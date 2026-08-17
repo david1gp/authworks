@@ -4,6 +4,7 @@ import * as v from "valibot"
 import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
 import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { passkeyAuthenticationComplete } from "../actions/passkeyAuthenticationComplete.js"
 import { passkeyAuthenticationStart } from "../actions/passkeyAuthenticationStart.js"
@@ -96,6 +97,13 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
   })
 
   app.post("/instances/:instanceId/passkeys/authentication/start", async (context) => {
+    const tenant = passkeyTenantInstanceResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "not_found")
     const body = await passkeyJsonRead(context)
     const input = body.success
       ? v.safeParse(passkeyAuthenticationStartRequestSchema, body.data)
@@ -117,6 +125,13 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
   })
 
   app.post("/instances/:instanceId/passkeys/authentication/complete", async (context) => {
+    const tenant = passkeyTenantInstanceResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "not_found")
     const body = await passkeyJsonRead(context)
     if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "bad_request")
     const input = v.safeParse(passkeyAuthenticationCompleteRequestSchema, body.data)
@@ -206,6 +221,27 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
   })
 
   return app
+}
+
+function passkeyTenantInstanceResolve(
+  database: StorageDatabase,
+  host: string | undefined,
+  requestUrl: string,
+  instanceId: string,
+) {
+  const resolvedHost = host ?? new URL(requestUrl).hostname
+  const normalizedHost = resolvedHost.startsWith("[")
+    ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
+    : (resolvedHost.split(":")[0] ?? "")
+  const tenant = instanceTenantContextResolve({ database, host: normalizedHost })
+  if (!tenant.success) return tenant
+  if (tenant.data.instanceId !== instanceId)
+    return {
+      errorMessage: "The instance is not available in this tenant context.",
+      op: "passkeyTenantInstanceResolve",
+      success: false as const,
+    }
+  return tenant
 }
 
 async function passkeyAuthenticationCompleteRoute(

@@ -324,7 +324,7 @@ test("password server and client expose generic public contracts", async () => {
     const instance = await createInstance(database, "passwords-api.example.com")
     const app = passwordServerAppCreate({ database, systemSecret: "system-secret" })
     const client = passwordApiClientCreate({
-      baseUrl: "http://server.test",
+      baseUrl: "https://passwords-api.example.com",
       fetch: async (input, init) => app.request(input.toString(), init),
     })
     const registered = await client.passwordRegister(instance.id, registrationInput())
@@ -348,7 +348,7 @@ test("password server and client expose generic public contracts", async () => {
     })
     if (!policy.success) return
     const unauthorized = await passwordApiClientCreate({
-      baseUrl: "http://server.test",
+      baseUrl: "https://passwords-api.example.com",
       fetch: async (input, init) => app.request(input.toString(), init),
       token: "bad",
     }).passwordPolicySet(

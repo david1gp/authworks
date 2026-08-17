@@ -530,7 +530,7 @@ test("external identity HTTP, client, and CLI surfaces keep configuration and se
       systemSecret: "system-secret",
     })
     const client = externalIdentityApiClientCreate({
-      baseUrl: "http://server.test",
+      baseUrl: "https://external-http.example.com",
       fetch: async (input, init) => app.request(input.toString(), init),
       token: "system-secret",
     })

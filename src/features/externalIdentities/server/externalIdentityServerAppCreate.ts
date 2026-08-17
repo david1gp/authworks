@@ -6,6 +6,7 @@ import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
 import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
 import { externalIdentityCallback } from "../actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../actions/externalIdentityLinkComplete.js"
@@ -41,16 +42,23 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     minimumAssurance: "authenticated",
   })
 
-  app.get("/instances/:instanceId/external-identity-providers", (context) =>
-    externalIdentityResultResponseCreate(
+  app.get("/instances/:instanceId/external-identity-providers", (context) => {
+    const tenant = externalIdentityTenantInstanceResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
+    return externalIdentityResultResponseCreate(
       context,
       externalIdentityProviderList({
         database: options.database,
         instanceId: context.req.param("instanceId"),
         organizationId: context.req.query("organizationId"),
       }),
-    ),
-  )
+    )
+  })
 
   app.get("/system/instances/:instanceId/external-identity-providers", (context) => {
     const authorization = externalIdentitySystemAuthorizationGet(
@@ -156,6 +164,13 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   })
 
   app.post("/instances/:instanceId/external-identity/:providerId/start", async (context) => {
+    const tenant = externalIdentityTenantInstanceResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
     const body = await externalIdentityJsonRead(context)
     if (!body.success) return externalIdentityErrorResponseCreate(context, body)
     const input = v.safeParse(externalIdentityStartRequestSchema, body.data)
@@ -176,8 +191,15 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     )
   })
 
-  app.get("/instances/:instanceId/external-identity/:providerId/callback", async (context) =>
-    externalIdentityResultResponseCreate(
+  app.get("/instances/:instanceId/external-identity/:providerId/callback", async (context) => {
+    const tenant = externalIdentityTenantInstanceResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
+    return externalIdentityResultResponseCreate(
       context,
       await externalIdentityCallback({
         code: context.req.query("code") ?? "",
@@ -188,8 +210,8 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         providerPorts,
         state: context.req.query("state") ?? "",
       }),
-    ),
-  )
+    )
+  })
 
   app.post(
     "/instances/:instanceId/users/:userId/external-identities/:providerId/link/start",
@@ -274,6 +296,27 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   )
 
   return app
+}
+
+function externalIdentityTenantInstanceResolve(
+  database: StorageDatabase,
+  host: string | undefined,
+  requestUrl: string,
+  instanceId: string,
+) {
+  const resolvedHost = host ?? new URL(requestUrl).hostname
+  const normalizedHost = resolvedHost.startsWith("[")
+    ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
+    : (resolvedHost.split(":")[0] ?? "")
+  const tenant = instanceTenantContextResolve({ database, host: normalizedHost })
+  if (!tenant.success) return tenant
+  if (tenant.data.instanceId !== instanceId)
+    return {
+      errorMessage: "The instance is not available in this tenant context.",
+      op: "externalIdentityTenantInstanceResolve",
+      success: false as const,
+    }
+  return tenant
 }
 
 function externalIdentitySystemAuthorizationGet(

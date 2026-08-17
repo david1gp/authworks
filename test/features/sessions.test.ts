@@ -149,7 +149,7 @@ test("the password HTTP success seam returns a session with device metadata", as
   await withDatabase(async (database) => {
     const { instance } = await createVerifiedUser(database, "sessions-http.example.com")
     const app = passwordServerAppCreate({ database })
-    const response = await app.request(`http://server.test/instances/${instance.id}/password/login`, {
+    const response = await app.request(`https://sessions-http.example.com/instances/${instance.id}/password/login`, {
       body: JSON.stringify({ identifier: "session-user", password: "Correct Horse 12" }),
       headers: {
         "content-type": "application/json",

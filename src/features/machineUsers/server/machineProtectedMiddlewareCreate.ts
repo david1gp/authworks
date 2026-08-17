@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from "hono"
 import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
 import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
 import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
+import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -24,9 +25,17 @@ export function machineProtectedMiddlewareCreate(
   options: MachineProtectedMiddlewareOptions,
 ): MiddlewareHandler<MachineProtectedMiddlewareEnv> {
   return async (context, next) => {
+    const instanceId = context.req.param("instanceId") ?? ""
+    const host = context.req.header("host") ?? new URL(context.req.url).hostname
+    const tenant = instanceTenantContextResolve({ database: options.database, host })
+    if (tenant.success && tenant.data.instanceId !== instanceId)
+      return context.json(
+        httpErrorResponseCreate("unauthorized", "Machine authorization is invalid."),
+        httpErrorStatusGet("unauthorized") as 401,
+      )
     const authenticated = machineCredentialAuthenticate({
       database: options.database,
-      instanceId: context.req.param("instanceId") ?? "",
+      instanceId,
       token: machineTokenGet(context.req.header("authorization"), context.req.header("x-api-key")),
     })
     if (!authenticated.success)
@@ -37,7 +46,7 @@ export function machineProtectedMiddlewareCreate(
     if (options.permission !== undefined) {
       const authorized = authorizationEnforce({
         actor: authenticated.data.actor,
-        instanceId: context.req.param("instanceId") ?? "",
+        instanceId,
         permission: options.permission,
       })
       if (!authorized.success)

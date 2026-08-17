@@ -7,7 +7,7 @@ import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../instances/domain/instanceTenantContextCreate.js"
+import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
 import { passwordChange } from "../actions/passwordChange.js"
 import { passwordEmailVerify } from "../actions/passwordEmailVerify.js"
 import { passwordLogin } from "../actions/passwordLogin.js"
@@ -43,6 +43,13 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   const sessionCreate = options.sessionCreate ?? sessionPasswordCreate()
 
   app.post("/instances/:instanceId/password/register", async (context) => {
+    const tenant = passwordTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
     if (!body.success) return passwordErrorResponseCreate(context, body)
     const input = v.safeParse(passwordRegistrationRequestSchema, body.data)
@@ -54,7 +61,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordRegister({
-        context: instanceTenantContextCreate(context.req.param("instanceId"), "anonymous"),
+        context: tenant.data,
         database: options.database,
         input: input.output,
         instanceId: context.req.param("instanceId"),
@@ -64,6 +71,13 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   })
 
   app.post("/instances/:instanceId/password/login", async (context) => {
+    const tenant = passwordTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
     if (!body.success) return passwordErrorResponseCreate(context, body)
     const input = v.safeParse(passwordLoginRequestSchema, body.data)
@@ -72,7 +86,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordLogin({
-        context: instanceTenantContextCreate(context.req.param("instanceId"), "anonymous"),
+        context: tenant.data,
         database: options.database,
         input: input.output,
         instanceId: context.req.param("instanceId"),
@@ -84,6 +98,13 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   })
 
   app.post("/instances/:instanceId/password/verify-email", async (context) => {
+    const tenant = passwordTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
     if (!body.success) return passwordErrorResponseCreate(context, body)
     const input = v.safeParse(passwordEmailVerificationRequestSchema, body.data)
@@ -95,7 +116,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordEmailVerify({
-        context: instanceTenantContextCreate(context.req.param("instanceId"), "anonymous"),
+        context: tenant.data,
         database: options.database,
         input: input.output,
         instanceId: context.req.param("instanceId"),
@@ -104,6 +125,13 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   })
 
   app.post("/instances/:instanceId/password/recovery/request", async (context) => {
+    const tenant = passwordTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
     if (!body.success) return passwordErrorResponseCreate(context, body)
     const input = v.safeParse(passwordRecoveryRequestSchema, body.data)
@@ -115,7 +143,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordRecoveryRequest({
-        context: instanceTenantContextCreate(context.req.param("instanceId"), "anonymous"),
+        context: tenant.data,
         database: options.database,
         input: input.output,
         instanceId: context.req.param("instanceId"),
@@ -125,6 +153,13 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   })
 
   app.post("/instances/:instanceId/password/recovery/complete", async (context) => {
+    const tenant = passwordTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
     if (!body.success) return passwordErrorResponseCreate(context, body)
     const input = v.safeParse(passwordRecoveryCompleteRequestSchema, body.data)
@@ -136,7 +171,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordRecoveryComplete({
-        context: instanceTenantContextCreate(context.req.param("instanceId"), "anonymous"),
+        context: tenant.data,
         database: options.database,
         input: input.output,
         instanceId: context.req.param("instanceId"),
@@ -145,6 +180,13 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   })
 
   app.post("/instances/:instanceId/users/:userId/password", async (context) => {
+    const tenant = passwordTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
     if (!body.success) return passwordErrorResponseCreate(context, body)
     const input = v.safeParse(passwordChangeRequestSchema, body.data)
@@ -156,7 +198,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordChange({
-        context: instanceTenantContextCreate(context.req.param("instanceId"), "anonymous"),
+        context: tenant.data,
         database: options.database,
         input: input.output,
         instanceId: context.req.param("instanceId"),
@@ -165,16 +207,23 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     )
   })
 
-  app.get("/instances/:instanceId/password-policy", (context) =>
-    passwordResultResponseCreate(
+  app.get("/instances/:instanceId/password-policy", (context) => {
+    const tenant = passwordTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("instanceId"),
+    )
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
+    return passwordResultResponseCreate(
       context,
       passwordPolicyGet({
-        context: instanceTenantContextCreate(context.req.param("instanceId"), "anonymous"),
+        context: tenant.data,
         database: options.database,
         instanceId: context.req.param("instanceId"),
       }),
-    ),
-  )
+    )
+  })
 
   app.get("/system/instances/:instanceId/password-policy", (context) => {
     const authorization = passwordSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
@@ -212,6 +261,30 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   })
 
   return app
+}
+
+function passwordTenantContextResolve(
+  database: StorageDatabase,
+  host: string | undefined,
+  requestUrl: string,
+  instanceId: string,
+) {
+  const tenant = instanceTenantContextResolve({ database, host: passwordRequestHostGet(host, requestUrl) })
+  if (!tenant.success) return tenant
+  if (tenant.data.instanceId !== instanceId)
+    return {
+      errorMessage: "The instance is not available in this tenant context.",
+      op: "passwordTenantContextResolve",
+      success: false as const,
+    }
+  return tenant
+}
+
+function passwordRequestHostGet(host: string | undefined, requestUrl: string): string {
+  const resolvedHost = host ?? new URL(requestUrl).hostname
+  return resolvedHost.startsWith("[")
+    ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
+    : (resolvedHost.split(":")[0] ?? "")
 }
 
 function passwordDeviceMetadataGet(context: {

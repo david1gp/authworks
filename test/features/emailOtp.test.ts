@@ -393,7 +393,7 @@ test("email OTP HTTP and client contracts expose no code material", async () => 
       },
     })
     const client = emailOtpApiClientCreate({
-      baseUrl: "http://server.test",
+      baseUrl: "https://email-otp-api.example.com",
       fetch: async (input, init) => app.request(input.toString(), init),
     })
     const started = await client.emailOtpStart(instance.id, { email: "otp@example.com" })
