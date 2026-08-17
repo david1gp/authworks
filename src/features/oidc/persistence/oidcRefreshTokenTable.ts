@@ -9,6 +9,7 @@ export const oidcRefreshTokenTable = sqliteTable(
     familyId: text("family_id").notNull(),
     id: text("id").primaryKey(),
     instanceId: text("instance_id").notNull(),
+    nonceEncrypted: text("nonce_encrypted"),
     scope: text("scope").notNull(),
     sessionId: text("session_id").notNull(),
     tokenHash: text("token_hash").notNull(),

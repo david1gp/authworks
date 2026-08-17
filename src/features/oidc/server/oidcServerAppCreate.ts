@@ -23,12 +23,14 @@ import { oidcJwksGet } from "../actions/oidcJwksGet.js"
 import { oidcSigningKeyCreate } from "../actions/oidcSigningKeyCreate.js"
 import { oidcSigningKeyLifecycleSet } from "../actions/oidcSigningKeyLifecycleSet.js"
 import { oidcSigningKeyList } from "../actions/oidcSigningKeyList.js"
+import { oidcTokenIssue } from "../actions/oidcTokenIssue.js"
 import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import { oidcAuthorizationRequestSchema } from "../public/oidcAuthorizationRequestSchema.js"
 import { oidcClientCreateRequestSchema } from "../public/oidcClientCreateRequestSchema.js"
 import { oidcClientLifecycleRequestSchema } from "../public/oidcClientLifecycleRequestSchema.js"
 import { oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
 import { oidcSigningKeyLifecycleRequestSchema } from "../public/oidcSigningKeyLifecycleRequestSchema.js"
+import { oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
 
 type OidcServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -111,6 +113,38 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
         instanceId: instance.data.instanceId,
       }),
     )
+  })
+
+  app.post("/oauth2/token", async (context) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success)
+      return oidcTokenErrorResponseCreate(context, "invalid_request", "The token request is invalid.")
+    const body = await oidcTokenFormRead(context)
+    if (!body.success) return oidcTokenErrorResponseCreate(context, "invalid_request", body.errorMessage)
+    if (
+      body.data.grant_type !== undefined &&
+      body.data.grant_type !== "authorization_code" &&
+      body.data.grant_type !== "refresh_token"
+    )
+      return oidcTokenErrorResponseCreate(context, "unsupported_grant_type", "The grant type is not supported.")
+    const credentials = oidcTokenClientCredentialsResolve(context.req.header("authorization"), body.data)
+    if (!credentials.success) return oidcTokenErrorResponseCreate(context, "invalid_client", credentials.errorMessage)
+    const input = v.safeParse(oidcTokenRequestSchema, {
+      ...body.data,
+      client_id: credentials.clientId,
+      ...(credentials.clientSecret === undefined ? {} : { client_secret: credentials.clientSecret }),
+    })
+    if (!input.success) return oidcTokenErrorResponseCreate(context, "invalid_request", "The token request is invalid.")
+    const token = oidcTokenIssue({
+      database: options.database,
+      encryptionSecret: options.systemSecret,
+      input: input.output,
+      instanceId: instance.data.instanceId,
+    })
+    if (!token.success) return oidcTokenErrorResponseCreate(context, oidcTokenErrorCodeGet(token), token.errorMessage)
+    context.header("cache-control", "no-store")
+    context.header("pragma", "no-cache")
+    return context.json(token.data)
   })
   return app
 }
@@ -354,6 +388,37 @@ function oidcErrorResponseCreate(
   )
 }
 
+function oidcTokenErrorResponseCreate(
+  context: {
+    header: (name: string, value: string) => void
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+  },
+  code:
+    | "invalid_client"
+    | "invalid_grant"
+    | "invalid_request"
+    | "invalid_scope"
+    | "server_error"
+    | "unsupported_grant_type",
+  message: string,
+) {
+  context.header("cache-control", "no-store")
+  context.header("pragma", "no-cache")
+  if (code === "invalid_client") context.header("www-authenticate", 'Basic realm="oauth2/token"')
+  return context.json(
+    { error: code, error_description: message },
+    (code === "invalid_client" ? 401 : code === "server_error" ? 500 : 400) as ContentfulStatusCode,
+  )
+}
+
+function oidcTokenErrorCodeGet(result: { errorMessage: string; op: string }) {
+  if (result.op === "oidcTokenInvalidClient") return "invalid_client" as const
+  if (result.op === "oidcTokenInvalidScope") return "invalid_scope" as const
+  if (result.op === "oidcTokenInvalidRequest") return "invalid_request" as const
+  if (result.op === "oidcTokenInvalidGrant") return "invalid_grant" as const
+  return "server_error" as const
+}
+
 function oidcErrorCodeGet(result: { errorMessage: string; op: string }): string {
   const message = result.errorMessage.toLowerCase()
   const op = result.op.toLowerCase()
@@ -399,5 +464,57 @@ async function oidcRequestJsonRead(context: { req: { json: <T>() => Promise<T> }
     return { data: await context.req.json<unknown>(), success: true as const }
   } catch (_error) {
     return { errorMessage: "The request body is invalid.", op: "oidcRequestJsonRead", success: false as const }
+  }
+}
+
+async function oidcTokenFormRead(context: {
+  req: { header: (name: string) => string | undefined; text: () => Promise<string> }
+}) {
+  const contentType = context.req.header("content-type")?.split(";", 1)[0]?.trim().toLowerCase()
+  if (contentType !== "application/x-www-form-urlencoded")
+    return { errorMessage: "The token request must use form encoding.", success: false as const }
+  try {
+    const values: Record<string, string> = {}
+    for (const [key, value] of new URLSearchParams(await context.req.text()).entries()) {
+      if (Object.hasOwn(values, key))
+        return { errorMessage: "The token request contains duplicate parameters.", success: false as const }
+      values[key] = value
+    }
+    return { data: values, success: true as const }
+  } catch (_error) {
+    return { errorMessage: "The token request is invalid.", success: false as const }
+  }
+}
+
+function oidcTokenClientCredentialsResolve(
+  authorization: string | undefined,
+  body: Record<string, string>,
+):
+  | { readonly clientId: string; readonly clientSecret?: string; readonly success: true }
+  | { readonly errorMessage: string; readonly success: false } {
+  const bodyClientId = body.client_id
+  const bodyClientSecret = body.client_secret
+  if (authorization === undefined) {
+    if (bodyClientId === undefined) return { errorMessage: "Client authentication failed.", success: false }
+    return {
+      clientId: bodyClientId,
+      ...(bodyClientSecret === undefined ? {} : { clientSecret: bodyClientSecret }),
+      success: true,
+    }
+  }
+  const basic = /^Basic\s+(\S+)$/i.exec(authorization)
+  if (basic === null) return { errorMessage: "Client authentication failed.", success: false }
+  try {
+    const decoded = Buffer.from(basic[1] ?? "", "base64").toString("utf8")
+    const separator = decoded.indexOf(":")
+    if (separator < 1 || bodyClientSecret !== undefined)
+      return { errorMessage: "Client authentication failed.", success: false }
+    const clientId = decoded.slice(0, separator)
+    const clientSecret = decoded.slice(separator + 1)
+    if (bodyClientId !== undefined && bodyClientId !== clientId)
+      return { errorMessage: "Client authentication failed.", success: false }
+    return { clientId, clientSecret, success: true }
+  } catch (_error) {
+    return { errorMessage: "Client authentication failed.", success: false }
   }
 }

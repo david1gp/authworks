@@ -1,4 +1,5 @@
 export const oidcEventTypes = {
+  accessTokenIssued: "oidc.access_token_issued",
   authorizationCodeConsumed: "oidc.authorization_code_consumed",
   authorizationCodeIssued: "oidc.authorization_code_issued",
   authorizationRequestValidated: "oidc.authorization_request_validated",
@@ -8,4 +9,7 @@ export const oidcEventTypes = {
   clientUpdated: "oidc.client_updated",
   signingKeyCreated: "oidc.signing_key_created",
   signingKeyRetired: "oidc.signing_key_retired",
+  refreshTokenIssued: "oidc.refresh_token_issued",
+  refreshTokenReplayDetected: "oidc.refresh_token_replay_detected",
+  refreshTokenRotated: "oidc.refresh_token_rotated",
 } as const

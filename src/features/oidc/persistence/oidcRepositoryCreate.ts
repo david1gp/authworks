@@ -5,7 +5,9 @@ import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { type OidcAuthorizationCodeRow, oidcAuthorizationCodeTable } from "./oidcAuthorizationCodeTable.js"
 import { type OidcAuthorizationRequestRow, oidcAuthorizationRequestTable } from "./oidcAuthorizationRequestTable.js"
+import { type OidcAccessTokenRow, oidcAccessTokenTable } from "./oidcAccessTokenTable.js"
 import { type OidcClientRow, oidcClientTable } from "./oidcClientTable.js"
+import { type OidcRefreshTokenRow, oidcRefreshTokenTable } from "./oidcRefreshTokenTable.js"
 import { type OidcSigningKeyRow, oidcSigningKeyTable } from "./oidcSigningKeyTable.js"
 
 type OidcClientInsert = typeof oidcClientTable.$inferInsert
@@ -14,6 +16,8 @@ type OidcSigningKeyInsert = typeof oidcSigningKeyTable.$inferInsert
 type OidcSigningKeyUpdate = Partial<OidcSigningKeyInsert>
 type OidcAuthorizationCodeInsert = typeof oidcAuthorizationCodeTable.$inferInsert
 type OidcAuthorizationRequestInsert = typeof oidcAuthorizationRequestTable.$inferInsert
+type OidcAccessTokenInsert = typeof oidcAccessTokenTable.$inferInsert
+type OidcRefreshTokenInsert = typeof oidcRefreshTokenTable.$inferInsert
 
 export function oidcRepositoryCreate(database: StorageExecutor) {
   return {
@@ -70,6 +74,106 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
         )
       } catch (_error) {
         return resultErrorCreate("oidcAuthorizationCodeGetByTokenHash", "The authorization code could not be read.")
+      }
+    },
+
+    accessTokenCreate(input: OidcAccessTokenInsert): Result<OidcAccessTokenRow> {
+      try {
+        const row = database.insert(oidcAccessTokenTable).values(input).returning().get()
+        if (row === undefined)
+          return resultErrorCreate("oidcAccessTokenCreate", "The access token could not be created.")
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCreate("oidcAccessTokenCreate", "The access token could not be created.")
+      }
+    },
+
+    accessTokenFamilyRevoke(instanceId: string, familyId: string, revokedAt: number): Result<void> {
+      try {
+        database
+          .update(oidcAccessTokenTable)
+          .set({ revokedAt })
+          .where(
+            and(
+              eq(oidcAccessTokenTable.instanceId, instanceId),
+              eq(oidcAccessTokenTable.refreshFamilyId, familyId),
+              isNull(oidcAccessTokenTable.revokedAt),
+            ),
+          )
+          .run()
+        return resultCreate(undefined)
+      } catch (_error) {
+        return resultErrorCreate("oidcAccessTokenFamilyRevoke", "The access token family could not be revoked.")
+      }
+    },
+
+    refreshTokenCreate(input: OidcRefreshTokenInsert): Result<OidcRefreshTokenRow> {
+      try {
+        const row = database.insert(oidcRefreshTokenTable).values(input).returning().get()
+        if (row === undefined)
+          return resultErrorCreate("oidcRefreshTokenCreate", "The refresh token could not be created.")
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCreate("oidcRefreshTokenCreate", "The refresh token could not be created.")
+      }
+    },
+
+    refreshTokenFamilyRevoke(instanceId: string, familyId: string, revokedAt: number): Result<void> {
+      try {
+        database
+          .update(oidcRefreshTokenTable)
+          .set({ revokedAt })
+          .where(
+            and(
+              eq(oidcRefreshTokenTable.instanceId, instanceId),
+              eq(oidcRefreshTokenTable.familyId, familyId),
+              isNull(oidcRefreshTokenTable.revokedAt),
+            ),
+          )
+          .run()
+        return resultCreate(undefined)
+      } catch (_error) {
+        return resultErrorCreate("oidcRefreshTokenFamilyRevoke", "The refresh token family could not be revoked.")
+      }
+    },
+
+    refreshTokenGetByTokenHash(tokenHash: string): Result<OidcRefreshTokenRow | null> {
+      try {
+        return resultCreate(
+          database.select().from(oidcRefreshTokenTable).where(eq(oidcRefreshTokenTable.tokenHash, tokenHash)).get() ??
+            null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcRefreshTokenGetByTokenHash", "The refresh token could not be read.")
+      }
+    },
+
+    refreshTokenRotate(
+      instanceId: string,
+      clientId: string,
+      tokenHash: string,
+      replacedByHash: string,
+      now: number,
+    ): Result<OidcRefreshTokenRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcRefreshTokenTable)
+            .set({ replacedByHash, revokedAt: now })
+            .where(
+              and(
+                eq(oidcRefreshTokenTable.instanceId, instanceId),
+                eq(oidcRefreshTokenTable.clientId, clientId),
+                eq(oidcRefreshTokenTable.tokenHash, tokenHash),
+                gt(oidcRefreshTokenTable.expiresAt, now),
+                isNull(oidcRefreshTokenTable.revokedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcRefreshTokenRotate", "The refresh token could not be rotated.")
       }
     },
 

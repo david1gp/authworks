@@ -38,6 +38,9 @@ import {
 import { type OidcClientUpdateRequest, oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
 import { type OidcDiscovery, oidcDiscoverySchema } from "../public/oidcDiscoverySchema.js"
 import { type OidcJwks, oidcJwksSchema } from "../public/oidcJwksSchema.js"
+import { type OidcTokenRequest, oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
+import { oidcTokenErrorSchema } from "../public/oidcTokenErrorSchema.js"
+import { type OidcTokenResponse, oidcTokenResponseSchema } from "../public/oidcTokenResponseSchema.js"
 import {
   type OidcSigningKeyLifecycleRequest,
   oidcSigningKeyLifecycleRequestSchema,
@@ -83,6 +86,32 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     }
   }
 
+  const tokenRequest = async (input: OidcTokenRequest): Promise<Result<OidcTokenResponse>> => {
+    const op = "oidcApiClientTokenIssue"
+    const body = new URLSearchParams()
+    for (const [key, value] of Object.entries(input)) {
+      if (value !== undefined) body.set(key, value)
+    }
+    try {
+      const response = await (options.fetch ?? fetch)(new URL("/oauth2/token", options.baseUrl), {
+        body,
+        headers: { accept: "application/json", "content-type": "application/x-www-form-urlencoded" },
+        method: "POST",
+      })
+      const responseBody = await response.json().catch(() => undefined)
+      if (!response.ok) {
+        const parsedError = v.safeParse(oidcTokenErrorSchema, responseBody)
+        if (!parsedError.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
+        return resultErrorCreate(op, parsedError.output.error_description ?? parsedError.output.error)
+      }
+      const parsed = v.safeParse(oidcTokenResponseSchema, responseBody)
+      if (!parsed.success) return resultErrorCreate(op, "The server returned an invalid token response.")
+      return resultCreate(parsed.output)
+    } catch (_error) {
+      return resultErrorCreate(op, "The server could not be reached.")
+    }
+  }
+
   const managementPath = (instanceId: string, suffix = "") =>
     `/system/instances/${encodeURIComponent(instanceId)}/oidc${suffix}`
 
@@ -113,6 +142,13 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
         if (value !== undefined) query.set(key, value)
       }
       return request(`/oauth2/authorize?${query.toString()}`, { method: "GET" }, oidcAuthorizationResponseSchema)
+    },
+
+    oidcTokenIssue(input: OidcTokenRequest): Promise<Result<OidcTokenResponse>> {
+      const parsed = v.safeParse(oidcTokenRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(resultErrorCreate("oidcApiClientTokenIssue", "The token request is invalid."))
+      return tokenRequest(parsed.output)
     },
 
     oidcClientCreate(instanceId: string, input: OidcClientCreateRequest): Promise<Result<OidcClientCreateResponse>> {

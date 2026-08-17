@@ -178,7 +178,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS oidc_access_tokens_refresh_family_idx ON oidc_access_tokens (refresh_family_id)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS oidc_refresh_tokens (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, client_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, family_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, scope TEXT NOT NULL CHECK (json_valid(scope)), created_at INTEGER NOT NULL CHECK (created_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), replaced_by_hash TEXT, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS oidc_refresh_tokens (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, client_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, family_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, nonce_encrypted TEXT, scope TEXT NOT NULL CHECK (json_valid(scope)), created_at INTEGER NOT NULL CHECK (created_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), replaced_by_hash TEXT, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
     )
     database.run(
       "CREATE INDEX IF NOT EXISTS oidc_refresh_tokens_instance_user_idx ON oidc_refresh_tokens (instance_id, user_id)",

@@ -17,14 +17,17 @@ import { oidcDiscoveryGet } from "../../src/features/oidc/actions/oidcDiscoveryG
 import { oidcJwksGet } from "../../src/features/oidc/actions/oidcJwksGet.js"
 import { oidcSigningKeyCreate } from "../../src/features/oidc/actions/oidcSigningKeyCreate.js"
 import { oidcSigningKeyList } from "../../src/features/oidc/actions/oidcSigningKeyList.js"
+import { oidcTokenIssue } from "../../src/features/oidc/actions/oidcTokenIssue.js"
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
 import { oidcClientSecretMatches } from "../../src/features/oidc/domain/oidcClientSecretMatches.js"
 import { oidcJwtSign } from "../../src/features/oidc/domain/oidcJwtSign.js"
+import { oidcJwtVerify } from "../../src/features/oidc/domain/oidcJwtVerify.js"
 import { oidcRedirectUriMatches } from "../../src/features/oidc/domain/oidcRedirectUriMatches.js"
 import { oidcRedirectUriValidate } from "../../src/features/oidc/domain/oidcRedirectUriValidate.js"
 import { oidcValueDecrypt } from "../../src/features/oidc/domain/oidcValueEncrypt.js"
 import { oidcDiscoverySchema } from "../../src/features/oidc/public/oidcDiscoverySchema.js"
 import { oidcJwksSchema } from "../../src/features/oidc/public/oidcJwksSchema.js"
+import { oidcTokenResponseSchema } from "../../src/features/oidc/public/oidcTokenResponseSchema.js"
 import { oidcServerAppCreate } from "../../src/features/oidc/server/oidcServerAppCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
@@ -102,6 +105,20 @@ async function createAuthenticatedSession(
 
 function pkceChallengeCreate(verifier: string): string {
   return createHash("sha256").update(verifier, "utf8").digest("base64url")
+}
+
+async function oidcTokenRequest(
+  app: ReturnType<typeof oidcServerAppCreate>,
+  domain: string,
+  input: Record<string, string>,
+): Promise<Response> {
+  return app.fetch(
+    new Request(`https://${domain}/oauth2/token`, {
+      body: new URLSearchParams(input),
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      method: "POST",
+    }),
+  )
 }
 
 test("redirect URI matching is exact and rejects unsafe registrations", () => {
@@ -263,6 +280,8 @@ test("OIDC management routes use system auth while discovery and JWKS are public
     const jwksBody = v.parse(oidcJwksSchema, await jwks.json())
     expect(discoveryBody.issuer).toBe("https://routes.example.com")
     expect(jwksBody.keys).toEqual([])
+    expect(discoveryBody.grant_types_supported).toEqual(["authorization_code", "refresh_token"])
+    expect(discoveryBody.token_endpoint).toBe("https://routes.example.com/oauth2/token")
     const tenant = await app.fetch(
       new Request(`https://routes.example.com/instances/${instance.id}/oidc/clients`, {
         headers: { authorization: `Bearer ${bootstrap.data.bootstrapAdmin.secret.valueGet()}` },
@@ -580,5 +599,331 @@ test("authorization routes use the authenticated session and the API client cont
       redirect_uri: started.data.redirect_uri,
     })
     expect(redeemed).toMatchObject({ success: true, data: { client_id: client.data.client.id, nonce: null } })
+  })
+})
+
+test("the standards token endpoint exchanges codes, signs scoped tokens, and rotates refresh tokens", async () => {
+  await withDatabase(async (database) => {
+    const authenticated = await createAuthenticatedSession(database, "token.example.com")
+    const client = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        allowedScopes: ["openid", "profile", "email"],
+        clientType: "confidential",
+        name: "Token client",
+        redirectUris: ["https://client.example/callback"],
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(client.success).toBe(true)
+    if (!client.success || client.data.clientSecret === undefined) return
+    const key = oidcSigningKeyCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      encryptionSecret: "token-secret",
+      instanceId: authenticated.instance.id,
+    })
+    expect(key.success).toBe(true)
+    if (!key.success) return
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const authorization = oidcAuthorizationRequestAuthorize({
+      database,
+      encryptionSecret: "token-secret",
+      input: {
+        client_id: client.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        nonce: "token-nonce",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid profile email",
+        state: "token-state",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(authorization.success).toBe(true)
+    if (!authorization.success) return
+    const app = oidcServerAppCreate({ database, systemSecret: "token-secret" })
+    const wrongVerifier = await oidcTokenRequest(app, "token.example.com", {
+      client_id: client.data.client.id,
+      client_secret: client.data.clientSecret,
+      code: authorization.data.code,
+      code_verifier: "wrong-verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~",
+      grant_type: "authorization_code",
+      redirect_uri: authorization.data.redirect_uri,
+    })
+    expect(wrongVerifier.status).toBe(400)
+    expect(await wrongVerifier.json()).toMatchObject({ error: "invalid_grant" })
+    const response = await oidcTokenRequest(app, "token.example.com", {
+      client_id: client.data.client.id,
+      client_secret: client.data.clientSecret,
+      code: authorization.data.code,
+      code_verifier: verifier,
+      grant_type: "authorization_code",
+      redirect_uri: authorization.data.redirect_uri,
+    })
+    expect(response.status).toBe(200)
+    const token = v.parse(oidcTokenResponseSchema, await response.json())
+    expect(token.scope).toBe("openid profile email")
+    expect(token.token_type).toBe("Bearer")
+    const idClaims = oidcJwtVerify(token.id_token, key.data.signingKey.publicJwk)
+    const accessClaims = oidcJwtVerify(token.access_token, key.data.signingKey.publicJwk)
+    expect(idClaims).toMatchObject({
+      data: {
+        amr: ["password"],
+        aud: client.data.client.id,
+        auth_time: 1_700_000_000,
+        email: "token-example-com@example.com",
+        email_verified: true,
+        iss: "https://token.example.com",
+        nonce: "token-nonce",
+        sub: authenticated.userId,
+      },
+      success: true,
+    })
+    expect(accessClaims).toMatchObject({
+      data: {
+        aud: client.data.client.id,
+        client_id: client.data.client.id,
+        scope: "openid profile email",
+        sub: authenticated.userId,
+      },
+      success: true,
+    })
+    const rotatedResponse = await oidcTokenRequest(app, "token.example.com", {
+      client_id: client.data.client.id,
+      client_secret: client.data.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: token.refresh_token,
+    })
+    expect(rotatedResponse.status).toBe(200)
+    const rotated = v.parse(oidcTokenResponseSchema, await rotatedResponse.json())
+    expect(rotated.refresh_token).not.toBe(token.refresh_token)
+    const expandedScope = await oidcTokenRequest(app, "token.example.com", {
+      client_id: client.data.client.id,
+      client_secret: client.data.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: rotated.refresh_token,
+      scope: "openid profile email custom",
+    })
+    expect(expandedScope.status).toBe(400)
+    expect(await expandedScope.json()).toMatchObject({ error: "invalid_scope" })
+    const replay = await oidcTokenRequest(app, "token.example.com", {
+      client_id: client.data.client.id,
+      client_secret: client.data.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: token.refresh_token,
+    })
+    expect(replay.status).toBe(400)
+    expect(await replay.json()).toMatchObject({ error: "invalid_grant" })
+    const familyReplay = await oidcTokenRequest(app, "token.example.com", {
+      client_id: client.data.client.id,
+      client_secret: client.data.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: rotated.refresh_token,
+    })
+    expect(familyReplay.status).toBe(400)
+    expect(await familyReplay.json()).toMatchObject({ error: "invalid_grant" })
+    expect(
+      database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_refresh_tokens WHERE revoked_at IS NOT NULL").get(),
+    ).toEqual({
+      count: 2,
+    })
+  })
+})
+
+test("the token endpoint supports public clients and confidential basic authentication while isolating grants", async () => {
+  await withDatabase(async (database) => {
+    const authenticated = await createAuthenticatedSession(database, "token-auth.example.com")
+    const publicClient = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { clientType: "public", name: "Public token client", redirectUris: ["https://client.example/callback"] },
+      instanceId: authenticated.instance.id,
+    })
+    expect(publicClient.success).toBe(true)
+    if (!publicClient.success) return
+    const key = oidcSigningKeyCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      encryptionSecret: "token-auth-secret",
+      instanceId: authenticated.instance.id,
+    })
+    expect(key.success).toBe(true)
+    if (!key.success) return
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const authorization = oidcAuthorizationRequestAuthorize({
+      database,
+      encryptionSecret: "token-auth-secret",
+      input: {
+        client_id: publicClient.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid",
+        state: "state",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(authorization.success).toBe(true)
+    if (!authorization.success) return
+    const app = oidcServerAppCreate({ database, systemSecret: "token-auth-secret" })
+    const publicResponse = await oidcTokenRequest(app, "token-auth.example.com", {
+      client_id: publicClient.data.client.id,
+      code: authorization.data.code,
+      code_verifier: verifier,
+      grant_type: "authorization_code",
+      redirect_uri: authorization.data.redirect_uri,
+    })
+    expect(publicResponse.status).toBe(200)
+
+    const apiAuthorization = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: publicClient.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid",
+        state: "api-state",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(apiAuthorization.success).toBe(true)
+    if (!apiAuthorization.success) return
+    const apiClient = oidcApiClientCreate({
+      baseUrl: "https://token-auth.example.com",
+      fetch: async (input, init) => app.request(input.toString(), init),
+    })
+    const apiToken = await apiClient.oidcTokenIssue({
+      client_id: publicClient.data.client.id,
+      code: apiAuthorization.data.code,
+      code_verifier: verifier,
+      grant_type: "authorization_code",
+      redirect_uri: apiAuthorization.data.redirect_uri,
+    })
+    expect(apiToken.success).toBe(true)
+
+    const confidential = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        clientType: "confidential",
+        name: "Basic token client",
+        redirectUris: ["https://client.example/callback"],
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(confidential.success).toBe(true)
+    if (!confidential.success || confidential.data.clientSecret === undefined) return
+    const basicAuthorization = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: confidential.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid",
+        state: "state",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(basicAuthorization.success).toBe(true)
+    if (!basicAuthorization.success) return
+    const basic = Buffer.from(`${confidential.data.client.id}:${confidential.data.clientSecret}`).toString("base64")
+    const basicResponse = await app.fetch(
+      new Request("https://token-auth.example.com/oauth2/token", {
+        body: new URLSearchParams({
+          code: basicAuthorization.data.code,
+          code_verifier: verifier,
+          grant_type: "authorization_code",
+          redirect_uri: basicAuthorization.data.redirect_uri,
+        }),
+        headers: {
+          authorization: `Basic ${basic}`,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        method: "POST",
+      }),
+    )
+    expect(basicResponse.status).toBe(200)
+    const foreign = await oidcTokenIssue({
+      database,
+      input: {
+        client_id: publicClient.data.client.id,
+        code: authorization.data.code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: authorization.data.redirect_uri,
+      },
+      instanceId: "018f0b7b-5c6e-7b7d-8e8f-901234567890",
+    })
+    expect(foreign.success).toBe(false)
+  })
+})
+
+test("token exchange is atomic with code consumption and token audit events", async () => {
+  await withDatabase(async (database) => {
+    const authenticated = await createAuthenticatedSession(database, "token-atomic.example.com")
+    const client = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { clientType: "public", name: "Atomic token client", redirectUris: ["https://client.example/callback"] },
+      instanceId: authenticated.instance.id,
+    })
+    expect(client.success).toBe(true)
+    if (!client.success) return
+    expect(
+      oidcSigningKeyCreate({
+        context: instanceSystemContextCreate(),
+        database,
+        encryptionSecret: "atomic-token-secret",
+        instanceId: authenticated.instance.id,
+      }).success,
+    ).toBe(true)
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const authorization = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: client.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid",
+        state: "state",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(authorization.success).toBe(true)
+    if (!authorization.success) return
+    database.sqlite.run(
+      "CREATE TRIGGER reject_oidc_token_events BEFORE INSERT ON events WHEN NEW.event_type = 'oidc.access_token_issued' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
+    )
+    const failed = oidcTokenIssue({
+      database,
+      encryptionSecret: "atomic-token-secret",
+      input: {
+        client_id: client.data.client.id,
+        code: authorization.data.code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: authorization.data.redirect_uri,
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(failed.success).toBe(false)
+    expect(database.sqlite.query("SELECT used_at FROM oidc_authorization_codes").get()).toEqual({ used_at: null })
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_access_tokens").get()).toEqual({ count: 0 })
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_refresh_tokens").get()).toEqual({ count: 0 })
   })
 })
