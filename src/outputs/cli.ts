@@ -4,6 +4,7 @@ import type { ApplicationContext, Command } from "@stricli/core"
 import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
 import { instanceCliCommands } from "../features/instances/cli/instanceCliCommands.js"
 import { organizationCliCommands } from "../features/organizations/cli/organizationCliCommands.js"
+import { passwordCliCommands } from "../features/passwords/cli/passwordCliCommands.js"
 import { userCliCommands } from "../features/users/cli/userCliCommands.js"
 
 const scaffoldCommand: Command<ApplicationContext> = buildCommand<Record<never, never>, [], ApplicationContext>({
@@ -24,6 +25,8 @@ const cliApplication = buildApplication(
       instances: instanceCliCommands,
       org: organizationCliCommands,
       organizations: organizationCliCommands,
+      password: passwordCliCommands,
+      passwords: passwordCliCommands,
       user: userCliCommands,
       users: userCliCommands,
       status: scaffoldCommand,

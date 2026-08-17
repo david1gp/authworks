@@ -7,6 +7,10 @@ import { instanceTable } from "../../features/instances/persistence/instanceTabl
 import { organizationInvitationTable } from "../../features/organizations/persistence/organizationInvitationTable.js"
 import { organizationMembershipTable } from "../../features/organizations/persistence/organizationMembershipTable.js"
 import { organizationTable } from "../../features/organizations/persistence/organizationTable.js"
+import { passwordChallengeTable } from "../../features/passwords/persistence/passwordChallengeTable.js"
+import { passwordCredentialTable } from "../../features/passwords/persistence/passwordCredentialTable.js"
+import { passwordLockoutTable } from "../../features/passwords/persistence/passwordLockoutTable.js"
+import { passwordPolicyTable } from "../../features/passwords/persistence/passwordPolicyTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
@@ -19,6 +23,10 @@ export const storageSchema = {
   organizationInvitationTable,
   organizationMembershipTable,
   organizationTable,
+  passwordChallengeTable,
+  passwordCredentialTable,
+  passwordLockoutTable,
+  passwordPolicyTable,
   userProfileTable,
   userTable,
   storageCurrentStateTable,

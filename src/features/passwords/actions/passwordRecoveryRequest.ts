@@ -1,0 +1,101 @@
+import * as v from "valibot"
+import { type Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
+import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { instanceGet } from "../../instances/actions/instanceGet.js"
+import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
+import { passwordTokenCreate } from "../domain/passwordTokenCreate.js"
+import { passwordTokenHashCreate } from "../domain/passwordTokenHashCreate.js"
+import { passwordEventTypes } from "../events/passwordEventTypes.js"
+import { passwordRecoveryEventPayloadSchema } from "../events/passwordRecoveryEventPayloadSchema.js"
+import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
+import { type PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliverySchema.js"
+import { type PasswordRecoveryRequest, passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
+import type { PasswordRecoveryResponse } from "../public/passwordRecoveryResponseSchema.js"
+
+type PasswordRecoveryRequestOptions = {
+  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly database: StorageDatabase
+  readonly input: PasswordRecoveryRequest
+  readonly instanceId: string
+  readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
+  readonly correlationId?: string
+  readonly onRecoveryToken?: (delivery: PasswordRecoveryDelivery) => void
+}
+
+export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions): Result<PasswordRecoveryResponse> {
+  const op = "passwordRecoveryRequest"
+  if (options.context === undefined || options.context === null)
+    return resultErrorCreate(op, "A tenant context is required.")
+  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+    return resultErrorCreate(op, "The recovery is not available in this tenant context.")
+  const parsed = v.safeParse(passwordRecoveryRequestSchema, options.input)
+  if (!parsed.success) return resultErrorCreate(op, "The recovery request is invalid.")
+  const email = userEmailNormalize(parsed.output.email)
+  if (!email.success) return resultCreate({ accepted: true })
+  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
+  if (!instance.success) return resultCreate({ accepted: true })
+  if (instance.data.instance.status !== "active") return resultCreate({ accepted: true })
+  const repository = passwordRepositoryCreate(options.database.db)
+  const user = repository.passwordUserFindByIdentifier(options.instanceId, email.data)
+  if (!user.success || user.data === null || user.data.state === "deleted" || user.data.emailVerifiedAt === null)
+    return resultCreate({ accepted: true })
+  const userRow = user.data
+  const runtime = options.runtime ?? options.database.runtime
+  const now = runtime.now()
+  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The recovery timestamp is invalid.")
+  const token = passwordTokenCreate(runtime)
+  const challengeId = uuidv7Create(runtime)
+  const correlationId = options.correlationId ?? uuidv7Create(runtime)
+  const created = storageTransactionRun(options.database, (transaction) => {
+    const txRepository = passwordRepositoryCreate(transaction)
+    const expired = txRepository.passwordChallengeExpirePrevious(options.instanceId, userRow.id, "recovery", now)
+    if (!expired.success) return expired
+    const challenge = txRepository.passwordChallengeCreate({
+      createdAt: now,
+      expiresAt: now + 60 * 60 * 1_000,
+      id: challengeId,
+      instanceId: options.instanceId,
+      kind: "recovery",
+      tokenHash: passwordTokenHashCreate(token.valueGet()),
+      userId: userRow.id,
+      version: 1,
+    })
+    if (!challenge.success) return challenge
+    const eventVersion = txRepository.passwordEventVersionGet(options.instanceId, userRow.id)
+    if (!eventVersion.success) return resultErrorCreate(op, "The recovery event version is invalid.")
+    const payload = v.safeParse(passwordRecoveryEventPayloadSchema, { accepted: true })
+    if (!payload.success) return resultErrorCreate(op, "The recovery event payload is invalid.")
+    const event = storageEventAppend(
+      transaction,
+      {
+        actorId: options.context.actorId,
+        aggregateId: userRow.id,
+        aggregateType: "password",
+        aggregateVersion: eventVersion.data + 1,
+        commandIndex: 0,
+        correlationId,
+        eventType: passwordEventTypes.recoveryRequested,
+        instanceId: options.instanceId,
+        metadata: { auditSafe: true, source: "passwords" },
+        occurredAt: now,
+        payload: payload.output,
+      },
+      runtime,
+    )
+    if (!event.success) return event
+    return resultCreate(undefined)
+  })
+  if (!created.success) return created
+  try {
+    options.onRecoveryToken?.({ instanceId: options.instanceId, token: token.valueGet(), userId: userRow.id })
+  } catch (_error) {}
+  return resultCreate({ accepted: true })
+}

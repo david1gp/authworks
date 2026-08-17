@@ -54,6 +54,22 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS user_profiles_instance_id_idx ON user_profiles (instance_id)")
     database.run(
+      "CREATE TABLE IF NOT EXISTS password_credentials (user_id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, hash TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), changed_at INTEGER NOT NULL CHECK (changed_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS password_policies (instance_id TEXT PRIMARY KEY NOT NULL, minimum_length INTEGER NOT NULL CHECK (minimum_length > 0 AND minimum_length <= 72), require_lowercase INTEGER NOT NULL CHECK (require_lowercase IN (0, 1)), require_uppercase INTEGER NOT NULL CHECK (require_uppercase IN (0, 1)), require_number INTEGER NOT NULL CHECK (require_number IN (0, 1)), require_symbol INTEGER NOT NULL CHECK (require_symbol IN (0, 1)), maximum_attempts INTEGER NOT NULL CHECK (maximum_attempts > 0), lockout_duration_ms INTEGER NOT NULL CHECK (lockout_duration_ms > 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS password_lockouts (user_id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, failed_attempts INTEGER NOT NULL CHECK (failed_attempts >= 0), locked_until INTEGER CHECK (locked_until IS NULL OR locked_until >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS password_lockouts_instance_id_idx ON password_lockouts (instance_id)")
+    database.run(
+      "CREATE TABLE IF NOT EXISTS password_challenges (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('verification', 'recovery')), token_hash TEXT NOT NULL UNIQUE, expires_at INTEGER NOT NULL CHECK (expires_at >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS password_challenges_user_kind_idx ON password_challenges (instance_id, user_id, kind)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS events (position INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, command_index INTEGER NOT NULL CHECK (command_index >= 0), instance_id TEXT NOT NULL, aggregate_type TEXT NOT NULL, aggregate_id TEXT NOT NULL, aggregate_version INTEGER NOT NULL CHECK (aggregate_version > 0), actor_id TEXT, correlation_id TEXT NOT NULL, causation_id TEXT, occurred_at INTEGER NOT NULL CHECK (occurred_at >= 0), event_type TEXT NOT NULL, payload TEXT NOT NULL CHECK (json_valid(payload)), metadata TEXT NOT NULL CHECK (json_valid(metadata)))",
     )
     database.run(
