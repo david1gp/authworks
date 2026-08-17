@@ -5,6 +5,7 @@ import { resultErrorCreate } from "../../src/platform/errors/resultErrorCreate.j
 import { httpErrorResponseCreate } from "../../src/platform/http/httpErrorResponseCreate.js"
 import { httpErrorResponseSchema } from "../../src/platform/http/httpErrorResponseSchema.js"
 import { httpErrorStatusGet } from "../../src/platform/http/httpErrorStatusGet.js"
+import { httpApiClientRequest } from "../../src/platform/http/httpApiClientRequest.js"
 import { uuidv7Create } from "../../src/platform/ids/uuidv7Create.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
 import { secretCreate } from "../../src/platform/secrets/secretCreate.js"
@@ -73,4 +74,53 @@ test("HTTP errors have a validated public shape and conservative status fallback
   expect(v.safeParse(httpErrorResponseSchema, body).success).toBe(true)
   expect(httpErrorStatusGet("not_found")).toBe(404)
   expect(httpErrorStatusGet("unknown_code")).toBe(500)
+})
+
+test("HTTP API clients share headers, transport errors, and response validation", async () => {
+  const requests: Request[] = []
+  const schema = v.object({ value: v.string() })
+  const success = await httpApiClientRequest({
+    baseUrl: "https://identity.example.test",
+    fetch: async (input, init) => {
+      const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
+      requests.push(new Request(requestUrl, init))
+      return Response.json({ value: "ok" })
+    },
+    init: { body: JSON.stringify({ name: "Ada" }), method: "POST" },
+    op: "testRequest",
+    path: "/resource",
+    schema,
+    token: secretCreate("test-token"),
+  })
+  expect(success).toEqual({ data: { value: "ok" }, success: true })
+  expect(requests[0]?.url).toBe("https://identity.example.test/resource")
+  expect(requests[0]?.headers.get("accept")).toBe("application/json")
+  expect(requests[0]?.headers.get("content-type")).toBe("application/json")
+  expect(requests[0]?.headers.get("authorization")).toBe("Bearer test-token")
+
+  const invalid = await httpApiClientRequest({
+    baseUrl: "https://identity.example.test",
+    fetch: async () => Response.json({ value: 1 }),
+    init: { method: "GET" },
+    op: "testRequest",
+    path: "/resource",
+    schema,
+  })
+  expect(invalid).toEqual({
+    errorMessage: "The server returned an invalid response.",
+    op: "testRequest",
+    success: false,
+  })
+
+  const unreachable = await httpApiClientRequest({
+    baseUrl: "https://identity.example.test",
+    fetch: async () => {
+      throw new Error("offline")
+    },
+    init: { method: "GET" },
+    op: "testRequest",
+    path: "/resource",
+    schema,
+  })
+  expect(unreachable).toEqual({ errorMessage: "The server could not be reached.", op: "testRequest", success: false })
 })

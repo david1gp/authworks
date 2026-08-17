@@ -1,0 +1,91 @@
+import { expect, test } from "bun:test"
+import { mkdtemp, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
+
+type CliRun = {
+  readonly exitCode: number
+  readonly stderr: string
+  readonly stdout: string
+}
+
+const featureRoutes = [
+  "instances",
+  "email-otp",
+  "external-identities",
+  "organizations",
+  "oidc",
+  "mfa",
+  "impersonation",
+  "machine-users",
+  "passkeys",
+  "passwords",
+  "projects",
+  "sessions",
+  "users",
+]
+
+test("every completed feature command tree has clean subprocess help", async () => {
+  const root = await cliRun("--help")
+  expect(root.exitCode).toBe(0)
+  expect(root.stdout).toContain("instances")
+  expect(root.stdout).not.toContain("ZITADEL v2 scaffold")
+  expect(root.stdout).not.toContain("status")
+
+  for (const route of featureRoutes) {
+    const result = await cliRun(route, "--help")
+    expect(result.exitCode).toBe(0)
+    expect(result.stderr).toBe("")
+    expect(result.stdout.length).toBeGreaterThan(0)
+  }
+})
+
+test("CLI reports transport errors and succeeds through the composed server", async () => {
+  const unavailable = await cliRun("instances", "list", "--server", "http://127.0.0.1:1")
+  expect(unavailable.exitCode).not.toBe(0)
+  expect(unavailable.stdout).toBe("")
+  expect(unavailable.stderr).toContain("could not be reached")
+
+  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-cli-surfaces-"))
+  const server = Bun.serve({
+    fetch: serverApplicationCreate({
+      databasePath: join(directory, "zitadel.sqlite"),
+      systemSecret: "cli-system-secret",
+    }).fetch,
+    port: 0,
+  })
+  try {
+    const available = await cliRun(
+      "instances",
+      "create",
+      "--server",
+      server.url.toString(),
+      "--token",
+      "cli-system-secret",
+      "--domain",
+      "cli.example.com",
+      "--name",
+      "CLI instance",
+    )
+    expect(available.exitCode).toBe(0)
+    expect(available.stderr).toBe("")
+    expect(JSON.parse(available.stdout)).toMatchObject({ instance: { domains: ["cli.example.com"] } })
+  } finally {
+    server.stop(true)
+    await rm(directory, { force: true, recursive: true })
+  }
+})
+
+async function cliRun(...args: string[]): Promise<CliRun> {
+  const child = Bun.spawn(["bun", "src/outputs/cli.ts", ...args], {
+    stderr: "pipe",
+    stdout: "pipe",
+  })
+  const [exitCode, stderr, stdout] = await Promise.all([
+    child.exited,
+    new Response(child.stderr).text(),
+    new Response(child.stdout).text(),
+  ])
+  return { exitCode, stderr, stdout }
+}
