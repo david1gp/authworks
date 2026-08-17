@@ -12,6 +12,7 @@ import { authorizationPermissionSchema } from "../public/authorizationPermission
 import type { AuthorizationPolicyRule } from "../public/authorizationPolicyRuleSchema.js"
 import { authorizationPolicyRuleSchema } from "../public/authorizationPolicyRuleSchema.js"
 import type { AuthorizationRoleDefinition } from "../public/authorizationRoleDefinitionSchema.js"
+import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSchema.js"
 
 type AuthorizationPolicyEvaluateOptions = {
   readonly actor: AuthorizationActorContext
@@ -19,6 +20,7 @@ type AuthorizationPolicyEvaluateOptions = {
   readonly instanceId: string
   readonly organizationId?: string
   readonly permission: AuthorizationPermission
+  readonly minimumAssurance?: SessionAssurance
   readonly policies?: readonly AuthorizationPolicyRule[]
   readonly resourceId?: string
   readonly roles?: readonly string[]
@@ -68,13 +70,21 @@ export function authorizationPolicyEvaluate(
   const rules = [...roleRules.data, ...policies]
   const matches = (rule: AuthorizationPolicyRule) => {
     if (rule.permission !== permission.output) return false
-    if (options.resourceId === undefined) return rule.resourceId === undefined
-    return rule.resourceId === undefined || rule.resourceId === options.resourceId
+    if (options.resourceId !== undefined && rule.resourceId !== undefined && rule.resourceId !== options.resourceId)
+      return false
+    return assuranceIsSufficient(actor.output.assurance, options.minimumAssurance ?? rule.minimumAssurance)
   }
   if (rules.some((rule) => rule.effect === "deny" && matches(rule))) return resultCreate(baseDecision(false, "policy"))
   const matchingAllowIndex = rules.findIndex((rule) => rule.effect === "allow" && matches(rule))
   if (matchingAllowIndex === -1) {
     const hasResourceRule = rules.some((rule) => rule.permission === permission.output && rule.resourceId !== undefined)
+    const hasInsufficientAssurance = rules.some(
+      (rule) =>
+        rule.effect === "allow" &&
+        rule.permission === permission.output &&
+        assuranceIsInsufficient(actor.output.assurance, options.minimumAssurance ?? rule.minimumAssurance),
+    )
+    if (hasInsufficientAssurance) return resultCreate(baseDecision(false, "insufficient_assurance"))
     return resultCreate(baseDecision(false, hasResourceRule ? "resource_mismatch" : "no_permission"))
   }
   return resultCreate(baseDecision(true, matchingAllowIndex >= roleRules.data.length ? "policy" : "role"))
@@ -103,6 +113,29 @@ function authorizationActorContextIsConsistent(actor: AuthorizationActorContext)
       actor.organizationId === undefined
     )
   return (
-    actor.assurance === "authenticated" && actor.authenticationMethod === "trusted" && actor.instanceId !== undefined
+    (actor.assurance === "authenticated" || actor.assurance === "multi_factor") &&
+    actor.authenticationMethod === "trusted" &&
+    actor.instanceId !== undefined
   )
+}
+
+function assuranceIsInsufficient(
+  current: AuthorizationActorContext["assurance"],
+  required: SessionAssurance | undefined,
+) {
+  if (required === undefined) return false
+  return assuranceRankGet(current) < assuranceRankGet(required)
+}
+
+function assuranceIsSufficient(
+  current: AuthorizationActorContext["assurance"],
+  required: SessionAssurance | undefined,
+) {
+  return !assuranceIsInsufficient(current, required)
+}
+
+function assuranceRankGet(assurance: SessionAssurance): number {
+  if (assurance === "multi_factor") return 2
+  if (assurance === "authenticated") return 1
+  return 0
 }

@@ -25,17 +25,22 @@ import { passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequest
 import { passwordRegistrationRequestSchema } from "../public/passwordRegistrationRequestSchema.js"
 import type { PasswordRegistrationDelivery } from "../public/passwordRegistrationDeliverySchema.js"
 import type { PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliverySchema.js"
+import type { PasswordSessionCreate } from "../public/passwordSessionCreate.js"
+import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
+import { sessionPasswordCreate } from "../../sessions/public/sessionPasswordCreate.js"
 
 type PasswordServerAppCreateOptions = {
   readonly database: StorageDatabase
   readonly systemSecret?: Secret | string
   readonly onRecoveryToken?: (delivery: PasswordRecoveryDelivery) => void
+  readonly sessionCreate?: PasswordSessionCreate
   readonly onVerificationToken?: (delivery: PasswordRegistrationDelivery) => void
 }
 
 export function passwordServerAppCreate(options: PasswordServerAppCreateOptions) {
   const app = new Hono()
   const systemContext = instanceSystemContextCreate("system")
+  const sessionCreate = options.sessionCreate ?? sessionPasswordCreate()
 
   app.post("/instances/:instanceId/password/register", async (context) => {
     const body = await passwordRequestJsonRead(context)
@@ -71,6 +76,8 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         database: options.database,
         input: input.output,
         instanceId: context.req.param("instanceId"),
+        deviceMetadata: passwordDeviceMetadataGet(context),
+        sessionCreate,
       }),
     )
   })
@@ -204,6 +211,22 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
   })
 
   return app
+}
+
+function passwordDeviceMetadataGet(context: {
+  req: { header: (name: string) => string | undefined }
+}): SessionDeviceMetadata {
+  const forwardedFor = context.req.header("x-forwarded-for")?.split(",", 1)[0]?.trim()
+  return {
+    ...(context.req.header("user-agent") === undefined ? {} : { userAgent: context.req.header("user-agent") }),
+    ...(forwardedFor === undefined || forwardedFor.length === 0 ? {} : { ipAddress: forwardedFor }),
+    ...(context.req.header("x-device-fingerprint") === undefined
+      ? {}
+      : { fingerprint: context.req.header("x-device-fingerprint") }),
+    ...(context.req.header("x-device-description") === undefined
+      ? {}
+      : { description: context.req.header("x-device-description") }),
+  }
 }
 
 function passwordErrorResponseCreate(

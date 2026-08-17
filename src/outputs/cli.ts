@@ -5,6 +5,7 @@ import { buildApplication, buildCommand, buildRouteMap, help, run, version } fro
 import { instanceCliCommands } from "../features/instances/cli/instanceCliCommands.js"
 import { organizationCliCommands } from "../features/organizations/cli/organizationCliCommands.js"
 import { passwordCliCommands } from "../features/passwords/cli/passwordCliCommands.js"
+import { sessionCliCommands } from "../features/sessions/cli/sessionCliCommands.js"
 import { userCliCommands } from "../features/users/cli/userCliCommands.js"
 
 const scaffoldCommand: Command<ApplicationContext> = buildCommand<Record<never, never>, [], ApplicationContext>({
@@ -27,6 +28,8 @@ const cliApplication = buildApplication(
       organizations: organizationCliCommands,
       password: passwordCliCommands,
       passwords: passwordCliCommands,
+      session: sessionCliCommands,
+      sessions: sessionCliCommands,
       user: userCliCommands,
       users: userCliCommands,
       status: scaffoldCommand,

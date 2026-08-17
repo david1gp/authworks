@@ -12,6 +12,7 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import { instanceGet } from "../../instances/actions/instanceGet.js"
 import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
 import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
 import { userStateChangedEventPayloadSchema } from "../../users/events/userStateChangedEventPayloadSchema.js"
 import { userEventTypes } from "../../users/events/userEventTypes.js"
 import { userTable } from "../../users/persistence/userTable.js"
@@ -35,6 +36,7 @@ type PasswordLoginOptions = {
   readonly instanceId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
+  readonly deviceMetadata?: SessionDeviceMetadata
   readonly sessionCreate?: PasswordSessionCreate
 }
 
@@ -162,23 +164,24 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
       runtime,
     )
     if (!event.success) return event
-    return resultCreate({
-      authentication: {
-        authenticatedAt: now,
-        instanceId: options.instanceId,
-        userId: current.data.id,
-      },
+    const authentication = {
+      authenticatedAt: now,
+      instanceId: options.instanceId,
+      userId: current.data.id,
+    }
+    if (options.sessionCreate === undefined) return resultCreate({ authentication })
+    const session = options.sessionCreate(authentication, {
+      actorId: options.context.actorId,
+      commandIndex: userVersion === current.data.version ? 1 : 2,
+      correlationId,
+      deviceMetadata: options.deviceMetadata,
+      executor: transaction,
+      runtime,
     })
+    if (!session.success) return resultErrorCreate(op, "The authenticated session could not be created.")
+    return resultCreate({ authentication, session: session.data })
   })
   if (!authenticated.success) return authenticated
-  if (options.sessionCreate !== undefined) {
-    try {
-      const session = options.sessionCreate(authenticated.data.authentication)
-      if (!session.success) return resultErrorCreate(op, "The authenticated session could not be created.")
-    } catch (_error) {
-      return resultErrorCreate(op, "The authenticated session could not be created.")
-    }
-  }
   return authenticated
 }
 

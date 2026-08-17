@@ -11,6 +11,7 @@ import { passwordChallengeTable } from "../../features/passwords/persistence/pas
 import { passwordCredentialTable } from "../../features/passwords/persistence/passwordCredentialTable.js"
 import { passwordLockoutTable } from "../../features/passwords/persistence/passwordLockoutTable.js"
 import { passwordPolicyTable } from "../../features/passwords/persistence/passwordPolicyTable.js"
+import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
@@ -27,6 +28,7 @@ export const storageSchema = {
   passwordCredentialTable,
   passwordLockoutTable,
   passwordPolicyTable,
+  sessionTable,
   userProfileTable,
   userTable,
   storageCurrentStateTable,

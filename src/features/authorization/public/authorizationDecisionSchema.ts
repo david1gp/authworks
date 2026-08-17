@@ -10,6 +10,7 @@ export const authorizationDecisionSchema = v.object({
   reason: v.picklist([
     "anonymous",
     "bootstrap_admin",
+    "insufficient_assurance",
     "no_permission",
     "organization_mismatch",
     "policy",

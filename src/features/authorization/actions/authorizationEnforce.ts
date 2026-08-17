@@ -6,6 +6,7 @@ import type { AuthorizationActorContext } from "../public/authorizationActorCont
 import type { AuthorizationPermission } from "../public/authorizationPermissionSchema.js"
 import type { AuthorizationPolicyRule } from "../public/authorizationPolicyRuleSchema.js"
 import type { AuthorizationRoleDefinition } from "../public/authorizationRoleDefinitionSchema.js"
+import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSchema.js"
 
 type AuthorizationEnforceOptions = {
   readonly actor: AuthorizationActorContext
@@ -13,6 +14,7 @@ type AuthorizationEnforceOptions = {
   readonly instanceId: string
   readonly organizationId?: string
   readonly permission: AuthorizationPermission
+  readonly minimumAssurance?: SessionAssurance
   readonly policies?: readonly AuthorizationPolicyRule[]
   readonly resourceId?: string
   readonly roles?: readonly string[]
@@ -28,5 +30,7 @@ export function authorizationEnforce(options: AuthorizationEnforceOptions): Resu
     return resultErrorCreate(op, "The actor is not available in this tenant context.")
   if (decision.data.reason === "organization_mismatch")
     return resultErrorCreate(op, "The actor is not available in this organization context.")
+  if (decision.data.reason === "insufficient_assurance")
+    return resultErrorCreate(op, "A stronger authentication is required.")
   return resultErrorCreate(op, "The actor is not authorized for this permission.")
 }

@@ -1,0 +1,135 @@
+import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { sessionApiClientCreate } from "../client/sessionApiClientCreate.js"
+
+type SessionCliFlags = {
+  readonly instanceId: string
+  readonly server?: string
+  readonly token?: string
+}
+
+const sessionCurrentCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags) {
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionCurrent(flags.instanceId))
+  },
+  parameters: { flags: sessionCommonFlags() },
+  docs: { brief: "Read the current session" },
+})
+
+const sessionListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags) {
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionList(flags.instanceId))
+  },
+  parameters: { flags: sessionCommonFlags() },
+  docs: { brief: "List sessions" },
+})
+
+const sessionRecentCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags) {
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRecentList(flags.instanceId))
+  },
+  parameters: { flags: sessionCommonFlags() },
+  docs: { brief: "List recent sessions" },
+})
+
+const sessionRotateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags) {
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRotate(flags.instanceId))
+  },
+  parameters: { flags: sessionCommonFlags() },
+  docs: { brief: "Rotate the current session credential" },
+})
+
+const sessionRevokeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags & { sessionId: string }) {
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(this, flags).sessionRevoke(flags.instanceId, flags.sessionId),
+    )
+  },
+  parameters: { flags: { ...sessionCommonFlags(), sessionId: sessionIdFlag() } },
+  docs: { brief: "Revoke a session" },
+})
+
+const sessionRevokeAllCommand = buildCommand({
+  async func(this: ApplicationContext, flags: SessionCliFlags & { keepCurrent: boolean }) {
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(this, flags).sessionRevokeAll(flags.instanceId, { keepCurrent: flags.keepCurrent }),
+    )
+  },
+  parameters: { flags: { ...sessionCommonFlags(), keepCurrent: booleanFlag() } },
+  docs: { brief: "Revoke all sessions" },
+})
+
+export const sessionCliCommands = buildRouteMap({
+  routes: {
+    current: sessionCurrentCommand,
+    list: sessionListCommand,
+    recent: sessionRecentCommand,
+    revoke: sessionRevokeCommand,
+    revokeAll: sessionRevokeAllCommand,
+    rotate: sessionRotateCommand,
+  },
+  docs: { brief: "Manage sessions" },
+})
+
+function sessionCliClientCreate(context: ApplicationContext, flags: SessionCliFlags) {
+  return sessionApiClientCreate({
+    baseUrl: flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000",
+    token: flags.token ?? context.process.env?.ZITADEL_V2_TOKEN,
+  })
+}
+
+function sessionCliResultWrite(
+  context: ApplicationContext,
+  result: { data?: unknown; errorMessage?: string; success: boolean },
+) {
+  if (!result.success) {
+    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.exitCode = 1
+    return
+  }
+  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+}
+
+function sessionCommonFlags() {
+  return {
+    instanceId: instanceIdFlag(),
+    server: {
+      brief: "ZITADEL v2 server URL",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "URL",
+    },
+    token: {
+      brief: "Bearer token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+  }
+}
+
+function instanceIdFlag() {
+  return {
+    brief: "Instance UUID",
+    kind: "parsed" as const,
+    parse: (value: string) => value,
+    placeholder: "INSTANCE_ID",
+  }
+}
+
+function sessionIdFlag() {
+  return { brief: "Session UUID", kind: "parsed" as const, parse: (value: string) => value, placeholder: "SESSION_ID" }
+}
+
+function booleanFlag() {
+  return {
+    brief: "Keep the current session",
+    kind: "parsed" as const,
+    parse: (value: string) => value === "true",
+    placeholder: "BOOLEAN",
+  }
+}
