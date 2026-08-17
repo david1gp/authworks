@@ -8,6 +8,7 @@ export const oidcConsentTable = sqliteTable(
     instanceId: text("instance_id").notNull(),
     scope: text("scope").notNull(),
     updatedAt: integer("updated_at").notNull(),
+    revokedAt: integer("revoked_at"),
     userId: text("user_id").notNull(),
   },
   (table) => [

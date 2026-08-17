@@ -1,6 +1,9 @@
 export const oidcEventTypes = {
   accessTokenIssued: "oidc.access_token_issued",
   accessTokenRevoked: "oidc.access_token_revoked",
+  consentGranted: "oidc.consent_granted",
+  consentDenied: "oidc.consent_denied",
+  consentRevoked: "oidc.consent_revoked",
   authorizationCodeConsumed: "oidc.authorization_code_consumed",
   authorizationCodeIssued: "oidc.authorization_code_issued",
   authorizationRequestValidated: "oidc.authorization_request_validated",
@@ -8,6 +11,7 @@ export const oidcEventTypes = {
   clientSecretRotated: "oidc.client_secret_rotated",
   clientStatusChanged: "oidc.client_status_changed",
   clientUpdated: "oidc.client_updated",
+  logout: "oidc.logout",
   signingKeyCreated: "oidc.signing_key_created",
   signingKeyRetired: "oidc.signing_key_retired",
   refreshTokenIssued: "oidc.refresh_token_issued",

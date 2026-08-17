@@ -3,10 +3,12 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { type OidcAuthorizationCodeRow, oidcAuthorizationCodeTable } from "./oidcAuthorizationCodeTable.js"
 import { type OidcAuthorizationRequestRow, oidcAuthorizationRequestTable } from "./oidcAuthorizationRequestTable.js"
 import { type OidcAccessTokenRow, oidcAccessTokenTable } from "./oidcAccessTokenTable.js"
 import { type OidcClientRow, oidcClientTable } from "./oidcClientTable.js"
+import { type OidcConsentRow, oidcConsentTable } from "./oidcConsentTable.js"
 import { type OidcRefreshTokenRow, oidcRefreshTokenTable } from "./oidcRefreshTokenTable.js"
 import { type OidcSigningKeyRow, oidcSigningKeyTable } from "./oidcSigningKeyTable.js"
 
@@ -16,6 +18,7 @@ type OidcSigningKeyInsert = typeof oidcSigningKeyTable.$inferInsert
 type OidcSigningKeyUpdate = Partial<OidcSigningKeyInsert>
 type OidcAuthorizationCodeInsert = typeof oidcAuthorizationCodeTable.$inferInsert
 type OidcAuthorizationRequestInsert = typeof oidcAuthorizationRequestTable.$inferInsert
+type OidcConsentInsert = typeof oidcConsentTable.$inferInsert
 type OidcAccessTokenInsert = typeof oidcAccessTokenTable.$inferInsert
 type OidcRefreshTokenInsert = typeof oidcRefreshTokenTable.$inferInsert
 
@@ -250,6 +253,245 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
         return resultCreate(row)
       } catch (_error) {
         return resultErrorCreate("oidcAuthorizationRequestCreate", "The authorization request could not be created.")
+      }
+    },
+
+    authorizationRequestGet(instanceId: string, requestId: string): Result<OidcAuthorizationRequestRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(oidcAuthorizationRequestTable)
+            .where(
+              and(
+                eq(oidcAuthorizationRequestTable.instanceId, instanceId),
+                eq(oidcAuthorizationRequestTable.id, requestId),
+              ),
+            )
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcAuthorizationRequestGet", "The authorization request could not be read.")
+      }
+    },
+
+    authorizationRequestApprove(
+      instanceId: string,
+      requestId: string,
+      approvedAt: number,
+    ): Result<OidcAuthorizationRequestRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcAuthorizationRequestTable)
+            .set({ approvedAt })
+            .where(
+              and(
+                eq(oidcAuthorizationRequestTable.instanceId, instanceId),
+                eq(oidcAuthorizationRequestTable.id, requestId),
+                isNull(oidcAuthorizationRequestTable.approvedAt),
+                isNull(oidcAuthorizationRequestTable.rejectedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcAuthorizationRequestApprove", "The authorization request could not be approved.")
+      }
+    },
+
+    authorizationRequestReject(
+      instanceId: string,
+      requestId: string,
+      rejectedAt: number,
+    ): Result<OidcAuthorizationRequestRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcAuthorizationRequestTable)
+            .set({ rejectedAt })
+            .where(
+              and(
+                eq(oidcAuthorizationRequestTable.instanceId, instanceId),
+                eq(oidcAuthorizationRequestTable.id, requestId),
+                isNull(oidcAuthorizationRequestTable.approvedAt),
+                isNull(oidcAuthorizationRequestTable.rejectedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcAuthorizationRequestReject", "The authorization request could not be rejected.")
+      }
+    },
+
+    consentGet(instanceId: string, userId: string, clientId: string): Result<OidcConsentRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(oidcConsentTable)
+            .where(
+              and(
+                eq(oidcConsentTable.instanceId, instanceId),
+                eq(oidcConsentTable.userId, userId),
+                eq(oidcConsentTable.clientId, clientId),
+                isNull(oidcConsentTable.revokedAt),
+              ),
+            )
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcConsentGet", "The OIDC consent could not be read.")
+      }
+    },
+
+    consentList(instanceId: string, userId: string): Result<OidcConsentRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(oidcConsentTable)
+            .where(
+              and(
+                eq(oidcConsentTable.instanceId, instanceId),
+                eq(oidcConsentTable.userId, userId),
+                isNull(oidcConsentTable.revokedAt),
+              ),
+            )
+            .orderBy(asc(oidcConsentTable.createdAt))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcConsentList", "The OIDC consents could not be read.")
+      }
+    },
+
+    consentUpsert(input: OidcConsentInsert): Result<OidcConsentRow> {
+      try {
+        const existing = database
+          .select()
+          .from(oidcConsentTable)
+          .where(
+            and(
+              eq(oidcConsentTable.instanceId, input.instanceId),
+              eq(oidcConsentTable.userId, input.userId),
+              eq(oidcConsentTable.clientId, input.clientId),
+            ),
+          )
+          .get()
+        if (existing === undefined) {
+          const row = database.insert(oidcConsentTable).values(input).returning().get()
+          if (row === undefined) return resultErrorCreate("oidcConsentUpsert", "The OIDC consent could not be saved.")
+          return resultCreate(row)
+        }
+        const row = database
+          .update(oidcConsentTable)
+          .set({ ...input, revokedAt: null })
+          .where(
+            and(
+              eq(oidcConsentTable.instanceId, input.instanceId),
+              eq(oidcConsentTable.userId, input.userId),
+              eq(oidcConsentTable.clientId, input.clientId),
+            ),
+          )
+          .returning()
+          .get()
+        if (row === undefined) return resultErrorCreate("oidcConsentUpsert", "The OIDC consent could not be saved.")
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCreate("oidcConsentUpsert", "The OIDC consent could not be saved.")
+      }
+    },
+
+    consentRevoke(
+      instanceId: string,
+      userId: string,
+      clientId: string,
+      revokedAt: number,
+    ): Result<OidcConsentRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcConsentTable)
+            .set({ revokedAt, updatedAt: revokedAt })
+            .where(
+              and(
+                eq(oidcConsentTable.instanceId, instanceId),
+                eq(oidcConsentTable.userId, userId),
+                eq(oidcConsentTable.clientId, clientId),
+                isNull(oidcConsentTable.revokedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcConsentRevoke", "The OIDC consent could not be revoked.")
+      }
+    },
+
+    consentEventVersionGet(instanceId: string, userId: string, clientId: string): Result<number> {
+      try {
+        const event = database
+          .select({ aggregateVersion: storageEventTable.aggregateVersion })
+          .from(storageEventTable)
+          .where(
+            and(
+              eq(storageEventTable.instanceId, instanceId),
+              eq(storageEventTable.aggregateType, "oidc_consent"),
+              eq(storageEventTable.aggregateId, `${userId}:${clientId}`),
+            ),
+          )
+          .orderBy(desc(storageEventTable.aggregateVersion))
+          .get()
+        return resultCreate(event?.aggregateVersion ?? 0)
+      } catch (_error) {
+        return resultErrorCreate("oidcConsentEventVersionGet", "The OIDC consent event version could not be read.")
+      }
+    },
+
+    accessTokenSessionRevoke(instanceId: string, sessionId: string, revokedAt: number): Result<OidcAccessTokenRow[]> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcAccessTokenTable)
+            .set({ revokedAt })
+            .where(
+              and(
+                eq(oidcAccessTokenTable.instanceId, instanceId),
+                eq(oidcAccessTokenTable.sessionId, sessionId),
+                isNull(oidcAccessTokenTable.revokedAt),
+              ),
+            )
+            .returning()
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcAccessTokenSessionRevoke", "The access tokens could not be revoked.")
+      }
+    },
+
+    refreshTokenSessionRevoke(instanceId: string, sessionId: string, revokedAt: number): Result<OidcRefreshTokenRow[]> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcRefreshTokenTable)
+            .set({ revokedAt })
+            .where(
+              and(
+                eq(oidcRefreshTokenTable.instanceId, instanceId),
+                eq(oidcRefreshTokenTable.sessionId, sessionId),
+                isNull(oidcRefreshTokenTable.revokedAt),
+              ),
+            )
+            .returning()
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcRefreshTokenSessionRevoke", "The refresh tokens could not be revoked.")
       }
     },
 

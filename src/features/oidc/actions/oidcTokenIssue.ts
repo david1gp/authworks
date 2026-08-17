@@ -373,6 +373,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     accessExpiresAt,
   )
   idClaims.azp = options.client.id
+  idClaims.sid = options.subject.session.id
   if (options.nonce !== null) idClaims.nonce = options.nonce
   const idToken = oidcJwtSign({ alg: "RS256", kid: key.data.id, typ: "JWT" }, idClaims, key.data.privateKey)
   if (!idToken.success) return idToken

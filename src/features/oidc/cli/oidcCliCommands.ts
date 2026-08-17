@@ -4,6 +4,7 @@ import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 type OidcCliFlags = { readonly server?: string; readonly token?: string }
 type OidcInstanceFlags = OidcCliFlags & { readonly instanceId: string }
 type OidcClientFlags = OidcInstanceFlags & { readonly clientId: string }
+type OidcConsentFlags = OidcInstanceFlags & { readonly userId: string }
 
 const oidcClientCreateCommand = buildCommand({
   async func(
@@ -118,6 +119,68 @@ const oidcSigningKeyRetireCommand = buildCommand({
   docs: { brief: "Retire an OIDC signing key" },
 })
 
+const oidcConsentListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcConsentFlags) {
+    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcConsentList(flags.instanceId, flags.userId))
+  },
+  parameters: {
+    flags: { ...oidcCommonFlags(), instanceId: oidcIdFlag("Instance UUID"), userId: oidcIdFlag("User UUID") },
+  },
+  docs: { brief: "List persisted OIDC consents" },
+})
+
+const oidcConsentRevokeCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcConsentFlags & { clientId: string }) {
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(this, flags).oidcConsentRevoke(flags.instanceId, flags.userId, {
+        client_id: flags.clientId,
+      }),
+    )
+  },
+  parameters: {
+    flags: {
+      ...oidcCommonFlags(),
+      instanceId: oidcIdFlag("Instance UUID"),
+      userId: oidcIdFlag("User UUID"),
+      clientId: oidcIdFlag("Client UUID"),
+    },
+  },
+  docs: { brief: "Revoke a persisted OIDC consent" },
+})
+
+const oidcLogoutCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: OidcCliFlags & {
+      clientId?: string
+      idTokenHint?: string
+      postLogoutRedirectUri?: string
+      state?: string
+    },
+  ) {
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(this, flags).oidcLogout({
+        ...(flags.clientId === undefined ? {} : { client_id: flags.clientId }),
+        ...(flags.idTokenHint === undefined ? {} : { id_token_hint: flags.idTokenHint }),
+        ...(flags.postLogoutRedirectUri === undefined ? {} : { post_logout_redirect_uri: flags.postLogoutRedirectUri }),
+        ...(flags.state === undefined ? {} : { state: flags.state }),
+      }),
+    )
+  },
+  parameters: {
+    flags: {
+      ...oidcCommonFlags(),
+      clientId: { ...oidcIdFlag("Client UUID"), optional: true as const },
+      idTokenHint: { ...oidcTextFlag("ID token hint"), optional: true as const },
+      postLogoutRedirectUri: { ...oidcTextFlag("Exact registered post-logout redirect URI"), optional: true as const },
+      state: { ...oidcTextFlag("Post-logout state"), optional: true as const },
+    },
+  },
+  docs: { brief: "Perform RP-initiated OIDC logout" },
+})
+
 export const oidcCliCommands = buildRouteMap({
   routes: {
     clientCreate: oidcClientCreateCommand,
@@ -127,6 +190,9 @@ export const oidcCliCommands = buildRouteMap({
     keyCreate: oidcSigningKeyCreateCommand,
     keyList: oidcSigningKeyListCommand,
     keyRetire: oidcSigningKeyRetireCommand,
+    consentList: oidcConsentListCommand,
+    consentRevoke: oidcConsentRevokeCommand,
+    logout: oidcLogoutCommand,
   },
   docs: { brief: "OIDC client and signing-key administration" },
 })

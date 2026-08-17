@@ -12,6 +12,9 @@ import { instanceSystemContextCreate } from "../../instances/domain/instanceSyst
 import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
 import { oidcAuthorizationCodeRedeem } from "../actions/oidcAuthorizationCodeRedeem.js"
 import { oidcAuthorizationRequestAuthorize } from "../actions/oidcAuthorizationRequestAuthorize.js"
+import { oidcAuthorizationRequestConsent } from "../actions/oidcAuthorizationRequestConsent.js"
+import { oidcConsentList } from "../actions/oidcConsentList.js"
+import { oidcConsentRevoke } from "../actions/oidcConsentRevoke.js"
 import { oidcClientCreate } from "../actions/oidcClientCreate.js"
 import { oidcClientGet } from "../actions/oidcClientGet.js"
 import { oidcClientLifecycleSet } from "../actions/oidcClientLifecycleSet.js"
@@ -26,8 +29,14 @@ import { oidcSigningKeyList } from "../actions/oidcSigningKeyList.js"
 import { oidcTokenIssue } from "../actions/oidcTokenIssue.js"
 import { oidcTokenRevoke } from "../actions/oidcTokenRevoke.js"
 import { oidcUserInfoGet } from "../actions/oidcUserInfoGet.js"
+import { oidcLogout } from "../actions/oidcLogout.js"
 import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import { oidcAuthorizationRequestSchema } from "../public/oidcAuthorizationRequestSchema.js"
+import { oidcAuthorizationConsentRequestSchema } from "../public/oidcAuthorizationConsentRequestSchema.js"
+import { oidcAuthorizationConsentRequiredSchema } from "../public/oidcAuthorizationConsentRequiredSchema.js"
+import type { OidcAuthorizationConsentResponse } from "../public/oidcAuthorizationConsentResponseSchema.js"
+import { oidcConsentRevokeRequestSchema } from "../public/oidcConsentRevokeRequestSchema.js"
+import { oidcLogoutRequestSchema } from "../public/oidcLogoutRequestSchema.js"
 import { oidcClientCreateRequestSchema } from "../public/oidcClientCreateRequestSchema.js"
 import { oidcClientLifecycleRequestSchema } from "../public/oidcClientLifecycleRequestSchema.js"
 import { oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
@@ -88,13 +97,106 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       instanceId: instance.data.instanceId,
       sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? "",
     })
-    if (!authorization.success) return oidcErrorResponseCreate(context, authorization)
+    if (!authorization.success) {
+      if (authorization.op === "oidcAuthorizationConsentRequired")
+        return oidcAuthorizationConsentRequiredResponseCreate(context, authorization)
+      if (authorization.op === "oidcAuthorizationInteractionRequired")
+        return context.json({ error: "interaction_required", error_description: authorization.errorMessage }, 400)
+      return oidcErrorResponseCreate(context, authorization)
+    }
     if (context.req.header("accept")?.includes("application/json")) return context.json(authorization.data)
     const redirect = new URL(authorization.data.redirect_uri)
     redirect.searchParams.set("code", authorization.data.code)
     redirect.searchParams.set("state", authorization.data.state)
     return context.redirect(redirect.toString(), 302)
   })
+
+  app.post("/oauth2/consent", async (context) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const body = await oidcRequestJsonRead(context)
+    if (!body.success) return oidcErrorResponseCreate(context, body)
+    const input = v.safeParse(oidcAuthorizationConsentRequestSchema, body.data)
+    if (!input.success)
+      return oidcErrorResponseCreate(context, {
+        errorMessage: "The OIDC consent request is invalid.",
+        op: "oidcAuthorizationRequestConsent",
+      })
+    const consent = oidcAuthorizationRequestConsent({
+      database: options.database,
+      encryptionSecret: options.systemSecret,
+      input: input.output,
+      instanceId: instance.data.instanceId,
+      sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? "",
+    })
+    if (!consent.success) return oidcErrorResponseCreate(context, consent)
+    if (context.req.header("accept")?.includes("application/json")) return context.json(consent.data)
+    return oidcConsentRedirectCreate(context, consent.data)
+  })
+
+  app.post("/oauth2/consent/revoke", async (context) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const body = await oidcRequestJsonRead(context)
+    if (!body.success) return oidcErrorResponseCreate(context, body)
+    const input = v.safeParse(oidcConsentRevokeRequestSchema, body.data)
+    if (!input.success)
+      return oidcErrorResponseCreate(context, {
+        errorMessage: "The consent request is invalid.",
+        op: "oidcConsentRevoke",
+      })
+    return oidcResultResponseCreate(
+      context,
+      oidcConsentRevoke({
+        database: options.database,
+        instanceId: instance.data.instanceId,
+        clientId: input.output.client_id,
+        sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? "",
+      }),
+    )
+  })
+
+  const oidcLogoutRoute = (context: {
+    req: {
+      header: (name: string) => string | undefined
+      query: (name: string) => string | undefined
+      url: string
+    }
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+    redirect: (location: string, status?: 301 | 302 | 303 | 307 | 308) => Response
+  }) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const input = v.safeParse(oidcLogoutRequestSchema, {
+      ...(context.req.query("client_id") === undefined ? {} : { client_id: context.req.query("client_id") }),
+      ...(context.req.query("id_token_hint") === undefined
+        ? {}
+        : { id_token_hint: context.req.query("id_token_hint") }),
+      ...(context.req.query("post_logout_redirect_uri") === undefined
+        ? {}
+        : { post_logout_redirect_uri: context.req.query("post_logout_redirect_uri") }),
+      ...(context.req.query("state") === undefined ? {} : { state: context.req.query("state") }),
+    })
+    if (!input.success)
+      return oidcErrorResponseCreate(context, { errorMessage: "The logout request is invalid.", op: "oidcLogout" })
+    const loggedOut = oidcLogout({
+      database: options.database,
+      encryptionSecret: options.systemSecret,
+      input: input.output,
+      instanceId: instance.data.instanceId,
+      sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? undefined,
+    })
+    if (!loggedOut.success) return oidcErrorResponseCreate(context, loggedOut)
+    if (context.req.header("accept")?.includes("application/json")) return context.json(loggedOut.data)
+    if (loggedOut.data.post_logout_redirect_uri !== undefined) {
+      const redirect = new URL(loggedOut.data.post_logout_redirect_uri)
+      if (loggedOut.data.state !== undefined) redirect.searchParams.set("state", loggedOut.data.state)
+      return context.redirect(redirect.toString(), 302)
+    }
+    return new Response(null, { status: 204 })
+  }
+  app.get("/oauth2/logout", oidcLogoutRoute)
+  app.get("/oidc/logout", oidcLogoutRoute)
 
   app.post("/oauth2/authorization-code/redeem", async (context) => {
     const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
@@ -243,6 +345,35 @@ function oidcManagementRoutesRegister(
         context: authenticated.data,
         database: options.database,
         instanceId: oidcParamGet(context, "instanceId"),
+      }),
+    )
+  })
+
+  app.get(`${prefix}/consents/:userId`, (context) => {
+    const authenticated = authenticate(context)
+    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
+    return oidcResultResponseCreate(
+      context,
+      oidcConsentList({
+        context: authenticated.data,
+        database: options.database,
+        instanceId: oidcParamGet(context, "instanceId"),
+        userId: oidcParamGet(context, "userId"),
+      }),
+    )
+  })
+
+  app.post(`${prefix}/consents/:userId/:clientId/revoke`, (context) => {
+    const authenticated = authenticate(context)
+    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
+    return oidcResultResponseCreate(
+      context,
+      oidcConsentRevoke({
+        context: authenticated.data,
+        database: options.database,
+        instanceId: oidcParamGet(context, "instanceId"),
+        clientId: oidcParamGet(context, "clientId"),
+        userId: oidcParamGet(context, "userId"),
       }),
     )
   })
@@ -465,6 +596,36 @@ function oidcErrorResponseCreate(
   )
 }
 
+function oidcAuthorizationConsentRequiredResponseCreate(
+  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
+  result: { errorData?: string | null },
+) {
+  if (result.errorData === undefined || result.errorData === null)
+    return context.json({ error: { code: "bad_request", message: "User consent is required." } }, 400)
+  try {
+    const parsed = v.safeParse(oidcAuthorizationConsentRequiredSchema, JSON.parse(result.errorData))
+    if (!parsed.success)
+      return context.json({ error: { code: "bad_request", message: "User consent is required." } }, 400)
+    return context.json(parsed.output, 200)
+  } catch (_error) {
+    return context.json({ error: { code: "bad_request", message: "User consent is required." } }, 400)
+  }
+}
+
+function oidcConsentRedirectCreate(
+  context: { redirect: (location: string, status?: 301 | 302 | 303 | 307 | 308) => Response },
+  response: OidcAuthorizationConsentResponse,
+) {
+  const redirect = new URL(response.redirect_uri)
+  if (response.approved && response.code !== undefined) {
+    redirect.searchParams.set("code", response.code)
+  } else {
+    redirect.searchParams.set("error", response.error ?? "access_denied")
+  }
+  redirect.searchParams.set("state", response.state)
+  return context.redirect(redirect.toString(), 302)
+}
+
 function oidcTokenErrorResponseCreate(
   context: {
     header: (name: string, value: string) => void
@@ -515,6 +676,7 @@ function oidcTokenErrorCodeGet(result: { errorMessage: string; op: string }) {
 function oidcErrorCodeGet(result: { errorMessage: string; op: string }): string {
   const message = result.errorMessage.toLowerCase()
   const op = result.op.toLowerCase()
+  if (op.includes("oidclogout") || op.includes("oidcauthorizationinteractionrequired")) return "bad_request"
   if (
     op.includes("systemauthorization") ||
     op.includes("authenticate") ||

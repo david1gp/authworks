@@ -4,6 +4,7 @@ export const oidcDiscoverySchema = v.strictObject({
   authorization_endpoint: v.pipe(v.string(), v.url()),
   claims_supported: v.array(v.string()),
   code_challenge_methods_supported: v.array(v.literal("S256")),
+  end_session_endpoint: v.pipe(v.string(), v.url()),
   grant_types_supported: v.array(v.picklist(["authorization_code", "refresh_token"])),
   id_token_signing_alg_values_supported: v.array(v.literal("RS256")),
   issuer: v.pipe(v.string(), v.url()),

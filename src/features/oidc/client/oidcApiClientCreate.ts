@@ -17,6 +17,15 @@ import {
   oidcAuthorizationRequestSchema,
 } from "../public/oidcAuthorizationRequestSchema.js"
 import {
+  type OidcAuthorizationConsentRequest,
+  oidcAuthorizationConsentRequestSchema,
+} from "../public/oidcAuthorizationConsentRequestSchema.js"
+import {
+  type OidcAuthorizationConsentResponse,
+  oidcAuthorizationConsentResponseSchema,
+} from "../public/oidcAuthorizationConsentResponseSchema.js"
+import { oidcAuthorizationConsentRequiredSchema } from "../public/oidcAuthorizationConsentRequiredSchema.js"
+import {
   type OidcAuthorizationResponse,
   oidcAuthorizationResponseSchema,
 } from "../public/oidcAuthorizationResponseSchema.js"
@@ -37,6 +46,17 @@ import {
 } from "../public/oidcClientSecretRotateResponseSchema.js"
 import { type OidcClientUpdateRequest, oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
 import { type OidcDiscovery, oidcDiscoverySchema } from "../public/oidcDiscoverySchema.js"
+import { type OidcConsentListResponse, oidcConsentListResponseSchema } from "../public/oidcConsentListResponseSchema.js"
+import {
+  type OidcConsentRevokeRequest,
+  oidcConsentRevokeRequestSchema,
+} from "../public/oidcConsentRevokeRequestSchema.js"
+import {
+  type OidcConsentRevokeResponse,
+  oidcConsentRevokeResponseSchema,
+} from "../public/oidcConsentRevokeResponseSchema.js"
+import { type OidcLogoutRequest, oidcLogoutRequestSchema } from "../public/oidcLogoutRequestSchema.js"
+import { type OidcLogoutResponse, oidcLogoutResponseSchema } from "../public/oidcLogoutResponseSchema.js"
 import { type OidcJwks, oidcJwksSchema } from "../public/oidcJwksSchema.js"
 import { type OidcTokenRequest, oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
 import { type OidcTokenRevokeRequest, oidcTokenRevokeRequestSchema } from "../public/oidcTokenRevokeRequestSchema.js"
@@ -82,7 +102,16 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
         return resultErrorCreate(op, `${parsedError.output.error.code}: ${parsedError.output.error.message}`)
       }
       const parsed = v.safeParse(schema, body)
-      if (!parsed.success) return resultErrorCreate(op, "The server returned an invalid response.")
+      if (!parsed.success) {
+        const consent = v.safeParse(oidcAuthorizationConsentRequiredSchema, body)
+        if (consent.success)
+          return resultErrorCreate(
+            "oidcAuthorizationConsentRequired",
+            "User consent is required.",
+            JSON.stringify(consent.output),
+          )
+        return resultErrorCreate(op, "The server returned an invalid response.")
+      }
       return resultCreate(parsed.output)
     } catch (_error) {
       return resultErrorCreate(op, "The server could not be reached.")
@@ -195,6 +224,21 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       return request(`/oauth2/authorize?${query.toString()}`, { method: "GET" }, oidcAuthorizationResponseSchema)
     },
 
+    oidcAuthorizationRequestConsent(
+      input: OidcAuthorizationConsentRequest,
+    ): Promise<Result<OidcAuthorizationConsentResponse>> {
+      const parsed = v.safeParse(oidcAuthorizationConsentRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("oidcApiClientAuthorizationRequestConsent", "The consent request is invalid."),
+        )
+      return request(
+        "/oauth2/consent",
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        oidcAuthorizationConsentResponseSchema,
+      )
+    },
+
     oidcTokenIssue(input: OidcTokenRequest): Promise<Result<OidcTokenResponse>> {
       const parsed = v.safeParse(oidcTokenRequestSchema, input)
       if (!parsed.success)
@@ -217,6 +261,43 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
           resultErrorCreate("oidcApiClientTokenRevoke", "The token revocation request is invalid."),
         )
       return tokenRevokeRequest(parsed.output)
+    },
+
+    oidcLogout(input: OidcLogoutRequest): Promise<Result<OidcLogoutResponse>> {
+      const parsed = v.safeParse(oidcLogoutRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(resultErrorCreate("oidcApiClientLogout", "The logout request is invalid."))
+      const query = new URLSearchParams()
+      for (const [key, value] of Object.entries(parsed.output)) {
+        if (value !== undefined) query.set(key, value)
+      }
+      return request(`/oauth2/logout?${query.toString()}`, { method: "GET" }, oidcLogoutResponseSchema)
+    },
+
+    oidcConsentList(instanceId: string, userId: string): Promise<Result<OidcConsentListResponse>> {
+      return request(
+        managementPath(instanceId, `/consents/${encodeURIComponent(userId)}`),
+        { method: "GET" },
+        oidcConsentListResponseSchema,
+      )
+    },
+
+    oidcConsentRevoke(
+      instanceId: string,
+      userId: string,
+      input: OidcConsentRevokeRequest,
+    ): Promise<Result<OidcConsentRevokeResponse>> {
+      const parsed = v.safeParse(oidcConsentRevokeRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(resultErrorCreate("oidcApiClientConsentRevoke", "The consent request is invalid."))
+      return request(
+        managementPath(
+          instanceId,
+          `/consents/${encodeURIComponent(userId)}/${encodeURIComponent(input.client_id)}/revoke`,
+        ),
+        { method: "POST" },
+        oidcConsentRevokeResponseSchema,
+      )
     },
 
     oidcClientCreate(instanceId: string, input: OidcClientCreateRequest): Promise<Result<OidcClientCreateResponse>> {

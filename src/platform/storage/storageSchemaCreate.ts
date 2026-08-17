@@ -185,7 +185,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS oidc_refresh_tokens_family_idx ON oidc_refresh_tokens (family_id)")
     database.run(
-      "CREATE TABLE IF NOT EXISTS oidc_consents (instance_id TEXT NOT NULL, user_id TEXT NOT NULL, client_id TEXT NOT NULL, scope TEXT NOT NULL CHECK (json_valid(scope)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), PRIMARY KEY (instance_id, user_id, client_id), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS oidc_consents (instance_id TEXT NOT NULL, user_id TEXT NOT NULL, client_id TEXT NOT NULL, scope TEXT NOT NULL CHECK (json_valid(scope)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), PRIMARY KEY (instance_id, user_id, client_id), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE)",
     )
     database.run("CREATE INDEX IF NOT EXISTS oidc_consents_instance_idx ON oidc_consents (instance_id)")
     database.run(

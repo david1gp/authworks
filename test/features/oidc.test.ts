@@ -10,6 +10,7 @@ import { instanceSystemContextCreate } from "../../src/features/instances/domain
 import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
 import { oidcAuthorizationCodeRedeem } from "../../src/features/oidc/actions/oidcAuthorizationCodeRedeem.js"
 import { oidcAuthorizationRequestAuthorize } from "../../src/features/oidc/actions/oidcAuthorizationRequestAuthorize.js"
+import { oidcAuthorizationRequestConsent } from "../../src/features/oidc/actions/oidcAuthorizationRequestConsent.js"
 import { oidcClientCreate } from "../../src/features/oidc/actions/oidcClientCreate.js"
 import { oidcClientGet } from "../../src/features/oidc/actions/oidcClientGet.js"
 import { oidcClientList } from "../../src/features/oidc/actions/oidcClientList.js"
@@ -18,6 +19,8 @@ import { oidcJwksGet } from "../../src/features/oidc/actions/oidcJwksGet.js"
 import { oidcSigningKeyCreate } from "../../src/features/oidc/actions/oidcSigningKeyCreate.js"
 import { oidcSigningKeyList } from "../../src/features/oidc/actions/oidcSigningKeyList.js"
 import { oidcTokenIssue } from "../../src/features/oidc/actions/oidcTokenIssue.js"
+import { oidcConsentRevoke } from "../../src/features/oidc/actions/oidcConsentRevoke.js"
+import { oidcLogout } from "../../src/features/oidc/actions/oidcLogout.js"
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
 import { oidcClientSecretMatches } from "../../src/features/oidc/domain/oidcClientSecretMatches.js"
 import { oidcJwtSign } from "../../src/features/oidc/domain/oidcJwtSign.js"
@@ -132,6 +135,7 @@ async function createOidcTokenFixture(database: StorageDatabase, domain: string,
       clientType: "confidential",
       name: `${domain} client`,
       redirectUris: ["https://client.example/callback"],
+      trusted: true,
     },
     instanceId: authenticated.instance.id,
   })
@@ -326,6 +330,7 @@ test("OIDC management routes use system auth while discovery and JWKS are public
       clientType: "public",
       name: "Route client",
       redirectUris: ["https://client.example/callback"],
+      trusted: true,
     })
     if (!created.success) throw new Error(created.errorMessage)
     expect(created.success).toBe(true)
@@ -359,6 +364,7 @@ test("authenticated authorization issues a bound short-lived code and preserves 
         clientType: "public",
         name: "Authorization client",
         redirectUris: ["https://client.example/callback?channel=one"],
+        trusted: true,
       },
       instanceId: authenticated.instance.id,
     })
@@ -450,6 +456,7 @@ test("authorization rejects redirect, state, PKCE, expiry, and tenant mismatches
         clientType: "public",
         name: "Negative authorization client",
         redirectUris: ["https://client.example/callback"],
+        trusted: true,
       },
       instanceId: authenticated.instance.id,
     })
@@ -540,6 +547,7 @@ test("authorization and code consumption roll back with their audit events", asy
         clientType: "public",
         name: "Atomic authorization client",
         redirectUris: ["https://client.example/callback"],
+        trusted: true,
       },
       instanceId: authenticated.instance.id,
     })
@@ -609,6 +617,7 @@ test("authorization routes use the authenticated session and the API client cont
         clientType: "public",
         name: "Authorization route client",
         redirectUris: ["https://client.example/callback"],
+        trusted: true,
       },
       instanceId: authenticated.instance.id,
     })
@@ -670,6 +679,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
         clientType: "confidential",
         name: "Token client",
         redirectUris: ["https://client.example/callback"],
+        trusted: true,
       },
       instanceId: authenticated.instance.id,
     })
@@ -797,7 +807,12 @@ test("the token endpoint supports public clients and confidential basic authenti
     const publicClient = oidcClientCreate({
       context: instanceSystemContextCreate(),
       database,
-      input: { clientType: "public", name: "Public token client", redirectUris: ["https://client.example/callback"] },
+      input: {
+        clientType: "public",
+        name: "Public token client",
+        redirectUris: ["https://client.example/callback"],
+        trusted: true,
+      },
       instanceId: authenticated.instance.id,
     })
     expect(publicClient.success).toBe(true)
@@ -874,6 +889,7 @@ test("the token endpoint supports public clients and confidential basic authenti
         clientType: "confidential",
         name: "Basic token client",
         redirectUris: ["https://client.example/callback"],
+        trusted: true,
       },
       instanceId: authenticated.instance.id,
     })
@@ -933,7 +949,12 @@ test("token exchange is atomic with code consumption and token audit events", as
     const client = oidcClientCreate({
       context: instanceSystemContextCreate(),
       database,
-      input: { clientType: "public", name: "Atomic token client", redirectUris: ["https://client.example/callback"] },
+      input: {
+        clientType: "public",
+        name: "Atomic token client",
+        redirectUris: ["https://client.example/callback"],
+        trusted: true,
+      },
       instanceId: authenticated.instance.id,
     })
     expect(client.success).toBe(true)
@@ -1159,5 +1180,216 @@ test("OIDC revocation authenticates clients, is idempotent, isolates tenants, an
         .get(atomic.authenticated.instance.id),
     ).toEqual({ revoked_at: null })
     database.sqlite.run("DROP TRIGGER reject_oidc_revocation_events")
+  })
+})
+
+test("authorization requires consent, reuses grants, supports incremental scopes, and revokes them atomically", async () => {
+  await withDatabase(async (database) => {
+    const authenticated = await createAuthenticatedSession(database, "consent.example.com")
+    const client = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        allowedScopes: ["openid", "profile", "email"],
+        clientType: "public",
+        name: "Consent client",
+        redirectUris: ["https://client.example/callback"],
+        requireConsent: true,
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(client.success).toBe(true)
+    if (!client.success) return
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const pending = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: client.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid profile",
+        state: "consent-state",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(pending.success).toBe(false)
+    if (pending.success) return
+    expect(pending.op).toBe("oidcAuthorizationConsentRequired")
+    const required = JSON.parse(pending.errorData ?? "{}") as { request_id?: string }
+    expect(required.request_id).toBeString()
+    expect(database.sqlite.query("SELECT approved_at FROM oidc_authorization_requests").get()).toEqual({
+      approved_at: null,
+    })
+
+    database.sqlite.run(
+      "CREATE TRIGGER reject_oidc_consent_events BEFORE INSERT ON events WHEN NEW.event_type = 'oidc.consent_granted' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
+    )
+    const rejectedApproval = oidcAuthorizationRequestConsent({
+      database,
+      input: { decision: "approve", request_id: required.request_id ?? "" },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(rejectedApproval.success).toBe(false)
+    expect(database.sqlite.query("SELECT approved_at FROM oidc_authorization_requests").get()).toEqual({
+      approved_at: null,
+    })
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_consents").get()).toEqual({ count: 0 })
+    database.sqlite.run("DROP TRIGGER reject_oidc_consent_events")
+
+    const approved = oidcAuthorizationRequestConsent({
+      database,
+      input: { decision: "approve", request_id: required.request_id ?? "" },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(approved).toMatchObject({ success: true, data: { approved: true, state: "consent-state" } })
+    expect(database.sqlite.query("SELECT scope FROM oidc_consents").get()).toEqual({
+      scope: JSON.stringify(["openid", "profile"]),
+    })
+
+    const reused = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: client.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid profile",
+        state: "reused-state",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(reused.success).toBe(true)
+
+    const incremental = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: client.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid profile email",
+        state: "incremental-state",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(incremental.success).toBe(false)
+    if (incremental.success) return
+    expect(incremental.op).toBe("oidcAuthorizationConsentRequired")
+    const incrementalRequired = JSON.parse(incremental.errorData ?? "{}") as { request_id?: string }
+    const incrementalApproval = oidcAuthorizationRequestConsent({
+      database,
+      input: { decision: "approve", request_id: incrementalRequired.request_id ?? "" },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(incrementalApproval.success).toBe(true)
+    expect(database.sqlite.query("SELECT scope FROM oidc_consents").get()).toEqual({
+      scope: JSON.stringify(["openid", "profile", "email"]),
+    })
+
+    const revoked = oidcConsentRevoke({
+      database,
+      clientId: client.data.client.id,
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(revoked).toEqual({ data: { revoked: true }, success: true })
+    const afterRevoke = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: client.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid profile",
+        state: "after-revoke",
+      },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(afterRevoke.success).toBe(false)
+    if (afterRevoke.success) return
+    expect(afterRevoke.op).toBe("oidcAuthorizationConsentRequired")
+    const safeEvents = JSON.stringify(database.sqlite.query("SELECT payload, metadata FROM events").all())
+    expect(safeEvents).not.toContain("consent-state")
+    expect(safeEvents).not.toContain("incremental-state")
+  })
+})
+
+test("RP-initiated logout validates exact redirects, revokes the session and OIDC artifacts, and preserves state", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "logout.example.com")
+    database.sqlite
+      .query("UPDATE oidc_clients SET post_logout_redirect_uris = ? WHERE id = ?")
+      .run(JSON.stringify(["https://client.example/logout"]), fixture.client.id)
+    const invalidRedirect = oidcLogout({
+      database,
+      encryptionSecret: "oidc-fixture-secret",
+      input: {
+        id_token_hint: fixture.token.id_token,
+        post_logout_redirect_uri: "https://client.example/other",
+      },
+      instanceId: fixture.authenticated.instance.id,
+    })
+    expect(invalidRedirect.success).toBe(false)
+    expect(database.sqlite.query("SELECT revoked_at FROM sessions").get()).toEqual({ revoked_at: null })
+
+    database.sqlite.run(
+      "CREATE TRIGGER reject_oidc_logout_events BEFORE INSERT ON events WHEN NEW.event_type = 'oidc.logout' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
+    )
+    const failedLogout = oidcLogout({
+      database,
+      encryptionSecret: "oidc-fixture-secret",
+      input: { id_token_hint: fixture.token.id_token },
+      instanceId: fixture.authenticated.instance.id,
+    })
+    expect(failedLogout.success).toBe(false)
+    expect(database.sqlite.query("SELECT revoked_at FROM sessions").get()).toEqual({ revoked_at: null })
+    expect(database.sqlite.query("SELECT revoked_at FROM oidc_access_tokens").get()).toEqual({ revoked_at: null })
+    database.sqlite.run("DROP TRIGGER reject_oidc_logout_events")
+
+    const response = await fixture.app.fetch(
+      new Request(
+        `https://logout.example.com/oauth2/logout?id_token_hint=${encodeURIComponent(fixture.token.id_token)}&post_logout_redirect_uri=${encodeURIComponent("https://client.example/logout")}&state=logout-state`,
+        { headers: { accept: "application/json" } },
+      ),
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({
+      post_logout_redirect_uri: "https://client.example/logout",
+      revoked: true,
+      state: "logout-state",
+    })
+    expect(database.sqlite.query("SELECT revoked_at, revocation_reason FROM sessions").get()).toMatchObject({
+      revocation_reason: "rp_initiated_logout",
+    })
+    const userInfo = await fixture.app.fetch(
+      new Request("https://logout.example.com/oauth2/userinfo", {
+        headers: { authorization: `Bearer ${fixture.token.access_token}` },
+      }),
+    )
+    expect(userInfo.status).toBe(401)
+    const refresh = await oidcTokenRequest(fixture.app, "logout.example.com", {
+      client_id: fixture.client.id,
+      client_secret: fixture.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: fixture.token.refresh_token,
+    })
+    expect(refresh.status).toBe(400)
+    expect(await refresh.json()).toMatchObject({ error: "invalid_grant" })
+    const audit = JSON.stringify(database.sqlite.query("SELECT payload, metadata FROM events").all())
+    expect(audit).not.toContain(fixture.token.access_token)
+    expect(audit).not.toContain(fixture.token.refresh_token)
+    expect(audit).not.toContain("logout-state")
   })
 })

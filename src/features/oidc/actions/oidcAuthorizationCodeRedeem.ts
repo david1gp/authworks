@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
@@ -17,6 +18,7 @@ import { oidcValueDecrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcAuthorizationCodeConsumedEventPayloadSchema } from "../events/oidcAuthorizationCodeConsumedEventPayloadSchema.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
+import { sessionTable } from "../../sessions/persistence/sessionTable.js"
 import type { OidcAuthorizationCodeRedeemRequest } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import type { OidcAuthorizationCodeRedeemResponse } from "../public/oidcAuthorizationCodeRedeemResponseSchema.js"
@@ -75,6 +77,20 @@ export function oidcAuthorizationCodeRedeem(
       code.data.usedAt !== null ||
       code.data.expiresAt <= now
     )
+      return resultErrorCreate(op, "The authorization code is invalid.")
+
+    const session = transaction
+      .select({ expiresAt: sessionTable.expiresAt, revokedAt: sessionTable.revokedAt })
+      .from(sessionTable)
+      .where(
+        and(
+          eq(sessionTable.instanceId, options.instanceId),
+          eq(sessionTable.id, code.data.sessionId),
+          eq(sessionTable.userId, code.data.userId),
+        ),
+      )
+      .get()
+    if (session === undefined || session.revokedAt !== null || session.expiresAt <= now)
       return resultErrorCreate(op, "The authorization code is invalid.")
 
     const pkce = oidcPkceVerify(parsed.output.code_verifier, code.data.codeChallenge, code.data.codeChallengeMethod)
