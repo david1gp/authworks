@@ -62,6 +62,7 @@
     "build:library": "tsc -p ./tsconfig.lib.json",
     "build:server": "bun build ./src/outputs/server.ts --outfile ./dist/server/server.js --target bun --format esm",
     "build:cli": "bun build ./src/outputs/cli.ts --outfile ./dist/cli/cli.js --target bun --format esm && chmod +x ./dist/cli/cli.js",
+    "verify:outputs": "bun run build && ZITADEL_V2_REQUIRE_BUILT_OUTPUTS=1 bun test test/build/distributableOutputs.test.ts",
     "check": "bun run format:check && bun run typecheck && bun test && bun run build",
     "release": "bash ./ops/release.sh",
     "deploy": "bash ./ops/deploy.sh",
