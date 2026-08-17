@@ -3,6 +3,7 @@
 import type { ApplicationContext, Command } from "@stricli/core"
 import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
 import { instanceCliCommands } from "../features/instances/cli/instanceCliCommands.js"
+import { organizationCliCommands } from "../features/organizations/cli/organizationCliCommands.js"
 
 const scaffoldCommand: Command<ApplicationContext> = buildCommand<Record<never, never>, [], ApplicationContext>({
   func: function (this: ApplicationContext) {
@@ -20,6 +21,8 @@ const cliApplication = buildApplication(
   buildRouteMap({
     routes: {
       instances: instanceCliCommands,
+      org: organizationCliCommands,
+      organizations: organizationCliCommands,
       status: scaffoldCommand,
     },
     docs: {
