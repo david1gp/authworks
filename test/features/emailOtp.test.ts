@@ -12,6 +12,11 @@ import { emailOtpServerAppCreate } from "../../src/features/emailOtp/server/emai
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
+import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
+import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
+import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
+import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -65,7 +70,8 @@ async function createVerifiedUser(database: StorageDatabase, domain: string) {
     instanceId: created.data.instance.id,
   })
   expect(verified.success).toBe(true)
-  return { context, instance: created.data.instance }
+  if (!verified.success) throw new Error(verified.errorMessage)
+  return { context, instance: created.data.instance, userId: verified.data.user.id }
 }
 
 test("email OTP authenticates once, applies cooldown, and calls ports after commit", async () => {
@@ -124,6 +130,8 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
     })
     expect(verified.success).toBe(true)
     if (!verified.success) return
+    expect(verified.data.session).toBeDefined()
+    if (verified.data.session === undefined) return
     expect(verified.data.session.session.authenticationMethod).toBe("email_otp")
     expect(verified.data.session.session.assurance).toBe("authenticated")
     expect(notifications).toEqual(["requested", "verified"])
@@ -155,6 +163,84 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
     })
     expect(resent.success).toBe(true)
     expect(replacement?.challengeId).not.toBe(delivery.challengeId)
+  })
+})
+
+test("required MFA turns email OTP authentication into a TOTP challenge", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { context, instance, userId } = await createVerifiedUser(database, "email-mfa.example.com")
+    const enrollment = mfaTotpEnrollmentStart({
+      database,
+      encryptionSecret: "mfa-test-secret",
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+      userId,
+    })
+    expect(enrollment.success).toBe(true)
+    if (!enrollment.success) return
+    const enrollmentCode = mfaTotpCodeCreate(enrollment.data.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(enrollmentCode.success).toBe(true)
+    if (!enrollmentCode.success) return
+    expect(
+      mfaTotpEnrollmentConfirm({
+        database,
+        encryptionSecret: "mfa-test-secret",
+        input: { code: enrollmentCode.data, enrollmentId: enrollment.data.enrollment.id },
+        instanceId: instance.id,
+        runtime: testkit.runtime,
+        userId,
+      }).success,
+    ).toBe(true)
+    expect(
+      mfaPolicySet({
+        context: instanceSystemContextCreate("system"),
+        database,
+        input: { lockoutDurationMs: 900_000, maxAttempts: 3, mode: "required", totpWindow: 1 },
+        instanceId: instance.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+
+    let delivery: { challengeId: string; code: string } | undefined
+    const started = emailOtpStart({
+      context,
+      database,
+      input: { email: "otp@example.com" },
+      instanceId: instance.id,
+      onDelivery: (value) => {
+        delivery = value
+      },
+      runtime: testkit.runtime,
+    })
+    expect(started.success).toBe(true)
+    if (!started.success || delivery === undefined) return
+    const verified = emailOtpVerify({
+      context,
+      database,
+      input: { challengeId: delivery.challengeId, code: delivery.code },
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+    })
+    expect(verified.success).toBe(true)
+    if (!verified.success) return
+    expect(verified.data.challenge).toBeDefined()
+    expect(verified.data.session).toBeUndefined()
+    if (verified.data.challenge === undefined) return
+    testkit.advance(30_000)
+    const challengeCode = mfaTotpCodeCreate(enrollment.data.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(challengeCode.success).toBe(true)
+    if (!challengeCode.success) return
+    const completed = mfaChallengeComplete({
+      database,
+      encryptionSecret: "mfa-test-secret",
+      input: { code: challengeCode.data, token: verified.data.challenge.token },
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+    })
+    expect(completed).toMatchObject({
+      success: true,
+      data: { session: { session: { assurance: "multi_factor", authenticationMethod: "email_otp" } } },
+    })
   })
 })
 

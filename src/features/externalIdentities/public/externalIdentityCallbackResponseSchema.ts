@@ -1,6 +1,7 @@
 import * as v from "valibot"
 import { sessionCredentialResponseSchema } from "../../sessions/public/sessionCredentialResponseSchema.js"
 import { externalIdentitySchema } from "./externalIdentitySchema.js"
+import { mfaChallengeResponseSchema } from "../../mfa/public/mfaChallengeResponseSchema.js"
 
 export const externalIdentityCallbackResponseSchema = v.variant("kind", [
   v.strictObject({
@@ -9,9 +10,10 @@ export const externalIdentityCallbackResponseSchema = v.variant("kind", [
       instanceId: v.pipe(v.string(), v.minLength(1)),
       userId: v.pipe(v.string(), v.minLength(1)),
     }),
+    challenge: v.optional(mfaChallengeResponseSchema),
     identity: externalIdentitySchema,
     kind: v.literal("authenticated"),
-    session: sessionCredentialResponseSchema,
+    session: v.optional(sessionCredentialResponseSchema),
   }),
   v.strictObject({
     confirmationToken: v.pipe(v.string(), v.minLength(1)),

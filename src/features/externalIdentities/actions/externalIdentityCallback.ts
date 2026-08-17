@@ -27,6 +27,7 @@ import { externalIdentityRepositoryCreate } from "../persistence/externalIdentit
 import type { ExternalIdentityOAuthTransactionRow } from "../persistence/externalIdentityOAuthTransactionTable.js"
 import type { ExternalIdentityProviderRow } from "../persistence/externalIdentityProviderTable.js"
 import type { ExternalIdentityCallbackResponse } from "../public/externalIdentityCallbackResponseSchema.js"
+import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
 
 const externalIdentityTransactionExpiryMessage = "The external identity callback is invalid."
 
@@ -384,24 +385,34 @@ function externalIdentitySignInCommit(
     options.runtime,
   )
   if (!authEvent.success) return authEvent
-  const session = sessionIssue({
+  const authenticationResult = mfaPrimaryAuthenticationComplete({
     actorId: null,
-    assurance: "authenticated",
-    authenticationMethod: "external_identity",
-    commandIndex: 2,
-    correlationId: options.correlationId,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
     instanceId: options.instanceId,
+    primaryAuthenticationMethod: "external_identity",
     runtime: options.runtime,
+    sessionCreate: () =>
+      sessionIssue({
+        actorId: null,
+        assurance: "authenticated",
+        authenticationMethod: "external_identity",
+        commandIndex: 2,
+        correlationId: options.correlationId,
+        deviceMetadata: options.deviceMetadata,
+        executor: options.database,
+        instanceId: options.instanceId,
+        runtime: options.runtime,
+        userId,
+      }),
     userId,
   })
-  if (!session.success) return resultErrorCreate(op, "The authenticated session could not be created.")
+  if (!authenticationResult.success) return resultErrorCreate(op, "The authenticated session could not be created.")
   return resultCreate({
     authentication: { authenticatedAt: options.now, instanceId: options.instanceId, userId },
     identity: externalIdentityViewCreate(identityRow, options.provider.type),
     kind: "authenticated",
-    session: session.data,
+    ...authenticationResult.data,
   })
 }
 

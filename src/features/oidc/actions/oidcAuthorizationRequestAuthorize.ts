@@ -63,6 +63,11 @@ export function oidcAuthorizationRequestAuthorize(
   if (!authenticated.success) return resultErrorCreate(op, "Session authorization is required.")
   if (authenticated.data.session.assurance === "none")
     return resultErrorCreate(op, "Session authorization is required.")
+  if (
+    oidcAuthorizationRequiresMultiFactor(parsed.output.acr_values) &&
+    authenticated.data.session.assurance !== "multi_factor"
+  )
+    return resultErrorCreate("oidcAuthorizationInsufficientAssurance", "Multi-factor session assurance is required.")
 
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
@@ -250,6 +255,10 @@ export function oidcAuthorizationRequestAuthorize(
       JSON.stringify(completed.data.response),
     )
   return resultCreate(completed.data.response)
+}
+
+function oidcAuthorizationRequiresMultiFactor(value: string | undefined): boolean {
+  return value?.split(" ").includes("multi_factor") ?? false
 }
 
 type OidcAuthorizationCodeIssueOptions = {

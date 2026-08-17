@@ -24,6 +24,7 @@ import type { EmailOtpSecurityNotification } from "../public/emailOtpSecurityNot
 import type { EmailOtpVerifyRequest } from "../public/emailOtpVerifyRequestSchema.js"
 import { emailOtpVerifyRequestSchema } from "../public/emailOtpVerifyRequestSchema.js"
 import type { EmailOtpVerifyResponse } from "../public/emailOtpVerifyResponseSchema.js"
+import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
 
 type EmailOtpVerifyOptions = {
   readonly context: InstanceSystemContext | InstanceTenantContext
@@ -141,7 +142,8 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
   }
   if (current.userId === null)
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
-  const user = repository.emailOtpUserGet(options.instanceId, current.userId)
+  const userId = current.userId
+  const user = repository.emailOtpUserGet(options.instanceId, userId)
   if (!user.success) return user
   const normalizedEmail =
     user.data === null
@@ -183,7 +185,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
   if (!consumed.success) return consumed
   if (consumed.data === null)
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
-  const payload = v.safeParse(emailOtpVerifiedEventPayloadSchema, { challengeId: current.id, userId: current.userId })
+  const payload = v.safeParse(emailOtpVerifiedEventPayloadSchema, { challengeId: current.id, userId })
   if (!payload.success) return resultErrorCreate(op, "The email OTP event payload is invalid.")
   const event = storageEventAppend(
     options.database,
@@ -203,25 +205,36 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
     options.runtime,
   )
   if (!event.success) return event
-  const session = sessionIssue({
+  const authentication = { authenticatedAt: options.now, instanceId: options.instanceId, userId }
+  const authenticationResult = mfaPrimaryAuthenticationComplete({
     actorId: options.context.actorId,
-    assurance: "authenticated",
-    authenticationMethod: "email_otp",
-    commandIndex: 1,
-    correlationId: options.correlationId,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
     instanceId: options.instanceId,
+    primaryAuthenticationMethod: "email_otp",
     runtime: options.runtime,
-    userId: current.userId,
+    sessionCreate: () =>
+      sessionIssue({
+        actorId: options.context.actorId,
+        assurance: "authenticated",
+        authenticationMethod: "email_otp",
+        commandIndex: 1,
+        correlationId: options.correlationId,
+        deviceMetadata: options.deviceMetadata,
+        executor: options.database,
+        instanceId: options.instanceId,
+        runtime: options.runtime,
+        userId,
+      }),
+    userId,
   })
-  if (!session.success) return resultErrorCreate(op, "The authenticated session could not be created.")
+  if (!authenticationResult.success) return resultErrorCreate(op, "The authenticated session could not be created.")
   return resultCreate({
     failure: false as const,
-    notification: emailOtpNotificationCreate("verified", current.userId, current.id, options.instanceId),
+    notification: emailOtpNotificationCreate("verified", userId, current.id, options.instanceId),
     response: {
-      authentication: { authenticatedAt: options.now, instanceId: options.instanceId, userId: current.userId },
-      session: session.data,
+      authentication,
+      ...authenticationResult.data,
     },
   })
 }

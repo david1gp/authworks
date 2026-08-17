@@ -25,6 +25,7 @@ type OidcUserInfoGetOptions = {
 
 type OidcUserInfoSubject = {
   readonly profile: typeof userProfileTable.$inferSelect | null
+  readonly session: typeof sessionTable.$inferSelect
   readonly user: typeof userTable.$inferSelect
 }
 
@@ -82,12 +83,23 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
         .get() ?? null
     const scope = oidcUserInfoScopeParse(access.data.scope)
     if (!scope.success) return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")
-    return resultCreate(oidcUserInfoClaimsCreate({ profile, user }, scope.data))
+    return resultCreate(oidcUserInfoClaimsCreate({ profile, session, user }, scope.data))
   })
 }
 
 function oidcUserInfoClaimsCreate(subject: OidcUserInfoSubject, scope: readonly string[]): OidcUserInfo {
   const claims: OidcUserInfo = { sub: subject.user.id }
+  if (subject.session.assurance === "multi_factor") {
+    claims.acr = "multi_factor"
+    claims.amr = [
+      ...new Set(
+        [subject.session.authenticationMethod, subject.session.mfaMethod ?? undefined].filter(
+          (value): value is string => value !== undefined,
+        ),
+      ),
+    ]
+    claims.auth_time = Math.floor(subject.session.createdAt / 1_000)
+  }
   if (scope.includes("email")) {
     claims.email = subject.user.email
     claims.email_verified = subject.user.emailVerifiedAt !== null

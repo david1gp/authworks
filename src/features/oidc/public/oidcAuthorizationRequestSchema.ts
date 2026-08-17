@@ -2,6 +2,7 @@ import * as v from "valibot"
 import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
 
 export const oidcAuthorizationRequestSchema = v.strictObject({
+  acr_values: v.optional(v.pipe(v.string(), v.maxLength(256))),
   client_id: oidcResourceIdSchema,
   code_challenge: v.pipe(v.string(), v.minLength(43), v.maxLength(43), v.regex(/^[A-Za-z0-9_-]+$/)),
   code_challenge_method: v.literal("S256"),

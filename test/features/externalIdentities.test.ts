@@ -17,6 +17,11 @@ import type { ExternalIdentityProviderPort } from "../../src/features/externalId
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { externalIdentityStart } from "../../src/features/externalIdentities/actions/externalIdentityStart.js"
 import { externalIdentityUnlink } from "../../src/features/externalIdentities/actions/externalIdentityUnlink.js"
+import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
+import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
+import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
+import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
@@ -118,6 +123,8 @@ test("external identity login validates state and creates a session without expo
     })
     expect(callback.success).toBe(true)
     if (!callback.success || callback.data.kind !== "authenticated") return
+    expect(callback.data.session).toBeDefined()
+    if (callback.data.session === undefined) return
     expect(callback.data.session.session.authenticationMethod).toBe("external_identity")
     expect(sessionAuthenticate({ database, instanceId: instance.id, token: callback.data.session.token }).success).toBe(
       true,
@@ -148,6 +155,154 @@ test("external identity login validates state and creates a session without expo
         })
       ).success,
     ).toBe(false)
+  })
+})
+
+test("required MFA turns external identity authentication into a TOTP challenge", async () => {
+  await withDatabase(async (database, testkit) => {
+    const instance = await createInstance(database, "external-mfa.example.com")
+    const provider = await createProvider(database, instance.id)
+    const ports = { google: testPort() }
+    const context = instanceTenantContextCreate(instance.id, "anonymous")
+    let verificationToken = ""
+    const registered = passwordRegister({
+      context,
+      database,
+      input: {
+        email: "new@example.com",
+        password: "Correct Horse 12",
+        profile: {},
+        userName: "external-mfa-user",
+      },
+      instanceId: instance.id,
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+    })
+    expect(registered.success).toBe(true)
+    if (!registered.success) return
+    const verified = passwordEmailVerify({
+      context,
+      database,
+      input: { token: verificationToken },
+      instanceId: instance.id,
+    })
+    expect(verified.success).toBe(true)
+    if (!verified.success) return
+    const enrollment = mfaTotpEnrollmentStart({
+      database,
+      encryptionSecret: "mfa-test-secret",
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+      userId: verified.data.user.id,
+    })
+    expect(enrollment.success).toBe(true)
+    if (!enrollment.success) return
+    const enrollmentCode = mfaTotpCodeCreate(enrollment.data.secret, Math.floor(testkit.runtime.now() / 30_000))
+    if (!enrollmentCode.success) return
+    expect(
+      mfaTotpEnrollmentConfirm({
+        database,
+        encryptionSecret: "mfa-test-secret",
+        input: { code: enrollmentCode.data, enrollmentId: enrollment.data.enrollment.id },
+        instanceId: instance.id,
+        runtime: testkit.runtime,
+        userId: verified.data.user.id,
+      }).success,
+    ).toBe(true)
+    const login = passwordLogin({
+      context,
+      database,
+      input: { identifier: "external-mfa-user", password: "Correct Horse 12" },
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+    })
+    expect(login.success).toBe(true)
+    if (!login.success || login.data.session === undefined) return
+    const linkStart = externalIdentityLinkStart({
+      database,
+      input: {},
+      instanceId: instance.id,
+      providerId: provider.id,
+      providerPorts: ports,
+      session: login.data.session.session,
+      userId: verified.data.user.id,
+      runtime: testkit.runtime,
+    })
+    expect(linkStart.success).toBe(true)
+    if (!linkStart.success) return
+    const linkState = new URL(linkStart.data.authorizationUrl).searchParams.get("state") ?? ""
+    const pending = await externalIdentityCallback({
+      code: "link-code",
+      database,
+      instanceId: instance.id,
+      providerId: provider.id,
+      providerPorts: ports,
+      state: linkState,
+      runtime: testkit.runtime,
+    })
+    expect(pending.success).toBe(true)
+    if (!pending.success || pending.data.kind !== "link_confirmation") return
+    expect(
+      externalIdentityLinkComplete({
+        database,
+        input: { confirm: true, confirmationToken: pending.data.confirmationToken },
+        instanceId: instance.id,
+        providerId: provider.id,
+        session: login.data.session.session,
+        userId: verified.data.user.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+    expect(
+      mfaPolicySet({
+        context: instanceSystemContextCreate("system"),
+        database,
+        input: { lockoutDurationMs: 900_000, maxAttempts: 3, mode: "required", totpWindow: 1 },
+        instanceId: instance.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+    const started = externalIdentityStart({
+      database,
+      input: {},
+      instanceId: instance.id,
+      providerId: provider.id,
+      providerPorts: ports,
+      runtime: testkit.runtime,
+    })
+    expect(started.success).toBe(true)
+    if (!started.success) return
+    const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
+    const callback = await externalIdentityCallback({
+      code: "provider-code",
+      database,
+      instanceId: instance.id,
+      providerId: provider.id,
+      providerPorts: ports,
+      state,
+      runtime: testkit.runtime,
+    })
+    expect(callback.success).toBe(true)
+    if (!callback.success || callback.data.kind !== "authenticated") return
+    expect(callback.data.challenge).toBeDefined()
+    expect(callback.data.session).toBeUndefined()
+    if (callback.data.challenge === undefined) return
+    testkit.advance(30_000)
+    const challengeCode = mfaTotpCodeCreate(enrollment.data.secret, Math.floor(testkit.runtime.now() / 30_000))
+    if (!challengeCode.success) return
+    expect(
+      mfaChallengeComplete({
+        database,
+        encryptionSecret: "mfa-test-secret",
+        input: { code: challengeCode.data, token: callback.data.challenge.token },
+        instanceId: instance.id,
+        runtime: testkit.runtime,
+      }),
+    ).toMatchObject({
+      success: true,
+      data: { session: { session: { assurance: "multi_factor", authenticationMethod: "external_identity" } } },
+    })
   })
 })
 

@@ -563,7 +563,13 @@ function oidcTokenClaimsCreate(
 ): Record<string, unknown> {
   const claims: Record<string, unknown> = {
     acr: subject.session.assurance,
-    amr: [subject.session.authenticationMethod],
+    amr: [
+      ...new Set(
+        [subject.session.authenticationMethod, subject.session.mfaMethod ?? undefined].filter(
+          (value): value is string => value !== undefined,
+        ),
+      ),
+    ],
     auth_time: Math.floor(subject.session.createdAt / 1_000),
     aud: clientId,
     exp: Math.floor(expiresAt / 1_000),

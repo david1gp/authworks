@@ -28,6 +28,7 @@ import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreat
 import { type PasswordLoginRequest, passwordLoginRequestSchema } from "../public/passwordLoginRequestSchema.js"
 import type { PasswordLoginResponse } from "../public/passwordLoginResponseSchema.js"
 import type { PasswordSessionCreate } from "../public/passwordSessionCreate.js"
+import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
 
 type PasswordLoginOptions = {
   readonly context: InstanceSystemContext | InstanceTenantContext
@@ -88,6 +89,7 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
     const currentRepository = passwordRepositoryCreate(transaction)
     const current = currentRepository.passwordUserGet(options.instanceId, userRow.id)
     if (!current.success || current.data === null) return resultErrorCreate(op, "The credentials are invalid.")
+    const currentUser = current.data
     const currentCredential = currentRepository.passwordCredentialGet(options.instanceId, current.data.id)
     if (!currentCredential.success || currentCredential.data === null)
       return resultErrorCreate(op, "The credentials are invalid.")
@@ -138,7 +140,7 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
       instanceId: options.instanceId,
       lockedUntil: null,
       updatedAt: now,
-      userId: current.data.id,
+      userId: currentUser.id,
       version: lockoutVersion,
     })
     if (!lockout.success) return lockout
@@ -167,19 +169,38 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
     const authentication = {
       authenticatedAt: now,
       instanceId: options.instanceId,
-      userId: current.data.id,
+      userId: currentUser.id,
     }
-    if (options.sessionCreate === undefined) return resultCreate({ authentication })
-    const session = options.sessionCreate(authentication, {
+    const authenticationResult = mfaPrimaryAuthenticationComplete({
       actorId: options.context.actorId,
-      commandIndex: userVersion === current.data.version ? 1 : 2,
-      correlationId,
       deviceMetadata: options.deviceMetadata,
       executor: transaction,
+      instanceId: options.instanceId,
+      primaryAuthenticationMethod: "password",
       runtime,
+      sessionCreate:
+        options.sessionCreate === undefined
+          ? undefined
+          : () =>
+              options.sessionCreate!(
+                {
+                  authenticatedAt: now,
+                  instanceId: options.instanceId,
+                  userId: currentUser.id,
+                },
+                {
+                  actorId: options.context.actorId,
+                  commandIndex: userVersion === currentUser.version ? 1 : 2,
+                  correlationId,
+                  deviceMetadata: options.deviceMetadata,
+                  executor: transaction,
+                  runtime,
+                },
+              ),
+      userId: currentUser.id,
     })
-    if (!session.success) return resultErrorCreate(op, "The authenticated session could not be created.")
-    return resultCreate({ authentication, session: session.data })
+    if (!authenticationResult.success) return resultErrorCreate(op, "The credentials are invalid.")
+    return resultCreate({ authentication, ...authenticationResult.data })
   })
   if (!authenticated.success) return authenticated
   return authenticated
