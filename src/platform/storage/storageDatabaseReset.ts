@@ -1,0 +1,34 @@
+import { type Result } from "#result"
+import { resultErrorCreate } from "../errors/resultErrorCreate.js"
+import type { StorageDatabase } from "./storageDatabaseOpen.js"
+import { storageSchemaCreate } from "./storageSchemaCreate.js"
+
+class StorageResetRollback extends Error {
+  readonly result: Extract<Result<void>, { success: false }>
+
+  constructor(result: Extract<Result<void>, { success: false }>) {
+    super(result.errorMessage)
+    this.result = result
+  }
+}
+
+export function storageDatabaseReset(database: StorageDatabase): Result<void> {
+  const op = "storageDatabaseReset"
+
+  try {
+    return database.db.transaction((transaction) => {
+      transaction.run("DROP TRIGGER IF EXISTS events_append_only_update")
+      transaction.run("DROP TRIGGER IF EXISTS events_append_only_delete")
+      transaction.run("DROP INDEX IF EXISTS events_aggregate_version_idx")
+      transaction.run("DROP TABLE IF EXISTS events")
+      transaction.run("DROP TABLE IF EXISTS current_state")
+
+      const schema = storageSchemaCreate(transaction)
+      if (!schema.success) throw new StorageResetRollback(schema)
+      return schema
+    })
+  } catch (error: unknown) {
+    if (error instanceof StorageResetRollback) return error.result
+    return resultErrorCreate(op, "The SQLite database could not be reset.")
+  }
+}
