@@ -49,7 +49,7 @@ export function organizationInvitationRevoke(options: OrganizationInvitationRevo
       context: options.context,
       organization: organization.data,
       repository,
-      requiredRole: "admin",
+      requiredPermission: "organization.members.manage",
     })
     if (!authorized.success) return authorized
     if (invitation.data.status !== "pending")

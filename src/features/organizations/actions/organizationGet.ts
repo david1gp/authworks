@@ -32,7 +32,7 @@ export function organizationGet(options: OrganizationGetOptions): Result<{ organ
     context: options.context,
     organization: organization.data,
     repository,
-    requiredRole: "member",
+    requiredPermission: "organization.read",
   })
   if (!authorized.success) return authorized
   return resultCreate({ organization: organizationPublicViewCreate(organization.data) })

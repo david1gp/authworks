@@ -3,6 +3,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { instanceSecretHashCreate } from "../domain/instanceSecretHashCreate.js"
 import type { InstanceTenantContext } from "../domain/instanceTenantContext.js"
 import { instanceRepositoryCreate } from "../persistence/instanceRepositoryCreate.js"
@@ -22,5 +23,12 @@ export function instanceBootstrapAdminAuthenticate(
   if (!admin.success) return admin
   if (admin.data === null || !secretMatches(instanceSecretHashCreate(options.secret), admin.data.secretHash))
     return resultErrorCreate(op, "The bootstrap administrator credentials are invalid.")
-  return resultCreate({ ...options.context, actorId: admin.data.adminId })
+  const actor: AuthorizationActorContext = {
+    actorId: admin.data.adminId,
+    assurance: "authenticated",
+    authenticationMethod: "bootstrap_admin",
+    instanceId: options.context.instanceId,
+    kind: "bootstrap_admin",
+  }
+  return resultCreate({ ...options.context, actor, actorId: admin.data.adminId })
 }

@@ -54,7 +54,7 @@ export function organizationUpdate(options: OrganizationUpdateOptions): Result<{
       context: options.context,
       organization: current.data,
       repository,
-      requiredRole: "admin",
+      requiredPermission: "organization.manage",
     })
     if (!authorized.success) return authorized
     const name = organizationNameNormalize(requestedName)

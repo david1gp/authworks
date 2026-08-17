@@ -31,7 +31,7 @@ export function organizationList(options: OrganizationListOptions): Result<{ org
         context: options.context,
         organization: row,
         repository,
-        requiredRole: "member",
+        requiredPermission: "organization.read",
       })
       if (!authorized.success) continue
     }

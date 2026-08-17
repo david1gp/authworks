@@ -60,7 +60,7 @@ export function organizationMembershipCreate(
       context: options.context,
       organization: organization.data,
       repository,
-      requiredRole: "admin",
+      requiredPermission: "organization.members.manage",
     })
     if (!authorized.success) return authorized
     const existing = repository.organizationMembershipGetByOrganizationUser(

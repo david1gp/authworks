@@ -35,7 +35,7 @@ export function organizationInvitationList(
     context: options.context,
     organization: organization.data,
     repository,
-    requiredRole: "member",
+    requiredPermission: "organization.read",
   })
   if (!authorized.success) return authorized
   const rows = repository.organizationInvitationList(options.organizationId)

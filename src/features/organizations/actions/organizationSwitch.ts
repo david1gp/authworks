@@ -55,7 +55,7 @@ export function organizationSwitch(options: OrganizationSwitchOptions): Result<O
       context: options.context,
       organization: organization.data,
       repository,
-      requiredRole: "member",
+      requiredPermission: "organization.switch",
     })
     if (!authorized.success) return authorized
     const payload = v.safeParse(organizationSwitchedEventPayloadSchema, { organizationId: organization.data.id })
@@ -80,7 +80,12 @@ export function organizationSwitch(options: OrganizationSwitchOptions): Result<O
     if (!event.success) return event
     return resultCreate({
       activeOrganizationId: organization.data.id,
-      context: organizationContextCreate(options.instanceId, organization.data.id, options.context.actorId),
+      context: organizationContextCreate(
+        options.instanceId,
+        organization.data.id,
+        options.context.actorId,
+        options.context.actor,
+      ),
       organization: organizationPublicViewCreate(organization.data),
     })
   })
