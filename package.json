@@ -43,10 +43,10 @@
   "type": "module",
   "private": false,
   "sideEffects": false,
-  "main": "dist/outputs/library.js",
-  "types": "./dist/outputs/library.d.ts",
+  "main": "./dist/library/outputs/library.js",
+  "types": "./dist/library/outputs/library.d.ts",
   "bin": {
-    "zitadel-v2": "./dist/outputs/cli.js"
+    "zitadel-v2": "./dist/cli/cli.js"
   },
   "engines": {
     "node": ">=22",
@@ -56,11 +56,17 @@
     "dev": "bun run src/outputs/server.ts",
     "test": "bun test",
     "test:w": "bun test --watch",
-    "tsc": "tsc --noEmit",
-    "build": "rm -rf ./dist && tsc -p ./tsconfig.lib.json",
+    "typecheck": "tsc -p ./tsconfig.json --noEmit",
+    "tsc": "tsc -p ./tsconfig.json --noEmit",
+    "build": "bun run clean && bun run typecheck && bun run build:library && bun run build:server && bun run build:cli",
+    "build:library": "tsc -p ./tsconfig.lib.json",
+    "build:server": "bun build ./src/outputs/server.ts --outfile ./dist/server/server.js --target bun --format esm",
+    "build:cli": "bun build ./src/outputs/cli.ts --outfile ./dist/cli/cli.js --target bun --format esm && chmod +x ./dist/cli/cli.js",
+    "check": "bun run format:check && bun run typecheck && bun test && bun run build",
     "release": "bash ./ops/release.sh",
     "deploy": "bash ./ops/deploy.sh",
     "format": "biome format --write src test ops package.json tsconfig.json tsconfig.lib.json biome.json bunfig.toml cliff.toml README.md",
+    "format:check": "biome format src test ops package.json tsconfig.json tsconfig.lib.json biome.json bunfig.toml cliff.toml README.md",
     "update": "bun update",
     "update:commit": "bun update && git add package.json && bun run tsc && git commit -m \"chore(deps): update dependencies\" && git push",
     "clean": "rm -rf ./dist",
@@ -68,7 +74,7 @@
   },
   "peerDependencies": {
     "@adaptive-ds/result": ">=0.4.0",
-    "valibot": "^1.2.0"
+    "valibot": "^1.4.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.2",
@@ -85,8 +91,18 @@
   },
   "exports": {
     ".": {
-      "types": "./dist/outputs/library.d.ts",
-      "import": "./dist/outputs/library.js"
+      "types": "./dist/library/outputs/library.d.ts",
+      "import": "./dist/library/outputs/library.js"
+    },
+    "./server": {
+      "import": "./dist/server/server.js"
+    },
+    "./library": {
+      "types": "./dist/library/outputs/library.d.ts",
+      "import": "./dist/library/outputs/library.js"
+    },
+    "./cli": {
+      "import": "./dist/cli/cli.js"
     },
     "./package.json": "./package.json"
   },
@@ -98,5 +114,10 @@
   "publishConfig": {
     "access": "public",
     "provenance": true
+  },
+  "dependencies": {
+    "@stricli/core": "^1.3.0",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.13.2"
   }
 }

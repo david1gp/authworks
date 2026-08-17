@@ -4,13 +4,13 @@
     "target": "ES2024",
     "lib": ["ES2024"],
     "rootDir": "./src",
-    "outDir": "./dist",
+    "outDir": "./dist/library",
     "noEmit": false,
     "declaration": true,
     "declarationMap": false,
     "sourceMap": false,
     "incremental": false
   },
-  "include": ["src/**/*"],
+  "include": ["src/outputs/library.ts"],
   "exclude": ["node_modules", "test", "docs", "dist", ".idea", ".vscode", "**/*.test.ts"]
 }

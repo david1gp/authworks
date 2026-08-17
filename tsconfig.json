@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "esnext",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "allowImportingTsExtensions": false,
     "resolveJsonModule": true,
     "noEmit": true,
@@ -25,6 +25,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": true,
+    "moduleDetection": "force",
     "noUncheckedSideEffectImports": true,
     //
     // type imports - https://www.typescriptlang.org/tsconfig#verbatimModuleSyntax

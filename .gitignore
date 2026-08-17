@@ -92,6 +92,7 @@ astro
 # ai, ethereal and auto generated
 .roo/rules-code
 AGENTS.md
+!AGENTS.md
 
 # images
 /public-images

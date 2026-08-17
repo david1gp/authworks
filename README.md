@@ -2,9 +2,9 @@
 
 Identity backend you can run as a Hono server, import as a typed client, or drive from a CLI. One Bun package. Features own their routes, schemas, events, and tests.
 
-This is an alpha rewrite. Schema resets are allowed. Current-state SQLite tables stay authoritative. An append-only event log records domain facts without secrets.
+This is an alpha scaffold. Schema resets are allowed. Current-state SQLite tables will stay authoritative, with an append-only event log for domain facts that never contains secrets.
 
-## What it covers
+## Planned capabilities
 
 - Users, passwords, sessions, recovery, and rate limits
 - Email OTP, social login, recent accounts
@@ -37,7 +37,10 @@ src/platform             ids, clocks, errors, config, storage
 src/outputs              thin server, library, and cli composition
 ```
 
-Outputs import features. They do not contain feature logic. Missing imports fail at build time.
+Outputs import feature surfaces. They do not contain feature logic. Missing imports fail at build time.
+
+The scaffold currently provides empty server and CLI compositions plus the package build/test boundaries; feature
+behavior is implemented in later tasks.
 
 ## Links
 
