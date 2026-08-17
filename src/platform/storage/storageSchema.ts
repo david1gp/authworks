@@ -7,6 +7,8 @@ import { instanceTable } from "../../features/instances/persistence/instanceTabl
 import { organizationInvitationTable } from "../../features/organizations/persistence/organizationInvitationTable.js"
 import { organizationMembershipTable } from "../../features/organizations/persistence/organizationMembershipTable.js"
 import { organizationTable } from "../../features/organizations/persistence/organizationTable.js"
+import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
+import { userTable } from "../../features/users/persistence/userTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
 import { storageEventTable } from "./storageEventTable.js"
 
@@ -17,6 +19,8 @@ export const storageSchema = {
   organizationInvitationTable,
   organizationMembershipTable,
   organizationTable,
+  userProfileTable,
+  userTable,
   storageCurrentStateTable,
   storageEventTable,
 }
