@@ -8,8 +8,10 @@ import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { instanceBootstrapAdminAuthenticate } from "../../instances/actions/instanceBootstrapAdminAuthenticate.js"
 import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
 import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { oidcAuthorizationCodeRedeem } from "../actions/oidcAuthorizationCodeRedeem.js"
+import { oidcAuthorizationRequestAuthorize } from "../actions/oidcAuthorizationRequestAuthorize.js"
 import { oidcClientCreate } from "../actions/oidcClientCreate.js"
 import { oidcClientGet } from "../actions/oidcClientGet.js"
 import { oidcClientLifecycleSet } from "../actions/oidcClientLifecycleSet.js"
@@ -21,6 +23,8 @@ import { oidcJwksGet } from "../actions/oidcJwksGet.js"
 import { oidcSigningKeyCreate } from "../actions/oidcSigningKeyCreate.js"
 import { oidcSigningKeyLifecycleSet } from "../actions/oidcSigningKeyLifecycleSet.js"
 import { oidcSigningKeyList } from "../actions/oidcSigningKeyList.js"
+import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
+import { oidcAuthorizationRequestSchema } from "../public/oidcAuthorizationRequestSchema.js"
 import { oidcClientCreateRequestSchema } from "../public/oidcClientCreateRequestSchema.js"
 import { oidcClientLifecycleRequestSchema } from "../public/oidcClientLifecycleRequestSchema.js"
 import { oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
@@ -61,6 +65,52 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     const jwks = oidcJwksGet({ database: options.database, instanceId: instance.data.instanceId })
     if (!jwks.success) return oidcErrorResponseCreate(context, jwks)
     return context.json(jwks.data)
+  })
+
+  app.get("/oauth2/authorize", (context) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const input = v.safeParse(oidcAuthorizationRequestSchema, oidcAuthorizationRequestInputCreate(context))
+    if (!input.success)
+      return oidcErrorResponseCreate(context, {
+        errorMessage: "The OIDC authorization request is invalid.",
+        op: "oidcAuthorizationRequestAuthorize",
+      })
+    const authorization = oidcAuthorizationRequestAuthorize({
+      database: options.database,
+      encryptionSecret: options.systemSecret,
+      input: input.output,
+      instanceId: instance.data.instanceId,
+      sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? "",
+    })
+    if (!authorization.success) return oidcErrorResponseCreate(context, authorization)
+    if (context.req.header("accept")?.includes("application/json")) return context.json(authorization.data)
+    const redirect = new URL(authorization.data.redirect_uri)
+    redirect.searchParams.set("code", authorization.data.code)
+    redirect.searchParams.set("state", authorization.data.state)
+    return context.redirect(redirect.toString(), 302)
+  })
+
+  app.post("/oauth2/authorization-code/redeem", async (context) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const body = await oidcRequestJsonRead(context)
+    if (!body.success) return oidcErrorResponseCreate(context, body)
+    const input = v.safeParse(oidcAuthorizationCodeRedeemRequestSchema, body.data)
+    if (!input.success)
+      return oidcErrorResponseCreate(context, {
+        errorMessage: "The authorization code request is invalid.",
+        op: "oidcAuthorizationCodeRedeem",
+      })
+    return oidcResultResponseCreate(
+      context,
+      oidcAuthorizationCodeRedeem({
+        database: options.database,
+        encryptionSecret: options.systemSecret,
+        input: input.output,
+        instanceId: instance.data.instanceId,
+      }),
+    )
   })
   return app
 }
@@ -271,6 +321,24 @@ function oidcBearerTokenGet(authorization: string | undefined): string | null {
   return match?.[1] ?? null
 }
 
+function oidcAuthorizationRequestInputCreate(context: {
+  req: { query: (name: string) => string | undefined }
+}): Record<string, string> {
+  const nonce = context.req.query("nonce")
+  const prompt = context.req.query("prompt")
+  return {
+    client_id: context.req.query("client_id") ?? "",
+    code_challenge: context.req.query("code_challenge") ?? "",
+    code_challenge_method: context.req.query("code_challenge_method") ?? "",
+    ...(nonce === undefined ? {} : { nonce }),
+    ...(prompt === undefined ? {} : { prompt }),
+    redirect_uri: context.req.query("redirect_uri") ?? "",
+    response_type: context.req.query("response_type") ?? "",
+    scope: context.req.query("scope") ?? "",
+    state: context.req.query("state") ?? "",
+  }
+}
+
 function oidcParamGet(context: { req: { param: (name: string) => string | undefined } }, name: string): string {
   return context.req.param(name) ?? ""
 }
@@ -290,9 +358,10 @@ function oidcErrorCodeGet(result: { errorMessage: string; op: string }): string 
   const message = result.errorMessage.toLowerCase()
   const op = result.op.toLowerCase()
   if (
-    op.includes("authorization") ||
+    op.includes("systemauthorization") ||
     op.includes("authenticate") ||
     message.includes("authentication") ||
+    message.includes("session authorization") ||
     message.includes("credentials")
   )
     return "unauthorized"

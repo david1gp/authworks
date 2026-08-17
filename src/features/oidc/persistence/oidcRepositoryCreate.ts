@@ -1,8 +1,10 @@
-import { and, asc, desc, eq } from "drizzle-orm"
+import { and, asc, desc, eq, gt, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { type OidcAuthorizationCodeRow, oidcAuthorizationCodeTable } from "./oidcAuthorizationCodeTable.js"
+import { type OidcAuthorizationRequestRow, oidcAuthorizationRequestTable } from "./oidcAuthorizationRequestTable.js"
 import { type OidcClientRow, oidcClientTable } from "./oidcClientTable.js"
 import { type OidcSigningKeyRow, oidcSigningKeyTable } from "./oidcSigningKeyTable.js"
 
@@ -10,9 +12,78 @@ type OidcClientInsert = typeof oidcClientTable.$inferInsert
 type OidcClientUpdate = Partial<OidcClientInsert>
 type OidcSigningKeyInsert = typeof oidcSigningKeyTable.$inferInsert
 type OidcSigningKeyUpdate = Partial<OidcSigningKeyInsert>
+type OidcAuthorizationCodeInsert = typeof oidcAuthorizationCodeTable.$inferInsert
+type OidcAuthorizationRequestInsert = typeof oidcAuthorizationRequestTable.$inferInsert
 
 export function oidcRepositoryCreate(database: StorageExecutor) {
   return {
+    authorizationCodeConsume(
+      instanceId: string,
+      clientId: string,
+      authorizationCodeId: string,
+      tokenHash: string,
+      consumedAt: number,
+      now: number,
+    ): Result<OidcAuthorizationCodeRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcAuthorizationCodeTable)
+            .set({ usedAt: consumedAt })
+            .where(
+              and(
+                eq(oidcAuthorizationCodeTable.id, authorizationCodeId),
+                eq(oidcAuthorizationCodeTable.instanceId, instanceId),
+                eq(oidcAuthorizationCodeTable.clientId, clientId),
+                eq(oidcAuthorizationCodeTable.tokenHash, tokenHash),
+                gt(oidcAuthorizationCodeTable.expiresAt, now),
+                isNull(oidcAuthorizationCodeTable.usedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcAuthorizationCodeConsume", "The authorization code could not be consumed.")
+      }
+    },
+
+    authorizationCodeCreate(input: OidcAuthorizationCodeInsert): Result<OidcAuthorizationCodeRow> {
+      try {
+        const row = database.insert(oidcAuthorizationCodeTable).values(input).returning().get()
+        if (row === undefined)
+          return resultErrorCreate("oidcAuthorizationCodeCreate", "The authorization code could not be created.")
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCreate("oidcAuthorizationCodeCreate", "The authorization code could not be created.")
+      }
+    },
+
+    authorizationCodeGetByTokenHash(tokenHash: string): Result<OidcAuthorizationCodeRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(oidcAuthorizationCodeTable)
+            .where(eq(oidcAuthorizationCodeTable.tokenHash, tokenHash))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("oidcAuthorizationCodeGetByTokenHash", "The authorization code could not be read.")
+      }
+    },
+
+    authorizationRequestCreate(input: OidcAuthorizationRequestInsert): Result<OidcAuthorizationRequestRow> {
+      try {
+        const row = database.insert(oidcAuthorizationRequestTable).values(input).returning().get()
+        if (row === undefined)
+          return resultErrorCreate("oidcAuthorizationRequestCreate", "The authorization request could not be created.")
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCreate("oidcAuthorizationRequestCreate", "The authorization request could not be created.")
+      }
+    },
+
     clientCreate(input: OidcClientInsert): Result<OidcClientRow> {
       try {
         const row = database.insert(oidcClientTable).values(input).returning().get()

@@ -23,11 +23,13 @@ export function oidcDiscoveryGet(options: OidcDiscoveryGetOptions): Result<OidcD
   if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
   const issuer = oidcIssuerCreate(instance.data.instance.domain)
   return resultCreate({
+    authorization_endpoint: `${issuer}/oauth2/authorize`,
     claims_supported: ["sub"],
+    code_challenge_methods_supported: ["S256"],
     id_token_signing_alg_values_supported: ["RS256"],
     issuer,
     jwks_uri: `${issuer}/.well-known/jwks.json`,
-    response_types_supported: [],
+    response_types_supported: ["code"],
     scopes_supported: ["openid"],
     subject_types_supported: ["public"],
   })

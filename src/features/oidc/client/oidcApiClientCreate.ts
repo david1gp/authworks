@@ -4,6 +4,22 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import { httpErrorResponseSchema } from "../../../platform/http/httpErrorResponseSchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
+import {
+  type OidcAuthorizationCodeRedeemRequest,
+  oidcAuthorizationCodeRedeemRequestSchema,
+} from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
+import {
+  type OidcAuthorizationCodeRedeemResponse,
+  oidcAuthorizationCodeRedeemResponseSchema,
+} from "../public/oidcAuthorizationCodeRedeemResponseSchema.js"
+import {
+  type OidcAuthorizationRequest,
+  oidcAuthorizationRequestSchema,
+} from "../public/oidcAuthorizationRequestSchema.js"
+import {
+  type OidcAuthorizationResponse,
+  oidcAuthorizationResponseSchema,
+} from "../public/oidcAuthorizationResponseSchema.js"
 import { type OidcClientCreateRequest, oidcClientCreateRequestSchema } from "../public/oidcClientCreateRequestSchema.js"
 import {
   type OidcClientCreateResponse,
@@ -71,6 +87,34 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     `/system/instances/${encodeURIComponent(instanceId)}/oidc${suffix}`
 
   return {
+    oidcAuthorizationCodeRedeem(
+      input: OidcAuthorizationCodeRedeemRequest,
+    ): Promise<Result<OidcAuthorizationCodeRedeemResponse>> {
+      const parsed = v.safeParse(oidcAuthorizationCodeRedeemRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("oidcApiClientAuthorizationCodeRedeem", "The authorization code request is invalid."),
+        )
+      return request(
+        "/oauth2/authorization-code/redeem",
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        oidcAuthorizationCodeRedeemResponseSchema,
+      )
+    },
+
+    oidcAuthorizationRequestAuthorize(input: OidcAuthorizationRequest): Promise<Result<OidcAuthorizationResponse>> {
+      const parsed = v.safeParse(oidcAuthorizationRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("oidcApiClientAuthorizationRequestAuthorize", "The OIDC authorization request is invalid."),
+        )
+      const query = new URLSearchParams()
+      for (const [key, value] of Object.entries(parsed.output)) {
+        if (value !== undefined) query.set(key, value)
+      }
+      return request(`/oauth2/authorize?${query.toString()}`, { method: "GET" }, oidcAuthorizationResponseSchema)
+    },
+
     oidcClientCreate(instanceId: string, input: OidcClientCreateRequest): Promise<Result<OidcClientCreateResponse>> {
       const parsed = v.safeParse(oidcClientCreateRequestSchema, input)
       if (!parsed.success)
