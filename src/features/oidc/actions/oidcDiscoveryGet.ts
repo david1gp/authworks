@@ -5,6 +5,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { instanceGet } from "../../instances/actions/instanceGet.js"
 import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
 import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
+import { machineClientCredentialsSupported } from "../../machineUsers/public/machineClientCredentialsSupported.js"
 import type { OidcDiscovery } from "../public/oidcDiscoverySchema.js"
 
 type OidcDiscoveryGetOptions = {
@@ -22,6 +23,14 @@ export function oidcDiscoveryGet(options: OidcDiscoveryGetOptions): Result<OidcD
   if (!instance.success) return instance
   if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
   const issuer = oidcIssuerCreate(instance.data.instance.domain)
+  const machineCredentials = machineClientCredentialsSupported({
+    database: options.database,
+    instanceId: options.instanceId,
+  })
+  if (!machineCredentials.success) return machineCredentials
+  const grantTypes: ("authorization_code" | "refresh_token" | "client_credentials")[] = machineCredentials.data
+    ? ["authorization_code", "refresh_token", "client_credentials"]
+    : ["authorization_code", "refresh_token"]
   return resultCreate({
     authorization_endpoint: `${issuer}/oauth2/authorize`,
     claims_supported: [
@@ -42,7 +51,7 @@ export function oidcDiscoveryGet(options: OidcDiscoveryGetOptions): Result<OidcD
     ],
     code_challenge_methods_supported: ["S256"],
     end_session_endpoint: `${issuer}/oauth2/logout`,
-    grant_types_supported: ["authorization_code", "refresh_token"],
+    grant_types_supported: grantTypes,
     id_token_signing_alg_values_supported: ["RS256"],
     issuer,
     jwks_uri: `${issuer}/.well-known/jwks.json`,

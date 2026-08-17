@@ -19,6 +19,8 @@ import { projectApplicationTable } from "../../features/projects/persistence/pro
 import { projectGrantTable } from "../../features/projects/persistence/projectGrantTable.js"
 import { projectRoleTable } from "../../features/projects/persistence/projectRoleTable.js"
 import { projectTable } from "../../features/projects/persistence/projectTable.js"
+import { machineCredentialTable } from "../../features/machineUsers/persistence/machineCredentialTable.js"
+import { machineUserTable } from "../../features/machineUsers/persistence/machineUserTable.js"
 import { oidcAccessTokenTable } from "../../features/oidc/persistence/oidcAccessTokenTable.js"
 import { oidcAuthorizationCodeTable } from "../../features/oidc/persistence/oidcAuthorizationCodeTable.js"
 import { oidcAuthorizationRequestTable } from "../../features/oidc/persistence/oidcAuthorizationRequestTable.js"
@@ -58,6 +60,8 @@ export const storageSchema = {
   projectGrantTable,
   projectRoleTable,
   projectTable,
+  machineCredentialTable,
+  machineUserTable,
   oidcAccessTokenTable,
   oidcAuthorizationCodeTable,
   oidcAuthorizationRequestTable,

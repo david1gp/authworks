@@ -184,6 +184,20 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS project_grants_granted_organization_id_idx ON project_grants (granted_organization_id)",
     )
     database.run(
+      "CREATE TABLE IF NOT EXISTS machine_users (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_name TEXT NOT NULL, display_name TEXT NOT NULL, scopes TEXT NOT NULL CHECK (json_valid(scopes)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (instance_id, user_name), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS machine_users_instance_id_idx ON machine_users (instance_id)")
+    database.run(
+      "CREATE TABLE IF NOT EXISTS machine_credentials (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, machine_user_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('client_secret', 'personal_access_token', 'api_key', 'access_token')), name TEXT, secret_hash TEXT NOT NULL UNIQUE, scopes TEXT NOT NULL CHECK (json_valid(scopes)), expires_at INTEGER CHECK (expires_at IS NULL OR expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), replaced_by_id TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (machine_user_id) REFERENCES machine_users(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS machine_credentials_instance_id_idx ON machine_credentials (instance_id)")
+    database.run(
+      "CREATE INDEX IF NOT EXISTS machine_credentials_machine_user_id_idx ON machine_credentials (instance_id, machine_user_id)",
+    )
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS machine_credentials_secret_hash_idx ON machine_credentials (secret_hash)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS oidc_clients (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, name TEXT NOT NULL, client_type TEXT NOT NULL CHECK (client_type IN ('public', 'confidential')), secret_hash TEXT, redirect_uris TEXT NOT NULL CHECK (json_valid(redirect_uris)), post_logout_redirect_uris TEXT NOT NULL CHECK (json_valid(post_logout_redirect_uris)), allowed_scopes TEXT NOT NULL CHECK (json_valid(allowed_scopes)), trusted INTEGER NOT NULL CHECK (trusted IN (0, 1)), require_consent INTEGER NOT NULL CHECK (require_consent IN (0, 1)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), project_id TEXT, application_id TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL, FOREIGN KEY (application_id) REFERENCES project_applications(id) ON DELETE SET NULL)",
     )
     database.run("CREATE INDEX IF NOT EXISTS oidc_clients_instance_id_idx ON oidc_clients (instance_id)")

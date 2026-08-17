@@ -13,6 +13,7 @@ import { oidcRefreshTokenFamilyRevokedEventPayloadSchema } from "../events/oidcR
 import { oidcClientSecretMatches } from "../domain/oidcClientSecretMatches.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
+import { machineClientCredentialsRevoke } from "../../machineUsers/public/machineClientCredentialsRevoke.js"
 import type { OidcClientRow } from "../persistence/oidcClientTable.js"
 import type { OidcTokenRevokeRequest } from "../public/oidcTokenRevokeRequestSchema.js"
 import { oidcTokenRevokeRequestSchema } from "../public/oidcTokenRevokeRequestSchema.js"
@@ -36,6 +37,19 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The token revocation timestamp is invalid.")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
+
+  if (clientId !== undefined && !oidcClientIdIsUuid(clientId)) {
+    if (parsed.output.client_secret === undefined)
+      return resultErrorCreate("oidcTokenRevokeInvalidClient", "Client authentication failed.")
+    return machineClientCredentialsRevoke({
+      clientId,
+      clientSecret: parsed.output.client_secret,
+      database: options.database,
+      instanceId: options.instanceId,
+      runtime,
+      token: parsed.output.token,
+    })
+  }
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
@@ -155,6 +169,10 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
     if (!familyEvent.success) return familyEvent
     return resultCreate(undefined)
   })
+}
+
+function oidcClientIdIsUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value)
 }
 
 function oidcTokenRevokeClientAuthenticate(

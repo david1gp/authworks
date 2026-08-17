@@ -56,6 +56,8 @@ export function authorizationPolicyEvaluate(
   if (actor.output.organizationId !== undefined && actor.output.organizationId !== options.organizationId)
     return resultCreate(baseDecision(false, "organization_mismatch"))
   if (actor.output.kind === "bootstrap_admin") return resultCreate(baseDecision(true, "bootstrap_admin"))
+  if (actor.output.kind === "machine")
+    return resultCreate(baseDecision(actor.output.scopes?.includes(permission.output) ?? false, "policy"))
 
   const roleRules = authorizationRolePermissionsResolve({
     customRoles: options.customRoles,
@@ -109,6 +111,15 @@ function authorizationActorContextIsConsistent(actor: AuthorizationActorContext)
     return (
       actor.assurance === "authenticated" &&
       actor.authenticationMethod === "bootstrap_admin" &&
+      actor.instanceId !== undefined &&
+      actor.organizationId === undefined
+    )
+  if (actor.kind === "machine")
+    return (
+      actor.assurance === "authenticated" &&
+      ["client_credentials", "personal_access_token", "api_key", "oidc_access_token"].includes(
+        actor.authenticationMethod,
+      ) &&
       actor.instanceId !== undefined &&
       actor.organizationId === undefined
     )

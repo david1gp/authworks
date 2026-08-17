@@ -7,10 +7,12 @@ type AuthorizationActorContextCreateOptions = {
   readonly instanceId?: string
   readonly kind: AuthorizationActorContext["kind"]
   readonly organizationId?: string
+  readonly scopes?: readonly string[]
 }
 
 export function authorizationActorContextCreate(
   options: AuthorizationActorContextCreateOptions,
 ): AuthorizationActorContext {
-  return { ...options }
+  const { scopes, ...actor } = options
+  return scopes === undefined ? actor : { ...actor, scopes: [...scopes] }
 }

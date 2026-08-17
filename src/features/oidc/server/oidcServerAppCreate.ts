@@ -229,7 +229,8 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     if (
       body.data.grant_type !== undefined &&
       body.data.grant_type !== "authorization_code" &&
-      body.data.grant_type !== "refresh_token"
+      body.data.grant_type !== "refresh_token" &&
+      body.data.grant_type !== "client_credentials"
     )
       return oidcTokenErrorResponseCreate(context, "unsupported_grant_type", "The grant type is not supported.")
     const credentials = oidcTokenClientCredentialsResolve(context.req.header("authorization"), body.data)
@@ -660,7 +661,8 @@ function oidcUserInfoErrorResponseCreate(context: {
 }
 
 function oidcTokenRevokeErrorCodeGet(result: { errorMessage: string; op: string }) {
-  if (result.op === "oidcTokenRevokeInvalidClient") return "invalid_client" as const
+  if (result.op === "oidcTokenRevokeInvalidClient" || result.op === "machineClientCredentialsInvalidClient")
+    return "invalid_client" as const
   if (result.op === "oidcTokenRevoke") return "invalid_request" as const
   return "server_error" as const
 }

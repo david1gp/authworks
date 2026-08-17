@@ -3,6 +3,8 @@ import type { AuthorizationPermission } from "../public/authorizationPermissionS
 export const authorizationPermissionDefinitions = {
   instanceRead: "instance.read",
   instanceWrite: "instance.write",
+  machineCredentialManage: "machine.credential.manage",
+  machineUserManage: "machine.user.manage",
   organizationManage: "organization.manage",
   organizationMembersManage: "organization.members.manage",
   organizationRead: "organization.read",

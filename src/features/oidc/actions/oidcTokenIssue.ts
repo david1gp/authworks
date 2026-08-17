@@ -35,6 +35,8 @@ import { userProfileTable, type UserProfileRow } from "../../users/persistence/u
 import { userTable, type UserRow } from "../../users/persistence/userTable.js"
 import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { and, eq } from "drizzle-orm"
+import { machineClientCredentialsIssue } from "../../machineUsers/public/machineClientCredentialsIssue.js"
+import { machineClientCredentialsAuthenticate } from "../../machineUsers/public/machineClientCredentialsAuthenticate.js"
 
 const oidcAccessTokenLifetimeMs = 5 * 60 * 1_000
 const oidcRefreshTokenLifetimeMs = 30 * 24 * 60 * 60 * 1_000
@@ -85,6 +87,75 @@ export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcToken
   const clientId = parsed.output.client_id
   if (clientId === undefined) return resultErrorCreate("oidcTokenInvalidClient", "Client authentication failed.")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
+
+  if (parsed.output.grant_type === "client_credentials") {
+    if (parsed.output.client_secret === undefined)
+      return resultErrorCreate("oidcTokenInvalidClient", "Client authentication failed.")
+    const machineAuthentication = machineClientCredentialsAuthenticate({
+      database: options.database,
+      input: {
+        clientId,
+        clientSecret: parsed.output.client_secret,
+        ...(parsed.output.scope === undefined ? {} : { scope: parsed.output.scope.split(" ") }),
+      },
+      instanceId: options.instanceId,
+    })
+    if (!machineAuthentication.success) {
+      if (machineAuthentication.op === "machineClientCredentialsInvalidScope")
+        return resultErrorCreate("oidcTokenInvalidScope", "The requested scope is invalid.")
+      if (machineAuthentication.op === "machineClientCredentialsInvalidClient")
+        return resultErrorCreate("oidcTokenInvalidClient", "Client authentication failed.")
+      return machineAuthentication
+    }
+    const expiresAt = now + 5 * 60 * 1_000
+    let accessToken: string | undefined
+    const signingKey = oidcTokenSigningKeyGet(
+      oidcRepositoryCreate(options.database.db).signingKeyList(options.instanceId),
+      options.encryptionSecret,
+    )
+    if (signingKey.success) {
+      const signed = oidcJwtSign(
+        { alg: "RS256", kid: signingKey.data.id, typ: "at+jwt" },
+        {
+          aud: clientId,
+          client_id: clientId,
+          exp: Math.floor(expiresAt / 1_000),
+          iat: Math.floor(now / 1_000),
+          iss: issuer,
+          jti: uuidv7Create(runtime),
+          scope: machineAuthentication.data.scopes.join(" "),
+          sub: machineAuthentication.data.machineUserId,
+        },
+        signingKey.data.privateKey,
+      )
+      if (!signed.success) return signed
+      accessToken = signed.data
+    }
+    const issued = machineClientCredentialsIssue({
+      ...(accessToken === undefined ? {} : { accessToken }),
+      database: options.database,
+      input: {
+        clientId,
+        clientSecret: parsed.output.client_secret,
+        ...(parsed.output.scope === undefined ? {} : { scope: parsed.output.scope.split(" ") }),
+      },
+      instanceId: options.instanceId,
+      runtime,
+    })
+    if (!issued.success) {
+      if (issued.op === "machineClientCredentialsInvalidClient")
+        return resultErrorCreate("oidcTokenInvalidClient", "Client authentication failed.")
+      if (issued.op === "machineClientCredentialsInvalidScope")
+        return resultErrorCreate("oidcTokenInvalidScope", "The requested scope is invalid.")
+      return issued
+    }
+    return resultCreate({
+      access_token: issued.data.accessToken,
+      expires_in: issued.data.expiresIn,
+      scope: issued.data.scope,
+      token_type: "Bearer",
+    } as OidcTokenResponse)
+  }
 
   const completed = storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
