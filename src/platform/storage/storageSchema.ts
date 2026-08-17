@@ -26,6 +26,8 @@ import { oidcClientTable } from "../../features/oidc/persistence/oidcClientTable
 import { oidcConsentTable } from "../../features/oidc/persistence/oidcConsentTable.js"
 import { oidcRefreshTokenTable } from "../../features/oidc/persistence/oidcRefreshTokenTable.js"
 import { oidcSigningKeyTable } from "../../features/oidc/persistence/oidcSigningKeyTable.js"
+import { passkeyCeremonyTable } from "../../features/passkeys/persistence/passkeyCeremonyTable.js"
+import { passkeyCredentialTable } from "../../features/passkeys/persistence/passkeyCredentialTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
 import { mfaChallengeTable } from "../../features/mfa/persistence/mfaChallengeTable.js"
 import { mfaLockoutTable } from "../../features/mfa/persistence/mfaLockoutTable.js"
@@ -63,6 +65,8 @@ export const storageSchema = {
   oidcConsentTable,
   oidcRefreshTokenTable,
   oidcSigningKeyTable,
+  passkeyCeremonyTable,
+  passkeyCredentialTable,
   sessionTable,
   mfaChallengeTable,
   mfaLockoutTable,

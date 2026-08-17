@@ -250,7 +250,8 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
       authenticationMethod: challenge.data.primaryAuthenticationMethod as
         | "email_otp"
         | "external_identity"
-        | "password",
+        | "password"
+        | "passkey",
       commandIndex: 1,
       correlationId: options.correlationId,
       deviceMetadata: {

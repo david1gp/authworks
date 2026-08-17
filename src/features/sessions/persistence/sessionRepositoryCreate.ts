@@ -142,7 +142,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       now: number,
       expectedVersion: number,
       nextVersion: number,
-      mfaMethod: "recovery_code" | "totp",
+      mfaMethod: "passkey" | "recovery_code" | "totp",
     ): Result<SessionRow | null> {
       try {
         return resultCreate(

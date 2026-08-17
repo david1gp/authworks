@@ -4,6 +4,7 @@ export const sessionAuthenticationMethodSchema = v.picklist([
   "email_otp",
   "external_identity",
   "password",
+  "passkey",
   "recovery_code",
   "totp",
 ])
