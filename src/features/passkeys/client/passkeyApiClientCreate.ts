@@ -8,6 +8,8 @@ import type { PasskeyAuthenticationCompleteRequest } from "../public/passkeyAuth
 import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
 import { passkeyAuthenticationCompleteResponseSchema } from "../public/passkeyAuthenticationCompleteResponseSchema.js"
 import { passkeyAuthenticationStartResponseSchema } from "../public/passkeyAuthenticationStartResponseSchema.js"
+import type { PasskeyAuthenticationStartRequest } from "../public/passkeyAuthenticationStartRequestSchema.js"
+import { passkeyAuthenticationStartRequestSchema } from "../public/passkeyAuthenticationStartRequestSchema.js"
 import type { PasskeyCredentialListResponse } from "../public/passkeyCredentialListResponseSchema.js"
 import { passkeyCredentialListResponseSchema } from "../public/passkeyCredentialListResponseSchema.js"
 import type { PasskeyCredentialRevokeRequest } from "../public/passkeyCredentialRevokeRequestSchema.js"
@@ -79,10 +81,16 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
         passkeyRegistrationCompleteResponseSchema,
       )
     },
-    passkeyAuthenticationStart(instanceId: string) {
+    passkeyAuthenticationStart(instanceId: string, input: PasskeyAuthenticationStartRequest = {}) {
+      const checked = parsed(
+        passkeyAuthenticationStartRequestSchema,
+        input,
+        "The passkey authentication request is invalid.",
+      )
+      if (!checked.success) return Promise.resolve(checked)
       return request(
         `/instances/${encodeURIComponent(instanceId)}/passkeys/authentication/start`,
-        json({}),
+        json(checked.data),
         passkeyAuthenticationStartResponseSchema,
       )
     },

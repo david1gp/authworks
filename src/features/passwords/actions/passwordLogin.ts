@@ -29,12 +29,14 @@ import { type PasswordLoginRequest, passwordLoginRequestSchema } from "../public
 import type { PasswordLoginResponse } from "../public/passwordLoginResponseSchema.js"
 import type { PasswordSessionCreate } from "../public/passwordSessionCreate.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 type PasswordLoginOptions = {
   readonly context: InstanceSystemContext | InstanceTenantContext
   readonly database: StorageDatabase
   readonly input: PasswordLoginRequest
   readonly instanceId: string
+  readonly organizationId?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
   readonly deviceMetadata?: SessionDeviceMetadata
@@ -62,6 +64,16 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
     passwordHashVerify(parsed.output.password, passwordDummyHash)
     return resultErrorCreate(op, "The credentials are invalid.")
   }
+  const policy = organizationLoginPolicyEnforce({
+    database: options.database,
+    instanceId: options.instanceId,
+    method: "password",
+    organizationId: options.organizationId ?? parsed.output.organizationId,
+  })
+  if (!policy.success) {
+    passwordHashVerify(parsed.output.password, passwordDummyHash)
+    return resultErrorCreate(op, "The credentials are invalid.")
+  }
   const repository = passwordRepositoryCreate(options.database.db)
   const user = repository.passwordUserFindByIdentifier(options.instanceId, identifier.data)
   if (!user.success) return resultErrorCreate(op, "The credentials are invalid.")
@@ -82,7 +94,7 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The login timestamp is invalid.")
   const policyRow = repository.passwordPolicyGet(options.instanceId)
   if (!policyRow.success) return resultErrorCreate(op, "The credentials are invalid.")
-  const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
+  const passwordPolicy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   const authenticated = storageTransactionRun(options.database, (transaction) => {

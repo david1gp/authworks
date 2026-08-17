@@ -9,6 +9,10 @@ import { instanceBootstrapAdminTable } from "../../features/instances/persistenc
 import { instanceDomainTable } from "../../features/instances/persistence/instanceDomainTable.js"
 import { instanceTable } from "../../features/instances/persistence/instanceTable.js"
 import { organizationInvitationTable } from "../../features/organizations/persistence/organizationInvitationTable.js"
+import { organizationBrandingTable } from "../../features/organizations/persistence/organizationBrandingTable.js"
+import { organizationDomainTable } from "../../features/organizations/persistence/organizationDomainTable.js"
+import { instanceLoginPolicyTable } from "../../features/organizations/persistence/instanceLoginPolicyTable.js"
+import { organizationLoginPolicyTable } from "../../features/organizations/persistence/organizationLoginPolicyTable.js"
 import { organizationMembershipTable } from "../../features/organizations/persistence/organizationMembershipTable.js"
 import { organizationTable } from "../../features/organizations/persistence/organizationTable.js"
 import { passwordChallengeTable } from "../../features/passwords/persistence/passwordChallengeTable.js"
@@ -50,6 +54,10 @@ export const storageSchema = {
   instanceDomainTable,
   instanceTable,
   organizationInvitationTable,
+  organizationBrandingTable,
+  organizationDomainTable,
+  instanceLoginPolicyTable,
+  organizationLoginPolicyTable,
   organizationMembershipTable,
   organizationTable,
   passwordChallengeTable,

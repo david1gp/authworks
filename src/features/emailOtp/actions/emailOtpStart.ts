@@ -22,6 +22,7 @@ import type { EmailOtpSecurityNotification } from "../public/emailOtpSecurityNot
 import type { EmailOtpStartRequest } from "../public/emailOtpStartRequestSchema.js"
 import { emailOtpStartRequestSchema } from "../public/emailOtpStartRequestSchema.js"
 import type { EmailOtpStartResponse } from "../public/emailOtpStartResponseSchema.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 const emailOtpCooldownMs = 60 * 1_000
 const emailOtpExpiryMs = 10 * 60 * 1_000
@@ -32,6 +33,7 @@ type EmailOtpStartOptions = {
   readonly database: StorageDatabase
   readonly input: EmailOtpStartRequest
   readonly instanceId: string
+  readonly organizationId?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
   readonly onDelivery?: (delivery: EmailOtpDelivery) => void | Promise<void>
@@ -66,6 +68,13 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
   if (!email.success) return generic()
   const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
   if (!instance.success || instance.data.instance.status !== "active") return generic()
+  const policy = organizationLoginPolicyEnforce({
+    database: options.database,
+    instanceId: options.instanceId,
+    method: "email_otp",
+    organizationId: options.organizationId ?? parsed.output.organizationId,
+  })
+  if (!policy.success) return resultErrorCreate(op, "The email OTP login method is disabled for this organization.")
   const emailHash = emailOtpEmailHashCreate(email.data)
   const code = emailOtpCodeCreate(runtime)
   if (!code.success) return code
@@ -107,6 +116,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
       id: challengeId,
       instanceId: options.instanceId,
       maxAttempts: emailOtpMaxAttempts,
+      organizationId: options.organizationId ?? parsed.output.organizationId ?? null,
       purpose: "sign_in",
       userId: eligible && user.data !== null ? user.data.id : null,
       version: 1,

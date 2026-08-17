@@ -10,6 +10,7 @@ export const passkeyCeremonyTable = sqliteTable(
     id: text("id").primaryKey(),
     instanceId: text("instance_id").notNull(),
     kind: text("kind").notNull(),
+    organizationId: text("organization_id"),
     origins: text("origins").notNull(),
     purpose: text("purpose").notNull(),
     rpId: text("rp_id").notNull(),

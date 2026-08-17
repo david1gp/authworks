@@ -10,6 +10,18 @@ import { instanceBootstrapAdminAuthenticate } from "../../instances/actions/inst
 import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
 import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
 import { organizationCreate } from "../actions/organizationCreate.js"
+import { organizationBrandingGet } from "../actions/organizationBrandingGet.js"
+import { organizationBrandingSet } from "../actions/organizationBrandingSet.js"
+import { organizationDomainClaim } from "../actions/organizationDomainClaim.js"
+import { organizationDomainDiscover } from "../actions/organizationDomainDiscover.js"
+import { organizationDomainList } from "../actions/organizationDomainList.js"
+import { organizationDomainRemove } from "../actions/organizationDomainRemove.js"
+import { organizationDomainVerify } from "../actions/organizationDomainVerify.js"
+import { organizationInstanceLoginPolicyGet } from "../actions/organizationInstanceLoginPolicyGet.js"
+import { organizationInstanceLoginPolicySet } from "../actions/organizationInstanceLoginPolicySet.js"
+import { organizationLoginPolicyGet } from "../actions/organizationLoginPolicyGet.js"
+import { organizationLoginPolicySet } from "../actions/organizationLoginPolicySet.js"
+import { organizationDomainDnsVerificationPortCreate } from "../domain/organizationDomainDnsVerificationPortCreate.js"
 import { organizationGet } from "../actions/organizationGet.js"
 import { organizationInvitationAccept } from "../actions/organizationInvitationAccept.js"
 import { organizationInvitationCreate } from "../actions/organizationInvitationCreate.js"
@@ -33,15 +45,39 @@ import { organizationMembershipCreateRequestSchema } from "../public/organizatio
 import { organizationMembershipUpdateRequestSchema } from "../public/organizationMembershipUpdateRequestSchema.js"
 import { organizationSwitchRequestSchema } from "../public/organizationSwitchRequestSchema.js"
 import { organizationUpdateRequestSchema } from "../public/organizationUpdateRequestSchema.js"
+import { organizationBrandingSetRequestSchema } from "../public/organizationBrandingSetRequestSchema.js"
+import { organizationDomainClaimRequestSchema } from "../public/organizationDomainClaimRequestSchema.js"
+import { organizationLoginPolicySetRequestSchema } from "../public/organizationLoginPolicySetRequestSchema.js"
 
 type OrganizationServerAppCreateOptions = {
   readonly database: StorageDatabase
+  readonly domainVerificationPort?: ReturnType<typeof organizationDomainDnsVerificationPortCreate>
   readonly systemSecret?: Secret | string
 }
 
 export function organizationServerAppCreate(options: OrganizationServerAppCreateOptions) {
   const app = new Hono()
   const systemContext = instanceSystemContextCreate("system")
+  const domainVerificationPort = options.domainVerificationPort ?? organizationDomainDnsVerificationPortCreate()
+
+  app.get("/organization-discovery", (context) =>
+    organizationResultResponseCreate(
+      context,
+      organizationDomainDiscover({
+        database: options.database,
+        domain: context.req.query("domain") ?? organizationRequestHostGet(context.req.header("host"), context.req.url),
+      }),
+    ),
+  )
+  app.get("/api/v2/bootstrap", (context) =>
+    organizationResultResponseCreate(
+      context,
+      organizationDomainDiscover({
+        database: options.database,
+        domain: context.req.query("domain") ?? organizationRequestHostGet(context.req.header("host"), context.req.url),
+      }),
+    ),
+  )
 
   app.get("/system/organization-roles", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
@@ -118,6 +154,177 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
+        instanceId: context.req.param("instanceId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
+
+  app.get("/system/instances/:instanceId/login-policy", (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    return organizationResultResponseCreate(
+      context,
+      organizationInstanceLoginPolicyGet({ database: options.database, instanceId: context.req.param("instanceId") }),
+    )
+  })
+
+  app.patch("/system/instances/:instanceId/login-policy", async (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const body = await organizationRequestJsonRead(context)
+    if (!body.success) return organizationErrorResponseCreate(context, body)
+    const input = v.safeParse(organizationLoginPolicySetRequestSchema, body.data)
+    if (!input.success)
+      return organizationErrorResponseCreate(context, {
+        errorMessage: "The login policy is invalid.",
+        op: "organizationInstanceLoginPolicySet",
+      })
+    return organizationResultResponseCreate(
+      context,
+      organizationInstanceLoginPolicySet({
+        context: systemContext,
+        database: options.database,
+        input: input.output,
+        instanceId: context.req.param("instanceId"),
+      }),
+    )
+  })
+
+  app.get("/system/instances/:instanceId/organizations/:organizationId/branding", (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    return organizationResultResponseCreate(
+      context,
+      organizationBrandingGet({
+        database: options.database,
+        instanceId: context.req.param("instanceId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
+
+  app.put("/system/instances/:instanceId/organizations/:organizationId/branding", async (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const body = await organizationRequestJsonRead(context)
+    if (!body.success) return organizationErrorResponseCreate(context, body)
+    const input = v.safeParse(organizationBrandingSetRequestSchema, body.data)
+    if (!input.success)
+      return organizationErrorResponseCreate(context, {
+        errorMessage: "The branding is invalid.",
+        op: "organizationBrandingSet",
+      })
+    return organizationResultResponseCreate(
+      context,
+      organizationBrandingSet({
+        context: systemContext,
+        database: options.database,
+        input: input.output,
+        instanceId: context.req.param("instanceId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
+
+  app.get("/system/instances/:instanceId/organizations/:organizationId/login-policy", (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    return organizationResultResponseCreate(
+      context,
+      organizationLoginPolicyGet({
+        database: options.database,
+        instanceId: context.req.param("instanceId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
+
+  app.patch("/system/instances/:instanceId/organizations/:organizationId/login-policy", async (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const body = await organizationRequestJsonRead(context)
+    if (!body.success) return organizationErrorResponseCreate(context, body)
+    const input = v.safeParse(organizationLoginPolicySetRequestSchema, body.data)
+    if (!input.success)
+      return organizationErrorResponseCreate(context, {
+        errorMessage: "The login policy is invalid.",
+        op: "organizationLoginPolicySet",
+      })
+    return organizationResultResponseCreate(
+      context,
+      organizationLoginPolicySet({
+        context: systemContext,
+        database: options.database,
+        input: input.output,
+        instanceId: context.req.param("instanceId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
+
+  app.get("/system/instances/:instanceId/organizations/:organizationId/domains", (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    return organizationResultResponseCreate(
+      context,
+      organizationDomainList({
+        database: options.database,
+        instanceId: context.req.param("instanceId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
+
+  app.post("/system/instances/:instanceId/organizations/:organizationId/domains", async (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const body = await organizationRequestJsonRead(context)
+    if (!body.success) return organizationErrorResponseCreate(context, body)
+    const input = v.safeParse(organizationDomainClaimRequestSchema, body.data)
+    if (!input.success)
+      return organizationErrorResponseCreate(context, {
+        errorMessage: "The domain claim is invalid.",
+        op: "organizationDomainClaim",
+      })
+    return organizationResultResponseCreate(
+      context,
+      organizationDomainClaim({
+        context: systemContext,
+        database: options.database,
+        input: input.output,
+        instanceId: context.req.param("instanceId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+      201,
+    )
+  })
+
+  app.post("/system/instances/:instanceId/organizations/:organizationId/domains/:domain/verify", async (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    return organizationResultResponseCreate(
+      context,
+      await organizationDomainVerify({
+        context: systemContext,
+        database: options.database,
+        dnsPort: domainVerificationPort,
+        domain: context.req.param("domain"),
+        instanceId: context.req.param("instanceId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
+
+  app.delete("/system/instances/:instanceId/organizations/:organizationId/domains/:domain", (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    return organizationResultResponseCreate(
+      context,
+      organizationDomainRemove({
+        context: systemContext,
+        database: options.database,
+        domain: context.req.param("domain"),
         instanceId: context.req.param("instanceId"),
         organizationId: context.req.param("organizationId"),
       }),
@@ -451,4 +658,9 @@ function organizationTenantContextResolve(database: StorageDatabase, host: strin
     ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
     : resolvedHost.split(":")[0]
   return instanceTenantContextResolve({ database, host: normalizedHost ?? "" })
+}
+
+function organizationRequestHostGet(host: string | undefined, requestUrl: string): string {
+  const value = host ?? new URL(requestUrl).hostname
+  return value.startsWith("[") ? value.slice(1, value.indexOf("]")) : (value.split(":")[0] ?? "")
 }

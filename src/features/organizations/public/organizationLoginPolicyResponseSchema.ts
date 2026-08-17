@@ -1,0 +1,13 @@
+import * as v from "valibot"
+import { organizationLoginPolicyOverrideSchema } from "./organizationLoginPolicyOverrideSchema.js"
+import { organizationLoginPolicySchema } from "./organizationLoginPolicySchema.js"
+import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
+
+export const organizationLoginPolicyResponseSchema = v.strictObject({
+  instanceId: organizationResourceIdSchema,
+  organizationId: v.nullable(organizationResourceIdSchema),
+  overrides: organizationLoginPolicyOverrideSchema,
+  policy: organizationLoginPolicySchema,
+})
+
+export type OrganizationLoginPolicyResponse = v.InferOutput<typeof organizationLoginPolicyResponseSchema>

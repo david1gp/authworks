@@ -13,6 +13,7 @@ export const emailOtpChallengeTable = sqliteTable(
     id: text("id").primaryKey(),
     instanceId: text("instance_id").notNull(),
     maxAttempts: integer("max_attempts").notNull(),
+    organizationId: text("organization_id"),
     purpose: text("purpose").notNull(),
     userId: text("user_id"),
     version: integer("version").notNull(),

@@ -19,6 +19,7 @@ import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreat
 import { type PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliverySchema.js"
 import { type PasswordRecoveryRequest, passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
 import type { PasswordRecoveryResponse } from "../public/passwordRecoveryResponseSchema.js"
+import { organizationLoginPolicyResolve } from "../../organizations/public/organizationLoginPolicyResolve.js"
 
 type PasswordRecoveryRequestOptions = {
   readonly context: InstanceSystemContext | InstanceTenantContext
@@ -43,6 +44,12 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
   if (!instance.success) return resultCreate({ accepted: true })
   if (instance.data.instance.status !== "active") return resultCreate({ accepted: true })
+  const policy = organizationLoginPolicyResolve({
+    database: options.database,
+    instanceId: options.instanceId,
+    organizationId: parsed.output.organizationId,
+  })
+  if (!policy.success || !policy.data.allowPasswordRecovery) return resultCreate({ accepted: true })
   const repository = passwordRepositoryCreate(options.database.db)
   const user = repository.passwordUserFindByIdentifier(options.instanceId, email.data)
   if (!user.success || user.data === null || user.data.state === "deleted" || user.data.emailVerifiedAt === null)

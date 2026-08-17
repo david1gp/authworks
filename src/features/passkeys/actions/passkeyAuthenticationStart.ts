@@ -20,6 +20,7 @@ import type { PasskeyAuthenticationStartResponse } from "../public/passkeyAuthen
 import { passkeyAuthenticationStartResponseSchema } from "../public/passkeyAuthenticationStartResponseSchema.js"
 import type { PasskeyCeremonyPurpose } from "../public/passkeyCeremonyPurposeSchema.js"
 import { passkeyTokenHashCreate } from "../domain/passkeyTokenHashCreate.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 type PasskeyAuthenticationStartOptions = {
   readonly database: StorageDatabase
@@ -28,6 +29,7 @@ type PasskeyAuthenticationStartOptions = {
   readonly rpId: string
   readonly rpName: string
   readonly purpose: PasskeyCeremonyPurpose
+  readonly organizationId?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly userId?: string
   readonly sessionId?: string
@@ -39,6 +41,15 @@ export async function passkeyAuthenticationStart(
   options: PasskeyAuthenticationStartOptions,
 ): Promise<Result<PasskeyAuthenticationStartResponse>> {
   const op = "passkeyAuthenticationStart"
+  if (options.purpose === "passwordless") {
+    const policy = organizationLoginPolicyEnforce({
+      database: options.database,
+      instanceId: options.instanceId,
+      method: "passkey",
+      organizationId: options.organizationId,
+    })
+    if (!policy.success) return resultErrorCreate(op, "The passkey login method is disabled for this organization.")
+  }
   const configuration = passkeyConfigurationValidate(options.rpId, options.origins, options.rpName)
   if (!configuration.success) return configuration
   if (options.purpose === "passwordless" && (options.userId !== undefined || options.sessionId !== undefined))
@@ -105,6 +116,7 @@ export async function passkeyAuthenticationStart(
     database: options.database,
     instanceId: options.instanceId,
     now,
+    organizationId: options.organizationId,
     purpose: options.purpose,
     runtime,
     sessionId: options.sessionId,
@@ -125,6 +137,7 @@ type PasskeyAuthenticationStartStoreOptions = {
   readonly database: StorageDatabase
   readonly instanceId: string
   readonly now: number
+  readonly organizationId?: string
   readonly purpose: PasskeyCeremonyPurpose
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionId?: string
@@ -144,6 +157,7 @@ function passkeyAuthenticationStartStore(options: PasskeyAuthenticationStartStor
       id: ceremonyId,
       instanceId: options.instanceId,
       kind: "authentication",
+      organizationId: options.organizationId ?? null,
       origins: JSON.stringify(options.configuration.origins),
       purpose: options.purpose,
       rpId: options.configuration.rpId,

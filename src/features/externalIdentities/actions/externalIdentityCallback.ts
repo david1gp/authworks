@@ -28,6 +28,7 @@ import type { ExternalIdentityOAuthTransactionRow } from "../persistence/externa
 import type { ExternalIdentityProviderRow } from "../persistence/externalIdentityProviderTable.js"
 import type { ExternalIdentityCallbackResponse } from "../public/externalIdentityCallbackResponseSchema.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 const externalIdentityTransactionExpiryMessage = "The external identity callback is invalid."
 
@@ -115,6 +116,14 @@ export async function externalIdentityCallback(
     if (!committed.success) return committed
     return resultCreate({ confirmationToken, expiresAt: transactionRow.expiresAt, kind: "link_confirmation" })
   }
+  const policy = organizationLoginPolicyEnforce({
+    database: options.database,
+    instanceId: options.instanceId,
+    method: "external_identity",
+    organizationId: transactionRow.organizationId ?? undefined,
+    providerId: options.providerId,
+  })
+  if (!policy.success) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
   const committed = storageTransactionRun(options.database, (executor) =>
     externalIdentitySignInCommit({
       correlationId,

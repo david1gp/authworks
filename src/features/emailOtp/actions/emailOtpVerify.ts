@@ -25,6 +25,7 @@ import type { EmailOtpVerifyRequest } from "../public/emailOtpVerifyRequestSchem
 import { emailOtpVerifyRequestSchema } from "../public/emailOtpVerifyRequestSchema.js"
 import type { EmailOtpVerifyResponse } from "../public/emailOtpVerifyResponseSchema.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 type EmailOtpVerifyOptions = {
   readonly context: InstanceSystemContext | InstanceTenantContext
@@ -59,6 +60,23 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
   const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
   if (!instance.success || instance.data.instance.status !== "active")
     return resultErrorCreate(op, "The email OTP code is invalid.")
+  const challenge = emailOtpRepositoryCreate(options.database.db).emailOtpChallengeGet(
+    options.instanceId,
+    parsed.output.challengeId,
+  )
+  if (
+    !challenge.success ||
+    challenge.data === null ||
+    (parsed.output.organizationId !== undefined && parsed.output.organizationId !== challenge.data.organizationId)
+  )
+    return resultErrorCreate(op, "The email OTP code is invalid.")
+  const policy = organizationLoginPolicyEnforce({
+    database: options.database,
+    instanceId: options.instanceId,
+    method: "email_otp",
+    organizationId: challenge.data.organizationId ?? undefined,
+  })
+  if (!policy.success) return resultErrorCreate(op, "The email OTP login method is disabled for this organization.")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const committed = storageTransactionRun(options.database, (transaction) =>
     emailOtpVerifyTransaction({

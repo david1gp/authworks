@@ -11,4 +11,9 @@ export const organizationEventTypes = {
   switched: "organization.switched",
   updated: "organization.updated",
   statusChanged: "organization.status_changed",
+  brandingChanged: "organization.branding_changed",
+  domainAdded: "organization.domain_added",
+  domainRemoved: "organization.domain_removed",
+  domainVerified: "organization.domain_verified",
+  loginPolicyChanged: "organization.login_policy_changed",
 } as const

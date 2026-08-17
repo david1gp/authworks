@@ -15,6 +15,7 @@ import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAut
 import { passkeyCredentialRevokeRequestSchema } from "../public/passkeyCredentialRevokeRequestSchema.js"
 import { passkeyRegistrationCompleteRequestSchema } from "../public/passkeyRegistrationCompleteRequestSchema.js"
 import { passkeyRegistrationStartRequestSchema } from "../public/passkeyRegistrationStartRequestSchema.js"
+import { passkeyAuthenticationStartRequestSchema } from "../public/passkeyAuthenticationStartRequestSchema.js"
 
 type PasskeyServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -94,19 +95,26 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     )
   })
 
-  app.post("/instances/:instanceId/passkeys/authentication/start", async (context) =>
-    passkeyResultResponseCreate(
+  app.post("/instances/:instanceId/passkeys/authentication/start", async (context) => {
+    const body = await passkeyJsonRead(context)
+    const input = body.success
+      ? v.safeParse(passkeyAuthenticationStartRequestSchema, body.data)
+      : v.safeParse(passkeyAuthenticationStartRequestSchema, {})
+    if (!input.success)
+      return passkeyErrorResponseCreate(context, "The passkey authentication request is invalid.", "bad_request")
+    return passkeyResultResponseCreate(
       context,
       await passkeyAuthenticationStart({
         database: options.database,
         instanceId: context.req.param("instanceId"),
+        organizationId: input.output.organizationId,
         origins: options.origins,
         purpose: "passwordless",
         rpId: options.rpId,
         rpName: options.rpName,
       }),
-    ),
-  )
+    )
+  })
 
   app.post("/instances/:instanceId/passkeys/authentication/complete", async (context) => {
     const body = await passkeyJsonRead(context)

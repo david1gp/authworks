@@ -22,6 +22,7 @@ import { externalIdentityRepositoryCreate } from "../persistence/externalIdentit
 import type { ExternalIdentityStartRequest } from "../public/externalIdentityStartRequestSchema.js"
 import { externalIdentityStartRequestSchema } from "../public/externalIdentityStartRequestSchema.js"
 import type { ExternalIdentityStartResponse } from "../public/externalIdentityStartResponseSchema.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 const externalIdentityStateLifetimeMs = 10 * 60 * 1_000
 
@@ -50,7 +51,9 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
     provider.data === null ||
     !provider.data.enabled ||
     (parsed.output.organizationId === undefined && provider.data.organizationId !== null) ||
-    (parsed.output.organizationId !== undefined && provider.data.organizationId !== parsed.output.organizationId)
+    (parsed.output.organizationId !== undefined &&
+      provider.data.organizationId !== null &&
+      provider.data.organizationId !== parsed.output.organizationId)
   )
     return resultErrorCreate(op, "The external identity provider is unavailable.")
   if (parsed.output.organizationId !== undefined) {
@@ -67,6 +70,14 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
     if (organization === undefined || organization.status !== "active")
       return resultErrorCreate(op, "The external identity provider is unavailable.")
   }
+  const policy = organizationLoginPolicyEnforce({
+    database: options.database,
+    instanceId: options.instanceId,
+    method: "external_identity",
+    organizationId: parsed.output.organizationId,
+    providerId: options.providerId,
+  })
+  if (!policy.success) return resultErrorCreate(op, "The external identity provider is unavailable.")
   const port = options.providerPorts[provider.data.type as keyof ExternalIdentityProviderPorts]
   if (port === undefined) return resultErrorCreate(op, "The external identity provider is unavailable.")
   const runtime = options.runtime ?? options.database.runtime

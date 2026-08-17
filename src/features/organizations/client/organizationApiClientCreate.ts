@@ -8,6 +8,32 @@ import {
   type OrganizationCreateRequest,
   organizationCreateRequestSchema,
 } from "../public/organizationCreateRequestSchema.js"
+import {
+  type OrganizationBrandingResponse,
+  organizationBrandingResponseSchema,
+} from "../public/organizationBrandingResponseSchema.js"
+import type { OrganizationBrandingSetRequest } from "../public/organizationBrandingSetRequestSchema.js"
+import { organizationBrandingSetRequestSchema } from "../public/organizationBrandingSetRequestSchema.js"
+import {
+  type OrganizationDomainClaimRequest,
+  organizationDomainClaimRequestSchema,
+} from "../public/organizationDomainClaimRequestSchema.js"
+import {
+  type OrganizationDomainListResponse,
+  organizationDomainListResponseSchema,
+} from "../public/organizationDomainListResponseSchema.js"
+import {
+  type OrganizationDomainRemoveResponse,
+  organizationDomainRemoveResponseSchema,
+} from "../public/organizationDomainRemoveResponseSchema.js"
+import {
+  type OrganizationDomainResponse,
+  organizationDomainResponseSchema,
+} from "../public/organizationDomainResponseSchema.js"
+import {
+  type OrganizationDiscoveryResponse,
+  organizationDiscoveryResponseSchema,
+} from "../public/organizationDiscoveryResponseSchema.js"
 import { type OrganizationInvitationAcceptRequest } from "../public/organizationInvitationAcceptRequestSchema.js"
 import {
   type OrganizationInvitationCreateRequest,
@@ -74,6 +100,12 @@ import {
   type OrganizationUpdateRequest,
   organizationUpdateRequestSchema,
 } from "../public/organizationUpdateRequestSchema.js"
+import {
+  type OrganizationLoginPolicyResponse,
+  organizationLoginPolicyResponseSchema,
+} from "../public/organizationLoginPolicyResponseSchema.js"
+import type { OrganizationLoginPolicySetRequest } from "../public/organizationLoginPolicySetRequestSchema.js"
+import { organizationLoginPolicySetRequestSchema } from "../public/organizationLoginPolicySetRequestSchema.js"
 
 type OrganizationApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -150,6 +182,126 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}`,
         patchRequest(parsed.output),
         organizationResponseSchema,
+      )
+    },
+    organizationBrandingGet(instanceId: string, organizationId: string): Promise<Result<OrganizationBrandingResponse>> {
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}/branding`,
+        { method: "GET" },
+        organizationBrandingResponseSchema,
+      )
+    },
+    organizationBrandingSet(
+      instanceId: string,
+      organizationId: string,
+      input: OrganizationBrandingSetRequest,
+    ): Promise<Result<OrganizationBrandingResponse>> {
+      const parsed = v.safeParse(organizationBrandingSetRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(resultErrorCreate("organizationApiClientBrandingSet", "The branding is invalid."))
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}/branding`,
+        { ...jsonRequest(parsed.output), method: "PUT" },
+        organizationBrandingResponseSchema,
+      )
+    },
+    organizationDomainClaim(
+      instanceId: string,
+      organizationId: string,
+      input: OrganizationDomainClaimRequest,
+    ): Promise<Result<OrganizationDomainResponse>> {
+      const parsed = v.safeParse(organizationDomainClaimRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(resultErrorCreate("organizationApiClientDomainClaim", "The domain claim is invalid."))
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}/domains`,
+        jsonRequest(parsed.output),
+        organizationDomainResponseSchema,
+      )
+    },
+    organizationDomainList(
+      instanceId: string,
+      organizationId: string,
+    ): Promise<Result<OrganizationDomainListResponse>> {
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}/domains`,
+        { method: "GET" },
+        organizationDomainListResponseSchema,
+      )
+    },
+    organizationDomainVerify(
+      instanceId: string,
+      organizationId: string,
+      domain: string,
+    ): Promise<Result<OrganizationDomainResponse>> {
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}/domains/${encodeURIComponent(domain)}/verify`,
+        jsonRequest({}),
+        organizationDomainResponseSchema,
+      )
+    },
+    organizationDomainRemove(
+      instanceId: string,
+      organizationId: string,
+      domain: string,
+    ): Promise<Result<OrganizationDomainRemoveResponse>> {
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}/domains/${encodeURIComponent(domain)}`,
+        { method: "DELETE" },
+        organizationDomainRemoveResponseSchema,
+      )
+    },
+    organizationDomainDiscover(domain: string): Promise<Result<OrganizationDiscoveryResponse>> {
+      return request(
+        `/organization-discovery?domain=${encodeURIComponent(domain)}`,
+        { method: "GET" },
+        organizationDiscoveryResponseSchema,
+      )
+    },
+    organizationInstanceLoginPolicyGet(instanceId: string): Promise<Result<OrganizationLoginPolicyResponse>> {
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/login-policy`,
+        { method: "GET" },
+        organizationLoginPolicyResponseSchema,
+      )
+    },
+    organizationInstanceLoginPolicySet(
+      instanceId: string,
+      input: OrganizationLoginPolicySetRequest,
+    ): Promise<Result<OrganizationLoginPolicyResponse>> {
+      const parsed = v.safeParse(organizationLoginPolicySetRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("organizationApiClientInstanceLoginPolicySet", "The login policy is invalid."),
+        )
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/login-policy`,
+        patchRequest(parsed.output),
+        organizationLoginPolicyResponseSchema,
+      )
+    },
+    organizationLoginPolicyGet(
+      instanceId: string,
+      organizationId: string,
+    ): Promise<Result<OrganizationLoginPolicyResponse>> {
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}/login-policy`,
+        { method: "GET" },
+        organizationLoginPolicyResponseSchema,
+      )
+    },
+    organizationLoginPolicySet(
+      instanceId: string,
+      organizationId: string,
+      input: OrganizationLoginPolicySetRequest,
+    ): Promise<Result<OrganizationLoginPolicyResponse>> {
+      const parsed = v.safeParse(organizationLoginPolicySetRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(resultErrorCreate("organizationApiClientLoginPolicySet", "The login policy is invalid."))
+      return request(
+        `/system/instances/${encodeURIComponent(instanceId)}/organizations/${encodeURIComponent(organizationId)}/login-policy`,
+        patchRequest(parsed.output),
+        organizationLoginPolicyResponseSchema,
       )
     },
     organizationLifecycleSet(

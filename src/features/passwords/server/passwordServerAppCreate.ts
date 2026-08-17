@@ -76,6 +76,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         database: options.database,
         input: input.output,
         instanceId: context.req.param("instanceId"),
+        organizationId: input.output.organizationId,
         deviceMetadata: passwordDeviceMetadataGet(context),
         sessionCreate,
       }),

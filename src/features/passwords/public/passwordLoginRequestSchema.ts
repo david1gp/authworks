@@ -2,6 +2,7 @@ import * as v from "valibot"
 
 export const passwordLoginRequestSchema = v.strictObject({
   identifier: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+  organizationId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
   password: v.pipe(v.string(), v.minLength(1), v.maxLength(1024)),
 })
 

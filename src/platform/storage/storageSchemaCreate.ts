@@ -25,6 +25,28 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS organizations_instance_id_idx ON organizations (instance_id)")
     database.run(
+      "CREATE TABLE IF NOT EXISTS organization_domains (domain TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, organization_id TEXT NOT NULL, is_primary INTEGER NOT NULL CHECK (is_primary IN (0, 1)), verified INTEGER NOT NULL CHECK (verified IN (0, 1)), verification_token_hash TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS organization_domains_instance_idx ON organization_domains (instance_id)")
+    database.run(
+      "CREATE INDEX IF NOT EXISTS organization_domains_organization_idx ON organization_domains (organization_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS organization_domains_organization_primary_idx ON organization_domains (organization_id, is_primary)",
+    )
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS organization_domains_one_primary_idx ON organization_domains (organization_id) WHERE is_primary = 1",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS organization_branding (organization_id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, branding TEXT NOT NULL CHECK (json_valid(branding)), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS instance_login_policies (instance_id TEXT PRIMARY KEY NOT NULL, allow_domain_discovery INTEGER NOT NULL CHECK (allow_domain_discovery IN (0, 1)), allow_email_otp INTEGER NOT NULL CHECK (allow_email_otp IN (0, 1)), allow_external_identity INTEGER NOT NULL CHECK (allow_external_identity IN (0, 1)), allow_password INTEGER NOT NULL CHECK (allow_password IN (0, 1)), allow_password_recovery INTEGER NOT NULL CHECK (allow_password_recovery IN (0, 1)), allow_passkey INTEGER NOT NULL CHECK (allow_passkey IN (0, 1)), allow_registration INTEGER NOT NULL CHECK (allow_registration IN (0, 1)), provider_ids TEXT CHECK (provider_ids IS NULL OR json_valid(provider_ids)), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS organization_login_policies (organization_id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, allow_domain_discovery INTEGER CHECK (allow_domain_discovery IS NULL OR allow_domain_discovery IN (0, 1)), allow_email_otp INTEGER CHECK (allow_email_otp IS NULL OR allow_email_otp IN (0, 1)), allow_external_identity INTEGER CHECK (allow_external_identity IS NULL OR allow_external_identity IN (0, 1)), allow_password INTEGER CHECK (allow_password IS NULL OR allow_password IN (0, 1)), allow_password_recovery INTEGER CHECK (allow_password_recovery IS NULL OR allow_password_recovery IN (0, 1)), allow_passkey INTEGER CHECK (allow_passkey IS NULL OR allow_passkey IN (0, 1)), allow_registration INTEGER CHECK (allow_registration IS NULL OR allow_registration IN (0, 1)), provider_ids TEXT CHECK (provider_ids IS NULL OR json_valid(provider_ids)), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS organization_memberships (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, organization_id TEXT NOT NULL, user_id TEXT NOT NULL, roles TEXT NOT NULL CHECK (json_valid(roles)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (organization_id, user_id), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
     database.run(
@@ -54,7 +76,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS user_profiles_instance_id_idx ON user_profiles (instance_id)")
     database.run(
-      "CREATE TABLE IF NOT EXISTS email_otp_challenges (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_id TEXT, email_hash TEXT NOT NULL, purpose TEXT NOT NULL CHECK (purpose IN ('sign_in')), code_hash TEXT NOT NULL, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS email_otp_challenges (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, organization_id TEXT, user_id TEXT, email_hash TEXT NOT NULL, purpose TEXT NOT NULL CHECK (purpose IN ('sign_in')), code_hash TEXT NOT NULL, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
     database.run(
       "CREATE INDEX IF NOT EXISTS email_otp_challenges_instance_email_idx ON email_otp_challenges (instance_id, email_hash, purpose)",
@@ -123,7 +145,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS passkey_credentials_instance_rp_idx ON passkey_credentials (instance_id, rp_id)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS passkey_ceremonies (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('registration', 'authentication')), purpose TEXT NOT NULL CHECK (purpose IN ('passwordless', 'mfa', 'step_up')), user_id TEXT, session_id TEXT, token_hash TEXT NOT NULL UNIQUE, challenge_hash TEXT NOT NULL, rp_id TEXT NOT NULL, origins TEXT NOT NULL CHECK (json_valid(origins)), user_verification TEXT NOT NULL CHECK (user_verification IN ('required', 'preferred', 'discouraged')), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS passkey_ceremonies (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, organization_id TEXT, kind TEXT NOT NULL CHECK (kind IN ('registration', 'authentication')), purpose TEXT NOT NULL CHECK (purpose IN ('passwordless', 'mfa', 'step_up')), user_id TEXT, session_id TEXT, token_hash TEXT NOT NULL UNIQUE, challenge_hash TEXT NOT NULL, rp_id TEXT NOT NULL, origins TEXT NOT NULL CHECK (json_valid(origins)), user_verification TEXT NOT NULL CHECK (user_verification IN ('required', 'preferred', 'discouraged')), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE)",
     )
     database.run(
       "CREATE INDEX IF NOT EXISTS passkey_ceremonies_instance_expiry_idx ON passkey_ceremonies (instance_id, expires_at)",

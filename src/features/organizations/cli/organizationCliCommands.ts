@@ -1,5 +1,7 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { organizationApiClientCreate } from "../client/organizationApiClientCreate.js"
+import type { OrganizationBrandingSetRequest } from "../public/organizationBrandingSetRequestSchema.js"
+import type { OrganizationLoginPolicySetRequest } from "../public/organizationLoginPolicySetRequestSchema.js"
 
 type OrganizationCliFlags = {
   readonly server?: string
@@ -74,6 +76,107 @@ const organizationUpdateCommand = buildCommand({
     },
   },
   docs: { brief: "Rename an organization" },
+})
+
+const organizationBrandingSetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { branding: string }) {
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(this, flags).organizationBrandingSet(
+        flags.instanceId,
+        flags.organizationId,
+        organizationCliJsonParse(flags.branding) as OrganizationBrandingSetRequest,
+      ),
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      instanceId: organizationIdFlag(),
+      organizationId: organizationFlag(),
+      branding: textFlag("Branding JSON document"),
+    },
+  },
+  docs: { brief: "Set organization branding metadata" },
+})
+
+const organizationDomainClaimCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { domain: string; primary?: boolean }) {
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(this, flags).organizationDomainClaim(flags.instanceId, flags.organizationId, {
+        domain: flags.domain,
+        isPrimary: flags.primary,
+      }),
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      instanceId: organizationIdFlag(),
+      organizationId: organizationFlag(),
+      domain: textFlag("Organization domain"),
+      primary: optionalBooleanFlag("Make this the primary domain"),
+    },
+  },
+  docs: { brief: "Claim an organization domain" },
+})
+
+const organizationDomainListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(this, flags).organizationDomainList(flags.instanceId, flags.organizationId),
+    )
+  },
+  parameters: {
+    flags: { ...organizationCommonFlags(), instanceId: organizationIdFlag(), organizationId: organizationFlag() },
+  },
+  docs: { brief: "List organization domains" },
+})
+
+const organizationDomainVerifyCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { domain: string }) {
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(this, flags).organizationDomainVerify(
+        flags.instanceId,
+        flags.organizationId,
+        flags.domain,
+      ),
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      instanceId: organizationIdFlag(),
+      organizationId: organizationFlag(),
+      domain: textFlag("Organization domain"),
+    },
+  },
+  docs: { brief: "Verify an organization domain through DNS" },
+})
+
+const organizationLoginPolicySetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { policy: string }) {
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(this, flags).organizationLoginPolicySet(
+        flags.instanceId,
+        flags.organizationId,
+        organizationCliJsonParse(flags.policy) as OrganizationLoginPolicySetRequest,
+      ),
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      instanceId: organizationIdFlag(),
+      organizationId: organizationFlag(),
+      policy: textFlag("Login policy JSON document"),
+    },
+  },
+  docs: { brief: "Set organization login policy overrides" },
 })
 
 const organizationLifecycleCommand = buildCommand({
@@ -322,6 +425,11 @@ export const organizationCliCommands = buildRouteMap({
     switch: organizationSwitchCommand,
     lifecycle: organizationLifecycleCommand,
     update: organizationUpdateCommand,
+    brandingSet: organizationBrandingSetCommand,
+    domainClaim: organizationDomainClaimCommand,
+    domainList: organizationDomainListCommand,
+    domainVerify: organizationDomainVerifyCommand,
+    loginPolicySet: organizationLoginPolicySetCommand,
   },
   docs: { brief: "Organization administration" },
 })
@@ -397,5 +505,23 @@ function optionalNumberFlag(brief: string) {
     optional: true as const,
     parse: (value: string) => Number(value),
     placeholder: "TIMESTAMP",
+  }
+}
+
+function optionalBooleanFlag(brief: string) {
+  return {
+    brief,
+    kind: "parsed" as const,
+    optional: true as const,
+    parse: (value: string) => value === "true",
+    placeholder: "BOOLEAN",
+  }
+}
+
+function organizationCliJsonParse(value: string): unknown {
+  try {
+    return JSON.parse(value) as unknown
+  } catch (_error) {
+    return null
   }
 }

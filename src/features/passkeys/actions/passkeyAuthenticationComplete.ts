@@ -32,6 +32,7 @@ import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAut
 import type { PasskeyAuthenticationCompleteResponse } from "../public/passkeyAuthenticationCompleteResponseSchema.js"
 import { passkeyTokenHashCreate } from "../domain/passkeyTokenHashCreate.js"
 import { passkeyUserHandleCreate } from "../domain/passkeyUserHandleCreate.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 type PasskeyAuthenticationCompleteOptions = {
   readonly database: StorageDatabase
@@ -71,6 +72,15 @@ export async function passkeyAuthenticationComplete(
     return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
   if (options.expectedPurpose !== undefined && ceremony.data.purpose !== options.expectedPurpose)
     return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
+  if (ceremony.data.purpose === "passwordless") {
+    const policy = organizationLoginPolicyEnforce({
+      database: options.database,
+      instanceId: options.instanceId,
+      method: "passkey",
+      organizationId: ceremony.data.organizationId ?? undefined,
+    })
+    if (!policy.success) return resultErrorCreate(op, "The passkey login method is disabled for this organization.")
+  }
   const origins = passkeyOriginsParse(ceremony.data.origins)
   if (origins === null) return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
   const storedConfiguration = passkeyConfigurationValidate(ceremony.data.rpId, origins, options.rpName)

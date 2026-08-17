@@ -1,0 +1,139 @@
+import { createHash } from "node:crypto"
+import * as v from "valibot"
+import { and, eq } from "drizzle-orm"
+import { type Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
+import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { instanceDomainNormalize } from "../../instances/domain/instanceDomainNormalize.js"
+import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { instanceDomainTable } from "../../instances/persistence/instanceDomainTable.js"
+import { organizationDomainTable } from "../persistence/organizationDomainTable.js"
+import { organizationDomainAddedEventPayloadSchema } from "../events/organizationDomainAddedEventPayloadSchema.js"
+import { organizationEventTypes } from "../events/organizationEventTypes.js"
+import { organizationDomainPublicViewCreate } from "../domain/organizationDomainPublicViewCreate.js"
+import { organizationDomainVerificationRecordNameCreate } from "../domain/organizationDomainVerificationRecordNameCreate.js"
+import { organizationDomainVerificationValueCreate } from "../domain/organizationDomainVerificationValueCreate.js"
+import { organizationDomainRepositoryCreate } from "../persistence/organizationDomainRepositoryCreate.js"
+import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
+import type { OrganizationDomainResponse } from "../public/organizationDomainResponseSchema.js"
+import {
+  type OrganizationDomainClaimRequest,
+  organizationDomainClaimRequestSchema,
+} from "../public/organizationDomainClaimRequestSchema.js"
+import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
+
+type OrganizationDomainClaimOptions = {
+  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly database: StorageDatabase
+  readonly input: OrganizationDomainClaimRequest
+  readonly instanceId: string
+  readonly organizationId: string
+  readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
+  readonly correlationId?: string
+}
+
+export function organizationDomainClaim(options: OrganizationDomainClaimOptions): Result<OrganizationDomainResponse> {
+  const op = "organizationDomainClaim"
+  const parsed = v.safeParse(organizationDomainClaimRequestSchema, options.input)
+  if (!parsed.success) return resultErrorCreate(op, "The organization domain claim is invalid.")
+  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+    return resultErrorCreate(op, "The organization is not available in this tenant context.")
+  const domain = instanceDomainNormalize(parsed.output.domain)
+  if (!domain.success) return domain
+  const runtime = options.runtime ?? options.database.runtime
+  const now = runtime.now()
+  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The domain timestamp is invalid.")
+  const token = organizationDomainVerificationValueCreate(runtime)
+  const tokenHash = createHash("sha256").update(token, "utf8").digest("hex")
+  const correlationId = options.correlationId ?? uuidv7Create(runtime)
+  return storageTransactionRun(options.database, (transaction) => {
+    const organizations = organizationRepositoryCreate(transaction)
+    const organization = organizations.organizationGet(options.organizationId)
+    if (!organization.success) return organization
+    if (
+      organization.data === null ||
+      organization.data.instanceId !== options.instanceId ||
+      organization.data.status !== "active"
+    )
+      return resultErrorCreate(op, "The organization was not found.")
+    const authorized = organizationContextAuthorize({
+      context: options.context,
+      organization: organization.data,
+      repository: organizations,
+      requiredPermission: "organization.manage",
+    })
+    if (!authorized.success) return authorized
+    const instanceDomain = transaction
+      .select({ domain: instanceDomainTable.domain })
+      .from(instanceDomainTable)
+      .where(eq(instanceDomainTable.domain, domain.data))
+      .get()
+    if (instanceDomain !== undefined) return resultErrorCreate(op, "The domain is already assigned to an instance.")
+    const domains = organizationDomainRepositoryCreate(transaction)
+    const current = domains.organizationDomainGet(domain.data)
+    if (!current.success) return current
+    if (current.data !== null) return resultErrorCreate(op, "The domain is already claimed.")
+    const existing = domains.organizationDomainList(options.organizationId)
+    if (!existing.success) return existing
+    const isPrimary = parsed.output.isPrimary === true || existing.data.length === 0
+    if (isPrimary) {
+      transaction
+        .update(organizationDomainTable)
+        .set({ isPrimary: false })
+        .where(eq(organizationDomainTable.organizationId, options.organizationId))
+        .run()
+    }
+    const created = domains.organizationDomainCreate({
+      createdAt: now,
+      domain: domain.data,
+      instanceId: options.instanceId,
+      isPrimary,
+      organizationId: options.organizationId,
+      updatedAt: now,
+      verificationTokenHash: tokenHash,
+      verified: false,
+      version: 1,
+    })
+    if (!created.success) return resultErrorCreate(op, "The domain is already claimed.")
+    const payload = v.safeParse(organizationDomainAddedEventPayloadSchema, {
+      domain: domain.data,
+      isPrimary,
+      verified: false,
+    })
+    if (!payload.success) return resultErrorCreate(op, "The domain event payload is invalid.")
+    const event = storageEventAppend(
+      transaction,
+      {
+        actorId: options.context.actorId,
+        aggregateId: domain.data,
+        aggregateType: "organization_domain",
+        aggregateVersion: 1,
+        commandIndex: 0,
+        correlationId,
+        eventType: organizationEventTypes.domainAdded,
+        instanceId: options.instanceId,
+        metadata: { source: "organizations" },
+        occurredAt: now,
+        payload: payload.output,
+      },
+      runtime,
+    )
+    if (!event.success) return event
+    return resultCreate({
+      domain: {
+        ...organizationDomainPublicViewCreate(created.data),
+        verification: {
+          recordName: organizationDomainVerificationRecordNameCreate(domain.data),
+          recordType: "TXT" as const,
+          recordValue: token,
+        },
+      },
+    })
+  })
+}

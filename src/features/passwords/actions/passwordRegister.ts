@@ -32,6 +32,7 @@ import {
   passwordRegistrationRequestSchema,
 } from "../public/passwordRegistrationRequestSchema.js"
 import type { PasswordRegistrationResponse } from "../public/passwordRegistrationResponseSchema.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 type PasswordRegisterOptions = {
   readonly context: InstanceSystemContext | InstanceTenantContext
@@ -60,6 +61,13 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
   if (!instance.success) return instance
   if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const loginPolicy = organizationLoginPolicyEnforce({
+    database: options.database,
+    instanceId: options.instanceId,
+    method: "password",
+    organizationId: parsed.output.organizationId,
+  })
+  if (!loginPolicy.success) return resultErrorCreate(op, "Password registration is disabled for this organization.")
   const policyRow = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.instanceId)
   if (!policyRow.success) return policyRow
   const policy =
