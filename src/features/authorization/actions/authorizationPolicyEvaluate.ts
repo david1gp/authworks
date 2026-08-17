@@ -6,7 +6,6 @@ import { authorizationRolePermissionsResolve } from "./authorizationRolePermissi
 import type { AuthorizationActorContext } from "../public/authorizationActorContextSchema.js"
 import { authorizationActorContextSchema } from "../public/authorizationActorContextSchema.js"
 import type { AuthorizationDecision } from "../public/authorizationDecisionSchema.js"
-import { authorizationDecisionSchema } from "../public/authorizationDecisionSchema.js"
 import type { AuthorizationPermission } from "../public/authorizationPermissionSchema.js"
 import { authorizationPermissionSchema } from "../public/authorizationPermissionSchema.js"
 import type { AuthorizationPolicyRule } from "../public/authorizationPolicyRuleSchema.js"
@@ -56,6 +55,13 @@ export function authorizationPolicyEvaluate(
   if (actor.output.organizationId !== undefined && actor.output.organizationId !== options.organizationId)
     return resultCreate(baseDecision(false, "organization_mismatch"))
   if (actor.output.kind === "bootstrap_admin") return resultCreate(baseDecision(true, "bootstrap_admin"))
+  if (actor.output.impersonatorId !== undefined && permission.output === "user.impersonate")
+    return resultCreate(baseDecision(false, "impersonation_limit"))
+  if (
+    actor.output.impersonationPermissions !== undefined &&
+    !actor.output.impersonationPermissions.includes(permission.output)
+  )
+    return resultCreate(baseDecision(false, "impersonation_limit"))
   if (actor.output.kind === "machine")
     return resultCreate(baseDecision(actor.output.scopes?.includes(permission.output) ?? false, "policy"))
 
@@ -93,6 +99,13 @@ export function authorizationPolicyEvaluate(
 }
 
 function authorizationActorContextIsConsistent(actor: AuthorizationActorContext): boolean {
+  if (
+    actor.kind !== "user" &&
+    (actor.impersonatorId !== undefined ||
+      actor.impersonationSessionId !== undefined ||
+      actor.impersonationPermissions !== undefined)
+  )
+    return false
   if (actor.kind === "system")
     return (
       actor.assurance === "authenticated" &&
@@ -123,6 +136,18 @@ function authorizationActorContextIsConsistent(actor: AuthorizationActorContext)
       actor.instanceId !== undefined &&
       actor.organizationId === undefined
     )
+  if (
+    actor.impersonatorId !== undefined &&
+    (actor.impersonationSessionId === undefined ||
+      actor.impersonationPermissions === undefined ||
+      actor.impersonatorId === actor.actorId)
+  )
+    return false
+  if (
+    actor.impersonatorId === undefined &&
+    (actor.impersonationSessionId !== undefined || actor.impersonationPermissions !== undefined)
+  )
+    return false
   return (
     (actor.assurance === "authenticated" || actor.assurance === "multi_factor") &&
     actor.authenticationMethod === "trusted" &&

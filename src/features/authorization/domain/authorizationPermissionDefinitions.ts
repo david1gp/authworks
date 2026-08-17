@@ -23,5 +23,6 @@ export const authorizationPermissionDefinitions = {
   projectRoleWrite: "project.role.write",
   projectWrite: "project.write",
   userManage: "user.manage",
+  userImpersonate: "user.impersonate",
   userRead: "user.read",
 } as const satisfies Record<string, AuthorizationPermission>

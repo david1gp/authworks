@@ -6,11 +6,15 @@ import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { sessionEventTypes } from "../events/sessionEventTypes.js"
 import { sessionRevokedEventPayloadSchema } from "../events/sessionRevokedEventPayloadSchema.js"
 import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
 import type { SessionRevocationResponse } from "../public/sessionRevocationResponseSchema.js"
+import { impersonationEndedEventPayloadSchema } from "../../impersonation/events/impersonationEndedEventPayloadSchema.js"
+import { impersonationEventTypes } from "../../impersonation/events/impersonationEventTypes.js"
+import { and, desc, eq } from "drizzle-orm"
 
 type SessionRevokeOptions = {
   readonly database: StorageDatabase
@@ -70,6 +74,51 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
       runtime,
     )
     if (!event.success) return event
+    if (current.data.impersonatorId !== null) {
+      const impersonationVersion = transaction
+        .select({ aggregateVersion: storageEventTable.aggregateVersion })
+        .from(storageEventTable)
+        .where(
+          and(
+            eq(storageEventTable.aggregateType, "impersonation"),
+            eq(storageEventTable.aggregateId, options.sessionId),
+          ),
+        )
+        .orderBy(desc(storageEventTable.aggregateVersion))
+        .get()?.aggregateVersion
+      if (impersonationVersion === undefined)
+        return resultErrorCreate(op, "The impersonation audit event was not found.")
+      const endedPayload = v.safeParse(impersonationEndedEventPayloadSchema, {
+        actorId: current.data.impersonatorId,
+        endedAt: now,
+        endedById: options.userId,
+        instanceId: options.instanceId,
+        ...(current.data.impersonationOrganizationId === null
+          ? {}
+          : { organizationId: current.data.impersonationOrganizationId }),
+        sessionId: options.sessionId,
+        subjectId: current.data.userId,
+      })
+      if (!endedPayload.success) return resultErrorCreate(op, "The impersonation event payload is invalid.")
+      const endedEvent = storageEventAppend(
+        transaction,
+        {
+          actorId: options.userId,
+          aggregateId: options.sessionId,
+          aggregateType: "impersonation",
+          aggregateVersion: impersonationVersion + 1,
+          commandIndex: 1,
+          correlationId,
+          eventType: impersonationEventTypes.ended,
+          instanceId: options.instanceId,
+          metadata: { auditSafe: true, source: "impersonation" },
+          occurredAt: now,
+          payload: endedPayload.output,
+        },
+        runtime,
+      )
+      if (!endedEvent.success) return endedEvent
+    }
     return resultCreate<SessionRevocationResponse>({ revoked: true })
   })
 }

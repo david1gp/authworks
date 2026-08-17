@@ -8,6 +8,7 @@ import { instanceCliCommands } from "../features/instances/cli/instanceCliComman
 import { organizationCliCommands } from "../features/organizations/cli/organizationCliCommands.js"
 import { oidcCliCommands } from "../features/oidc/cli/oidcCliCommands.js"
 import { mfaCliCommands } from "../features/mfa/cli/mfaCliCommands.js"
+import { impersonationCliCommands } from "../features/impersonation/cli/impersonationCliCommands.js"
 import { machineUserCliCommands } from "../features/machineUsers/cli/machineUserCliCommands.js"
 import { passkeyCliCommands } from "../features/passkeys/cli/passkeyCliCommands.js"
 import { passwordCliCommands } from "../features/passwords/cli/passwordCliCommands.js"
@@ -40,6 +41,8 @@ const cliApplication = buildApplication(
       oidcClients: oidcCliCommands,
       mfa: mfaCliCommands,
       mfaPolicy: mfaCliCommands,
+      impersonation: impersonationCliCommands,
+      impersonate: impersonationCliCommands,
       machine: machineUserCliCommands,
       machineUsers: machineUserCliCommands,
       passkey: passkeyCliCommands,

@@ -11,11 +11,13 @@ import { sessionRevokeAll } from "../actions/sessionRevokeAll.js"
 import { sessionRotate } from "../actions/sessionRotate.js"
 import { sessionProtectedMiddlewareCreate } from "./sessionProtectedMiddlewareCreate.js"
 import { sessionRevokeAllRequestSchema } from "../public/sessionRevokeAllRequestSchema.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import type { Session } from "../public/sessionSchema.js"
 
 type SessionServerEnv = {
   Variables: {
-    authorizationActor: { actorId: string }
-    session: { id: string }
+    authorizationActor: AuthorizationActorContext
+    session: Session
   }
 }
 

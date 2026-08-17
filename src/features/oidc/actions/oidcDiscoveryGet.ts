@@ -34,6 +34,7 @@ export function oidcDiscoveryGet(options: OidcDiscoveryGetOptions): Result<OidcD
   return resultCreate({
     authorization_endpoint: `${issuer}/oauth2/authorize`,
     claims_supported: [
+      "act",
       "acr",
       "amr",
       "auth_time",

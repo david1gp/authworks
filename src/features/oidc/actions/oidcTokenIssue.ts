@@ -648,6 +648,7 @@ function oidcTokenClaimsCreate(
     iss: issuer,
     sub: subject.user.id,
   }
+  if (subject.session.impersonatorId !== null) claims.act = { sub: subject.session.impersonatorId }
   if (scope.includes("email")) {
     claims.email = subject.user.email
     claims.email_verified = subject.user.emailVerifiedAt !== null

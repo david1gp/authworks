@@ -32,5 +32,7 @@ export function authorizationEnforce(options: AuthorizationEnforceOptions): Resu
     return resultErrorCreate(op, "The actor is not available in this organization context.")
   if (decision.data.reason === "insufficient_assurance")
     return resultErrorCreate(op, "A stronger authentication is required.")
+  if (decision.data.reason === "impersonation_limit")
+    return resultErrorCreate(op, "The impersonated session is not allowed to use this permission.")
   return resultErrorCreate(op, "The actor is not authorized for this permission.")
 }

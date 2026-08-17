@@ -11,6 +11,10 @@ export const sessionTable = sqliteTable(
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
     instanceId: text("instance_id").notNull(),
+    impersonationOrganizationId: text("impersonation_organization_id"),
+    impersonationPermissions: text("impersonation_permissions"),
+    impersonationReason: text("impersonation_reason"),
+    impersonatorId: text("impersonator_id"),
     ipAddress: text("ip_address"),
     lastUsedAt: integer("last_used_at").notNull(),
     mfaMethod: text("mfa_method"),
@@ -25,6 +29,7 @@ export const sessionTable = sqliteTable(
     uniqueIndex("sessions_token_hash_idx").on(table.tokenHash),
     index("sessions_instance_user_idx").on(table.instanceId, table.userId),
     index("sessions_instance_last_used_idx").on(table.instanceId, table.userId, table.lastUsedAt),
+    index("sessions_impersonator_idx").on(table.instanceId, table.impersonatorId),
   ],
 )
 

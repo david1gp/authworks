@@ -7,6 +7,7 @@ import { passwordServerAppCreate } from "../features/passwords/server/passwordSe
 import { projectServerAppCreate } from "../features/projects/server/projectServerAppCreate.js"
 import { oidcServerAppCreate } from "../features/oidc/server/oidcServerAppCreate.js"
 import { mfaServerAppCreate } from "../features/mfa/server/mfaServerAppCreate.js"
+import { impersonationServerAppCreate } from "../features/impersonation/server/impersonationServerAppCreate.js"
 import { machineUserServerAppCreate } from "../features/machineUsers/server/machineUserServerAppCreate.js"
 import { passkeyServerAppCreate } from "../features/passkeys/server/passkeyServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/public/sessionPasswordCreate.js"
@@ -48,6 +49,7 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
   application.route("/", projectServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route("/", oidcServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route("/", machineUserServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
+  application.route("/", impersonationServerAppCreate({ database: database.data }))
   application.route(
     "/",
     mfaServerAppCreate({

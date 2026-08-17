@@ -11,6 +11,7 @@ export const authorizationDecisionSchema = v.object({
     "anonymous",
     "bootstrap_admin",
     "insufficient_assurance",
+    "impersonation_limit",
     "no_permission",
     "organization_mismatch",
     "policy",

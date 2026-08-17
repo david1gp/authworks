@@ -22,6 +22,8 @@ import type { SessionCredentialResponse } from "../public/sessionCredentialRespo
 import { sessionDeviceMetadataSchema, type SessionDeviceMetadata } from "../public/sessionDeviceMetadataSchema.js"
 import type { SessionMfaMethod } from "../public/sessionMfaMethodSchema.js"
 import { sessionMfaMethodSchema } from "../public/sessionMfaMethodSchema.js"
+import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
+import { authorizationPermissionSchema } from "../../authorization/public/authorizationPermissionSchema.js"
 
 type SessionIssueOptions = {
   readonly actorId?: string | null
@@ -34,6 +36,10 @@ type SessionIssueOptions = {
   readonly executor?: StorageExecutor
   readonly expiresAt?: number
   readonly instanceId: string
+  readonly impersonationOrganizationId?: string
+  readonly impersonationPermissions?: readonly AuthorizationPermission[]
+  readonly impersonationReason?: string
+  readonly impersonatorId?: string
   readonly mfaMethod?: SessionMfaMethod
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly userId: string
@@ -57,6 +63,27 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
   if (!mfaMethod.success) return resultErrorCreate(op, "The session MFA method is invalid.")
   if (options.instanceId.length === 0 || options.userId.length === 0)
     return resultErrorCreate(op, "The session ownership is invalid.")
+  const impersonationFields = [
+    options.impersonationOrganizationId,
+    options.impersonatorId,
+    options.impersonationReason,
+    options.impersonationPermissions,
+  ]
+  if (
+    impersonationFields.some((field) => field !== undefined) &&
+    impersonationFields.some((field) => field === undefined)
+  )
+    return resultErrorCreate(op, "The impersonation session marker is invalid.")
+  if (options.impersonatorId !== undefined && options.impersonatorId === options.userId)
+    return resultErrorCreate(op, "The impersonation session marker is invalid.")
+  if (options.impersonatorId !== undefined && options.impersonationReason !== undefined) {
+    if (options.impersonationReason.length < 3 || options.impersonationReason.length > 256)
+      return resultErrorCreate(op, "The impersonation reason is invalid.")
+    const permissions = v.safeParse(v.array(authorizationPermissionSchema), options.impersonationPermissions)
+    if (!permissions.success) return resultErrorCreate(op, "The impersonation permissions are invalid.")
+    if (options.impersonationOrganizationId !== undefined && options.impersonationOrganizationId.length === 0)
+      return resultErrorCreate(op, "The impersonation organization is invalid.")
+  }
   const commandIndex = options.commandIndex ?? 0
   if (!Number.isSafeInteger(commandIndex) || commandIndex < 0)
     return resultErrorCreate(op, "The session command index is invalid.")
@@ -84,6 +111,11 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     expiresAt,
     id: sessionId,
     instanceId: options.instanceId,
+    impersonationOrganizationId: options.impersonationOrganizationId ?? null,
+    impersonationPermissions:
+      options.impersonationPermissions === undefined ? null : JSON.stringify(options.impersonationPermissions),
+    impersonationReason: options.impersonationReason ?? null,
+    impersonatorId: options.impersonatorId ?? null,
     ipAddress: deviceData.ipAddress ?? null,
     lastUsedAt: now,
     mfaMethod: mfaMethod.output ?? null,
@@ -100,6 +132,11 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     authenticationMethod: authenticationMethod.output,
     device: deviceData,
     expiresAt,
+    ...(options.impersonationOrganizationId === undefined
+      ? {}
+      : { impersonationOrganizationId: options.impersonationOrganizationId }),
+    ...(options.impersonationReason === undefined ? {} : { impersonationReason: options.impersonationReason }),
+    ...(options.impersonatorId === undefined ? {} : { impersonatorId: options.impersonatorId }),
     ...(mfaMethod.output === undefined ? {} : { mfaMethod: mfaMethod.output }),
     sessionId,
     userId: options.userId,

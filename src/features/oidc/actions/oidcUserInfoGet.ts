@@ -89,6 +89,7 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
 
 function oidcUserInfoClaimsCreate(subject: OidcUserInfoSubject, scope: readonly string[]): OidcUserInfo {
   const claims: OidcUserInfo = { sub: subject.user.id }
+  if (subject.session.impersonatorId !== null) claims.act = { sub: subject.session.impersonatorId }
   if (subject.session.assurance === "multi_factor") {
     claims.acr = "multi_factor"
     claims.amr = [

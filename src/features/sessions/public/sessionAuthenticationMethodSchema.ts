@@ -3,6 +3,7 @@ import * as v from "valibot"
 export const sessionAuthenticationMethodSchema = v.picklist([
   "email_otp",
   "external_identity",
+  "impersonation",
   "password",
   "passkey",
   "recovery_code",

@@ -16,6 +16,9 @@ export const authorizationActorContextSchema = v.object({
   instanceId: v.optional(v.pipe(v.string(), v.minLength(1))),
   kind: v.picklist(["anonymous", "user", "bootstrap_admin", "system", "machine"]),
   organizationId: v.optional(v.pipe(v.string(), v.minLength(1))),
+  impersonationPermissions: v.optional(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(128)))),
+  impersonationSessionId: v.optional(v.pipe(v.string(), v.minLength(1))),
+  impersonatorId: v.optional(v.pipe(v.string(), v.minLength(1))),
   scopes: v.optional(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(128)))),
 })
 

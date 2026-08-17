@@ -11,6 +11,9 @@ import type { Session } from "../public/sessionSchema.js"
 import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { and, eq } from "drizzle-orm"
+import * as v from "valibot"
+import { instanceBootstrapAdminTable } from "../../instances/persistence/instanceBootstrapAdminTable.js"
+import { authorizationPermissionSchema } from "../../authorization/public/authorizationPermissionSchema.js"
 
 type SessionAuthenticateOptions = {
   readonly database: StorageDatabase
@@ -44,6 +47,38 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
     .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, found.data.userId)))
     .get()
   if (user === undefined || user.state !== "active") return resultErrorCreate(op, "Session authorization is invalid.")
+  let impersonationPermissions: string[] | undefined
+  if (
+    found.data.impersonatorId === null &&
+    (found.data.impersonationOrganizationId !== null ||
+      found.data.impersonationPermissions !== null ||
+      found.data.impersonationReason !== null)
+  )
+    return resultErrorCreate(op, "Session authorization is invalid.")
+  if (found.data.impersonatorId !== null) {
+    if (found.data.impersonationReason === null || found.data.impersonationPermissions === null)
+      return resultErrorCreate(op, "Session authorization is invalid.")
+    const permissions = sessionImpersonationPermissionsParse(found.data.impersonationPermissions)
+    if (!permissions.success) return resultErrorCreate(op, "Session authorization is invalid.")
+    impersonationPermissions = permissions.data
+    const impersonator = options.database.db
+      .select({ id: userTable.id, state: userTable.state })
+      .from(userTable)
+      .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, found.data.impersonatorId)))
+      .get()
+    const bootstrap = options.database.db
+      .select({ id: instanceBootstrapAdminTable.adminId })
+      .from(instanceBootstrapAdminTable)
+      .where(
+        and(
+          eq(instanceBootstrapAdminTable.instanceId, options.instanceId),
+          eq(instanceBootstrapAdminTable.adminId, found.data.impersonatorId),
+        ),
+      )
+      .get()
+    if ((impersonator === undefined || impersonator.state !== "active") && bootstrap === undefined)
+      return resultErrorCreate(op, "Session authorization is invalid.")
+  }
   const used = repository.sessionLastUsedUpdate(
     options.instanceId,
     found.data.id,
@@ -56,7 +91,24 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
     assurance: found.data.assurance as AuthorizationActorContext["assurance"],
     authenticationMethod: "trusted",
     instanceId: found.data.instanceId,
+    ...(found.data.impersonationPermissions === null ? {} : { impersonationPermissions }),
+    ...(found.data.impersonatorId === null ? {} : { impersonatorId: found.data.impersonatorId }),
+    ...(found.data.impersonatorId === null ? {} : { impersonationSessionId: found.data.id }),
     kind: "user",
+    ...(found.data.impersonationOrganizationId === null
+      ? {}
+      : { organizationId: found.data.impersonationOrganizationId }),
   })
   return resultCreate({ actor, session: sessionPublicViewCreate(used.data, true) })
+}
+
+function sessionImpersonationPermissionsParse(value: string): Result<string[]> {
+  try {
+    const parsed = v.safeParse(v.array(authorizationPermissionSchema), JSON.parse(value))
+    if (!parsed.success)
+      return resultErrorCreate("sessionImpersonationPermissionsParse", "The session permissions are invalid.")
+    return resultCreate(parsed.output)
+  } catch (_error) {
+    return resultErrorCreate("sessionImpersonationPermissionsParse", "The session permissions are invalid.")
+  }
 }

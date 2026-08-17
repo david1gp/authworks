@@ -8,6 +8,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { and, eq } from "drizzle-orm"
+import { instanceBootstrapAdminTable } from "../../instances/persistence/instanceBootstrapAdminTable.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
@@ -49,6 +50,25 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
       .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, current.data.userId)))
       .get()
     if (user === undefined || user.state !== "active") return resultErrorCreate(op, "Session rotation is invalid.")
+    if (current.data.impersonatorId !== null) {
+      const impersonator = transaction
+        .select({ id: userTable.id, state: userTable.state })
+        .from(userTable)
+        .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, current.data.impersonatorId)))
+        .get()
+      const bootstrap = transaction
+        .select({ id: instanceBootstrapAdminTable.adminId })
+        .from(instanceBootstrapAdminTable)
+        .where(
+          and(
+            eq(instanceBootstrapAdminTable.instanceId, options.instanceId),
+            eq(instanceBootstrapAdminTable.adminId, current.data.impersonatorId),
+          ),
+        )
+        .get()
+      if ((impersonator === undefined || impersonator.state !== "active") && bootstrap === undefined)
+        return resultErrorCreate(op, "Session rotation is invalid.")
+    }
     const rotated = repository.sessionRotate(
       options.instanceId,
       current.data.id,

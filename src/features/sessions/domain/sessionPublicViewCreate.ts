@@ -17,6 +17,16 @@ export function sessionPublicViewCreate(row: SessionRow, current = false): Sessi
     id: row.id,
     instanceId: row.instanceId,
     lastUsedAt: row.lastUsedAt,
+    ...(row.impersonatorId === null
+      ? {}
+      : {
+          impersonated: true as const,
+          ...(row.impersonationOrganizationId === null
+            ? {}
+            : { impersonationOrganizationId: row.impersonationOrganizationId }),
+          ...(row.impersonationReason === null ? {} : { impersonationReason: row.impersonationReason }),
+          impersonatorId: row.impersonatorId,
+        }),
     ...(row.mfaMethod === null ? {} : { mfaMethod: row.mfaMethod as Session["mfaMethod"] }),
     revokedAt: row.revokedAt,
     userId: row.userId,
