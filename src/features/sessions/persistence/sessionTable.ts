@@ -13,6 +13,7 @@ export const sessionTable = sqliteTable(
     instanceId: text("instance_id").notNull(),
     ipAddress: text("ip_address"),
     lastUsedAt: integer("last_used_at").notNull(),
+    mfaMethod: text("mfa_method"),
     revokedAt: integer("revoked_at"),
     revocationReason: text("revocation_reason"),
     tokenHash: text("token_hash").notNull(),

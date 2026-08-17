@@ -20,6 +20,8 @@ import type { SessionAuthenticationMethod } from "../public/sessionAuthenticatio
 import { sessionAuthenticationMethodSchema } from "../public/sessionAuthenticationMethodSchema.js"
 import type { SessionCredentialResponse } from "../public/sessionCredentialResponseSchema.js"
 import { sessionDeviceMetadataSchema, type SessionDeviceMetadata } from "../public/sessionDeviceMetadataSchema.js"
+import type { SessionMfaMethod } from "../public/sessionMfaMethodSchema.js"
+import { sessionMfaMethodSchema } from "../public/sessionMfaMethodSchema.js"
 
 type SessionIssueOptions = {
   readonly actorId?: string | null
@@ -32,6 +34,7 @@ type SessionIssueOptions = {
   readonly executor?: StorageExecutor
   readonly expiresAt?: number
   readonly instanceId: string
+  readonly mfaMethod?: SessionMfaMethod
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly userId: string
 }
@@ -50,6 +53,8 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
   if (!authenticationMethod.success) return resultErrorCreate(op, "The session authentication method is invalid.")
   const device = v.safeParse(sessionDeviceMetadataSchema, options.deviceMetadata ?? {})
   if (!device.success) return resultErrorCreate(op, "The session device metadata is invalid.")
+  const mfaMethod = v.safeParse(v.optional(sessionMfaMethodSchema), options.mfaMethod)
+  if (!mfaMethod.success) return resultErrorCreate(op, "The session MFA method is invalid.")
   if (options.instanceId.length === 0 || options.userId.length === 0)
     return resultErrorCreate(op, "The session ownership is invalid.")
   const commandIndex = options.commandIndex ?? 0
@@ -81,6 +86,7 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     instanceId: options.instanceId,
     ipAddress: deviceData.ipAddress ?? null,
     lastUsedAt: now,
+    mfaMethod: mfaMethod.output ?? null,
     revokedAt: null,
     revocationReason: null,
     tokenHash: sessionCredentialHashCreate(token),
@@ -94,6 +100,7 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     authenticationMethod: authenticationMethod.output,
     device: deviceData,
     expiresAt,
+    ...(mfaMethod.output === undefined ? {} : { mfaMethod: mfaMethod.output }),
     sessionId,
     userId: options.userId,
   })

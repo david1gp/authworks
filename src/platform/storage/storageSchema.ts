@@ -27,6 +27,11 @@ import { oidcConsentTable } from "../../features/oidc/persistence/oidcConsentTab
 import { oidcRefreshTokenTable } from "../../features/oidc/persistence/oidcRefreshTokenTable.js"
 import { oidcSigningKeyTable } from "../../features/oidc/persistence/oidcSigningKeyTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
+import { mfaChallengeTable } from "../../features/mfa/persistence/mfaChallengeTable.js"
+import { mfaLockoutTable } from "../../features/mfa/persistence/mfaLockoutTable.js"
+import { mfaPolicyTable } from "../../features/mfa/persistence/mfaPolicyTable.js"
+import { mfaRecoveryCodeTable } from "../../features/mfa/persistence/mfaRecoveryCodeTable.js"
+import { mfaTotpEnrollmentTable } from "../../features/mfa/persistence/mfaTotpEnrollmentTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
@@ -59,6 +64,11 @@ export const storageSchema = {
   oidcRefreshTokenTable,
   oidcSigningKeyTable,
   sessionTable,
+  mfaChallengeTable,
+  mfaLockoutTable,
+  mfaPolicyTable,
+  mfaRecoveryCodeTable,
+  mfaTotpEnrollmentTable,
   userProfileTable,
   userTable,
   storageCurrentStateTable,

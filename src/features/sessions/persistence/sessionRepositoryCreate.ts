@@ -134,6 +134,44 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    sessionAssuranceRotate(
+      instanceId: string,
+      sessionId: string,
+      tokenHash: string,
+      nextTokenHash: string,
+      now: number,
+      expectedVersion: number,
+      nextVersion: number,
+      mfaMethod: "recovery_code" | "totp",
+    ): Result<SessionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(sessionTable)
+            .set({
+              assurance: "multi_factor",
+              lastUsedAt: now,
+              mfaMethod,
+              tokenHash: nextTokenHash,
+              version: nextVersion,
+            })
+            .where(
+              and(
+                eq(sessionTable.instanceId, instanceId),
+                eq(sessionTable.id, sessionId),
+                eq(sessionTable.tokenHash, tokenHash),
+                eq(sessionTable.version, expectedVersion),
+                isNull(sessionTable.revokedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("sessionAssuranceRotate", "The session could not be upgraded.")
+      }
+    },
+
     sessionVersionUpdate(
       instanceId: string,
       sessionId: string,

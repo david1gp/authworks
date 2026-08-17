@@ -7,6 +7,7 @@ import { externalIdentityCliCommands } from "../features/externalIdentities/cli/
 import { instanceCliCommands } from "../features/instances/cli/instanceCliCommands.js"
 import { organizationCliCommands } from "../features/organizations/cli/organizationCliCommands.js"
 import { oidcCliCommands } from "../features/oidc/cli/oidcCliCommands.js"
+import { mfaCliCommands } from "../features/mfa/cli/mfaCliCommands.js"
 import { passwordCliCommands } from "../features/passwords/cli/passwordCliCommands.js"
 import { projectCliCommands } from "../features/projects/cli/projectCliCommands.js"
 import { sessionCliCommands } from "../features/sessions/cli/sessionCliCommands.js"
@@ -35,6 +36,8 @@ const cliApplication = buildApplication(
       organizations: organizationCliCommands,
       oidc: oidcCliCommands,
       oidcClients: oidcCliCommands,
+      mfa: mfaCliCommands,
+      mfaPolicy: mfaCliCommands,
       password: passwordCliCommands,
       passwords: passwordCliCommands,
       project: projectCliCommands,

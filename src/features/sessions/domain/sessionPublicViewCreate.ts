@@ -17,6 +17,7 @@ export function sessionPublicViewCreate(row: SessionRow, current = false): Sessi
     id: row.id,
     instanceId: row.instanceId,
     lastUsedAt: row.lastUsedAt,
+    ...(row.mfaMethod === null ? {} : { mfaMethod: row.mfaMethod as Session["mfaMethod"] }),
     revokedAt: row.revokedAt,
     userId: row.userId,
   }
