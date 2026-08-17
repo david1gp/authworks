@@ -1,5 +1,6 @@
 import { Hono } from "hono"
 import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpServerAppCreate.js"
+import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { instanceServerAppCreate } from "../features/instances/server/instanceServerAppCreate.js"
 import { organizationServerAppCreate } from "../features/organizations/server/organizationServerAppCreate.js"
 import { passwordServerAppCreate } from "../features/passwords/server/passwordServerAppCreate.js"
@@ -19,6 +20,10 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
   const application = instanceServerAppCreate({ database: database.data, systemSecret: options.systemSecret })
   application.route("/", sessionServerAppCreate({ database: database.data }))
   application.route("/", emailOtpServerAppCreate({ database: database.data }))
+  application.route(
+    "/",
+    externalIdentityServerAppCreate({ database: database.data, systemSecret: options.systemSecret }),
+  )
   application.route("/", organizationServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route("/", userServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route(

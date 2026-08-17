@@ -79,11 +79,38 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS password_challenges_user_kind_idx ON password_challenges (instance_id, user_id, kind)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, assurance TEXT NOT NULL CHECK (assurance IN ('none', 'authenticated', 'multi_factor')), authentication_method TEXT NOT NULL CHECK (authentication_method IN ('email_otp', 'password')), device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER NOT NULL CHECK (last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), revocation_reason TEXT, version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, assurance TEXT NOT NULL CHECK (assurance IN ('none', 'authenticated', 'multi_factor')), authentication_method TEXT NOT NULL CHECK (authentication_method IN ('email_otp', 'password', 'external_identity')), device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER NOT NULL CHECK (last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), revocation_reason TEXT, version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
     )
     database.run("CREATE INDEX IF NOT EXISTS sessions_instance_user_idx ON sessions (instance_id, user_id)")
     database.run(
       "CREATE INDEX IF NOT EXISTS sessions_instance_last_used_idx ON sessions (instance_id, user_id, last_used_at)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS external_identity_providers (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, organization_id TEXT, type TEXT NOT NULL CHECK (type IN ('google', 'github', 'microsoft')), display_name TEXT NOT NULL, enabled INTEGER NOT NULL CHECK (enabled IN (0, 1)), allow_account_creation INTEGER NOT NULL CHECK (allow_account_creation IN (0, 1)), client_id TEXT NOT NULL, client_secret TEXT NOT NULL, redirect_uri TEXT NOT NULL, scopes TEXT NOT NULL CHECK (json_valid(scopes)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (instance_id, type, organization_id), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS external_identity_providers_instance_idx ON external_identity_providers (instance_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS external_identity_providers_organization_idx ON external_identity_providers (instance_id, organization_id)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS external_identities (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_id TEXT NOT NULL, provider_id TEXT NOT NULL, external_subject TEXT NOT NULL, username TEXT, display_name TEXT, email TEXT, email_verified INTEGER NOT NULL CHECK (email_verified IN (0, 1)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (provider_id, external_subject), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (provider_id) REFERENCES external_identity_providers(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS external_identities_instance_user_idx ON external_identities (instance_id, user_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS external_identities_instance_provider_idx ON external_identities (instance_id, provider_id)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS external_identity_oauth_transactions (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, provider_id TEXT NOT NULL, organization_id TEXT, user_id TEXT, intent TEXT NOT NULL CHECK (intent IN ('sign_in', 'link')), state_hash TEXT NOT NULL UNIQUE, nonce_hash TEXT, nonce TEXT, pkce_verifier TEXT NOT NULL, redirect_uri TEXT NOT NULL, expires_at INTEGER NOT NULL CHECK (expires_at >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), callback_validated_at INTEGER CHECK (callback_validated_at IS NULL OR callback_validated_at >= 0), confirmation_token_hash TEXT, external_subject TEXT, external_username TEXT, external_display_name TEXT, external_email TEXT, external_email_verified INTEGER CHECK (external_email_verified IS NULL OR external_email_verified IN (0, 1)), external_issuer TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (provider_id) REFERENCES external_identity_providers(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS external_identity_oauth_transactions_instance_idx ON external_identity_oauth_transactions (instance_id, provider_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS external_identity_oauth_transactions_expiry_idx ON external_identity_oauth_transactions (expires_at)",
     )
     database.run(
       "CREATE TABLE IF NOT EXISTS events (position INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, command_index INTEGER NOT NULL CHECK (command_index >= 0), instance_id TEXT NOT NULL, aggregate_type TEXT NOT NULL, aggregate_id TEXT NOT NULL, aggregate_version INTEGER NOT NULL CHECK (aggregate_version > 0), actor_id TEXT, correlation_id TEXT NOT NULL, causation_id TEXT, occurred_at INTEGER NOT NULL CHECK (occurred_at >= 0), event_type TEXT NOT NULL, payload TEXT NOT NULL CHECK (json_valid(payload)), metadata TEXT NOT NULL CHECK (json_valid(metadata)))",
