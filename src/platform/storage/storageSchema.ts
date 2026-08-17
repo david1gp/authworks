@@ -1,10 +1,16 @@
 import type { ExtractTablesWithRelations } from "drizzle-orm"
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 import type { SQLiteTransaction } from "drizzle-orm/sqlite-core"
+import { instanceBootstrapAdminTable } from "../../features/instances/persistence/instanceBootstrapAdminTable.js"
+import { instanceDomainTable } from "../../features/instances/persistence/instanceDomainTable.js"
+import { instanceTable } from "../../features/instances/persistence/instanceTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
 import { storageEventTable } from "./storageEventTable.js"
 
 export const storageSchema = {
+  instanceBootstrapAdminTable,
+  instanceDomainTable,
+  instanceTable,
   storageCurrentStateTable,
   storageEventTable,
 }

@@ -20,7 +20,11 @@ export function storageDatabaseReset(database: StorageDatabase): Result<void> {
       transaction.run("DROP TRIGGER IF EXISTS events_append_only_update")
       transaction.run("DROP TRIGGER IF EXISTS events_append_only_delete")
       transaction.run("DROP INDEX IF EXISTS events_aggregate_version_idx")
+      transaction.run("DROP INDEX IF EXISTS instance_domains_instance_id_idx")
       transaction.run("DROP TABLE IF EXISTS events")
+      transaction.run("DROP TABLE IF EXISTS instance_bootstrap_admins")
+      transaction.run("DROP TABLE IF EXISTS instance_domains")
+      transaction.run("DROP TABLE IF EXISTS instances")
       transaction.run("DROP TABLE IF EXISTS current_state")
 
       const schema = storageSchemaCreate(transaction)
