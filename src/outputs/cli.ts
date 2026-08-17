@@ -6,6 +6,7 @@ import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommand
 import { externalIdentityCliCommands } from "../features/externalIdentities/cli/externalIdentityCliCommands.js"
 import { instanceCliCommands } from "../features/instances/cli/instanceCliCommands.js"
 import { organizationCliCommands } from "../features/organizations/cli/organizationCliCommands.js"
+import { oidcCliCommands } from "../features/oidc/cli/oidcCliCommands.js"
 import { passwordCliCommands } from "../features/passwords/cli/passwordCliCommands.js"
 import { projectCliCommands } from "../features/projects/cli/projectCliCommands.js"
 import { sessionCliCommands } from "../features/sessions/cli/sessionCliCommands.js"
@@ -32,6 +33,8 @@ const cliApplication = buildApplication(
       externalIdentity: externalIdentityCliCommands,
       org: organizationCliCommands,
       organizations: organizationCliCommands,
+      oidc: oidcCliCommands,
+      oidcClients: oidcCliCommands,
       password: passwordCliCommands,
       passwords: passwordCliCommands,
       project: projectCliCommands,

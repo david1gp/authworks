@@ -138,6 +138,57 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS project_grants_granted_organization_id_idx ON project_grants (granted_organization_id)",
     )
     database.run(
+      "CREATE TABLE IF NOT EXISTS oidc_clients (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, name TEXT NOT NULL, client_type TEXT NOT NULL CHECK (client_type IN ('public', 'confidential')), secret_hash TEXT, redirect_uris TEXT NOT NULL CHECK (json_valid(redirect_uris)), post_logout_redirect_uris TEXT NOT NULL CHECK (json_valid(post_logout_redirect_uris)), allowed_scopes TEXT NOT NULL CHECK (json_valid(allowed_scopes)), trusted INTEGER NOT NULL CHECK (trusted IN (0, 1)), require_consent INTEGER NOT NULL CHECK (require_consent IN (0, 1)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), project_id TEXT, application_id TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL, FOREIGN KEY (application_id) REFERENCES project_applications(id) ON DELETE SET NULL)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS oidc_clients_instance_id_idx ON oidc_clients (instance_id)")
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS oidc_clients_instance_application_idx ON oidc_clients (instance_id, application_id)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS oidc_signing_keys (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, algorithm TEXT NOT NULL CHECK (algorithm = 'RS256'), public_jwk TEXT NOT NULL CHECK (json_valid(public_jwk)), encrypted_private_key TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('active', 'retired')), created_at INTEGER NOT NULL CHECK (created_at >= 0), retired_at INTEGER CHECK (retired_at IS NULL OR retired_at >= 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS oidc_signing_keys_instance_status_idx ON oidc_signing_keys (instance_id, status)",
+    )
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS oidc_signing_keys_one_active_idx ON oidc_signing_keys (instance_id) WHERE status = 'active'",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS oidc_authorization_requests (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, client_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, redirect_uri TEXT NOT NULL, issuer TEXT NOT NULL, scope TEXT NOT NULL CHECK (json_valid(scope)), code_challenge TEXT NOT NULL, code_challenge_method TEXT NOT NULL CHECK (code_challenge_method = 'S256'), state_encrypted TEXT, nonce_encrypted TEXT, prompt TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), approved_at INTEGER CHECK (approved_at IS NULL OR approved_at >= 0), rejected_at INTEGER CHECK (rejected_at IS NULL OR rejected_at >= 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS oidc_authorization_requests_instance_idx ON oidc_authorization_requests (instance_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS oidc_authorization_requests_expiry_idx ON oidc_authorization_requests (expires_at)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS oidc_authorization_codes (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, client_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, redirect_uri TEXT NOT NULL, issuer TEXT NOT NULL, scope TEXT NOT NULL CHECK (json_valid(scope)), code_challenge TEXT NOT NULL, code_challenge_method TEXT NOT NULL CHECK (code_challenge_method = 'S256'), token_hash TEXT NOT NULL UNIQUE, nonce_encrypted TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), used_at INTEGER CHECK (used_at IS NULL OR used_at >= 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS oidc_authorization_codes_instance_idx ON oidc_authorization_codes (instance_id)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS oidc_access_tokens (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, client_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, scope TEXT NOT NULL CHECK (json_valid(scope)), refresh_family_id TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS oidc_access_tokens_instance_user_idx ON oidc_access_tokens (instance_id, user_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS oidc_access_tokens_refresh_family_idx ON oidc_access_tokens (refresh_family_id)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS oidc_refresh_tokens (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, client_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, family_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, scope TEXT NOT NULL CHECK (json_valid(scope)), created_at INTEGER NOT NULL CHECK (created_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), replaced_by_hash TEXT, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS oidc_refresh_tokens_instance_user_idx ON oidc_refresh_tokens (instance_id, user_id)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS oidc_refresh_tokens_family_idx ON oidc_refresh_tokens (family_id)")
+    database.run(
+      "CREATE TABLE IF NOT EXISTS oidc_consents (instance_id TEXT NOT NULL, user_id TEXT NOT NULL, client_id TEXT NOT NULL, scope TEXT NOT NULL CHECK (json_valid(scope)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), PRIMARY KEY (instance_id, user_id, client_id), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS oidc_consents_instance_idx ON oidc_consents (instance_id)")
+    database.run(
       "CREATE TABLE IF NOT EXISTS events (position INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, command_index INTEGER NOT NULL CHECK (command_index >= 0), instance_id TEXT NOT NULL, aggregate_type TEXT NOT NULL, aggregate_id TEXT NOT NULL, aggregate_version INTEGER NOT NULL CHECK (aggregate_version > 0), actor_id TEXT, correlation_id TEXT NOT NULL, causation_id TEXT, occurred_at INTEGER NOT NULL CHECK (occurred_at >= 0), event_type TEXT NOT NULL, payload TEXT NOT NULL CHECK (json_valid(payload)), metadata TEXT NOT NULL CHECK (json_valid(metadata)))",
     )
     database.run(

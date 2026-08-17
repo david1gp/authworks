@@ -19,6 +19,13 @@ import { projectApplicationTable } from "../../features/projects/persistence/pro
 import { projectGrantTable } from "../../features/projects/persistence/projectGrantTable.js"
 import { projectRoleTable } from "../../features/projects/persistence/projectRoleTable.js"
 import { projectTable } from "../../features/projects/persistence/projectTable.js"
+import { oidcAccessTokenTable } from "../../features/oidc/persistence/oidcAccessTokenTable.js"
+import { oidcAuthorizationCodeTable } from "../../features/oidc/persistence/oidcAuthorizationCodeTable.js"
+import { oidcAuthorizationRequestTable } from "../../features/oidc/persistence/oidcAuthorizationRequestTable.js"
+import { oidcClientTable } from "../../features/oidc/persistence/oidcClientTable.js"
+import { oidcConsentTable } from "../../features/oidc/persistence/oidcConsentTable.js"
+import { oidcRefreshTokenTable } from "../../features/oidc/persistence/oidcRefreshTokenTable.js"
+import { oidcSigningKeyTable } from "../../features/oidc/persistence/oidcSigningKeyTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
@@ -44,6 +51,13 @@ export const storageSchema = {
   projectGrantTable,
   projectRoleTable,
   projectTable,
+  oidcAccessTokenTable,
+  oidcAuthorizationCodeTable,
+  oidcAuthorizationRequestTable,
+  oidcClientTable,
+  oidcConsentTable,
+  oidcRefreshTokenTable,
+  oidcSigningKeyTable,
   sessionTable,
   userProfileTable,
   userTable,

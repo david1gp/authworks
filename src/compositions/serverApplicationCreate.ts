@@ -5,6 +5,7 @@ import { instanceServerAppCreate } from "../features/instances/server/instanceSe
 import { organizationServerAppCreate } from "../features/organizations/server/organizationServerAppCreate.js"
 import { passwordServerAppCreate } from "../features/passwords/server/passwordServerAppCreate.js"
 import { projectServerAppCreate } from "../features/projects/server/projectServerAppCreate.js"
+import { oidcServerAppCreate } from "../features/oidc/server/oidcServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/public/sessionPasswordCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
 import { userServerAppCreate } from "../features/users/server/userServerAppCreate.js"
@@ -27,6 +28,7 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
   )
   application.route("/", organizationServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route("/", projectServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
+  application.route("/", oidcServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route("/", userServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route(
     "/",
