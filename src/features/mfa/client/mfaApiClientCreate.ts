@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import { httpErrorResponseSchema } from "../../../platform/http/httpErrorResponseSchema.js"
+import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import type { MfaChallengeCompleteRequest } from "../public/mfaChallengeCompleteRequestSchema.js"
 import { mfaChallengeCompleteRequestSchema } from "../public/mfaChallengeCompleteRequestSchema.js"
@@ -41,33 +41,21 @@ type MfaApiClientCreateOptions = {
 }
 
 export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
-  const request = async <T>(
+  const request = <T>(
     path: string,
     init: RequestInit,
     schema: v.GenericSchema<T>,
     token = options.token,
-  ): Promise<Result<T>> => {
-    const op = "mfaApiClientRequest"
-    const headers = new Headers(init.headers)
-    headers.set("accept", "application/json")
-    if (init.body !== undefined) headers.set("content-type", "application/json")
-    if (token !== undefined)
-      headers.set("authorization", `Bearer ${token instanceof Secret ? token.valueGet() : token}`)
-    try {
-      const response = await (options.fetch ?? fetch)(new URL(path, options.baseUrl), { ...init, headers })
-      const body = await response.json().catch(() => undefined)
-      if (!response.ok) {
-        const parsedError = v.safeParse(httpErrorResponseSchema, body)
-        if (!parsedError.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
-        return resultErrorCreate(op, `${parsedError.output.error.code}: ${parsedError.output.error.message}`)
-      }
-      const parsed = v.safeParse(schema, body)
-      if (!parsed.success) return resultErrorCreate(op, "The server returned an invalid response.")
-      return resultCreate(parsed.output)
-    } catch (_error) {
-      return resultErrorCreate(op, "The server could not be reached.")
-    }
-  }
+  ): Promise<Result<T>> =>
+    httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init,
+      op: "mfaApiClientRequest",
+      path,
+      schema,
+      token,
+    })
   const parsed = <T>(schema: v.GenericSchema<T>, input: unknown, message: string): Result<T> => {
     const value = v.safeParse(schema, input)
     return value.success ? resultCreate(value.output) : resultErrorCreate("mfaApiClientCreate", message)

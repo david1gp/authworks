@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import { httpErrorResponseSchema } from "../../../platform/http/httpErrorResponseSchema.js"
+import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import type { ExternalIdentityCallbackResponse } from "../public/externalIdentityCallbackResponseSchema.js"
 import { externalIdentityCallbackResponseSchema } from "../public/externalIdentityCallbackResponseSchema.js"
@@ -36,31 +36,16 @@ type ExternalIdentityApiClientCreateOptions = {
 }
 
 export function externalIdentityApiClientCreate(options: ExternalIdentityApiClientCreateOptions) {
-  const request = async <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> => {
-    const op = "externalIdentityApiClientRequest"
-    const headers = new Headers(init.headers)
-    headers.set("accept", "application/json")
-    if (init.body !== undefined) headers.set("content-type", "application/json")
-    if (options.token !== undefined)
-      headers.set(
-        "authorization",
-        `Bearer ${options.token instanceof Secret ? options.token.valueGet() : options.token}`,
-      )
-    try {
-      const response = await (options.fetch ?? fetch)(new URL(path, options.baseUrl), { ...init, headers })
-      const body = await response.json().catch(() => undefined)
-      if (!response.ok) {
-        const error = v.safeParse(httpErrorResponseSchema, body)
-        if (!error.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
-        return resultErrorCreate(op, `${error.output.error.code}: ${error.output.error.message}`)
-      }
-      const parsed = v.safeParse(schema, body)
-      if (!parsed.success) return resultErrorCreate(op, "The server returned an invalid response.")
-      return resultCreate(parsed.output)
-    } catch (_error) {
-      return resultErrorCreate(op, "The server could not be reached.")
-    }
-  }
+  const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init,
+      op: "externalIdentityApiClientRequest",
+      path,
+      schema,
+      token: options.token,
+    })
 
   const parsedRequest = <T>(schema: v.GenericSchema<T>, input: unknown, message: string) => {
     const parsed = v.safeParse(schema, input)

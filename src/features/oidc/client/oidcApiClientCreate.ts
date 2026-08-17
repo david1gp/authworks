@@ -1,8 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
-import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import { httpErrorResponseSchema } from "../../../platform/http/httpErrorResponseSchema.js"
+import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import {
   type OidcAuthorizationCodeRedeemRequest,
@@ -83,113 +82,81 @@ type OidcApiClientCreateOptions = {
 }
 
 export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
-  const request = async <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> => {
-    const op = "oidcApiClientRequest"
-    const headers = new Headers(init.headers)
-    headers.set("accept", "application/json")
-    if (init.body !== undefined) headers.set("content-type", "application/json")
-    if (options.token !== undefined)
-      headers.set(
-        "authorization",
-        `Bearer ${options.token instanceof Secret ? options.token.valueGet() : options.token}`,
-      )
-    try {
-      const response = await (options.fetch ?? fetch)(new URL(path, options.baseUrl), { ...init, headers })
-      const body = await response.json().catch(() => undefined)
-      if (!response.ok) {
-        const parsedError = v.safeParse(httpErrorResponseSchema, body)
-        if (!parsedError.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
-        return resultErrorCreate(op, `${parsedError.output.error.code}: ${parsedError.output.error.message}`)
-      }
-      const parsed = v.safeParse(schema, body)
-      if (!parsed.success) {
+  const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init,
+      invalidResponseErrorGet: (body) => {
         const consent = v.safeParse(oidcAuthorizationConsentRequiredSchema, body)
-        if (consent.success)
-          return resultErrorCreate(
-            "oidcAuthorizationConsentRequired",
-            "User consent is required.",
-            JSON.stringify(consent.output),
-          )
-        return resultErrorCreate(op, "The server returned an invalid response.")
-      }
-      return resultCreate(parsed.output)
-    } catch (_error) {
-      return resultErrorCreate(op, "The server could not be reached.")
-    }
-  }
+        if (!consent.success) return undefined
+        return resultErrorCreate(
+          "oidcAuthorizationConsentRequired",
+          "User consent is required.",
+          JSON.stringify(consent.output),
+        )
+      },
+      op: "oidcApiClientRequest",
+      path,
+      schema,
+      token: options.token,
+    })
 
-  const tokenRequest = async (input: OidcTokenRequest): Promise<Result<OidcTokenResponse>> => {
-    const op = "oidcApiClientTokenIssue"
+  const tokenRequest = (input: OidcTokenRequest): Promise<Result<OidcTokenResponse>> => {
     const body = new URLSearchParams()
     for (const [key, value] of Object.entries(input)) {
       if (value !== undefined) body.set(key, value)
     }
-    try {
-      const response = await (options.fetch ?? fetch)(new URL("/oauth2/token", options.baseUrl), {
-        body,
-        headers: { accept: "application/json", "content-type": "application/x-www-form-urlencoded" },
-        method: "POST",
-      })
-      const responseBody = await response.json().catch(() => undefined)
-      if (!response.ok) {
+    return httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init: { body, method: "POST" },
+      invalidResponseMessage: "The server returned an invalid token response.",
+      op: "oidcApiClientTokenIssue",
+      path: "/oauth2/token",
+      responseErrorMessageGet: (responseBody) => {
         const parsedError = v.safeParse(oidcTokenErrorSchema, responseBody)
-        if (!parsedError.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
-        return resultErrorCreate(op, parsedError.output.error_description ?? parsedError.output.error)
-      }
-      const parsed = v.safeParse(oidcTokenResponseSchema, responseBody)
-      if (!parsed.success) return resultErrorCreate(op, "The server returned an invalid token response.")
-      return resultCreate(parsed.output)
-    } catch (_error) {
-      return resultErrorCreate(op, "The server could not be reached.")
-    }
+        return parsedError.success ? (parsedError.output.error_description ?? parsedError.output.error) : undefined
+      },
+      schema: oidcTokenResponseSchema,
+    })
   }
 
-  const userInfoRequest = async (method: "GET" | "POST"): Promise<Result<OidcUserInfo>> => {
+  const userInfoRequest = (method: "GET" | "POST"): Promise<Result<OidcUserInfo>> => {
     const op = method === "GET" ? "oidcApiClientUserInfoGet" : "oidcApiClientUserInfoPost"
-    const headers = new Headers({ accept: "application/json" })
-    if (options.token !== undefined)
-      headers.set(
-        "authorization",
-        `Bearer ${options.token instanceof Secret ? options.token.valueGet() : options.token}`,
-      )
-    try {
-      const response = await (options.fetch ?? fetch)(new URL("/oauth2/userinfo", options.baseUrl), { headers, method })
-      const body = await response.json().catch(() => undefined)
-      if (!response.ok) {
+    return httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init: { method },
+      invalidResponseMessage: "The server returned an invalid UserInfo response.",
+      op,
+      path: "/oauth2/userinfo",
+      responseErrorMessageGet: (body) => {
         const parsedError = v.safeParse(oidcUserInfoErrorSchema, body)
-        if (!parsedError.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
-        return resultErrorCreate(op, parsedError.output.error_description ?? parsedError.output.error)
-      }
-      const parsed = v.safeParse(oidcUserInfoSchema, body)
-      if (!parsed.success) return resultErrorCreate(op, "The server returned an invalid UserInfo response.")
-      return resultCreate(parsed.output)
-    } catch (_error) {
-      return resultErrorCreate(op, "The server could not be reached.")
-    }
+        return parsedError.success ? (parsedError.output.error_description ?? parsedError.output.error) : undefined
+      },
+      schema: oidcUserInfoSchema,
+      token: options.token,
+    })
   }
 
-  const tokenRevokeRequest = async (input: OidcTokenRevokeRequest): Promise<Result<void>> => {
-    const op = "oidcApiClientTokenRevoke"
+  const tokenRevokeRequest = (input: OidcTokenRevokeRequest): Promise<Result<void>> => {
     const body = new URLSearchParams()
     for (const [key, value] of Object.entries(input)) {
       if (value !== undefined) body.set(key, value)
     }
-    try {
-      const response = await (options.fetch ?? fetch)(new URL("/oauth2/revoke", options.baseUrl), {
-        body,
-        headers: { accept: "application/json", "content-type": "application/x-www-form-urlencoded" },
-        method: "POST",
-      })
-      const responseBody = await response.json().catch(() => undefined)
-      if (!response.ok) {
+    return httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init: { body, method: "POST" },
+      op: "oidcApiClientTokenRevoke",
+      path: "/oauth2/revoke",
+      responseErrorMessageGet: (responseBody) => {
         const parsedError = v.safeParse(oidcTokenErrorSchema, responseBody)
-        if (!parsedError.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
-        return resultErrorCreate(op, parsedError.output.error_description ?? parsedError.output.error)
-      }
-      return resultCreate(undefined)
-    } catch (_error) {
-      return resultErrorCreate(op, "The server could not be reached.")
-    }
+        return parsedError.success ? (parsedError.output.error_description ?? parsedError.output.error) : undefined
+      },
+      schema: v.undefined(),
+    })
   }
 
   const managementPath = (instanceId: string, suffix = "") =>

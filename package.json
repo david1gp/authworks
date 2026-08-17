@@ -101,6 +101,14 @@
       "types": "./dist/library/outputs/library.d.ts",
       "import": "./dist/library/outputs/library.js"
     },
+    "./features/*": {
+      "types": "./dist/library/outputs/library/*.d.ts",
+      "import": "./dist/library/outputs/library/*.js"
+    },
+    "./*": {
+      "types": "./dist/library/outputs/library/*.d.ts",
+      "import": "./dist/library/outputs/library/*.js"
+    },
     "./cli": {
       "import": "./dist/cli/cli.js"
     },

@@ -1,6 +1,5 @@
 #!/usr/bin/env bun
 
-import type { ApplicationContext, Command } from "@stricli/core"
 import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
 import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommands.js"
 import { externalIdentityCliCommands } from "../features/externalIdentities/cli/externalIdentityCliCommands.js"
@@ -16,18 +15,6 @@ import { projectCliCommands } from "../features/projects/cli/projectCliCommands.
 import { sessionCliCommands } from "../features/sessions/cli/sessionCliCommands.js"
 import { userCliCommands } from "../features/users/cli/userCliCommands.js"
 
-const scaffoldCommand: Command<ApplicationContext> = buildCommand<Record<never, never>, [], ApplicationContext>({
-  func: function (this: ApplicationContext) {
-    this.process.stdout.write("ZITADEL v2 scaffold\n")
-  },
-  parameters: {
-    flags: {},
-  },
-  docs: {
-    brief: "Print scaffold status",
-  },
-})
-
 const cliApplication = buildApplication(
   buildRouteMap({
     routes: {
@@ -35,6 +22,7 @@ const cliApplication = buildApplication(
       emailOtp: emailOtpCliCommands,
       externalIdentities: externalIdentityCliCommands,
       externalIdentity: externalIdentityCliCommands,
+      emailOtps: emailOtpCliCommands,
       org: organizationCliCommands,
       organizations: organizationCliCommands,
       oidc: oidcCliCommands,
@@ -55,7 +43,6 @@ const cliApplication = buildApplication(
       sessions: sessionCliCommands,
       user: userCliCommands,
       users: userCliCommands,
-      status: scaffoldCommand,
     },
     docs: {
       brief: "ZITADEL v2 identity platform",
