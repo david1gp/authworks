@@ -28,6 +28,7 @@ import { oidcValueDecrypt } from "../../src/features/oidc/domain/oidcValueEncryp
 import { oidcDiscoverySchema } from "../../src/features/oidc/public/oidcDiscoverySchema.js"
 import { oidcJwksSchema } from "../../src/features/oidc/public/oidcJwksSchema.js"
 import { oidcTokenResponseSchema } from "../../src/features/oidc/public/oidcTokenResponseSchema.js"
+import { oidcUserInfoSchema } from "../../src/features/oidc/public/oidcUserInfoSchema.js"
 import { oidcServerAppCreate } from "../../src/features/oidc/server/oidcServerAppCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
@@ -119,6 +120,62 @@ async function oidcTokenRequest(
       method: "POST",
     }),
   )
+}
+
+async function createOidcTokenFixture(database: StorageDatabase, domain: string, scope = "openid profile email") {
+  const authenticated = await createAuthenticatedSession(database, domain)
+  const client = oidcClientCreate({
+    context: instanceSystemContextCreate(),
+    database,
+    input: {
+      allowedScopes: ["openid", "profile", "email"],
+      clientType: "confidential",
+      name: `${domain} client`,
+      redirectUris: ["https://client.example/callback"],
+    },
+    instanceId: authenticated.instance.id,
+  })
+  if (!client.success || client.data.clientSecret === undefined) throw new Error("The OIDC fixture client failed.")
+  const key = oidcSigningKeyCreate({
+    context: instanceSystemContextCreate(),
+    database,
+    encryptionSecret: "oidc-fixture-secret",
+    instanceId: authenticated.instance.id,
+  })
+  if (!key.success) throw new Error(key.errorMessage)
+  const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+  const authorization = oidcAuthorizationRequestAuthorize({
+    database,
+    input: {
+      client_id: client.data.client.id,
+      code_challenge: pkceChallengeCreate(verifier),
+      code_challenge_method: "S256",
+      redirect_uri: "https://client.example/callback",
+      response_type: "code",
+      scope,
+      state: "fixture-state",
+    },
+    instanceId: authenticated.instance.id,
+    sessionToken: authenticated.token,
+  })
+  if (!authorization.success) throw new Error(authorization.errorMessage)
+  const app = oidcServerAppCreate({ database, systemSecret: "oidc-fixture-secret" })
+  const response = await oidcTokenRequest(app, domain, {
+    client_id: client.data.client.id,
+    client_secret: client.data.clientSecret,
+    code: authorization.data.code,
+    code_verifier: verifier,
+    grant_type: "authorization_code",
+    redirect_uri: authorization.data.redirect_uri,
+  })
+  if (!response.ok) throw new Error(`The OIDC fixture token request failed: ${response.status}`)
+  return {
+    app,
+    authenticated,
+    client: client.data.client,
+    clientSecret: client.data.clientSecret,
+    token: v.parse(oidcTokenResponseSchema, await response.json()),
+  }
 }
 
 test("redirect URI matching is exact and rejects unsafe registrations", () => {
@@ -925,5 +982,182 @@ test("token exchange is atomic with code consumption and token audit events", as
     expect(database.sqlite.query("SELECT used_at FROM oidc_authorization_codes").get()).toEqual({ used_at: null })
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_access_tokens").get()).toEqual({ count: 0 })
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_refresh_tokens").get()).toEqual({ count: 0 })
+  })
+})
+
+test("UserInfo validates bearer tokens, isolates tenants, and filters claims by scope", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "userinfo.example.com")
+    const getResponse = await fixture.app.fetch(
+      new Request("https://userinfo.example.com/oauth2/userinfo", {
+        headers: { authorization: `Bearer ${fixture.token.access_token}` },
+      }),
+    )
+    expect(getResponse.status).toBe(200)
+    expect(v.parse(oidcUserInfoSchema, await getResponse.json())).toEqual({
+      email: "userinfo-example-com@example.com",
+      email_verified: true,
+      name: "OIDC User",
+      preferred_username: "userinfo-example-com",
+      sub: fixture.authenticated.userId,
+    })
+    const postResponse = await fixture.app.fetch(
+      new Request("https://userinfo.example.com/oauth2/userinfo", {
+        headers: { authorization: `Bearer ${fixture.token.access_token}` },
+        method: "POST",
+      }),
+    )
+    expect(postResponse.status).toBe(200)
+    expect(await postResponse.json()).toEqual({
+      email: "userinfo-example-com@example.com",
+      email_verified: true,
+      name: "OIDC User",
+      preferred_username: "userinfo-example-com",
+      sub: fixture.authenticated.userId,
+    })
+    const missingBearer = await fixture.app.fetch(new Request("https://userinfo.example.com/oauth2/userinfo"))
+    expect(missingBearer.status).toBe(401)
+    expect(missingBearer.headers.get("www-authenticate")).toContain('error="invalid_token"')
+
+    const openidOnly = await createOidcTokenFixture(database, "userinfo-openid.example.com", "openid")
+    const openidResponse = await openidOnly.app.fetch(
+      new Request("https://userinfo-openid.example.com/oauth2/userinfo", {
+        headers: { authorization: `Bearer ${openidOnly.token.access_token}` },
+      }),
+    )
+    expect(openidResponse.status).toBe(200)
+    expect(await openidResponse.json()).toEqual({ sub: openidOnly.authenticated.userId })
+
+    await createInstance(database, "userinfo-beta.example.com")
+    const foreign = await fixture.app.fetch(
+      new Request("https://userinfo-beta.example.com/oauth2/userinfo", {
+        headers: { authorization: `Bearer ${fixture.token.access_token}` },
+      }),
+    )
+    expect(foreign.status).toBe(401)
+
+    database.sqlite
+      .query("UPDATE sessions SET revoked_at = ? WHERE user_id = ?")
+      .run(database.runtime.now(), fixture.authenticated.userId)
+    const revokedSession = await fixture.app.fetch(
+      new Request("https://userinfo.example.com/oauth2/userinfo", {
+        headers: { authorization: `Bearer ${fixture.token.access_token}` },
+      }),
+    )
+    expect(revokedSession.status).toBe(401)
+  })
+})
+
+test("OIDC revocation authenticates clients, is idempotent, isolates tenants, and audits atomically", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "revoke.example.com")
+    const basic = Buffer.from(`${fixture.client.id}:${fixture.clientSecret}`).toString("base64")
+    const revoke = (input: Record<string, string>, authorization = `Basic ${basic}`) =>
+      fixture.app.fetch(
+        new Request("https://revoke.example.com/oauth2/revoke", {
+          body: new URLSearchParams(input),
+          headers: {
+            authorization,
+            "content-type": "application/x-www-form-urlencoded",
+          },
+          method: "POST",
+        }),
+      )
+
+    const invalidClient = await revoke({ token: fixture.token.access_token }, "Basic invalid")
+    expect(invalidClient.status).toBe(401)
+    expect(invalidClient.headers.get("www-authenticate")).toContain("oauth2/revoke")
+
+    const beta = await createInstance(database, "revoke-beta.example.com")
+    const betaClient = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { clientType: "confidential", name: "Beta client", redirectUris: ["https://client.example/callback"] },
+      instanceId: beta.id,
+    })
+    expect(betaClient.success).toBe(true)
+    if (!betaClient.success || betaClient.data.clientSecret === undefined) return
+    const betaBasic = Buffer.from(`${betaClient.data.client.id}:${betaClient.data.clientSecret}`).toString("base64")
+    const foreign = await fixture.app.fetch(
+      new Request("https://revoke-beta.example.com/oauth2/revoke", {
+        body: new URLSearchParams({ token: fixture.token.access_token }),
+        headers: {
+          authorization: `Basic ${betaBasic}`,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        method: "POST",
+      }),
+    )
+    expect(foreign.status).toBe(200)
+    const beforeRevoke = await fixture.app.fetch(
+      new Request("https://revoke.example.com/oauth2/userinfo", {
+        headers: { authorization: `Bearer ${fixture.token.access_token}` },
+      }),
+    )
+    expect(beforeRevoke.status).toBe(200)
+
+    const accessRevoked = await revoke({ token: fixture.token.access_token, token_type_hint: "access_token" })
+    expect(accessRevoked.status).toBe(200)
+    expect(await accessRevoked.text()).toBe("")
+    const accessEventCount = database.sqlite
+      .query("SELECT COUNT(*) AS count FROM events WHERE event_type = 'oidc.access_token_revoked'")
+      .get() as { count: number }
+    expect(accessEventCount.count).toBe(1)
+    const repeatedAccessRevoke = await revoke({ token: fixture.token.access_token })
+    expect(repeatedAccessRevoke.status).toBe(200)
+    expect(
+      (
+        database.sqlite
+          .query("SELECT COUNT(*) AS count FROM events WHERE event_type = 'oidc.access_token_revoked'")
+          .get() as { count: number }
+      ).count,
+    ).toBe(1)
+    const afterRevoke = await fixture.app.fetch(
+      new Request("https://revoke.example.com/oauth2/userinfo", {
+        headers: { authorization: `Bearer ${fixture.token.access_token}` },
+      }),
+    )
+    expect(afterRevoke.status).toBe(401)
+
+    const refreshRevoked = await revoke({ token: fixture.token.refresh_token, token_type_hint: "refresh_token" })
+    expect(refreshRevoked.status).toBe(200)
+    expect(
+      (
+        database.sqlite
+          .query("SELECT COUNT(*) AS count FROM events WHERE event_type = 'oidc.refresh_token_family_revoked'")
+          .get() as { count: number }
+      ).count,
+    ).toBe(1)
+    expect(
+      database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_refresh_tokens WHERE revoked_at IS NOT NULL").get(),
+    ).toEqual({ count: 1 })
+    const unknown = await revoke({ token: "unknown-token-value" })
+    expect(unknown.status).toBe(200)
+    const audit = JSON.stringify(database.sqlite.query("SELECT payload FROM events").all())
+    expect(audit).not.toContain(fixture.token.access_token)
+    expect(audit).not.toContain(fixture.token.refresh_token)
+
+    const atomic = await createOidcTokenFixture(database, "revoke-atomic.example.com")
+    const atomicBasic = Buffer.from(`${atomic.client.id}:${atomic.clientSecret}`).toString("base64")
+    database.sqlite.run(
+      "CREATE TRIGGER reject_oidc_revocation_events BEFORE INSERT ON events WHEN NEW.event_type = 'oidc.refresh_token_family_revoked' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
+    )
+    const failed = await atomic.app.fetch(
+      new Request("https://revoke-atomic.example.com/oauth2/revoke", {
+        body: new URLSearchParams({ token: atomic.token.refresh_token }),
+        headers: {
+          authorization: `Basic ${atomicBasic}`,
+          "content-type": "application/x-www-form-urlencoded",
+        },
+        method: "POST",
+      }),
+    )
+    expect(failed.status).toBe(500)
+    expect(
+      database.sqlite
+        .query("SELECT revoked_at FROM oidc_refresh_tokens WHERE instance_id = ?")
+        .get(atomic.authenticated.instance.id),
+    ).toEqual({ revoked_at: null })
+    database.sqlite.run("DROP TRIGGER reject_oidc_revocation_events")
   })
 })

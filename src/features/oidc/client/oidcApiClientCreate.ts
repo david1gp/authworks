@@ -39,8 +39,11 @@ import { type OidcClientUpdateRequest, oidcClientUpdateRequestSchema } from "../
 import { type OidcDiscovery, oidcDiscoverySchema } from "../public/oidcDiscoverySchema.js"
 import { type OidcJwks, oidcJwksSchema } from "../public/oidcJwksSchema.js"
 import { type OidcTokenRequest, oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
+import { type OidcTokenRevokeRequest, oidcTokenRevokeRequestSchema } from "../public/oidcTokenRevokeRequestSchema.js"
 import { oidcTokenErrorSchema } from "../public/oidcTokenErrorSchema.js"
 import { type OidcTokenResponse, oidcTokenResponseSchema } from "../public/oidcTokenResponseSchema.js"
+import { type OidcUserInfo, oidcUserInfoSchema } from "../public/oidcUserInfoSchema.js"
+import { oidcUserInfoErrorSchema } from "../public/oidcUserInfoErrorSchema.js"
 import {
   type OidcSigningKeyLifecycleRequest,
   oidcSigningKeyLifecycleRequestSchema,
@@ -112,6 +115,54 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     }
   }
 
+  const userInfoRequest = async (method: "GET" | "POST"): Promise<Result<OidcUserInfo>> => {
+    const op = method === "GET" ? "oidcApiClientUserInfoGet" : "oidcApiClientUserInfoPost"
+    const headers = new Headers({ accept: "application/json" })
+    if (options.token !== undefined)
+      headers.set(
+        "authorization",
+        `Bearer ${options.token instanceof Secret ? options.token.valueGet() : options.token}`,
+      )
+    try {
+      const response = await (options.fetch ?? fetch)(new URL("/oauth2/userinfo", options.baseUrl), { headers, method })
+      const body = await response.json().catch(() => undefined)
+      if (!response.ok) {
+        const parsedError = v.safeParse(oidcUserInfoErrorSchema, body)
+        if (!parsedError.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
+        return resultErrorCreate(op, parsedError.output.error_description ?? parsedError.output.error)
+      }
+      const parsed = v.safeParse(oidcUserInfoSchema, body)
+      if (!parsed.success) return resultErrorCreate(op, "The server returned an invalid UserInfo response.")
+      return resultCreate(parsed.output)
+    } catch (_error) {
+      return resultErrorCreate(op, "The server could not be reached.")
+    }
+  }
+
+  const tokenRevokeRequest = async (input: OidcTokenRevokeRequest): Promise<Result<void>> => {
+    const op = "oidcApiClientTokenRevoke"
+    const body = new URLSearchParams()
+    for (const [key, value] of Object.entries(input)) {
+      if (value !== undefined) body.set(key, value)
+    }
+    try {
+      const response = await (options.fetch ?? fetch)(new URL("/oauth2/revoke", options.baseUrl), {
+        body,
+        headers: { accept: "application/json", "content-type": "application/x-www-form-urlencoded" },
+        method: "POST",
+      })
+      const responseBody = await response.json().catch(() => undefined)
+      if (!response.ok) {
+        const parsedError = v.safeParse(oidcTokenErrorSchema, responseBody)
+        if (!parsedError.success) return resultErrorCreate(op, `The server returned HTTP ${response.status}.`)
+        return resultErrorCreate(op, parsedError.output.error_description ?? parsedError.output.error)
+      }
+      return resultCreate(undefined)
+    } catch (_error) {
+      return resultErrorCreate(op, "The server could not be reached.")
+    }
+  }
+
   const managementPath = (instanceId: string, suffix = "") =>
     `/system/instances/${encodeURIComponent(instanceId)}/oidc${suffix}`
 
@@ -149,6 +200,23 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("oidcApiClientTokenIssue", "The token request is invalid."))
       return tokenRequest(parsed.output)
+    },
+
+    oidcUserInfoGet(): Promise<Result<OidcUserInfo>> {
+      return userInfoRequest("GET")
+    },
+
+    oidcUserInfoPost(): Promise<Result<OidcUserInfo>> {
+      return userInfoRequest("POST")
+    },
+
+    oidcTokenRevoke(input: OidcTokenRevokeRequest): Promise<Result<void>> {
+      const parsed = v.safeParse(oidcTokenRevokeRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("oidcApiClientTokenRevoke", "The token revocation request is invalid."),
+        )
+      return tokenRevokeRequest(parsed.output)
     },
 
     oidcClientCreate(instanceId: string, input: OidcClientCreateRequest): Promise<Result<OidcClientCreateResponse>> {

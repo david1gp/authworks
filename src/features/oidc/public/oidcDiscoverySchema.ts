@@ -9,10 +9,15 @@ export const oidcDiscoverySchema = v.strictObject({
   issuer: v.pipe(v.string(), v.url()),
   jwks_uri: v.pipe(v.string(), v.url()),
   response_types_supported: v.array(v.literal("code")),
+  revocation_endpoint: v.pipe(v.string(), v.url()),
+  revocation_endpoint_auth_methods_supported: v.array(
+    v.picklist(["client_secret_basic", "client_secret_post", "none"]),
+  ),
   scopes_supported: v.array(v.string()),
   subject_types_supported: v.array(v.literal("public")),
   token_endpoint: v.pipe(v.string(), v.url()),
   token_endpoint_auth_methods_supported: v.array(v.picklist(["client_secret_basic", "client_secret_post", "none"])),
+  userinfo_endpoint: v.pipe(v.string(), v.url()),
 })
 
 export type OidcDiscovery = v.InferOutput<typeof oidcDiscoverySchema>

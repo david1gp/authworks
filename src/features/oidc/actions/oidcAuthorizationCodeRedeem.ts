@@ -65,7 +65,7 @@ export function oidcAuthorizationCodeRedeem(
     if (!oidcRedirectUriMatches(parsed.output.redirect_uri, redirectUris.data).success)
       return resultErrorCreate(op, "The authorization code is invalid.")
 
-    const code = repository.authorizationCodeGetByTokenHash(tokenHash)
+    const code = repository.authorizationCodeGetByTokenHash(options.instanceId, tokenHash)
     if (!code.success) return code
     if (
       code.data === null ||

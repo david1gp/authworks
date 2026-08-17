@@ -45,9 +45,12 @@ export function oidcDiscoveryGet(options: OidcDiscoveryGetOptions): Result<OidcD
     issuer,
     jwks_uri: `${issuer}/.well-known/jwks.json`,
     response_types_supported: ["code"],
+    revocation_endpoint: `${issuer}/oauth2/revoke`,
+    revocation_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post", "none"],
     scopes_supported: ["openid", "profile", "email"],
     subject_types_supported: ["public"],
     token_endpoint: `${issuer}/oauth2/token`,
     token_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post", "none"],
+    userinfo_endpoint: `${issuer}/oauth2/userinfo`,
   })
 }

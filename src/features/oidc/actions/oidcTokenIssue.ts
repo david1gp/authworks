@@ -159,7 +159,7 @@ function oidcTokenAuthorizationCodeExchange(options: OidcTokenExchangeOptions): 
   const { input } = options
   if (input.code === undefined || input.code_verifier === undefined || input.redirect_uri === undefined)
     return resultErrorCreate("oidcTokenInvalidGrant", "The authorization grant is invalid.")
-  const code = options.repository.authorizationCodeGetByTokenHash(oidcHashCreate(input.code))
+  const code = options.repository.authorizationCodeGetByTokenHash(options.instanceId, oidcHashCreate(input.code))
   if (!code.success) return code
   if (
     code.data === null ||
@@ -241,7 +241,7 @@ function oidcTokenRefreshExchange(options: OidcTokenExchangeOptions): Result<Oid
   if (input.refresh_token === undefined)
     return resultErrorCreate("oidcTokenInvalidGrant", "The refresh token is invalid.")
   const tokenHash = oidcHashCreate(input.refresh_token)
-  const refresh = options.repository.refreshTokenGetByTokenHash(tokenHash)
+  const refresh = options.repository.refreshTokenGetByTokenHash(options.instanceId, tokenHash)
   if (!refresh.success) return refresh
   if (
     refresh.data === null ||
@@ -254,12 +254,14 @@ function oidcTokenRefreshExchange(options: OidcTokenExchangeOptions): Result<Oid
       return resultErrorCreate("oidcTokenInvalidGrant", "The refresh token is invalid.")
     const refreshRevoked = options.repository.refreshTokenFamilyRevoke(
       options.instanceId,
+      refresh.data.clientId,
       refresh.data.familyId,
       options.now,
     )
     if (!refreshRevoked.success) return refreshRevoked
     const accessRevoked = options.repository.accessTokenFamilyRevoke(
       options.instanceId,
+      refresh.data.clientId,
       refresh.data.familyId,
       options.now,
     )

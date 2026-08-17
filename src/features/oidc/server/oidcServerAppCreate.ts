@@ -24,6 +24,8 @@ import { oidcSigningKeyCreate } from "../actions/oidcSigningKeyCreate.js"
 import { oidcSigningKeyLifecycleSet } from "../actions/oidcSigningKeyLifecycleSet.js"
 import { oidcSigningKeyList } from "../actions/oidcSigningKeyList.js"
 import { oidcTokenIssue } from "../actions/oidcTokenIssue.js"
+import { oidcTokenRevoke } from "../actions/oidcTokenRevoke.js"
+import { oidcUserInfoGet } from "../actions/oidcUserInfoGet.js"
 import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import { oidcAuthorizationRequestSchema } from "../public/oidcAuthorizationRequestSchema.js"
 import { oidcClientCreateRequestSchema } from "../public/oidcClientCreateRequestSchema.js"
@@ -31,6 +33,7 @@ import { oidcClientLifecycleRequestSchema } from "../public/oidcClientLifecycleR
 import { oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
 import { oidcSigningKeyLifecycleRequestSchema } from "../public/oidcSigningKeyLifecycleRequestSchema.js"
 import { oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
+import { oidcTokenRevokeRequestSchema } from "../public/oidcTokenRevokeRequestSchema.js"
 
 type OidcServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -145,6 +148,80 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     context.header("cache-control", "no-store")
     context.header("pragma", "no-cache")
     return context.json(token.data)
+  })
+
+  app.get("/oauth2/userinfo", (context) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success) return oidcUserInfoErrorResponseCreate(context)
+    const token = oidcBearerTokenGet(context.req.header("authorization"))
+    if (token === null) return oidcUserInfoErrorResponseCreate(context)
+    const userInfo = oidcUserInfoGet({
+      database: options.database,
+      instanceId: instance.data.instanceId,
+      token,
+    })
+    if (!userInfo.success) return oidcUserInfoErrorResponseCreate(context)
+    context.header("cache-control", "no-store")
+    return context.json(userInfo.data)
+  })
+
+  app.post("/oauth2/userinfo", (context) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success) return oidcUserInfoErrorResponseCreate(context)
+    const token = oidcBearerTokenGet(context.req.header("authorization"))
+    if (token === null) return oidcUserInfoErrorResponseCreate(context)
+    const userInfo = oidcUserInfoGet({
+      database: options.database,
+      instanceId: instance.data.instanceId,
+      token,
+    })
+    if (!userInfo.success) return oidcUserInfoErrorResponseCreate(context)
+    context.header("cache-control", "no-store")
+    return context.json(userInfo.data)
+  })
+
+  app.post("/oauth2/revoke", async (context) => {
+    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
+    if (!instance.success)
+      return oidcTokenErrorResponseCreate(
+        context,
+        "invalid_request",
+        "The revocation request is invalid.",
+        "oauth2/revoke",
+      )
+    const body = await oidcTokenFormRead(context, "revocation")
+    if (!body.success)
+      return oidcTokenErrorResponseCreate(context, "invalid_request", body.errorMessage, "oauth2/revoke")
+    const credentials = oidcTokenClientCredentialsResolve(context.req.header("authorization"), body.data)
+    if (!credentials.success)
+      return oidcTokenErrorResponseCreate(context, "invalid_client", credentials.errorMessage, "oauth2/revoke")
+    const input = v.safeParse(oidcTokenRevokeRequestSchema, {
+      ...body.data,
+      client_id: credentials.clientId,
+      ...(credentials.clientSecret === undefined ? {} : { client_secret: credentials.clientSecret }),
+    })
+    if (!input.success)
+      return oidcTokenErrorResponseCreate(
+        context,
+        "invalid_request",
+        "The revocation request is invalid.",
+        "oauth2/revoke",
+      )
+    const revoked = oidcTokenRevoke({
+      database: options.database,
+      input: input.output,
+      instanceId: instance.data.instanceId,
+    })
+    if (!revoked.success)
+      return oidcTokenErrorResponseCreate(
+        context,
+        oidcTokenRevokeErrorCodeGet(revoked),
+        revoked.errorMessage,
+        "oauth2/revoke",
+      )
+    context.header("cache-control", "no-store")
+    context.header("pragma", "no-cache")
+    return new Response(null, { status: 200 })
   })
   return app
 }
@@ -351,7 +428,7 @@ function oidcPublicInstanceResolve(database: StorageDatabase, host: string | und
 
 function oidcBearerTokenGet(authorization: string | undefined): string | null {
   if (authorization === undefined) return null
-  const match = /^Bearer (.+)$/.exec(authorization)
+  const match = /^Bearer\s+(\S+)$/i.exec(authorization)
   return match?.[1] ?? null
 }
 
@@ -401,14 +478,30 @@ function oidcTokenErrorResponseCreate(
     | "server_error"
     | "unsupported_grant_type",
   message: string,
+  realm = "oauth2/token",
 ) {
   context.header("cache-control", "no-store")
   context.header("pragma", "no-cache")
-  if (code === "invalid_client") context.header("www-authenticate", 'Basic realm="oauth2/token"')
+  if (code === "invalid_client") context.header("www-authenticate", `Basic realm="${realm}"`)
   return context.json(
     { error: code, error_description: message },
     (code === "invalid_client" ? 401 : code === "server_error" ? 500 : 400) as ContentfulStatusCode,
   )
+}
+
+function oidcUserInfoErrorResponseCreate(context: {
+  header: (name: string, value: string) => void
+  json: (body: unknown, status?: ContentfulStatusCode) => Response
+}) {
+  context.header("www-authenticate", 'Bearer error="invalid_token", error_description="The access token is invalid."')
+  context.header("cache-control", "no-store")
+  return context.json({ error: "invalid_token", error_description: "The access token is invalid." }, 401)
+}
+
+function oidcTokenRevokeErrorCodeGet(result: { errorMessage: string; op: string }) {
+  if (result.op === "oidcTokenRevokeInvalidClient") return "invalid_client" as const
+  if (result.op === "oidcTokenRevoke") return "invalid_request" as const
+  return "server_error" as const
 }
 
 function oidcTokenErrorCodeGet(result: { errorMessage: string; op: string }) {
@@ -467,22 +560,25 @@ async function oidcRequestJsonRead(context: { req: { json: <T>() => Promise<T> }
   }
 }
 
-async function oidcTokenFormRead(context: {
-  req: { header: (name: string) => string | undefined; text: () => Promise<string> }
-}) {
+async function oidcTokenFormRead(
+  context: {
+    req: { header: (name: string) => string | undefined; text: () => Promise<string> }
+  },
+  requestName = "token",
+) {
   const contentType = context.req.header("content-type")?.split(";", 1)[0]?.trim().toLowerCase()
   if (contentType !== "application/x-www-form-urlencoded")
-    return { errorMessage: "The token request must use form encoding.", success: false as const }
+    return { errorMessage: `The ${requestName} request must use form encoding.`, success: false as const }
   try {
     const values: Record<string, string> = {}
     for (const [key, value] of new URLSearchParams(await context.req.text()).entries()) {
       if (Object.hasOwn(values, key))
-        return { errorMessage: "The token request contains duplicate parameters.", success: false as const }
+        return { errorMessage: `The ${requestName} request contains duplicate parameters.`, success: false as const }
       values[key] = value
     }
     return { data: values, success: true as const }
   } catch (_error) {
-    return { errorMessage: "The token request is invalid.", success: false as const }
+    return { errorMessage: `The ${requestName} request is invalid.`, success: false as const }
   }
 }
 
