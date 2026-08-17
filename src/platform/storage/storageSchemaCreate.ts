@@ -113,6 +113,31 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS external_identity_oauth_transactions_expiry_idx ON external_identity_oauth_transactions (expires_at)",
     )
     database.run(
+      "CREATE TABLE IF NOT EXISTS projects (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, organization_id TEXT NOT NULL, name TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), authorization_required INTEGER NOT NULL CHECK (authorization_required IN (0, 1)), project_access_required INTEGER NOT NULL CHECK (project_access_required IN (0, 1)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (organization_id, name), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS projects_instance_id_idx ON projects (instance_id)")
+    database.run("CREATE INDEX IF NOT EXISTS projects_organization_id_idx ON projects (organization_id)")
+    database.run(
+      "CREATE TABLE IF NOT EXISTS project_applications (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, project_id TEXT NOT NULL, name TEXT NOT NULL, application_type TEXT NOT NULL CHECK (application_type IN ('oidc', 'api', 'saml')), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS project_applications_instance_id_idx ON project_applications (instance_id)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS project_applications_project_id_idx ON project_applications (project_id)")
+    database.run(
+      "CREATE TABLE IF NOT EXISTS project_roles (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, project_id TEXT NOT NULL, key TEXT NOT NULL, display_name TEXT NOT NULL, group_name TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (project_id, key), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS project_roles_instance_id_idx ON project_roles (instance_id)")
+    database.run("CREATE INDEX IF NOT EXISTS project_roles_project_id_idx ON project_roles (project_id)")
+    database.run(
+      "CREATE TABLE IF NOT EXISTS project_grants (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, project_id TEXT NOT NULL, organization_id TEXT NOT NULL, granted_organization_id TEXT NOT NULL, role_keys TEXT NOT NULL CHECK (json_valid(role_keys)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (project_id, granted_organization_id), FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE, FOREIGN KEY (granted_organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS project_grants_instance_id_idx ON project_grants (instance_id)")
+    database.run("CREATE INDEX IF NOT EXISTS project_grants_project_id_idx ON project_grants (project_id)")
+    database.run(
+      "CREATE INDEX IF NOT EXISTS project_grants_granted_organization_id_idx ON project_grants (granted_organization_id)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS events (position INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, command_index INTEGER NOT NULL CHECK (command_index >= 0), instance_id TEXT NOT NULL, aggregate_type TEXT NOT NULL, aggregate_id TEXT NOT NULL, aggregate_version INTEGER NOT NULL CHECK (aggregate_version > 0), actor_id TEXT, correlation_id TEXT NOT NULL, causation_id TEXT, occurred_at INTEGER NOT NULL CHECK (occurred_at >= 0), event_type TEXT NOT NULL, payload TEXT NOT NULL CHECK (json_valid(payload)), metadata TEXT NOT NULL CHECK (json_valid(metadata)))",
     )
     database.run(

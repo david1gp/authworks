@@ -4,6 +4,7 @@ import { externalIdentityServerAppCreate } from "../features/externalIdentities/
 import { instanceServerAppCreate } from "../features/instances/server/instanceServerAppCreate.js"
 import { organizationServerAppCreate } from "../features/organizations/server/organizationServerAppCreate.js"
 import { passwordServerAppCreate } from "../features/passwords/server/passwordServerAppCreate.js"
+import { projectServerAppCreate } from "../features/projects/server/projectServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/public/sessionPasswordCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
 import { userServerAppCreate } from "../features/users/server/userServerAppCreate.js"
@@ -25,6 +26,7 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
     externalIdentityServerAppCreate({ database: database.data, systemSecret: options.systemSecret }),
   )
   application.route("/", organizationServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
+  application.route("/", projectServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route("/", userServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route(
     "/",

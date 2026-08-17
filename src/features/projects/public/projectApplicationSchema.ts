@@ -1,0 +1,17 @@
+import * as v from "valibot"
+import { projectApplicationStatusSchema } from "../domain/projectApplicationStatusSchema.js"
+import { projectApplicationTypeSchema } from "../domain/projectApplicationTypeSchema.js"
+import { projectResourceIdSchema } from "./projectResourceIdSchema.js"
+
+export const projectApplicationSchema = v.strictObject({
+  applicationType: projectApplicationTypeSchema,
+  createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  id: projectResourceIdSchema,
+  instanceId: projectResourceIdSchema,
+  name: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
+  projectId: projectResourceIdSchema,
+  status: projectApplicationStatusSchema,
+  updatedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
+})
+
+export type ProjectApplication = v.InferOutput<typeof projectApplicationSchema>

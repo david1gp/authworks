@@ -15,6 +15,10 @@ import { passwordChallengeTable } from "../../features/passwords/persistence/pas
 import { passwordCredentialTable } from "../../features/passwords/persistence/passwordCredentialTable.js"
 import { passwordLockoutTable } from "../../features/passwords/persistence/passwordLockoutTable.js"
 import { passwordPolicyTable } from "../../features/passwords/persistence/passwordPolicyTable.js"
+import { projectApplicationTable } from "../../features/projects/persistence/projectApplicationTable.js"
+import { projectGrantTable } from "../../features/projects/persistence/projectGrantTable.js"
+import { projectRoleTable } from "../../features/projects/persistence/projectRoleTable.js"
+import { projectTable } from "../../features/projects/persistence/projectTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
@@ -36,6 +40,10 @@ export const storageSchema = {
   passwordCredentialTable,
   passwordLockoutTable,
   passwordPolicyTable,
+  projectApplicationTable,
+  projectGrantTable,
+  projectRoleTable,
+  projectTable,
   sessionTable,
   userProfileTable,
   userTable,

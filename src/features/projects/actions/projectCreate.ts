@@ -1,0 +1,118 @@
+import { type Result } from "#result"
+import * as v from "valibot"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
+import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { instanceGet } from "../../instances/actions/instanceGet.js"
+import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { organizationGet } from "../../organizations/actions/organizationGet.js"
+import { projectOrganizationAuthorize } from "./projectOrganizationAuthorize.js"
+import { projectNameNormalize } from "../domain/projectNameNormalize.js"
+import { projectPublicViewCreate } from "../domain/projectPublicViewCreate.js"
+import { projectEventTypes } from "../events/projectEventTypes.js"
+import { projectCreatedEventPayloadSchema } from "../events/projectCreatedEventPayloadSchema.js"
+import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
+import { projectCreateRequestSchema, type ProjectCreateRequest } from "../public/projectCreateRequestSchema.js"
+import type { Project } from "../public/projectSchema.js"
+
+type ProjectCreateOptions = {
+  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly database: StorageDatabase
+  readonly input: ProjectCreateRequest
+  readonly instanceId: string
+  readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
+  readonly correlationId?: string
+}
+
+export function projectCreate(options: ProjectCreateOptions): Result<{ project: Project }> {
+  const op = "projectCreate"
+  const parsed = v.safeParse(projectCreateRequestSchema, options.input)
+  if (!parsed.success) return resultErrorCreate(op, "The project request is invalid.")
+  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+    return resultErrorCreate(op, "The project is not available in this tenant context.")
+  const systemContext = instanceSystemContextCreate()
+  const instance = instanceGet({ context: systemContext, database: options.database, instanceId: options.instanceId })
+  if (!instance.success) return instance
+  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const organization = organizationGet({
+    context: systemContext,
+    database: options.database,
+    instanceId: options.instanceId,
+    organizationId: parsed.output.organizationId,
+  })
+  if (!organization.success) return organization
+  if (organization.data.organization.instanceId !== options.instanceId)
+    return resultErrorCreate(op, "The organization was not found.")
+  if (organization.data.organization.status !== "active")
+    return resultErrorCreate(op, "The organization is not active.")
+  const authorized = projectOrganizationAuthorize({
+    context: options.context,
+    database: options.database,
+    instanceId: options.instanceId,
+    organizationId: parsed.output.organizationId,
+    permission: "project.create",
+  })
+  if (!authorized.success) return authorized
+  const name = projectNameNormalize(parsed.output.name)
+  if (!name.success) return name
+  const authorizationRequired = parsed.output.authorizationRequired ?? false
+  const projectAccessRequired = parsed.output.projectAccessRequired ?? false
+  const runtime = options.runtime ?? options.database.runtime
+  const createdAt = runtime.now()
+  if (!Number.isSafeInteger(createdAt) || createdAt < 0)
+    return resultErrorCreate(op, "The project timestamp is invalid.")
+  const projectId = uuidv7Create(runtime)
+  const correlationId = options.correlationId ?? uuidv7Create(runtime)
+  return storageTransactionRun(options.database, (transaction) => {
+    const repository = projectRepositoryCreate(transaction)
+    const created = repository.projectCreate({
+      authorizationRequired: authorizationRequired ? 1 : 0,
+      createdAt,
+      id: projectId,
+      instanceId: options.instanceId,
+      name: name.data,
+      organizationId: parsed.output.organizationId,
+      projectAccessRequired: projectAccessRequired ? 1 : 0,
+      status: "active",
+      updatedAt: createdAt,
+      version: 1,
+    })
+    if (!created.success) {
+      if (created.errorMessage === "The project could not be created.")
+        return resultErrorCreate(op, "A project with that name already exists in this organization.")
+      return created
+    }
+    const payload = v.safeParse(projectCreatedEventPayloadSchema, {
+      authorizationRequired,
+      name: name.data,
+      organizationId: parsed.output.organizationId,
+      projectAccessRequired,
+    })
+    if (!payload.success) return resultErrorCreate(op, "The project event payload is invalid.")
+    const event = storageEventAppend(
+      transaction,
+      {
+        actorId: options.context.actorId,
+        aggregateId: projectId,
+        aggregateType: "project",
+        aggregateVersion: 1,
+        commandIndex: 0,
+        correlationId,
+        eventType: projectEventTypes.created,
+        instanceId: options.instanceId,
+        metadata: { source: "projects" },
+        occurredAt: createdAt,
+        payload: payload.output,
+      },
+      runtime,
+    )
+    if (!event.success) return event
+    return resultCreate({ project: projectPublicViewCreate(created.data) })
+  })
+}

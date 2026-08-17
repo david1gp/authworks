@@ -1,0 +1,101 @@
+import { type Result } from "#result"
+import * as v from "valibot"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
+import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { projectApplicationNameNormalize } from "../domain/projectApplicationNameNormalize.js"
+import { projectApplicationPublicViewCreate } from "../domain/projectApplicationPublicViewCreate.js"
+import { projectEventTypes } from "../events/projectEventTypes.js"
+import { projectApplicationCreatedEventPayloadSchema } from "../events/projectApplicationCreatedEventPayloadSchema.js"
+import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
+import {
+  projectApplicationCreateRequestSchema,
+  type ProjectApplicationCreateRequest,
+} from "../public/projectApplicationCreateRequestSchema.js"
+import type { ProjectApplication } from "../public/projectApplicationSchema.js"
+import { projectContextAuthorize } from "./projectContextAuthorize.js"
+
+type ProjectApplicationCreateOptions = {
+  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly database: StorageDatabase
+  readonly input: ProjectApplicationCreateRequest
+  readonly instanceId: string
+  readonly projectId: string
+  readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
+  readonly correlationId?: string
+}
+
+export function projectApplicationCreate(
+  options: ProjectApplicationCreateOptions,
+): Result<{ application: ProjectApplication }> {
+  const op = "projectApplicationCreate"
+  const parsed = v.safeParse(projectApplicationCreateRequestSchema, options.input)
+  if (!parsed.success) return resultErrorCreate(op, "The application request is invalid.")
+  const runtime = options.runtime ?? options.database.runtime
+  const createdAt = runtime.now()
+  if (!Number.isSafeInteger(createdAt) || createdAt < 0)
+    return resultErrorCreate(op, "The application timestamp is invalid.")
+  const applicationId = uuidv7Create(runtime)
+  const correlationId = options.correlationId ?? uuidv7Create(runtime)
+  return storageTransactionRun(options.database, (transaction) => {
+    const repository = projectRepositoryCreate(transaction)
+    const project = repository.projectGet(options.projectId)
+    if (!project.success) return project
+    if (project.data === null || project.data.instanceId !== options.instanceId || project.data.status !== "active")
+      return resultErrorCreate(op, "The project was not found.")
+    const authorized = projectContextAuthorize({
+      context: options.context,
+      database: options.database,
+      instanceId: options.instanceId,
+      permission: "project.app.write",
+      project: project.data,
+    })
+    if (!authorized.success) return authorized
+    const name = projectApplicationNameNormalize(parsed.output.name)
+    if (!name.success) return name
+    const created = repository.projectApplicationCreate({
+      applicationType: parsed.output.applicationType,
+      createdAt,
+      id: applicationId,
+      instanceId: options.instanceId,
+      name: name.data,
+      projectId: options.projectId,
+      status: "active",
+      updatedAt: createdAt,
+      version: 1,
+    })
+    if (!created.success) return created
+    const payload = v.safeParse(projectApplicationCreatedEventPayloadSchema, {
+      applicationId,
+      applicationType: parsed.output.applicationType,
+      name: name.data,
+      projectId: options.projectId,
+    })
+    if (!payload.success) return resultErrorCreate(op, "The application event payload is invalid.")
+    const event = storageEventAppend(
+      transaction,
+      {
+        actorId: options.context.actorId,
+        aggregateId: applicationId,
+        aggregateType: "project_application",
+        aggregateVersion: 1,
+        commandIndex: 0,
+        correlationId,
+        eventType: projectEventTypes.applicationCreated,
+        instanceId: options.instanceId,
+        metadata: { source: "projects" },
+        occurredAt: createdAt,
+        payload: payload.output,
+      },
+      runtime,
+    )
+    if (!event.success) return event
+    return resultCreate({ application: projectApplicationPublicViewCreate(created.data) })
+  })
+}

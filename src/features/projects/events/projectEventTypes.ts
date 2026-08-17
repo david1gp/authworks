@@ -1,0 +1,17 @@
+export const projectEventTypes = {
+  applicationCreated: "project.application_created",
+  applicationDeleted: "project.application_deleted",
+  applicationStatusChanged: "project.application_status_changed",
+  applicationUpdated: "project.application_updated",
+  created: "project.created",
+  deleted: "project.deleted",
+  grantCreated: "project.grant_created",
+  grantDeleted: "project.grant_deleted",
+  grantStatusChanged: "project.grant_status_changed",
+  grantUpdated: "project.grant_updated",
+  roleCreated: "project.role_created",
+  roleDeleted: "project.role_deleted",
+  roleUpdated: "project.role_updated",
+  statusChanged: "project.status_changed",
+  updated: "project.updated",
+} as const
