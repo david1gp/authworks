@@ -54,6 +54,15 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS user_profiles_instance_id_idx ON user_profiles (instance_id)")
     database.run(
+      "CREATE TABLE IF NOT EXISTS email_otp_challenges (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_id TEXT, email_hash TEXT NOT NULL, purpose TEXT NOT NULL CHECK (purpose IN ('sign_in')), code_hash TEXT NOT NULL, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS email_otp_challenges_instance_email_idx ON email_otp_challenges (instance_id, email_hash, purpose)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS email_otp_challenges_instance_user_idx ON email_otp_challenges (instance_id, user_id, purpose)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS password_credentials (user_id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, hash TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), changed_at INTEGER NOT NULL CHECK (changed_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
     )
     database.run(
@@ -70,7 +79,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS password_challenges_user_kind_idx ON password_challenges (instance_id, user_id, kind)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, assurance TEXT NOT NULL CHECK (assurance IN ('none', 'authenticated', 'multi_factor')), authentication_method TEXT NOT NULL CHECK (authentication_method IN ('password')), device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER NOT NULL CHECK (last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), revocation_reason TEXT, version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, instance_id TEXT NOT NULL, user_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, assurance TEXT NOT NULL CHECK (assurance IN ('none', 'authenticated', 'multi_factor')), authentication_method TEXT NOT NULL CHECK (authentication_method IN ('email_otp', 'password')), device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER NOT NULL CHECK (last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), revocation_reason TEXT, version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (instance_id) REFERENCES instances(id) ON DELETE CASCADE)",
     )
     database.run("CREATE INDEX IF NOT EXISTS sessions_instance_user_idx ON sessions (instance_id, user_id)")
     database.run(

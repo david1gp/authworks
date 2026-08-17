@@ -2,6 +2,7 @@
 
 import type { ApplicationContext, Command } from "@stricli/core"
 import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
+import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommands.js"
 import { instanceCliCommands } from "../features/instances/cli/instanceCliCommands.js"
 import { organizationCliCommands } from "../features/organizations/cli/organizationCliCommands.js"
 import { passwordCliCommands } from "../features/passwords/cli/passwordCliCommands.js"
@@ -24,6 +25,7 @@ const cliApplication = buildApplication(
   buildRouteMap({
     routes: {
       instances: instanceCliCommands,
+      emailOtp: emailOtpCliCommands,
       org: organizationCliCommands,
       organizations: organizationCliCommands,
       password: passwordCliCommands,
