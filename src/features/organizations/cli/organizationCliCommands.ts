@@ -524,8 +524,8 @@ export const organizationCliCommands = buildRouteMap({
 
 function organizationCliClientCreate(context: ApplicationContext, flags: OrganizationCliFlags) {
   return organizationApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.ZITADEL_V2_TOKEN,
+    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
+    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
   })
 }
 
@@ -563,7 +563,7 @@ function organizationCliResultWrite(
 function organizationCommonFlags() {
   return {
     server: {
-      brief: "ZITADEL v2 server URL",
+      brief: "Authworks server URL",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

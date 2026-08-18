@@ -1,9 +1,9 @@
 {
-  "name": "@adaptive-ds/zitadel-v2",
+  "name": "@adaptive-ds/authworks",
   "version": "0.1.0",
   "description": "Backend-first identity platform: Hono server, typed API client library, and CLI. Users, orgs, OIDC, MFA, and events on SQLite.",
   "keywords": [
-    "zitadel",
+    "authworks",
     "identity",
     "oidc",
     "oauth2",
@@ -22,13 +22,13 @@
     "cli",
     "adaptive-ds"
   ],
-  "homepage": "https://github.com/david1gp/zitadel-v2",
+  "homepage": "https://github.com/david1gp/authworks",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/david1gp/zitadel-v2.git"
+    "url": "git+https://github.com/david1gp/authworks.git"
   },
   "bugs": {
-    "url": "https://github.com/david1gp/zitadel-v2/issues"
+    "url": "https://github.com/david1gp/authworks/issues"
   },
   "author": {
     "name": "David Siewert",
@@ -46,7 +46,7 @@
   "main": "./dist/library/outputs/library.js",
   "types": "./dist/library/outputs/library.d.ts",
   "bin": {
-    "zitadel-v2": "./dist/cli/cli.js"
+    "authworks": "./dist/cli/cli.js"
   },
   "engines": {
     "node": ">=22",

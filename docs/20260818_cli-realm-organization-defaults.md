@@ -6,7 +6,7 @@ Allow realm- and organization-scoped CLI commands to use environment-provided de
 
 ## Decisions
 
-- Use `ZITADEL_V2_REALM_ID` and `ZITADEL_V2_ORGANIZATION_ID`.
+- Use `AUTHWORKS_REALM_ID` and `AUTHWORKS_ORGANIZATION_ID`.
 - Explicit `--realm-id` and `--organization-id` values override environment defaults.
 - Commands still fail through normal CLI validation when a required ID has neither a flag nor an environment value.
 - Realm-independent commands remain unchanged.

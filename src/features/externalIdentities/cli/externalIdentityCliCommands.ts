@@ -140,8 +140,8 @@ function externalIdentityCliClientCreate(
   flags: Pick<ExternalIdentityCliFlags, "server" | "token">,
 ) {
   return externalIdentityApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.ZITADEL_V2_TOKEN,
+    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
+    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
   })
 }
 
@@ -161,7 +161,7 @@ function externalIdentityCommonFlags() {
   return {
     realmId: { ...externalIdentityTextFlag("Realm UUID"), optional: true as const },
     server: {
-      brief: "ZITADEL v2 server URL",
+      brief: "Authworks server URL",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

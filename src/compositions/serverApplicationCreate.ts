@@ -44,7 +44,7 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
       database: database.data,
       origins: options.passkeyOrigins ?? [publicOrigin],
       rpId: passkeyRpId,
-      rpName: options.passkeyRpName ?? "ZITADEL",
+      rpName: options.passkeyRpName ?? "Authworks",
     }),
   )
   application.route("/", organizationServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))

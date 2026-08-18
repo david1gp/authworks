@@ -61,8 +61,8 @@ export const impersonationCliCommands = buildRouteMap({
 
 function impersonationCliClientCreate(context: ApplicationContext, flags: ImpersonationCliFlags) {
   return impersonationApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.ZITADEL_V2_TOKEN,
+    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
+    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
   })
 }
 
@@ -81,7 +81,7 @@ function impersonationCliResultWrite(
 function impersonationCommonFlags() {
   return {
     realmId: { ...textFlag("Realm UUID"), optional: true as const },
-    server: optionalTextFlag("ZITADEL v2 server URL"),
+    server: optionalTextFlag("Authworks server URL"),
     token: optionalTextFlag("Bearer token"),
   }
 }

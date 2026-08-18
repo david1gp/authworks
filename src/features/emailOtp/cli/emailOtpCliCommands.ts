@@ -54,7 +54,7 @@ export const emailOtpCliCommands = buildRouteMap({
 
 function emailOtpCliClientCreate(context: ApplicationContext, flags: Pick<EmailOtpCliFlags, "server">) {
   return emailOtpApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000",
+    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
   })
 }
 
@@ -73,7 +73,7 @@ function emailOtpCliResultWrite(
 function emailOtpCommonFlags() {
   return {
     server: {
-      brief: "ZITADEL v2 server URL",
+      brief: "Authworks server URL",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

@@ -32,9 +32,9 @@ import { platformTestkitCreate } from "../../src/platform/testkit/platformTestki
 async function withDatabase<T>(
   operation: (database: StorageDatabase, testkit: ReturnType<typeof platformTestkitCreate>) => Promise<T>,
 ) {
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-organization-settings-"))
+  const directory = await mkdtemp(join(tmpdir(), "authworks-organization-settings-"))
   const testkit = platformTestkitCreate()
-  const opened = storageDatabaseOpen(join(directory, "zitadel.sqlite"), testkit.runtime)
+  const opened = storageDatabaseOpen(join(directory, "authworks.sqlite"), testkit.runtime)
   expect(opened.success).toBe(true)
   if (!opened.success) throw new Error(opened.errorMessage)
   try {
@@ -111,7 +111,7 @@ test("branding and verified domain discovery are tenant-safe and DNS-port based"
     expect(claimed.data.domain.verification?.recordValue).not.toBeUndefined()
     const port: OrganizationDomainDnsVerificationPort = {
       txtRecordsGet: async (recordName) => {
-        expect(recordName).toBe("_zitadel-verification.login.example.com")
+        expect(recordName).toBe("_authworks-verification.login.example.com")
         return resultCreate([claimed.data.domain.verification?.recordValue ?? ""])
       },
     }

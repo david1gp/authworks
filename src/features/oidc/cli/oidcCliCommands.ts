@@ -233,8 +233,8 @@ export const oidcCliCommands = buildRouteMap({
 
 function oidcCliClientCreate(context: ApplicationContext, flags: OidcCliFlags) {
   return oidcApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.ZITADEL_V2_TOKEN,
+    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
+    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
   })
 }
 
@@ -253,7 +253,7 @@ function oidcCliResultWrite(
 function oidcCommonFlags() {
   return {
     server: {
-      brief: "ZITADEL v2 server URL",
+      brief: "Authworks server URL",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

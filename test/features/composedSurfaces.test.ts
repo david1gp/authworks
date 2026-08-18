@@ -18,12 +18,12 @@ import { userApiClientCreate } from "../../src/features/users/client/userApiClie
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
 
 test("all feature clients round-trip through the composed server", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-composed-surfaces-"))
+  const directory = await mkdtemp(join(tmpdir(), "authworks-composed-surfaces-"))
   const domain = "composed-surfaces.example.com"
   const systemSecret = "composed-system-secret"
   try {
     const created = serverApplicationCreate({
-      databasePath: join(directory, "zitadel.sqlite"),
+      databasePath: join(directory, "authworks.sqlite"),
       publicOrigin: `https://${domain}`,
       systemSecret,
     })

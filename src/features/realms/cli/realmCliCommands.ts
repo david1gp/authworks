@@ -43,7 +43,7 @@ const realmCreateCommand = buildCommand({
       },
       name: { brief: "Realm display name", kind: "parsed", parse: (value: string) => value, placeholder: "NAME" },
       server: {
-        brief: "ZITADEL v2 server URL",
+        brief: "Authworks server URL",
         kind: "parsed",
         optional: true,
         parse: (value: string) => value,
@@ -69,7 +69,7 @@ const realmListCommand = buildCommand({
   parameters: {
     flags: {
       server: {
-        brief: "ZITADEL v2 server URL",
+        brief: "Authworks server URL",
         kind: "parsed",
         optional: true,
         parse: (value: string) => value,
@@ -105,7 +105,7 @@ const realmBootstrapCommand = buildCommand({
         placeholder: "REALM_ID",
       },
       server: {
-        brief: "ZITADEL v2 server URL",
+        brief: "Authworks server URL",
         kind: "parsed",
         optional: true,
         parse: (value: string) => value,
@@ -133,8 +133,8 @@ export const realmCliCommands = buildRouteMap({
 })
 
 function realmCliClientCreate(context: ApplicationContext, flags: RealmCliFlags) {
-  const baseUrl = flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000"
-  const token = flags.token ?? context.process.env?.ZITADEL_V2_TOKEN
+  const baseUrl = flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000"
+  const token = flags.token ?? context.process.env?.AUTHWORKS_TOKEN
   return realmApiClientCreate({ baseUrl, token })
 }
 

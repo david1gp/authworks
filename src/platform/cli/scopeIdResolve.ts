@@ -17,7 +17,7 @@ export function scopeIdResolve(
   return undefined
 }
 
-function scopeIdEnvironmentName(name: ScopeIdName): "ZITADEL_V2_ORGANIZATION_ID" | "ZITADEL_V2_REALM_ID" {
-  if (name === "organization") return "ZITADEL_V2_ORGANIZATION_ID"
-  return "ZITADEL_V2_REALM_ID"
+function scopeIdEnvironmentName(name: ScopeIdName): "AUTHWORKS_ORGANIZATION_ID" | "AUTHWORKS_REALM_ID" {
+  if (name === "organization") return "AUTHWORKS_ORGANIZATION_ID"
+  return "AUTHWORKS_REALM_ID"
 }

@@ -3,11 +3,11 @@ import { serverApplicationCreate } from "../compositions/serverApplicationCreate
 
 export function serverListen(): void {
   const parsed = configurationParse({
-    databasePath: process.env.ZITADEL_V2_DATABASE_PATH ?? process.env.DATABASE_PATH,
-    host: process.env.ZITADEL_V2_HOST ?? process.env.HOST,
+    databasePath: process.env.AUTHWORKS_DATABASE_PATH ?? process.env.DATABASE_PATH,
+    host: process.env.AUTHWORKS_HOST ?? process.env.HOST,
     nodeEnv: process.env.NODE_ENV,
-    port: process.env.ZITADEL_V2_PORT ?? process.env.PORT,
-    publicOrigin: process.env.ZITADEL_V2_PUBLIC_ORIGIN ?? process.env.PUBLIC_ORIGIN ?? "http://127.0.0.1:3000",
+    port: process.env.AUTHWORKS_PORT ?? process.env.PORT,
+    publicOrigin: process.env.AUTHWORKS_PUBLIC_ORIGIN ?? process.env.PUBLIC_ORIGIN ?? "http://127.0.0.1:3000",
   })
   if (!parsed.success) {
     console.error(parsed.errorMessage)
@@ -17,7 +17,7 @@ export function serverListen(): void {
   const created = serverApplicationCreate({
     databasePath: parsed.data.databasePath,
     publicOrigin: parsed.data.publicOrigin,
-    systemSecret: process.env.ZITADEL_V2_SYSTEM_SECRET,
+    systemSecret: process.env.AUTHWORKS_SYSTEM_SECRET,
   })
   if (!created.success) {
     console.error(created.errorMessage)

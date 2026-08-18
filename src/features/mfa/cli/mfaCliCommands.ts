@@ -117,9 +117,9 @@ export const mfaCliCommands = buildRouteMap({
 
 function mfaCliClientCreate(context: ApplicationContext, flags: MfaCliFlags) {
   return mfaApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000",
-    systemToken: flags.systemToken ?? context.process.env?.ZITADEL_V2_SYSTEM_SECRET,
-    token: flags.token ?? context.process.env?.ZITADEL_V2_TOKEN,
+    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
+    systemToken: flags.systemToken ?? context.process.env?.AUTHWORKS_SYSTEM_SECRET,
+    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
   })
 }
 
@@ -138,7 +138,7 @@ function mfaCliResultWrite(
 function mfaCommonFlags() {
   return {
     server: {
-      brief: "ZITADEL v2 server URL",
+      brief: "Authworks server URL",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

@@ -32,9 +32,9 @@ import { platformTestkitCreate } from "../../src/platform/testkit/platformTestki
 async function withDatabase<T>(
   operation: (database: StorageDatabase, testkit: ReturnType<typeof platformTestkitCreate>) => Promise<T>,
 ) {
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-mfa-"))
+  const directory = await mkdtemp(join(tmpdir(), "authworks-mfa-"))
   const testkit = platformTestkitCreate()
-  const opened = storageDatabaseOpen(join(directory, "zitadel.sqlite"), testkit.runtime)
+  const opened = storageDatabaseOpen(join(directory, "authworks.sqlite"), testkit.runtime)
   expect(opened.success).toBe(true)
   if (!opened.success) throw new Error(opened.errorMessage)
   try {

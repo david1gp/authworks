@@ -13,8 +13,8 @@ import { storageTransactionRun } from "../../src/platform/storage/storageTransac
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
 
 async function withStorage<T>(operation: (path: string) => Promise<T>): Promise<T> {
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-storage-"))
-  const path = join(directory, "zitadel.sqlite")
+  const directory = await mkdtemp(join(tmpdir(), "authworks-storage-"))
+  const path = join(directory, "authworks.sqlite")
   try {
     return await operation(path)
   } finally {

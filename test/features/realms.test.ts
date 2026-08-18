@@ -19,8 +19,8 @@ import { storageEventTable } from "../../src/platform/storage/storageEventTable.
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
 
 async function withDatabase<T>(operation: (database: StorageDatabase) => Promise<T>) {
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-realms-"))
-  const path = join(directory, "zitadel.sqlite")
+  const directory = await mkdtemp(join(tmpdir(), "authworks-realms-"))
+  const path = join(directory, "authworks.sqlite")
   const testkit = platformTestkitCreate()
   const opened = storageDatabaseOpen(path, testkit.runtime)
   expect(opened.success).toBe(true)

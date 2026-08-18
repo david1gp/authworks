@@ -39,8 +39,8 @@ type ConformanceFixture = {
 }
 
 async function withFixture<T>(operation: (fixture: ConformanceFixture) => Promise<T>): Promise<T> {
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-task-20-"))
-  const databasePath = join(directory, "zitadel.sqlite")
+  const directory = await mkdtemp(join(tmpdir(), "authworks-task-20-"))
+  const databasePath = join(directory, "authworks.sqlite")
   const created = serverApplicationCreate({
     databasePath,
     publicOrigin: "https://alpha.task-20.example",

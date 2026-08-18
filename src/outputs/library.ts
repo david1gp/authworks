@@ -1,4 +1,4 @@
-export const packageName = "@adaptive-ds/zitadel-v2"
+export const packageName = "@adaptive-ds/authworks"
 
 export { resultCreate } from "../platform/errors/resultCreate.js"
 export { resultErrorCreate } from "../platform/errors/resultErrorCreate.js"

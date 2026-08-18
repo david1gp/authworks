@@ -45,11 +45,11 @@ const cliApplication = buildApplication(
       users: userCliCommands,
     },
     docs: {
-      brief: "ZITADEL v2 identity platform",
+      brief: "Authworks identity platform",
     },
   }),
   {
-    name: "zitadel-v2",
+    name: "authworks",
     scanner: {
       caseStyle: "allow-kebab-for-camel",
     },

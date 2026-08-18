@@ -38,7 +38,7 @@ Replace the tenant-domain `instance` abstraction with `realm` everywhere, withou
 - `src/outputs/{server.ts,library.ts,cli.ts,library}`
 - `test`
 - `README.md`
-- `docs/20260817_zitadel-v2.md`
+- `docs/20260817_authworks.md`
 - `package.json`
 
 ## Current context

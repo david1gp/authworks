@@ -10,7 +10,7 @@ type FileSnapshot = {
 }
 
 test("importing the server output does not initialize SQLite", async () => {
-  const databasePath = join(process.cwd(), "zitadel.sqlite")
+  const databasePath = join(process.cwd(), "authworks.sqlite")
   const before = await fileSnapshot(databasePath)
   await import("../../src/outputs/server.js")
   const after = await fileSnapshot(databasePath)
@@ -20,10 +20,10 @@ test("importing the server output does not initialize SQLite", async () => {
 })
 
 test("server application creation returns a Result error for a bad database path", async () => {
-  const parent = await mkdtemp(join(tmpdir(), "zitadel-v2-invalid-db-"))
+  const parent = await mkdtemp(join(tmpdir(), "authworks-invalid-db-"))
   await rm(parent, { force: true, recursive: true })
 
-  const result = serverApplicationCreate({ databasePath: join(parent, "missing", "zitadel.sqlite") })
+  const result = serverApplicationCreate({ databasePath: join(parent, "missing", "authworks.sqlite") })
 
   expect(result.success).toBe(false)
 })

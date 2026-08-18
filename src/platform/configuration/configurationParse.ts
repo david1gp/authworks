@@ -4,7 +4,7 @@ import { resultErrorCreate } from "../errors/resultErrorCreate.js"
 import { configurationSchema, type Configuration } from "./configurationSchema.js"
 
 const defaultValues = {
-  databasePath: "zitadel.sqlite",
+  databasePath: "authworks.sqlite",
   host: "127.0.0.1",
   nodeEnv: "development",
   port: 3000,

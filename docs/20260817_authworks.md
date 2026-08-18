@@ -1,8 +1,8 @@
-# ZITADEL v2 backend
+# Authworks backend
 
 ## Goal
 
-Build `/home/david/adaptive/zitadel-v2` as an alpha, backend-first identity platform covering all agreed capabilities from levels 1 through 6. Deliver a usable server, a public schema/API-client library, and an `@stricli/core` CLI. Preserve observable behavior from existing ZITADEL and adaptive authentication tests where applicable, with correctness and security tests taking priority over implementation reuse.
+Build `/home/david/adaptive/authworks` as an alpha, backend-first identity platform covering all agreed capabilities from levels 1 through 6. Deliver a usable server, a public schema/API-client library, and an `@stricli/core` CLI. Preserve observable behavior from existing ZITADEL and adaptive authentication tests where applicable, with correctness and security tests taking priority over implementation reuse.
 
 ## Decisions
 
@@ -12,7 +12,7 @@ Build `/home/david/adaptive/zitadel-v2` as an alpha, backend-first identity plat
 - Keep public Valibot transport schemas separate from private Drizzle persistence schemas. Share explicit domain/public schemas where safe; never derive public contracts blindly from database rows.
 - Perform backend, library, and CLI work before creating any UI.
 - Use canonical lowercase UUIDv7 strings for public durable resource and event IDs. Use random opaque secrets for credentials, sessions, authorization codes, refresh tokens, API keys, challenges, nonce, and state. Use an internal integer event position for strict ordering.
-- Use one file-backed SQLite database, `zitadel.sqlite`, for current state and the append-only event log. Configure `journal_mode=WAL`, `synchronous=FULL`, `foreign_keys=ON`, `temp_store=MEMORY`, and `busy_timeout=5000`, adapting the proven `/home/david/leo_own/gruppenplan-app` presets for identity-data durability. Write state plus events in one transaction.
+- Use one file-backed SQLite database, `authworks.sqlite`, for current state and the append-only event log. Configure `journal_mode=WAL`, `synchronous=FULL`, `foreign_keys=ON`, `temp_store=MEMORY`, and `busy_timeout=5000`, adapting the proven `/home/david/leo_own/gruppenplan-app` presets for identity-data durability. Write state plus events in one transaction.
 - Current-state tables are authoritative. The append-only event table records versioned domain facts with event ID, position, command index, realm, aggregate identity/version, actor, correlation/causation, timestamp, payload, and metadata. Never record secrets or credential material.
 - Alpha rule: destructive schema changes and database resets are allowed. Do not implement backward compatibility, compatibility adapters, event upcasters, deprecated contracts, or migration paths for existing data unless explicitly requested. Keep only what is needed to construct and test the current schema from an empty database.
 - Before implementing a feature, inspect existing ZITADEL, `adaptive/convex-auth-solid`, `leo/allgroups-chat`, and `adaptive/zitadel-login` behavior and tests as applicable. Port observable behavior, not framework-specific implementation.
@@ -60,13 +60,13 @@ Build `/home/david/adaptive/zitadel-v2` as an alpha, backend-first identity plat
 
 ## Paths
 
-- Plan: `/home/david/adaptive/zitadel-v2/docs/20260817_zitadel-v2.md`
-- Target: `/home/david/adaptive/zitadel-v2`
-- Source: `/home/david/adaptive/zitadel-v2/src`
-- Features: `/home/david/adaptive/zitadel-v2/src/features/*`
-- Platform: `/home/david/adaptive/zitadel-v2/src/platform/*`
-- Output entries: `/home/david/adaptive/zitadel-v2/src/outputs/{server,library,cli}.ts`
-- Builds: `/home/david/adaptive/zitadel-v2/dist/{server,library,cli}`
+- Plan: `/home/david/adaptive/authworks/docs/20260817_authworks.md`
+- Target: `/home/david/adaptive/authworks`
+- Source: `/home/david/adaptive/authworks/src`
+- Features: `/home/david/adaptive/authworks/src/features/*`
+- Platform: `/home/david/adaptive/authworks/src/platform/*`
+- Output entries: `/home/david/adaptive/authworks/src/outputs/{server,library,cli}.ts`
+- Builds: `/home/david/adaptive/authworks/dist/{server,library,cli}`
 - Primary reference: `/home/david/opensource/zitadel`
 - Stack reference: `/home/david/adaptive/codeline`
 - Authentication reference: `/home/david/adaptive/convex-auth-solid`

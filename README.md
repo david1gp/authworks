@@ -1,4 +1,4 @@
-# @adaptive-ds/zitadel-v2
+# @adaptive-ds/authworks
 
 This package is an independent identity API built with Hono and Valibot. It is not ZITADEL-compatible, not a ZITADEL client, and not a protobuf/ConnectRPC compatibility layer. You can run it as a Hono server, import it as a typed client, or use it from a CLI. It is one Bun package, with features that own their routes, schemas, events, and tests.
 
@@ -32,7 +32,7 @@ Package exports use an explicit allowlist. `.` is a thin root containing `packag
 ## Install
 
 ```bash
-bun add @adaptive-ds/zitadel-v2
+bun add @adaptive-ds/authworks
 ```
 
 ## Scripts
@@ -49,13 +49,13 @@ bun run release  # git-cliff changelog + tag
 
 ## CLI scope defaults
 
-Realm- and organization-scoped commands can use `ZITADEL_V2_REALM_ID` and `ZITADEL_V2_ORGANIZATION_ID` as default
+Realm- and organization-scoped commands can use `AUTHWORKS_REALM_ID` and `AUTHWORKS_ORGANIZATION_ID` as default
 scope IDs:
 
 ```bash
-export ZITADEL_V2_REALM_ID=realm-uuid
-export ZITADEL_V2_ORGANIZATION_ID=organization-uuid
-zitadel-v2 organizations get
+export AUTHWORKS_REALM_ID=realm-uuid
+export AUTHWORKS_ORGANIZATION_ID=organization-uuid
+authworks organizations get
 ```
 
 Explicit `--realm-id` and `--organization-id` flags take precedence over their corresponding environment values. If a
@@ -76,9 +76,9 @@ tenant isolation, event atomicity, secret safety, and built-output smoke checks 
 
 ## Links
 
-- code: https://github.com/david1gp/zitadel-v2
-- npm: https://www.npmjs.com/package/@adaptive-ds/zitadel-v2
-- issues: https://github.com/david1gp/zitadel-v2/issues
+- code: https://github.com/david1gp/authworks
+- npm: https://www.npmjs.com/package/@adaptive-ds/authworks
+- issues: https://github.com/david1gp/authworks/issues
 
 ## License
 

@@ -1,4 +1,4 @@
-# ZITADEL v2 repository instructions
+# Authworks repository instructions
 
 ## Tooling
 
@@ -27,6 +27,6 @@
 
 ## Scope discipline
 
-- The plan in `docs/20260817_zitadel-v2.md` is authoritative. Do not implement later task behavior as part of a scaffold
+- The plan in `docs/20260817_authworks.md` is authoritative. Do not implement later task behavior as part of a scaffold
   or tooling change.
 - Keep tests beside the feature they exercise. Use real temporary resources when a later feature needs persistence.

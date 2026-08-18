@@ -183,7 +183,7 @@ async function githubIdentityFetch(
       headers: {
         accept: "application/vnd.github+json",
         authorization: `Bearer ${accessToken}`,
-        "user-agent": "zitadel-v2",
+        "user-agent": "authworks",
       },
       signal: AbortSignal.timeout(timeoutMs),
     })
@@ -198,7 +198,7 @@ async function githubIdentityFetch(
         headers: {
           accept: "application/vnd.github+json",
           authorization: `Bearer ${accessToken}`,
-          "user-agent": "zitadel-v2",
+          "user-agent": "authworks",
         },
         signal: AbortSignal.timeout(timeoutMs),
       })

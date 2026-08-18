@@ -45,5 +45,5 @@ export function oidcValueDecrypt(value: string, realmId: string, secret?: Secret
 function oidcEncryptionKeyCreate(realmId: string, secret?: Secret | string): Buffer {
   const value =
     secret === undefined ? `development-only:${realmId}` : typeof secret === "string" ? secret : secret.valueGet()
-  return createHash("sha256").update(`zitadel-v2-oidc:${realmId}:${value}`, "utf8").digest()
+  return createHash("sha256").update(`authworks-oidc:${realmId}:${value}`, "utf8").digest()
 }

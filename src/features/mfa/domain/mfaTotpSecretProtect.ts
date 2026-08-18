@@ -16,7 +16,7 @@ export function mfaTotpSecretProtect(
   try {
     const keyValue =
       secret === undefined ? `development-only:${realmId}` : typeof secret === "string" ? secret : secret.valueGet()
-    const key = createHash("sha256").update(`zitadel-v2-mfa:${realmId}:${keyValue}`, "utf8").digest()
+    const key = createHash("sha256").update(`authworks-mfa:${realmId}:${keyValue}`, "utf8").digest()
     if (operation === "encrypt") {
       const iv = randomBytes(12)
       const cipher = createCipheriv("aes-256-gcm", key, iv)

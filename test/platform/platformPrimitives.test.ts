@@ -73,11 +73,11 @@ test("secrets redact serialization and compare without an early length exit", ()
 })
 
 test("configuration applies safe defaults and rejects insecure production origins", () => {
-  const parsed = configurationParse({ PUBLIC_ORIGIN: "https://identity.example.test/zitadel/" })
+  const parsed = configurationParse({ PUBLIC_ORIGIN: "https://identity.example.test/authworks/" })
   expect(parsed.success).toBe(true)
   if (!parsed.success) return
-  expect(parsed.data).toMatchObject({ databasePath: "zitadel.sqlite", host: "127.0.0.1", port: 3000 })
-  expect(parsed.data.publicOrigin).toBe("https://identity.example.test/zitadel")
+  expect(parsed.data).toMatchObject({ databasePath: "authworks.sqlite", host: "127.0.0.1", port: 3000 })
+  expect(parsed.data.publicOrigin).toBe("https://identity.example.test/authworks")
 
   const rejected = configurationParse({ nodeEnv: "production", publicOrigin: "http://identity.example.test" })
   expect(rejected.success).toBe(false)
@@ -95,8 +95,8 @@ test("configuration rejects credential-bearing origins without echoing credentia
 
 test("configuration rejects origins with search or hash components", () => {
   for (const publicOrigin of [
-    "https://identity.example.test/zitadel?tenant=one",
-    "https://identity.example.test/zitadel#login",
+    "https://identity.example.test/authworks?tenant=one",
+    "https://identity.example.test/authworks#login",
   ]) {
     const rejected = configurationParse({ publicOrigin })
     expect(rejected.success).toBe(false)
@@ -124,7 +124,7 @@ test("HTTP API clients share headers, transport errors, and response validation"
   const requests: Request[] = []
   const schema = v.object({ value: v.string() })
   const success = await httpApiClientRequest({
-    baseUrl: "https://identity.example.test/zitadel",
+    baseUrl: "https://identity.example.test/authworks",
     fetch: async (input, init) => {
       const requestUrl = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url
       requests.push(new Request(requestUrl, init))
@@ -137,7 +137,7 @@ test("HTTP API clients share headers, transport errors, and response validation"
     token: secretCreate("test-token"),
   })
   expect(success).toEqual({ data: { value: "ok" }, success: true })
-  expect(requests[0]?.url).toBe("https://identity.example.test/zitadel/resource")
+  expect(requests[0]?.url).toBe("https://identity.example.test/authworks/resource")
   expect(requests[0]?.headers.get("accept")).toBe("application/json")
   expect(requests[0]?.headers.get("content-type")).toBe("application/json")
   expect(requests[0]?.headers.get("authorization")).toBe("Bearer test-token")
@@ -158,7 +158,7 @@ test("HTTP API clients share headers, transport errors, and response validation"
   })
 
   const structured = await httpApiClientRequest({
-    baseUrl: "https://identity.example.test/zitadel",
+    baseUrl: "https://identity.example.test/authworks",
     fetch: async () => Response.json({ error: { code: "platform.internal", message: "boom" } }, { status: 500 }),
     init: { method: "GET" },
     op: "testRequest",

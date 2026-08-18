@@ -12,22 +12,21 @@ type ProcessResult = {
 test("built library, server, and CLI outputs are executable", async () => {
   const built = await Bun.file("dist/cli/cli.js").exists()
   if (!built) {
-    if (process.env.ZITADEL_V2_REQUIRE_BUILT_OUTPUTS === "1")
-      throw new Error("The distributable outputs are not built.")
+    if (process.env.AUTHWORKS_REQUIRE_BUILT_OUTPUTS === "1") throw new Error("The distributable outputs are not built.")
     return
   }
 
   const packageImport = await processRun([
     "bun",
     "-e",
-    'const subpaths = ["authorization", "emailOtp", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/zitadel-v2/" + path))); const root = await import("@adaptive-ds/zitadel-v2"); if (typeof root.packageName !== "string" || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
+    'const subpaths = ["authorization", "emailOtp", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/authworks/" + path))); const root = await import("@adaptive-ds/authworks"); if (typeof root.packageName !== "string" || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
   ])
   expect(packageImport).toEqual({ exitCode: 0, stderr: "", stdout: "" })
 
   const forbiddenPackageImport = await processRun([
     "bun",
     "-e",
-    'const result = await import("@adaptive-ds/zitadel-v2/features/users").then(() => "ok", () => "fail"); if (result !== "fail") process.exit(2)',
+    'const result = await import("@adaptive-ds/authworks/features/users").then(() => "ok", () => "fail"); if (result !== "fail") process.exit(2)',
   ])
   expect(forbiddenPackageImport).toEqual({ exitCode: 0, stderr: "", stdout: "" })
 
@@ -84,13 +83,13 @@ test("built library, server, and CLI outputs are executable", async () => {
   expect(cliRealmHelp.stdout).not.toContain("--instance-id")
   expect(cliRealmHelp.stdout).not.toContain("Instance UUID")
 
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-built-outputs-"))
+  const directory = await mkdtemp(join(tmpdir(), "authworks-built-outputs-"))
   const child = Bun.spawn(["bun", "dist/server/server.js"], {
     env: {
       ...process.env,
-      ZITADEL_V2_DATABASE_PATH: join(directory, "zitadel.sqlite"),
-      ZITADEL_V2_PUBLIC_ORIGIN: "http://127.0.0.1:3000",
-      ZITADEL_V2_SYSTEM_SECRET: "built-output-secret",
+      AUTHWORKS_DATABASE_PATH: join(directory, "authworks.sqlite"),
+      AUTHWORKS_PUBLIC_ORIGIN: "http://127.0.0.1:3000",
+      AUTHWORKS_SYSTEM_SECRET: "built-output-secret",
     },
     stderr: "pipe",
     stdout: "pipe",

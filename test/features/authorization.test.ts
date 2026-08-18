@@ -21,8 +21,8 @@ import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseO
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
 
 async function withDatabase<T>(operation: (database: StorageDatabase) => Promise<T>) {
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-authorization-"))
-  const opened = storageDatabaseOpen(join(directory, "zitadel.sqlite"), platformTestkitCreate().runtime)
+  const directory = await mkdtemp(join(tmpdir(), "authworks-authorization-"))
+  const opened = storageDatabaseOpen(join(directory, "authworks.sqlite"), platformTestkitCreate().runtime)
   expect(opened.success).toBe(true)
   if (!opened.success) {
     await rm(directory, { force: true, recursive: true })

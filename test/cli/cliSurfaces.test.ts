@@ -31,7 +31,7 @@ test("every completed feature command tree has clean subprocess help", async () 
   expect(root.exitCode).toBe(0)
   expect(root.stdout).toContain("realms")
   expect(root.stdout).not.toContain("instances")
-  expect(root.stdout).not.toContain("ZITADEL v2 scaffold")
+  expect(root.stdout).not.toContain("Authworks scaffold")
   expect(root.stdout).not.toContain("status")
 
   for (const route of featureRoutes) {
@@ -53,9 +53,9 @@ test("CLI realm identifiers use the realm flag and vocabulary", async () => {
 })
 
 test("CLI scoped commands use environment defaults and explicit flags take precedence", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-cli-scope-defaults-"))
+  const directory = await mkdtemp(join(tmpdir(), "authworks-cli-scope-defaults-"))
   const created = serverApplicationCreate({
-    databasePath: join(directory, "zitadel.sqlite"),
+    databasePath: join(directory, "authworks.sqlite"),
     systemSecret: "cli-scope-secret",
   })
   expect(created.success).toBe(true)
@@ -85,7 +85,7 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
     const realmId = (JSON.parse(realmCreate.stdout) as { realm: { id: string } }).realm.id
 
     const realmDefault = await cliRunWithEnvironment(
-      { ZITADEL_V2_REALM_ID: realmId },
+      { AUTHWORKS_REALM_ID: realmId },
       "users",
       "list",
       "--server",
@@ -98,7 +98,7 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
     expect(JSON.parse(realmDefault.stdout)).toMatchObject({ items: [] })
 
     const organizationCreate = await cliRunWithEnvironment(
-      { ZITADEL_V2_REALM_ID: realmId },
+      { AUTHWORKS_REALM_ID: realmId },
       "organizations",
       "create",
       "--server",
@@ -112,7 +112,7 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
     const organizationId = (JSON.parse(organizationCreate.stdout) as { organization: { id: string } }).organization.id
 
     const organizationDefault = await cliRunWithEnvironment(
-      { ZITADEL_V2_REALM_ID: realmId, ZITADEL_V2_ORGANIZATION_ID: organizationId },
+      { AUTHWORKS_REALM_ID: realmId, AUTHWORKS_ORGANIZATION_ID: organizationId },
       "organizations",
       "get",
       "--server",
@@ -125,7 +125,7 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
     expect(JSON.parse(organizationDefault.stdout)).toMatchObject({ organization: { id: organizationId } })
 
     const realmFlagPrecedence = await cliRunWithEnvironment(
-      { ZITADEL_V2_REALM_ID: "environment-realm-is-ignored" },
+      { AUTHWORKS_REALM_ID: "environment-realm-is-ignored" },
       "users",
       "list",
       "--server",
@@ -140,8 +140,8 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
 
     const organizationFlagPrecedence = await cliRunWithEnvironment(
       {
-        ZITADEL_V2_ORGANIZATION_ID: "environment-organization-is-ignored",
-        ZITADEL_V2_REALM_ID: "environment-realm-is-ignored",
+        AUTHWORKS_ORGANIZATION_ID: "environment-organization-is-ignored",
+        AUTHWORKS_REALM_ID: "environment-realm-is-ignored",
       },
       "organizations",
       "get",
@@ -166,7 +166,7 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
 test("CLI reports missing required scope IDs before making an API request", async () => {
   const unavailableServer = "http://127.0.0.1:1"
   const missingRealm = await cliRunWithEnvironment(
-    { ZITADEL_V2_REALM_ID: undefined },
+    { AUTHWORKS_REALM_ID: undefined },
     "users",
     "list",
     "--server",
@@ -177,7 +177,7 @@ test("CLI reports missing required scope IDs before making an API request", asyn
   expect(missingRealm.stderr).toBe("Expected input for flag --realm-id\n")
 
   const blankRealm = await cliRunWithEnvironment(
-    { ZITADEL_V2_REALM_ID: "" },
+    { AUTHWORKS_REALM_ID: "" },
     "users",
     "list",
     "--server",
@@ -188,7 +188,7 @@ test("CLI reports missing required scope IDs before making an API request", asyn
   expect(blankRealm.stderr).toBe("Expected input for flag --realm-id\n")
 
   const missingOrganization = await cliRunWithEnvironment(
-    { ZITADEL_V2_ORGANIZATION_ID: undefined },
+    { AUTHWORKS_ORGANIZATION_ID: undefined },
     "organizations",
     "get",
     "--server",
@@ -207,9 +207,9 @@ test("CLI reports transport errors and succeeds through the composed server", as
   expect(unavailable.stdout).toBe("")
   expect(unavailable.stderr).toContain("could not be reached")
 
-  const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-cli-surfaces-"))
+  const directory = await mkdtemp(join(tmpdir(), "authworks-cli-surfaces-"))
   const created = serverApplicationCreate({
-    databasePath: join(directory, "zitadel.sqlite"),
+    databasePath: join(directory, "authworks.sqlite"),
     systemSecret: "cli-system-secret",
   })
   expect(created.success).toBe(true)
