@@ -9,7 +9,7 @@ export const organizationInvitationSchema = v.strictObject({
   email: v.pipe(v.string(), v.minLength(3), v.maxLength(320)),
   expiresAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   id: organizationResourceIdSchema,
-  instanceId: organizationResourceIdSchema,
+  realmId: organizationResourceIdSchema,
   organizationId: organizationResourceIdSchema,
   roles: organizationRolesSchema,
   status: organizationInvitationStatusSchema,

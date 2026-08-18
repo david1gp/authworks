@@ -6,7 +6,7 @@ import { httpErrorResponseCreate } from "../../../platform/http/httpErrorRespons
 import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { mfaChallengeComplete } from "../actions/mfaChallengeComplete.js"
 import { mfaLoginChallengeStart } from "../actions/mfaLoginChallengeStart.js"
 import { mfaPolicyGet } from "../actions/mfaPolicyGet.js"
@@ -43,20 +43,20 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
   const protectedMiddleware = sessionProtectedMiddlewareCreate({ database: options.database })
   const encryptionSecret = options.encryptionSecret ?? options.systemSecret
 
-  app.get("/instances/:instanceId/mfa-policy", (context) => {
+  app.get("/realms/:realmId/mfa-policy", (context) => {
     const authorization = mfaSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return mfaErrorResponseCreate(context, authorization.errorMessage, "unauthorized")
     return mfaResultResponseCreate(
       context,
       mfaPolicyGet({
-        context: instanceSystemContextCreate("system"),
+        context: realmSystemContextCreate("system"),
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.patch("/system/instances/:instanceId/mfa-policy", async (context) => {
+  app.patch("/system/realms/:realmId/mfa-policy", async (context) => {
     const authorization = mfaSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return mfaErrorResponseCreate(context, authorization.errorMessage, "unauthorized")
     const body = await mfaJsonRead(context)
@@ -66,15 +66,15 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
     return mfaResultResponseCreate(
       context,
       mfaPolicySet({
-        context: instanceSystemContextCreate("system"),
+        context: realmSystemContextCreate("system"),
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.post("/instances/:instanceId/mfa/totp/enroll", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/mfa/totp/enroll", protectedMiddleware, async (context) => {
     const body = await mfaJsonRead(context)
     const input = body.success
       ? v.safeParse(mfaTotpEnrollmentStartRequestSchema, body.data)
@@ -87,13 +87,13 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         database: options.database,
         encryptionSecret,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     )
   })
 
-  app.post("/instances/:instanceId/mfa/totp/confirm", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/mfa/totp/confirm", protectedMiddleware, async (context) => {
     const body = await mfaJsonRead(context)
     if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "bad_request")
     const input = v.safeParse(mfaTotpEnrollmentConfirmRequestSchema, body.data)
@@ -106,26 +106,26 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         database: options.database,
         encryptionSecret,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     )
   })
 
-  app.delete("/instances/:instanceId/mfa/totp", protectedMiddleware, (context) =>
+  app.delete("/realms/:realmId/mfa/totp", protectedMiddleware, (context) =>
     mfaResultResponseCreate(
       context,
       mfaTotpEnrollmentRemove({
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         sessionToken: mfaBearerTokenGet(context.req.header("authorization")),
         userId: context.get("authorizationActor").actorId,
       }),
     ),
   )
 
-  app.post("/instances/:instanceId/mfa/totp/verify", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/mfa/totp/verify", protectedMiddleware, async (context) => {
     const body = await mfaJsonRead(context)
     const code =
       body.success && typeof body.data === "object" && body.data !== null && "code" in body.data
@@ -138,25 +138,25 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         code,
         database: options.database,
         encryptionSecret,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     )
   })
 
-  app.post("/instances/:instanceId/mfa/recovery-codes", protectedMiddleware, (context) =>
+  app.post("/realms/:realmId/mfa/recovery-codes", protectedMiddleware, (context) =>
     mfaResultResponseCreate(
       context,
       mfaRecoveryCodesGenerate({
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     ),
   )
 
-  app.post("/instances/:instanceId/mfa/recovery-codes/verify", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/mfa/recovery-codes/verify", protectedMiddleware, async (context) => {
     const body = await mfaJsonRead(context)
     const code =
       body.success && typeof body.data === "object" && body.data !== null && "code" in body.data
@@ -168,26 +168,26 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         actorId: context.get("authorizationActor").actorId,
         code,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     )
   })
 
-  app.post("/instances/:instanceId/mfa/step-up/start", protectedMiddleware, (context) =>
+  app.post("/realms/:realmId/mfa/step-up/start", protectedMiddleware, (context) =>
     mfaResultResponseCreate(
       context,
       mfaStepUpStart({
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         sessionId: context.get("session").id,
         userId: context.get("authorizationActor").actorId,
       }),
     ),
   )
 
-  app.post("/instances/:instanceId/mfa/step-up/complete", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/mfa/step-up/complete", protectedMiddleware, async (context) => {
     const body = await mfaJsonRead(context)
     if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "bad_request")
     const input = v.safeParse(mfaChallengeCompleteRequestSchema, body.data)
@@ -199,13 +199,13 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         database: options.database,
         encryptionSecret,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         sessionToken: mfaBearerTokenGet(context.req.header("authorization")),
       }),
     )
   })
 
-  app.post("/instances/:instanceId/mfa/challenge/complete", async (context) => {
+  app.post("/realms/:realmId/mfa/challenge/complete", async (context) => {
     const body = await mfaJsonRead(context)
     if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "bad_request")
     const input = v.safeParse(mfaChallengeCompleteRequestSchema, body.data)
@@ -216,7 +216,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         database: options.database,
         encryptionSecret,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })

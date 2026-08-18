@@ -19,7 +19,7 @@ type MfaTotpEnrollmentRemoveOptions = {
   readonly actorId?: string | null
   readonly database: StorageDatabase
   readonly enrollmentId?: string
-  readonly instanceId: string
+  readonly realmId: string
   readonly sessionToken: string
   readonly userId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -41,7 +41,7 @@ export function mfaTotpEnrollmentRemove(
       .from(sessionTable)
       .where(
         and(
-          eq(sessionTable.instanceId, options.instanceId),
+          eq(sessionTable.realmId, options.realmId),
           eq(sessionTable.userId, options.userId),
           eq(sessionTable.tokenHash, sessionCredentialHashCreate(options.sessionToken)),
         ),
@@ -57,13 +57,13 @@ export function mfaTotpEnrollmentRemove(
     const repository = mfaRepositoryCreate(transaction)
     const enrollment =
       options.enrollmentId === undefined
-        ? repository.mfaEnrollmentActiveGet(options.instanceId, options.userId)
-        : repository.mfaEnrollmentGet(options.instanceId, options.userId, options.enrollmentId)
+        ? repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
+        : repository.mfaEnrollmentGet(options.realmId, options.userId, options.enrollmentId)
     if (!enrollment.success) return enrollment
     if (enrollment.data === null || enrollment.data.status !== "active")
       return resultErrorCreate(op, "The TOTP enrollment was not found.")
     const removed = repository.mfaEnrollmentDelete(
-      options.instanceId,
+      options.realmId,
       options.userId,
       enrollment.data.id,
       enrollment.data.version,
@@ -86,7 +86,7 @@ export function mfaTotpEnrollmentRemove(
         commandIndex: 0,
         correlationId,
         eventType: mfaEventTypes.totpRemoved,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "mfa" },
         occurredAt: now,
         payload: payload.output,

@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationRolesDecode } from "../domain/organizationRolesDecode.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationMembershipRemovedEventPayloadSchema } from "../events/organizationMembershipRemovedEventPayloadSchema.js"
@@ -16,9 +16,9 @@ import { organizationRepositoryCreate } from "../persistence/organizationReposit
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationMembershipRemoveOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly membershipId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -38,7 +38,7 @@ export function organizationMembershipRemove(options: OrganizationMembershipRemo
     if (!current.success) return current
     if (
       current.data === null ||
-      current.data.instanceId !== options.instanceId ||
+      current.data.realmId !== options.realmId ||
       current.data.organizationId !== options.organizationId
     )
       return resultErrorCreate(op, "The organization membership was not found.")
@@ -84,7 +84,7 @@ export function organizationMembershipRemove(options: OrganizationMembershipRemo
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.membershipRemoved,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: removedAt,
         payload: payload.output,

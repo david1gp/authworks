@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userPublicViewCreate } from "../../users/domain/userPublicViewCreate.js"
 import { userStateChangedEventPayloadSchema } from "../../users/events/userStateChangedEventPayloadSchema.js"
 import { userEmailVerificationChangedEventPayloadSchema } from "../../users/events/userEmailVerificationChangedEventPayloadSchema.js"
@@ -26,10 +26,10 @@ import {
 import type { PasswordEmailVerificationResponse } from "../public/passwordEmailVerificationResponseSchema.js"
 
 type PasswordEmailVerifyOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: PasswordEmailVerificationRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -38,13 +38,13 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
   const op = "passwordEmailVerify"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The verification is not available in this tenant context.")
   const parsed = v.safeParse(passwordEmailVerificationRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The verification token is invalid.")
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return resultErrorCreate(op, "The verification token is invalid.")
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The verification token is invalid.")
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return resultErrorCreate(op, "The verification token is invalid.")
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The verification token is invalid.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The verification timestamp is invalid.")
@@ -52,7 +52,7 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
   return storageTransactionRun(options.database, (transaction) => {
     const repository = passwordRepositoryCreate(transaction)
     const challenge = repository.passwordChallengeGet(
-      options.instanceId,
+      options.realmId,
       passwordTokenHashCreate(parsed.output.token),
       "verification",
     )
@@ -60,13 +60,13 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
       return resultErrorCreate(op, "The verification token is invalid.")
     if (challenge.data.consumedAt !== null || challenge.data.expiresAt <= now)
       return resultErrorCreate(op, "The verification token is invalid.")
-    const user = userRepositoryCreate(transaction).userGet(options.instanceId, challenge.data.userId)
+    const user = userRepositoryCreate(transaction).userGet(options.realmId, challenge.data.userId)
     if (!user.success || user.data === null || user.data.state === "deleted" || user.data.emailVerifiedAt !== null)
       return resultErrorCreate(op, "The verification token is invalid.")
     const consumed = repository.passwordChallengeConsume(challenge.data.id, now)
     if (!consumed.success || consumed.data === null) return resultErrorCreate(op, "The verification token is invalid.")
     const nextState = user.data.state === "initial" ? "active" : user.data.state
-    const updated = userRepositoryCreate(transaction).userUpdate(options.instanceId, user.data.id, {
+    const updated = userRepositoryCreate(transaction).userUpdate(options.realmId, user.data.id, {
       emailVerifiedAt: now,
       state: nextState,
       updatedAt: now,
@@ -85,7 +85,7 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
         commandIndex: 0,
         correlationId,
         eventType: userEventTypes.emailVerificationChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: verificationPayload.output,
@@ -106,7 +106,7 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
           commandIndex: 1,
           correlationId,
           eventType: userEventTypes.stateChanged,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "passwords" },
           occurredAt: now,
           payload: statePayload.output,
@@ -115,7 +115,7 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
       )
       if (!stateEvent.success) return stateEvent
     }
-    const eventVersion = repository.passwordEventVersionGet(options.instanceId, user.data.id)
+    const eventVersion = repository.passwordEventVersionGet(options.realmId, user.data.id)
     if (!eventVersion.success) return resultErrorCreate(op, "The verification event version is invalid.")
     const payload = v.safeParse(passwordEmailVerifiedEventPayloadSchema, { verified: true })
     if (!payload.success) return resultErrorCreate(op, "The verification event payload is invalid.")
@@ -129,7 +129,7 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
         commandIndex: nextState === user.data.state ? 1 : 2,
         correlationId,
         eventType: passwordEventTypes.emailVerified,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: payload.output,

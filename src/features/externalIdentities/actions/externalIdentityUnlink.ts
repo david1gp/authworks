@@ -19,7 +19,7 @@ import type { ExternalIdentityUnlinkResponse } from "../public/externalIdentityU
 type ExternalIdentityUnlinkOptions = {
   readonly database: StorageDatabase
   readonly externalSubject: string
-  readonly instanceId: string
+  readonly realmId: string
   readonly providerId: string
   readonly session: Session
   readonly userId: string
@@ -29,13 +29,13 @@ type ExternalIdentityUnlinkOptions = {
 
 export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): Result<ExternalIdentityUnlinkResponse> {
   const op = "externalIdentityUnlink"
-  if (options.session.instanceId !== options.instanceId || options.session.userId !== options.userId)
+  if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
     return resultErrorCreate(op, "The session does not belong to this user.")
   if (options.session.assurance === "none") return resultErrorCreate(op, "Session authorization is required.")
   if (options.externalSubject.length === 0 || options.providerId.length === 0)
     return resultErrorCreate(op, "The external identity is invalid.")
   const identity = externalIdentityRepositoryCreate(options.database.db).externalIdentityList(
-    options.instanceId,
+    options.realmId,
     options.userId,
   )
   if (!identity.success) return identity
@@ -52,24 +52,19 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
     const others = transaction
       .select({ total: count() })
       .from(externalIdentityTable)
-      .where(
-        and(eq(externalIdentityTable.instanceId, options.instanceId), eq(externalIdentityTable.userId, options.userId)),
-      )
+      .where(and(eq(externalIdentityTable.realmId, options.realmId), eq(externalIdentityTable.userId, options.userId)))
       .get()
     const password = transaction
       .select({ id: passwordCredentialTable.userId })
       .from(passwordCredentialTable)
       .where(
-        and(
-          eq(passwordCredentialTable.instanceId, options.instanceId),
-          eq(passwordCredentialTable.userId, options.userId),
-        ),
+        and(eq(passwordCredentialTable.realmId, options.realmId), eq(passwordCredentialTable.userId, options.userId)),
       )
       .get()
     if ((others?.total ?? 0) <= 1 && password === undefined)
       return resultErrorCreate(op, "The last usable authentication method cannot be removed.")
     const removed = repository.externalIdentityDelete(
-      options.instanceId,
+      options.realmId,
       options.userId,
       options.providerId,
       options.externalSubject,
@@ -96,7 +91,7 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
         commandIndex: 0,
         correlationId,
         eventType: externalIdentityEventTypes.unlinked,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: now,
         payload: payload.output,

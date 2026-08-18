@@ -17,7 +17,7 @@ export function userPublicViewCreate(row: UserRecord): User {
     emailVerified: row.emailVerifiedAt !== null,
     ...(row.emailVerifiedAt === null ? {} : { emailVerifiedAt: row.emailVerifiedAt }),
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     profile,
     state: row.state as User["state"],
     updatedAt: row.updatedAt,

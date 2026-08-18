@@ -7,11 +7,11 @@ import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceBootstrapAdminAuthenticate } from "../../instances/actions/instanceBootstrapAdminAuthenticate.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectAccessCheck } from "../actions/projectAccessCheck.js"
 import { projectApplicationCreate } from "../actions/projectApplicationCreate.js"
 import { projectApplicationDelete } from "../actions/projectApplicationDelete.js"
@@ -51,7 +51,7 @@ type ProjectServerAppCreateOptions = {
   readonly systemSecret?: Secret | string
 }
 
-type ProjectRequestContext = InstanceSystemContext | InstanceTenantContext
+type ProjectRequestContext = RealmSystemContext | RealmTenantContext
 type ProjectAuthenticator = (context: {
   req: { header: (name: string) => string | undefined; url: string }
 }) => { data: ProjectRequestContext; success: true } | { errorMessage: string; op: string; success: false }
@@ -59,10 +59,10 @@ type ProjectAuthenticator = (context: {
 export function projectServerAppCreate(options: ProjectServerAppCreateOptions) {
   const app = new Hono() as Hono & { projectDatabase?: StorageDatabase }
   app.projectDatabase = options.database
-  projectRoutesRegister(app, "/system/instances/:instanceId", (context) =>
+  projectRoutesRegister(app, "/system/realms/:realmId", (context) =>
     projectSystemAuthenticate(context.req.header("authorization"), options.systemSecret),
   )
-  projectRoutesRegister(app, "/instances/:instanceId", (context) =>
+  projectRoutesRegister(app, "/realms/:realmId", (context) =>
     projectTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -82,7 +82,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
       projectList({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
       }),
     )
   })
@@ -104,7 +104,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
       }),
       201,
     )
@@ -118,7 +118,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
       projectGet({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -141,7 +141,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -164,7 +164,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -178,7 +178,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
       projectDelete({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -198,7 +198,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
       projectApplicationList({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -220,7 +220,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
       201,
@@ -235,7 +235,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
         applicationId: projectParamGet(context, "applicationId"),
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -258,7 +258,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -281,7 +281,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -295,7 +295,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
         applicationId: projectParamGet(context, "applicationId"),
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -311,7 +311,7 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
       projectRoleList({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -333,7 +333,7 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
       201,
@@ -356,7 +356,7 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
         roleId: projectParamGet(context, "roleId"),
       }),
@@ -370,7 +370,7 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
       projectRoleDelete({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
         roleId: projectParamGet(context, "roleId"),
       }),
@@ -387,7 +387,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
       projectGrantList({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -409,7 +409,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
         context: authenticated.data,
         database: projectDatabaseGet(app),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
       201,
@@ -433,7 +433,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
         database: projectDatabaseGet(app),
         grantId: projectParamGet(context, "grantId"),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -456,7 +456,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
         database: projectDatabaseGet(app),
         grantId: projectParamGet(context, "grantId"),
         input: input.output,
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -470,7 +470,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
         context: authenticated.data,
         database: projectDatabaseGet(app),
         grantId: projectParamGet(context, "grantId"),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -483,7 +483,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
       projectAccessCheck({
         context: authenticated.data,
         database: projectDatabaseGet(app),
-        instanceId: projectParamGet(context, "instanceId"),
+        realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
       }),
     )
@@ -506,7 +506,7 @@ function projectSystemAuthenticate(authorization: string | undefined, configured
       op: "projectSystemAuthorization",
       success: false as const,
     }
-  return resultCreate(instanceSystemContextCreate())
+  return resultCreate(realmSystemContextCreate())
 }
 
 function projectTenantAuthenticate(
@@ -519,9 +519,9 @@ function projectTenantAuthenticate(
   const normalizedHost = resolvedHost.startsWith("[")
     ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
     : resolvedHost.split(":")[0]
-  const tenant = instanceTenantContextResolve({ database, host: normalizedHost ?? "" })
+  const tenant = realmTenantContextResolve({ database, host: normalizedHost ?? "" })
   if (!tenant.success) return tenant
-  return instanceBootstrapAdminAuthenticate({
+  return realmBootstrapAdminAuthenticate({
     context: tenant.data,
     database,
     secret: projectBearerTokenGet(authorization) ?? "",

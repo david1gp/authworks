@@ -2,18 +2,18 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectApplicationPublicViewCreate } from "../domain/projectApplicationPublicViewCreate.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import type { ProjectApplication } from "../public/projectApplicationSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectApplicationGetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly applicationId: string
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
 }
 
@@ -26,7 +26,7 @@ export function projectApplicationGet(
   if (!application.success) return application
   if (
     application.data === null ||
-    application.data.instanceId !== options.instanceId ||
+    application.data.realmId !== options.realmId ||
     application.data.projectId !== options.projectId ||
     application.data.status !== "active"
   )
@@ -38,7 +38,7 @@ export function projectApplicationGet(
   const authorized = projectContextAuthorize({
     context: options.context,
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     permission: "project.app.read",
     project: project.data,
   })

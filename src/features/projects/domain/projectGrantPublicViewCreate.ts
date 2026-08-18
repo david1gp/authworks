@@ -12,7 +12,7 @@ export function projectGrantPublicViewCreate(row: ProjectGrantRow): Result<Proje
     createdAt: row.createdAt,
     grantedOrganizationId: row.grantedOrganizationId,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     organizationId: row.organizationId,
     projectId: row.projectId,
     roleKeys: roles.data,

@@ -6,7 +6,7 @@ export const machineCredentialTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     expiresAt: integer("expires_at"),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     kind: text("kind").notNull(),
     machineUserId: text("machine_user_id").notNull(),
     name: text("name"),
@@ -17,8 +17,8 @@ export const machineCredentialTable = sqliteTable(
     version: integer("version").notNull(),
   },
   (table) => [
-    index("machine_credentials_instance_id_idx").on(table.instanceId),
-    index("machine_credentials_machine_user_id_idx").on(table.instanceId, table.machineUserId),
+    index("machine_credentials_realm_id_idx").on(table.realmId),
+    index("machine_credentials_machine_user_id_idx").on(table.realmId, table.machineUserId),
     uniqueIndex("machine_credentials_secret_hash_idx").on(table.secretHash),
   ],
 )

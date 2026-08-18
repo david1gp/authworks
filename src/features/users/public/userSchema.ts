@@ -11,7 +11,7 @@ export const userSchema = v.strictObject({
   emailVerified: v.boolean(),
   emailVerifiedAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
   id: userResourceIdSchema,
-  instanceId: userResourceIdSchema,
+  realmId: userResourceIdSchema,
   profile: userProfileSchema,
   state: userStateSchema,
   updatedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),

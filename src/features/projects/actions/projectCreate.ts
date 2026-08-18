@@ -7,10 +7,10 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { organizationGet } from "../../organizations/actions/organizationGet.js"
 import { projectOrganizationAuthorize } from "./projectOrganizationAuthorize.js"
 import { projectNameNormalize } from "../domain/projectNameNormalize.js"
@@ -22,10 +22,10 @@ import { projectCreateRequestSchema, type ProjectCreateRequest } from "../public
 import type { Project } from "../public/projectSchema.js"
 
 type ProjectCreateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: ProjectCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -34,27 +34,27 @@ export function projectCreate(options: ProjectCreateOptions): Result<{ project: 
   const op = "projectCreate"
   const parsed = v.safeParse(projectCreateRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The project request is invalid.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The project is not available in this tenant context.")
-  const systemContext = instanceSystemContextCreate()
-  const instance = instanceGet({ context: systemContext, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const systemContext = realmSystemContextCreate()
+  const realm = realmGet({ context: systemContext, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
   const organization = organizationGet({
     context: systemContext,
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     organizationId: parsed.output.organizationId,
   })
   if (!organization.success) return organization
-  if (organization.data.organization.instanceId !== options.instanceId)
+  if (organization.data.organization.realmId !== options.realmId)
     return resultErrorCreate(op, "The organization was not found.")
   if (organization.data.organization.status !== "active")
     return resultErrorCreate(op, "The organization is not active.")
   const authorized = projectOrganizationAuthorize({
     context: options.context,
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     organizationId: parsed.output.organizationId,
     permission: "project.create",
   })
@@ -75,7 +75,7 @@ export function projectCreate(options: ProjectCreateOptions): Result<{ project: 
       authorizationRequired: authorizationRequired ? 1 : 0,
       createdAt,
       id: projectId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       name: name.data,
       organizationId: parsed.output.organizationId,
       projectAccessRequired: projectAccessRequired ? 1 : 0,
@@ -105,7 +105,7 @@ export function projectCreate(options: ProjectCreateOptions): Result<{ project: 
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.created,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: createdAt,
         payload: payload.output,

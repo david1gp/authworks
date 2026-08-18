@@ -7,7 +7,7 @@ export const passwordChallengeTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     kind: text("kind").notNull(),
     tokenHash: text("token_hash").notNull(),
     userId: text("user_id").notNull(),
@@ -15,7 +15,7 @@ export const passwordChallengeTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("password_challenges_token_hash_idx").on(table.tokenHash),
-    index("password_challenges_user_kind_idx").on(table.instanceId, table.userId, table.kind),
+    index("password_challenges_user_kind_idx").on(table.realmId, table.userId, table.kind),
   ],
 )
 

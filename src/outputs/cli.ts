@@ -3,7 +3,7 @@
 import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
 import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommands.js"
 import { externalIdentityCliCommands } from "../features/externalIdentities/cli/externalIdentityCliCommands.js"
-import { instanceCliCommands } from "../features/instances/cli/instanceCliCommands.js"
+import { realmCliCommands } from "../features/realms/cli/realmCliCommands.js"
 import { organizationCliCommands } from "../features/organizations/cli/organizationCliCommands.js"
 import { oidcCliCommands } from "../features/oidc/cli/oidcCliCommands.js"
 import { mfaCliCommands } from "../features/mfa/cli/mfaCliCommands.js"
@@ -18,7 +18,7 @@ import { userCliCommands } from "../features/users/cli/userCliCommands.js"
 const cliApplication = buildApplication(
   buildRouteMap({
     routes: {
-      instances: instanceCliCommands,
+      realms: realmCliCommands,
       emailOtp: emailOtpCliCommands,
       externalIdentities: externalIdentityCliCommands,
       externalIdentity: externalIdentityCliCommands,

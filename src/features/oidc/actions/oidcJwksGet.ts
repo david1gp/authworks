@@ -7,11 +7,11 @@ import type { OidcJwks } from "../public/oidcJwksSchema.js"
 
 type OidcJwksGetOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 export function oidcJwksGet(options: OidcJwksGetOptions): Result<OidcJwks> {
-  const rows = oidcRepositoryCreate(options.database.db).signingKeyList(options.instanceId)
+  const rows = oidcRepositoryCreate(options.database.db).signingKeyList(options.realmId)
   if (!rows.success) return rows
   const keys = []
   for (const row of rows.data) {

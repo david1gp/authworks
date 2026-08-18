@@ -9,7 +9,7 @@ export const externalIdentityTable = sqliteTable(
     emailVerified: integer("email_verified", { mode: "boolean" }).notNull(),
     externalSubject: text("external_subject").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     providerId: text("provider_id").notNull(),
     updatedAt: integer("updated_at").notNull(),
     userId: text("user_id").notNull(),
@@ -18,8 +18,8 @@ export const externalIdentityTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("external_identities_provider_subject_idx").on(table.providerId, table.externalSubject),
-    index("external_identities_instance_user_idx").on(table.instanceId, table.userId),
-    index("external_identities_instance_provider_idx").on(table.instanceId, table.providerId),
+    index("external_identities_realm_user_idx").on(table.realmId, table.userId),
+    index("external_identities_realm_provider_idx").on(table.realmId, table.providerId),
   ],
 )
 

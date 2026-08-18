@@ -24,7 +24,7 @@ const externalIdentityRecentAuthenticationMs = 5 * 60 * 1_000
 type ExternalIdentityLinkCompleteOptions = {
   readonly database: StorageDatabase
   readonly input: ExternalIdentityLinkCompleteRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly providerId: string
   readonly session: Session
   readonly userId: string
@@ -38,7 +38,7 @@ export function externalIdentityLinkComplete(
   const op = "externalIdentityLinkComplete"
   const parsed = v.safeParse(externalIdentityLinkCompleteRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "Explicit link confirmation is required.")
-  if (options.session.instanceId !== options.instanceId || options.session.userId !== options.userId)
+  if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
     return resultErrorCreate(op, "The session does not belong to this user.")
   if (options.session.assurance === "none")
     return resultErrorCreate(op, "A recent authentication is required before linking an external identity.")
@@ -48,7 +48,7 @@ export function externalIdentityLinkComplete(
     return resultErrorCreate(op, "A recent authentication is required before linking an external identity.")
   const repository = externalIdentityRepositoryCreate(options.database.db)
   const pending = repository.externalIdentityOAuthTransactionGetByConfirmationToken(
-    options.instanceId,
+    options.realmId,
     externalIdentitySecretHashCreate(parsed.output.confirmationToken),
   )
   if (!pending.success) return pending
@@ -67,7 +67,7 @@ export function externalIdentityLinkComplete(
   if (pendingRow.externalSubject === null)
     return resultErrorCreate(op, "The external identity link confirmation is invalid.")
   const externalSubject = pendingRow.externalSubject
-  const provider = repository.externalIdentityProviderGet(options.instanceId, pending.data.providerId)
+  const provider = repository.externalIdentityProviderGet(options.realmId, pending.data.providerId)
   if (!provider.success) return provider
   if (provider.data === null || !provider.data.enabled || provider.data.redirectUri !== pending.data.redirectUri)
     return resultErrorCreate(op, "The external identity link confirmation is invalid.")
@@ -76,7 +76,7 @@ export function externalIdentityLinkComplete(
   return storageTransactionRun(options.database, (transaction) => {
     const currentRepository = externalIdentityRepositoryCreate(transaction)
     const current = currentRepository.externalIdentityOAuthTransactionGetByConfirmationToken(
-      options.instanceId,
+      options.realmId,
       externalIdentitySecretHashCreate(parsed.output.confirmationToken),
     )
     if (!current.success) return current
@@ -96,7 +96,7 @@ export function externalIdentityLinkComplete(
       emailVerified: pendingRow.externalEmailVerified === true,
       externalSubject,
       id: uuidv7Create(runtime),
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       providerId: pendingRow.providerId,
       updatedAt: now,
       userId: options.userId,
@@ -126,7 +126,7 @@ export function externalIdentityLinkComplete(
         commandIndex: 0,
         correlationId,
         eventType: externalIdentityEventTypes.linked,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: now,
         payload: payload.output,

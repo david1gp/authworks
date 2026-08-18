@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { machineCredentialRotatedEventPayloadSchema } from "../events/machineCredentialRotatedEventPayloadSchema.js"
 import { machineEventTypes } from "../events/machineEventTypes.js"
 import { machineSecretCreate } from "../domain/machineSecretCreate.js"
@@ -20,9 +20,9 @@ import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 import type { MachineUserSecretRotateResponse } from "../public/machineUserSecretRotateResponseSchema.js"
 
 type MachineUserClientSecretRotateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly machineUserId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -46,19 +46,19 @@ export function machineUserClientSecretRotate(
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const user = repository.userGet(options.instanceId, options.machineUserId)
+    const user = repository.userGet(options.realmId, options.machineUserId)
     if (!user.success) return user
     if (user.data === null) return resultErrorCreate(op, "The machine user was not found.")
     if (user.data.status !== "active") return resultErrorCreate(op, "The machine user is not active.")
     const scopes = machineScopesParse(user.data.scopes)
     if (!scopes.success) return scopes
-    const credentials = repository.credentialList(options.instanceId, options.machineUserId)
+    const credentials = repository.credentialList(options.realmId, options.machineUserId)
     if (!credentials.success) return credentials
     const current = credentials.data.find(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
     )
     if (current === undefined) return resultErrorCreate(op, "The machine user has no active client secret.")
-    const revoked = repository.credentialUpdate(options.instanceId, current.id, {
+    const revoked = repository.credentialUpdate(options.realmId, current.id, {
       replacedById: replacementId,
       revokedAt: now,
       version: current.version + 1,
@@ -69,7 +69,7 @@ export function machineUserClientSecretRotate(
       createdAt: now,
       expiresAt: null,
       id: replacementId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       kind: "client_secret",
       machineUserId: options.machineUserId,
       name: null,
@@ -96,7 +96,7 @@ export function machineUserClientSecretRotate(
         commandIndex: 0,
         correlationId,
         eventType: machineEventTypes.credentialRotated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "machine-users" },
         occurredAt: now,
         payload: payload.output,

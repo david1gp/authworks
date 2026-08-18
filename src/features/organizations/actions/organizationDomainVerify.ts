@@ -8,8 +8,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceDomainNormalize } from "../../instances/domain/instanceDomainNormalize.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import { realmDomainNormalize } from "../../realms/domain/realmDomainNormalize.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import { organizationDomainVerifiedEventPayloadSchema } from "../events/organizationDomainVerifiedEventPayloadSchema.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationDomainPublicViewCreate } from "../domain/organizationDomainPublicViewCreate.js"
@@ -21,11 +21,11 @@ import type { OrganizationDomainResponse } from "../public/organizationDomainRes
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationDomainVerifyOptions = {
-  readonly context: InstanceSystemContext
+  readonly context: RealmSystemContext
   readonly database: StorageDatabase
   readonly dnsPort: OrganizationDomainDnsVerificationPort
   readonly domain: string
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -35,7 +35,7 @@ export async function organizationDomainVerify(
   options: OrganizationDomainVerifyOptions,
 ): Promise<Result<OrganizationDomainResponse>> {
   const op = "organizationDomainVerify"
-  const normalized = instanceDomainNormalize(options.domain)
+  const normalized = realmDomainNormalize(options.domain)
   if (!normalized.success) return resultErrorCreate(op, "The organization domain is invalid.")
   const domain = normalized.data
   const organizations = organizationRepositoryCreate(options.database.db)
@@ -43,7 +43,7 @@ export async function organizationDomainVerify(
   if (!organization.success) return organization
   if (
     organization.data === null ||
-    organization.data.instanceId !== options.instanceId ||
+    organization.data.realmId !== options.realmId ||
     organization.data.status !== "active"
   )
     return resultErrorCreate(op, "The organization domain was not found.")
@@ -105,7 +105,7 @@ export async function organizationDomainVerify(
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.domainVerified,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: now,
         payload: payload.output,

@@ -7,7 +7,7 @@ export function projectRolePublicViewCreate(row: ProjectRoleRow): ProjectRole {
     displayName: row.displayName,
     ...(row.group === null ? {} : { group: row.group }),
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     key: row.key,
     projectId: row.projectId,
     updatedAt: row.updatedAt,

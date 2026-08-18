@@ -18,7 +18,7 @@ import { and, desc, eq } from "drizzle-orm"
 
 type SessionRevokeOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly reason?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionId: string
@@ -36,19 +36,19 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
   const correlationId = uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = sessionRepositoryCreate(transaction)
-    const current = repository.sessionGet(options.instanceId, options.sessionId)
+    const current = repository.sessionGet(options.realmId, options.sessionId)
     if (!current.success) return current
     if (current.data === null || current.data.userId !== options.userId)
       return resultErrorCreate(op, "The session was not found.")
     if (current.data.revokedAt !== null) return resultCreate<SessionRevocationResponse>({ revoked: false })
-    const revoked = repository.sessionVersionUpdate(options.instanceId, options.sessionId, current.data.version, {
+    const revoked = repository.sessionVersionUpdate(options.realmId, options.sessionId, current.data.version, {
       revocationReason: reason,
       revokedAt: now,
       version: current.data.version + 1,
     })
     if (!revoked.success) return revoked
     if (revoked.data === null) return resultErrorCreate(op, "The session was not found.")
-    const eventVersion = repository.sessionEventVersionGet(options.instanceId, options.sessionId)
+    const eventVersion = repository.sessionEventVersionGet(options.realmId, options.sessionId)
     if (!eventVersion.success) return eventVersion
     const payload = v.safeParse(sessionRevokedEventPayloadSchema, {
       reason,
@@ -66,7 +66,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
         commandIndex: 0,
         correlationId,
         eventType: sessionEventTypes.revoked,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "sessions" },
         occurredAt: now,
         payload: payload.output,
@@ -92,7 +92,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
         actorId: current.data.impersonatorId,
         endedAt: now,
         endedById: options.userId,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         ...(current.data.impersonationOrganizationId === null
           ? {}
           : { organizationId: current.data.impersonationOrganizationId }),
@@ -110,7 +110,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
           commandIndex: 1,
           correlationId,
           eventType: impersonationEventTypes.ended,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "impersonation" },
           occurredAt: now,
           payload: endedPayload.output,

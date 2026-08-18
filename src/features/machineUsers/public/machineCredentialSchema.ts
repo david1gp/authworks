@@ -11,7 +11,7 @@ export const machineCredentialSchema = v.strictObject({
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   expiresAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
   id: machineCredentialIdSchema,
-  instanceId: machineCredentialIdSchema,
+  realmId: machineCredentialIdSchema,
   kind: machineCredentialKindSchema,
   machineUserId: machineCredentialIdSchema,
   name: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(200))),

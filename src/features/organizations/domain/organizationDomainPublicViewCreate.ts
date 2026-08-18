@@ -5,7 +5,7 @@ export function organizationDomainPublicViewCreate(row: OrganizationDomainRow): 
   return {
     createdAt: row.createdAt,
     domain: row.domain,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     isPrimary: row.isPrimary,
     organizationId: row.organizationId,
     updatedAt: row.updatedAt,

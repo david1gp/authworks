@@ -2,25 +2,25 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { Organization } from "../public/organizationSchema.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationListOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 export function organizationList(options: OrganizationListOptions): Result<{ organizations: Organization[] }> {
   const op = "organizationList"
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The organizations are not available in this tenant context.")
   const repository = organizationRepositoryCreate(options.database.db)
-  const rows = repository.organizationList(options.instanceId)
+  const rows = repository.organizationList(options.realmId)
   if (!rows.success) return rows
   const organizations: Organization[] = []
   for (const row of rows.data) {

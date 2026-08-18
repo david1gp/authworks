@@ -24,7 +24,7 @@ import { organizationLoginPolicyEnforce } from "../../organizations/public/organ
 
 type PasskeyAuthenticationStartOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly origins: readonly string[]
   readonly rpId: string
   readonly rpName: string
@@ -44,7 +44,7 @@ export async function passkeyAuthenticationStart(
   if (options.purpose === "passwordless") {
     const policy = organizationLoginPolicyEnforce({
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       method: "passkey",
       organizationId: options.organizationId,
     })
@@ -61,7 +61,7 @@ export async function passkeyAuthenticationStart(
   if (options.userId === undefined) {
     credentials = []
   } else {
-    const found = repository.passkeyCredentialList(options.instanceId, options.userId)
+    const found = repository.passkeyCredentialList(options.realmId, options.userId)
     if (!found.success) return found
     if (found.data.every((credential) => credential.revokedAt !== null))
       return resultErrorCreate(op, "An active passkey credential is required.")
@@ -70,7 +70,7 @@ export async function passkeyAuthenticationStart(
       .from(sessionTable)
       .where(
         and(
-          eq(sessionTable.instanceId, options.instanceId),
+          eq(sessionTable.realmId, options.realmId),
           eq(sessionTable.id, options.sessionId!),
           eq(sessionTable.userId, options.userId),
         ),
@@ -114,7 +114,7 @@ export async function passkeyAuthenticationStart(
     configuration: configuration.data,
     correlationId: options.correlationId,
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     now,
     organizationId: options.organizationId,
     purpose: options.purpose,
@@ -135,7 +135,7 @@ type PasskeyAuthenticationStartStoreOptions = {
   readonly configuration: { readonly origins: readonly string[]; readonly rpId: string; readonly rpName: string }
   readonly correlationId?: string
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly now: number
   readonly organizationId?: string
   readonly purpose: PasskeyCeremonyPurpose
@@ -155,7 +155,7 @@ function passkeyAuthenticationStartStore(options: PasskeyAuthenticationStartStor
       createdAt: options.now,
       expiresAt: options.now + 5 * 60 * 1_000,
       id: ceremonyId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       kind: "authentication",
       organizationId: options.organizationId ?? null,
       origins: JSON.stringify(options.configuration.origins),
@@ -185,7 +185,7 @@ function passkeyAuthenticationStartStore(options: PasskeyAuthenticationStartStor
         commandIndex: 0,
         correlationId,
         eventType: passkeyEventTypes.authenticationStarted,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passkeys" },
         occurredAt: options.now,
         payload: payload.output,

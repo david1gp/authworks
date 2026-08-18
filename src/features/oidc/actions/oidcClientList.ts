@@ -1,23 +1,23 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcClientPublicViewCreate } from "../domain/oidcClientPublicViewCreate.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import type { OidcClientListResponse } from "../public/oidcClientListResponseSchema.js"
 
 type OidcClientListOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 export function oidcClientList(options: OidcClientListOptions): Result<OidcClientListResponse> {
-  const authorized = oidcClientContextAuthorize({ context: options.context, instanceId: options.instanceId })
+  const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
-  const rows = oidcRepositoryCreate(options.database.db).clientList(options.instanceId)
+  const rows = oidcRepositoryCreate(options.database.db).clientList(options.realmId)
   if (!rows.success) return rows
   const clients = []
   for (const row of rows.data) {

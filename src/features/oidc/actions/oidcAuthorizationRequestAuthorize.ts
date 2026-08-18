@@ -9,8 +9,8 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import { oidcAuthorizationCodeCreate } from "../domain/oidcAuthorizationCodeCreate.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
@@ -35,7 +35,7 @@ type OidcAuthorizationRequestAuthorizeOptions = {
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: OidcAuthorizationRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionToken: string
   readonly correlationId?: string
@@ -51,12 +51,12 @@ export function oidcAuthorizationRequestAuthorize(
   const op = "oidcAuthorizationRequestAuthorize"
   const parsed = v.safeParse(oidcAuthorizationRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The OIDC authorization request is invalid.")
-  if (options.instanceId.length === 0) return resultErrorCreate(op, "The OIDC authorization request is invalid.")
+  if (options.realmId.length === 0) return resultErrorCreate(op, "The OIDC authorization request is invalid.")
 
   const runtime = options.runtime ?? options.database.runtime
   const authenticated = sessionAuthenticate({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     runtime,
     token: options.sessionToken,
   })
@@ -72,29 +72,29 @@ export function oidcAuthorizationRequestAuthorize(
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate(op, "The OIDC authorization timestamp is invalid.")
-  const instance = instanceGet({
-    context: instanceSystemContextCreate(),
+  const realm = realmGet({
+    context: realmSystemContextCreate(),
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
   })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
-  const issuer = oidcIssuerCreate(instance.data.instance.domain)
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  const issuer = oidcIssuerCreate(realm.data.realm.domain)
   const authorizationRequestId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
-  const state = oidcValueEncrypt(parsed.output.state, options.instanceId, options.encryptionSecret)
+  const state = oidcValueEncrypt(parsed.output.state, options.realmId, options.encryptionSecret)
   if (!state.success) return state
   const nonce =
     parsed.output.nonce === undefined
       ? resultCreate<string | null>(null)
-      : oidcValueEncrypt(parsed.output.nonce, options.instanceId, options.encryptionSecret)
+      : oidcValueEncrypt(parsed.output.nonce, options.realmId, options.encryptionSecret)
   if (!nonce.success) return nonce
   const requestExpiresAt = now + oidcAuthorizationRequestLifetimeMs
   if (!Number.isSafeInteger(requestExpiresAt)) return resultErrorCreate(op, "The OIDC authorization expiry is invalid.")
 
   const completed = storageTransactionRun<OidcAuthorizationTransactionResult>(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
-    const client = repository.clientGet(options.instanceId, parsed.output.client_id)
+    const client = repository.clientGet(options.realmId, parsed.output.client_id)
     if (!client.success) return client
     if (client.data === null || client.data.status !== "active")
       return resultErrorCreate(op, "The OIDC client was not found.")
@@ -108,7 +108,7 @@ export function oidcAuthorizationRequestAuthorize(
     if (!allowedScopes.success) return resultErrorCreate(op, "The OIDC client configuration is invalid.")
     const scope = oidcAuthorizationScopeParse(parsed.output.scope, allowedScopes.data)
     if (!scope.success) return scope
-    const consent = repository.consentGet(options.instanceId, authenticated.data.actor.actorId, parsed.output.client_id)
+    const consent = repository.consentGet(options.realmId, authenticated.data.actor.actorId, parsed.output.client_id)
     if (!consent.success) return consent
     const grantedScope = consent.data === null ? resultCreate<string[]>([]) : oidcStoredScopeParse(consent.data.scope)
     if (!grantedScope.success) return resultErrorCreate(op, "The stored OIDC consent is invalid.")
@@ -125,7 +125,7 @@ export function oidcAuthorizationRequestAuthorize(
       createdAt: now,
       expiresAt: requestExpiresAt,
       id: authorizationRequestId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       issuer,
       nonceEncrypted: nonce.data,
       prompt: parsed.output.prompt ?? null,
@@ -159,7 +159,7 @@ export function oidcAuthorizationRequestAuthorize(
         commandIndex: 0,
         correlationId,
         eventType: oidcEventTypes.authorizationRequestValidated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "oidc" },
         occurredAt: now,
         payload: requestPayload.output,
@@ -187,7 +187,7 @@ export function oidcAuthorizationRequestAuthorize(
       const saved = repository.consentUpsert({
         clientId: parsed.output.client_id,
         createdAt: consent.data?.createdAt ?? now,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         revokedAt: null,
         scope: JSON.stringify(granted),
         updatedAt: now,
@@ -202,7 +202,7 @@ export function oidcAuthorizationRequestAuthorize(
       })
       if (!consentPayload.success) return resultErrorCreate(op, "The consent event payload is invalid.")
       const consentVersion = repository.consentEventVersionGet(
-        options.instanceId,
+        options.realmId,
         authenticated.data.actor.actorId,
         parsed.output.client_id,
       )
@@ -217,7 +217,7 @@ export function oidcAuthorizationRequestAuthorize(
           commandIndex: 1,
           correlationId,
           eventType: oidcEventTypes.consentGranted,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "oidc" },
           occurredAt: now,
           payload: consentPayload.output,
@@ -234,7 +234,7 @@ export function oidcAuthorizationRequestAuthorize(
       codeChallengeMethod: parsed.output.code_challenge_method,
       correlationId,
       expiresAt: now + oidcAuthorizationCodeLifetimeMs,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       issuer,
       nonceEncrypted: nonce.data,
       now,
@@ -268,7 +268,7 @@ type OidcAuthorizationCodeIssueOptions = {
   readonly codeChallengeMethod: "S256"
   readonly correlationId: string
   readonly expiresAt: number
-  readonly instanceId: string
+  readonly realmId: string
   readonly issuer: string
   readonly nonceEncrypted: string | null
   readonly now: number
@@ -296,7 +296,7 @@ function oidcAuthorizationCodeIssue(
     createdAt: options.now,
     expiresAt: options.expiresAt,
     id: uuidv7Create(options.runtime),
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     issuer: options.issuer,
     nonceEncrypted: options.nonceEncrypted,
     redirectUri: options.redirectUri,
@@ -329,7 +329,7 @@ function oidcAuthorizationCodeIssue(
       commandIndex: 2,
       correlationId: options.correlationId,
       eventType: oidcEventTypes.authorizationCodeIssued,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "oidc" },
       occurredAt: options.now,
       payload: payload.output,

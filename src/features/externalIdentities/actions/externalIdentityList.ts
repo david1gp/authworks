@@ -11,17 +11,17 @@ import type { ExternalIdentityListResponse } from "../public/externalIdentityLis
 
 type ExternalIdentityListOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly session: Session
   readonly userId: string
 }
 
 export function externalIdentityList(options: ExternalIdentityListOptions): Result<ExternalIdentityListResponse> {
   const identities = externalIdentityRepositoryCreate(options.database.db).externalIdentityList(
-    options.instanceId,
+    options.realmId,
     options.userId,
   )
-  if (options.session.instanceId !== options.instanceId || options.session.userId !== options.userId)
+  if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
     return resultErrorCreate("externalIdentityList", "The session does not belong to this user.")
   if (options.session.assurance === "none")
     return resultErrorCreate("externalIdentityList", "Session authorization is required.")
@@ -34,7 +34,7 @@ export function externalIdentityList(options: ExternalIdentityListOptions): Resu
       .where(
         and(
           eq(externalIdentityProviderTable.id, identity.providerId),
-          eq(externalIdentityProviderTable.instanceId, options.instanceId),
+          eq(externalIdentityProviderTable.realmId, options.realmId),
         ),
       )
       .get()

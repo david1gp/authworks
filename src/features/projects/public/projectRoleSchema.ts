@@ -6,7 +6,7 @@ export const projectRoleSchema = v.strictObject({
   displayName: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   group: v.optional(v.pipe(v.string(), v.maxLength(200))),
   id: projectResourceIdSchema,
-  instanceId: projectResourceIdSchema,
+  realmId: projectResourceIdSchema,
   key: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   projectId: projectResourceIdSchema,
   updatedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),

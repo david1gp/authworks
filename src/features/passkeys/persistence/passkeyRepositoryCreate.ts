@@ -20,13 +20,13 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passkeyCeremonyGetByTokenHash(instanceId: string, tokenHash: string): Result<PasskeyCeremonyRow | null> {
+    passkeyCeremonyGetByTokenHash(realmId: string, tokenHash: string): Result<PasskeyCeremonyRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(passkeyCeremonyTable)
-            .where(and(eq(passkeyCeremonyTable.instanceId, instanceId), eq(passkeyCeremonyTable.tokenHash, tokenHash)))
+            .where(and(eq(passkeyCeremonyTable.realmId, realmId), eq(passkeyCeremonyTable.tokenHash, tokenHash)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -35,7 +35,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
     },
 
     passkeyCeremonyConsume(
-      instanceId: string,
+      realmId: string,
       id: string,
       tokenHash: string,
       expectedVersion: number,
@@ -48,7 +48,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .set({ consumedAt, version: expectedVersion + 1 })
             .where(
               and(
-                eq(passkeyCeremonyTable.instanceId, instanceId),
+                eq(passkeyCeremonyTable.realmId, realmId),
                 eq(passkeyCeremonyTable.id, id),
                 eq(passkeyCeremonyTable.tokenHash, tokenHash),
                 eq(passkeyCeremonyTable.version, expectedVersion),
@@ -75,7 +75,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
     },
 
     passkeyCredentialGetByCredentialId(
-      instanceId: string,
+      realmId: string,
       rpId: string,
       credentialId: string,
     ): Result<PasskeyCredentialRow | null> {
@@ -86,7 +86,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .from(passkeyCredentialTable)
             .where(
               and(
-                eq(passkeyCredentialTable.instanceId, instanceId),
+                eq(passkeyCredentialTable.realmId, realmId),
                 eq(passkeyCredentialTable.rpId, rpId),
                 eq(passkeyCredentialTable.credentialId, credentialId),
               ),
@@ -98,13 +98,13 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passkeyCredentialList(instanceId: string, userId: string): Result<PasskeyCredentialRow[]> {
+    passkeyCredentialList(realmId: string, userId: string): Result<PasskeyCredentialRow[]> {
       try {
         return resultCreate(
           database
             .select()
             .from(passkeyCredentialTable)
-            .where(and(eq(passkeyCredentialTable.instanceId, instanceId), eq(passkeyCredentialTable.userId, userId)))
+            .where(and(eq(passkeyCredentialTable.realmId, realmId), eq(passkeyCredentialTable.userId, userId)))
             .all(),
         )
       } catch (_error) {
@@ -112,7 +112,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passkeyCredentialGet(instanceId: string, userId: string, id: string): Result<PasskeyCredentialRow | null> {
+    passkeyCredentialGet(realmId: string, userId: string, id: string): Result<PasskeyCredentialRow | null> {
       try {
         return resultCreate(
           database
@@ -120,7 +120,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .from(passkeyCredentialTable)
             .where(
               and(
-                eq(passkeyCredentialTable.instanceId, instanceId),
+                eq(passkeyCredentialTable.realmId, realmId),
                 eq(passkeyCredentialTable.userId, userId),
                 eq(passkeyCredentialTable.id, id),
               ),
@@ -133,7 +133,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
     },
 
     passkeyCredentialCounterUpdate(
-      instanceId: string,
+      realmId: string,
       id: string,
       expectedVersion: number,
       counter: number,
@@ -147,7 +147,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .set({ backedUp: backedUp ? 1 : 0, counter, lastUsedAt, version: expectedVersion + 1 })
             .where(
               and(
-                eq(passkeyCredentialTable.instanceId, instanceId),
+                eq(passkeyCredentialTable.realmId, realmId),
                 eq(passkeyCredentialTable.id, id),
                 eq(passkeyCredentialTable.version, expectedVersion),
                 isNull(passkeyCredentialTable.revokedAt),
@@ -162,7 +162,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
     },
 
     passkeyCredentialRevoke(
-      instanceId: string,
+      realmId: string,
       userId: string,
       id: string,
       expectedVersion: number,
@@ -175,7 +175,7 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .set({ revokedAt, version: expectedVersion + 1 })
             .where(
               and(
-                eq(passkeyCredentialTable.instanceId, instanceId),
+                eq(passkeyCredentialTable.realmId, realmId),
                 eq(passkeyCredentialTable.userId, userId),
                 eq(passkeyCredentialTable.id, id),
                 eq(passkeyCredentialTable.version, expectedVersion),
@@ -190,14 +190,14 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passkeyEventVersionGet(instanceId: string, aggregateType: string, aggregateId: string): Result<number> {
+    passkeyEventVersionGet(realmId: string, aggregateType: string, aggregateId: string): Result<number> {
       try {
         const event = database
           .select({ aggregateVersion: storageEventTable.aggregateVersion })
           .from(storageEventTable)
           .where(
             and(
-              eq(storageEventTable.instanceId, instanceId),
+              eq(storageEventTable.realmId, realmId),
               eq(storageEventTable.aggregateType, aggregateType),
               eq(storageEventTable.aggregateId, aggregateId),
             ),

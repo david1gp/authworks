@@ -6,11 +6,11 @@ import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceBootstrapAdminAuthenticate } from "../../instances/actions/instanceBootstrapAdminAuthenticate.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { machineApiKeyCreate } from "../actions/machineApiKeyCreate.js"
 import { machineCredentialList } from "../actions/machineCredentialList.js"
 import { machineCredentialRevoke } from "../actions/machineCredentialRevoke.js"
@@ -31,17 +31,17 @@ type MachineUserServerAppCreateOptions = {
   readonly systemSecret?: Secret | string
 }
 
-type MachineRequestContext = InstanceSystemContext | InstanceTenantContext
+type MachineRequestContext = RealmSystemContext | RealmTenantContext
 type MachineAuthenticator = (context: {
   req: { header: (name: string) => string | undefined; url: string }
 }) => { data: MachineRequestContext; success: true } | { errorMessage: string; op: string; success: false }
 
 export function machineUserServerAppCreate(options: MachineUserServerAppCreateOptions) {
   const app = new Hono()
-  machineRoutesRegister(app, options, "/system/instances/:instanceId", (context) =>
+  machineRoutesRegister(app, options, "/system/realms/:realmId", (context) =>
     machineSystemAuthenticate(context.req.header("authorization"), options.systemSecret),
   )
-  machineRoutesRegister(app, options, "/instances/:instanceId", (context) =>
+  machineRoutesRegister(app, options, "/realms/:realmId", (context) =>
     machineTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -51,7 +51,7 @@ export function machineUserServerAppCreate(options: MachineUserServerAppCreateOp
   )
 
   app.get(
-    "/instances/:instanceId/protected-api",
+    "/realms/:realmId/protected-api",
     machineProtectedMiddlewareCreate({ database: options.database }),
     (context) =>
       context.json({
@@ -78,7 +78,7 @@ function machineRoutesRegister(
       machineUserList({
         context: authenticated.data,
         database: options.database,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
       }),
     )
   })
@@ -100,7 +100,7 @@ function machineRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
       }),
       201,
     )
@@ -114,7 +114,7 @@ function machineRoutesRegister(
       machineUserGet({
         context: authenticated.data,
         database: options.database,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
         machineUserId: machineParamGet(context, "machineUserId"),
       }),
     )
@@ -137,7 +137,7 @@ function machineRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
         machineUserId: machineParamGet(context, "machineUserId"),
       }),
     )
@@ -151,7 +151,7 @@ function machineRoutesRegister(
       machineUserClientSecretRotate({
         context: authenticated.data,
         database: options.database,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
         machineUserId: machineParamGet(context, "machineUserId"),
       }),
     )
@@ -165,7 +165,7 @@ function machineRoutesRegister(
       machineCredentialList({
         context: authenticated.data,
         database: options.database,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
         machineUserId: machineParamGet(context, "machineUserId"),
       }),
     )
@@ -191,7 +191,7 @@ function machineRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
       }),
       201,
     )
@@ -217,7 +217,7 @@ function machineRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
       }),
       201,
     )
@@ -241,7 +241,7 @@ function machineRoutesRegister(
         credentialId: machineParamGet(context, "credentialId"),
         database: options.database,
         input: input.output,
-        instanceId: machineParamGet(context, "instanceId"),
+        realmId: machineParamGet(context, "realmId"),
       }),
     )
   })
@@ -255,7 +255,7 @@ function machineSystemAuthenticate(authorization: string | undefined, configured
       op: "machineSystemAuthorization",
       success: false as const,
     }
-  return { data: instanceSystemContextCreate(), success: true as const }
+  return { data: realmSystemContextCreate(), success: true as const }
 }
 
 function machineTenantAuthenticate(
@@ -264,9 +264,9 @@ function machineTenantAuthenticate(
   requestUrl: string,
   authorization: string | undefined,
 ) {
-  const resolved = instanceTenantContextResolve({ database, host: machineHostGet(host, requestUrl) })
+  const resolved = realmTenantContextResolve({ database, host: machineHostGet(host, requestUrl) })
   if (!resolved.success) return resolved
-  return instanceBootstrapAdminAuthenticate({
+  return realmBootstrapAdminAuthenticate({
     context: resolved.data,
     database,
     secret: machineBearerTokenGet(authorization) ?? "",

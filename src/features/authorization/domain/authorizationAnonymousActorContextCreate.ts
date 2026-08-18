@@ -1,11 +1,11 @@
 import { authorizationActorContextCreate } from "./authorizationActorContextCreate.js"
 
-export function authorizationAnonymousActorContextCreate(instanceId: string) {
+export function authorizationAnonymousActorContextCreate(realmId: string) {
   return authorizationActorContextCreate({
     actorId: "anonymous",
     assurance: "none",
     authenticationMethod: "none",
-    instanceId,
+    realmId,
     kind: "anonymous",
   })
 }

@@ -22,7 +22,7 @@ import { passkeyTokenHashCreate } from "../domain/passkeyTokenHashCreate.js"
 type PasskeyRegistrationCompleteOptions = {
   readonly database: StorageDatabase
   readonly input: PasskeyRegistrationCompleteRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly origins: readonly string[]
   readonly rpId: string
   readonly rpName: string
@@ -45,7 +45,7 @@ export async function passkeyRegistrationComplete(
   if (!configuration.success) return resultErrorCreate(op, "The passkey registration ceremony is invalid.")
   const tokenHash = passkeyTokenHashCreate(input.output.token)
   const ceremony = passkeyRepositoryCreate(options.database.db).passkeyCeremonyGetByTokenHash(
-    options.instanceId,
+    options.realmId,
     tokenHash,
   )
   if (!ceremony.success) return ceremony
@@ -92,7 +92,7 @@ export async function passkeyRegistrationComplete(
       actorId: options.actorId,
       correlationId,
       database: transaction,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       now,
       runtime,
       tokenHash,
@@ -105,7 +105,7 @@ type PasskeyRegistrationCompleteTransactionOptions = {
   readonly actorId?: string | null
   readonly correlationId: string
   readonly database: Parameters<typeof passkeyRepositoryCreate>[0]
-  readonly instanceId: string
+  readonly realmId: string
   readonly now: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly tokenHash: string
@@ -117,7 +117,7 @@ function passkeyRegistrationCompleteTransaction(
 ): Result<PasskeyRegistrationCompleteResponse> {
   const op = "passkeyRegistrationComplete"
   const repository = passkeyRepositoryCreate(options.database)
-  const ceremony = repository.passkeyCeremonyGetByTokenHash(options.instanceId, options.tokenHash)
+  const ceremony = repository.passkeyCeremonyGetByTokenHash(options.realmId, options.tokenHash)
   if (!ceremony.success) return ceremony
   if (
     ceremony.data === null ||
@@ -129,7 +129,7 @@ function passkeyRegistrationCompleteTransaction(
     return resultErrorCreate(op, "The passkey registration ceremony is invalid.")
   const credential = options.verified.registrationInfo.credential
   const consumed = repository.passkeyCeremonyConsume(
-    options.instanceId,
+    options.realmId,
     ceremony.data.id,
     options.tokenHash,
     ceremony.data.version,
@@ -145,7 +145,7 @@ function passkeyRegistrationCompleteTransaction(
     credentialId: credential.id,
     deviceType: options.verified.registrationInfo.credentialDeviceType,
     id: uuidv7Create(options.runtime),
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     lastUsedAt: null,
     publicKey: Buffer.from(credential.publicKey),
     revokedAt: null,
@@ -173,7 +173,7 @@ function passkeyRegistrationCompleteTransaction(
       commandIndex: 0,
       correlationId: options.correlationId,
       eventType: passkeyEventTypes.registrationCompleted,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "passkeys" },
       occurredAt: options.now,
       payload: credentialPayload.output,
@@ -198,7 +198,7 @@ function passkeyRegistrationCompleteTransaction(
       commandIndex: 1,
       correlationId: options.correlationId,
       eventType: passkeyEventTypes.registrationCompleted,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "passkeys" },
       occurredAt: options.now,
       payload: ceremonyPayload.output,

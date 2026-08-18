@@ -18,13 +18,13 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    sessionGet(instanceId: string, sessionId: string): Result<SessionRow | null> {
+    sessionGet(realmId: string, sessionId: string): Result<SessionRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(sessionTable)
-            .where(and(eq(sessionTable.instanceId, instanceId), eq(sessionTable.id, sessionId)))
+            .where(and(eq(sessionTable.realmId, realmId), eq(sessionTable.id, sessionId)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -42,12 +42,12 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    sessionList(instanceId: string, userId: string, limit?: number): Result<SessionRow[]> {
+    sessionList(realmId: string, userId: string, limit?: number): Result<SessionRow[]> {
       try {
         const query = database
           .select()
           .from(sessionTable)
-          .where(and(eq(sessionTable.instanceId, instanceId), eq(sessionTable.userId, userId)))
+          .where(and(eq(sessionTable.realmId, realmId), eq(sessionTable.userId, userId)))
           .orderBy(desc(sessionTable.lastUsedAt), desc(sessionTable.createdAt))
         if (limit === undefined) return resultCreate(query.all())
         return resultCreate(query.limit(limit).all())
@@ -56,14 +56,14 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    sessionEventVersionGet(instanceId: string, sessionId: string): Result<number> {
+    sessionEventVersionGet(realmId: string, sessionId: string): Result<number> {
       try {
         const event = database
           .select({ aggregateVersion: storageEventTable.aggregateVersion })
           .from(storageEventTable)
           .where(
             and(
-              eq(storageEventTable.instanceId, instanceId),
+              eq(storageEventTable.realmId, realmId),
               eq(storageEventTable.aggregateId, sessionId),
               eq(storageEventTable.aggregateType, "session"),
             ),
@@ -77,7 +77,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
     },
 
     sessionLastUsedUpdate(
-      instanceId: string,
+      realmId: string,
       sessionId: string,
       tokenHash: string,
       lastUsedAt: number,
@@ -89,7 +89,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
             .set({ lastUsedAt })
             .where(
               and(
-                eq(sessionTable.instanceId, instanceId),
+                eq(sessionTable.realmId, realmId),
                 eq(sessionTable.id, sessionId),
                 eq(sessionTable.tokenHash, tokenHash),
                 isNull(sessionTable.revokedAt),
@@ -104,7 +104,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
     },
 
     sessionRotate(
-      instanceId: string,
+      realmId: string,
       sessionId: string,
       tokenHash: string,
       nextTokenHash: string,
@@ -119,7 +119,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
             .set({ lastUsedAt: now, tokenHash: nextTokenHash, version: nextVersion })
             .where(
               and(
-                eq(sessionTable.instanceId, instanceId),
+                eq(sessionTable.realmId, realmId),
                 eq(sessionTable.id, sessionId),
                 eq(sessionTable.tokenHash, tokenHash),
                 eq(sessionTable.version, expectedVersion),
@@ -135,7 +135,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
     },
 
     sessionAssuranceRotate(
-      instanceId: string,
+      realmId: string,
       sessionId: string,
       tokenHash: string,
       nextTokenHash: string,
@@ -157,7 +157,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
             })
             .where(
               and(
-                eq(sessionTable.instanceId, instanceId),
+                eq(sessionTable.realmId, realmId),
                 eq(sessionTable.id, sessionId),
                 eq(sessionTable.tokenHash, tokenHash),
                 eq(sessionTable.version, expectedVersion),
@@ -173,7 +173,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
     },
 
     sessionVersionUpdate(
-      instanceId: string,
+      realmId: string,
       sessionId: string,
       expectedVersion: number,
       input: Partial<typeof sessionTable.$inferInsert>,
@@ -185,7 +185,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
             .set(input)
             .where(
               and(
-                eq(sessionTable.instanceId, instanceId),
+                eq(sessionTable.realmId, realmId),
                 eq(sessionTable.id, sessionId),
                 eq(sessionTable.version, expectedVersion),
               ),

@@ -14,7 +14,7 @@ export function oidcClientPublicViewCreate(row: OidcClientRow): Result<v.InferOu
       clientType: row.clientType,
       createdAt: row.createdAt,
       id: row.id,
-      instanceId: row.instanceId,
+      realmId: row.realmId,
       name: row.name,
       postLogoutRedirectUris: JSON.parse(row.postLogoutRedirectUris),
       projectId: row.projectId ?? undefined,

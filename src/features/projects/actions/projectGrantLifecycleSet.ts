@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectGrantPublicViewCreate } from "../domain/projectGrantPublicViewCreate.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectGrantStatusChangedEventPayloadSchema } from "../events/projectGrantStatusChangedEventPayloadSchema.js"
@@ -21,11 +21,11 @@ import type { ProjectGrant } from "../public/projectGrantSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectGrantLifecycleSetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly grantId: string
   readonly input: ProjectGrantLifecycleRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -46,7 +46,7 @@ export function projectGrantLifecycleSet(options: ProjectGrantLifecycleSetOption
     if (!current.success) return current
     if (
       current.data === null ||
-      current.data.instanceId !== options.instanceId ||
+      current.data.realmId !== options.realmId ||
       current.data.projectId !== options.projectId
     )
       return resultErrorCreate(op, "The project grant was not found.")
@@ -60,7 +60,7 @@ export function projectGrantLifecycleSet(options: ProjectGrantLifecycleSetOption
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.grant.write",
       project: project.data,
     })
@@ -87,7 +87,7 @@ export function projectGrantLifecycleSet(options: ProjectGrantLifecycleSetOption
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.grantStatusChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: updatedAt,
         payload: payload.output,

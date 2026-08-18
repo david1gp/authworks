@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcClientSecretCreate } from "../domain/oidcClientSecretCreate.js"
 import { oidcRedirectUriValidate } from "../domain/oidcRedirectUriValidate.js"
@@ -22,10 +22,10 @@ import type { OidcClientCreateResponse } from "../public/oidcClientCreateRespons
 import { oidcClientPublicViewCreate } from "../domain/oidcClientPublicViewCreate.js"
 
 type OidcClientCreateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OidcClientCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -34,15 +34,15 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
   const op = "oidcClientCreate"
   const parsed = v.safeParse(oidcClientCreateRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The OIDC client request is invalid.")
-  const authorized = oidcClientContextAuthorize({ context: options.context, instanceId: options.instanceId })
+  const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
-  const instance = instanceGet({
+  const realm = realmGet({
     context: { actor: options.context.actor, actorId: options.context.actorId, kind: "system" },
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
   })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
   const configuration = oidcClientConfigurationValidate(parsed.output)
   if (!configuration.success) return configuration
   const runtime = options.runtime ?? options.database.runtime
@@ -67,7 +67,7 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
       clientType: parsed.output.clientType,
       createdAt,
       id: clientId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       name: parsed.output.name,
       postLogoutRedirectUris: JSON.stringify(configuration.data.postLogoutRedirectUris),
       projectId: parsed.output.projectId ?? null,
@@ -100,7 +100,7 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
         commandIndex: 0,
         correlationId,
         eventType: oidcEventTypes.clientCreated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "oidc" },
         occurredAt: createdAt,
         payload: payload.output,

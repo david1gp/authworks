@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { passwordPolicyRowCreate } from "../domain/passwordPolicyRowCreate.js"
 import { passwordPolicyViewCreate } from "../domain/passwordPolicyViewCreate.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
@@ -22,10 +22,10 @@ import {
 import type { PasswordPolicy } from "../public/passwordPolicySchema.js"
 
 type PasswordPolicySetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: PasswordPolicySetRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -36,9 +36,9 @@ export function passwordPolicySet(options: PasswordPolicySetOptions): Result<{ p
     return resultErrorCreate(op, "Only the system context can change the password policy.")
   const parsed = v.safeParse(passwordPolicySetRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The password policy is invalid.")
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
@@ -47,11 +47,11 @@ export function passwordPolicySet(options: PasswordPolicySetOptions): Result<{ p
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = passwordRepositoryCreate(transaction)
-    const current = repository.passwordPolicyGet(options.instanceId)
+    const current = repository.passwordPolicyGet(options.realmId)
     if (!current.success) return current
     const version = (current.data?.version ?? 0) + 1
     const row = repository.passwordPolicySet(
-      passwordPolicyRowCreate(options.instanceId, parsed.output, updatedAt, version),
+      passwordPolicyRowCreate(options.realmId, parsed.output, updatedAt, version),
     )
     if (!row.success) return row
     const payload = v.safeParse(passwordPolicyChangedEventPayloadSchema, parsed.output)
@@ -60,13 +60,13 @@ export function passwordPolicySet(options: PasswordPolicySetOptions): Result<{ p
       transaction,
       {
         actorId: options.context.actorId,
-        aggregateId: options.instanceId,
+        aggregateId: options.realmId,
         aggregateType: "password_policy",
         aggregateVersion: version,
         commandIndex: 0,
         correlationId,
         eventType: passwordEventTypes.policyChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: updatedAt,
         payload: payload.output,

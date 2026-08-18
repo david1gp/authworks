@@ -8,7 +8,7 @@ export const passkeyCeremonyTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     kind: text("kind").notNull(),
     organizationId: text("organization_id"),
     origins: text("origins").notNull(),
@@ -22,8 +22,8 @@ export const passkeyCeremonyTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("passkey_ceremonies_token_hash_idx").on(table.tokenHash),
-    index("passkey_ceremonies_instance_expiry_idx").on(table.instanceId, table.expiresAt),
-    index("passkey_ceremonies_instance_user_idx").on(table.instanceId, table.userId),
+    index("passkey_ceremonies_realm_expiry_idx").on(table.realmId, table.expiresAt),
+    index("passkey_ceremonies_realm_user_idx").on(table.realmId, table.userId),
   ],
 )
 

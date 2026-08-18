@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import { instanceTenantContextCreate } from "../../instances/domain/instanceTenantContextCreate.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import { realmTenantContextCreate } from "../../realms/domain/realmTenantContextCreate.js"
 import { and, eq } from "drizzle-orm"
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
@@ -29,7 +29,7 @@ const externalIdentityStateLifetimeMs = 10 * 60 * 1_000
 type ExternalIdentityStartOptions = {
   readonly database: StorageDatabase
   readonly input: ExternalIdentityStartRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly providerId: string
   readonly providerPorts: ExternalIdentityProviderPorts
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -40,12 +40,12 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
   const op = "externalIdentityStart"
   const parsed = v.safeParse(externalIdentityStartRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The external identity start request is invalid.")
-  const context = instanceTenantContextCreate(options.instanceId, "anonymous")
-  const instance = instanceGet({ context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success || instance.data.instance.status !== "active")
+  const context = realmTenantContextCreate(options.realmId, "anonymous")
+  const realm = realmGet({ context, database: options.database, realmId: options.realmId })
+  if (!realm.success || realm.data.realm.status !== "active")
     return resultErrorCreate(op, "The external identity provider is unavailable.")
   const repository = externalIdentityRepositoryCreate(options.database.db)
-  const provider = repository.externalIdentityProviderGet(options.instanceId, options.providerId)
+  const provider = repository.externalIdentityProviderGet(options.realmId, options.providerId)
   if (!provider.success) return provider
   if (
     provider.data === null ||
@@ -58,13 +58,10 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
     return resultErrorCreate(op, "The external identity provider is unavailable.")
   if (parsed.output.organizationId !== undefined) {
     const organization = options.database.db
-      .select({ id: organizationTable.id, instanceId: organizationTable.instanceId, status: organizationTable.status })
+      .select({ id: organizationTable.id, realmId: organizationTable.realmId, status: organizationTable.status })
       .from(organizationTable)
       .where(
-        and(
-          eq(organizationTable.id, parsed.output.organizationId),
-          eq(organizationTable.instanceId, options.instanceId),
-        ),
+        and(eq(organizationTable.id, parsed.output.organizationId), eq(organizationTable.realmId, options.realmId)),
       )
       .get()
     if (organization === undefined || organization.status !== "active")
@@ -72,7 +69,7 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
   }
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     method: "external_identity",
     organizationId: parsed.output.organizationId,
     providerId: options.providerId,
@@ -128,7 +125,7 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
       externalUsername: null,
       expiresAt,
       id: transactionId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       intent: "sign_in",
       nonce,
       nonceHash,
@@ -157,7 +154,7 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
         commandIndex: 0,
         correlationId,
         eventType: externalIdentityEventTypes.authenticationStarted,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: now,
         payload: payload.output,

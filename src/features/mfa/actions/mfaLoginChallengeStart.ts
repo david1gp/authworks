@@ -29,7 +29,7 @@ type MfaLoginChallengeStartOptions = {
     readonly userAgent?: string
   }
   readonly executor?: StorageExecutor
-  readonly instanceId: string
+  readonly realmId: string
   readonly primaryAuthenticationMethod?: SessionAuthenticationMethod
   readonly purpose: "login" | "step_up"
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -62,7 +62,7 @@ type MfaLoginChallengeStartTransactionOptions = {
   readonly correlationId: string
   readonly deviceMetadata?: MfaLoginChallengeStartOptions["deviceMetadata"]
   readonly executor: StorageExecutor
-  readonly instanceId: string
+  readonly realmId: string
   readonly now: number
   readonly primaryAuthenticationMethod?: SessionAuthenticationMethod
   readonly purpose: "login" | "step_up"
@@ -75,7 +75,7 @@ function mfaLoginChallengeStartTransaction(
   options: MfaLoginChallengeStartTransactionOptions,
 ): Result<MfaChallengeResponse> {
   const repository = mfaRepositoryCreate(options.executor)
-  const policyRow = repository.mfaPolicyGet(options.instanceId)
+  const policyRow = repository.mfaPolicyGet(options.realmId)
   if (!policyRow.success) return policyRow
   const policy = policyRow.data ?? {
     ...mfaPolicyDefaults,
@@ -83,7 +83,7 @@ function mfaLoginChallengeStartTransaction(
     maxAttempts: mfaPolicyDefaults.maxAttempts,
     totpWindow: mfaPolicyDefaults.totpWindow,
   }
-  const active = repository.mfaEnrollmentActiveGet(options.instanceId, options.userId)
+  const active = repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
   if (!active.success) return active
   if (active.data === null) return resultErrorCreate("mfaLoginChallengeStart", "An active TOTP enrollment is required.")
   let primaryAuthenticationMethod = options.primaryAuthenticationMethod
@@ -93,7 +93,7 @@ function mfaLoginChallengeStartTransaction(
       .from(sessionTable)
       .where(
         and(
-          eq(sessionTable.instanceId, options.instanceId),
+          eq(sessionTable.realmId, options.realmId),
           eq(sessionTable.id, options.sessionId!),
           eq(sessionTable.userId, options.userId),
         ),
@@ -125,7 +125,7 @@ function mfaLoginChallengeStartTransaction(
     deviceFingerprint: options.deviceMetadata?.fingerprint ?? null,
     expiresAt,
     id: challengeId,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     ipAddress: options.deviceMetadata?.ipAddress ?? null,
     maxAttempts: policy.maxAttempts,
     primaryAuthenticationMethod,
@@ -150,7 +150,7 @@ function mfaLoginChallengeStartTransaction(
       commandIndex: 0,
       correlationId: options.correlationId,
       eventType: mfaEventTypes.challengeStarted,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "mfa" },
       occurredAt: options.now,
       payload: payload.output,

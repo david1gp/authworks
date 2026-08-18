@@ -28,7 +28,7 @@ type OidcAuthorizationRequestConsentOptions = {
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: OidcAuthorizationConsentRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionToken: string
   readonly correlationId?: string
@@ -43,7 +43,7 @@ export function oidcAuthorizationRequestConsent(
   const runtime = options.runtime ?? options.database.runtime
   const authenticated = sessionAuthenticate({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     runtime,
     token: options.sessionToken,
   })
@@ -54,7 +54,7 @@ export function oidcAuthorizationRequestConsent(
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
-    const request = repository.authorizationRequestGet(options.instanceId, parsed.output.request_id)
+    const request = repository.authorizationRequestGet(options.realmId, parsed.output.request_id)
     if (!request.success) return request
     if (
       request.data === null ||
@@ -65,7 +65,7 @@ export function oidcAuthorizationRequestConsent(
       request.data.expiresAt <= now
     )
       return resultErrorCreate(op, "The OIDC consent request is invalid.")
-    const client = repository.clientGet(options.instanceId, request.data.clientId)
+    const client = repository.clientGet(options.realmId, request.data.clientId)
     if (!client.success) return client
     if (client.data === null || client.data.status !== "active")
       return resultErrorCreate(op, "The OIDC consent request is invalid.")
@@ -74,11 +74,11 @@ export function oidcAuthorizationRequestConsent(
     const state =
       request.data.stateEncrypted === null
         ? resultCreate("")
-        : oidcValueDecrypt(request.data.stateEncrypted, options.instanceId, options.encryptionSecret)
+        : oidcValueDecrypt(request.data.stateEncrypted, options.realmId, options.encryptionSecret)
     if (!state.success || state.data.length === 0) return resultErrorCreate(op, "The OIDC consent request is invalid.")
 
     if (parsed.output.decision === "deny") {
-      const rejected = repository.authorizationRequestReject(options.instanceId, request.data.id, now)
+      const rejected = repository.authorizationRequestReject(options.realmId, request.data.id, now)
       if (!rejected.success) return rejected
       if (rejected.data === null) return resultErrorCreate(op, "The OIDC consent request is invalid.")
       const payload = v.safeParse(oidcConsentDeniedEventPayloadSchema, {
@@ -97,7 +97,7 @@ export function oidcAuthorizationRequestConsent(
           commandIndex: 1,
           correlationId,
           eventType: oidcEventTypes.consentDenied,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "oidc" },
           occurredAt: now,
           payload: payload.output,
@@ -113,7 +113,7 @@ export function oidcAuthorizationRequestConsent(
       })
     }
 
-    const existing = repository.consentGet(options.instanceId, request.data.userId, request.data.clientId)
+    const existing = repository.consentGet(options.realmId, request.data.userId, request.data.clientId)
     if (!existing.success) return existing
     const existingScope: Result<string[]> =
       existing.data === null ? resultCreate([]) : oidcScopeParse(existing.data.scope)
@@ -122,7 +122,7 @@ export function oidcAuthorizationRequestConsent(
     const saved = repository.consentUpsert({
       clientId: request.data.clientId,
       createdAt: existing.data?.createdAt ?? now,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       revokedAt: null,
       scope: JSON.stringify(granted),
       updatedAt: now,
@@ -137,7 +137,7 @@ export function oidcAuthorizationRequestConsent(
     })
     if (!consentPayload.success) return resultErrorCreate(op, "The consent event payload is invalid.")
     const consentVersion = repository.consentEventVersionGet(
-      options.instanceId,
+      options.realmId,
       request.data.userId,
       request.data.clientId,
     )
@@ -152,7 +152,7 @@ export function oidcAuthorizationRequestConsent(
         commandIndex: 0,
         correlationId,
         eventType: oidcEventTypes.consentGranted,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "oidc" },
         occurredAt: now,
         payload: consentPayload.output,
@@ -160,7 +160,7 @@ export function oidcAuthorizationRequestConsent(
       runtime,
     )
     if (!consentEvent.success) return consentEvent
-    const approved = repository.authorizationRequestApprove(options.instanceId, request.data.id, now)
+    const approved = repository.authorizationRequestApprove(options.realmId, request.data.id, now)
     if (!approved.success) return approved
     if (approved.data === null) return resultErrorCreate(op, "The OIDC consent request is invalid.")
     const code = oidcAuthorizationCodeCreate(runtime)
@@ -174,7 +174,7 @@ export function oidcAuthorizationRequestConsent(
       createdAt: now,
       expiresAt,
       id: uuidv7Create(runtime),
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       issuer: request.data.issuer,
       nonceEncrypted: request.data.nonceEncrypted,
       redirectUri: request.data.redirectUri,
@@ -206,7 +206,7 @@ export function oidcAuthorizationRequestConsent(
         commandIndex: 2,
         correlationId,
         eventType: oidcEventTypes.authorizationCodeIssued,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "oidc" },
         occurredAt: now,
         payload: codePayload.output,

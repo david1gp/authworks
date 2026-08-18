@@ -3,14 +3,14 @@ import { emailOtpApiClientCreate } from "../client/emailOtpApiClientCreate.js"
 
 type EmailOtpCliFlags = {
   readonly server?: string
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 const emailOtpStartCommand = buildCommand({
   async func(this: ApplicationContext, flags: EmailOtpCliFlags & { email: string }) {
     emailOtpCliResultWrite(
       this,
-      await emailOtpCliClientCreate(this, flags).emailOtpStart(flags.instanceId, { email: flags.email }),
+      await emailOtpCliClientCreate(this, flags).emailOtpStart(flags.realmId, { email: flags.email }),
     )
   },
   parameters: {
@@ -26,7 +26,7 @@ const emailOtpVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: EmailOtpCliFlags & { challengeId: string; code: string }) {
     emailOtpCliResultWrite(
       this,
-      await emailOtpCliClientCreate(this, flags).emailOtpVerify(flags.instanceId, {
+      await emailOtpCliClientCreate(this, flags).emailOtpVerify(flags.realmId, {
         challengeId: flags.challengeId,
         code: flags.code,
       }),
@@ -74,11 +74,11 @@ function emailOtpCommonFlags() {
       parse: (value: string) => value,
       placeholder: "URL",
     },
-    instanceId: {
-      brief: "Instance UUID",
+    realmId: {
+      brief: "Realm UUID",
       kind: "parsed" as const,
       parse: (value: string) => value,
-      placeholder: "INSTANCE_ID",
+      placeholder: "REALM_ID",
     },
   }
 }

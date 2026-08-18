@@ -6,7 +6,7 @@ import type { SessionListResponse } from "../public/sessionListResponseSchema.js
 type SessionRecentListOptions = {
   readonly currentSessionId?: string
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly userId: string
 }
 

@@ -10,7 +10,7 @@ type MfaStepUpCompleteOptions = {
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: MfaChallengeCompleteRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: { now: () => number; randomBytes: (length: number) => Uint8Array }
   readonly sessionToken: string
   readonly correlationId?: string
@@ -23,7 +23,7 @@ export function mfaStepUpComplete(options: MfaStepUpCompleteOptions): Result<Mfa
     database: options.database,
     encryptionSecret: options.encryptionSecret,
     input: options.input,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     runtime: options.runtime,
     sessionToken: options.sessionToken,
   })

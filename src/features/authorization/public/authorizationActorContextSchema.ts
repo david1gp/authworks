@@ -13,7 +13,7 @@ export const authorizationActorContextSchema = v.object({
     "api_key",
     "oidc_access_token",
   ]),
-  instanceId: v.optional(v.pipe(v.string(), v.minLength(1))),
+  realmId: v.optional(v.pipe(v.string(), v.minLength(1))),
   kind: v.picklist(["anonymous", "user", "bootstrap_admin", "system", "machine"]),
   organizationId: v.optional(v.pipe(v.string(), v.minLength(1))),
   impersonationPermissions: v.optional(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(128)))),

@@ -10,8 +10,8 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { mfaTotpEnrollmentViewCreate } from "../domain/mfaTotpEnrollmentViewCreate.js"
 import { mfaTotpSecretCreate } from "../domain/mfaTotpSecretCreate.js"
@@ -29,7 +29,7 @@ type MfaTotpEnrollmentStartOptions = {
   readonly encryptionSecret?: Secret | string
   readonly executor?: StorageExecutor
   readonly input?: MfaTotpEnrollmentStartRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly label?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly userId: string
@@ -39,18 +39,18 @@ type MfaTotpEnrollmentStartOptions = {
 
 export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): Result<MfaTotpEnrollmentStartResponse> {
   const op = "mfaTotpEnrollmentStart"
-  const instance =
+  const realm =
     options.database === undefined
       ? null
-      : instanceGet({
-          context: instanceSystemContextCreate(),
+      : realmGet({
+          context: realmSystemContextCreate(),
           database: options.database,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
         })
   if (options.database !== undefined && options.executor === undefined) {
-    if (instance === null || !instance.success || instance.data.instance.status !== "active")
+    if (realm === null || !realm.success || realm.data.realm.status !== "active")
       return resultErrorCreate(op, "The TOTP enrollment is invalid.")
-    const issuer = instance.data.instance.domain
+    const issuer = realm.data.realm.domain
     const runtime = options.runtime ?? options.database.runtime
     return storageTransactionRun(options.database, (transaction) =>
       mfaTotpEnrollmentStart({ ...options, database: undefined, executor: transaction, issuer, runtime }),
@@ -63,11 +63,11 @@ export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): 
   const runtime = options.runtime ?? options.database?.runtime ?? runtimeCreate()
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The TOTP enrollment timestamp is invalid.")
-  if (instance !== null && (!instance.success || instance.data.instance.status !== "active"))
+  if (realm !== null && (!realm.success || realm.data.realm.status !== "active"))
     return resultErrorCreate(op, "The TOTP enrollment is invalid.")
   const secret = mfaTotpSecretCreate(runtime)
   if (!secret.success) return secret
-  const protectedSecret = mfaTotpSecretProtect("encrypt", secret.data, options.instanceId, options.encryptionSecret)
+  const protectedSecret = mfaTotpSecretProtect("encrypt", secret.data, options.realmId, options.encryptionSecret)
   if (!protectedSecret.success) return protectedSecret
   const enrollmentId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
@@ -75,18 +75,18 @@ export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): 
   const foundUser = executor
     .select({ id: userTable.id, state: userTable.state })
     .from(userTable)
-    .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, options.userId)))
+    .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, options.userId)))
     .get()
   if (foundUser === undefined || foundUser.state !== "active")
     return resultErrorCreate(op, "The TOTP enrollment is invalid.")
-  const pending = repository.mfaEnrollmentPendingDelete(options.instanceId, options.userId)
+  const pending = repository.mfaEnrollmentPendingDelete(options.realmId, options.userId)
   if (!pending.success) return pending
   const created = repository.mfaEnrollmentCreate({
     confirmedAt: null,
     createdAt: now,
     encryptedSecret: protectedSecret.data,
     id: enrollmentId,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     label: input.output.label ?? "Authenticator app",
     lastUsedStep: null,
     status: "pending",
@@ -106,7 +106,7 @@ export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): 
       commandIndex: 0,
       correlationId,
       eventType: mfaEventTypes.totpEnrollmentStarted,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "mfa" },
       occurredAt: now,
       payload: payload.output,
@@ -114,7 +114,7 @@ export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): 
     runtime,
   )
   if (!event.success) return event
-  const issuer = options.issuer ?? (instance?.success ? instance.data.instance.domain : options.instanceId)
+  const issuer = options.issuer ?? (realm?.success ? realm.data.realm.domain : options.realmId)
   const account = encodeURIComponent(options.userId)
   const otpauthUri = `otpauth://totp/${encodeURIComponent(issuer)}:${account}?secret=${secret.data}&issuer=${encodeURIComponent(issuer)}&algorithm=SHA1&digits=6&period=30`
   return resultCreate({ enrollment: mfaTotpEnrollmentViewCreate(created.data), otpauthUri, secret: secret.data })

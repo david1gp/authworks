@@ -31,22 +31,19 @@ export function impersonationApiClientCreate(options: ImpersonationApiClientCrea
     })
 
   return {
-    impersonationEnd(instanceId: string, sessionId: string): Promise<Result<ImpersonationEndResponse>> {
+    impersonationEnd(realmId: string, sessionId: string): Promise<Result<ImpersonationEndResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/impersonations/${encodeURIComponent(sessionId)}/end`,
+        `/realms/${encodeURIComponent(realmId)}/impersonations/${encodeURIComponent(sessionId)}/end`,
         { method: "POST" },
         impersonationEndResponseSchema,
       )
     },
-    impersonationStart(
-      instanceId: string,
-      input: ImpersonationStartRequest,
-    ): Promise<Result<ImpersonationStartResponse>> {
+    impersonationStart(realmId: string, input: ImpersonationStartRequest): Promise<Result<ImpersonationStartResponse>> {
       const parsed = v.safeParse(impersonationStartRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("impersonationApiClientStart", "The request is invalid."))
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/impersonations`,
+        `/realms/${encodeURIComponent(realmId)}/impersonations`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         impersonationStartResponseSchema,
       )

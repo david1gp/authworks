@@ -35,7 +35,7 @@ type SessionIssueOptions = {
   readonly database?: StorageDatabase
   readonly executor?: StorageExecutor
   readonly expiresAt?: number
-  readonly instanceId: string
+  readonly realmId: string
   readonly impersonationOrganizationId?: string
   readonly impersonationPermissions?: readonly AuthorizationPermission[]
   readonly impersonationReason?: string
@@ -61,7 +61,7 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
   if (!device.success) return resultErrorCreate(op, "The session device metadata is invalid.")
   const mfaMethod = v.safeParse(v.optional(sessionMfaMethodSchema), options.mfaMethod)
   if (!mfaMethod.success) return resultErrorCreate(op, "The session MFA method is invalid.")
-  if (options.instanceId.length === 0 || options.userId.length === 0)
+  if (options.realmId.length === 0 || options.userId.length === 0)
     return resultErrorCreate(op, "The session ownership is invalid.")
   const impersonationFields = [
     options.impersonationOrganizationId,
@@ -110,7 +110,7 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     deviceFingerprint: deviceData.fingerprint ?? null,
     expiresAt,
     id: sessionId,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     impersonationOrganizationId: options.impersonationOrganizationId ?? null,
     impersonationPermissions:
       options.impersonationPermissions === undefined ? null : JSON.stringify(options.impersonationPermissions),
@@ -152,7 +152,7 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
       commandIndex,
       correlationId,
       eventType: sessionEventTypes.created,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "sessions" },
       occurredAt: now,
       payload: payload.output,

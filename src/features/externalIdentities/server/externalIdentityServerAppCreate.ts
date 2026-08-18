@@ -6,8 +6,8 @@ import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { externalIdentityCallback } from "../actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../actions/externalIdentityLinkComplete.js"
 import { externalIdentityLinkStart } from "../actions/externalIdentityLinkStart.js"
@@ -35,32 +35,32 @@ type ExternalIdentityServerAppCreateOptions = {
 
 export function externalIdentityServerAppCreate(options: ExternalIdentityServerAppCreateOptions) {
   const app = new Hono()
-  const systemContext = instanceSystemContextCreate("system")
+  const systemContext = realmSystemContextCreate("system")
   const providerPorts = options.providerPorts ?? externalIdentityProviderPortCreate()
   const protectedMiddleware = sessionProtectedMiddlewareCreate({
     database: options.database,
     minimumAssurance: "authenticated",
   })
 
-  app.get("/instances/:instanceId/external-identity-providers", (context) => {
-    const tenant = externalIdentityTenantInstanceResolve(
+  app.get("/realms/:realmId/external-identity-providers", (context) => {
+    const tenant = externalIdentityTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
     return externalIdentityResultResponseCreate(
       context,
       externalIdentityProviderList({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.query("organizationId"),
       }),
     )
   })
 
-  app.get("/system/instances/:instanceId/external-identity-providers", (context) => {
+  app.get("/system/realms/:realmId/external-identity-providers", (context) => {
     const authorization = externalIdentitySystemAuthorizationGet(
       context.req.header("authorization"),
       options.systemSecret,
@@ -71,13 +71,13 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       externalIdentityProviderList({
         database: options.database,
         includeDisabled: true,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.query("organizationId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/external-identity-providers", async (context) => {
+  app.post("/system/realms/:realmId/external-identity-providers", async (context) => {
     const authorization = externalIdentitySystemAuthorizationGet(
       context.req.header("authorization"),
       options.systemSecret,
@@ -97,13 +97,13 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
       201,
     )
   })
 
-  app.get("/system/instances/:instanceId/external-identity-providers/:providerId", (context) => {
+  app.get("/system/realms/:realmId/external-identity-providers/:providerId", (context) => {
     const authorization = externalIdentitySystemAuthorizationGet(
       context.req.header("authorization"),
       options.systemSecret,
@@ -114,13 +114,13 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       externalIdentityProviderGet({
         database: options.database,
         includeDisabled: true,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
       }),
     )
   })
 
-  app.patch("/system/instances/:instanceId/external-identity-providers/:providerId", async (context) => {
+  app.patch("/system/realms/:realmId/external-identity-providers/:providerId", async (context) => {
     const authorization = externalIdentitySystemAuthorizationGet(
       context.req.header("authorization"),
       options.systemSecret,
@@ -140,13 +140,13 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/external-identity-providers/:providerId/disable", (context) => {
+  app.post("/system/realms/:realmId/external-identity-providers/:providerId/disable", (context) => {
     const authorization = externalIdentitySystemAuthorizationGet(
       context.req.header("authorization"),
       options.systemSecret,
@@ -157,18 +157,18 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       externalIdentityProviderDisable({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
       }),
     )
   })
 
-  app.post("/instances/:instanceId/external-identity/:providerId/start", async (context) => {
-    const tenant = externalIdentityTenantInstanceResolve(
+  app.post("/realms/:realmId/external-identity/:providerId/start", async (context) => {
+    const tenant = externalIdentityTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
     const body = await externalIdentityJsonRead(context)
@@ -184,19 +184,19 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       externalIdentityStart({
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
         providerPorts,
       }),
     )
   })
 
-  app.get("/instances/:instanceId/external-identity/:providerId/callback", async (context) => {
-    const tenant = externalIdentityTenantInstanceResolve(
+  app.get("/realms/:realmId/external-identity/:providerId/callback", async (context) => {
+    const tenant = externalIdentityTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
     return externalIdentityResultResponseCreate(
@@ -205,7 +205,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         code: context.req.query("code") ?? "",
         database: options.database,
         deviceMetadata: externalIdentityDeviceMetadataGet(context),
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
         providerPorts,
         state: context.req.query("state") ?? "",
@@ -214,7 +214,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   })
 
   app.post(
-    "/instances/:instanceId/users/:userId/external-identities/:providerId/link/start",
+    "/realms/:realmId/users/:userId/external-identities/:providerId/link/start",
     protectedMiddleware,
     async (context) => {
       const body = await externalIdentityJsonRead(context)
@@ -230,7 +230,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         externalIdentityLinkStart({
           database: options.database,
           input: input.output,
-          instanceId: context.req.param("instanceId"),
+          realmId: context.req.param("realmId"),
           providerId: context.req.param("providerId"),
           providerPorts,
           session: context.get("session"),
@@ -241,7 +241,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   )
 
   app.post(
-    "/instances/:instanceId/users/:userId/external-identities/:providerId/link/complete",
+    "/realms/:realmId/users/:userId/external-identities/:providerId/link/complete",
     protectedMiddleware,
     async (context) => {
       const body = await externalIdentityJsonRead(context)
@@ -257,7 +257,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         externalIdentityLinkComplete({
           database: options.database,
           input: input.output,
-          instanceId: context.req.param("instanceId"),
+          realmId: context.req.param("realmId"),
           providerId: context.req.param("providerId"),
           session: context.get("session"),
           userId: context.req.param("userId"),
@@ -266,12 +266,12 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     },
   )
 
-  app.get("/instances/:instanceId/users/:userId/external-identities", protectedMiddleware, (context) =>
+  app.get("/realms/:realmId/users/:userId/external-identities", protectedMiddleware, (context) =>
     externalIdentityResultResponseCreate(
       context,
       externalIdentityList({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         session: context.get("session"),
         userId: context.req.param("userId"),
       }),
@@ -279,7 +279,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   )
 
   app.delete(
-    "/instances/:instanceId/users/:userId/external-identities/:providerId/:externalSubject",
+    "/realms/:realmId/users/:userId/external-identities/:providerId/:externalSubject",
     protectedMiddleware,
     (context) =>
       externalIdentityResultResponseCreate(
@@ -287,7 +287,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         externalIdentityUnlink({
           database: options.database,
           externalSubject: context.req.param("externalSubject"),
-          instanceId: context.req.param("instanceId"),
+          realmId: context.req.param("realmId"),
           providerId: context.req.param("providerId"),
           session: context.get("session"),
           userId: context.req.param("userId"),
@@ -298,22 +298,22 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   return app
 }
 
-function externalIdentityTenantInstanceResolve(
+function externalIdentityTenantContextResolve(
   database: StorageDatabase,
   host: string | undefined,
   requestUrl: string,
-  instanceId: string,
+  realmId: string,
 ) {
   const resolvedHost = host ?? new URL(requestUrl).hostname
   const normalizedHost = resolvedHost.startsWith("[")
     ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
     : (resolvedHost.split(":")[0] ?? "")
-  const tenant = instanceTenantContextResolve({ database, host: normalizedHost })
+  const tenant = realmTenantContextResolve({ database, host: normalizedHost })
   if (!tenant.success) return tenant
-  if (tenant.data.instanceId !== instanceId)
+  if (tenant.data.realmId !== realmId)
     return {
-      errorMessage: "The instance is not available in this tenant context.",
-      op: "externalIdentityTenantInstanceResolve",
+      errorMessage: "The realm is not available in this tenant context.",
+      op: "externalIdentityTenantContextResolve",
       success: false as const,
     }
   return tenant

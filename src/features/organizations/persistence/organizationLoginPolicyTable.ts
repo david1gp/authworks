@@ -8,7 +8,7 @@ export const organizationLoginPolicyTable = sqliteTable("organization_login_poli
   allowPasswordRecovery: integer("allow_password_recovery", { mode: "boolean" }),
   allowPasskey: integer("allow_passkey", { mode: "boolean" }),
   allowRegistration: integer("allow_registration", { mode: "boolean" }),
-  instanceId: text("instance_id").notNull(),
+  realmId: text("realm_id").notNull(),
   organizationId: text("organization_id").primaryKey(),
   providerIds: text("provider_ids"),
   updatedAt: integer("updated_at").notNull(),

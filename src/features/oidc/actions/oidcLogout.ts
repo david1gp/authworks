@@ -10,8 +10,8 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import { sessionEventTypes } from "../../sessions/events/sessionEventTypes.js"
 import { sessionRevokedEventPayloadSchema } from "../../sessions/events/sessionRevokedEventPayloadSchema.js"
@@ -35,7 +35,7 @@ type OidcLogoutOptions = {
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: OidcLogoutRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionToken?: string
   readonly correlationId?: string
@@ -54,19 +54,19 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The logout timestamp is invalid.")
-  const instance = instanceGet({
-    context: instanceSystemContextCreate(),
+  const realm = realmGet({
+    context: realmSystemContextCreate(),
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
   })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
-  const issuer = oidcIssuerCreate(instance.data.instance.domain)
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  const issuer = oidcIssuerCreate(realm.data.realm.domain)
   const identity = oidcLogoutIdentityResolve({
     database: options.database,
     encryptionSecret: options.encryptionSecret,
     input: parsed.output,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     issuer,
     now,
     runtime,
@@ -80,21 +80,21 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
   const completed = storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
     const sessions = sessionRepositoryCreate(transaction)
-    const session = sessions.sessionGet(options.instanceId, identity.data.sessionId)
+    const session = sessions.sessionGet(options.realmId, identity.data.sessionId)
     if (!session.success) return session
     if (session.data === null || session.data.userId !== identity.data.userId)
       return resultErrorCreate(op, "The logout session is invalid.")
     let revoked = false
     let commandIndex = 0
     if (session.data.revokedAt === null) {
-      const updated = sessions.sessionVersionUpdate(options.instanceId, session.data.id, session.data.version, {
+      const updated = sessions.sessionVersionUpdate(options.realmId, session.data.id, session.data.version, {
         revokedAt: now,
         revocationReason: "rp_initiated_logout",
         version: session.data.version + 1,
       })
       if (!updated.success) return updated
       if (updated.data === null) return resultErrorCreate(op, "The logout session is invalid.")
-      const eventVersion = sessions.sessionEventVersionGet(options.instanceId, session.data.id)
+      const eventVersion = sessions.sessionEventVersionGet(options.realmId, session.data.id)
       if (!eventVersion.success) return eventVersion
       const payload = v.safeParse(sessionRevokedEventPayloadSchema, {
         reason: "rp_initiated_logout",
@@ -112,7 +112,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
           commandIndex,
           correlationId,
           eventType: sessionEventTypes.revoked,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "sessions" },
           occurredAt: now,
           payload: payload.output,
@@ -124,7 +124,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
       revoked = true
     }
 
-    const access = repository.accessTokenSessionRevoke(options.instanceId, identity.data.sessionId, now)
+    const access = repository.accessTokenSessionRevoke(options.realmId, identity.data.sessionId, now)
     if (!access.success) return access
     for (const token of access.data) {
       const payload = v.safeParse(oidcAccessTokenRevokedEventPayloadSchema, {
@@ -143,7 +143,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
           commandIndex,
           correlationId,
           eventType: oidcEventTypes.accessTokenRevoked,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "oidc" },
           occurredAt: now,
           payload: payload.output,
@@ -155,7 +155,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
       revoked = true
     }
 
-    const refresh = repository.refreshTokenSessionRevoke(options.instanceId, identity.data.sessionId, now)
+    const refresh = repository.refreshTokenSessionRevoke(options.realmId, identity.data.sessionId, now)
     if (!refresh.success) return refresh
     const families = new Map<string, (typeof refresh.data)[number]>()
     for (const token of refresh.data) {
@@ -179,7 +179,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
           commandIndex,
           correlationId,
           eventType: oidcEventTypes.refreshTokenFamilyRevoked,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "oidc" },
           occurredAt: now,
           payload: payload.output,
@@ -203,7 +203,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
       .from(storageEventTable)
       .where(
         and(
-          eq(storageEventTable.instanceId, options.instanceId),
+          eq(storageEventTable.realmId, options.realmId),
           eq(storageEventTable.aggregateType, "oidc_logout"),
           eq(storageEventTable.aggregateId, identity.data.sessionId),
         ),
@@ -220,7 +220,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
         commandIndex,
         correlationId,
         eventType: oidcEventTypes.logout,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "oidc" },
         occurredAt: now,
         payload: logoutPayload.output,
@@ -245,7 +245,7 @@ type OidcLogoutIdentityOptions = {
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: OidcLogoutRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly issuer: string
   readonly now: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -258,14 +258,14 @@ function oidcLogoutIdentityResolve(options: OidcLogoutIdentityOptions): Result<O
     const hint = oidcLogoutIdTokenVerify(
       repository,
       options.input.id_token_hint,
-      options.instanceId,
+      options.realmId,
       options.issuer,
       options.now,
     )
     if (!hint.success) return hint
     if (options.input.client_id !== undefined && options.input.client_id !== hint.data.clientId)
       return resultErrorCreate("oidcLogout", "The logout request is invalid.")
-    const client = repository.clientGet(options.instanceId, hint.data.clientId)
+    const client = repository.clientGet(options.realmId, hint.data.clientId)
     if (!client.success) return client
     if (client.data === null || client.data.status !== "active")
       return resultErrorCreate("oidcLogout", "The logout request is invalid.")
@@ -273,13 +273,13 @@ function oidcLogoutIdentityResolve(options: OidcLogoutIdentityOptions): Result<O
   }
   if (options.input.client_id === undefined || options.sessionToken === undefined)
     return resultErrorCreate("oidcLogout", "An ID token hint or authenticated session is required.")
-  const client = repository.clientGet(options.instanceId, options.input.client_id)
+  const client = repository.clientGet(options.realmId, options.input.client_id)
   if (!client.success) return client
   if (client.data === null || client.data.status !== "active")
     return resultErrorCreate("oidcLogout", "The logout request is invalid.")
   const authenticated = sessionAuthenticate({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     runtime: options.runtime,
     token: options.sessionToken,
   })
@@ -294,7 +294,7 @@ function oidcLogoutIdentityResolve(options: OidcLogoutIdentityOptions): Result<O
 function oidcLogoutIdTokenVerify(
   repository: ReturnType<typeof oidcRepositoryCreate>,
   token: string,
-  instanceId: string,
+  realmId: string,
   issuer: string,
   now: number,
 ): Result<{ readonly clientId: string; readonly sessionId: string; readonly userId: string }> {
@@ -305,7 +305,7 @@ function oidcLogoutIdTokenVerify(
     if (headerBytes === null) return resultErrorCreate("oidcLogout", "The logout request is invalid.")
     const header = JSON.parse(Buffer.from(headerBytes).toString("utf8")) as { kid?: string }
     if (typeof header.kid !== "string") return resultErrorCreate("oidcLogout", "The logout request is invalid.")
-    const key = repository.signingKeyGet(instanceId, header.kid)
+    const key = repository.signingKeyGet(realmId, header.kid)
     if (!key.success) return key
     if (key.data === null) return resultErrorCreate("oidcLogout", "The logout request is invalid.")
     const publicJwk = v.safeParse(oidcPublicJwkSchema, JSON.parse(key.data.publicJwk))

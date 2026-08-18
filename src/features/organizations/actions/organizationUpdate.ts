@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationNameNormalize } from "../domain/organizationNameNormalize.js"
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
@@ -22,10 +22,10 @@ import {
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationUpdateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OrganizationUpdateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -37,7 +37,7 @@ export function organizationUpdate(options: OrganizationUpdateOptions): Result<{
   if (!parsed.success || parsed.output.name === undefined)
     return resultErrorCreate(op, "The organization update is invalid.")
   const requestedName = parsed.output.name
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The organization is not available in this tenant context.")
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
@@ -48,7 +48,7 @@ export function organizationUpdate(options: OrganizationUpdateOptions): Result<{
     const repository = organizationRepositoryCreate(transaction)
     const current = repository.organizationGet(options.organizationId)
     if (!current.success) return current
-    if (current.data === null || current.data.instanceId !== options.instanceId || current.data.status !== "active")
+    if (current.data === null || current.data.realmId !== options.realmId || current.data.status !== "active")
       return resultErrorCreate(op, "The organization was not found.")
     const authorized = organizationContextAuthorize({
       context: options.context,
@@ -64,8 +64,7 @@ export function organizationUpdate(options: OrganizationUpdateOptions): Result<{
       updatedAt,
       version: current.data.version + 1,
     })
-    if (!updated.success)
-      return resultErrorCreate(op, "An organization with that name already exists in this instance.")
+    if (!updated.success) return resultErrorCreate(op, "An organization with that name already exists in this realm.")
     if (updated.data === null) return resultErrorCreate(op, "The organization was not found.")
     const payload = v.safeParse(organizationUpdatedEventPayloadSchema, { name: name.data })
     if (!payload.success) return resultErrorCreate(op, "The organization event payload is invalid.")
@@ -79,7 +78,7 @@ export function organizationUpdate(options: OrganizationUpdateOptions): Result<{
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.updated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: updatedAt,
         payload: payload.output,

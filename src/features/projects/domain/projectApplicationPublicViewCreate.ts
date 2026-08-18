@@ -6,7 +6,7 @@ export function projectApplicationPublicViewCreate(row: ProjectApplicationRow): 
     applicationType: row.applicationType as ProjectApplication["applicationType"],
     createdAt: row.createdAt,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     name: row.name,
     projectId: row.projectId,
     status: row.status as ProjectApplication["status"],

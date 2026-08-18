@@ -11,7 +11,7 @@ export const machineUserSchema = v.strictObject({
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   displayName: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   id: machineUserIdSchema,
-  instanceId: machineUserIdSchema,
+  realmId: machineUserIdSchema,
   scopes: v.pipe(v.array(machineScopeSchema), v.maxLength(100)),
   status: machineUserStatusSchema,
   updatedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),

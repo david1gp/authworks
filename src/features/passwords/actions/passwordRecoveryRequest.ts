@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
 import { passwordTokenCreate } from "../domain/passwordTokenCreate.js"
 import { passwordTokenHashCreate } from "../domain/passwordTokenHashCreate.js"
@@ -22,10 +22,10 @@ import type { PasswordRecoveryResponse } from "../public/passwordRecoveryRespons
 import { organizationLoginPolicyResolve } from "../../organizations/public/organizationLoginPolicyResolve.js"
 
 type PasswordRecoveryRequestOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: PasswordRecoveryRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
   readonly onRecoveryToken?: (delivery: PasswordRecoveryDelivery) => void
@@ -35,23 +35,23 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   const op = "passwordRecoveryRequest"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The recovery is not available in this tenant context.")
   const parsed = v.safeParse(passwordRecoveryRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The recovery request is invalid.")
   const email = userEmailNormalize(parsed.output.email)
   if (!email.success) return resultCreate({ accepted: true })
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return resultCreate({ accepted: true })
-  if (instance.data.instance.status !== "active") return resultCreate({ accepted: true })
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return resultCreate({ accepted: true })
+  if (realm.data.realm.status !== "active") return resultCreate({ accepted: true })
   const policy = organizationLoginPolicyResolve({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     organizationId: parsed.output.organizationId,
   })
   if (!policy.success || !policy.data.allowPasswordRecovery) return resultCreate({ accepted: true })
   const repository = passwordRepositoryCreate(options.database.db)
-  const user = repository.passwordUserFindByIdentifier(options.instanceId, email.data)
+  const user = repository.passwordUserFindByIdentifier(options.realmId, email.data)
   if (!user.success || user.data === null || user.data.state === "deleted" || user.data.emailVerifiedAt === null)
     return resultCreate({ accepted: true })
   const userRow = user.data
@@ -63,20 +63,20 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const created = storageTransactionRun(options.database, (transaction) => {
     const txRepository = passwordRepositoryCreate(transaction)
-    const expired = txRepository.passwordChallengeExpirePrevious(options.instanceId, userRow.id, "recovery", now)
+    const expired = txRepository.passwordChallengeExpirePrevious(options.realmId, userRow.id, "recovery", now)
     if (!expired.success) return expired
     const challenge = txRepository.passwordChallengeCreate({
       createdAt: now,
       expiresAt: now + 60 * 60 * 1_000,
       id: challengeId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       kind: "recovery",
       tokenHash: passwordTokenHashCreate(token.valueGet()),
       userId: userRow.id,
       version: 1,
     })
     if (!challenge.success) return challenge
-    const eventVersion = txRepository.passwordEventVersionGet(options.instanceId, userRow.id)
+    const eventVersion = txRepository.passwordEventVersionGet(options.realmId, userRow.id)
     if (!eventVersion.success) return resultErrorCreate(op, "The recovery event version is invalid.")
     const payload = v.safeParse(passwordRecoveryEventPayloadSchema, { accepted: true })
     if (!payload.success) return resultErrorCreate(op, "The recovery event payload is invalid.")
@@ -90,7 +90,7 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
         commandIndex: 0,
         correlationId,
         eventType: passwordEventTypes.recoveryRequested,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: payload.output,
@@ -102,7 +102,7 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   })
   if (!created.success) return created
   try {
-    options.onRecoveryToken?.({ instanceId: options.instanceId, token: token.valueGet(), userId: userRow.id })
+    options.onRecoveryToken?.({ realmId: options.realmId, token: token.valueGet(), userId: userRow.id })
   } catch (_error) {}
   return resultCreate({ accepted: true })
 }

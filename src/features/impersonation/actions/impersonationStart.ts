@@ -29,7 +29,7 @@ type ImpersonationStartOptions = {
   readonly actor: AuthorizationActorContext
   readonly database: StorageDatabase
   readonly durationMs: number
-  readonly instanceId: string
+  readonly realmId: string
   readonly onSecurityNotification?: (notification: ImpersonationSecurityNotification) => void | Promise<void>
   readonly organizationId?: string
   readonly reason: string
@@ -40,7 +40,7 @@ type ImpersonationStartOptions = {
 
 export function impersonationStart(options: ImpersonationStartOptions): Result<ImpersonationStartResponse> {
   const op = "impersonationStart"
-  if (options.instanceId.length === 0 || options.targetUserId.length === 0)
+  if (options.realmId.length === 0 || options.targetUserId.length === 0)
     return resultErrorCreate(op, "The impersonation target is invalid.")
   if (options.actor.impersonatorId !== undefined)
     return resultErrorCreate(op, "Impersonation sessions cannot start another impersonation session.")
@@ -78,7 +78,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
           and(
             eq(organizationMembershipTable.organizationId, options.organizationId),
             eq(organizationMembershipTable.userId, options.actor.actorId),
-            eq(organizationMembershipTable.instanceId, options.instanceId),
+            eq(organizationMembershipTable.realmId, options.realmId),
           ),
         )
         .get()
@@ -87,7 +87,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
       if (!decoded.success) return decoded
       const enforced = authorizationEnforce({
         actor: options.actor,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         organizationId: options.organizationId,
         permission: impersonationPermission,
         policies: options.actor.scopes?.map((permission) => ({ effect: "allow" as const, permission })),
@@ -105,12 +105,12 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
     const target = transaction
       .select({
         id: userTable.id,
-        instanceId: userTable.instanceId,
+        realmId: userTable.realmId,
         state: userTable.state,
         deletedAt: userTable.deletedAt,
       })
       .from(userTable)
-      .where(and(eq(userTable.id, options.targetUserId), eq(userTable.instanceId, options.instanceId)))
+      .where(and(eq(userTable.id, options.targetUserId), eq(userTable.realmId, options.realmId)))
       .get()
     if (target === undefined || target.state !== "active" || target.deletedAt !== null)
       return resultErrorCreate(op, "The impersonation target was not found or is not active.")
@@ -118,13 +118,11 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
       const organization = transaction
         .select({
           id: organizationTable.id,
-          instanceId: organizationTable.instanceId,
+          realmId: organizationTable.realmId,
           status: organizationTable.status,
         })
         .from(organizationTable)
-        .where(
-          and(eq(organizationTable.id, options.organizationId), eq(organizationTable.instanceId, options.instanceId)),
-        )
+        .where(and(eq(organizationTable.id, options.organizationId), eq(organizationTable.realmId, options.realmId)))
         .get()
       if (organization === undefined || organization.status !== "active")
         return resultErrorCreate(op, "The impersonation organization was not found or is not active.")
@@ -135,7 +133,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
           and(
             eq(organizationMembershipTable.organizationId, options.organizationId),
             eq(organizationMembershipTable.userId, options.targetUserId),
-            eq(organizationMembershipTable.instanceId, options.instanceId),
+            eq(organizationMembershipTable.realmId, options.realmId),
           ),
         )
         .get()
@@ -150,7 +148,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
       database: undefined,
       executor: transaction,
       expiresAt,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       impersonationOrganizationId: options.organizationId,
       impersonationPermissions: permissions,
       impersonationReason: options.reason.trim(),
@@ -163,7 +161,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
       actorId: options.actor.actorId,
       assurance: options.actor.assurance,
       expiresAt,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       ...(options.organizationId === undefined ? {} : { organizationId: options.organizationId }),
       reason: options.reason.trim(),
       sessionId: issued.data.session.id,
@@ -180,7 +178,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
         commandIndex: 1,
         correlationId,
         eventType: impersonationEventTypes.started,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "impersonation" },
         occurredAt: now,
         payload: payload.output,
@@ -193,7 +191,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
   if (!committed.success) return committed
   impersonationSecurityNotificationInvoke(options.onSecurityNotification, {
     actorId: options.actor.actorId,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     kind: "started",
     ...(options.organizationId === undefined ? {} : { organizationId: options.organizationId }),
     sessionId: committed.data.session.id,
@@ -206,13 +204,13 @@ function impersonationAccessResolve(options: ImpersonationStartOptions): Result<
   const roles = [...(options.roles ?? [])]
   if (options.organizationId !== undefined && options.actor.kind === "user") {
     const membership = options.database.db
-      .select({ roles: organizationMembershipTable.roles, instanceId: organizationMembershipTable.instanceId })
+      .select({ roles: organizationMembershipTable.roles, realmId: organizationMembershipTable.realmId })
       .from(organizationMembershipTable)
       .where(
         and(
           eq(organizationMembershipTable.organizationId, options.organizationId),
           eq(organizationMembershipTable.userId, options.actor.actorId),
-          eq(organizationMembershipTable.instanceId, options.instanceId),
+          eq(organizationMembershipTable.realmId, options.realmId),
         ),
       )
       .get()
@@ -225,7 +223,7 @@ function impersonationAccessResolve(options: ImpersonationStartOptions): Result<
   const actorPolicies = options.actor.scopes?.map((permission) => ({ effect: "allow" as const, permission })) ?? []
   const enforced = authorizationEnforce({
     actor: options.actor,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     organizationId: options.organizationId,
     permission: impersonationPermission,
     policies: actorPolicies,
@@ -233,7 +231,7 @@ function impersonationAccessResolve(options: ImpersonationStartOptions): Result<
   })
   if (!enforced.success) return enforced
   if (options.actor.kind === "bootstrap_admin") {
-    const resolved = authorizationRolePermissionsResolve({ roles: ["instance_admin"] })
+    const resolved = authorizationRolePermissionsResolve({ roles: ["realm_admin"] })
     if (!resolved.success) return resolved
     return resultCreate({
       permissions: resolved.data.filter((rule) => rule.effect === "allow").map((rule) => rule.permission),

@@ -7,18 +7,18 @@ type UserCliFlags = {
 }
 
 type UserIdCliFlags = UserCliFlags & {
-  readonly instanceId: string
+  readonly realmId: string
   readonly userId: string
 }
 
 const userCreateCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: UserCliFlags & { displayName?: string; email: string; instanceId: string; userName: string },
+    flags: UserCliFlags & { displayName?: string; email: string; realmId: string; userName: string },
   ) {
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userCreate(flags.instanceId, {
+      await userCliClientCreate(this, flags).userCreate(flags.realmId, {
         email: flags.email,
         profile: { displayName: flags.displayName },
         userName: flags.userName,
@@ -28,7 +28,7 @@ const userCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...userCommonFlags(),
-      instanceId: userInstanceIdFlag(),
+      realmId: userRealmIdFlag(),
       userName: textFlag("User name"),
       email: textFlag("Email address"),
       displayName: optionalTextFlag("Display name"),
@@ -38,18 +38,18 @@ const userCreateCommand = buildCommand({
 })
 
 const userListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: UserCliFlags & { instanceId: string }) {
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userList(flags.instanceId))
+  async func(this: ApplicationContext, flags: UserCliFlags & { realmId: string }) {
+    userCliResultWrite(this, await userCliClientCreate(this, flags).userList(flags.realmId))
   },
-  parameters: { flags: { ...userCommonFlags(), instanceId: userInstanceIdFlag() } },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag() } },
   docs: { brief: "List users" },
 })
 
 const userGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags) {
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userGet(flags.instanceId, flags.userId))
+    userCliResultWrite(this, await userCliClientCreate(this, flags).userGet(flags.realmId, flags.userId))
   },
-  parameters: { flags: { ...userCommonFlags(), instanceId: userInstanceIdFlag(), userId: userIdFlag() } },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
   docs: { brief: "Get a user" },
 })
 
@@ -57,7 +57,7 @@ const userProfileCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags & { displayName?: string }) {
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userProfileUpdate(flags.instanceId, flags.userId, {
+      await userCliClientCreate(this, flags).userProfileUpdate(flags.realmId, flags.userId, {
         displayName: flags.displayName,
       }),
     )
@@ -65,7 +65,7 @@ const userProfileCommand = buildCommand({
   parameters: {
     flags: {
       ...userCommonFlags(),
-      instanceId: userInstanceIdFlag(),
+      realmId: userRealmIdFlag(),
       userId: userIdFlag(),
       displayName: optionalTextFlag("Display name"),
     },
@@ -80,13 +80,13 @@ const userLifecycleCommand = buildCommand({
   ) {
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userLifecycleSet(flags.instanceId, flags.userId, { state: flags.state }),
+      await userCliClientCreate(this, flags).userLifecycleSet(flags.realmId, flags.userId, { state: flags.state }),
     )
   },
   parameters: {
     flags: {
       ...userCommonFlags(),
-      instanceId: userInstanceIdFlag(),
+      realmId: userRealmIdFlag(),
       userId: userIdFlag(),
       state: userStateFlag(),
     },
@@ -98,7 +98,7 @@ const userVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags & { state: "unverified" | "verified" }) {
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userEmailVerificationSet(flags.instanceId, flags.userId, {
+      await userCliClientCreate(this, flags).userEmailVerificationSet(flags.realmId, flags.userId, {
         state: flags.state,
       }),
     )
@@ -106,7 +106,7 @@ const userVerifyCommand = buildCommand({
   parameters: {
     flags: {
       ...userCommonFlags(),
-      instanceId: userInstanceIdFlag(),
+      realmId: userRealmIdFlag(),
       userId: userIdFlag(),
       state: userVerificationStateFlag(),
     },
@@ -116,9 +116,9 @@ const userVerifyCommand = buildCommand({
 
 const userDeleteCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags) {
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userDelete(flags.instanceId, flags.userId))
+    userCliResultWrite(this, await userCliClientCreate(this, flags).userDelete(flags.realmId, flags.userId))
   },
-  parameters: { flags: { ...userCommonFlags(), instanceId: userInstanceIdFlag(), userId: userIdFlag() } },
+  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
   docs: { brief: "Delete a user account" },
 })
 
@@ -173,12 +173,12 @@ function userCommonFlags() {
   }
 }
 
-function userInstanceIdFlag() {
+function userRealmIdFlag() {
   return {
-    brief: "Instance UUID",
+    brief: "Realm UUID",
     kind: "parsed" as const,
     parse: (value: string) => value,
-    placeholder: "INSTANCE_ID",
+    placeholder: "REALM_ID",
   }
 }
 

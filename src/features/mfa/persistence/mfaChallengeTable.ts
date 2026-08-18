@@ -10,7 +10,7 @@ export const mfaChallengeTable = sqliteTable(
     deviceFingerprint: text("device_fingerprint"),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     ipAddress: text("ip_address"),
     maxAttempts: integer("max_attempts").notNull(),
     primaryAuthenticationMethod: text("primary_authentication_method").notNull(),
@@ -24,7 +24,7 @@ export const mfaChallengeTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("mfa_challenges_token_hash_idx").on(table.tokenHash),
-    index("mfa_challenges_instance_user_idx").on(table.instanceId, table.userId, table.purpose),
+    index("mfa_challenges_realm_user_idx").on(table.realmId, table.userId, table.purpose),
   ],
 )
 

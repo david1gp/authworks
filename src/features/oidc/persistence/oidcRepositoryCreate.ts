@@ -25,7 +25,7 @@ type OidcRefreshTokenInsert = typeof oidcRefreshTokenTable.$inferInsert
 export function oidcRepositoryCreate(database: StorageExecutor) {
   return {
     authorizationCodeConsume(
-      instanceId: string,
+      realmId: string,
       clientId: string,
       authorizationCodeId: string,
       tokenHash: string,
@@ -40,7 +40,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .where(
               and(
                 eq(oidcAuthorizationCodeTable.id, authorizationCodeId),
-                eq(oidcAuthorizationCodeTable.instanceId, instanceId),
+                eq(oidcAuthorizationCodeTable.realmId, realmId),
                 eq(oidcAuthorizationCodeTable.clientId, clientId),
                 eq(oidcAuthorizationCodeTable.tokenHash, tokenHash),
                 gt(oidcAuthorizationCodeTable.expiresAt, now),
@@ -66,17 +66,14 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    authorizationCodeGetByTokenHash(instanceId: string, tokenHash: string): Result<OidcAuthorizationCodeRow | null> {
+    authorizationCodeGetByTokenHash(realmId: string, tokenHash: string): Result<OidcAuthorizationCodeRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(oidcAuthorizationCodeTable)
             .where(
-              and(
-                eq(oidcAuthorizationCodeTable.instanceId, instanceId),
-                eq(oidcAuthorizationCodeTable.tokenHash, tokenHash),
-              ),
+              and(eq(oidcAuthorizationCodeTable.realmId, realmId), eq(oidcAuthorizationCodeTable.tokenHash, tokenHash)),
             )
             .get() ?? null,
         )
@@ -96,13 +93,13 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    accessTokenGetByTokenHash(instanceId: string, tokenHash: string): Result<OidcAccessTokenRow | null> {
+    accessTokenGetByTokenHash(realmId: string, tokenHash: string): Result<OidcAccessTokenRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(oidcAccessTokenTable)
-            .where(and(eq(oidcAccessTokenTable.instanceId, instanceId), eq(oidcAccessTokenTable.tokenHash, tokenHash)))
+            .where(and(eq(oidcAccessTokenTable.realmId, realmId), eq(oidcAccessTokenTable.tokenHash, tokenHash)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -111,7 +108,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
     },
 
     accessTokenRevoke(
-      instanceId: string,
+      realmId: string,
       clientId: string,
       tokenHash: string,
       revokedAt: number,
@@ -123,7 +120,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .set({ revokedAt })
             .where(
               and(
-                eq(oidcAccessTokenTable.instanceId, instanceId),
+                eq(oidcAccessTokenTable.realmId, realmId),
                 eq(oidcAccessTokenTable.clientId, clientId),
                 eq(oidcAccessTokenTable.tokenHash, tokenHash),
                 isNull(oidcAccessTokenTable.revokedAt),
@@ -138,7 +135,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
     },
 
     accessTokenFamilyRevoke(
-      instanceId: string,
+      realmId: string,
       clientId: string,
       familyId: string,
       revokedAt: number,
@@ -149,7 +146,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           .set({ revokedAt })
           .where(
             and(
-              eq(oidcAccessTokenTable.instanceId, instanceId),
+              eq(oidcAccessTokenTable.realmId, realmId),
               eq(oidcAccessTokenTable.clientId, clientId),
               eq(oidcAccessTokenTable.refreshFamilyId, familyId),
               isNull(oidcAccessTokenTable.revokedAt),
@@ -175,7 +172,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
     },
 
     refreshTokenFamilyRevoke(
-      instanceId: string,
+      realmId: string,
       clientId: string,
       familyId: string,
       revokedAt: number,
@@ -186,7 +183,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           .set({ revokedAt })
           .where(
             and(
-              eq(oidcRefreshTokenTable.instanceId, instanceId),
+              eq(oidcRefreshTokenTable.realmId, realmId),
               eq(oidcRefreshTokenTable.clientId, clientId),
               eq(oidcRefreshTokenTable.familyId, familyId),
               isNull(oidcRefreshTokenTable.revokedAt),
@@ -200,15 +197,13 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    refreshTokenGetByTokenHash(instanceId: string, tokenHash: string): Result<OidcRefreshTokenRow | null> {
+    refreshTokenGetByTokenHash(realmId: string, tokenHash: string): Result<OidcRefreshTokenRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(oidcRefreshTokenTable)
-            .where(
-              and(eq(oidcRefreshTokenTable.instanceId, instanceId), eq(oidcRefreshTokenTable.tokenHash, tokenHash)),
-            )
+            .where(and(eq(oidcRefreshTokenTable.realmId, realmId), eq(oidcRefreshTokenTable.tokenHash, tokenHash)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -217,7 +212,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
     },
 
     refreshTokenRotate(
-      instanceId: string,
+      realmId: string,
       clientId: string,
       tokenHash: string,
       replacedByHash: string,
@@ -230,7 +225,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .set({ replacedByHash, revokedAt: now })
             .where(
               and(
-                eq(oidcRefreshTokenTable.instanceId, instanceId),
+                eq(oidcRefreshTokenTable.realmId, realmId),
                 eq(oidcRefreshTokenTable.clientId, clientId),
                 eq(oidcRefreshTokenTable.tokenHash, tokenHash),
                 gt(oidcRefreshTokenTable.expiresAt, now),
@@ -256,17 +251,14 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    authorizationRequestGet(instanceId: string, requestId: string): Result<OidcAuthorizationRequestRow | null> {
+    authorizationRequestGet(realmId: string, requestId: string): Result<OidcAuthorizationRequestRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(oidcAuthorizationRequestTable)
             .where(
-              and(
-                eq(oidcAuthorizationRequestTable.instanceId, instanceId),
-                eq(oidcAuthorizationRequestTable.id, requestId),
-              ),
+              and(eq(oidcAuthorizationRequestTable.realmId, realmId), eq(oidcAuthorizationRequestTable.id, requestId)),
             )
             .get() ?? null,
         )
@@ -276,7 +268,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
     },
 
     authorizationRequestApprove(
-      instanceId: string,
+      realmId: string,
       requestId: string,
       approvedAt: number,
     ): Result<OidcAuthorizationRequestRow | null> {
@@ -287,7 +279,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .set({ approvedAt })
             .where(
               and(
-                eq(oidcAuthorizationRequestTable.instanceId, instanceId),
+                eq(oidcAuthorizationRequestTable.realmId, realmId),
                 eq(oidcAuthorizationRequestTable.id, requestId),
                 isNull(oidcAuthorizationRequestTable.approvedAt),
                 isNull(oidcAuthorizationRequestTable.rejectedAt),
@@ -302,7 +294,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
     },
 
     authorizationRequestReject(
-      instanceId: string,
+      realmId: string,
       requestId: string,
       rejectedAt: number,
     ): Result<OidcAuthorizationRequestRow | null> {
@@ -313,7 +305,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .set({ rejectedAt })
             .where(
               and(
-                eq(oidcAuthorizationRequestTable.instanceId, instanceId),
+                eq(oidcAuthorizationRequestTable.realmId, realmId),
                 eq(oidcAuthorizationRequestTable.id, requestId),
                 isNull(oidcAuthorizationRequestTable.approvedAt),
                 isNull(oidcAuthorizationRequestTable.rejectedAt),
@@ -327,7 +319,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    consentGet(instanceId: string, userId: string, clientId: string): Result<OidcConsentRow | null> {
+    consentGet(realmId: string, userId: string, clientId: string): Result<OidcConsentRow | null> {
       try {
         return resultCreate(
           database
@@ -335,7 +327,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .from(oidcConsentTable)
             .where(
               and(
-                eq(oidcConsentTable.instanceId, instanceId),
+                eq(oidcConsentTable.realmId, realmId),
                 eq(oidcConsentTable.userId, userId),
                 eq(oidcConsentTable.clientId, clientId),
                 isNull(oidcConsentTable.revokedAt),
@@ -348,7 +340,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    consentList(instanceId: string, userId: string): Result<OidcConsentRow[]> {
+    consentList(realmId: string, userId: string): Result<OidcConsentRow[]> {
       try {
         return resultCreate(
           database
@@ -356,7 +348,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .from(oidcConsentTable)
             .where(
               and(
-                eq(oidcConsentTable.instanceId, instanceId),
+                eq(oidcConsentTable.realmId, realmId),
                 eq(oidcConsentTable.userId, userId),
                 isNull(oidcConsentTable.revokedAt),
               ),
@@ -376,7 +368,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           .from(oidcConsentTable)
           .where(
             and(
-              eq(oidcConsentTable.instanceId, input.instanceId),
+              eq(oidcConsentTable.realmId, input.realmId),
               eq(oidcConsentTable.userId, input.userId),
               eq(oidcConsentTable.clientId, input.clientId),
             ),
@@ -392,7 +384,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           .set({ ...input, revokedAt: null })
           .where(
             and(
-              eq(oidcConsentTable.instanceId, input.instanceId),
+              eq(oidcConsentTable.realmId, input.realmId),
               eq(oidcConsentTable.userId, input.userId),
               eq(oidcConsentTable.clientId, input.clientId),
             ),
@@ -406,12 +398,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    consentRevoke(
-      instanceId: string,
-      userId: string,
-      clientId: string,
-      revokedAt: number,
-    ): Result<OidcConsentRow | null> {
+    consentRevoke(realmId: string, userId: string, clientId: string, revokedAt: number): Result<OidcConsentRow | null> {
       try {
         return resultCreate(
           database
@@ -419,7 +406,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .set({ revokedAt, updatedAt: revokedAt })
             .where(
               and(
-                eq(oidcConsentTable.instanceId, instanceId),
+                eq(oidcConsentTable.realmId, realmId),
                 eq(oidcConsentTable.userId, userId),
                 eq(oidcConsentTable.clientId, clientId),
                 isNull(oidcConsentTable.revokedAt),
@@ -433,14 +420,14 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    consentEventVersionGet(instanceId: string, userId: string, clientId: string): Result<number> {
+    consentEventVersionGet(realmId: string, userId: string, clientId: string): Result<number> {
       try {
         const event = database
           .select({ aggregateVersion: storageEventTable.aggregateVersion })
           .from(storageEventTable)
           .where(
             and(
-              eq(storageEventTable.instanceId, instanceId),
+              eq(storageEventTable.realmId, realmId),
               eq(storageEventTable.aggregateType, "oidc_consent"),
               eq(storageEventTable.aggregateId, `${userId}:${clientId}`),
             ),
@@ -453,7 +440,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    accessTokenSessionRevoke(instanceId: string, sessionId: string, revokedAt: number): Result<OidcAccessTokenRow[]> {
+    accessTokenSessionRevoke(realmId: string, sessionId: string, revokedAt: number): Result<OidcAccessTokenRow[]> {
       try {
         return resultCreate(
           database
@@ -461,7 +448,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .set({ revokedAt })
             .where(
               and(
-                eq(oidcAccessTokenTable.instanceId, instanceId),
+                eq(oidcAccessTokenTable.realmId, realmId),
                 eq(oidcAccessTokenTable.sessionId, sessionId),
                 isNull(oidcAccessTokenTable.revokedAt),
               ),
@@ -474,7 +461,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    refreshTokenSessionRevoke(instanceId: string, sessionId: string, revokedAt: number): Result<OidcRefreshTokenRow[]> {
+    refreshTokenSessionRevoke(realmId: string, sessionId: string, revokedAt: number): Result<OidcRefreshTokenRow[]> {
       try {
         return resultCreate(
           database
@@ -482,7 +469,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .set({ revokedAt })
             .where(
               and(
-                eq(oidcRefreshTokenTable.instanceId, instanceId),
+                eq(oidcRefreshTokenTable.realmId, realmId),
                 eq(oidcRefreshTokenTable.sessionId, sessionId),
                 isNull(oidcRefreshTokenTable.revokedAt),
               ),
@@ -505,13 +492,13 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    clientGet(instanceId: string, clientId: string): Result<OidcClientRow | null> {
+    clientGet(realmId: string, clientId: string): Result<OidcClientRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(oidcClientTable)
-            .where(and(eq(oidcClientTable.instanceId, instanceId), eq(oidcClientTable.id, clientId)))
+            .where(and(eq(oidcClientTable.realmId, realmId), eq(oidcClientTable.id, clientId)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -519,13 +506,13 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    clientList(instanceId: string): Result<OidcClientRow[]> {
+    clientList(realmId: string): Result<OidcClientRow[]> {
       try {
         return resultCreate(
           database
             .select()
             .from(oidcClientTable)
-            .where(eq(oidcClientTable.instanceId, instanceId))
+            .where(eq(oidcClientTable.realmId, realmId))
             .orderBy(asc(oidcClientTable.createdAt))
             .all(),
         )
@@ -534,13 +521,13 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    clientUpdate(instanceId: string, clientId: string, input: OidcClientUpdate): Result<OidcClientRow | null> {
+    clientUpdate(realmId: string, clientId: string, input: OidcClientUpdate): Result<OidcClientRow | null> {
       try {
         return resultCreate(
           database
             .update(oidcClientTable)
             .set(input)
-            .where(and(eq(oidcClientTable.instanceId, instanceId), eq(oidcClientTable.id, clientId)))
+            .where(and(eq(oidcClientTable.realmId, realmId), eq(oidcClientTable.id, clientId)))
             .returning()
             .get() ?? null,
         )
@@ -560,13 +547,13 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    signingKeyGet(instanceId: string, signingKeyId: string): Result<OidcSigningKeyRow | null> {
+    signingKeyGet(realmId: string, signingKeyId: string): Result<OidcSigningKeyRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(oidcSigningKeyTable)
-            .where(and(eq(oidcSigningKeyTable.instanceId, instanceId), eq(oidcSigningKeyTable.id, signingKeyId)))
+            .where(and(eq(oidcSigningKeyTable.realmId, realmId), eq(oidcSigningKeyTable.id, signingKeyId)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -574,13 +561,13 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    signingKeyList(instanceId: string): Result<OidcSigningKeyRow[]> {
+    signingKeyList(realmId: string): Result<OidcSigningKeyRow[]> {
       try {
         return resultCreate(
           database
             .select()
             .from(oidcSigningKeyTable)
-            .where(eq(oidcSigningKeyTable.instanceId, instanceId))
+            .where(eq(oidcSigningKeyTable.realmId, realmId))
             .orderBy(desc(oidcSigningKeyTable.createdAt))
             .all(),
         )
@@ -590,7 +577,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
     },
 
     signingKeyUpdate(
-      instanceId: string,
+      realmId: string,
       signingKeyId: string,
       input: OidcSigningKeyUpdate,
     ): Result<OidcSigningKeyRow | null> {
@@ -599,7 +586,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           database
             .update(oidcSigningKeyTable)
             .set(input)
-            .where(and(eq(oidcSigningKeyTable.instanceId, instanceId), eq(oidcSigningKeyTable.id, signingKeyId)))
+            .where(and(eq(oidcSigningKeyTable.realmId, realmId), eq(oidcSigningKeyTable.id, signingKeyId)))
             .returning()
             .get() ?? null,
         )

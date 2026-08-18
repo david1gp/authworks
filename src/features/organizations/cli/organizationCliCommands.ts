@@ -9,18 +9,18 @@ type OrganizationCliFlags = {
 }
 
 type OrganizationIdCliFlags = OrganizationCliFlags & {
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
 }
 
 const organizationCreateCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: OrganizationCliFlags & { instanceId: string; name: string; ownerUserId?: string },
+    flags: OrganizationCliFlags & { name: string; ownerUserId?: string; realmId: string },
   ) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationCreate(flags.instanceId, {
+      await organizationCliClientCreate(this, flags).organizationCreate(flags.realmId, {
         name: flags.name,
         ownerUserId: flags.ownerUserId,
       }),
@@ -29,7 +29,7 @@ const organizationCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       name: textFlag("Organization display name"),
       ownerUserId: optionalTextFlag("Initial owner user ID"),
     },
@@ -38,10 +38,10 @@ const organizationCreateCommand = buildCommand({
 })
 
 const organizationListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationCliFlags & { instanceId: string }) {
-    organizationCliResultWrite(this, await organizationCliClientCreate(this, flags).organizationList(flags.instanceId))
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { realmId: string }) {
+    organizationCliResultWrite(this, await organizationCliClientCreate(this, flags).organizationList(flags.realmId))
   },
-  parameters: { flags: { ...organizationCommonFlags(), instanceId: organizationIdFlag() } },
+  parameters: { flags: { ...organizationCommonFlags(), realmId: realmIdFlag() } },
   docs: { brief: "List organizations" },
 })
 
@@ -49,11 +49,11 @@ const organizationGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationGet(flags.instanceId, flags.organizationId),
+      await organizationCliClientCreate(this, flags).organizationGet(flags.realmId, flags.organizationId),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), instanceId: organizationIdFlag(), organizationId: organizationFlag() },
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
   },
   docs: { brief: "Get an organization" },
 })
@@ -62,7 +62,7 @@ const organizationUpdateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { name: string }) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationUpdate(flags.instanceId, flags.organizationId, {
+      await organizationCliClientCreate(this, flags).organizationUpdate(flags.realmId, flags.organizationId, {
         name: flags.name,
       }),
     )
@@ -70,7 +70,7 @@ const organizationUpdateCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       name: textFlag("Organization display name"),
     },
@@ -83,7 +83,7 @@ const organizationBrandingSetCommand = buildCommand({
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationBrandingSet(
-        flags.instanceId,
+        flags.realmId,
         flags.organizationId,
         organizationCliJsonParse(flags.branding) as OrganizationBrandingSetRequest,
       ),
@@ -92,7 +92,7 @@ const organizationBrandingSetCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       branding: textFlag("Branding JSON document"),
     },
@@ -104,7 +104,7 @@ const organizationDomainClaimCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { domain: string; primary?: boolean }) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationDomainClaim(flags.instanceId, flags.organizationId, {
+      await organizationCliClientCreate(this, flags).organizationDomainClaim(flags.realmId, flags.organizationId, {
         domain: flags.domain,
         isPrimary: flags.primary,
       }),
@@ -113,7 +113,7 @@ const organizationDomainClaimCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       domain: textFlag("Organization domain"),
       primary: optionalBooleanFlag("Make this the primary domain"),
@@ -126,11 +126,11 @@ const organizationDomainListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationDomainList(flags.instanceId, flags.organizationId),
+      await organizationCliClientCreate(this, flags).organizationDomainList(flags.realmId, flags.organizationId),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), instanceId: organizationIdFlag(), organizationId: organizationFlag() },
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
   },
   docs: { brief: "List organization domains" },
 })
@@ -140,7 +140,7 @@ const organizationDomainVerifyCommand = buildCommand({
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationDomainVerify(
-        flags.instanceId,
+        flags.realmId,
         flags.organizationId,
         flags.domain,
       ),
@@ -149,7 +149,7 @@ const organizationDomainVerifyCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       domain: textFlag("Organization domain"),
     },
@@ -162,7 +162,7 @@ const organizationLoginPolicySetCommand = buildCommand({
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationLoginPolicySet(
-        flags.instanceId,
+        flags.realmId,
         flags.organizationId,
         organizationCliJsonParse(flags.policy) as OrganizationLoginPolicySetRequest,
       ),
@@ -171,7 +171,7 @@ const organizationLoginPolicySetCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       policy: textFlag("Login policy JSON document"),
     },
@@ -183,7 +183,7 @@ const organizationLifecycleCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { status: "active" | "inactive" | "removed" }) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationLifecycleSet(flags.instanceId, flags.organizationId, {
+      await organizationCliClientCreate(this, flags).organizationLifecycleSet(flags.realmId, flags.organizationId, {
         status: flags.status,
       }),
     )
@@ -191,7 +191,7 @@ const organizationLifecycleCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       status: {
         brief: "Lifecycle status",
@@ -216,17 +216,16 @@ const organizationMemberAddCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { userId: string; roles: string }) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationMembershipCreate(
-        flags.instanceId,
-        flags.organizationId,
-        { userId: flags.userId, roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[] },
-      ),
+      await organizationCliClientCreate(this, flags).organizationMembershipCreate(flags.realmId, flags.organizationId, {
+        userId: flags.userId,
+        roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[],
+      }),
     )
   },
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       userId: textFlag("User ID"),
       roles: textFlag("Comma-separated roles"),
@@ -239,11 +238,11 @@ const organizationMemberListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationMembershipList(flags.instanceId, flags.organizationId),
+      await organizationCliClientCreate(this, flags).organizationMembershipList(flags.realmId, flags.organizationId),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), instanceId: organizationIdFlag(), organizationId: organizationFlag() },
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
   },
   docs: { brief: "List organization members" },
 })
@@ -253,7 +252,7 @@ const organizationMemberUpdateCommand = buildCommand({
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationMembershipUpdate(
-        flags.instanceId,
+        flags.realmId,
         flags.organizationId,
         flags.membershipId,
         { roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[] },
@@ -263,7 +262,7 @@ const organizationMemberUpdateCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       membershipId: textFlag("Membership ID"),
       roles: textFlag("Comma-separated roles"),
@@ -277,7 +276,7 @@ const organizationMemberRemoveCommand = buildCommand({
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationMembershipRemove(
-        flags.instanceId,
+        flags.realmId,
         flags.organizationId,
         flags.membershipId,
       ),
@@ -286,7 +285,7 @@ const organizationMemberRemoveCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       membershipId: textFlag("Membership ID"),
     },
@@ -301,21 +300,17 @@ const organizationInvitationCreateCommand = buildCommand({
   ) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationInvitationCreate(
-        flags.instanceId,
-        flags.organizationId,
-        {
-          email: flags.email,
-          roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[],
-          expiresAt: flags.expiresAt,
-        },
-      ),
+      await organizationCliClientCreate(this, flags).organizationInvitationCreate(flags.realmId, flags.organizationId, {
+        email: flags.email,
+        roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[],
+        expiresAt: flags.expiresAt,
+      }),
     )
   },
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       email: textFlag("Invitee email"),
       roles: textFlag("Comma-separated roles"),
@@ -345,11 +340,11 @@ const organizationInvitationListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationInvitationList(flags.instanceId, flags.organizationId),
+      await organizationCliClientCreate(this, flags).organizationInvitationList(flags.realmId, flags.organizationId),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), instanceId: organizationIdFlag(), organizationId: organizationFlag() },
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
   },
   docs: { brief: "List organization invitations" },
 })
@@ -359,7 +354,7 @@ const organizationInvitationRevokeCommand = buildCommand({
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationInvitationRevoke(
-        flags.instanceId,
+        flags.realmId,
         flags.organizationId,
         flags.invitationId,
       ),
@@ -368,7 +363,7 @@ const organizationInvitationRevokeCommand = buildCommand({
   parameters: {
     flags: {
       ...organizationCommonFlags(),
-      instanceId: organizationIdFlag(),
+      realmId: realmIdFlag(),
       organizationId: organizationFlag(),
       invitationId: textFlag("Invitation ID"),
     },
@@ -393,16 +388,16 @@ const organizationInvitationAcceptCommand = buildCommand({
 })
 
 const organizationSwitchCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationCliFlags & { instanceId: string; organizationId: string }) {
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { organizationId: string; realmId: string }) {
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationSwitch(flags.instanceId, {
+      await organizationCliClientCreate(this, flags).organizationSwitch(flags.realmId, {
         organizationId: flags.organizationId,
       }),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), instanceId: organizationIdFlag(), organizationId: organizationFlag() },
+    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
   },
   docs: { brief: "Switch the active organization" },
 })
@@ -472,12 +467,12 @@ function organizationCommonFlags() {
   }
 }
 
-function organizationIdFlag() {
+function realmIdFlag() {
   return {
-    brief: "Instance UUID",
+    brief: "Realm UUID",
     kind: "parsed" as const,
     parse: (value: string) => value,
-    placeholder: "INSTANCE_ID",
+    placeholder: "REALM_ID",
   }
 }
 

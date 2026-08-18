@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { machineCredentialIssuedEventPayloadSchema } from "../events/machineCredentialIssuedEventPayloadSchema.js"
 import { machineEventTypes } from "../events/machineEventTypes.js"
 import { machineSecretCreate } from "../domain/machineSecretCreate.js"
@@ -25,10 +25,10 @@ import type { MachineCredentialIssueResponse } from "../public/machineCredential
 import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 
 type MachineCredentialIssueOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: MachineCredentialIssueRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly kind: Exclude<MachineCredentialKind, "access_token" | "client_secret">
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -56,7 +56,7 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const machineUser = repository.userGet(options.instanceId, parsed.output.machineUserId)
+    const machineUser = repository.userGet(options.realmId, parsed.output.machineUserId)
     if (!machineUser.success) return machineUser
     if (machineUser.data === null) return resultErrorCreate(op, "The machine user was not found.")
     if (machineUser.data.status !== "active") return resultErrorCreate(op, "The machine user is not active.")
@@ -69,7 +69,7 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
       createdAt: now,
       expiresAt,
       id: credentialId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       kind: options.kind,
       machineUserId: parsed.output.machineUserId,
       name: parsed.output.name,
@@ -99,7 +99,7 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
         commandIndex: 0,
         correlationId,
         eventType: machineEventTypes.credentialIssued,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "machine-users" },
         occurredAt: now,
         payload: payload.output,

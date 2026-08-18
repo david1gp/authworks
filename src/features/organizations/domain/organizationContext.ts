@@ -3,7 +3,7 @@ import type { AuthorizationActorContext } from "../../authorization/public/autho
 export type OrganizationContext = {
   readonly actor: AuthorizationActorContext
   readonly actorId: string
-  readonly instanceId: string
+  readonly realmId: string
   readonly kind: "organization"
   readonly organizationId: string
 }

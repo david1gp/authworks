@@ -19,7 +19,7 @@ export function externalIdentityProviderViewCreate(row: ExternalIdentityProvider
     displayName: row.displayName,
     enabled: row.enabled,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     ...(row.organizationId === null ? {} : { organizationId: row.organizationId }),
     redirectUri: row.redirectUri,
     scopes: parsedScopes.success ? parsedScopes.output : [],

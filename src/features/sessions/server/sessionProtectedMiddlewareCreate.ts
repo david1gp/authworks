@@ -2,7 +2,7 @@ import type { Context, MiddlewareHandler } from "hono"
 import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
 import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
 import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import type { AuthorizationPolicyRule } from "../../authorization/public/authorizationPolicyRuleSchema.js"
@@ -31,14 +31,14 @@ export function sessionProtectedMiddlewareCreate(
   options: SessionProtectedMiddlewareOptions,
 ): MiddlewareHandler<SessionMiddlewareEnv> {
   return async (context, next) => {
-    const instanceId = context.req.param("instanceId") ?? ""
+    const realmId = context.req.param("realmId") ?? ""
     const host = context.req.header("host") ?? new URL(context.req.url).hostname
-    const tenant = instanceTenantContextResolve({ database: options.database, host })
-    if (tenant.success && tenant.data.instanceId !== instanceId)
+    const tenant = realmTenantContextResolve({ database: options.database, host })
+    if (tenant.success && tenant.data.realmId !== realmId)
       return sessionMiddlewareErrorResponseCreate(context, "Session authorization is invalid.", "unauthorized")
     const authenticated = sessionAuthenticate({
       database: options.database,
-      instanceId,
+      realmId,
       token: sessionBearerTokenGet(context.req.header("authorization")),
     })
     if (!authenticated.success)
@@ -49,7 +49,7 @@ export function sessionProtectedMiddlewareCreate(
     if (options.permission !== undefined) {
       const authorization = authorizationEnforce({
         actor: authenticated.data.actor,
-        instanceId: context.req.param("instanceId") ?? "",
+        realmId: context.req.param("realmId") ?? "",
         minimumAssurance: assurance,
         organizationId: options.organizationId,
         permission: options.permission,

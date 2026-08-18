@@ -25,7 +25,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
     },
 
     externalIdentityDelete(
-      instanceId: string,
+      realmId: string,
       userId: string,
       providerId: string,
       externalSubject: string,
@@ -36,7 +36,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .delete(externalIdentityTable)
             .where(
               and(
-                eq(externalIdentityTable.instanceId, instanceId),
+                eq(externalIdentityTable.realmId, realmId),
                 eq(externalIdentityTable.userId, userId),
                 eq(externalIdentityTable.providerId, providerId),
                 eq(externalIdentityTable.externalSubject, externalSubject),
@@ -72,13 +72,13 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    externalIdentityList(instanceId: string, userId: string): Result<ExternalIdentityRow[]> {
+    externalIdentityList(realmId: string, userId: string): Result<ExternalIdentityRow[]> {
       try {
         return resultCreate(
           database
             .select()
             .from(externalIdentityTable)
-            .where(and(eq(externalIdentityTable.instanceId, instanceId), eq(externalIdentityTable.userId, userId)))
+            .where(and(eq(externalIdentityTable.realmId, realmId), eq(externalIdentityTable.userId, userId)))
             .orderBy(asc(externalIdentityTable.createdAt))
             .all(),
         )
@@ -107,7 +107,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
     },
 
     externalIdentityOAuthTransactionGetByState(
-      instanceId: string,
+      realmId: string,
       stateHash: string,
     ): Result<ExternalIdentityOAuthTransactionRow | null> {
       try {
@@ -117,7 +117,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .from(externalIdentityOAuthTransactionTable)
             .where(
               and(
-                eq(externalIdentityOAuthTransactionTable.instanceId, instanceId),
+                eq(externalIdentityOAuthTransactionTable.realmId, realmId),
                 eq(externalIdentityOAuthTransactionTable.stateHash, stateHash),
               ),
             )
@@ -132,7 +132,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
     },
 
     externalIdentityOAuthTransactionGetByConfirmationToken(
-      instanceId: string,
+      realmId: string,
       confirmationTokenHash: string,
     ): Result<ExternalIdentityOAuthTransactionRow | null> {
       try {
@@ -142,7 +142,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .from(externalIdentityOAuthTransactionTable)
             .where(
               and(
-                eq(externalIdentityOAuthTransactionTable.instanceId, instanceId),
+                eq(externalIdentityOAuthTransactionTable.realmId, realmId),
                 eq(externalIdentityOAuthTransactionTable.confirmationTokenHash, confirmationTokenHash),
               ),
             )
@@ -231,17 +231,14 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    externalIdentityProviderGet(instanceId: string, providerId: string): Result<ExternalIdentityProviderRow | null> {
+    externalIdentityProviderGet(realmId: string, providerId: string): Result<ExternalIdentityProviderRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(externalIdentityProviderTable)
             .where(
-              and(
-                eq(externalIdentityProviderTable.instanceId, instanceId),
-                eq(externalIdentityProviderTable.id, providerId),
-              ),
+              and(eq(externalIdentityProviderTable.realmId, realmId), eq(externalIdentityProviderTable.id, providerId)),
             )
             .get() ?? null,
         )
@@ -250,7 +247,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    externalIdentityProviderList(instanceId: string, organizationId?: string): Result<ExternalIdentityProviderRow[]> {
+    externalIdentityProviderList(realmId: string, organizationId?: string): Result<ExternalIdentityProviderRow[]> {
       try {
         return resultCreate(
           database
@@ -259,11 +256,11 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .where(
               organizationId === undefined
                 ? and(
-                    eq(externalIdentityProviderTable.instanceId, instanceId),
+                    eq(externalIdentityProviderTable.realmId, realmId),
                     isNull(externalIdentityProviderTable.organizationId),
                   )
                 : and(
-                    eq(externalIdentityProviderTable.instanceId, instanceId),
+                    eq(externalIdentityProviderTable.realmId, realmId),
                     eq(externalIdentityProviderTable.organizationId, organizationId),
                   ),
             )
@@ -276,7 +273,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
     },
 
     externalIdentityProviderUpdate(
-      instanceId: string,
+      realmId: string,
       providerId: string,
       input: Partial<typeof externalIdentityProviderTable.$inferInsert>,
     ): Result<ExternalIdentityProviderRow | null> {
@@ -286,10 +283,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .update(externalIdentityProviderTable)
             .set(input)
             .where(
-              and(
-                eq(externalIdentityProviderTable.instanceId, instanceId),
-                eq(externalIdentityProviderTable.id, providerId),
-              ),
+              and(eq(externalIdentityProviderTable.realmId, realmId), eq(externalIdentityProviderTable.id, providerId)),
             )
             .returning()
             .get() ?? null,

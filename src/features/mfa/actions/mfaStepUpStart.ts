@@ -7,7 +7,7 @@ import type { MfaChallengeResponse } from "../public/mfaChallengeResponseSchema.
 type MfaStepUpStartOptions = {
   readonly actorId?: string | null
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: { now: () => number; randomBytes: (length: number) => Uint8Array }
   readonly sessionId: string
   readonly userId: string
@@ -20,7 +20,7 @@ export function mfaStepUpStart(options: MfaStepUpStartOptions): Result<MfaChalle
     actorId: options.actorId,
     correlationId: options.correlationId,
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     primaryAuthenticationMethod: options.primaryAuthenticationMethod,
     purpose: "step_up",
     runtime: options.runtime,

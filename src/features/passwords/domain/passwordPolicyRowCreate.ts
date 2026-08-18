@@ -2,13 +2,13 @@ import type { PasswordPolicy } from "../public/passwordPolicySchema.js"
 import { passwordPolicyTable } from "../persistence/passwordPolicyTable.js"
 
 export function passwordPolicyRowCreate(
-  instanceId: string,
+  realmId: string,
   policy: PasswordPolicy,
   updatedAt: number,
   version: number,
 ): typeof passwordPolicyTable.$inferInsert {
   return {
-    instanceId,
+    realmId,
     lockoutDurationMs: policy.lockoutDurationMs,
     maximumAttempts: policy.maximumAttempts,
     minimumLength: policy.minimumLength,

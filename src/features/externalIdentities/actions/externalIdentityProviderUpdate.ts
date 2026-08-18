@@ -7,7 +7,7 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
 import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityProviderViewCreate } from "../domain/externalIdentityProviderViewCreate.js"
@@ -17,10 +17,10 @@ import type { ExternalIdentityProviderUpdateRequest } from "../public/externalId
 import { externalIdentityProviderUpdateRequestSchema } from "../public/externalIdentityProviderUpdateRequestSchema.js"
 
 type ExternalIdentityProviderUpdateOptions = {
-  readonly context: InstanceSystemContext
+  readonly context: RealmSystemContext
   readonly database: StorageDatabase
   readonly input: ExternalIdentityProviderUpdateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly providerId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -40,10 +40,10 @@ export function externalIdentityProviderUpdate(
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = externalIdentityRepositoryCreate(transaction)
-    const current = repository.externalIdentityProviderGet(options.instanceId, options.providerId)
+    const current = repository.externalIdentityProviderGet(options.realmId, options.providerId)
     if (!current.success) return current
     if (current.data === null) return resultErrorCreate(op, "The external identity provider was not found.")
-    const updated = repository.externalIdentityProviderUpdate(options.instanceId, options.providerId, {
+    const updated = repository.externalIdentityProviderUpdate(options.realmId, options.providerId, {
       ...(parsed.output.allowAccountCreation === undefined
         ? {}
         : { allowAccountCreation: parsed.output.allowAccountCreation }),
@@ -77,7 +77,7 @@ export function externalIdentityProviderUpdate(
         commandIndex: 0,
         correlationId,
         eventType: disabled ? externalIdentityEventTypes.providerDisabled : externalIdentityEventTypes.providerUpdated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: now,
         payload: payload.output,

@@ -5,7 +5,7 @@ export const organizationMembershipTable = sqliteTable(
   {
     createdAt: integer("created_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     organizationId: text("organization_id").notNull(),
     roles: text("roles").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -14,7 +14,7 @@ export const organizationMembershipTable = sqliteTable(
   },
   (table) => [
     index("organization_memberships_organization_id_idx").on(table.organizationId),
-    index("organization_memberships_instance_id_idx").on(table.instanceId),
+    index("organization_memberships_realm_id_idx").on(table.realmId),
     uniqueIndex("organization_memberships_organization_user_idx").on(table.organizationId, table.userId),
   ],
 )

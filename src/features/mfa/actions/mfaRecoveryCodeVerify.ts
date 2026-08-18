@@ -17,7 +17,7 @@ type MfaRecoveryCodeVerifyOptions = {
   readonly actorId?: string | null
   readonly code: string
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly userId: string
   readonly correlationId?: string
@@ -32,13 +32,13 @@ export function mfaRecoveryCodeVerify(options: MfaRecoveryCodeVerifyOptions): Re
   return storageTransactionRun(options.database, (transaction) => {
     const repository = mfaRepositoryCreate(transaction)
     const found = repository.mfaRecoveryCodeGet(
-      options.instanceId,
+      options.realmId,
       options.userId,
       mfaRecoveryCodeHashCreate(options.code),
     )
     if (!found.success) return found
     if (found.data === null) return resultErrorCreate(op, "The recovery code is invalid.")
-    const consumed = repository.mfaRecoveryCodeConsume(options.instanceId, found.data.id, found.data.version, now)
+    const consumed = repository.mfaRecoveryCodeConsume(options.realmId, found.data.id, found.data.version, now)
     if (!consumed.success) return consumed
     if (consumed.data === null) return resultErrorCreate(op, "The recovery code is invalid.")
     const payload = v.safeParse(mfaEventPayloadSchema, { factor: "recovery_code", userId: options.userId })
@@ -53,7 +53,7 @@ export function mfaRecoveryCodeVerify(options: MfaRecoveryCodeVerifyOptions): Re
         commandIndex: 0,
         correlationId,
         eventType: mfaEventTypes.recoveryCodeUsed,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "mfa" },
         occurredAt: now,
         payload: payload.output,

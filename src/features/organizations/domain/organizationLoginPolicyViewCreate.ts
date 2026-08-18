@@ -1,37 +1,33 @@
-import type { InstanceLoginPolicyRow } from "../persistence/instanceLoginPolicyTable.js"
+import type { RealmLoginPolicyRow } from "../persistence/realmLoginPolicyTable.js"
 import type { OrganizationLoginPolicyRow } from "../persistence/organizationLoginPolicyTable.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import { organizationLoginPolicyDefaults } from "./organizationLoginPolicyDefaults.js"
 import { organizationLoginPolicyProviderIdsParse } from "./organizationLoginPolicyProviderIdsParse.js"
 
 export function organizationLoginPolicyViewCreate(
-  instance: InstanceLoginPolicyRow | null,
+  realm: RealmLoginPolicyRow | null,
   organization: OrganizationLoginPolicyRow | null,
 ): OrganizationLoginPolicy {
-  const instanceProviderIds = organizationLoginPolicyProviderIdsParse(instance?.providerIds)
+  const realmProviderIds = organizationLoginPolicyProviderIdsParse(realm?.providerIds)
   const organizationProviderIds = organizationLoginPolicyProviderIdsParse(organization?.providerIds)
   return {
     allowDomainDiscovery:
       organization?.allowDomainDiscovery ??
-      instance?.allowDomainDiscovery ??
+      realm?.allowDomainDiscovery ??
       organizationLoginPolicyDefaults.allowDomainDiscovery,
-    allowEmailOtp:
-      organization?.allowEmailOtp ?? instance?.allowEmailOtp ?? organizationLoginPolicyDefaults.allowEmailOtp,
+    allowEmailOtp: organization?.allowEmailOtp ?? realm?.allowEmailOtp ?? organizationLoginPolicyDefaults.allowEmailOtp,
     allowExternalIdentity:
       organization?.allowExternalIdentity ??
-      instance?.allowExternalIdentity ??
+      realm?.allowExternalIdentity ??
       organizationLoginPolicyDefaults.allowExternalIdentity,
-    allowPassword:
-      organization?.allowPassword ?? instance?.allowPassword ?? organizationLoginPolicyDefaults.allowPassword,
+    allowPassword: organization?.allowPassword ?? realm?.allowPassword ?? organizationLoginPolicyDefaults.allowPassword,
     allowPasswordRecovery:
       organization?.allowPasswordRecovery ??
-      instance?.allowPasswordRecovery ??
+      realm?.allowPasswordRecovery ??
       organizationLoginPolicyDefaults.allowPasswordRecovery,
-    allowPasskey: organization?.allowPasskey ?? instance?.allowPasskey ?? organizationLoginPolicyDefaults.allowPasskey,
+    allowPasskey: organization?.allowPasskey ?? realm?.allowPasskey ?? organizationLoginPolicyDefaults.allowPasskey,
     allowRegistration:
-      organization?.allowRegistration ??
-      instance?.allowRegistration ??
-      organizationLoginPolicyDefaults.allowRegistration,
-    providerIds: organizationProviderIds ?? instanceProviderIds,
+      organization?.allowRegistration ?? realm?.allowRegistration ?? organizationLoginPolicyDefaults.allowRegistration,
+    providerIds: organizationProviderIds ?? realmProviderIds,
   }
 }

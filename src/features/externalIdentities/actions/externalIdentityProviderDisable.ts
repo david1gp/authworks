@@ -1,13 +1,13 @@
 import { type Result } from "#result"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { ExternalIdentityProvider } from "../public/externalIdentityProviderSchema.js"
 import { externalIdentityProviderUpdate } from "./externalIdentityProviderUpdate.js"
 
 type ExternalIdentityProviderDisableOptions = {
-  readonly context: InstanceSystemContext
+  readonly context: RealmSystemContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly providerId: string
 }
 

@@ -10,7 +10,7 @@ export function organizationMembershipPublicViewCreate(row: OrganizationMembersh
   return resultCreate({
     createdAt: row.createdAt,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     organizationId: row.organizationId,
     roles: roles.data,
     updatedAt: row.updatedAt,

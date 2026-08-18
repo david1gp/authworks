@@ -13,7 +13,7 @@ import type { MachineCredentialAuthentication } from "../domain/machineCredentia
 
 type MachineCredentialAuthenticateOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly requiredScope?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly token: string
@@ -23,13 +23,13 @@ export function machineCredentialAuthenticate(
   options: MachineCredentialAuthenticateOptions,
 ): Result<MachineCredentialAuthentication> {
   const op = "machineCredentialAuthenticate"
-  if (options.instanceId.length === 0 || options.token.length === 0)
+  if (options.realmId.length === 0 || options.token.length === 0)
     return resultErrorCreate(op, "Machine authorization is required.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "Machine authorization is invalid.")
   const repository = machineRepositoryCreate(options.database.db)
-  const credentials = repository.credentialListForInstance(options.instanceId)
+  const credentials = repository.credentialListForRealm(options.realmId)
   if (!credentials.success) return credentials
   const tokenHashCandidates = []
   for (const credential of credentials.data) {
@@ -48,7 +48,7 @@ export function machineCredentialAuthenticate(
     (candidate) => candidate.revokedAt === null && (candidate.expiresAt === null || candidate.expiresAt > now),
   )
   if (credential === undefined) return resultErrorCreate(op, "Machine authorization is invalid.")
-  const machineUser = repository.userGet(options.instanceId, credential.machineUserId)
+  const machineUser = repository.userGet(options.realmId, credential.machineUserId)
   if (!machineUser.success) return machineUser
   if (machineUser.data === null || machineUser.data.status !== "active")
     return resultErrorCreate(op, "Machine authorization is invalid.")
@@ -66,7 +66,7 @@ export function machineCredentialAuthenticate(
     actorId: machineUser.data.id,
     assurance: "authenticated",
     authenticationMethod,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     kind: "machine",
     scopes: scopes.data,
   })

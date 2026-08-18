@@ -7,14 +7,14 @@ type PasswordCliFlags = {
 }
 
 type PasswordPolicyCliFlags = PasswordCliFlags & {
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 const passwordPolicyGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasswordPolicyCliFlags) {
-    passwordCliResultWrite(this, await passwordCliClientCreate(this, flags).passwordPolicyGet(flags.instanceId))
+    passwordCliResultWrite(this, await passwordCliClientCreate(this, flags).passwordPolicyGet(flags.realmId))
   },
-  parameters: { flags: { ...passwordCommonFlags(), instanceId: passwordInstanceIdFlag() } },
+  parameters: { flags: { ...passwordCommonFlags(), realmId: passwordRealmIdFlag() } },
   docs: { brief: "Read the password policy" },
 })
 
@@ -33,7 +33,7 @@ const passwordPolicySetCommand = buildCommand({
   ) {
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordPolicySet(flags.instanceId, {
+      await passwordCliClientCreate(this, flags).passwordPolicySet(flags.realmId, {
         lockoutDurationMs: flags.lockoutDurationMs,
         maximumAttempts: flags.maximumAttempts,
         minimumLength: flags.minimumLength,
@@ -47,7 +47,7 @@ const passwordPolicySetCommand = buildCommand({
   parameters: {
     flags: {
       ...passwordCommonFlags(),
-      instanceId: passwordInstanceIdFlag(),
+      realmId: passwordRealmIdFlag(),
       minimumLength: passwordNumberFlag("Minimum password length"),
       requireLowercase: passwordBooleanFlag("Require lowercase characters"),
       requireUppercase: passwordBooleanFlag("Require uppercase characters"),
@@ -63,11 +63,11 @@ const passwordPolicySetCommand = buildCommand({
 const passwordRegisterCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: PasswordCliFlags & { email: string; instanceId: string; password: string; userName: string },
+    flags: PasswordCliFlags & { email: string; password: string; realmId: string; userName: string },
   ) {
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordRegister(flags.instanceId, {
+      await passwordCliClientCreate(this, flags).passwordRegister(flags.realmId, {
         email: flags.email,
         password: flags.password,
         profile: {},
@@ -78,7 +78,7 @@ const passwordRegisterCommand = buildCommand({
   parameters: {
     flags: {
       ...passwordCommonFlags(),
-      instanceId: passwordInstanceIdFlag(),
+      realmId: passwordRealmIdFlag(),
       userName: passwordTextFlag("User name"),
       email: passwordTextFlag("Email address"),
       password: passwordTextFlag("Password"),
@@ -90,11 +90,11 @@ const passwordRegisterCommand = buildCommand({
 const passwordLoginCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: PasswordCliFlags & { identifier: string; instanceId: string; password: string },
+    flags: PasswordCliFlags & { identifier: string; password: string; realmId: string },
   ) {
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordLogin(flags.instanceId, {
+      await passwordCliClientCreate(this, flags).passwordLogin(flags.realmId, {
         identifier: flags.identifier,
         password: flags.password,
       }),
@@ -103,7 +103,7 @@ const passwordLoginCommand = buildCommand({
   parameters: {
     flags: {
       ...passwordCommonFlags(),
-      instanceId: passwordInstanceIdFlag(),
+      realmId: passwordRealmIdFlag(),
       identifier: passwordTextFlag("Email or user name"),
       password: passwordTextFlag("Password"),
     },
@@ -112,16 +112,16 @@ const passwordLoginCommand = buildCommand({
 })
 
 const passwordVerifyCommand = buildCommand({
-  async func(this: ApplicationContext, flags: PasswordCliFlags & { instanceId: string; token: string }) {
+  async func(this: ApplicationContext, flags: PasswordCliFlags & { realmId: string; token: string }) {
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordEmailVerify(flags.instanceId, { token: flags.token }),
+      await passwordCliClientCreate(this, flags).passwordEmailVerify(flags.realmId, { token: flags.token }),
     )
   },
   parameters: {
     flags: {
       ...passwordCommonFlags(),
-      instanceId: passwordInstanceIdFlag(),
+      realmId: passwordRealmIdFlag(),
       token: passwordTextFlag("Verification token"),
     },
   },
@@ -129,14 +129,14 @@ const passwordVerifyCommand = buildCommand({
 })
 
 const passwordRecoveryRequestCommand = buildCommand({
-  async func(this: ApplicationContext, flags: PasswordCliFlags & { email: string; instanceId: string }) {
+  async func(this: ApplicationContext, flags: PasswordCliFlags & { email: string; realmId: string }) {
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordRecoveryRequest(flags.instanceId, { email: flags.email }),
+      await passwordCliClientCreate(this, flags).passwordRecoveryRequest(flags.realmId, { email: flags.email }),
     )
   },
   parameters: {
-    flags: { ...passwordCommonFlags(), instanceId: passwordInstanceIdFlag(), email: passwordTextFlag("Email address") },
+    flags: { ...passwordCommonFlags(), realmId: passwordRealmIdFlag(), email: passwordTextFlag("Email address") },
   },
   docs: { brief: "Request password recovery" },
 })
@@ -144,11 +144,11 @@ const passwordRecoveryRequestCommand = buildCommand({
 const passwordRecoveryCompleteCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: PasswordCliFlags & { instanceId: string; newPassword: string; token: string },
+    flags: PasswordCliFlags & { newPassword: string; realmId: string; token: string },
   ) {
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordRecoveryComplete(flags.instanceId, {
+      await passwordCliClientCreate(this, flags).passwordRecoveryComplete(flags.realmId, {
         newPassword: flags.newPassword,
         token: flags.token,
       }),
@@ -157,7 +157,7 @@ const passwordRecoveryCompleteCommand = buildCommand({
   parameters: {
     flags: {
       ...passwordCommonFlags(),
-      instanceId: passwordInstanceIdFlag(),
+      realmId: passwordRealmIdFlag(),
       token: passwordTextFlag("Recovery token"),
       newPassword: passwordTextFlag("New password"),
     },
@@ -170,11 +170,11 @@ export const passwordCliCommands = buildRouteMap({
     change: buildCommand({
       async func(
         this: ApplicationContext,
-        flags: PasswordCliFlags & { currentPassword: string; instanceId: string; newPassword: string; userId: string },
+        flags: PasswordCliFlags & { currentPassword: string; newPassword: string; realmId: string; userId: string },
       ) {
         passwordCliResultWrite(
           this,
-          await passwordCliClientCreate(this, flags).passwordChange(flags.instanceId, flags.userId, {
+          await passwordCliClientCreate(this, flags).passwordChange(flags.realmId, flags.userId, {
             currentPassword: flags.currentPassword,
             newPassword: flags.newPassword,
           }),
@@ -183,7 +183,7 @@ export const passwordCliCommands = buildRouteMap({
       parameters: {
         flags: {
           ...passwordCommonFlags(),
-          instanceId: passwordInstanceIdFlag(),
+          realmId: passwordRealmIdFlag(),
           userId: passwordUserIdFlag(),
           currentPassword: passwordTextFlag("Current password"),
           newPassword: passwordTextFlag("New password"),
@@ -244,12 +244,12 @@ function passwordCommonFlags() {
   }
 }
 
-function passwordInstanceIdFlag() {
+function passwordRealmIdFlag() {
   return {
-    brief: "Instance UUID",
+    brief: "Realm UUID",
     kind: "parsed" as const,
     parse: (value: string) => value,
-    placeholder: "INSTANCE_ID",
+    placeholder: "REALM_ID",
   }
 }
 

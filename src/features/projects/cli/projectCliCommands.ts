@@ -2,16 +2,16 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { projectApiClientCreate } from "../client/projectApiClientCreate.js"
 
 type ProjectCliFlags = { readonly server?: string; readonly token?: string }
-type ProjectIdCliFlags = ProjectCliFlags & { readonly instanceId: string; readonly projectId: string }
+type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId: string; readonly realmId: string }
 
 const projectCreateCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: ProjectCliFlags & { instanceId: string; name: string; organizationId: string },
+    flags: ProjectCliFlags & { name: string; organizationId: string; realmId: string },
   ) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectCreate(flags.instanceId, {
+      await projectCliClientCreate(this, flags).projectCreate(flags.realmId, {
         authorizationRequired: false,
         name: flags.name,
         organizationId: flags.organizationId,
@@ -22,7 +22,7 @@ const projectCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      instanceId: idFlag("Instance UUID"),
+      realmId: idFlag("Realm UUID"),
       organizationId: idFlag("Organization UUID"),
       name: textFlag("Project name"),
     },
@@ -31,19 +31,19 @@ const projectCreateCommand = buildCommand({
 })
 
 const projectListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectCliFlags & { instanceId: string }) {
-    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectList(flags.instanceId))
+  async func(this: ApplicationContext, flags: ProjectCliFlags & { realmId: string }) {
+    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectList(flags.realmId))
   },
-  parameters: { flags: { ...projectCommonFlags(), instanceId: idFlag("Instance UUID") } },
+  parameters: { flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID") } },
   docs: { brief: "List projects" },
 })
 
 const projectGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
-    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectGet(flags.instanceId, flags.projectId))
+    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectGet(flags.realmId, flags.projectId))
   },
   parameters: {
-    flags: { ...projectCommonFlags(), instanceId: idFlag("Instance UUID"), projectId: idFlag("Project UUID") },
+    flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID"), projectId: idFlag("Project UUID") },
   },
   docs: { brief: "Get a project" },
 })
@@ -52,13 +52,13 @@ const projectUpdateCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags & { name: string }) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectUpdate(flags.instanceId, flags.projectId, { name: flags.name }),
+      await projectCliClientCreate(this, flags).projectUpdate(flags.realmId, flags.projectId, { name: flags.name }),
     )
   },
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      instanceId: idFlag("Instance UUID"),
+      realmId: idFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       name: textFlag("Project name"),
     },
@@ -70,7 +70,7 @@ const projectLifecycleCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags & { status: "active" | "inactive" | "removed" }) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectLifecycleSet(flags.instanceId, flags.projectId, {
+      await projectCliClientCreate(this, flags).projectLifecycleSet(flags.realmId, flags.projectId, {
         status: flags.status,
       }),
     )
@@ -78,7 +78,7 @@ const projectLifecycleCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      instanceId: idFlag("Instance UUID"),
+      realmId: idFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       status: statusFlag(),
     },
@@ -93,7 +93,7 @@ const projectApplicationCreateCommand = buildCommand({
   ) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectApplicationCreate(flags.instanceId, flags.projectId, {
+      await projectCliClientCreate(this, flags).projectApplicationCreate(flags.realmId, flags.projectId, {
         applicationType: flags.applicationType,
         name: flags.name,
       }),
@@ -102,7 +102,7 @@ const projectApplicationCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      instanceId: idFlag("Instance UUID"),
+      realmId: idFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       name: textFlag("Application name"),
       applicationType: applicationTypeFlag(),
@@ -115,11 +115,11 @@ const projectApplicationListCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectApplicationList(flags.instanceId, flags.projectId),
+      await projectCliClientCreate(this, flags).projectApplicationList(flags.realmId, flags.projectId),
     )
   },
   parameters: {
-    flags: { ...projectCommonFlags(), instanceId: idFlag("Instance UUID"), projectId: idFlag("Project UUID") },
+    flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID"), projectId: idFlag("Project UUID") },
   },
   docs: { brief: "List applications" },
 })
@@ -128,7 +128,7 @@ const projectRoleCreateCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags & { key: string; displayName: string }) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectRoleCreate(flags.instanceId, flags.projectId, {
+      await projectCliClientCreate(this, flags).projectRoleCreate(flags.realmId, flags.projectId, {
         displayName: flags.displayName,
         key: flags.key,
       }),
@@ -137,7 +137,7 @@ const projectRoleCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      instanceId: idFlag("Instance UUID"),
+      realmId: idFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       key: textFlag("Role key"),
       displayName: textFlag("Role display name"),
@@ -150,11 +150,11 @@ const projectRoleListCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectRoleList(flags.instanceId, flags.projectId),
+      await projectCliClientCreate(this, flags).projectRoleList(flags.realmId, flags.projectId),
     )
   },
   parameters: {
-    flags: { ...projectCommonFlags(), instanceId: idFlag("Instance UUID"), projectId: idFlag("Project UUID") },
+    flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID"), projectId: idFlag("Project UUID") },
   },
   docs: { brief: "List project roles" },
 })
@@ -163,7 +163,7 @@ const projectGrantCreateCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags & { grantedOrganizationId: string; roleKeys: string }) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectGrantCreate(flags.instanceId, flags.projectId, {
+      await projectCliClientCreate(this, flags).projectGrantCreate(flags.realmId, flags.projectId, {
         grantedOrganizationId: flags.grantedOrganizationId,
         roleKeys: flags.roleKeys.length === 0 ? [] : flags.roleKeys.split(","),
       }),
@@ -172,7 +172,7 @@ const projectGrantCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      instanceId: idFlag("Instance UUID"),
+      realmId: idFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       grantedOrganizationId: idFlag("Granted organization UUID"),
       roleKeys: textFlag("Comma-separated project role keys"),
@@ -185,11 +185,11 @@ const projectGrantListCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectGrantList(flags.instanceId, flags.projectId),
+      await projectCliClientCreate(this, flags).projectGrantList(flags.realmId, flags.projectId),
     )
   },
   parameters: {
-    flags: { ...projectCommonFlags(), instanceId: idFlag("Instance UUID"), projectId: idFlag("Project UUID") },
+    flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID"), projectId: idFlag("Project UUID") },
   },
   docs: { brief: "List project grants" },
 })

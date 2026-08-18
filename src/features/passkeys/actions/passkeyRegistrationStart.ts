@@ -22,7 +22,7 @@ import { passkeyTokenHashCreate } from "../domain/passkeyTokenHashCreate.js"
 
 type PasskeyRegistrationStartOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly origins: readonly string[]
   readonly rpId: string
   readonly rpName: string
@@ -41,11 +41,11 @@ export async function passkeyRegistrationStart(
   const user = options.database.db
     .select({ email: userTable.email, id: userTable.id, state: userTable.state, userName: userTable.userName })
     .from(userTable)
-    .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, options.userId)))
+    .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, options.userId)))
     .get()
   if (user === undefined || user.state !== "active") return resultErrorCreate(op, "The passkey user is invalid.")
   const credentials = passkeyRepositoryCreate(options.database.db).passkeyCredentialList(
-    options.instanceId,
+    options.realmId,
     options.userId,
   )
   if (!credentials.success) return credentials
@@ -82,7 +82,7 @@ export async function passkeyRegistrationStart(
     configuration: configuration.data,
     correlationId: options.correlationId,
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     now,
     purpose: "mfa",
     runtime,
@@ -101,7 +101,7 @@ type PasskeyRegistrationStartStoreOptions = {
   readonly configuration: { readonly origins: readonly string[]; readonly rpId: string; readonly rpName: string }
   readonly correlationId?: string
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly now: number
   readonly purpose: "mfa"
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -119,7 +119,7 @@ function passkeyRegistrationStartStore(options: PasskeyRegistrationStartStoreOpt
       createdAt: options.now,
       expiresAt: options.now + 5 * 60 * 1_000,
       id: ceremonyId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       kind: "registration",
       origins: JSON.stringify(options.configuration.origins),
       purpose: options.purpose,
@@ -147,7 +147,7 @@ function passkeyRegistrationStartStore(options: PasskeyRegistrationStartStoreOpt
         commandIndex: 0,
         correlationId,
         eventType: passkeyEventTypes.registrationStarted,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passkeys" },
         occurredAt: options.now,
         payload: payload.output,

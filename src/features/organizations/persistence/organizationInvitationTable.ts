@@ -8,7 +8,7 @@ export const organizationInvitationTable = sqliteTable(
     email: text("email").notNull(),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     invitedBy: text("invited_by").notNull(),
     organizationId: text("organization_id").notNull(),
     roles: text("roles").notNull(),
@@ -19,7 +19,7 @@ export const organizationInvitationTable = sqliteTable(
   },
   (table) => [
     index("organization_invitations_organization_id_idx").on(table.organizationId),
-    index("organization_invitations_instance_id_idx").on(table.instanceId),
+    index("organization_invitations_realm_id_idx").on(table.realmId),
     uniqueIndex("organization_invitations_token_hash_idx").on(table.tokenHash),
   ],
 )

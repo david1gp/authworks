@@ -7,17 +7,17 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectDeletedEventPayloadSchema } from "../events/projectDeletedEventPayloadSchema.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectDeleteOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -25,7 +25,7 @@ type ProjectDeleteOptions = {
 
 export function projectDelete(options: ProjectDeleteOptions): Result<{ deleted: boolean; projectId: string }> {
   const op = "projectDelete"
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The project is not available in this tenant context.")
   const runtime = options.runtime ?? options.database.runtime
   const deletedAt = runtime.now()
@@ -36,12 +36,12 @@ export function projectDelete(options: ProjectDeleteOptions): Result<{ deleted: 
     const repository = projectRepositoryCreate(transaction)
     const current = repository.projectGet(options.projectId)
     if (!current.success) return current
-    if (current.data === null || current.data.instanceId !== options.instanceId)
+    if (current.data === null || current.data.realmId !== options.realmId)
       return resultCreate({ deleted: true, projectId: options.projectId })
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.delete",
       project: current.data,
     })
@@ -61,7 +61,7 @@ export function projectDelete(options: ProjectDeleteOptions): Result<{ deleted: 
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.deleted,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: deletedAt,
         payload: payload.output,

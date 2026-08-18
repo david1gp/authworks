@@ -4,16 +4,16 @@ import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationEnforce } from "../../authorization/public/authorizationEnforce.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationMembershipAccessList } from "../../organizations/actions/organizationMembershipAccessList.js"
 import type { ProjectRow } from "../persistence/projectTable.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 
 type ProjectContextAuthorizeOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly permission: AuthorizationPermission
   readonly project: ProjectRow
 }
@@ -23,12 +23,12 @@ export function projectContextAuthorize(
 ): Result<{ grantedOrganizationId?: string; roleKeys: string[] }> {
   const op = "projectContextAuthorize"
   if (options.context.kind === "system") return resultCreate({ roleKeys: [] })
-  if (options.context.instanceId !== options.instanceId || options.project.instanceId !== options.instanceId)
+  if (options.context.realmId !== options.realmId || options.project.realmId !== options.realmId)
     return resultErrorCreate(op, "The project is not available in this tenant context.")
   if (options.context.actor.kind === "bootstrap_admin") {
     const authorized = authorizationEnforce({
       actor: options.context.actor,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       organizationId: options.project.organizationId,
       permission: options.permission,
     })
@@ -37,7 +37,7 @@ export function projectContextAuthorize(
   }
   const memberships = organizationMembershipAccessList({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     userId: options.context.actorId,
   })
   if (!memberships.success) return memberships
@@ -49,7 +49,7 @@ export function projectContextAuthorize(
     if (membership.organizationId === options.project.organizationId) {
       const ownerDecision = authorizationEnforce({
         actor: options.context.actor,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         organizationId: membership.organizationId,
         permission: options.permission,
         roles: membership.roles,
@@ -63,7 +63,7 @@ export function projectContextAuthorize(
     if (grant === undefined || !projectReadPermissionAllowed(options.permission)) continue
     const grantedDecision = authorizationEnforce({
       actor: options.context.actor,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       organizationId: membership.organizationId,
       permission: options.permission,
       roles: membership.roles,

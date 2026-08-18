@@ -11,7 +11,7 @@ import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSch
 type AuthorizationEnforceOptions = {
   readonly actor: AuthorizationActorContext
   readonly customRoles?: readonly AuthorizationRoleDefinition[]
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId?: string
   readonly permission: AuthorizationPermission
   readonly minimumAssurance?: SessionAssurance

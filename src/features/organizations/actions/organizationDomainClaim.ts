@@ -9,10 +9,10 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceDomainNormalize } from "../../instances/domain/instanceDomainNormalize.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
-import { instanceDomainTable } from "../../instances/persistence/instanceDomainTable.js"
+import { realmDomainNormalize } from "../../realms/domain/realmDomainNormalize.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { realmDomainTable } from "../../realms/persistence/realmDomainTable.js"
 import { organizationDomainTable } from "../persistence/organizationDomainTable.js"
 import { organizationDomainAddedEventPayloadSchema } from "../events/organizationDomainAddedEventPayloadSchema.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
@@ -29,10 +29,10 @@ import {
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationDomainClaimOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OrganizationDomainClaimRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -42,9 +42,9 @@ export function organizationDomainClaim(options: OrganizationDomainClaimOptions)
   const op = "organizationDomainClaim"
   const parsed = v.safeParse(organizationDomainClaimRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The organization domain claim is invalid.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The organization is not available in this tenant context.")
-  const domain = instanceDomainNormalize(parsed.output.domain)
+  const domain = realmDomainNormalize(parsed.output.domain)
   if (!domain.success) return domain
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
@@ -58,7 +58,7 @@ export function organizationDomainClaim(options: OrganizationDomainClaimOptions)
     if (!organization.success) return organization
     if (
       organization.data === null ||
-      organization.data.instanceId !== options.instanceId ||
+      organization.data.realmId !== options.realmId ||
       organization.data.status !== "active"
     )
       return resultErrorCreate(op, "The organization was not found.")
@@ -69,12 +69,12 @@ export function organizationDomainClaim(options: OrganizationDomainClaimOptions)
       requiredPermission: "organization.manage",
     })
     if (!authorized.success) return authorized
-    const instanceDomain = transaction
-      .select({ domain: instanceDomainTable.domain })
-      .from(instanceDomainTable)
-      .where(eq(instanceDomainTable.domain, domain.data))
+    const realmDomain = transaction
+      .select({ domain: realmDomainTable.domain })
+      .from(realmDomainTable)
+      .where(eq(realmDomainTable.domain, domain.data))
       .get()
-    if (instanceDomain !== undefined) return resultErrorCreate(op, "The domain is already assigned to an instance.")
+    if (realmDomain !== undefined) return resultErrorCreate(op, "The domain is already assigned to a realm.")
     const domains = organizationDomainRepositoryCreate(transaction)
     const current = domains.organizationDomainGet(domain.data)
     if (!current.success) return current
@@ -92,7 +92,7 @@ export function organizationDomainClaim(options: OrganizationDomainClaimOptions)
     const created = domains.organizationDomainCreate({
       createdAt: now,
       domain: domain.data,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       isPrimary,
       organizationId: options.organizationId,
       updatedAt: now,
@@ -117,7 +117,7 @@ export function organizationDomainClaim(options: OrganizationDomainClaimOptions)
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.domainAdded,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: now,
         payload: payload.output,

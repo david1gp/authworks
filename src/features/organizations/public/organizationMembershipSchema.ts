@@ -5,7 +5,7 @@ import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
 export const organizationMembershipSchema = v.strictObject({
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   id: organizationResourceIdSchema,
-  instanceId: organizationResourceIdSchema,
+  realmId: organizationResourceIdSchema,
   organizationId: organizationResourceIdSchema,
   roles: organizationRolesSchema,
   updatedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),

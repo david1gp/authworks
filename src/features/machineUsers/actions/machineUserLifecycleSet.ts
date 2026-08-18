@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { machineCredentialRevokedEventPayloadSchema } from "../events/machineCredentialRevokedEventPayloadSchema.js"
 import { machineEventTypes } from "../events/machineEventTypes.js"
 import { machineUserStatusChangedEventPayloadSchema } from "../events/machineUserStatusChangedEventPayloadSchema.js"
@@ -23,10 +23,10 @@ import {
 import type { MachineUserResponse } from "../public/machineUserResponseSchema.js"
 
 type MachineUserLifecycleSetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: MachineUserLifecycleRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly machineUserId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -44,14 +44,14 @@ export function machineUserLifecycleSet(options: MachineUserLifecycleSetOptions)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const found = repository.userGet(options.instanceId, options.machineUserId)
+    const found = repository.userGet(options.realmId, options.machineUserId)
     if (!found.success) return found
     if (found.data === null) return resultErrorCreate(op, "The machine user was not found.")
     if (found.data.status === "removed" && parsed.output.status !== "removed")
       return resultErrorCreate(op, "A removed machine user cannot be reactivated.")
     if (found.data.status === parsed.output.status)
       return resultErrorCreate(op, "The machine user already has that status.")
-    const updated = repository.userUpdate(options.instanceId, options.machineUserId, {
+    const updated = repository.userUpdate(options.realmId, options.machineUserId, {
       status: parsed.output.status,
       updatedAt: now,
       version: found.data.version + 1,
@@ -72,7 +72,7 @@ export function machineUserLifecycleSet(options: MachineUserLifecycleSetOptions)
         commandIndex: 0,
         correlationId,
         eventType: machineEventTypes.userStatusChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "machine-users" },
         occurredAt: now,
         payload: statusPayload.output,
@@ -82,7 +82,7 @@ export function machineUserLifecycleSet(options: MachineUserLifecycleSetOptions)
     if (!statusEvent.success) return statusEvent
     if (parsed.output.status === "active")
       return resultCreate({ machineUser: machineUserPublicViewCreate(updated.data, scopes.data) })
-    const revoked = repository.credentialRevokeForUser(options.instanceId, options.machineUserId, now)
+    const revoked = repository.credentialRevokeForUser(options.realmId, options.machineUserId, now)
     if (!revoked.success) return revoked
     let commandIndex = 1
     for (const credential of revoked.data) {
@@ -101,7 +101,7 @@ export function machineUserLifecycleSet(options: MachineUserLifecycleSetOptions)
           commandIndex,
           correlationId,
           eventType: machineEventTypes.credentialRevoked,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "machine-users" },
           occurredAt: now,
           payload: payload.output,

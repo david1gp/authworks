@@ -2,16 +2,16 @@ import type { AuthorizationActorContext } from "../../authorization/public/autho
 import type { OrganizationContext } from "./organizationContext.js"
 
 export function organizationContextCreate(
-  instanceId: string,
+  realmId: string,
   organizationId: string,
   actorId: string,
   actor: AuthorizationActorContext = {
     actorId,
     assurance: "authenticated",
     authenticationMethod: "trusted",
-    instanceId,
+    realmId,
     kind: "user",
   },
 ): OrganizationContext {
-  return { actor, actorId, instanceId, kind: "organization", organizationId }
+  return { actor, actorId, realmId, kind: "organization", organizationId }
 }

@@ -4,7 +4,7 @@ import * as v from "valibot"
 import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
 import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { passkeyAuthenticationComplete } from "../actions/passkeyAuthenticationComplete.js"
 import { passkeyAuthenticationStart } from "../actions/passkeyAuthenticationStart.js"
@@ -53,7 +53,7 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     minimumAssurance: "multi_factor",
   })
 
-  app.post("/instances/:instanceId/passkeys/registration/start", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/passkeys/registration/start", protectedMiddleware, async (context) => {
     const body = await passkeyJsonRead(context)
     const input = body.success
       ? v.safeParse(passkeyRegistrationStartRequestSchema, body.data)
@@ -65,7 +65,7 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
       await passkeyRegistrationStart({
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         origins: options.origins,
         rpId: options.rpId,
         rpName: options.rpName,
@@ -74,7 +74,7 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     )
   })
 
-  app.post("/instances/:instanceId/passkeys/registration/complete", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/passkeys/registration/complete", protectedMiddleware, async (context) => {
     const body = await passkeyJsonRead(context)
     if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "bad_request")
     const input = v.safeParse(passkeyRegistrationCompleteRequestSchema, body.data)
@@ -86,7 +86,7 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         origins: options.origins,
         rpId: options.rpId,
         rpName: options.rpName,
@@ -96,12 +96,12 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     )
   })
 
-  app.post("/instances/:instanceId/passkeys/authentication/start", async (context) => {
-    const tenant = passkeyTenantInstanceResolve(
+  app.post("/realms/:realmId/passkeys/authentication/start", async (context) => {
+    const tenant = passkeyTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "not_found")
     const body = await passkeyJsonRead(context)
@@ -114,7 +114,7 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
       context,
       await passkeyAuthenticationStart({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: input.output.organizationId,
         origins: options.origins,
         purpose: "passwordless",
@@ -124,12 +124,12 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     )
   })
 
-  app.post("/instances/:instanceId/passkeys/authentication/complete", async (context) => {
-    const tenant = passkeyTenantInstanceResolve(
+  app.post("/realms/:realmId/passkeys/authentication/complete", async (context) => {
+    const tenant = passkeyTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "not_found")
     const body = await passkeyJsonRead(context)
@@ -142,7 +142,7 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
       await passkeyAuthenticationComplete({
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         origins: options.origins,
         rpId: options.rpId,
         rpName: options.rpName,
@@ -150,13 +150,13 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     )
   })
 
-  app.post("/instances/:instanceId/passkeys/mfa/start", protectedMiddleware, (context) =>
+  app.post("/realms/:realmId/passkeys/mfa/start", protectedMiddleware, (context) =>
     passkeyResultResponseCreate(
       context,
       passkeyAuthenticationStart({
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         origins: options.origins,
         purpose: "mfa",
         rpId: options.rpId,
@@ -167,17 +167,17 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     ),
   )
 
-  app.post("/instances/:instanceId/passkeys/mfa/complete", protectedMiddleware, async (context) =>
+  app.post("/realms/:realmId/passkeys/mfa/complete", protectedMiddleware, async (context) =>
     passkeyAuthenticationCompleteRoute(context, options, "mfa"),
   )
 
-  app.post("/instances/:instanceId/passkeys/step-up/start", protectedMiddleware, (context) =>
+  app.post("/realms/:realmId/passkeys/step-up/start", protectedMiddleware, (context) =>
     passkeyResultResponseCreate(
       context,
       passkeyAuthenticationStart({
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         origins: options.origins,
         purpose: "step_up",
         rpId: options.rpId,
@@ -188,22 +188,22 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     ),
   )
 
-  app.post("/instances/:instanceId/passkeys/step-up/complete", protectedMiddleware, async (context) =>
+  app.post("/realms/:realmId/passkeys/step-up/complete", protectedMiddleware, async (context) =>
     passkeyAuthenticationCompleteRoute(context, options, "step_up"),
   )
 
-  app.get("/instances/:instanceId/passkeys", protectedMiddleware, (context) =>
+  app.get("/realms/:realmId/passkeys", protectedMiddleware, (context) =>
     passkeyResultResponseCreate(
       context,
       passkeyCredentialList({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     ),
   )
 
-  app.delete("/instances/:instanceId/passkeys", strongMiddleware, async (context) => {
+  app.delete("/realms/:realmId/passkeys", strongMiddleware, async (context) => {
     const body = await passkeyJsonRead(context)
     if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "bad_request")
     const input = v.safeParse(passkeyCredentialRevokeRequestSchema, body.data)
@@ -214,7 +214,7 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     )
@@ -223,22 +223,22 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
   return app
 }
 
-function passkeyTenantInstanceResolve(
+function passkeyTenantContextResolve(
   database: StorageDatabase,
   host: string | undefined,
   requestUrl: string,
-  instanceId: string,
+  realmId: string,
 ) {
   const resolvedHost = host ?? new URL(requestUrl).hostname
   const normalizedHost = resolvedHost.startsWith("[")
     ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
     : (resolvedHost.split(":")[0] ?? "")
-  const tenant = instanceTenantContextResolve({ database, host: normalizedHost })
+  const tenant = realmTenantContextResolve({ database, host: normalizedHost })
   if (!tenant.success) return tenant
-  if (tenant.data.instanceId !== instanceId)
+  if (tenant.data.realmId !== realmId)
     return {
-      errorMessage: "The instance is not available in this tenant context.",
-      op: "passkeyTenantInstanceResolve",
+      errorMessage: "The realm is not available in this tenant context.",
+      op: "passkeyTenantContextResolve",
       success: false as const,
     }
   return tenant
@@ -260,7 +260,7 @@ async function passkeyAuthenticationCompleteRoute(
       actorId: context.get("authorizationActor").actorId,
       database: options.database,
       input: input.output,
-      instanceId: context.req.param("instanceId"),
+      realmId: context.req.param("realmId"),
       origins: options.origins,
       rpId: options.rpId,
       rpName: options.rpName,

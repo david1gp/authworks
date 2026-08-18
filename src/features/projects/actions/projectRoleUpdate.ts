@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectRolePublicViewCreate } from "../domain/projectRolePublicViewCreate.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectRoleUpdatedEventPayloadSchema } from "../events/projectRoleUpdatedEventPayloadSchema.js"
@@ -21,10 +21,10 @@ import type { ProjectRole } from "../public/projectRoleSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectRoleUpdateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: ProjectRoleUpdateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
   readonly roleId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -47,7 +47,7 @@ export function projectRoleUpdate(options: ProjectRoleUpdateOptions): Result<{ r
     if (!current.success) return current
     if (
       current.data === null ||
-      current.data.instanceId !== options.instanceId ||
+      current.data.realmId !== options.realmId ||
       current.data.projectId !== options.projectId
     )
       return resultErrorCreate(op, "The project role was not found.")
@@ -58,7 +58,7 @@ export function projectRoleUpdate(options: ProjectRoleUpdateOptions): Result<{ r
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.role.write",
       project: project.data,
     })
@@ -89,7 +89,7 @@ export function projectRoleUpdate(options: ProjectRoleUpdateOptions): Result<{ r
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.roleUpdated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: updatedAt,
         payload: payload.output,

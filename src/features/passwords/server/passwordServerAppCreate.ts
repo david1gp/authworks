@@ -6,8 +6,8 @@ import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { passwordChange } from "../actions/passwordChange.js"
 import { passwordEmailVerify } from "../actions/passwordEmailVerify.js"
 import { passwordLogin } from "../actions/passwordLogin.js"
@@ -39,15 +39,15 @@ type PasswordServerAppCreateOptions = {
 
 export function passwordServerAppCreate(options: PasswordServerAppCreateOptions) {
   const app = new Hono()
-  const systemContext = instanceSystemContextCreate("system")
+  const systemContext = realmSystemContextCreate("system")
   const sessionCreate = options.sessionCreate ?? sessionPasswordCreate()
 
-  app.post("/instances/:instanceId/password/register", async (context) => {
+  app.post("/realms/:realmId/password/register", async (context) => {
     const tenant = passwordTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
@@ -64,18 +64,18 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: tenant.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         onVerificationToken: options.onVerificationToken,
       }),
     )
   })
 
-  app.post("/instances/:instanceId/password/login", async (context) => {
+  app.post("/realms/:realmId/password/login", async (context) => {
     const tenant = passwordTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
@@ -89,7 +89,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: tenant.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: input.output.organizationId,
         deviceMetadata: passwordDeviceMetadataGet(context),
         sessionCreate,
@@ -97,12 +97,12 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     )
   })
 
-  app.post("/instances/:instanceId/password/verify-email", async (context) => {
+  app.post("/realms/:realmId/password/verify-email", async (context) => {
     const tenant = passwordTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
@@ -119,17 +119,17 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: tenant.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.post("/instances/:instanceId/password/recovery/request", async (context) => {
+  app.post("/realms/:realmId/password/recovery/request", async (context) => {
     const tenant = passwordTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
@@ -146,18 +146,18 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: tenant.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         onRecoveryToken: options.onRecoveryToken,
       }),
     )
   })
 
-  app.post("/instances/:instanceId/password/recovery/complete", async (context) => {
+  app.post("/realms/:realmId/password/recovery/complete", async (context) => {
     const tenant = passwordTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
@@ -174,17 +174,17 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: tenant.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.post("/instances/:instanceId/users/:userId/password", async (context) => {
+  app.post("/realms/:realmId/users/:userId/password", async (context) => {
     const tenant = passwordTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     const body = await passwordRequestJsonRead(context)
@@ -201,18 +201,18 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: tenant.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.get("/instances/:instanceId/password-policy", (context) => {
+  app.get("/realms/:realmId/password-policy", (context) => {
     const tenant = passwordTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
     return passwordResultResponseCreate(
@@ -220,12 +220,12 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
       passwordPolicyGet({
         context: tenant.data,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.get("/system/instances/:instanceId/password-policy", (context) => {
+  app.get("/system/realms/:realmId/password-policy", (context) => {
     const authorization = passwordSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return passwordErrorResponseCreate(context, authorization)
     return passwordResultResponseCreate(
@@ -233,12 +233,12 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
       passwordPolicyGet({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.patch("/system/instances/:instanceId/password-policy", async (context) => {
+  app.patch("/system/realms/:realmId/password-policy", async (context) => {
     const authorization = passwordSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return passwordErrorResponseCreate(context, authorization)
     const body = await passwordRequestJsonRead(context)
@@ -255,7 +255,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
@@ -267,13 +267,13 @@ function passwordTenantContextResolve(
   database: StorageDatabase,
   host: string | undefined,
   requestUrl: string,
-  instanceId: string,
+  realmId: string,
 ) {
-  const tenant = instanceTenantContextResolve({ database, host: passwordRequestHostGet(host, requestUrl) })
+  const tenant = realmTenantContextResolve({ database, host: passwordRequestHostGet(host, requestUrl) })
   if (!tenant.success) return tenant
-  if (tenant.data.instanceId !== instanceId)
+  if (tenant.data.realmId !== realmId)
     return {
-      errorMessage: "The instance is not available in this tenant context.",
+      errorMessage: "The realm is not available in this tenant context.",
       op: "passwordTenantContextResolve",
       success: false as const,
     }

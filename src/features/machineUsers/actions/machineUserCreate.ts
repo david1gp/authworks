@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { machineCredentialIssuedEventPayloadSchema } from "../events/machineCredentialIssuedEventPayloadSchema.js"
 import { machineUserCreatedEventPayloadSchema } from "../events/machineUserCreatedEventPayloadSchema.js"
 import { machineEventTypes } from "../events/machineEventTypes.js"
@@ -25,10 +25,10 @@ import {
 import type { MachineUserCreateResponse } from "../public/machineUserCreateResponseSchema.js"
 
 type MachineUserCreateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: MachineUserCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -39,9 +39,9 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
   if (!authorized.success) return authorized
   const parsed = v.safeParse(machineUserCreateRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The machine user request is invalid.")
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
 
   const userName = parsed.output.userName.trim().toLowerCase()
   if (!/^[a-z][a-z0-9._:-]*$/.test(userName)) return resultErrorCreate(op, "The machine user request is invalid.")
@@ -64,7 +64,7 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
       createdAt,
       displayName: parsed.output.displayName.trim(),
       id: machineUserId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       scopes: JSON.stringify(scopes),
       status: "active",
       updatedAt: createdAt,
@@ -73,14 +73,14 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
     })
     if (!user.success) {
       if (user.errorMessage === "The machine user could not be created.")
-        return resultErrorCreate(op, "A machine user with that name already exists in this instance.")
+        return resultErrorCreate(op, "A machine user with that name already exists in this realm.")
       return user
     }
     const credential = repository.credentialCreate({
       createdAt,
       expiresAt: null,
       id: credentialId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       kind: "client_secret",
       machineUserId,
       name: null,
@@ -116,7 +116,7 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
         commandIndex: 0,
         correlationId,
         eventType: machineEventTypes.userCreated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "machine-users" },
         occurredAt: createdAt,
         payload: userPayload.output,
@@ -134,7 +134,7 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
         commandIndex: 1,
         correlationId,
         eventType: machineEventTypes.credentialIssued,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "machine-users" },
         occurredAt: createdAt,
         payload: credentialPayload.output,

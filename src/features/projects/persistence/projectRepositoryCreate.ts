@@ -47,13 +47,13 @@ export function projectRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    projectList(instanceId: string): Result<ProjectRow[]> {
+    projectList(realmId: string): Result<ProjectRow[]> {
       try {
         return resultCreate(
           database
             .select()
             .from(projectTable)
-            .where(eq(projectTable.instanceId, instanceId))
+            .where(eq(projectTable.realmId, realmId))
             .orderBy(asc(projectTable.createdAt))
             .all(),
         )

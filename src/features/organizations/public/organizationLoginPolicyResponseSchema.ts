@@ -4,7 +4,7 @@ import { organizationLoginPolicySchema } from "./organizationLoginPolicySchema.j
 import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
 
 export const organizationLoginPolicyResponseSchema = v.strictObject({
-  instanceId: organizationResourceIdSchema,
+  realmId: organizationResourceIdSchema,
   organizationId: v.nullable(organizationResourceIdSchema),
   overrides: organizationLoginPolicyOverrideSchema,
   policy: organizationLoginPolicySchema,

@@ -7,13 +7,13 @@ export const mfaRecoveryCodeTable = sqliteTable(
     consumedAt: integer("consumed_at"),
     createdAt: integer("created_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     userId: text("user_id").notNull(),
     version: integer("version").notNull(),
   },
   (table) => [
     uniqueIndex("mfa_recovery_codes_hash_idx").on(table.codeHash),
-    index("mfa_recovery_codes_instance_user_idx").on(table.instanceId, table.userId),
+    index("mfa_recovery_codes_realm_user_idx").on(table.realmId, table.userId),
   ],
 )
 

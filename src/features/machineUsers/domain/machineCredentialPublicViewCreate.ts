@@ -9,7 +9,7 @@ export function machineCredentialPublicViewCreate(
     createdAt: row.createdAt,
     ...(row.expiresAt === null ? {} : { expiresAt: row.expiresAt }),
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     kind: row.kind as MachineCredential["kind"],
     machineUserId: row.machineUserId,
     ...(row.name === null ? {} : { name: row.name }),

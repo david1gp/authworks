@@ -7,7 +7,7 @@ export const projectApplicationSchema = v.strictObject({
   applicationType: projectApplicationTypeSchema,
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   id: projectResourceIdSchema,
-  instanceId: projectResourceIdSchema,
+  realmId: projectResourceIdSchema,
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   projectId: projectResourceIdSchema,
   status: projectApplicationStatusSchema,

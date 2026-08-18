@@ -6,8 +6,8 @@ import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
@@ -18,7 +18,7 @@ import { userTable } from "../../users/persistence/userTable.js"
 
 type OidcUserInfoGetOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly token: string
 }
@@ -30,14 +30,14 @@ type OidcUserInfoSubject = {
 }
 
 export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUserInfo> {
-  if (options.instanceId.length === 0 || options.token.length === 0)
+  if (options.realmId.length === 0 || options.token.length === 0)
     return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")
-  const instance = instanceGet({
-    context: instanceSystemContextCreate(),
+  const realm = realmGet({
+    context: realmSystemContextCreate(),
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
   })
-  if (!instance.success || instance.data.instance.status !== "active")
+  if (!realm.success || realm.data.realm.status !== "active")
     return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
@@ -46,11 +46,11 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
-    const access = repository.accessTokenGetByTokenHash(options.instanceId, oidcHashCreate(options.token))
+    const access = repository.accessTokenGetByTokenHash(options.realmId, oidcHashCreate(options.token))
     if (!access.success) return access
     if (
       access.data === null ||
-      access.data.instanceId !== options.instanceId ||
+      access.data.realmId !== options.realmId ||
       access.data.expiresAt <= now ||
       access.data.revokedAt !== null
     )
@@ -60,7 +60,7 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
       .from(sessionTable)
       .where(
         and(
-          eq(sessionTable.instanceId, options.instanceId),
+          eq(sessionTable.realmId, options.realmId),
           eq(sessionTable.id, access.data.sessionId),
           eq(sessionTable.userId, access.data.userId),
         ),
@@ -71,7 +71,7 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
     const user = transaction
       .select()
       .from(userTable)
-      .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, access.data.userId)))
+      .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, access.data.userId)))
       .get()
     if (user === undefined || user.state !== "active" || user.deletedAt !== null)
       return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")
@@ -79,7 +79,7 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
       transaction
         .select()
         .from(userProfileTable)
-        .where(and(eq(userProfileTable.instanceId, options.instanceId), eq(userProfileTable.userId, user.id)))
+        .where(and(eq(userProfileTable.realmId, options.realmId), eq(userProfileTable.userId, user.id)))
         .get() ?? null
     const scope = oidcUserInfoScopeParse(access.data.scope)
     if (!scope.success) return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")

@@ -28,7 +28,7 @@ const externalIdentityRecentAuthenticationMs = 5 * 60 * 1_000
 type ExternalIdentityLinkStartOptions = {
   readonly database: StorageDatabase
   readonly input: ExternalIdentityStartRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly providerId: string
   readonly providerPorts: ExternalIdentityProviderPorts
   readonly session: Session
@@ -43,7 +43,7 @@ export function externalIdentityLinkStart(
   const op = "externalIdentityLinkStart"
   const parsed = v.safeParse(externalIdentityStartRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The external identity link request is invalid.")
-  if (options.session.instanceId !== options.instanceId || options.session.userId !== options.userId)
+  if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
     return resultErrorCreate(op, "The session does not belong to this user.")
   if (options.session.assurance === "none")
     return resultErrorCreate(op, "A recent authentication is required before linking an external identity.")
@@ -53,7 +53,7 @@ export function externalIdentityLinkStart(
   if (now - options.session.createdAt > externalIdentityRecentAuthenticationMs)
     return resultErrorCreate(op, "A recent authentication is required before linking an external identity.")
   const repository = externalIdentityRepositoryCreate(options.database.db)
-  const provider = repository.externalIdentityProviderGet(options.instanceId, options.providerId)
+  const provider = repository.externalIdentityProviderGet(options.realmId, options.providerId)
   if (!provider.success) return provider
   if (
     provider.data === null ||
@@ -64,13 +64,10 @@ export function externalIdentityLinkStart(
     return resultErrorCreate(op, "The external identity provider is unavailable.")
   if (parsed.output.organizationId !== undefined) {
     const organization = options.database.db
-      .select({ id: organizationTable.id, instanceId: organizationTable.instanceId, status: organizationTable.status })
+      .select({ id: organizationTable.id, realmId: organizationTable.realmId, status: organizationTable.status })
       .from(organizationTable)
       .where(
-        and(
-          eq(organizationTable.id, parsed.output.organizationId),
-          eq(organizationTable.instanceId, options.instanceId),
-        ),
+        and(eq(organizationTable.id, parsed.output.organizationId), eq(organizationTable.realmId, options.realmId)),
       )
       .get()
     if (organization === undefined || organization.status !== "active")
@@ -114,7 +111,7 @@ export function externalIdentityLinkStart(
       externalUsername: null,
       expiresAt,
       id: transactionId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       intent: "link",
       nonce,
       nonceHash: nonce === undefined ? null : externalIdentitySecretHashCreate(nonce),
@@ -144,7 +141,7 @@ export function externalIdentityLinkStart(
         commandIndex: 0,
         correlationId,
         eventType: externalIdentityEventTypes.authenticationStarted,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: now,
         payload: payload.output,

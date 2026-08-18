@@ -3,9 +3,9 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import type { OidcConsentListResponse } from "../public/oidcConsentListResponseSchema.js"
@@ -13,19 +13,19 @@ import { oidcConsentSchema } from "../public/oidcConsentSchema.js"
 import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
 
 type OidcConsentListOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly userId: string
 }
 
 export function oidcConsentList(options: OidcConsentListOptions): Result<OidcConsentListResponse> {
   const op = "oidcConsentList"
-  const authorized = oidcClientContextAuthorize({ context: options.context, instanceId: options.instanceId })
+  const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  const rows = oidcRepositoryCreate(options.database.db).consentList(options.instanceId, options.userId)
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  const rows = oidcRepositoryCreate(options.database.db).consentList(options.realmId, options.userId)
   if (!rows.success) return rows
   const consents = []
   for (const row of rows.data) {

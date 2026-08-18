@@ -1,10 +1,10 @@
-import type { InstanceLoginPolicyRow } from "../persistence/instanceLoginPolicyTable.js"
+import type { RealmLoginPolicyRow } from "../persistence/realmLoginPolicyTable.js"
 import type { OrganizationLoginPolicyRow } from "../persistence/organizationLoginPolicyTable.js"
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
 import { organizationLoginPolicyProviderIdsParse } from "./organizationLoginPolicyProviderIdsParse.js"
 
 export function organizationLoginPolicyOverrideViewCreate(
-  policy: InstanceLoginPolicyRow | OrganizationLoginPolicyRow | null,
+  policy: RealmLoginPolicyRow | OrganizationLoginPolicyRow | null,
 ): OrganizationLoginPolicyOverride {
   if (policy === null) return {}
   const providerIds = organizationLoginPolicyProviderIdsParse(policy.providerIds)

@@ -7,7 +7,7 @@ import { organizationRepositoryCreate } from "../persistence/organizationReposit
 
 type OrganizationMembershipAccessListOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly userId: string
 }
 
@@ -16,7 +16,7 @@ export function organizationMembershipAccessList(
 ): Result<{ memberships: { organizationId: string; roles: string[]; status: string }[] }> {
   const op = "organizationMembershipAccessList"
   const repository = organizationRepositoryCreate(options.database.db)
-  const organizations = repository.organizationList(options.instanceId)
+  const organizations = repository.organizationList(options.realmId)
   if (!organizations.success) return organizations
   const memberships: { organizationId: string; roles: string[]; status: string }[] = []
   for (const organization of organizations.data) {

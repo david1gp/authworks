@@ -8,9 +8,9 @@ import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcKeyMaterialCreate } from "../domain/oidcKeyMaterialCreate.js"
 import { oidcSigningKeyPublicViewCreate } from "../domain/oidcSigningKeyPublicViewCreate.js"
@@ -22,25 +22,25 @@ import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import type { OidcSigningKeyResponse } from "../public/oidcSigningKeyResponseSchema.js"
 
 type OidcSigningKeyCreateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
 
 export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Result<OidcSigningKeyResponse> {
   const op = "oidcSigningKeyCreate"
-  const authorized = oidcClientContextAuthorize({ context: options.context, instanceId: options.instanceId })
+  const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
-  const instance = instanceGet({
+  const realm = realmGet({
     context: { actor: options.context.actor, actorId: options.context.actorId, kind: "system" },
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
   })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
@@ -48,17 +48,17 @@ export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Resu
   const keyId = uuidv7Create(runtime)
   const material = oidcKeyMaterialCreate()
   if (!material.success) return material
-  const encrypted = oidcValueEncrypt(material.data.privateKey, options.instanceId, options.encryptionSecret)
+  const encrypted = oidcValueEncrypt(material.data.privateKey, options.realmId, options.encryptionSecret)
   if (!encrypted.success) return encrypted
   const publicJwk = { ...material.data.publicJwk, kid: keyId }
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
-    const existing = repository.signingKeyList(options.instanceId)
+    const existing = repository.signingKeyList(options.realmId)
     if (!existing.success) return existing
     let commandIndex = 0
     for (const key of existing.data.filter((candidate) => candidate.status === "active")) {
-      const retired = repository.signingKeyUpdate(options.instanceId, key.id, {
+      const retired = repository.signingKeyUpdate(options.realmId, key.id, {
         retiredAt: createdAt,
         status: "retired",
       })
@@ -76,7 +76,7 @@ export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Resu
           commandIndex,
           correlationId,
           eventType: oidcEventTypes.signingKeyRetired,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { source: "oidc", reason: "rotation" },
           occurredAt: createdAt,
           payload: retiredPayload.output,
@@ -91,7 +91,7 @@ export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Resu
       createdAt,
       encryptedPrivateKey: encrypted.data,
       id: keyId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       publicJwk: JSON.stringify(publicJwk),
       retiredAt: null,
       status: "active",
@@ -109,7 +109,7 @@ export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Resu
         commandIndex,
         correlationId,
         eventType: oidcEventTypes.signingKeyCreated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "oidc" },
         occurredAt: createdAt,
         payload: payload.output,

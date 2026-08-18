@@ -8,8 +8,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
 import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
@@ -22,10 +22,10 @@ import type { ExternalIdentityProviderCreateRequest } from "../public/externalId
 import { externalIdentityProviderCreateRequestSchema } from "../public/externalIdentityProviderCreateRequestSchema.js"
 
 type ExternalIdentityProviderCreateOptions = {
-  readonly context: InstanceSystemContext
+  readonly context: RealmSystemContext
   readonly database: StorageDatabase
   readonly input: ExternalIdentityProviderCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -38,20 +38,16 @@ export function externalIdentityProviderCreate(
     return resultErrorCreate(op, "Only the system context can configure providers.")
   const parsed = v.safeParse(externalIdentityProviderCreateRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The external identity provider request is invalid.")
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
   if (parsed.output.organizationId !== undefined) {
     const organization = options.database.db
-      .select({ id: organizationTable.id, instanceId: organizationTable.instanceId, status: organizationTable.status })
+      .select({ id: organizationTable.id, realmId: organizationTable.realmId, status: organizationTable.status })
       .from(organizationTable)
       .where(eq(organizationTable.id, parsed.output.organizationId))
       .get()
-    if (
-      organization === undefined ||
-      organization.instanceId !== options.instanceId ||
-      organization.status !== "active"
-    )
+    if (organization === undefined || organization.realmId !== options.realmId || organization.status !== "active")
       return resultErrorCreate(op, "The organization was not found.")
   }
   const runtime = options.runtime ?? options.database.runtime
@@ -68,7 +64,7 @@ export function externalIdentityProviderCreate(
       .from(externalIdentityProviderTable)
       .where(
         and(
-          eq(externalIdentityProviderTable.instanceId, options.instanceId),
+          eq(externalIdentityProviderTable.realmId, options.realmId),
           eq(externalIdentityProviderTable.type, parsed.output.type),
           parsed.output.organizationId === undefined
             ? isNull(externalIdentityProviderTable.organizationId)
@@ -86,7 +82,7 @@ export function externalIdentityProviderCreate(
       displayName: parsed.output.displayName,
       enabled: true,
       id: providerId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       organizationId: parsed.output.organizationId ?? null,
       redirectUri: parsed.output.redirectUri,
       scopes: JSON.stringify(scopes),
@@ -111,7 +107,7 @@ export function externalIdentityProviderCreate(
         commandIndex: 0,
         correlationId,
         eventType: externalIdentityEventTypes.providerCreated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: now,
         payload: payload.output,

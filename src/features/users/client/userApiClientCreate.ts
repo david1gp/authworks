@@ -37,56 +37,48 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
 
   return {
-    userCreate(instanceId: string, input: UserCreateRequest): Promise<Result<UserResponse>> {
+    userCreate(realmId: string, input: UserCreateRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userCreateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("userApiClientCreate", "The user request is invalid."))
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/users`,
+        `/system/realms/${encodeURIComponent(realmId)}/users`,
         jsonRequest(parsed.output),
         userResponseSchema,
       )
     },
-    userGet(instanceId: string, userId: string): Promise<Result<UserResponse>> {
+    userGet(realmId: string, userId: string): Promise<Result<UserResponse>> {
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}`,
+        `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}`,
         { method: "GET" },
         userResponseSchema,
       )
     },
-    userList(instanceId: string): Promise<Result<UserListResponse>> {
-      return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/users`,
-        { method: "GET" },
-        userListResponseSchema,
-      )
+    userList(realmId: string): Promise<Result<UserListResponse>> {
+      return request(`/system/realms/${encodeURIComponent(realmId)}/users`, { method: "GET" }, userListResponseSchema)
     },
-    userProfileUpdate(
-      instanceId: string,
-      userId: string,
-      input: UserProfileUpdateRequest,
-    ): Promise<Result<UserResponse>> {
+    userProfileUpdate(realmId: string, userId: string, input: UserProfileUpdateRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userProfileUpdateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("userApiClientProfileUpdate", "The user profile update is invalid."))
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}/profile`,
+        `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/profile`,
         patchRequest(parsed.output),
         userResponseSchema,
       )
     },
-    userLifecycleSet(instanceId: string, userId: string, input: UserLifecycleRequest): Promise<Result<UserResponse>> {
+    userLifecycleSet(realmId: string, userId: string, input: UserLifecycleRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userLifecycleRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("userApiClientLifecycleSet", "The user lifecycle request is invalid."))
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}/lifecycle`,
+        `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/lifecycle`,
         jsonRequest(parsed.output),
         userResponseSchema,
       )
     },
     userEmailVerificationSet(
-      instanceId: string,
+      realmId: string,
       userId: string,
       input: UserVerificationRequest,
     ): Promise<Result<UserResponse>> {
@@ -96,14 +88,14 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
           resultErrorCreate("userApiClientVerificationSet", "The user verification request is invalid."),
         )
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}/verification`,
+        `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/verification`,
         jsonRequest(parsed.output),
         userResponseSchema,
       )
     },
-    userDelete(instanceId: string, userId: string): Promise<Result<UserResponse>> {
+    userDelete(realmId: string, userId: string): Promise<Result<UserResponse>> {
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}`,
+        `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}`,
         { method: "DELETE" },
         userResponseSchema,
       )

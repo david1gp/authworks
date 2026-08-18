@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcClientPublicViewCreate } from "../domain/oidcClientPublicViewCreate.js"
 import { oidcClientSecretCreate } from "../domain/oidcClientSecretCreate.js"
@@ -20,9 +20,9 @@ import { oidcClientSecretRotateResponseSchema } from "../public/oidcClientSecret
 
 type OidcClientSecretRotateOptions = {
   readonly clientId: string
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -31,7 +31,7 @@ export function oidcClientSecretRotate(
   options: OidcClientSecretRotateOptions,
 ): Result<v.InferOutput<typeof oidcClientSecretRotateResponseSchema>> {
   const op = "oidcClientSecretRotate"
-  const authorized = oidcClientContextAuthorize({ context: options.context, instanceId: options.instanceId })
+  const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
@@ -42,13 +42,13 @@ export function oidcClientSecretRotate(
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
-    const current = repository.clientGet(options.instanceId, options.clientId)
+    const current = repository.clientGet(options.realmId, options.clientId)
     if (!current.success) return current
     if (current.data === null || current.data.status === "removed")
       return resultErrorCreate(op, "The OIDC client was not found.")
     if (current.data.clientType !== "confidential")
       return resultErrorCreate(op, "Public OIDC clients do not have a client secret.")
-    const updated = repository.clientUpdate(options.instanceId, options.clientId, {
+    const updated = repository.clientUpdate(options.realmId, options.clientId, {
       secretHash: oidcSecretHashCreate(secret.data),
       updatedAt,
       version: current.data.version + 1,
@@ -67,7 +67,7 @@ export function oidcClientSecretRotate(
         commandIndex: 0,
         correlationId,
         eventType: oidcEventTypes.clientSecretRotated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "oidc" },
         occurredAt: updatedAt,
         payload: payload.output,

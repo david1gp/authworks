@@ -2,30 +2,30 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { mfaPolicyDefaults } from "../domain/mfaPolicyDefaults.js"
 import { mfaPolicyViewCreate } from "../domain/mfaPolicyViewCreate.js"
 import { mfaRepositoryCreate } from "../persistence/mfaRepositoryCreate.js"
 import type { MfaPolicy } from "../public/mfaPolicySchema.js"
 
 type MfaPolicyGetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 export function mfaPolicyGet(options: MfaPolicyGetOptions): Result<{ policy: MfaPolicy }> {
   const op = "mfaPolicyGet"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The MFA policy is not available in this tenant context.")
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
-  const row = mfaRepositoryCreate(options.database.db).mfaPolicyGet(options.instanceId)
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  const row = mfaRepositoryCreate(options.database.db).mfaPolicyGet(options.realmId)
   if (!row.success) return row
   return resultCreate({ policy: row.data === null ? mfaPolicyDefaults : mfaPolicyViewCreate(row.data) })
 }

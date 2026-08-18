@@ -28,7 +28,7 @@ export function impersonationServerAppCreate(options: ImpersonationServerAppCrea
   const app = new Hono<ImpersonationServerEnv>()
   const protectedMiddleware = sessionProtectedMiddlewareCreate({ database: options.database })
 
-  app.post("/instances/:instanceId/impersonations", protectedMiddleware, async (context) => {
+  app.post("/realms/:realmId/impersonations", protectedMiddleware, async (context) => {
     const body = await impersonationRequestBodyRead(context)
     if (!body.success) return impersonationErrorResponseCreate(context, body)
     const input = v.safeParse(impersonationStartRequestSchema, body.data)
@@ -43,7 +43,7 @@ export function impersonationServerAppCreate(options: ImpersonationServerAppCrea
         actor: context.get("authorizationActor"),
         database: options.database,
         durationMs: input.output.durationSeconds * 1_000,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         onSecurityNotification: options.onSecurityNotification,
         ...(input.output.organizationId === undefined ? {} : { organizationId: input.output.organizationId }),
         reason: input.output.reason,
@@ -53,25 +53,25 @@ export function impersonationServerAppCreate(options: ImpersonationServerAppCrea
     )
   })
 
-  app.post("/instances/:instanceId/impersonations/:sessionId/end", protectedMiddleware, (context) =>
+  app.post("/realms/:realmId/impersonations/:sessionId/end", protectedMiddleware, (context) =>
     impersonationResultResponseCreate(
       context,
       impersonationEnd({
         actor: context.get("authorizationActor"),
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         onSecurityNotification: options.onSecurityNotification,
         sessionId: context.req.param("sessionId"),
       }),
     ),
   )
-  app.delete("/instances/:instanceId/impersonations/:sessionId", protectedMiddleware, (context) =>
+  app.delete("/realms/:realmId/impersonations/:sessionId", protectedMiddleware, (context) =>
     impersonationResultResponseCreate(
       context,
       impersonationEnd({
         actor: context.get("authorizationActor"),
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         onSecurityNotification: options.onSecurityNotification,
         sessionId: context.req.param("sessionId"),
       }),

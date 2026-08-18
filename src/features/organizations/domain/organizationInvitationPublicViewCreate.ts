@@ -13,7 +13,7 @@ export function organizationInvitationPublicViewCreate(row: OrganizationInvitati
     email: row.email,
     expiresAt: row.expiresAt,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     organizationId: row.organizationId,
     roles: roles.data,
     status: row.status as OrganizationInvitation["status"],

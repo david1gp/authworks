@@ -15,7 +15,7 @@ import * as v from "valibot"
 type MachineClientCredentialsAuthenticateOptions = {
   readonly database: StorageDatabase
   readonly input: MachineClientCredentialsRequest
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 export function machineClientCredentialsAuthenticate(
@@ -25,13 +25,13 @@ export function machineClientCredentialsAuthenticate(
   if (!parsed.success)
     return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
   const repository = machineRepositoryCreate(options.database.db)
-  const machineUser = repository.userGetByName(options.instanceId, parsed.output.clientId.trim().toLowerCase())
+  const machineUser = repository.userGetByName(options.realmId, parsed.output.clientId.trim().toLowerCase())
   if (!machineUser.success) return machineUser
   if (machineUser.data === null || machineUser.data.status !== "active")
     return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
   const configuredScopes = machineScopesParse(machineUser.data.scopes)
   if (!configuredScopes.success) return configuredScopes
-  const credentials = repository.credentialList(options.instanceId, machineUser.data.id)
+  const credentials = repository.credentialList(options.realmId, machineUser.data.id)
   if (!credentials.success) return credentials
   const clientCredential = credentials.data.find(
     (credential) => credential.kind === "client_secret" && credential.revokedAt === null,

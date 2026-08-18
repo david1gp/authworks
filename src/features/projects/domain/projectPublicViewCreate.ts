@@ -6,7 +6,7 @@ export function projectPublicViewCreate(row: ProjectRow): Project {
     authorizationRequired: row.authorizationRequired === 1,
     createdAt: row.createdAt,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     name: row.name,
     organizationId: row.organizationId,
     projectAccessRequired: row.projectAccessRequired === 1,

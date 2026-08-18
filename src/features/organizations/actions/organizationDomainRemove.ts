@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceDomainNormalize } from "../../instances/domain/instanceDomainNormalize.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import { realmDomainNormalize } from "../../realms/domain/realmDomainNormalize.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import { organizationDomainRemovedEventPayloadSchema } from "../events/organizationDomainRemovedEventPayloadSchema.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationDomainRepositoryCreate } from "../persistence/organizationDomainRepositoryCreate.js"
@@ -16,10 +16,10 @@ import { organizationRepositoryCreate } from "../persistence/organizationReposit
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationDomainRemoveOptions = {
-  readonly context: InstanceSystemContext
+  readonly context: RealmSystemContext
   readonly database: StorageDatabase
   readonly domain: string
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -27,7 +27,7 @@ type OrganizationDomainRemoveOptions = {
 
 export function organizationDomainRemove(options: OrganizationDomainRemoveOptions): Result<{ removed: true }> {
   const op = "organizationDomainRemove"
-  const normalized = instanceDomainNormalize(options.domain)
+  const normalized = realmDomainNormalize(options.domain)
   if (!normalized.success) return resultErrorCreate(op, "The organization domain is invalid.")
   const domain = normalized.data
   const runtime = options.runtime ?? options.database.runtime
@@ -39,7 +39,7 @@ export function organizationDomainRemove(options: OrganizationDomainRemoveOption
     if (!organization.success) return organization
     if (
       organization.data === null ||
-      organization.data.instanceId !== options.instanceId ||
+      organization.data.realmId !== options.realmId ||
       organization.data.status === "removed"
     )
       return resultErrorCreate(op, "The organization was not found.")
@@ -74,7 +74,7 @@ export function organizationDomainRemove(options: OrganizationDomainRemoveOption
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.domainRemoved,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: now,
         payload: payload.output,

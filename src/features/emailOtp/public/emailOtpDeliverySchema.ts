@@ -5,7 +5,7 @@ export const emailOtpDeliverySchema = v.strictObject({
   code: v.pipe(v.string(), v.regex(/^\d{6}$/)),
   email: v.pipe(v.string(), v.minLength(3), v.maxLength(320)),
   expiresAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
-  instanceId: v.pipe(v.string(), v.minLength(1)),
+  realmId: v.pipe(v.string(), v.minLength(1)),
   purpose: v.literal("sign_in"),
   userId: v.pipe(v.string(), v.minLength(1)),
 })

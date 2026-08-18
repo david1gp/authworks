@@ -15,7 +15,7 @@ import type { SessionRevocationResponse } from "../public/sessionRevocationRespo
 type SessionRevokeAllOptions = {
   readonly database: StorageDatabase
   readonly exceptSessionId?: string
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly userId: string
 }
@@ -28,20 +28,20 @@ export function sessionRevokeAll(options: SessionRevokeAllOptions): Result<Sessi
   const correlationId = uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = sessionRepositoryCreate(transaction)
-    const sessions = repository.sessionList(options.instanceId, options.userId)
+    const sessions = repository.sessionList(options.realmId, options.userId)
     if (!sessions.success) return sessions
     let revoked = false
     let commandIndex = 0
     for (const session of sessions.data) {
       if (session.revokedAt !== null || session.id === options.exceptSessionId) continue
-      const updated = repository.sessionVersionUpdate(options.instanceId, session.id, session.version, {
+      const updated = repository.sessionVersionUpdate(options.realmId, session.id, session.version, {
         revocationReason: "user_requested_all",
         revokedAt: now,
         version: session.version + 1,
       })
       if (!updated.success) return updated
       if (updated.data === null) return resultErrorCreate(op, "The sessions could not be revoked.")
-      const eventVersion = repository.sessionEventVersionGet(options.instanceId, session.id)
+      const eventVersion = repository.sessionEventVersionGet(options.realmId, session.id)
       if (!eventVersion.success) return eventVersion
       const payload = v.safeParse(sessionRevokedEventPayloadSchema, {
         reason: "user_requested_all",
@@ -59,7 +59,7 @@ export function sessionRevokeAll(options: SessionRevokeAllOptions): Result<Sessi
           commandIndex,
           correlationId,
           eventType: sessionEventTypes.revokedAll,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "sessions" },
           occurredAt: now,
           payload: payload.output,

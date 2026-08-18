@@ -5,15 +5,15 @@ export const organizationTable = sqliteTable(
   {
     createdAt: integer("created_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     name: text("name").notNull(),
     status: text("status").notNull(),
     updatedAt: integer("updated_at").notNull(),
     version: integer("version").notNull(),
   },
   (table) => [
-    index("organizations_instance_id_idx").on(table.instanceId),
-    uniqueIndex("organizations_instance_name_idx").on(table.instanceId, table.name),
+    index("organizations_realm_id_idx").on(table.realmId),
+    uniqueIndex("organizations_realm_name_idx").on(table.realmId, table.name),
   ],
 )
 

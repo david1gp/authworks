@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userPublicViewCreate } from "../domain/userPublicViewCreate.js"
 import type { UserState } from "../domain/userStateSchema.js"
 import { userStateTransitionAllowed } from "../domain/userStateTransitionAllowed.js"
@@ -19,10 +19,10 @@ import { type UserLifecycleRequest, userLifecycleRequestSchema } from "../public
 import type { User } from "../public/userSchema.js"
 
 type UserLifecycleSetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: UserLifecycleRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly userId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -32,7 +32,7 @@ export function userLifecycleSet(options: UserLifecycleSetOptions): Result<{ use
   const op = "userLifecycleSet"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The user is not available in this tenant context.")
   const parsed = v.safeParse(userLifecycleRequestSchema, options.input)
   if (!parsed.success || parsed.output.state === "deleted")
@@ -44,13 +44,13 @@ export function userLifecycleSet(options: UserLifecycleSetOptions): Result<{ use
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = userRepositoryCreate(transaction)
-    const current = repository.userGet(options.instanceId, options.userId)
+    const current = repository.userGet(options.realmId, options.userId)
     if (!current.success) return current
     if (current.data === null || current.data.state === "deleted")
       return resultErrorCreate(op, "The user was not found.")
     if (!userStateTransitionAllowed(current.data.state as UserState, parsed.output.state))
       return resultErrorCreate(op, "The user lifecycle transition is not allowed.")
-    const updated = repository.userUpdate(options.instanceId, options.userId, {
+    const updated = repository.userUpdate(options.realmId, options.userId, {
       state: parsed.output.state,
       updatedAt,
       version: current.data.version + 1,
@@ -72,7 +72,7 @@ export function userLifecycleSet(options: UserLifecycleSetOptions): Result<{ use
         commandIndex: 0,
         correlationId,
         eventType: userEventTypes.stateChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "users" },
         occurredAt: updatedAt,
         payload: payload.output,

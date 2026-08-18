@@ -8,8 +8,8 @@ import { secretGenerate } from "../../../platform/secrets/secretGenerate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationEmailNormalize } from "../domain/organizationEmailNormalize.js"
 import { organizationInvitationPublicViewCreate } from "../domain/organizationInvitationPublicViewCreate.js"
 import { organizationInvitationTokenHashCreate } from "../domain/organizationInvitationTokenHashCreate.js"
@@ -26,10 +26,10 @@ import type { OrganizationInvitationCreateResponse } from "../public/organizatio
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationInvitationCreateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OrganizationInvitationCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -61,7 +61,7 @@ export function organizationInvitationCreate(
     if (!organization.success) return organization
     if (
       organization.data === null ||
-      organization.data.instanceId !== options.instanceId ||
+      organization.data.realmId !== options.realmId ||
       organization.data.status !== "active"
     )
       return resultErrorCreate(op, "The organization is not active or was not found.")
@@ -99,7 +99,7 @@ export function organizationInvitationCreate(
           commandIndex,
           correlationId,
           eventType: organizationEventTypes.invitationRevoked,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { source: "organizations" },
           occurredAt: createdAt,
           payload: revokePayload.output,
@@ -115,7 +115,7 @@ export function organizationInvitationCreate(
       email: email.data,
       expiresAt,
       id: invitationId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       invitedBy: options.context.actorId,
       organizationId: options.organizationId,
       roles: roles.data,
@@ -142,7 +142,7 @@ export function organizationInvitationCreate(
         commandIndex,
         correlationId,
         eventType: organizationEventTypes.invitationCreated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: createdAt,
         payload: payload.output,

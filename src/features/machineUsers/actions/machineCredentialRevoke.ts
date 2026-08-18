@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { machineCredentialRevokedEventPayloadSchema } from "../events/machineCredentialRevokedEventPayloadSchema.js"
 import { machineEventTypes } from "../events/machineEventTypes.js"
 import { machineCredentialPublicViewCreate } from "../domain/machineCredentialPublicViewCreate.js"
@@ -22,11 +22,11 @@ import {
 import type { MachineCredentialRevokeResponse } from "../public/machineCredentialRevokeResponseSchema.js"
 
 type MachineCredentialRevokeOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly credentialId: string
   readonly input?: MachineCredentialRevokeRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -46,11 +46,11 @@ export function machineCredentialRevoke(
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const found = repository.credentialGet(options.instanceId, options.credentialId)
+    const found = repository.credentialGet(options.realmId, options.credentialId)
     if (!found.success) return found
     if (found.data === null) return resultErrorCreate(op, "The machine credential was not found.")
     if (found.data.revokedAt !== null) return resultErrorCreate(op, "The machine credential is already revoked.")
-    const revoked = repository.credentialRevoke(options.instanceId, options.credentialId, now)
+    const revoked = repository.credentialRevoke(options.realmId, options.credentialId, now)
     if (!revoked.success) return revoked
     if (revoked.data === null) return resultErrorCreate(op, "The machine credential is already revoked.")
     const payload = v.safeParse(machineCredentialRevokedEventPayloadSchema, {
@@ -68,7 +68,7 @@ export function machineCredentialRevoke(
         commandIndex: 0,
         correlationId,
         eventType: machineEventTypes.credentialRevoked,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: {
           auditSafe: true,
           source: "machine-users",

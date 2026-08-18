@@ -5,7 +5,7 @@ export const organizationDomainTable = sqliteTable(
   {
     createdAt: integer("created_at").notNull(),
     domain: text("domain").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     isPrimary: integer("is_primary", { mode: "boolean" }).notNull(),
     organizationId: text("organization_id").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -14,7 +14,7 @@ export const organizationDomainTable = sqliteTable(
     version: integer("version").notNull(),
   },
   (table) => [
-    index("organization_domains_instance_idx").on(table.instanceId),
+    index("organization_domains_realm_idx").on(table.realmId),
     index("organization_domains_organization_idx").on(table.organizationId),
     index("organization_domains_organization_primary_idx").on(table.organizationId, table.isPrimary),
   ],

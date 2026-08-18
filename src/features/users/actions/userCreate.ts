@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userEmailNormalize } from "../domain/userEmailNormalize.js"
 import { userNameNormalize } from "../domain/userNameNormalize.js"
 import { userProfileNormalize } from "../domain/userProfileNormalize.js"
@@ -21,10 +21,10 @@ import { type UserCreateRequest, userCreateRequestSchema } from "../public/userC
 import type { User } from "../public/userSchema.js"
 
 type UserCreateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: UserCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -33,7 +33,7 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
   const op = "userCreate"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The user is not available in this tenant context.")
   const parsed = v.safeParse(userCreateRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The user request is invalid.")
@@ -43,9 +43,9 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
   if (!email.success) return email
   const profile = userProfileNormalize(parsed.output.profile)
   if (!profile.success) return profile
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
 
   const runtime = options.runtime ?? options.database.runtime
   const userId = uuidv7Create(runtime)
@@ -61,7 +61,7 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
         email: email.data,
         emailVerifiedAt: null,
         id: userId,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         state: "initial",
         updatedAt: createdAt,
         userName: userName.data,
@@ -71,7 +71,7 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
         displayName: profile.data.displayName,
         firstName: profile.data.firstName,
         gender: profile.data.gender,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         lastName: profile.data.lastName,
         nickName: profile.data.nickName,
         preferredLanguage: profile.data.preferredLanguage,
@@ -81,7 +81,7 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
     )
     if (!created.success) {
       if (created.errorMessage === "The user could not be created.")
-        return resultErrorCreate(op, "A user with that name or email already exists in this instance.")
+        return resultErrorCreate(op, "A user with that name or email already exists in this realm.")
       return created
     }
     const payload = v.safeParse(userCreatedEventPayloadSchema, { emailVerified: false, state: "initial" })
@@ -96,7 +96,7 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
         commandIndex: 0,
         correlationId,
         eventType: userEventTypes.created,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "users" },
         occurredAt: createdAt,
         payload: payload.output,

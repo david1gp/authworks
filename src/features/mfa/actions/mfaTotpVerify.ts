@@ -21,7 +21,7 @@ type MfaTotpVerifyOptions = {
   readonly code: string
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly userId: string
   readonly correlationId?: string
@@ -39,20 +39,20 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const transactionResult = storageTransactionRun<MfaTotpVerifyTransactionResult>(options.database, (transaction) => {
     const repository = mfaRepositoryCreate(transaction)
-    const enrollment = repository.mfaEnrollmentActiveGet(options.instanceId, options.userId)
+    const enrollment = repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
     if (!enrollment.success) return enrollment
     if (enrollment.data === null) return resultErrorCreate(op, "The TOTP code is invalid.")
-    const policy = repository.mfaPolicyGet(options.instanceId)
+    const policy = repository.mfaPolicyGet(options.realmId)
     if (!policy.success) return policy
     const settings = policy.data ?? mfaPolicyDefaults
-    const lockout = repository.mfaLockoutGet(options.instanceId, options.userId)
+    const lockout = repository.mfaLockoutGet(options.realmId, options.userId)
     if (!lockout.success) return lockout
     if (lockout.data?.lockedUntil !== null && lockout.data?.lockedUntil !== undefined && lockout.data.lockedUntil > now)
       return resultErrorCreate(op, "The TOTP code is invalid.")
     const secret = mfaTotpSecretProtect(
       "decrypt",
       enrollment.data.encryptedSecret,
-      options.instanceId,
+      options.realmId,
       options.encryptionSecret,
     )
     if (!secret.success) return resultErrorCreate(op, "The TOTP code is invalid.")
@@ -67,7 +67,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
       const attempts = (lockout.data?.failedAttempts ?? 0) + 1
       const saved = repository.mfaLockoutSet({
         failedAttempts: attempts,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         lockedUntil: attempts >= settings.maxAttempts ? now + settings.lockoutDurationMs : null,
         updatedAt: now,
         userId: options.userId,
@@ -77,7 +77,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
       return resultCreate({ kind: "failed" })
     }
     const updated = repository.mfaEnrollmentUpdate(
-      options.instanceId,
+      options.realmId,
       options.userId,
       enrollment.data.id,
       enrollment.data.version,
@@ -90,7 +90,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
     if (updated.data === null) return resultErrorCreate(op, "The TOTP code is invalid.")
     const reset = repository.mfaLockoutSet({
       failedAttempts: 0,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       lockedUntil: null,
       updatedAt: now,
       userId: options.userId,
@@ -113,7 +113,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
         commandIndex: 0,
         correlationId,
         eventType: mfaEventTypes.totpVerified,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "mfa" },
         occurredAt: now,
         payload: payload.output,

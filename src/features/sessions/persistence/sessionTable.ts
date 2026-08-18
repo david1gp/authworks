@@ -10,7 +10,7 @@ export const sessionTable = sqliteTable(
     deviceFingerprint: text("device_fingerprint"),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     impersonationOrganizationId: text("impersonation_organization_id"),
     impersonationPermissions: text("impersonation_permissions"),
     impersonationReason: text("impersonation_reason"),
@@ -27,9 +27,9 @@ export const sessionTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("sessions_token_hash_idx").on(table.tokenHash),
-    index("sessions_instance_user_idx").on(table.instanceId, table.userId),
-    index("sessions_instance_last_used_idx").on(table.instanceId, table.userId, table.lastUsedAt),
-    index("sessions_impersonator_idx").on(table.instanceId, table.impersonatorId),
+    index("sessions_realm_user_idx").on(table.realmId, table.userId),
+    index("sessions_realm_last_used_idx").on(table.realmId, table.userId, table.lastUsedAt),
+    index("sessions_impersonator_idx").on(table.realmId, table.impersonatorId),
   ],
 )
 

@@ -4,7 +4,7 @@ import * as v from "valibot"
 import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
 import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { emailOtpStart } from "../actions/emailOtpStart.js"
 import { emailOtpVerify } from "../actions/emailOtpVerify.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
@@ -22,12 +22,12 @@ type EmailOtpServerAppCreateOptions = {
 export function emailOtpServerAppCreate(options: EmailOtpServerAppCreateOptions) {
   const app = new Hono()
 
-  app.post("/instances/:instanceId/email-otp/start", async (context) => {
+  app.post("/realms/:realmId/email-otp/start", async (context) => {
     const tenant = emailOtpTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return emailOtpErrorResponseCreate(context, tenant.errorMessage, "not_found")
     const body = await emailOtpRequestJsonRead(context)
@@ -40,19 +40,19 @@ export function emailOtpServerAppCreate(options: EmailOtpServerAppCreateOptions)
         context: tenant.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         onDelivery: options.onDelivery,
         onSecurityNotification: options.onSecurityNotification,
       }),
     )
   })
 
-  app.post("/instances/:instanceId/email-otp/verify", async (context) => {
+  app.post("/realms/:realmId/email-otp/verify", async (context) => {
     const tenant = emailOtpTenantContextResolve(
       options.database,
       context.req.header("host"),
       context.req.url,
-      context.req.param("instanceId"),
+      context.req.param("realmId"),
     )
     if (!tenant.success) return emailOtpErrorResponseCreate(context, tenant.errorMessage, "not_found")
     const body = await emailOtpRequestJsonRead(context)
@@ -66,7 +66,7 @@ export function emailOtpServerAppCreate(options: EmailOtpServerAppCreateOptions)
         database: options.database,
         deviceMetadata: emailOtpDeviceMetadataGet(context),
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         onSecurityNotification: options.onSecurityNotification,
       }),
     )
@@ -79,17 +79,17 @@ function emailOtpTenantContextResolve(
   database: StorageDatabase,
   host: string | undefined,
   requestUrl: string,
-  instanceId: string,
+  realmId: string,
 ) {
   const resolvedHost = host ?? new URL(requestUrl).hostname
   const normalizedHost = resolvedHost.startsWith("[")
     ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
     : (resolvedHost.split(":")[0] ?? "")
-  const tenant = instanceTenantContextResolve({ database, host: normalizedHost })
+  const tenant = realmTenantContextResolve({ database, host: normalizedHost })
   if (!tenant.success) return tenant
-  if (tenant.data.instanceId !== instanceId)
+  if (tenant.data.realmId !== realmId)
     return {
-      errorMessage: "The instance is not available in this tenant context.",
+      errorMessage: "The realm is not available in this tenant context.",
       op: "emailOtpTenantContextResolve",
       success: false as const,
     }

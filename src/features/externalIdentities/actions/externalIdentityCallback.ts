@@ -36,7 +36,7 @@ type ExternalIdentityCallbackOptions = {
   readonly code: string
   readonly database: StorageDatabase
   readonly deviceMetadata?: SessionDeviceMetadata
-  readonly instanceId: string
+  readonly realmId: string
   readonly providerId: string
   readonly providerPorts: ExternalIdentityProviderPorts
   readonly state: string
@@ -60,7 +60,7 @@ export async function externalIdentityCallback(
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
   const repository = externalIdentityRepositoryCreate(options.database.db)
   const transaction = repository.externalIdentityOAuthTransactionGetByState(
-    options.instanceId,
+    options.realmId,
     externalIdentitySecretHashCreate(options.state),
   )
   if (!transaction.success) return transaction
@@ -73,7 +73,7 @@ export async function externalIdentityCallback(
   )
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
   const transactionRow = transaction.data
-  const provider = repository.externalIdentityProviderGet(options.instanceId, options.providerId)
+  const provider = repository.externalIdentityProviderGet(options.realmId, options.providerId)
   if (!provider.success) return provider
   if (provider.data === null || !provider.data.enabled || provider.data.redirectUri !== transactionRow.redirectUri)
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
@@ -118,7 +118,7 @@ export async function externalIdentityCallback(
   }
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     method: "external_identity",
     organizationId: transactionRow.organizationId ?? undefined,
     providerId: options.providerId,
@@ -130,7 +130,7 @@ export async function externalIdentityCallback(
       database: executor,
       deviceMetadata: options.deviceMetadata,
       identity: identity.data,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       now,
       provider: providerRow,
       runtime,
@@ -193,7 +193,7 @@ function externalIdentityLinkCallbackCommit(
       commandIndex: 0,
       correlationId: options.correlationId,
       eventType: externalIdentityEventTypes.authenticationSucceeded,
-      instanceId: options.transaction.instanceId,
+      realmId: options.transaction.realmId,
       metadata: { auditSafe: true, source: "external_identities" },
       occurredAt: options.now,
       payload: payload.output,
@@ -209,7 +209,7 @@ type ExternalIdentitySignInCommitOptions = {
   readonly database: Parameters<typeof externalIdentityRepositoryCreate>[0]
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly identity: ExternalIdentityProviderIdentity
-  readonly instanceId: string
+  readonly realmId: string
   readonly now: number
   readonly provider: ExternalIdentityProviderRow
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -229,12 +229,11 @@ function externalIdentitySignInCommit(
   let userId: string
   let identityRow = existing.data
   if (identityRow !== null) {
-    if (identityRow.instanceId !== options.instanceId)
-      return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+    if (identityRow.realmId !== options.realmId) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
     const user = options.database
       .select({ id: userTable.id, state: userTable.state, deletedAt: userTable.deletedAt })
       .from(userTable)
-      .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, identityRow.userId)))
+      .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, identityRow.userId)))
       .get()
     if (user === undefined || user.state !== "active" || user.deletedAt !== null)
       return resultErrorCreate(op, "The external identity could not authenticate this account.")
@@ -254,12 +253,12 @@ function externalIdentitySignInCommit(
     const existingEmail = options.database
       .select({ id: userTable.id })
       .from(userTable)
-      .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.email, email.data)))
+      .where(and(eq(userTable.realmId, options.realmId), eq(userTable.email, email.data)))
       .get()
     if (existingEmail !== undefined)
       return resultErrorCreate(op, "An account already exists for this email. Sign in and link this provider.")
     userId = uuidv7Create(options.runtime)
-    const userName = externalIdentityUserNameCreate(options.database, options.instanceId, options.identity, email.data)
+    const userName = externalIdentityUserNameCreate(options.database, options.realmId, options.identity, email.data)
     if (!userName.success) return userName
     const user = options.database
       .insert(userTable)
@@ -269,7 +268,7 @@ function externalIdentitySignInCommit(
         email: email.data,
         emailVerifiedAt: options.now,
         id: userId,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         state: "active",
         updatedAt: options.now,
         userName: userName.data,
@@ -284,7 +283,7 @@ function externalIdentitySignInCommit(
         displayName: options.identity.displayName ?? null,
         firstName: null,
         gender: null,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         lastName: null,
         nickName: null,
         preferredLanguage: null,
@@ -306,7 +305,7 @@ function externalIdentitySignInCommit(
         commandIndex: 0,
         correlationId: options.correlationId,
         eventType: userEventTypes.created,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: options.now,
         payload: userPayload.output,
@@ -330,7 +329,7 @@ function externalIdentitySignInCommit(
       emailVerified: options.identity.emailVerified,
       externalSubject: options.identity.externalSubject,
       id: uuidv7Create(options.runtime),
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       providerId: options.provider.id,
       updatedAt: options.now,
       userId,
@@ -358,7 +357,7 @@ function externalIdentitySignInCommit(
         commandIndex: 0,
         correlationId: options.correlationId,
         eventType: externalIdentityEventTypes.accountCreated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: options.now,
         payload: identityPayload.output,
@@ -386,7 +385,7 @@ function externalIdentitySignInCommit(
       commandIndex: 1,
       correlationId: options.correlationId,
       eventType: externalIdentityEventTypes.authenticationSucceeded,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "external_identities" },
       occurredAt: options.now,
       payload: authPayload.output,
@@ -398,7 +397,7 @@ function externalIdentitySignInCommit(
     actorId: null,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     primaryAuthenticationMethod: "external_identity",
     runtime: options.runtime,
     sessionCreate: () =>
@@ -410,7 +409,7 @@ function externalIdentitySignInCommit(
         correlationId: options.correlationId,
         deviceMetadata: options.deviceMetadata,
         executor: options.database,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         runtime: options.runtime,
         userId,
       }),
@@ -418,7 +417,7 @@ function externalIdentitySignInCommit(
   })
   if (!authenticationResult.success) return resultErrorCreate(op, "The authenticated session could not be created.")
   return resultCreate({
-    authentication: { authenticatedAt: options.now, instanceId: options.instanceId, userId },
+    authentication: { authenticatedAt: options.now, realmId: options.realmId, userId },
     identity: externalIdentityViewCreate(identityRow, options.provider.type),
     kind: "authenticated",
     ...authenticationResult.data,
@@ -445,7 +444,7 @@ function externalIdentityScopesParse(value: string): string[] {
 
 function externalIdentityUserNameCreate(
   database: Parameters<typeof externalIdentityRepositoryCreate>[0],
-  instanceId: string,
+  realmId: string,
   identity: ExternalIdentityProviderIdentity,
   email: string,
 ): Result<string> {
@@ -456,7 +455,7 @@ function externalIdentityUserNameCreate(
     const existing = database
       .select({ id: userTable.id })
       .from(userTable)
-      .where(and(eq(userTable.instanceId, instanceId), eq(userTable.userName, candidate)))
+      .where(and(eq(userTable.realmId, realmId), eq(userTable.userName, candidate)))
       .get()
     if (existing === undefined) return resultCreate(candidate)
     const ending = `-${suffix}`

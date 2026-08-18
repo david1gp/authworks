@@ -35,50 +35,43 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
     })
 
   return {
-    sessionCurrent(instanceId: string): Promise<Result<SessionResponse>> {
+    sessionCurrent(realmId: string): Promise<Result<SessionResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/sessions/current`,
+        `/realms/${encodeURIComponent(realmId)}/sessions/current`,
         { method: "GET" },
         sessionResponseSchema,
       )
     },
-    sessionList(instanceId: string): Promise<Result<SessionListResponse>> {
+    sessionList(realmId: string): Promise<Result<SessionListResponse>> {
+      return request(`/realms/${encodeURIComponent(realmId)}/sessions`, { method: "GET" }, sessionListResponseSchema)
+    },
+    sessionRecentList(realmId: string): Promise<Result<SessionListResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/sessions`,
+        `/realms/${encodeURIComponent(realmId)}/sessions/recent`,
         { method: "GET" },
         sessionListResponseSchema,
       )
     },
-    sessionRecentList(instanceId: string): Promise<Result<SessionListResponse>> {
+    sessionRotate(realmId: string): Promise<Result<SessionCredentialResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/sessions/recent`,
-        { method: "GET" },
-        sessionListResponseSchema,
-      )
-    },
-    sessionRotate(instanceId: string): Promise<Result<SessionCredentialResponse>> {
-      return request(
-        `/instances/${encodeURIComponent(instanceId)}/sessions/rotate`,
+        `/realms/${encodeURIComponent(realmId)}/sessions/rotate`,
         { method: "POST" },
         sessionCredentialResponseSchema,
       )
     },
-    sessionRevoke(instanceId: string, sessionId: string): Promise<Result<SessionRevocationResponse>> {
+    sessionRevoke(realmId: string, sessionId: string): Promise<Result<SessionRevocationResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/sessions/${encodeURIComponent(sessionId)}`,
+        `/realms/${encodeURIComponent(realmId)}/sessions/${encodeURIComponent(sessionId)}`,
         { method: "DELETE" },
         sessionRevocationResponseSchema,
       )
     },
-    sessionRevokeAll(
-      instanceId: string,
-      input: SessionRevokeAllRequest = {},
-    ): Promise<Result<SessionRevocationResponse>> {
+    sessionRevokeAll(realmId: string, input: SessionRevokeAllRequest = {}): Promise<Result<SessionRevocationResponse>> {
       const parsed = v.safeParse(sessionRevokeAllRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("sessionApiClientRevokeAll", "The request is invalid."))
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/sessions`,
+        `/realms/${encodeURIComponent(realmId)}/sessions`,
         { body: JSON.stringify(parsed.output), method: "DELETE" },
         sessionRevocationResponseSchema,
       )

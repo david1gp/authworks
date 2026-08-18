@@ -4,7 +4,7 @@ import { authorizationPermissionSchema } from "./authorizationPermissionSchema.j
 export const authorizationDecisionSchema = v.object({
   actorId: v.pipe(v.string(), v.minLength(1)),
   allowed: v.boolean(),
-  instanceId: v.pipe(v.string(), v.minLength(1)),
+  realmId: v.pipe(v.string(), v.minLength(1)),
   organizationId: v.optional(v.pipe(v.string(), v.minLength(1))),
   permission: authorizationPermissionSchema,
   reason: v.picklist([

@@ -8,9 +8,9 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
 import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
@@ -28,10 +28,10 @@ import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAu
 import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 type EmailOtpVerifyOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: EmailOtpVerifyRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
   readonly deviceMetadata?: SessionDeviceMetadata
@@ -50,18 +50,18 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
   const op = "emailOtpVerify"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The email OTP is not available in this tenant context.")
   const parsed = v.safeParse(emailOtpVerifyRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The email OTP code is invalid.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The email OTP timestamp is invalid.")
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success || instance.data.instance.status !== "active")
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success || realm.data.realm.status !== "active")
     return resultErrorCreate(op, "The email OTP code is invalid.")
   const challenge = emailOtpRepositoryCreate(options.database.db).emailOtpChallengeGet(
-    options.instanceId,
+    options.realmId,
     parsed.output.challengeId,
   )
   if (
@@ -72,7 +72,7 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
     return resultErrorCreate(op, "The email OTP code is invalid.")
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     method: "email_otp",
     organizationId: challenge.data.organizationId ?? undefined,
   })
@@ -85,7 +85,7 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
       database: transaction,
       deviceMetadata: options.deviceMetadata,
       input: parsed.output,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       now,
       runtime,
     }),
@@ -98,12 +98,12 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
 }
 
 type EmailOtpVerifyTransactionOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly correlationId: string
   readonly database: StorageExecutor
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly input: EmailOtpVerifyRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly now: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
 }
@@ -111,7 +111,7 @@ type EmailOtpVerifyTransactionOptions = {
 function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): Result<EmailOtpVerifyCommit> {
   const op = "emailOtpVerify"
   const repository = emailOtpRepositoryCreate(options.database)
-  const challenge = repository.emailOtpChallengeGet(options.instanceId, options.input.challengeId)
+  const challenge = repository.emailOtpChallengeGet(options.realmId, options.input.challengeId)
   if (!challenge.success) return challenge
   if (challenge.data === null || challenge.data.purpose !== "sign_in")
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
@@ -122,7 +122,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
     return emailOtpExpiredRecord(
       options,
       current.id,
-      current.instanceId,
+      current.realmId,
       current.version,
       current.attempts,
       current.userId,
@@ -138,7 +138,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
       consumedAt: exhausted ? options.now : null,
       expectedVersion: current.version,
       id: current.id,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       version: current.version + 1,
     })
     if (!updated.success) return updated
@@ -155,13 +155,13 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
     const notification =
       current.userId === null
         ? undefined
-        : emailOtpNotificationCreate("failed", current.userId, current.id, options.instanceId, attempts)
+        : emailOtpNotificationCreate("failed", current.userId, current.id, options.realmId, attempts)
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const, notification })
   }
   if (current.userId === null)
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
   const userId = current.userId
-  const user = repository.emailOtpUserGet(options.instanceId, userId)
+  const user = repository.emailOtpUserGet(options.realmId, userId)
   if (!user.success) return user
   const normalizedEmail =
     user.data === null
@@ -175,7 +175,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
     user.data.deletedAt === null &&
     user.data.emailVerifiedAt !== null
   if (!eligible) {
-    const consumed = repository.emailOtpChallengeConsume(options.instanceId, current.id, current.version, options.now)
+    const consumed = repository.emailOtpChallengeConsume(options.realmId, current.id, current.version, options.now)
     if (!consumed.success) return consumed
     if (consumed.data === null)
       return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
@@ -190,16 +190,10 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
     return resultCreate({
       errorMessage: "The email OTP code is invalid.",
       failure: true as const,
-      notification: emailOtpNotificationCreate(
-        "failed",
-        current.userId,
-        current.id,
-        options.instanceId,
-        current.attempts,
-      ),
+      notification: emailOtpNotificationCreate("failed", current.userId, current.id, options.realmId, current.attempts),
     })
   }
-  const consumed = repository.emailOtpChallengeConsume(options.instanceId, current.id, current.version, options.now)
+  const consumed = repository.emailOtpChallengeConsume(options.realmId, current.id, current.version, options.now)
   if (!consumed.success) return consumed
   if (consumed.data === null)
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
@@ -215,7 +209,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
       commandIndex: 0,
       correlationId: options.correlationId,
       eventType: emailOtpEventTypes.verified,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "email_otp" },
       occurredAt: options.now,
       payload: payload.output,
@@ -223,12 +217,12 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
     options.runtime,
   )
   if (!event.success) return event
-  const authentication = { authenticatedAt: options.now, instanceId: options.instanceId, userId }
+  const authentication = { authenticatedAt: options.now, realmId: options.realmId, userId }
   const authenticationResult = mfaPrimaryAuthenticationComplete({
     actorId: options.context.actorId,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     primaryAuthenticationMethod: "email_otp",
     runtime: options.runtime,
     sessionCreate: () =>
@@ -240,7 +234,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
         correlationId: options.correlationId,
         deviceMetadata: options.deviceMetadata,
         executor: options.database,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         runtime: options.runtime,
         userId,
       }),
@@ -249,7 +243,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
   if (!authenticationResult.success) return resultErrorCreate(op, "The authenticated session could not be created.")
   return resultCreate({
     failure: false as const,
-    notification: emailOtpNotificationCreate("verified", userId, current.id, options.instanceId),
+    notification: emailOtpNotificationCreate("verified", userId, current.id, options.realmId),
     response: {
       authentication,
       ...authenticationResult.data,
@@ -260,13 +254,13 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
 function emailOtpExpiredRecord(
   options: EmailOtpVerifyTransactionOptions,
   challengeId: string,
-  instanceId: string,
+  realmId: string,
   expectedVersion: number,
   attempts: number,
   userId: string | null,
 ): Result<EmailOtpVerifyCommit> {
   const repository = emailOtpRepositoryCreate(options.database)
-  const consumed = repository.emailOtpChallengeConsume(instanceId, challengeId, expectedVersion, options.now)
+  const consumed = repository.emailOtpChallengeConsume(realmId, challengeId, expectedVersion, options.now)
   if (!consumed.success) return consumed
   if (consumed.data === null)
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
@@ -276,7 +270,7 @@ function emailOtpExpiredRecord(
     errorMessage: "The email OTP code is invalid.",
     failure: true as const,
     notification:
-      userId === null ? undefined : emailOtpNotificationCreate("failed", userId, challengeId, instanceId, attempts),
+      userId === null ? undefined : emailOtpNotificationCreate("failed", userId, challengeId, realmId, attempts),
   })
 }
 
@@ -299,7 +293,7 @@ function emailOtpFailedEventAppend(
       commandIndex: 0,
       correlationId: options.correlationId,
       eventType: emailOtpEventTypes.failed,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "email_otp" },
       occurredAt: options.now,
       payload: payload.output,
@@ -312,13 +306,13 @@ function emailOtpNotificationCreate(
   kind: "failed" | "verified",
   userId: string,
   challengeId: string,
-  instanceId: string,
+  realmId: string,
   attempts?: number,
 ): EmailOtpSecurityNotification {
   return {
     ...(attempts === undefined ? {} : { attempts }),
     challengeId,
-    instanceId,
+    realmId: realmId,
     kind,
     userId,
   }

@@ -7,7 +7,7 @@ export const oidcAccessTokenTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     refreshFamilyId: text("refresh_family_id"),
     scope: text("scope").notNull(),
     sessionId: text("session_id").notNull(),
@@ -17,7 +17,7 @@ export const oidcAccessTokenTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("oidc_access_tokens_token_hash_idx").on(table.tokenHash),
-    index("oidc_access_tokens_instance_user_idx").on(table.instanceId, table.userId),
+    index("oidc_access_tokens_realm_user_idx").on(table.realmId, table.userId),
     index("oidc_access_tokens_refresh_family_idx").on(table.refreshFamilyId),
   ],
 )

@@ -21,7 +21,7 @@ import type { AuthorizationActorContext } from "../../authorization/public/autho
 type ImpersonationEndOptions = {
   readonly actor: AuthorizationActorContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly onSecurityNotification?: (notification: ImpersonationSecurityNotification) => void | Promise<void>
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionId: string
@@ -34,7 +34,7 @@ type ImpersonationEndCommit = {
 
 export function impersonationEnd(options: ImpersonationEndOptions): Result<ImpersonationEndResponse> {
   const op = "impersonationEnd"
-  if (options.instanceId.length === 0 || options.sessionId.length === 0)
+  if (options.realmId.length === 0 || options.sessionId.length === 0)
     return resultErrorCreate(op, "The impersonation session is invalid.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
@@ -42,7 +42,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
   const correlationId = uuidv7Create(runtime)
   const committed = storageTransactionRun(options.database, (transaction) => {
     const repository = sessionRepositoryCreate(transaction)
-    const current = repository.sessionGet(options.instanceId, options.sessionId)
+    const current = repository.sessionGet(options.realmId, options.sessionId)
     if (!current.success) return current
     if (current.data === null || current.data.impersonatorId === null)
       return resultErrorCreate(op, "The impersonation session was not found.")
@@ -56,14 +56,14 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
       return resultErrorCreate(op, "The actor is not authorized to end this impersonation.")
     if (current.data.revokedAt !== null)
       return resultCreate<ImpersonationEndCommit>({ response: { ended: false, sessionId: options.sessionId } })
-    const revoked = repository.sessionVersionUpdate(options.instanceId, options.sessionId, current.data.version, {
+    const revoked = repository.sessionVersionUpdate(options.realmId, options.sessionId, current.data.version, {
       revokedAt: now,
       revocationReason: "impersonation_ended",
       version: current.data.version + 1,
     })
     if (!revoked.success) return revoked
     if (revoked.data === null) return resultErrorCreate(op, "The impersonation session was not found.")
-    const sessionVersion = repository.sessionEventVersionGet(options.instanceId, options.sessionId)
+    const sessionVersion = repository.sessionEventVersionGet(options.realmId, options.sessionId)
     if (!sessionVersion.success) return sessionVersion
     const revokedPayload = v.safeParse(sessionRevokedEventPayloadSchema, {
       reason: "impersonation_ended",
@@ -81,7 +81,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
         commandIndex: 0,
         correlationId,
         eventType: sessionEventTypes.revoked,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "sessions" },
         occurredAt: now,
         payload: revokedPayload.output,
@@ -102,7 +102,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
       actorId: current.data.impersonatorId,
       endedAt: now,
       endedById: options.actor.actorId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       ...(current.data.impersonationOrganizationId === null
         ? {}
         : { organizationId: current.data.impersonationOrganizationId }),
@@ -120,7 +120,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
         commandIndex: 1,
         correlationId,
         eventType: impersonationEventTypes.ended,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "impersonation" },
         occurredAt: now,
         payload: endedPayload.output,
@@ -132,7 +132,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
       notification: {
         actorId: current.data.impersonatorId,
         endedById: options.actor.actorId,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         kind: "ended",
         ...(current.data.impersonationOrganizationId === null
           ? {}

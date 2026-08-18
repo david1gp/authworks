@@ -8,7 +8,7 @@ export const externalIdentityProviderSchema = v.strictObject({
   displayName: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),
   enabled: v.boolean(),
   id: v.pipe(v.string(), v.minLength(1)),
-  instanceId: v.pipe(v.string(), v.minLength(1)),
+  realmId: v.pipe(v.string(), v.minLength(1)),
   organizationId: v.optional(v.pipe(v.string(), v.minLength(1))),
   redirectUri: v.pipe(v.string(), v.url()),
   scopes: v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.maxLength(32)),

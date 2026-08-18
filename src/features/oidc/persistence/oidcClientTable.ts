@@ -7,7 +7,7 @@ export const oidcClientTable = sqliteTable(
     clientType: text("client_type").notNull(),
     createdAt: integer("created_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     name: text("name").notNull(),
     postLogoutRedirectUris: text("post_logout_redirect_uris").notNull(),
     redirectUris: text("redirect_uris").notNull(),
@@ -21,8 +21,8 @@ export const oidcClientTable = sqliteTable(
     applicationId: text("application_id"),
   },
   (table) => [
-    index("oidc_clients_instance_id_idx").on(table.instanceId),
-    uniqueIndex("oidc_clients_instance_application_idx").on(table.instanceId, table.applicationId),
+    index("oidc_clients_realm_id_idx").on(table.realmId),
+    uniqueIndex("oidc_clients_realm_application_idx").on(table.realmId, table.applicationId),
   ],
 )
 

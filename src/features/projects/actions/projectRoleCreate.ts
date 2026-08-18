@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectRolePublicViewCreate } from "../domain/projectRolePublicViewCreate.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectRoleCreatedEventPayloadSchema } from "../events/projectRoleCreatedEventPayloadSchema.js"
@@ -21,10 +21,10 @@ import type { ProjectRole } from "../public/projectRoleSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectRoleCreateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: ProjectRoleCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -44,12 +44,12 @@ export function projectRoleCreate(options: ProjectRoleCreateOptions): Result<{ r
     const repository = projectRepositoryCreate(transaction)
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
-    if (project.data === null || project.data.instanceId !== options.instanceId || project.data.status !== "active")
+    if (project.data === null || project.data.realmId !== options.realmId || project.data.status !== "active")
       return resultErrorCreate(op, "The project was not found.")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.role.write",
       project: project.data,
     })
@@ -62,7 +62,7 @@ export function projectRoleCreate(options: ProjectRoleCreateOptions): Result<{ r
       displayName: parsed.output.displayName,
       group: parsed.output.group,
       id: roleId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       key: parsed.output.key,
       projectId: options.projectId,
       updatedAt: createdAt,
@@ -87,7 +87,7 @@ export function projectRoleCreate(options: ProjectRoleCreateOptions): Result<{ r
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.roleCreated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: createdAt,
         payload: payload.output,

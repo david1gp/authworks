@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationGet } from "../../organizations/actions/organizationGet.js"
 import { projectRoleKeysEncode } from "../domain/projectRoleKeysEncode.js"
 import { projectGrantPublicViewCreate } from "../domain/projectGrantPublicViewCreate.js"
@@ -24,10 +24,10 @@ import type { ProjectGrant } from "../public/projectGrantSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectGrantCreateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: ProjectGrantCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -47,12 +47,12 @@ export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{
     const repository = projectRepositoryCreate(transaction)
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
-    if (project.data === null || project.data.instanceId !== options.instanceId || project.data.status !== "active")
+    if (project.data === null || project.data.realmId !== options.realmId || project.data.status !== "active")
       return resultErrorCreate(op, "The project was not found.")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.grant.create",
       project: project.data,
     })
@@ -60,13 +60,13 @@ export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{
     if (parsed.output.grantedOrganizationId === project.data.organizationId)
       return resultErrorCreate(op, "A project cannot be granted to its owning organization.")
     const organization = organizationGet({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       organizationId: parsed.output.grantedOrganizationId,
     })
     if (!organization.success) return organization
-    if (organization.data.organization.instanceId !== options.instanceId)
+    if (organization.data.organization.realmId !== options.realmId)
       return resultErrorCreate(op, "The granted organization was not found.")
     if (organization.data.organization.status !== "active")
       return resultErrorCreate(op, "The granted organization is not active.")
@@ -86,7 +86,7 @@ export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{
       createdAt,
       grantedOrganizationId: parsed.output.grantedOrganizationId,
       id: grantId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       organizationId: project.data.organizationId,
       projectId: options.projectId,
       roleKeys: roles.data,
@@ -112,7 +112,7 @@ export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.grantCreated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: createdAt,
         payload: payload.output,

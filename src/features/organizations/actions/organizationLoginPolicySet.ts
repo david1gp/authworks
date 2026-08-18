@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationLoginPolicyChangedEventPayloadSchema } from "../events/organizationLoginPolicyChangedEventPayloadSchema.js"
 import { organizationLoginPolicyDefaults } from "../domain/organizationLoginPolicyDefaults.js"
@@ -24,10 +24,10 @@ import { organizationLoginPolicyOverrideViewCreate } from "../domain/organizatio
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationLoginPolicySetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OrganizationLoginPolicySetRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -38,17 +38,17 @@ export function organizationLoginPolicySet(
 ): Result<OrganizationLoginPolicyResponse> {
   return organizationLoginPolicySetRun({
     ...options,
-    scope: options.organizationId === undefined ? "instance" : "organization",
+    scope: options.organizationId === undefined ? "realm" : "organization",
   })
 }
 
 function organizationLoginPolicySetRun(
   options: Omit<OrganizationLoginPolicySetOptions, "organizationId"> & {
     readonly organizationId?: string
-    readonly scope: "instance" | "organization"
+    readonly scope: "realm" | "organization"
   },
 ): Result<OrganizationLoginPolicyResponse> {
-  const op = options.scope === "instance" ? "organizationInstanceLoginPolicySet" : "organizationLoginPolicySet"
+  const op = options.scope === "realm" ? "organizationRealmLoginPolicySet" : "organizationLoginPolicySet"
   const parsed = v.safeParse(organizationLoginPolicySetRequestSchema, options.input)
   if (!parsed.success || Object.keys(parsed.output).length === 0)
     return resultErrorCreate(op, "The login policy update is invalid.")
@@ -66,12 +66,12 @@ function organizationLoginPolicySetRun(
       if (!organization.success) return organization
       if (
         organization.data === null ||
-        organization.data.instanceId !== options.instanceId ||
+        organization.data.realmId !== options.realmId ||
         organization.data.status !== "active"
       )
         return resultErrorCreate(op, "The organization was not found.")
-      const instance = repository.instanceLoginPolicyGet(options.instanceId)
-      if (!instance.success) return instance
+      const realm = repository.realmLoginPolicyGet(options.realmId)
+      if (!realm.success) return realm
       const authorized = organizationContextAuthorize({
         context: options.context,
         organization: organization.data,
@@ -85,7 +85,7 @@ function organizationLoginPolicySetRun(
         current.data === null
           ? repository.organizationLoginPolicyCreate({
               ...organizationLoginPolicyOverrideValues(parsed.output),
-              instanceId: options.instanceId,
+              realmId: options.realmId,
               organizationId: options.organizationId ?? "",
               updatedAt: now,
               version: 1,
@@ -97,13 +97,13 @@ function organizationLoginPolicySetRun(
             })
       if (!saved.success) return saved
       if (saved.data === null) return resultErrorCreate(op, "The login policy could not be saved.")
-      const effective = organizationLoginPolicyViewCreate(instance.data, saved.data)
+      const effective = organizationLoginPolicyViewCreate(realm.data, saved.data)
       const event = organizationLoginPolicyChangedEventAppend({
         aggregateId: options.organizationId ?? "",
         aggregateVersion: saved.data.version,
         actorId: options.context.actorId,
         correlationId,
-        eventInstanceId: options.instanceId,
+        eventRealmId: options.realmId,
         effective,
         occurredAt: now,
         runtime,
@@ -111,25 +111,25 @@ function organizationLoginPolicySetRun(
       })
       if (!event.success) return event
       return resultCreate({
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         organizationId: options.organizationId ?? "",
         overrides: organizationLoginPolicyOverrideViewCreate(saved.data),
         policy: effective,
       })
     }
-    const current = repository.instanceLoginPolicyGet(options.instanceId)
+    const current = repository.realmLoginPolicyGet(options.realmId)
     if (!current.success) return current
     const currentEffective = organizationLoginPolicyViewCreate(current.data, null)
     const saved =
       current.data === null
-        ? repository.instanceLoginPolicyCreate({
-            ...organizationLoginPolicyInstanceValues(parsed.output, currentEffective),
-            instanceId: options.instanceId,
+        ? repository.realmLoginPolicyCreate({
+            ...organizationLoginPolicyRealmValues(parsed.output, currentEffective),
+            realmId: options.realmId,
             updatedAt: now,
             version: 1,
           })
-        : repository.instanceLoginPolicyUpdate(options.instanceId, {
-            ...organizationLoginPolicyInstanceValues(parsed.output, currentEffective),
+        : repository.realmLoginPolicyUpdate(options.realmId, {
+            ...organizationLoginPolicyRealmValues(parsed.output, currentEffective),
             updatedAt: now,
             version: current.data.version + 1,
           })
@@ -137,11 +137,11 @@ function organizationLoginPolicySetRun(
     if (saved.data === null) return resultErrorCreate(op, "The login policy could not be saved.")
     const effective = organizationLoginPolicyViewCreate(saved.data, null)
     const event = organizationLoginPolicyChangedEventAppend({
-      aggregateId: options.instanceId,
+      aggregateId: options.realmId,
       aggregateVersion: saved.data.version,
       actorId: options.context.actorId,
       correlationId,
-      eventInstanceId: options.instanceId,
+      eventRealmId: options.realmId,
       effective,
       occurredAt: now,
       runtime,
@@ -149,7 +149,7 @@ function organizationLoginPolicySetRun(
     })
     if (!event.success) return event
     return resultCreate({
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       organizationId: null,
       overrides: organizationLoginPolicyOverrideViewCreate(saved.data),
       policy: effective,
@@ -172,7 +172,7 @@ function organizationLoginPolicyOverrideValues(input: OrganizationLoginPolicySet
   }
 }
 
-function organizationLoginPolicyInstanceValues(
+function organizationLoginPolicyRealmValues(
   input: OrganizationLoginPolicySetRequest,
   current: ReturnType<typeof organizationLoginPolicyViewCreate>,
 ) {
@@ -200,7 +200,7 @@ type OrganizationLoginPolicyChangedEventAppendOptions = {
   readonly aggregateId: string
   readonly aggregateVersion: number
   readonly correlationId: string
-  readonly eventInstanceId: string
+  readonly eventRealmId: string
   readonly effective: ReturnType<typeof organizationLoginPolicyViewCreate>
   readonly occurredAt: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -223,7 +223,7 @@ function organizationLoginPolicyChangedEventAppend(
       commandIndex: 0,
       correlationId: options.correlationId,
       eventType: organizationEventTypes.loginPolicyChanged,
-      instanceId: options.eventInstanceId,
+      realmId: options.eventRealmId,
       metadata: { source: "organizations" },
       occurredAt: options.occurredAt,
       payload: payload.output,

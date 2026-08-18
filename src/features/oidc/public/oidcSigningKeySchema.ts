@@ -7,7 +7,7 @@ export const oidcSigningKeySchema = v.strictObject({
   algorithm: v.literal("RS256"),
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   id: oidcResourceIdSchema,
-  instanceId: oidcResourceIdSchema,
+  realmId: oidcResourceIdSchema,
   publicJwk: oidcPublicJwkSchema,
   retiredAt: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0))),
   status: oidcSigningKeyStatusSchema,

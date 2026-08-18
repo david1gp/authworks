@@ -10,7 +10,7 @@ import type { OrganizationLoginMethod } from "./organizationLoginMethod.js"
 
 type OrganizationLoginPolicyEnforceOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly method: OrganizationLoginMethod
   readonly organizationId?: string
   readonly providerId?: string
@@ -47,14 +47,14 @@ function organizationLoginPolicyProviderIdsResolve(
   options: OrganizationLoginPolicyEnforceOptions,
 ): Result<string[] | null> {
   const repository = organizationLoginPolicyRepositoryCreate(options.database.db)
-  const instance = repository.instanceLoginPolicyGet(options.instanceId)
-  if (!instance.success) return instance
+  const realm = repository.realmLoginPolicyGet(options.realmId)
+  if (!realm.success) return realm
   if (options.organizationId === undefined)
-    return resultCreate(organizationLoginPolicyProviderIdsParse(instance.data?.providerIds))
+    return resultCreate(organizationLoginPolicyProviderIdsParse(realm.data?.providerIds))
   const organization = repository.organizationLoginPolicyGet(options.organizationId)
   if (!organization.success) return organization
   return resultCreate(
     organizationLoginPolicyProviderIdsParse(organization.data?.providerIds) ??
-      organizationLoginPolicyProviderIdsParse(instance.data?.providerIds),
+      organizationLoginPolicyProviderIdsParse(realm.data?.providerIds),
   )
 }

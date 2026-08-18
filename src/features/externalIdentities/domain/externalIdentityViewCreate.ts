@@ -12,7 +12,7 @@ export function externalIdentityViewCreate(row: ExternalIdentityRow, providerTyp
     emailVerified: row.emailVerified,
     externalSubject: row.externalSubject,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     providerId: row.providerId,
     providerType: parsedType.success ? parsedType.output : "google",
     updatedAt: row.updatedAt,

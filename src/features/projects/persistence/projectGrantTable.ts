@@ -6,7 +6,7 @@ export const projectGrantTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     grantedOrganizationId: text("granted_organization_id").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     organizationId: text("organization_id").notNull(),
     projectId: text("project_id").notNull(),
     roleKeys: text("role_keys").notNull(),
@@ -15,7 +15,7 @@ export const projectGrantTable = sqliteTable(
     version: integer("version").notNull(),
   },
   (table) => [
-    index("project_grants_instance_id_idx").on(table.instanceId),
+    index("project_grants_realm_id_idx").on(table.realmId),
     index("project_grants_project_id_idx").on(table.projectId),
     index("project_grants_granted_organization_id_idx").on(table.grantedOrganizationId),
     uniqueIndex("project_grants_project_organization_idx").on(table.projectId, table.grantedOrganizationId),

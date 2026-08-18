@@ -23,7 +23,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passwordChallengeGet(instanceId: string, tokenHash: string, kind: string): Result<PasswordChallengeRow | null> {
+    passwordChallengeGet(realmId: string, tokenHash: string, kind: string): Result<PasswordChallengeRow | null> {
       try {
         return resultCreate(
           database
@@ -31,7 +31,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .from(passwordChallengeTable)
             .where(
               and(
-                eq(passwordChallengeTable.instanceId, instanceId),
+                eq(passwordChallengeTable.realmId, realmId),
                 eq(passwordChallengeTable.kind, kind),
                 eq(passwordChallengeTable.tokenHash, tokenHash),
               ),
@@ -64,19 +64,14 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passwordChallengeExpirePrevious(
-      instanceId: string,
-      userId: string,
-      kind: string,
-      consumedAt: number,
-    ): Result<void> {
+    passwordChallengeExpirePrevious(realmId: string, userId: string, kind: string, consumedAt: number): Result<void> {
       try {
         database
           .update(passwordChallengeTable)
           .set({ consumedAt })
           .where(
             and(
-              eq(passwordChallengeTable.instanceId, instanceId),
+              eq(passwordChallengeTable.realmId, realmId),
               eq(passwordChallengeTable.userId, userId),
               eq(passwordChallengeTable.kind, kind),
               isNull(passwordChallengeTable.consumedAt),
@@ -103,13 +98,13 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passwordCredentialGet(instanceId: string, userId: string): Result<PasswordCredentialRow | null> {
+    passwordCredentialGet(realmId: string, userId: string): Result<PasswordCredentialRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(passwordCredentialTable)
-            .where(and(eq(passwordCredentialTable.instanceId, instanceId), eq(passwordCredentialTable.userId, userId)))
+            .where(and(eq(passwordCredentialTable.realmId, realmId), eq(passwordCredentialTable.userId, userId)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -118,7 +113,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
     },
 
     passwordCredentialUpdate(
-      instanceId: string,
+      realmId: string,
       userId: string,
       input: Partial<typeof passwordCredentialTable.$inferInsert>,
     ): Result<PasswordCredentialRow | null> {
@@ -127,7 +122,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
           database
             .update(passwordCredentialTable)
             .set(input)
-            .where(and(eq(passwordCredentialTable.instanceId, instanceId), eq(passwordCredentialTable.userId, userId)))
+            .where(and(eq(passwordCredentialTable.realmId, realmId), eq(passwordCredentialTable.userId, userId)))
             .returning()
             .get() ?? null,
         )
@@ -136,14 +131,14 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passwordEventVersionGet(instanceId: string, userId: string): Result<number> {
+    passwordEventVersionGet(realmId: string, userId: string): Result<number> {
       try {
         const event = database
           .select({ aggregateVersion: storageEventTable.aggregateVersion })
           .from(storageEventTable)
           .where(
             and(
-              eq(storageEventTable.instanceId, instanceId),
+              eq(storageEventTable.realmId, realmId),
               eq(storageEventTable.aggregateId, userId),
               eq(storageEventTable.aggregateType, "password"),
             ),
@@ -156,13 +151,13 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passwordLockoutGet(instanceId: string, userId: string): Result<PasswordLockoutRow | null> {
+    passwordLockoutGet(realmId: string, userId: string): Result<PasswordLockoutRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(passwordLockoutTable)
-            .where(and(eq(passwordLockoutTable.instanceId, instanceId), eq(passwordLockoutTable.userId, userId)))
+            .where(and(eq(passwordLockoutTable.realmId, realmId), eq(passwordLockoutTable.userId, userId)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -194,11 +189,10 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passwordPolicyGet(instanceId: string): Result<PasswordPolicyRow | null> {
+    passwordPolicyGet(realmId: string): Result<PasswordPolicyRow | null> {
       try {
         return resultCreate(
-          database.select().from(passwordPolicyTable).where(eq(passwordPolicyTable.instanceId, instanceId)).get() ??
-            null,
+          database.select().from(passwordPolicyTable).where(eq(passwordPolicyTable.realmId, realmId)).get() ?? null,
         )
       } catch (_error) {
         return resultErrorCreate("passwordPolicyGet", "The password policy could not be read.")
@@ -222,7 +216,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
               updatedAt: input.updatedAt,
               version: input.version,
             },
-            target: passwordPolicyTable.instanceId,
+            target: passwordPolicyTable.realmId,
           })
           .returning()
           .get()
@@ -234,7 +228,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passwordUserFindByIdentifier(instanceId: string, identifier: string): Result<UserRow | null> {
+    passwordUserFindByIdentifier(realmId: string, identifier: string): Result<UserRow | null> {
       try {
         return resultCreate(
           database
@@ -242,7 +236,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .from(userTable)
             .where(
               and(
-                eq(userTable.instanceId, instanceId),
+                eq(userTable.realmId, realmId),
                 or(eq(userTable.email, identifier), eq(userTable.userName, identifier)),
               ),
             )
@@ -254,13 +248,13 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    passwordUserGet(instanceId: string, userId: string): Result<UserRow | null> {
+    passwordUserGet(realmId: string, userId: string): Result<UserRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(userTable)
-            .where(and(eq(userTable.instanceId, instanceId), eq(userTable.id, userId)))
+            .where(and(eq(userTable.realmId, realmId), eq(userTable.id, userId)))
             .get() ?? null,
         )
       } catch (_error) {

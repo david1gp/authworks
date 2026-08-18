@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userProfileNormalize } from "../domain/userProfileNormalize.js"
 import { userPublicViewCreate } from "../domain/userPublicViewCreate.js"
 import { userEventTypes } from "../events/userEventTypes.js"
@@ -21,10 +21,10 @@ import {
 import type { User } from "../public/userSchema.js"
 
 type UserProfileUpdateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: UserProfileUpdateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly userId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -34,7 +34,7 @@ export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ u
   const op = "userProfileUpdate"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The user is not available in this tenant context.")
   const parsed = v.safeParse(userProfileUpdateRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The user profile update is invalid.")
@@ -48,7 +48,7 @@ export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ u
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = userRepositoryCreate(transaction)
-    const current = repository.userGet(options.instanceId, options.userId)
+    const current = repository.userGet(options.realmId, options.userId)
     if (!current.success) return current
     if (current.data === null || current.data.state === "deleted")
       return resultErrorCreate(op, "The user was not found.")
@@ -59,13 +59,13 @@ export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ u
       return currentValue !== profile.data[key]
     }) as (keyof typeof profile.data)[]
     if (changedFields.length === 0) return resultCreate({ user: userPublicViewCreate(currentUser) })
-    const updatedProfile = repository.userProfileUpdate(options.instanceId, options.userId, {
+    const updatedProfile = repository.userProfileUpdate(options.realmId, options.userId, {
       ...Object.fromEntries(changedFields.map((field) => [field, profile.data[field] ?? null])),
       updatedAt,
     })
     if (!updatedProfile.success) return updatedProfile
     if (updatedProfile.data === null) return resultErrorCreate(op, "The user was not found.")
-    const updated = repository.userUpdate(options.instanceId, options.userId, {
+    const updated = repository.userUpdate(options.realmId, options.userId, {
       updatedAt,
       version: currentUser.version + 1,
     })
@@ -83,7 +83,7 @@ export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ u
         commandIndex: 0,
         correlationId,
         eventType: userEventTypes.profileUpdated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "users" },
         occurredAt: updatedAt,
         payload: payload.output,

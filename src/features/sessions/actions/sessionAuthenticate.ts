@@ -12,12 +12,12 @@ import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.
 import { userTable } from "../../users/persistence/userTable.js"
 import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
-import { instanceBootstrapAdminTable } from "../../instances/persistence/instanceBootstrapAdminTable.js"
+import { realmBootstrapAdminTable } from "../../realms/persistence/realmBootstrapAdminTable.js"
 import { authorizationPermissionSchema } from "../../authorization/public/authorizationPermissionSchema.js"
 
 type SessionAuthenticateOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly token: string
 }
@@ -29,7 +29,7 @@ type SessionAuthentication = {
 
 export function sessionAuthenticate(options: SessionAuthenticateOptions): Result<SessionAuthentication> {
   const op = "sessionAuthenticate"
-  if (options.instanceId.length === 0 || options.token.length === 0)
+  if (options.realmId.length === 0 || options.token.length === 0)
     return resultErrorCreate(op, "Session authorization is required.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
@@ -37,14 +37,14 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
   const repository = sessionRepositoryCreate(options.database.db)
   const found = repository.sessionGetByTokenHash(sessionCredentialHashCreate(options.token))
   if (!found.success) return found
-  if (found.data === null || found.data.instanceId !== options.instanceId)
+  if (found.data === null || found.data.realmId !== options.realmId)
     return resultErrorCreate(op, "Session authorization is invalid.")
   if (found.data.revokedAt !== null || found.data.expiresAt <= now)
     return resultErrorCreate(op, "Session authorization is invalid.")
   const user = options.database.db
     .select({ id: userTable.id, state: userTable.state })
     .from(userTable)
-    .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, found.data.userId)))
+    .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, found.data.userId)))
     .get()
   if (user === undefined || user.state !== "active") return resultErrorCreate(op, "Session authorization is invalid.")
   let impersonationPermissions: string[] | undefined
@@ -64,15 +64,15 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
     const impersonator = options.database.db
       .select({ id: userTable.id, state: userTable.state })
       .from(userTable)
-      .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, found.data.impersonatorId)))
+      .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, found.data.impersonatorId)))
       .get()
     const bootstrap = options.database.db
-      .select({ id: instanceBootstrapAdminTable.adminId })
-      .from(instanceBootstrapAdminTable)
+      .select({ id: realmBootstrapAdminTable.adminId })
+      .from(realmBootstrapAdminTable)
       .where(
         and(
-          eq(instanceBootstrapAdminTable.instanceId, options.instanceId),
-          eq(instanceBootstrapAdminTable.adminId, found.data.impersonatorId),
+          eq(realmBootstrapAdminTable.realmId, options.realmId),
+          eq(realmBootstrapAdminTable.adminId, found.data.impersonatorId),
         ),
       )
       .get()
@@ -80,7 +80,7 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
       return resultErrorCreate(op, "Session authorization is invalid.")
   }
   const used = repository.sessionLastUsedUpdate(
-    options.instanceId,
+    options.realmId,
     found.data.id,
     sessionCredentialHashCreate(options.token),
     now,
@@ -90,7 +90,7 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
     actorId: found.data.userId,
     assurance: found.data.assurance as AuthorizationActorContext["assurance"],
     authenticationMethod: "trusted",
-    instanceId: found.data.instanceId,
+    realmId: found.data.realmId,
     ...(found.data.impersonationPermissions === null ? {} : { impersonationPermissions }),
     ...(found.data.impersonatorId === null ? {} : { impersonatorId: found.data.impersonatorId }),
     ...(found.data.impersonatorId === null ? {} : { impersonationSessionId: found.data.id }),

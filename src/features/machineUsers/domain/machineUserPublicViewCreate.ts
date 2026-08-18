@@ -6,7 +6,7 @@ export function machineUserPublicViewCreate(row: MachineUserRow, scopes: readonl
     createdAt: row.createdAt,
     displayName: row.displayName,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     scopes: [...scopes],
     status: row.status as MachineUser["status"],
     updatedAt: row.updatedAt,

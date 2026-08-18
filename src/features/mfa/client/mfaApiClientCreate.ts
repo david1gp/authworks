@@ -63,97 +63,93 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
   const json = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
 
   return {
-    mfaPolicyGet(instanceId: string): Promise<Result<MfaPolicyResponse>> {
+    mfaPolicyGet(realmId: string): Promise<Result<MfaPolicyResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa-policy`,
+        `/realms/${encodeURIComponent(realmId)}/mfa-policy`,
         { method: "GET" },
         mfaPolicyResponseSchema,
         options.systemToken,
       )
     },
-    mfaPolicySet(instanceId: string, input: MfaPolicySetRequest): Promise<Result<MfaPolicyResponse>> {
+    mfaPolicySet(realmId: string, input: MfaPolicySetRequest): Promise<Result<MfaPolicyResponse>> {
       const checked = parsed(mfaPolicySetRequestSchema, input, "The MFA policy is invalid.")
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/mfa-policy`,
+        `/system/realms/${encodeURIComponent(realmId)}/mfa-policy`,
         { ...json(checked.data), method: "PATCH" },
         mfaPolicyResponseSchema,
         options.systemToken,
       )
     },
     mfaTotpEnrollmentStart(
-      instanceId: string,
+      realmId: string,
       input: MfaTotpEnrollmentStartRequest = {},
     ): Promise<Result<MfaTotpEnrollmentStartResponse>> {
       const checked = parsed(mfaTotpEnrollmentStartRequestSchema, input, "The TOTP enrollment request is invalid.")
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/totp/enroll`,
+        `/realms/${encodeURIComponent(realmId)}/mfa/totp/enroll`,
         json(checked.data),
         mfaTotpEnrollmentStartResponseSchema,
       )
     },
     mfaTotpEnrollmentConfirm(
-      instanceId: string,
+      realmId: string,
       input: MfaTotpEnrollmentConfirmRequest,
     ): Promise<Result<MfaTotpEnrollmentConfirmResponse>> {
       const checked = parsed(mfaTotpEnrollmentConfirmRequestSchema, input, "The TOTP confirmation request is invalid.")
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/totp/confirm`,
+        `/realms/${encodeURIComponent(realmId)}/mfa/totp/confirm`,
         json(checked.data),
         mfaTotpEnrollmentConfirmResponseSchema,
       )
     },
-    mfaTotpEnrollmentRemove(instanceId: string): Promise<Result<MfaTotpEnrollmentRemoveResponse>> {
+    mfaTotpEnrollmentRemove(realmId: string): Promise<Result<MfaTotpEnrollmentRemoveResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/totp`,
+        `/realms/${encodeURIComponent(realmId)}/mfa/totp`,
         { method: "DELETE" },
         mfaTotpEnrollmentRemoveResponseSchema,
       )
     },
-    mfaTotpVerify(instanceId: string, code: string): Promise<Result<MfaTotpVerifyResponse>> {
+    mfaTotpVerify(realmId: string, code: string): Promise<Result<MfaTotpVerifyResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/totp/verify`,
+        `/realms/${encodeURIComponent(realmId)}/mfa/totp/verify`,
         json({ code }),
         mfaTotpVerifyResponseSchema,
       )
     },
-    mfaRecoveryCodesGenerate(instanceId: string): Promise<Result<MfaRecoveryCodesResponse>> {
+    mfaRecoveryCodesGenerate(realmId: string): Promise<Result<MfaRecoveryCodesResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/recovery-codes`,
+        `/realms/${encodeURIComponent(realmId)}/mfa/recovery-codes`,
         json({}),
         mfaRecoveryCodesResponseSchema,
       )
     },
-    mfaRecoveryCodeVerify(instanceId: string, code: string): Promise<Result<MfaRecoveryCodeVerifyResponse>> {
+    mfaRecoveryCodeVerify(realmId: string, code: string): Promise<Result<MfaRecoveryCodeVerifyResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/recovery-codes/verify`,
+        `/realms/${encodeURIComponent(realmId)}/mfa/recovery-codes/verify`,
         json({ code }),
         mfaRecoveryCodeVerifyResponseSchema,
       )
     },
-    mfaStepUpStart(instanceId: string): Promise<Result<MfaChallengeResponse>> {
-      return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/step-up/start`,
-        json({}),
-        mfaChallengeResponseSchema,
-      )
+    mfaStepUpStart(realmId: string): Promise<Result<MfaChallengeResponse>> {
+      return request(`/realms/${encodeURIComponent(realmId)}/mfa/step-up/start`, json({}), mfaChallengeResponseSchema)
     },
-    mfaStepUpComplete(instanceId: string, input: MfaChallengeCompleteRequest): Promise<Result<MfaLoginResponse>> {
+    mfaStepUpComplete(realmId: string, input: MfaChallengeCompleteRequest): Promise<Result<MfaLoginResponse>> {
       const checked = parsed(mfaChallengeCompleteRequestSchema, input, "The MFA code is invalid.")
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/step-up/complete`,
+        `/realms/${encodeURIComponent(realmId)}/mfa/step-up/complete`,
         json(checked.data),
         mfaLoginResponseSchema,
       )
     },
-    mfaChallengeComplete(instanceId: string, input: MfaChallengeCompleteRequest): Promise<Result<MfaLoginResponse>> {
+    mfaChallengeComplete(realmId: string, input: MfaChallengeCompleteRequest): Promise<Result<MfaLoginResponse>> {
       const checked = parsed(mfaChallengeCompleteRequestSchema, input, "The MFA code is invalid.")
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/mfa/challenge/complete`,
+        `/realms/${encodeURIComponent(realmId)}/mfa/challenge/complete`,
         json(checked.data),
         mfaLoginResponseSchema,
       )

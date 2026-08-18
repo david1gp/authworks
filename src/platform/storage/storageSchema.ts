@@ -5,13 +5,13 @@ import { emailOtpChallengeTable } from "../../features/emailOtp/persistence/emai
 import { externalIdentityOAuthTransactionTable } from "../../features/externalIdentities/persistence/externalIdentityOAuthTransactionTable.js"
 import { externalIdentityProviderTable } from "../../features/externalIdentities/persistence/externalIdentityProviderTable.js"
 import { externalIdentityTable } from "../../features/externalIdentities/persistence/externalIdentityTable.js"
-import { instanceBootstrapAdminTable } from "../../features/instances/persistence/instanceBootstrapAdminTable.js"
-import { instanceDomainTable } from "../../features/instances/persistence/instanceDomainTable.js"
-import { instanceTable } from "../../features/instances/persistence/instanceTable.js"
+import { realmBootstrapAdminTable } from "../../features/realms/persistence/realmBootstrapAdminTable.js"
+import { realmDomainTable } from "../../features/realms/persistence/realmDomainTable.js"
+import { realmTable } from "../../features/realms/persistence/realmTable.js"
 import { organizationInvitationTable } from "../../features/organizations/persistence/organizationInvitationTable.js"
 import { organizationBrandingTable } from "../../features/organizations/persistence/organizationBrandingTable.js"
 import { organizationDomainTable } from "../../features/organizations/persistence/organizationDomainTable.js"
-import { instanceLoginPolicyTable } from "../../features/organizations/persistence/instanceLoginPolicyTable.js"
+import { realmLoginPolicyTable } from "../../features/organizations/persistence/realmLoginPolicyTable.js"
 import { organizationLoginPolicyTable } from "../../features/organizations/persistence/organizationLoginPolicyTable.js"
 import { organizationMembershipTable } from "../../features/organizations/persistence/organizationMembershipTable.js"
 import { organizationTable } from "../../features/organizations/persistence/organizationTable.js"
@@ -50,13 +50,13 @@ export const storageSchema = {
   externalIdentityOAuthTransactionTable,
   externalIdentityProviderTable,
   externalIdentityTable,
-  instanceBootstrapAdminTable,
-  instanceDomainTable,
-  instanceTable,
+  realmBootstrapAdminTable,
+  realmDomainTable,
+  realmTable,
   organizationInvitationTable,
   organizationBrandingTable,
   organizationDomainTable,
-  instanceLoginPolicyTable,
+  realmLoginPolicyTable,
   organizationLoginPolicyTable,
   organizationMembershipTable,
   organizationTable,

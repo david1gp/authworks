@@ -16,7 +16,7 @@ import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSch
 type AuthorizationPolicyEvaluateOptions = {
   readonly actor: AuthorizationActorContext
   readonly customRoles?: readonly AuthorizationRoleDefinition[]
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId?: string
   readonly permission: AuthorizationPermission
   readonly minimumAssurance?: SessionAssurance
@@ -35,14 +35,14 @@ export function authorizationPolicyEvaluate(
     return resultErrorCreate(op, "The actor context is invalid.")
   const permission = v.safeParse(authorizationPermissionSchema, options.permission)
   if (!permission.success) return resultErrorCreate(op, "The permission is invalid.")
-  if (options.instanceId.length === 0) return resultErrorCreate(op, "The instance context is invalid.")
+  if (options.realmId.length === 0) return resultErrorCreate(op, "The realm context is invalid.")
   if (options.resourceId !== undefined && options.resourceId.length === 0)
     return resultErrorCreate(op, "The resource context is invalid.")
 
   const baseDecision = (allowed: boolean, reason: AuthorizationDecision["reason"]): AuthorizationDecision => ({
     actorId: actor.output.actorId,
     allowed,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     ...(options.organizationId === undefined ? {} : { organizationId: options.organizationId }),
     permission: permission.output,
     reason,
@@ -50,7 +50,7 @@ export function authorizationPolicyEvaluate(
   })
 
   if (actor.output.kind === "system") return resultCreate(baseDecision(true, "system"))
-  if (actor.output.instanceId !== options.instanceId) return resultCreate(baseDecision(false, "tenant_mismatch"))
+  if (actor.output.realmId !== options.realmId) return resultCreate(baseDecision(false, "tenant_mismatch"))
   if (actor.output.kind === "anonymous") return resultCreate(baseDecision(false, "anonymous"))
   if (actor.output.organizationId !== undefined && actor.output.organizationId !== options.organizationId)
     return resultCreate(baseDecision(false, "organization_mismatch"))
@@ -110,21 +110,21 @@ function authorizationActorContextIsConsistent(actor: AuthorizationActorContext)
     return (
       actor.assurance === "authenticated" &&
       actor.authenticationMethod === "system" &&
-      actor.instanceId === undefined &&
+      actor.realmId === undefined &&
       actor.organizationId === undefined
     )
   if (actor.kind === "anonymous")
     return (
       actor.assurance === "none" &&
       actor.authenticationMethod === "none" &&
-      actor.instanceId !== undefined &&
+      actor.realmId !== undefined &&
       actor.organizationId === undefined
     )
   if (actor.kind === "bootstrap_admin")
     return (
       actor.assurance === "authenticated" &&
       actor.authenticationMethod === "bootstrap_admin" &&
-      actor.instanceId !== undefined &&
+      actor.realmId !== undefined &&
       actor.organizationId === undefined
     )
   if (actor.kind === "machine")
@@ -133,7 +133,7 @@ function authorizationActorContextIsConsistent(actor: AuthorizationActorContext)
       ["client_credentials", "personal_access_token", "api_key", "oidc_access_token"].includes(
         actor.authenticationMethod,
       ) &&
-      actor.instanceId !== undefined &&
+      actor.realmId !== undefined &&
       actor.organizationId === undefined
     )
   if (
@@ -151,7 +151,7 @@ function authorizationActorContextIsConsistent(actor: AuthorizationActorContext)
   return (
     (actor.assurance === "authenticated" || actor.assurance === "multi_factor") &&
     actor.authenticationMethod === "trusted" &&
-    actor.instanceId !== undefined
+    actor.realmId !== undefined
   )
 }
 

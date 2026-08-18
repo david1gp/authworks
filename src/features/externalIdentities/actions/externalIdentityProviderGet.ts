@@ -8,7 +8,7 @@ import type { ExternalIdentityProvider } from "../public/externalIdentityProvide
 
 type ExternalIdentityProviderGetOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly providerId: string
   readonly includeDisabled?: boolean
 }
@@ -17,7 +17,7 @@ export function externalIdentityProviderGet(
   options: ExternalIdentityProviderGetOptions,
 ): Result<{ provider: ExternalIdentityProvider }> {
   const provider = externalIdentityRepositoryCreate(options.database.db).externalIdentityProviderGet(
-    options.instanceId,
+    options.realmId,
     options.providerId,
   )
   if (!provider.success) return provider

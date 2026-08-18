@@ -29,61 +29,61 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
   const app = new Hono<SessionServerEnv>()
   const protectedMiddleware = sessionProtectedMiddlewareCreate({ database: options.database })
 
-  app.get("/instances/:instanceId/sessions/current", protectedMiddleware, (context) =>
+  app.get("/realms/:realmId/sessions/current", protectedMiddleware, (context) =>
     sessionResultResponseCreate(context, {
       data: { session: context.get("session") },
       success: true,
     }),
   )
 
-  app.get("/instances/:instanceId/sessions", protectedMiddleware, (context) =>
+  app.get("/realms/:realmId/sessions", protectedMiddleware, (context) =>
     sessionResultResponseCreate(
       context,
       sessionList({
         currentSessionId: context.get("session").id,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     ),
   )
 
-  app.get("/instances/:instanceId/sessions/recent", protectedMiddleware, (context) =>
+  app.get("/realms/:realmId/sessions/recent", protectedMiddleware, (context) =>
     sessionResultResponseCreate(
       context,
       sessionRecentList({
         currentSessionId: context.get("session").id,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     ),
   )
 
-  app.post("/instances/:instanceId/sessions/rotate", protectedMiddleware, (context) =>
+  app.post("/realms/:realmId/sessions/rotate", protectedMiddleware, (context) =>
     sessionResultResponseCreate(
       context,
       sessionRotate({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         token: sessionBearerTokenGet(context.req.header("authorization")),
       }),
     ),
   )
 
-  app.delete("/instances/:instanceId/sessions/:sessionId", protectedMiddleware, (context) =>
+  app.delete("/realms/:realmId/sessions/:sessionId", protectedMiddleware, (context) =>
     sessionResultResponseCreate(
       context,
       sessionRevoke({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         sessionId: context.req.param("sessionId"),
         userId: context.get("authorizationActor").actorId,
       }),
     ),
   )
 
-  app.delete("/instances/:instanceId/sessions", protectedMiddleware, async (context) => {
+  app.delete("/realms/:realmId/sessions", protectedMiddleware, async (context) => {
     const body = await sessionRevokeAllBodyRead(context)
     if (!body.success) return sessionErrorResponseCreate(context, body.errorMessage, "bad_request")
     return sessionResultResponseCreate(
@@ -91,13 +91,13 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
       sessionRevokeAll({
         database: options.database,
         exceptSessionId: body.data.keepCurrent ? context.get("session").id : undefined,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     )
   })
 
-  app.get("/instances/:instanceId/protected", protectedMiddleware, (context) =>
+  app.get("/realms/:realmId/protected", protectedMiddleware, (context) =>
     context.json({ actor: context.get("authorizationActor"), session: context.get("session") }),
   )
 

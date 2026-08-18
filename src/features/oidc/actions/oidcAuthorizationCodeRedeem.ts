@@ -27,7 +27,7 @@ type OidcAuthorizationCodeRedeemOptions = {
   readonly database: StorageDatabase
   readonly encryptionSecret?: Secret | string
   readonly input: OidcAuthorizationCodeRedeemRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -47,7 +47,7 @@ export function oidcAuthorizationCodeRedeem(
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
-    const client = repository.clientGet(options.instanceId, parsed.output.client_id)
+    const client = repository.clientGet(options.realmId, parsed.output.client_id)
     if (!client.success) return client
     if (client.data === null || client.data.status !== "active")
       return resultErrorCreate(op, "The authorization code is invalid.")
@@ -67,11 +67,11 @@ export function oidcAuthorizationCodeRedeem(
     if (!oidcRedirectUriMatches(parsed.output.redirect_uri, redirectUris.data).success)
       return resultErrorCreate(op, "The authorization code is invalid.")
 
-    const code = repository.authorizationCodeGetByTokenHash(options.instanceId, tokenHash)
+    const code = repository.authorizationCodeGetByTokenHash(options.realmId, tokenHash)
     if (!code.success) return code
     if (
       code.data === null ||
-      code.data.instanceId !== options.instanceId ||
+      code.data.realmId !== options.realmId ||
       code.data.clientId !== parsed.output.client_id ||
       code.data.redirectUri !== parsed.output.redirect_uri ||
       code.data.usedAt !== null ||
@@ -84,7 +84,7 @@ export function oidcAuthorizationCodeRedeem(
       .from(sessionTable)
       .where(
         and(
-          eq(sessionTable.instanceId, options.instanceId),
+          eq(sessionTable.realmId, options.realmId),
           eq(sessionTable.id, code.data.sessionId),
           eq(sessionTable.userId, code.data.userId),
         ),
@@ -101,11 +101,11 @@ export function oidcAuthorizationCodeRedeem(
     const nonce =
       code.data.nonceEncrypted === null
         ? resultCreate<string | null>(null)
-        : oidcValueDecrypt(code.data.nonceEncrypted, options.instanceId, options.encryptionSecret)
+        : oidcValueDecrypt(code.data.nonceEncrypted, options.realmId, options.encryptionSecret)
     if (!nonce.success) return resultErrorCreate(op, "The authorization code is invalid.")
 
     const consumed = repository.authorizationCodeConsume(
-      options.instanceId,
+      options.realmId,
       parsed.output.client_id,
       code.data.id,
       tokenHash,
@@ -135,7 +135,7 @@ export function oidcAuthorizationCodeRedeem(
         commandIndex: 0,
         correlationId,
         eventType: oidcEventTypes.authorizationCodeConsumed,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "oidc" },
         occurredAt: now,
         payload: payload.output,
@@ -145,7 +145,7 @@ export function oidcAuthorizationCodeRedeem(
     if (!event.success) return event
     return resultCreate({
       client_id: consumed.data.clientId,
-      instance_id: consumed.data.instanceId,
+      realm_id: consumed.data.realmId,
       nonce: nonce.data,
       redirect_uri: consumed.data.redirectUri,
       scope: scope.data,

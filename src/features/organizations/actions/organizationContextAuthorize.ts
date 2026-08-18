@@ -2,8 +2,8 @@ import { type Result } from "#result"
 import { authorizationEnforce } from "../../authorization/public/authorizationEnforce.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import { organizationRolesDecode } from "../domain/organizationRolesDecode.js"
@@ -11,7 +11,7 @@ import { organizationRepositoryCreate } from "../persistence/organizationReposit
 import type { OrganizationRow } from "../persistence/organizationTable.js"
 
 type OrganizationContextAuthorizeOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly organization: OrganizationRow
   readonly repository: ReturnType<typeof organizationRepositoryCreate>
   readonly requiredPermission?: AuthorizationPermission
@@ -29,12 +29,12 @@ export function organizationContextAuthorize(options: OrganizationContextAuthori
         : undefined)
   if (permission === undefined) return resultErrorCreate(op, "An authorization permission is required.")
   if (options.context.kind === "system") return resultCreate(undefined)
-  if (options.context.instanceId !== options.organization.instanceId)
+  if (options.context.realmId !== options.organization.realmId)
     return resultErrorCreate(op, "The organization is not available in this tenant context.")
   if (options.context.actor.kind === "bootstrap_admin")
     return authorizationEnforce({
       actor: options.context.actor,
-      instanceId: options.organization.instanceId,
+      realmId: options.organization.realmId,
       organizationId: options.organization.id,
       permission,
     })
@@ -48,7 +48,7 @@ export function organizationContextAuthorize(options: OrganizationContextAuthori
   if (!roles.success) return roles
   return authorizationEnforce({
     actor: options.context.actor,
-    instanceId: options.organization.instanceId,
+    realmId: options.organization.realmId,
     organizationId: options.organization.id,
     permission,
     roles: roles.data,

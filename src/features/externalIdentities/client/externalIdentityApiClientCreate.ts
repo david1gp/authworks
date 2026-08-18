@@ -55,20 +55,20 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
 
   return {
     externalIdentityCallback(
-      instanceId: string,
+      realmId: string,
       providerId: string,
       code: string,
       state: string,
     ): Promise<Result<ExternalIdentityCallbackResponse>> {
       const query = new URLSearchParams({ code, state })
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/external-identity/${encodeURIComponent(providerId)}/callback?${query}`,
+        `/realms/${encodeURIComponent(realmId)}/external-identity/${encodeURIComponent(providerId)}/callback?${query}`,
         { method: "GET" },
         externalIdentityCallbackResponseSchema,
       )
     },
     externalIdentityLinkComplete(
-      instanceId: string,
+      realmId: string,
       userId: string,
       providerId: string,
       input: ExternalIdentityLinkCompleteRequest,
@@ -80,13 +80,13 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
       )
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}/external-identities/${encodeURIComponent(providerId)}/link/complete`,
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/external-identities/${encodeURIComponent(providerId)}/link/complete`,
         { body: JSON.stringify(parsed.data), method: "POST" },
         externalIdentityLinkCompleteResponseSchema,
       )
     },
     externalIdentityLinkStart(
-      instanceId: string,
+      realmId: string,
       userId: string,
       providerId: string,
       input: ExternalIdentityStartRequest = {},
@@ -98,20 +98,20 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
       )
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}/external-identities/${encodeURIComponent(providerId)}/link/start`,
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/external-identities/${encodeURIComponent(providerId)}/link/start`,
         { body: JSON.stringify(parsed.data), method: "POST" },
         externalIdentityStartResponseSchema,
       )
     },
-    externalIdentityList(instanceId: string, userId: string): Promise<Result<ExternalIdentityListResponse>> {
+    externalIdentityList(realmId: string, userId: string): Promise<Result<ExternalIdentityListResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}/external-identities`,
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/external-identities`,
         { method: "GET" },
         externalIdentityListResponseSchema,
       )
     },
     externalIdentityProviderCreate(
-      instanceId: string,
+      realmId: string,
       input: ExternalIdentityProviderCreateRequest,
     ): Promise<Result<ExternalIdentityProviderResponse>> {
       const parsed = parsedRequest(
@@ -121,34 +121,34 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
       )
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/external-identity-providers`,
+        `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers`,
         { body: JSON.stringify(parsed.data), method: "POST" },
         externalIdentityProviderResponseSchema,
       )
     },
     externalIdentityProviderDisable(
-      instanceId: string,
+      realmId: string,
       providerId: string,
     ): Promise<Result<ExternalIdentityProviderResponse>> {
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/external-identity-providers/${encodeURIComponent(providerId)}/disable`,
+        `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers/${encodeURIComponent(providerId)}/disable`,
         { method: "POST" },
         externalIdentityProviderResponseSchema,
       )
     },
     externalIdentityProviderList(
-      instanceId: string,
+      realmId: string,
       organizationId?: string,
     ): Promise<Result<ExternalIdentityProviderListResponse>> {
       const query = organizationId === undefined ? "" : `?organizationId=${encodeURIComponent(organizationId)}`
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/external-identity-providers${query}`,
+        `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers${query}`,
         { method: "GET" },
         externalIdentityProviderListResponseSchema,
       )
     },
     externalIdentityProviderUpdate(
-      instanceId: string,
+      realmId: string,
       providerId: string,
       input: ExternalIdentityProviderUpdateRequest,
     ): Promise<Result<ExternalIdentityProviderResponse>> {
@@ -159,24 +159,24 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
       )
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/external-identity-providers/${encodeURIComponent(providerId)}`,
+        `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers/${encodeURIComponent(providerId)}`,
         { body: JSON.stringify(parsed.data), method: "PATCH" },
         externalIdentityProviderResponseSchema,
       )
     },
     externalIdentityProviderPublicList(
-      instanceId: string,
+      realmId: string,
       organizationId?: string,
     ): Promise<Result<ExternalIdentityProviderListResponse>> {
       const query = organizationId === undefined ? "" : `?organizationId=${encodeURIComponent(organizationId)}`
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/external-identity-providers${query}`,
+        `/realms/${encodeURIComponent(realmId)}/external-identity-providers${query}`,
         { method: "GET" },
         externalIdentityProviderListResponseSchema,
       )
     },
     externalIdentityStart(
-      instanceId: string,
+      realmId: string,
       providerId: string,
       input: ExternalIdentityStartRequest = {},
     ): Promise<Result<ExternalIdentityStartResponse>> {
@@ -187,19 +187,19 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
       )
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/external-identity/${encodeURIComponent(providerId)}/start`,
+        `/realms/${encodeURIComponent(realmId)}/external-identity/${encodeURIComponent(providerId)}/start`,
         { body: JSON.stringify(parsed.data), method: "POST" },
         externalIdentityStartResponseSchema,
       )
     },
     externalIdentityUnlink(
-      instanceId: string,
+      realmId: string,
       userId: string,
       providerId: string,
       externalSubject: string,
     ): Promise<Result<ExternalIdentityUnlinkResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}/external-identities/${encodeURIComponent(providerId)}/${encodeURIComponent(externalSubject)}`,
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/external-identities/${encodeURIComponent(providerId)}/${encodeURIComponent(externalSubject)}`,
         { method: "DELETE" },
         externalIdentityUnlinkResponseSchema,
       )

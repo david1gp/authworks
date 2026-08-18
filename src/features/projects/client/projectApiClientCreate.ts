@@ -91,15 +91,15 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
     })
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
-  const projectPath = (instanceId: string, projectId?: string) =>
-    `/system/instances/${encodeURIComponent(instanceId)}/projects${projectId === undefined ? "" : `/${encodeURIComponent(projectId)}`}`
+  const projectPath = (realmId: string, projectId?: string) =>
+    `/system/realms/${encodeURIComponent(realmId)}/projects${projectId === undefined ? "" : `/${encodeURIComponent(projectId)}`}`
 
   return {
-    projectAccessCheck(instanceId: string, projectId: string): Promise<Result<ProjectAccessResponse>> {
-      return request(`${projectPath(instanceId, projectId)}/access`, { method: "GET" }, projectAccessResponseSchema)
+    projectAccessCheck(realmId: string, projectId: string): Promise<Result<ProjectAccessResponse>> {
+      return request(`${projectPath(realmId, projectId)}/access`, { method: "GET" }, projectAccessResponseSchema)
     },
     projectApplicationCreate(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       input: ProjectApplicationCreateRequest,
     ): Promise<Result<ProjectApplicationResponse>> {
@@ -109,35 +109,35 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
           resultErrorCreate("projectApiClientApplicationCreate", "The application request is invalid."),
         )
       return request(
-        `${projectPath(instanceId, projectId)}/applications`,
+        `${projectPath(realmId, projectId)}/applications`,
         jsonRequest(parsed.output),
         projectApplicationResponseSchema,
       )
     },
     projectApplicationDelete(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       applicationId: string,
     ): Promise<Result<ProjectApplicationDeleteResponse>> {
       return request(
-        `${projectPath(instanceId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
+        `${projectPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
         { method: "DELETE" },
         projectApplicationDeleteResponseSchema,
       )
     },
     projectApplicationGet(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       applicationId: string,
     ): Promise<Result<ProjectApplicationResponse>> {
       return request(
-        `${projectPath(instanceId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
+        `${projectPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
         { method: "GET" },
         projectApplicationResponseSchema,
       )
     },
     projectApplicationLifecycleSet(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       applicationId: string,
       input: ProjectApplicationLifecycleRequest,
@@ -148,20 +148,20 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
           resultErrorCreate("projectApiClientApplicationLifecycleSet", "The application lifecycle request is invalid."),
         )
       return request(
-        `${projectPath(instanceId, projectId)}/applications/${encodeURIComponent(applicationId)}/lifecycle`,
+        `${projectPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}/lifecycle`,
         jsonRequest(parsed.output),
         projectApplicationResponseSchema,
       )
     },
-    projectApplicationList(instanceId: string, projectId: string): Promise<Result<ProjectApplicationListResponse>> {
+    projectApplicationList(realmId: string, projectId: string): Promise<Result<ProjectApplicationListResponse>> {
       return request(
-        `${projectPath(instanceId, projectId)}/applications`,
+        `${projectPath(realmId, projectId)}/applications`,
         { method: "GET" },
         projectApplicationListResponseSchema,
       )
     },
     projectApplicationUpdate(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       applicationId: string,
       input: ProjectApplicationUpdateRequest,
@@ -172,25 +172,25 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
           resultErrorCreate("projectApiClientApplicationUpdate", "The application update is invalid."),
         )
       return request(
-        `${projectPath(instanceId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
+        `${projectPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
         patchRequest(parsed.output),
         projectApplicationResponseSchema,
       )
     },
-    projectCreate(instanceId: string, input: ProjectCreateRequest): Promise<Result<ProjectResponse>> {
+    projectCreate(realmId: string, input: ProjectCreateRequest): Promise<Result<ProjectResponse>> {
       const parsed = v.safeParse(projectCreateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("projectApiClientCreate", "The project request is invalid."))
-      return request(projectPath(instanceId), jsonRequest(parsed.output), projectResponseSchema)
+      return request(projectPath(realmId), jsonRequest(parsed.output), projectResponseSchema)
     },
-    projectDelete(instanceId: string, projectId: string): Promise<Result<ProjectDeleteResponse>> {
-      return request(projectPath(instanceId, projectId), { method: "DELETE" }, projectDeleteResponseSchema)
+    projectDelete(realmId: string, projectId: string): Promise<Result<ProjectDeleteResponse>> {
+      return request(projectPath(realmId, projectId), { method: "DELETE" }, projectDeleteResponseSchema)
     },
-    projectGet(instanceId: string, projectId: string): Promise<Result<ProjectResponse>> {
-      return request(projectPath(instanceId, projectId), { method: "GET" }, projectResponseSchema)
+    projectGet(realmId: string, projectId: string): Promise<Result<ProjectResponse>> {
+      return request(projectPath(realmId, projectId), { method: "GET" }, projectResponseSchema)
     },
     projectGrantCreate(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       input: ProjectGrantCreateRequest,
     ): Promise<Result<ProjectGrantResponse>> {
@@ -200,24 +200,24 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
           resultErrorCreate("projectApiClientGrantCreate", "The project grant request is invalid."),
         )
       return request(
-        `${projectPath(instanceId, projectId)}/grants`,
+        `${projectPath(realmId, projectId)}/grants`,
         jsonRequest(parsed.output),
         projectGrantResponseSchema,
       )
     },
     projectGrantDelete(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       grantId: string,
     ): Promise<Result<ProjectGrantDeleteResponse>> {
       return request(
-        `${projectPath(instanceId, projectId)}/grants/${encodeURIComponent(grantId)}`,
+        `${projectPath(realmId, projectId)}/grants/${encodeURIComponent(grantId)}`,
         { method: "DELETE" },
         projectGrantDeleteResponseSchema,
       )
     },
     projectGrantLifecycleSet(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       grantId: string,
       input: ProjectGrantLifecycleRequest,
@@ -228,16 +228,16 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
           resultErrorCreate("projectApiClientGrantLifecycleSet", "The project grant lifecycle request is invalid."),
         )
       return request(
-        `${projectPath(instanceId, projectId)}/grants/${encodeURIComponent(grantId)}/lifecycle`,
+        `${projectPath(realmId, projectId)}/grants/${encodeURIComponent(grantId)}/lifecycle`,
         jsonRequest(parsed.output),
         projectGrantResponseSchema,
       )
     },
-    projectGrantList(instanceId: string, projectId: string): Promise<Result<ProjectGrantListResponse>> {
-      return request(`${projectPath(instanceId, projectId)}/grants`, { method: "GET" }, projectGrantListResponseSchema)
+    projectGrantList(realmId: string, projectId: string): Promise<Result<ProjectGrantListResponse>> {
+      return request(`${projectPath(realmId, projectId)}/grants`, { method: "GET" }, projectGrantListResponseSchema)
     },
     projectGrantUpdate(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       grantId: string,
       input: ProjectGrantUpdateRequest,
@@ -246,13 +246,13 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("projectApiClientGrantUpdate", "The project grant update is invalid."))
       return request(
-        `${projectPath(instanceId, projectId)}/grants/${encodeURIComponent(grantId)}`,
+        `${projectPath(realmId, projectId)}/grants/${encodeURIComponent(grantId)}`,
         patchRequest(parsed.output),
         projectGrantResponseSchema,
       )
     },
     projectLifecycleSet(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       input: ProjectLifecycleRequest,
     ): Promise<Result<ProjectResponse>> {
@@ -261,45 +261,33 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
         return Promise.resolve(
           resultErrorCreate("projectApiClientLifecycleSet", "The project lifecycle request is invalid."),
         )
-      return request(
-        `${projectPath(instanceId, projectId)}/lifecycle`,
-        jsonRequest(parsed.output),
-        projectResponseSchema,
-      )
+      return request(`${projectPath(realmId, projectId)}/lifecycle`, jsonRequest(parsed.output), projectResponseSchema)
     },
-    projectList(instanceId: string): Promise<Result<ProjectListResponse>> {
-      return request(projectPath(instanceId), { method: "GET" }, projectListResponseSchema)
+    projectList(realmId: string): Promise<Result<ProjectListResponse>> {
+      return request(projectPath(realmId), { method: "GET" }, projectListResponseSchema)
     },
     projectRoleCreate(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       input: ProjectRoleCreateRequest,
     ): Promise<Result<ProjectRoleResponse>> {
       const parsed = v.safeParse(projectRoleCreateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("projectApiClientRoleCreate", "The project role request is invalid."))
-      return request(
-        `${projectPath(instanceId, projectId)}/roles`,
-        jsonRequest(parsed.output),
-        projectRoleResponseSchema,
-      )
+      return request(`${projectPath(realmId, projectId)}/roles`, jsonRequest(parsed.output), projectRoleResponseSchema)
     },
-    projectRoleDelete(
-      instanceId: string,
-      projectId: string,
-      roleId: string,
-    ): Promise<Result<ProjectRoleDeleteResponse>> {
+    projectRoleDelete(realmId: string, projectId: string, roleId: string): Promise<Result<ProjectRoleDeleteResponse>> {
       return request(
-        `${projectPath(instanceId, projectId)}/roles/${encodeURIComponent(roleId)}`,
+        `${projectPath(realmId, projectId)}/roles/${encodeURIComponent(roleId)}`,
         { method: "DELETE" },
         projectRoleDeleteResponseSchema,
       )
     },
-    projectRoleList(instanceId: string, projectId: string): Promise<Result<ProjectRoleListResponse>> {
-      return request(`${projectPath(instanceId, projectId)}/roles`, { method: "GET" }, projectRoleListResponseSchema)
+    projectRoleList(realmId: string, projectId: string): Promise<Result<ProjectRoleListResponse>> {
+      return request(`${projectPath(realmId, projectId)}/roles`, { method: "GET" }, projectRoleListResponseSchema)
     },
     projectRoleUpdate(
-      instanceId: string,
+      realmId: string,
       projectId: string,
       roleId: string,
       input: ProjectRoleUpdateRequest,
@@ -308,20 +296,16 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("projectApiClientRoleUpdate", "The project role update is invalid."))
       return request(
-        `${projectPath(instanceId, projectId)}/roles/${encodeURIComponent(roleId)}`,
+        `${projectPath(realmId, projectId)}/roles/${encodeURIComponent(roleId)}`,
         patchRequest(parsed.output),
         projectRoleResponseSchema,
       )
     },
-    projectUpdate(
-      instanceId: string,
-      projectId: string,
-      input: ProjectUpdateRequest,
-    ): Promise<Result<ProjectResponse>> {
+    projectUpdate(realmId: string, projectId: string, input: ProjectUpdateRequest): Promise<Result<ProjectResponse>> {
       const parsed = v.safeParse(projectUpdateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(resultErrorCreate("projectApiClientUpdate", "The project update is invalid."))
-      return request(projectPath(instanceId, projectId), patchRequest(parsed.output), projectResponseSchema)
+      return request(projectPath(realmId, projectId), patchRequest(parsed.output), projectResponseSchema)
     },
   }
 }

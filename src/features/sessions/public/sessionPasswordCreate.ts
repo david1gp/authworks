@@ -11,7 +11,7 @@ export function sessionPasswordCreate(): PasswordSessionCreate {
       correlationId: options.correlationId,
       deviceMetadata: options.deviceMetadata,
       executor: options.executor,
-      instanceId: authentication.instanceId,
+      realmId: authentication.realmId,
       runtime: options.runtime,
       userId: authentication.userId,
     })

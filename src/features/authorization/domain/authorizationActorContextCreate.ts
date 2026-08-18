@@ -4,7 +4,7 @@ type AuthorizationActorContextCreateOptions = {
   readonly actorId: string
   readonly assurance: AuthorizationActorContext["assurance"]
   readonly authenticationMethod: AuthorizationActorContext["authenticationMethod"]
-  readonly instanceId?: string
+  readonly realmId?: string
   readonly impersonationPermissions?: readonly string[]
   readonly impersonationSessionId?: string
   readonly impersonatorId?: string

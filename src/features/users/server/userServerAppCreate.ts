@@ -6,9 +6,9 @@ import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceBootstrapAdminAuthenticate } from "../../instances/actions/instanceBootstrapAdminAuthenticate.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { userCreate } from "../actions/userCreate.js"
 import { userDelete } from "../actions/userDelete.js"
 import { userEmailVerificationSet } from "../actions/userEmailVerificationSet.js"
@@ -28,18 +28,18 @@ type UserServerAppCreateOptions = {
 
 export function userServerAppCreate(options: UserServerAppCreateOptions) {
   const app = new Hono()
-  const systemContext = instanceSystemContextCreate("system")
+  const systemContext = realmSystemContextCreate("system")
 
-  app.get("/system/instances/:instanceId/users", (context) => {
+  app.get("/system/realms/:realmId/users", (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
     return userResultResponseCreate(
       context,
-      userList({ context: systemContext, database: options.database, instanceId: context.req.param("instanceId") }),
+      userList({ context: systemContext, database: options.database, realmId: context.req.param("realmId") }),
     )
   })
 
-  app.post("/system/instances/:instanceId/users", async (context) => {
+  app.post("/system/realms/:realmId/users", async (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
     const body = await userRequestJsonRead(context)
@@ -53,13 +53,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
       201,
     )
   })
 
-  app.get("/system/instances/:instanceId/users/:userId", (context) => {
+  app.get("/system/realms/:realmId/users/:userId", (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
     return userResultResponseCreate(
@@ -67,13 +67,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       userGet({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.patch("/system/instances/:instanceId/users/:userId/profile", async (context) => {
+  app.patch("/system/realms/:realmId/users/:userId/profile", async (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
     const body = await userRequestJsonRead(context)
@@ -90,13 +90,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/users/:userId/lifecycle", async (context) => {
+  app.post("/system/realms/:realmId/users/:userId/lifecycle", async (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
     const body = await userRequestJsonRead(context)
@@ -113,13 +113,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/users/:userId/verification", async (context) => {
+  app.post("/system/realms/:realmId/users/:userId/verification", async (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
     const body = await userRequestJsonRead(context)
@@ -136,13 +136,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.delete("/system/instances/:instanceId/users/:userId", (context) => {
+  app.delete("/system/realms/:realmId/users/:userId", (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
     return userResultResponseCreate(
@@ -150,13 +150,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       userDelete({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.get("/instances/:instanceId/users", (context) => {
+  app.get("/realms/:realmId/users", (context) => {
     const authenticated = userTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -169,12 +169,12 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       userList({
         context: authenticated.data,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.post("/instances/:instanceId/users", async (context) => {
+  app.post("/realms/:realmId/users", async (context) => {
     const authenticated = userTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -193,13 +193,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
       201,
     )
   })
 
-  app.get("/instances/:instanceId/users/:userId", (context) => {
+  app.get("/realms/:realmId/users/:userId", (context) => {
     const authenticated = userTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -212,13 +212,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       userGet({
         context: authenticated.data,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.patch("/instances/:instanceId/users/:userId/profile", async (context) => {
+  app.patch("/realms/:realmId/users/:userId/profile", async (context) => {
     const authenticated = userTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -240,13 +240,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.post("/instances/:instanceId/users/:userId/lifecycle", async (context) => {
+  app.post("/realms/:realmId/users/:userId/lifecycle", async (context) => {
     const authenticated = userTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -268,13 +268,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.post("/instances/:instanceId/users/:userId/verification", async (context) => {
+  app.post("/realms/:realmId/users/:userId/verification", async (context) => {
     const authenticated = userTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -296,13 +296,13 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
   })
 
-  app.delete("/instances/:instanceId/users/:userId", (context) => {
+  app.delete("/realms/:realmId/users/:userId", (context) => {
     const authenticated = userTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -315,7 +315,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       userDelete({
         context: authenticated.data,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
     )
@@ -383,9 +383,9 @@ function userTenantAuthenticate(
   const normalizedHost = resolvedHost.startsWith("[")
     ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
     : resolvedHost.split(":")[0]
-  const tenant = instanceTenantContextResolve({ database, host: normalizedHost ?? "" })
+  const tenant = realmTenantContextResolve({ database, host: normalizedHost ?? "" })
   if (!tenant.success) return tenant
-  return instanceBootstrapAdminAuthenticate({
+  return realmBootstrapAdminAuthenticate({
     context: tenant.data,
     database,
     secret: userBearerTokenGet(authorization) ?? "",

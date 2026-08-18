@@ -6,13 +6,13 @@ import type { Secret } from "../../../platform/secrets/Secret.js"
 import { oidcBase64UrlEncode } from "./oidcBase64UrlEncode.js"
 import { oidcBase64UrlDecode } from "./oidcBase64UrlDecode.js"
 
-export function oidcValueEncrypt(value: string, instanceId: string, secret?: Secret | string): Result<string> {
+export function oidcValueEncrypt(value: string, realmId: string, secret?: Secret | string): Result<string> {
   const op = "oidcValueEncrypt"
   try {
-    const key = oidcEncryptionKeyCreate(instanceId, secret)
+    const key = oidcEncryptionKeyCreate(realmId, secret)
     const iv = randomBytes(12)
     const cipher = createCipheriv("aes-256-gcm", key, iv)
-    cipher.setAAD(Buffer.from(instanceId))
+    cipher.setAAD(Buffer.from(realmId))
     const encrypted = Buffer.concat([cipher.update(value, "utf8"), cipher.final()])
     return resultCreate(
       `v1.${oidcBase64UrlEncode(iv)}.${oidcBase64UrlEncode(encrypted)}.${oidcBase64UrlEncode(cipher.getAuthTag())}`,
@@ -22,7 +22,7 @@ export function oidcValueEncrypt(value: string, instanceId: string, secret?: Sec
   }
 }
 
-export function oidcValueDecrypt(value: string, instanceId: string, secret?: Secret | string): Result<string> {
+export function oidcValueDecrypt(value: string, realmId: string, secret?: Secret | string): Result<string> {
   const op = "oidcValueDecrypt"
   try {
     const [version, ivEncoded, encryptedEncoded, tagEncoded] = value.split(".")
@@ -33,8 +33,8 @@ export function oidcValueDecrypt(value: string, instanceId: string, secret?: Sec
     const tag = oidcBase64UrlDecode(tagEncoded)
     if (iv === null || encrypted === null || tag === null)
       return resultErrorCreate(op, "The protected value could not be decrypted.")
-    const decipher = createDecipheriv("aes-256-gcm", oidcEncryptionKeyCreate(instanceId, secret), iv)
-    decipher.setAAD(Buffer.from(instanceId))
+    const decipher = createDecipheriv("aes-256-gcm", oidcEncryptionKeyCreate(realmId, secret), iv)
+    decipher.setAAD(Buffer.from(realmId))
     decipher.setAuthTag(Buffer.from(tag))
     return resultCreate(Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8"))
   } catch (_error) {
@@ -42,8 +42,8 @@ export function oidcValueDecrypt(value: string, instanceId: string, secret?: Sec
   }
 }
 
-function oidcEncryptionKeyCreate(instanceId: string, secret?: Secret | string): Buffer {
+function oidcEncryptionKeyCreate(realmId: string, secret?: Secret | string): Buffer {
   const value =
-    secret === undefined ? `development-only:${instanceId}` : typeof secret === "string" ? secret : secret.valueGet()
-  return createHash("sha256").update(`zitadel-v2-oidc:${instanceId}:${value}`, "utf8").digest()
+    secret === undefined ? `development-only:${realmId}` : typeof secret === "string" ? secret : secret.valueGet()
+  return createHash("sha256").update(`zitadel-v2-oidc:${realmId}:${value}`, "utf8").digest()
 }

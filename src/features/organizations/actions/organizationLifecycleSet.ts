@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationStatusChangedEventPayloadSchema } from "../events/organizationStatusChangedEventPayloadSchema.js"
@@ -21,10 +21,10 @@ import type { Organization } from "../public/organizationSchema.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationLifecycleSetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OrganizationLifecycleRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -36,7 +36,7 @@ export function organizationLifecycleSet(
   const op = "organizationLifecycleSet"
   const parsed = v.safeParse(organizationLifecycleRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The organization lifecycle request is invalid.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The organization is not available in this tenant context.")
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
@@ -47,7 +47,7 @@ export function organizationLifecycleSet(
     const repository = organizationRepositoryCreate(transaction)
     const current = repository.organizationGet(options.organizationId)
     if (!current.success) return current
-    if (current.data === null || current.data.instanceId !== options.instanceId)
+    if (current.data === null || current.data.realmId !== options.realmId)
       return resultErrorCreate(op, "The organization was not found.")
     if (current.data.status === "removed") return resultErrorCreate(op, "The organization has been removed.")
     if (current.data.status === parsed.output.status)
@@ -80,7 +80,7 @@ export function organizationLifecycleSet(
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.statusChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: updatedAt,
         payload: payload.output,

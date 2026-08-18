@@ -5,7 +5,7 @@ import type { ExternalIdentityProviderType } from "../public/externalIdentityPro
 type ExternalIdentityCliFlags = {
   readonly server?: string
   readonly token?: string
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 const externalIdentityProviderCreateCommand = buildCommand({
@@ -22,7 +22,7 @@ const externalIdentityProviderCreateCommand = buildCommand({
       scopes?: string
     },
   ) {
-    const result = await externalIdentityCliClientCreate(this, flags).externalIdentityProviderCreate(flags.instanceId, {
+    const result = await externalIdentityCliClientCreate(this, flags).externalIdentityProviderCreate(flags.realmId, {
       allowAccountCreation: flags.allowAccountCreation ?? false,
       clientId: flags.clientId,
       clientSecret: flags.clientSecret,
@@ -55,7 +55,7 @@ const externalIdentityProviderListCommand = buildCommand({
     externalIdentityCliResultWrite(
       this,
       await externalIdentityCliClientCreate(this, flags).externalIdentityProviderList(
-        flags.instanceId,
+        flags.realmId,
         flags.organizationId,
       ),
     )
@@ -71,7 +71,7 @@ const externalIdentityProviderDisableCommand = buildCommand({
     externalIdentityCliResultWrite(
       this,
       await externalIdentityCliClientCreate(this, flags).externalIdentityProviderDisable(
-        flags.instanceId,
+        flags.realmId,
         flags.providerId,
       ),
     )
@@ -87,7 +87,7 @@ const externalIdentityStartCommand = buildCommand({
   ) {
     externalIdentityCliResultWrite(
       this,
-      await externalIdentityCliClientCreate(this, flags).externalIdentityStart(flags.instanceId, flags.providerId, {
+      await externalIdentityCliClientCreate(this, flags).externalIdentityStart(flags.realmId, flags.providerId, {
         organizationId: flags.organizationId,
       }),
     )
@@ -136,7 +136,7 @@ function externalIdentityCliResultWrite(
 
 function externalIdentityCommonFlags() {
   return {
-    instanceId: externalIdentityTextFlag("Instance UUID"),
+    realmId: externalIdentityTextFlag("Realm UUID"),
     server: {
       brief: "ZITADEL v2 server URL",
       kind: "parsed" as const,

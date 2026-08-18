@@ -37,20 +37,20 @@ export function emailOtpApiClientCreate(options: EmailOtpApiClientCreateOptions)
   }
 
   return {
-    emailOtpStart(instanceId: string, input: EmailOtpStartRequest): Promise<Result<EmailOtpStartResponse>> {
+    emailOtpStart(realmId: string, input: EmailOtpStartRequest): Promise<Result<EmailOtpStartResponse>> {
       const parsed = parsedRequest(emailOtpStartRequestSchema, input, "The email OTP request is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/email-otp/start`,
+        `/realms/${encodeURIComponent(realmId)}/email-otp/start`,
         { body: JSON.stringify(parsed.data), method: "POST" },
         emailOtpStartResponseSchema,
       )
     },
-    emailOtpVerify(instanceId: string, input: EmailOtpVerifyRequest): Promise<Result<EmailOtpVerifyResponse>> {
+    emailOtpVerify(realmId: string, input: EmailOtpVerifyRequest): Promise<Result<EmailOtpVerifyResponse>> {
       const parsed = parsedRequest(emailOtpVerifyRequestSchema, input, "The email OTP code is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/email-otp/verify`,
+        `/realms/${encodeURIComponent(realmId)}/email-otp/verify`,
         { body: JSON.stringify(parsed.data), method: "POST" },
         emailOtpVerifyResponseSchema,
       )

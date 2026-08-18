@@ -73,87 +73,87 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
 
   return {
     passwordRegister(
-      instanceId: string,
+      realmId: string,
       input: PasswordRegistrationRequest,
     ): Promise<Result<PasswordRegistrationResponse>> {
       const parsed = parsedRequest(passwordRegistrationRequestSchema, input, "The registration request is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/password/register`,
+        `/realms/${encodeURIComponent(realmId)}/password/register`,
         jsonRequest(parsed.data),
         passwordRegistrationResponseSchema,
       )
     },
-    passwordLogin(instanceId: string, input: PasswordLoginRequest): Promise<Result<PasswordLoginResponse>> {
+    passwordLogin(realmId: string, input: PasswordLoginRequest): Promise<Result<PasswordLoginResponse>> {
       const parsed = parsedRequest(passwordLoginRequestSchema, input, "The credentials are invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/password/login`,
+        `/realms/${encodeURIComponent(realmId)}/password/login`,
         jsonRequest(parsed.data),
         passwordLoginResponseSchema,
       )
     },
     passwordEmailVerify(
-      instanceId: string,
+      realmId: string,
       input: PasswordEmailVerificationRequest,
     ): Promise<Result<PasswordEmailVerificationResponse>> {
       const parsed = parsedRequest(passwordEmailVerificationRequestSchema, input, "The verification token is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/password/verify-email`,
+        `/realms/${encodeURIComponent(realmId)}/password/verify-email`,
         jsonRequest(parsed.data),
         passwordEmailVerificationResponseSchema,
       )
     },
     passwordRecoveryRequest(
-      instanceId: string,
+      realmId: string,
       input: PasswordRecoveryRequest,
     ): Promise<Result<PasswordRecoveryResponse>> {
       const parsed = parsedRequest(passwordRecoveryRequestSchema, input, "The recovery request is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/password/recovery/request`,
+        `/realms/${encodeURIComponent(realmId)}/password/recovery/request`,
         jsonRequest(parsed.data),
         passwordRecoveryResponseSchema,
       )
     },
     passwordRecoveryComplete(
-      instanceId: string,
+      realmId: string,
       input: PasswordRecoveryCompleteRequest,
     ): Promise<Result<PasswordRecoveryCompleteResponse>> {
       const parsed = parsedRequest(passwordRecoveryCompleteRequestSchema, input, "The recovery token is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/password/recovery/complete`,
+        `/realms/${encodeURIComponent(realmId)}/password/recovery/complete`,
         jsonRequest(parsed.data),
         passwordRecoveryCompleteResponseSchema,
       )
     },
     passwordChange(
-      instanceId: string,
+      realmId: string,
       userId: string,
       input: PasswordChangeRequest,
     ): Promise<Result<PasswordChangeResponse>> {
       const parsed = parsedRequest(passwordChangeRequestSchema, input, "The password change request is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/users/${encodeURIComponent(userId)}/password`,
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/password`,
         jsonRequest(parsed.data),
         passwordChangeResponseSchema,
       )
     },
-    passwordPolicyGet(instanceId: string): Promise<Result<PasswordPolicyResponse>> {
+    passwordPolicyGet(realmId: string): Promise<Result<PasswordPolicyResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/password-policy`,
+        `/realms/${encodeURIComponent(realmId)}/password-policy`,
         { method: "GET" },
         passwordPolicyResponseSchema,
       )
     },
-    passwordPolicySet(instanceId: string, input: PasswordPolicySetRequest): Promise<Result<PasswordPolicyResponse>> {
+    passwordPolicySet(realmId: string, input: PasswordPolicySetRequest): Promise<Result<PasswordPolicyResponse>> {
       const parsed = parsedRequest(passwordPolicySetRequestSchema, input, "The password policy is invalid.")
       if (!parsed.success) return Promise.resolve(parsed)
       return request(
-        `/system/instances/${encodeURIComponent(instanceId)}/password-policy`,
+        `/system/realms/${encodeURIComponent(realmId)}/password-policy`,
         patchRequest(parsed.data),
         passwordPolicyResponseSchema,
       )

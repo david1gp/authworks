@@ -3,51 +3,47 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import { instanceLoginPolicyTable, type InstanceLoginPolicyRow } from "./instanceLoginPolicyTable.js"
+import { realmLoginPolicyTable, type RealmLoginPolicyRow } from "./realmLoginPolicyTable.js"
 import { organizationLoginPolicyTable, type OrganizationLoginPolicyRow } from "./organizationLoginPolicyTable.js"
 
 export function organizationLoginPolicyRepositoryCreate(database: StorageExecutor) {
   return {
-    instanceLoginPolicyCreate(input: typeof instanceLoginPolicyTable.$inferInsert): Result<InstanceLoginPolicyRow> {
+    realmLoginPolicyCreate(input: typeof realmLoginPolicyTable.$inferInsert): Result<RealmLoginPolicyRow> {
       try {
-        const row = database.insert(instanceLoginPolicyTable).values(input).returning().get()
+        const row = database.insert(realmLoginPolicyTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("instanceLoginPolicyCreate", "The login policy could not be saved.")
+          return resultErrorCreate("realmLoginPolicyCreate", "The login policy could not be saved.")
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("instanceLoginPolicyCreate", "The login policy could not be saved.")
+        return resultErrorCreate("realmLoginPolicyCreate", "The login policy could not be saved.")
       }
     },
 
-    instanceLoginPolicyGet(instanceId: string): Result<InstanceLoginPolicyRow | null> {
+    realmLoginPolicyGet(realmId: string): Result<RealmLoginPolicyRow | null> {
       try {
         return resultCreate(
-          database
-            .select()
-            .from(instanceLoginPolicyTable)
-            .where(eq(instanceLoginPolicyTable.instanceId, instanceId))
-            .get() ?? null,
+          database.select().from(realmLoginPolicyTable).where(eq(realmLoginPolicyTable.realmId, realmId)).get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("instanceLoginPolicyGet", "The login policy could not be read.")
+        return resultErrorCreate("realmLoginPolicyGet", "The login policy could not be read.")
       }
     },
 
-    instanceLoginPolicyUpdate(
-      instanceId: string,
-      input: Partial<typeof instanceLoginPolicyTable.$inferInsert>,
-    ): Result<InstanceLoginPolicyRow | null> {
+    realmLoginPolicyUpdate(
+      realmId: string,
+      input: Partial<typeof realmLoginPolicyTable.$inferInsert>,
+    ): Result<RealmLoginPolicyRow | null> {
       try {
         return resultCreate(
           database
-            .update(instanceLoginPolicyTable)
+            .update(realmLoginPolicyTable)
             .set(input)
-            .where(eq(instanceLoginPolicyTable.instanceId, instanceId))
+            .where(eq(realmLoginPolicyTable.realmId, realmId))
             .returning()
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("instanceLoginPolicyUpdate", "The login policy could not be saved.")
+        return resultErrorCreate("realmLoginPolicyUpdate", "The login policy could not be saved.")
       }
     },
 

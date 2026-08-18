@@ -6,7 +6,7 @@ export const storageEventTable = sqliteTable(
     position: integer("position").primaryKey({ autoIncrement: true }),
     id: text("id").notNull().unique(),
     commandIndex: integer("command_index").notNull(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     aggregateType: text("aggregate_type").notNull(),
     aggregateId: text("aggregate_id").notNull(),
     aggregateVersion: integer("aggregate_version").notNull(),

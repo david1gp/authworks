@@ -2,7 +2,7 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { impersonationApiClientCreate } from "../client/impersonationApiClientCreate.js"
 
 type ImpersonationCliFlags = {
-  readonly instanceId: string
+  readonly realmId: string
   readonly server?: string
   readonly token?: string
 }
@@ -17,7 +17,7 @@ const impersonationStartCommand = buildCommand({
       targetUserId: string
     },
   ) {
-    const result = await impersonationCliClientCreate(this, flags).impersonationStart(flags.instanceId, {
+    const result = await impersonationCliClientCreate(this, flags).impersonationStart(flags.realmId, {
       durationSeconds: flags.durationSeconds,
       ...(flags.organizationId === undefined ? {} : { organizationId: flags.organizationId }),
       reason: flags.reason,
@@ -41,7 +41,7 @@ const impersonationEndCommand = buildCommand({
   async func(this: ApplicationContext, flags: ImpersonationCliFlags & { sessionId: string }) {
     impersonationCliResultWrite(
       this,
-      await impersonationCliClientCreate(this, flags).impersonationEnd(flags.instanceId, flags.sessionId),
+      await impersonationCliClientCreate(this, flags).impersonationEnd(flags.realmId, flags.sessionId),
     )
   },
   parameters: { flags: { ...impersonationCommonFlags(), sessionId: textFlag("Impersonation session UUID") } },
@@ -74,7 +74,7 @@ function impersonationCliResultWrite(
 
 function impersonationCommonFlags() {
   return {
-    instanceId: textFlag("Instance UUID"),
+    realmId: textFlag("Realm UUID"),
     server: optionalTextFlag("ZITADEL v2 server URL"),
     token: optionalTextFlag("Bearer token"),
   }

@@ -9,19 +9,19 @@ import type { SessionListResponse } from "../public/sessionListResponseSchema.js
 type SessionListOptions = {
   readonly currentSessionId?: string
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly limit?: number
   readonly userId: string
 }
 
 export function sessionList(options: SessionListOptions): Result<SessionListResponse> {
   const op = "sessionList"
-  if (options.instanceId.length === 0 || options.userId.length === 0)
+  if (options.realmId.length === 0 || options.userId.length === 0)
     return resultErrorCreate(op, "The session ownership is invalid.")
   if (options.limit !== undefined && (!Number.isSafeInteger(options.limit) || options.limit < 1))
     return resultErrorCreate(op, "The session limit is invalid.")
   const sessions = sessionRepositoryCreate(options.database.db).sessionList(
-    options.instanceId,
+    options.realmId,
     options.userId,
     options.limit,
   )

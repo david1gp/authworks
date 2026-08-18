@@ -8,7 +8,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { and, eq } from "drizzle-orm"
-import { instanceBootstrapAdminTable } from "../../instances/persistence/instanceBootstrapAdminTable.js"
+import { realmBootstrapAdminTable } from "../../realms/persistence/realmBootstrapAdminTable.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
@@ -20,7 +20,7 @@ import type { SessionCredentialResponse } from "../public/sessionCredentialRespo
 
 type SessionRotateOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly token: string
 }
@@ -39,7 +39,7 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
     if (!current.success) return current
     if (
       current.data === null ||
-      current.data.instanceId !== options.instanceId ||
+      current.data.realmId !== options.realmId ||
       current.data.revokedAt !== null ||
       current.data.expiresAt <= now
     )
@@ -47,22 +47,22 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
     const user = transaction
       .select({ state: userTable.state })
       .from(userTable)
-      .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, current.data.userId)))
+      .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, current.data.userId)))
       .get()
     if (user === undefined || user.state !== "active") return resultErrorCreate(op, "Session rotation is invalid.")
     if (current.data.impersonatorId !== null) {
       const impersonator = transaction
         .select({ id: userTable.id, state: userTable.state })
         .from(userTable)
-        .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, current.data.impersonatorId)))
+        .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, current.data.impersonatorId)))
         .get()
       const bootstrap = transaction
-        .select({ id: instanceBootstrapAdminTable.adminId })
-        .from(instanceBootstrapAdminTable)
+        .select({ id: realmBootstrapAdminTable.adminId })
+        .from(realmBootstrapAdminTable)
         .where(
           and(
-            eq(instanceBootstrapAdminTable.instanceId, options.instanceId),
-            eq(instanceBootstrapAdminTable.adminId, current.data.impersonatorId),
+            eq(realmBootstrapAdminTable.realmId, options.realmId),
+            eq(realmBootstrapAdminTable.adminId, current.data.impersonatorId),
           ),
         )
         .get()
@@ -70,7 +70,7 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
         return resultErrorCreate(op, "Session rotation is invalid.")
     }
     const rotated = repository.sessionRotate(
-      options.instanceId,
+      options.realmId,
       current.data.id,
       current.data.tokenHash,
       nextHash,
@@ -80,7 +80,7 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
     )
     if (!rotated.success) return rotated
     if (rotated.data === null) return resultErrorCreate(op, "Session rotation is invalid.")
-    const eventVersion = repository.sessionEventVersionGet(options.instanceId, current.data.id)
+    const eventVersion = repository.sessionEventVersionGet(options.realmId, current.data.id)
     if (!eventVersion.success) return eventVersion
     const payload = v.safeParse(sessionRotatedEventPayloadSchema, { rotatedAt: now, sessionId: current.data.id })
     if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.")
@@ -94,7 +94,7 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
         commandIndex: 0,
         correlationId,
         eventType: sessionEventTypes.rotated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "sessions" },
         occurredAt: now,
         payload: payload.output,

@@ -10,7 +10,7 @@ export const externalIdentityProviderTable = sqliteTable(
     displayName: text("display_name").notNull(),
     enabled: integer("enabled", { mode: "boolean" }).notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     organizationId: text("organization_id"),
     redirectUri: text("redirect_uri").notNull(),
     scopes: text("scopes").notNull(),
@@ -19,13 +19,9 @@ export const externalIdentityProviderTable = sqliteTable(
     version: integer("version").notNull(),
   },
   (table) => [
-    index("external_identity_providers_instance_idx").on(table.instanceId),
-    index("external_identity_providers_organization_idx").on(table.instanceId, table.organizationId),
-    uniqueIndex("external_identity_providers_instance_type_org_idx").on(
-      table.instanceId,
-      table.type,
-      table.organizationId,
-    ),
+    index("external_identity_providers_realm_idx").on(table.realmId),
+    index("external_identity_providers_organization_idx").on(table.realmId, table.organizationId),
+    uniqueIndex("external_identity_providers_realm_type_org_idx").on(table.realmId, table.type, table.organizationId),
   ],
 )
 

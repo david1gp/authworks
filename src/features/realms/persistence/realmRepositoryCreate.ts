@@ -1,0 +1,120 @@
+import { eq } from "drizzle-orm"
+import { type Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { type RealmBootstrapAdminRow, realmBootstrapAdminTable } from "./realmBootstrapAdminTable.js"
+import { realmDomainTable } from "./realmDomainTable.js"
+import { type RealmRow, realmTable } from "./realmTable.js"
+
+type RealmInsert = typeof realmTable.$inferInsert
+type RealmUpdate = Partial<RealmInsert>
+
+export function realmRepositoryCreate(database: StorageExecutor) {
+  return {
+    realmBootstrapAdminGet(realmId: string): Result<RealmBootstrapAdminRow | null> {
+      try {
+        return resultCreate(
+          database.select().from(realmBootstrapAdminTable).where(eq(realmBootstrapAdminTable.realmId, realmId)).get() ??
+            null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("realmBootstrapAdminGet", "The bootstrap administrator could not be read.")
+      }
+    },
+
+    realmCreate(input: RealmInsert, domains: string[]): Result<RealmRow> {
+      try {
+        const realm = database.insert(realmTable).values(input).returning().get()
+        if (realm === undefined) return resultErrorCreate("realmCreate", "The realm could not be created.")
+        database
+          .insert(realmDomainTable)
+          .values(
+            domains.map((domain, index) => ({
+              domain,
+              realmId: realm.id,
+              isPrimary: index === 0 ? "true" : "false",
+            })),
+          )
+          .run()
+        return resultCreate(realm)
+      } catch (_error) {
+        return resultErrorCreate("realmCreate", "The realm could not be created.")
+      }
+    },
+
+    realmDomainList(realmId: string): Result<string[]> {
+      try {
+        const domains = database
+          .select({ domain: realmDomainTable.domain })
+          .from(realmDomainTable)
+          .where(eq(realmDomainTable.realmId, realmId))
+          .all()
+          .map((row) => row.domain)
+        return resultCreate(domains)
+      } catch (_error) {
+        return resultErrorCreate("realmDomainList", "The realm domains could not be read.")
+      }
+    },
+
+    realmGet(realmId: string): Result<RealmRow | null> {
+      try {
+        return resultCreate(database.select().from(realmTable).where(eq(realmTable.id, realmId)).get() ?? null)
+      } catch (_error) {
+        return resultErrorCreate("realmGet", "The realm could not be read.")
+      }
+    },
+
+    realmList(): Result<RealmRow[]> {
+      try {
+        return resultCreate(database.select().from(realmTable).orderBy(realmTable.createdAt).all())
+      } catch (_error) {
+        return resultErrorCreate("realmList", "The realms could not be read.")
+      }
+    },
+
+    realmUpdate(realmId: string, input: RealmUpdate): Result<RealmRow | null> {
+      try {
+        return resultCreate(
+          database.update(realmTable).set(input).where(eq(realmTable.id, realmId)).returning().get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("realmUpdate", "The realm could not be updated.")
+      }
+    },
+
+    realmBootstrapAdminCreate(input: typeof realmBootstrapAdminTable.$inferInsert): Result<RealmBootstrapAdminRow> {
+      try {
+        const admin = database.insert(realmBootstrapAdminTable).values(input).returning().get()
+        if (admin === undefined)
+          return resultErrorCreate("realmBootstrapAdminCreate", "The bootstrap administrator could not be created.")
+        return resultCreate(admin)
+      } catch (_error) {
+        return resultErrorCreate("realmBootstrapAdminCreate", "The bootstrap administrator could not be created.")
+      }
+    },
+
+    realmDomainReplace(realmId: string, domains: string[]): Result<void> {
+      try {
+        database.delete(realmDomainTable).where(eq(realmDomainTable.realmId, realmId)).run()
+        database
+          .insert(realmDomainTable)
+          .values(domains.map((domain, index) => ({ domain, realmId, isPrimary: index === 0 ? "true" : "false" })))
+          .run()
+        return resultCreate(undefined)
+      } catch (_error) {
+        return resultErrorCreate("realmDomainReplace", "The realm domains could not be updated.")
+      }
+    },
+
+    realmFindByDomain(domain: string): Result<RealmRow | null> {
+      try {
+        const domainRow = database.select().from(realmDomainTable).where(eq(realmDomainTable.domain, domain)).get()
+        if (domainRow === undefined) return resultCreate(null)
+        return this.realmGet(domainRow.realmId)
+      } catch (_error) {
+        return resultErrorCreate("realmFindByDomain", "The realm could not be resolved.")
+      }
+    },
+  }
+}

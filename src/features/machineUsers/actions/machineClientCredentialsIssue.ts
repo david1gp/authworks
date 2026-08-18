@@ -26,7 +26,7 @@ type MachineClientCredentialsIssueOptions = {
   readonly accessToken?: string
   readonly database: StorageDatabase
   readonly input: MachineClientCredentialsRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -53,13 +53,13 @@ export function machineClientCredentialsIssue(
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const machineUser = repository.userGetByName(options.instanceId, parsed.output.clientId.trim().toLowerCase())
+    const machineUser = repository.userGetByName(options.realmId, parsed.output.clientId.trim().toLowerCase())
     if (!machineUser.success) return machineUser
     if (machineUser.data === null || machineUser.data.status !== "active")
       return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
     const configuredScopes = machineScopesParse(machineUser.data.scopes)
     if (!configuredScopes.success) return configuredScopes
-    const credentials = repository.credentialList(options.instanceId, machineUser.data.id)
+    const credentials = repository.credentialList(options.realmId, machineUser.data.id)
     if (!credentials.success) return credentials
     const clientCredential = credentials.data.find(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
@@ -79,7 +79,7 @@ export function machineClientCredentialsIssue(
       createdAt: now,
       expiresAt,
       id: credentialId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       kind: "access_token",
       machineUserId: machineUser.data.id,
       name: "OAuth client credentials",
@@ -109,7 +109,7 @@ export function machineClientCredentialsIssue(
         commandIndex: 0,
         correlationId,
         eventType: machineEventTypes.credentialIssued,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "machine-users", protocol: "oauth2" },
         occurredAt: now,
         payload: payload.output,

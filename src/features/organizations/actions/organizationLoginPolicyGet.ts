@@ -10,7 +10,7 @@ import { organizationLoginPolicyResolve } from "../public/organizationLoginPolic
 
 type OrganizationLoginPolicyGetOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
 }
 
@@ -21,7 +21,7 @@ export function organizationLoginPolicyGet(
   if (!organization.success) return organization
   if (
     organization.data === null ||
-    organization.data.instanceId !== options.instanceId ||
+    organization.data.realmId !== options.realmId ||
     organization.data.status !== "active"
   )
     return resultErrorCreate("organizationLoginPolicyGet", "The organization was not found.")
@@ -32,7 +32,7 @@ export function organizationLoginPolicyGet(
   )
   if (!override.success) return override
   return resultCreate({
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     organizationId: options.organizationId,
     overrides: organizationLoginPolicyOverrideViewCreate(override.data),
     policy: policy.data,

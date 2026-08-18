@@ -6,11 +6,11 @@ import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.
 
 type MachineClientCredentialsSupportedOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 export function machineClientCredentialsSupported(options: MachineClientCredentialsSupportedOptions): Result<boolean> {
-  const users = machineRepositoryCreate(options.database.db).userList(options.instanceId)
+  const users = machineRepositoryCreate(options.database.db).userList(options.realmId)
   if (!users.success)
     return resultErrorCreate("machineClientCredentialsSupported", "The machine users could not be read.")
   return resultCreate(users.data.some((user) => user.status === "active"))

@@ -11,7 +11,7 @@ export const emailOtpChallengeTable = sqliteTable(
     emailHash: text("email_hash").notNull(),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     maxAttempts: integer("max_attempts").notNull(),
     organizationId: text("organization_id"),
     purpose: text("purpose").notNull(),
@@ -19,8 +19,8 @@ export const emailOtpChallengeTable = sqliteTable(
     version: integer("version").notNull(),
   },
   (table) => [
-    index("email_otp_challenges_instance_email_idx").on(table.instanceId, table.emailHash, table.purpose),
-    index("email_otp_challenges_instance_user_idx").on(table.instanceId, table.userId, table.purpose),
+    index("email_otp_challenges_realm_email_idx").on(table.realmId, table.emailHash, table.purpose),
+    index("email_otp_challenges_realm_user_idx").on(table.realmId, table.userId, table.purpose),
   ],
 )
 

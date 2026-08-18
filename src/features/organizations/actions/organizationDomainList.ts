@@ -9,7 +9,7 @@ import type { OrganizationDomainListResponse } from "../public/organizationDomai
 
 type OrganizationDomainListOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
 }
 
@@ -18,7 +18,7 @@ export function organizationDomainList(options: OrganizationDomainListOptions): 
   if (!organization.success) return organization
   if (
     organization.data === null ||
-    organization.data.instanceId !== options.instanceId ||
+    organization.data.realmId !== options.realmId ||
     organization.data.status === "removed"
   )
     return resultErrorCreate("organizationDomainList", "The organization was not found.")

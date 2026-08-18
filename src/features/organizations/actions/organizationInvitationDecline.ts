@@ -67,7 +67,7 @@ export function organizationInvitationDecline(
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.invitationDeclined,
-        instanceId: updated.data.instanceId,
+        realmId: updated.data.realmId,
         metadata: { source: "organizations" },
         occurredAt: declinedAt,
         payload: payload.output,

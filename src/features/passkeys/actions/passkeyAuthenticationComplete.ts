@@ -37,7 +37,7 @@ import { organizationLoginPolicyEnforce } from "../../organizations/public/organ
 type PasskeyAuthenticationCompleteOptions = {
   readonly database: StorageDatabase
   readonly input: PasskeyAuthenticationCompleteRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly origins: readonly string[]
   readonly rpId: string
   readonly rpName: string
@@ -61,7 +61,7 @@ export async function passkeyAuthenticationComplete(
   if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The passkey timestamp is invalid.")
   const tokenHash = passkeyTokenHashCreate(input.output.token)
   const repository = passkeyRepositoryCreate(options.database.db)
-  const ceremony = repository.passkeyCeremonyGetByTokenHash(options.instanceId, tokenHash)
+  const ceremony = repository.passkeyCeremonyGetByTokenHash(options.realmId, tokenHash)
   if (!ceremony.success) return ceremony
   if (
     ceremony.data === null ||
@@ -75,7 +75,7 @@ export async function passkeyAuthenticationComplete(
   if (ceremony.data.purpose === "passwordless") {
     const policy = organizationLoginPolicyEnforce({
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       method: "passkey",
       organizationId: ceremony.data.organizationId ?? undefined,
     })
@@ -91,7 +91,7 @@ export async function passkeyAuthenticationComplete(
   )
     return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
   const credential = repository.passkeyCredentialGetByCredentialId(
-    options.instanceId,
+    options.realmId,
     ceremony.data.rpId,
     input.output.response.id,
   )
@@ -105,7 +105,7 @@ export async function passkeyAuthenticationComplete(
   const user = options.database.db
     .select({ state: userTable.state })
     .from(userTable)
-    .where(and(eq(userTable.instanceId, options.instanceId), eq(userTable.id, credential.data.userId)))
+    .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, credential.data.userId)))
     .get()
   if (user?.state !== "active") return resultErrorCreate(op, "The passkey authentication response is invalid.")
   const webAuthnCredential: WebAuthnCredential = {
@@ -141,7 +141,7 @@ export async function passkeyAuthenticationComplete(
       actorId: options.actorId,
       correlationId,
       database: transaction,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       input: input.output,
       now,
       runtime,
@@ -156,7 +156,7 @@ type PasskeyAuthenticationCompleteTransactionOptions = {
   readonly actorId?: string | null
   readonly correlationId: string
   readonly database: Parameters<typeof passkeyRepositoryCreate>[0]
-  readonly instanceId: string
+  readonly realmId: string
   readonly input: PasskeyAuthenticationCompleteRequest
   readonly now: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -170,7 +170,7 @@ function passkeyAuthenticationCompleteTransaction(
 ): Result<PasskeyAuthenticationCompleteResponse> {
   const op = "passkeyAuthenticationComplete"
   const repository = passkeyRepositoryCreate(options.database)
-  const ceremony = repository.passkeyCeremonyGetByTokenHash(options.instanceId, options.tokenHash)
+  const ceremony = repository.passkeyCeremonyGetByTokenHash(options.realmId, options.tokenHash)
   if (!ceremony.success) return ceremony
   if (
     ceremony.data === null ||
@@ -180,7 +180,7 @@ function passkeyAuthenticationCompleteTransaction(
   )
     return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
   const credentialId = options.input.response.id
-  const credential = repository.passkeyCredentialGetByCredentialId(options.instanceId, ceremony.data.rpId, credentialId)
+  const credential = repository.passkeyCredentialGetByCredentialId(options.realmId, ceremony.data.rpId, credentialId)
   if (!credential.success) return credential
   if (
     credential.data === null ||
@@ -189,7 +189,7 @@ function passkeyAuthenticationCompleteTransaction(
   )
     return resultErrorCreate(op, "The passkey authentication response is invalid.")
   const consumed = repository.passkeyCeremonyConsume(
-    options.instanceId,
+    options.realmId,
     ceremony.data.id,
     options.tokenHash,
     ceremony.data.version,
@@ -201,7 +201,7 @@ function passkeyAuthenticationCompleteTransaction(
   if ((newCounter > 0 || credential.data.counter > 0) && newCounter <= credential.data.counter)
     return resultErrorCreate(op, "The passkey authenticator counter is invalid.")
   const updated = repository.passkeyCredentialCounterUpdate(
-    options.instanceId,
+    options.realmId,
     credential.data.id,
     credential.data.version,
     newCounter,
@@ -210,11 +210,7 @@ function passkeyAuthenticationCompleteTransaction(
   )
   if (!updated.success) return updated
   if (updated.data === null) return resultErrorCreate(op, "The passkey authentication response is invalid.")
-  const credentialVersion = repository.passkeyEventVersionGet(
-    options.instanceId,
-    "passkey_credential",
-    credential.data.id,
-  )
+  const credentialVersion = repository.passkeyEventVersionGet(options.realmId, "passkey_credential", credential.data.id)
   if (!credentialVersion.success) return credentialVersion
   const credentialPayload = v.safeParse(passkeyEventPayloadSchema, {
     backedUp: options.verified.authenticationInfo.credentialBackedUp,
@@ -234,7 +230,7 @@ function passkeyAuthenticationCompleteTransaction(
       commandIndex: 0,
       correlationId: options.correlationId,
       eventType: passkeyEventTypes.credentialUsed,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "passkeys" },
       occurredAt: options.now,
       payload: credentialPayload.output,
@@ -259,7 +255,7 @@ function passkeyAuthenticationCompleteTransaction(
       commandIndex: 1,
       correlationId: options.correlationId,
       eventType: passkeyEventTypes.authenticationCompleted,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "passkeys" },
       occurredAt: options.now,
       payload: authenticationPayload.output,
@@ -269,7 +265,7 @@ function passkeyAuthenticationCompleteTransaction(
   if (!authenticationEvent.success) return authenticationEvent
   const authentication = {
     authenticatedAt: options.now,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     userId: credential.data.userId,
   }
   if (ceremony.data.purpose === "passwordless") {
@@ -280,12 +276,19 @@ function passkeyAuthenticationCompleteTransaction(
       commandIndex: 2,
       correlationId: options.correlationId,
       executor: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       runtime: options.runtime,
       userId: credential.data.userId,
     })
     if (!session.success) return resultErrorCreate(op, "The passkey session could not be created.")
-    return resultCreate({ authentication, session: session.data })
+    return resultCreate({
+      authentication: {
+        authenticatedAt: authentication.authenticatedAt,
+        realmId: authentication.realmId,
+        userId: authentication.userId,
+      },
+      session: session.data,
+    })
   }
   return passkeySessionAssuranceRotate(options, ceremony.data.sessionId, credential.data.userId, authentication)
 }
@@ -294,7 +297,7 @@ function passkeySessionAssuranceRotate(
   options: PasskeyAuthenticationCompleteTransactionOptions,
   sessionId: string | null,
   userId: string,
-  authentication: PasskeyAuthenticationCompleteResponse["authentication"],
+  authentication: PasskeyAuthentication,
 ): Result<PasskeyAuthenticationCompleteResponse> {
   const op = "passkeyAuthenticationComplete"
   if (sessionId === null || options.sessionToken === undefined)
@@ -303,11 +306,7 @@ function passkeySessionAssuranceRotate(
     .select()
     .from(sessionTable)
     .where(
-      and(
-        eq(sessionTable.instanceId, options.instanceId),
-        eq(sessionTable.id, sessionId),
-        eq(sessionTable.userId, userId),
-      ),
+      and(eq(sessionTable.realmId, options.realmId), eq(sessionTable.id, sessionId), eq(sessionTable.userId, userId)),
     )
     .get()
   if (
@@ -319,7 +318,7 @@ function passkeySessionAssuranceRotate(
     return resultErrorCreate(op, "The passkey session is invalid.")
   const nextToken = sessionCredentialCreate(options.runtime)
   const rotated = sessionRepositoryCreate(options.database).sessionAssuranceRotate(
-    options.instanceId,
+    options.realmId,
     current.id,
     current.tokenHash,
     sessionCredentialHashCreate(nextToken),
@@ -330,7 +329,7 @@ function passkeySessionAssuranceRotate(
   )
   if (!rotated.success) return rotated
   if (rotated.data === null) return resultErrorCreate(op, "The passkey session is invalid.")
-  const eventVersion = sessionRepositoryCreate(options.database).sessionEventVersionGet(options.instanceId, current.id)
+  const eventVersion = sessionRepositoryCreate(options.database).sessionEventVersionGet(options.realmId, current.id)
   if (!eventVersion.success) return eventVersion
   const payload = v.safeParse(sessionRotatedEventPayloadSchema, { rotatedAt: options.now, sessionId: current.id })
   if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.")
@@ -344,7 +343,7 @@ function passkeySessionAssuranceRotate(
       commandIndex: 2,
       correlationId: options.correlationId,
       eventType: sessionEventTypes.rotated,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       metadata: { auditSafe: true, source: "sessions" },
       occurredAt: options.now,
       payload: payload.output,
@@ -353,9 +352,19 @@ function passkeySessionAssuranceRotate(
   )
   if (!event.success) return event
   return resultCreate({
-    authentication,
+    authentication: {
+      authenticatedAt: authentication.authenticatedAt,
+      realmId: authentication.realmId,
+      userId: authentication.userId,
+    },
     session: { session: sessionPublicViewCreate(rotated.data, true), token: nextToken },
   })
+}
+
+type PasskeyAuthentication = {
+  readonly authenticatedAt: number
+  readonly realmId: string
+  readonly userId: string
 }
 
 function passkeyOriginsParse(value: string): string[] | null {

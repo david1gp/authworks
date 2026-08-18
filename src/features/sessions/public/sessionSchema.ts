@@ -12,7 +12,7 @@ export const sessionSchema = v.strictObject({
   device: sessionDeviceMetadataSchema,
   expiresAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   id: v.pipe(v.string(), v.minLength(1)),
-  instanceId: v.pipe(v.string(), v.minLength(1)),
+  realmId: v.pipe(v.string(), v.minLength(1)),
   impersonated: v.optional(v.literal(true)),
   impersonationOrganizationId: v.optional(v.pipe(v.string(), v.minLength(1))),
   impersonationReason: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(256))),

@@ -9,7 +9,7 @@ import { organizationLoginPolicyResolve } from "../../organizations/public/organ
 type ExternalIdentityProviderListOptions = {
   readonly database: StorageDatabase
   readonly includeDisabled?: boolean
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId?: string
 }
 
@@ -17,21 +17,21 @@ export function externalIdentityProviderList(
   options: ExternalIdentityProviderListOptions,
 ): Result<ExternalIdentityProviderListResponse> {
   const repository = externalIdentityRepositoryCreate(options.database.db)
-  const instanceProviders = repository.externalIdentityProviderList(options.instanceId)
-  if (!instanceProviders.success) return instanceProviders
+  const realmProviders = repository.externalIdentityProviderList(options.realmId)
+  if (!realmProviders.success) return realmProviders
   const organizationProviders =
     options.organizationId === undefined
-      ? resultCreate<typeof instanceProviders.data>([])
-      : repository.externalIdentityProviderList(options.instanceId, options.organizationId)
+      ? resultCreate<typeof realmProviders.data>([])
+      : repository.externalIdentityProviderList(options.realmId, options.organizationId)
   if (!organizationProviders.success) return organizationProviders
   const policy = organizationLoginPolicyResolve({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     organizationId: options.organizationId,
   })
   if (!policy.success) return policy
   const providerIds = policy.data.providerIds
-  const providers = [...instanceProviders.data, ...organizationProviders.data].filter(
+  const providers = [...realmProviders.data, ...organizationProviders.data].filter(
     (provider, index, all) => all.findIndex((candidate) => candidate.id === provider.id) === index,
   )
   const visible = providers.filter(

@@ -9,7 +9,7 @@ export const oidcAuthorizationCodeTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     issuer: text("issuer").notNull(),
     nonceEncrypted: text("nonce_encrypted"),
     redirectUri: text("redirect_uri").notNull(),
@@ -21,7 +21,7 @@ export const oidcAuthorizationCodeTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("oidc_authorization_codes_token_hash_idx").on(table.tokenHash),
-    index("oidc_authorization_codes_instance_idx").on(table.instanceId),
+    index("oidc_authorization_codes_realm_idx").on(table.realmId),
   ],
 )
 

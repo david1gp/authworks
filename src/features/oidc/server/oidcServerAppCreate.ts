@@ -6,10 +6,10 @@ import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceBootstrapAdminAuthenticate } from "../../instances/actions/instanceBootstrapAdminAuthenticate.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcAuthorizationCodeRedeem } from "../actions/oidcAuthorizationCodeRedeem.js"
 import { oidcAuthorizationRequestAuthorize } from "../actions/oidcAuthorizationRequestAuthorize.js"
 import { oidcAuthorizationRequestConsent } from "../actions/oidcAuthorizationRequestConsent.js"
@@ -49,14 +49,14 @@ type OidcServerAppCreateOptions = {
   readonly systemSecret?: Secret | string
 }
 
-type OidcRequestContext = ReturnType<typeof instanceSystemContextCreate> | InstanceTenantContext
+type OidcRequestContext = ReturnType<typeof realmSystemContextCreate> | RealmTenantContext
 
 export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   const app = new Hono()
-  oidcManagementRoutesRegister(app, options, "/system/instances/:instanceId/oidc", (context) =>
+  oidcManagementRoutesRegister(app, options, "/system/realms/:realmId/oidc", (context) =>
     oidcSystemAuthenticate(context.req.header("authorization"), options.systemSecret),
   )
-  oidcManagementRoutesRegister(app, options, "/instances/:instanceId/oidc", (context) =>
+  oidcManagementRoutesRegister(app, options, "/realms/:realmId/oidc", (context) =>
     oidcTenantAuthenticate(
       options.database,
       context.req.header("host"),
@@ -66,24 +66,24 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   )
 
   app.get("/.well-known/openid-configuration", (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcErrorResponseCreate(context, instance)
-    const discovery = oidcDiscoveryGet({ database: options.database, instanceId: instance.data.instanceId })
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcErrorResponseCreate(context, realm)
+    const discovery = oidcDiscoveryGet({ database: options.database, realmId: realm.data.realmId })
     if (!discovery.success) return oidcErrorResponseCreate(context, discovery)
     return context.json(discovery.data)
   })
 
   app.get("/.well-known/jwks.json", (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcErrorResponseCreate(context, instance)
-    const jwks = oidcJwksGet({ database: options.database, instanceId: instance.data.instanceId })
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcErrorResponseCreate(context, realm)
+    const jwks = oidcJwksGet({ database: options.database, realmId: realm.data.realmId })
     if (!jwks.success) return oidcErrorResponseCreate(context, jwks)
     return context.json(jwks.data)
   })
 
   app.get("/oauth2/authorize", (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcErrorResponseCreate(context, realm)
     const input = v.safeParse(oidcAuthorizationRequestSchema, oidcAuthorizationRequestInputCreate(context))
     if (!input.success)
       return oidcErrorResponseCreate(context, {
@@ -94,7 +94,7 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       database: options.database,
       encryptionSecret: options.systemSecret,
       input: input.output,
-      instanceId: instance.data.instanceId,
+      realmId: realm.data.realmId,
       sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? "",
     })
     if (!authorization.success) {
@@ -112,8 +112,8 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   })
 
   app.post("/oauth2/consent", async (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcErrorResponseCreate(context, realm)
     const body = await oidcRequestJsonRead(context)
     if (!body.success) return oidcErrorResponseCreate(context, body)
     const input = v.safeParse(oidcAuthorizationConsentRequestSchema, body.data)
@@ -126,7 +126,7 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       database: options.database,
       encryptionSecret: options.systemSecret,
       input: input.output,
-      instanceId: instance.data.instanceId,
+      realmId: realm.data.realmId,
       sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? "",
     })
     if (!consent.success) return oidcErrorResponseCreate(context, consent)
@@ -135,8 +135,8 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   })
 
   app.post("/oauth2/consent/revoke", async (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcErrorResponseCreate(context, realm)
     const body = await oidcRequestJsonRead(context)
     if (!body.success) return oidcErrorResponseCreate(context, body)
     const input = v.safeParse(oidcConsentRevokeRequestSchema, body.data)
@@ -149,7 +149,7 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       context,
       oidcConsentRevoke({
         database: options.database,
-        instanceId: instance.data.instanceId,
+        realmId: realm.data.realmId,
         clientId: input.output.client_id,
         sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? "",
       }),
@@ -165,8 +165,8 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     json: (body: unknown, status?: ContentfulStatusCode) => Response
     redirect: (location: string, status?: 301 | 302 | 303 | 307 | 308) => Response
   }) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcErrorResponseCreate(context, realm)
     const input = v.safeParse(oidcLogoutRequestSchema, {
       ...(context.req.query("client_id") === undefined ? {} : { client_id: context.req.query("client_id") }),
       ...(context.req.query("id_token_hint") === undefined
@@ -183,7 +183,7 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       database: options.database,
       encryptionSecret: options.systemSecret,
       input: input.output,
-      instanceId: instance.data.instanceId,
+      realmId: realm.data.realmId,
       sessionToken: oidcBearerTokenGet(context.req.header("authorization")) ?? undefined,
     })
     if (!loggedOut.success) return oidcErrorResponseCreate(context, loggedOut)
@@ -199,8 +199,8 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   app.get("/oidc/logout", oidcLogoutRoute)
 
   app.post("/oauth2/authorization-code/redeem", async (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcErrorResponseCreate(context, instance)
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcErrorResponseCreate(context, realm)
     const body = await oidcRequestJsonRead(context)
     if (!body.success) return oidcErrorResponseCreate(context, body)
     const input = v.safeParse(oidcAuthorizationCodeRedeemRequestSchema, body.data)
@@ -215,15 +215,14 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
         database: options.database,
         encryptionSecret: options.systemSecret,
         input: input.output,
-        instanceId: instance.data.instanceId,
+        realmId: realm.data.realmId,
       }),
     )
   })
 
   app.post("/oauth2/token", async (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success)
-      return oidcTokenErrorResponseCreate(context, "invalid_request", "The token request is invalid.")
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcTokenErrorResponseCreate(context, "invalid_request", "The token request is invalid.")
     const body = await oidcTokenFormRead(context)
     if (!body.success) return oidcTokenErrorResponseCreate(context, "invalid_request", body.errorMessage)
     if (
@@ -245,7 +244,7 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       database: options.database,
       encryptionSecret: options.systemSecret,
       input: input.output,
-      instanceId: instance.data.instanceId,
+      realmId: realm.data.realmId,
     })
     if (!token.success) return oidcTokenErrorResponseCreate(context, oidcTokenErrorCodeGet(token), token.errorMessage)
     context.header("cache-control", "no-store")
@@ -254,13 +253,13 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   })
 
   app.get("/oauth2/userinfo", (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcUserInfoErrorResponseCreate(context)
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcUserInfoErrorResponseCreate(context)
     const token = oidcBearerTokenGet(context.req.header("authorization"))
     if (token === null) return oidcUserInfoErrorResponseCreate(context)
     const userInfo = oidcUserInfoGet({
       database: options.database,
-      instanceId: instance.data.instanceId,
+      realmId: realm.data.realmId,
       token,
     })
     if (!userInfo.success) return oidcUserInfoErrorResponseCreate(context)
@@ -269,13 +268,13 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   })
 
   app.post("/oauth2/userinfo", (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success) return oidcUserInfoErrorResponseCreate(context)
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcUserInfoErrorResponseCreate(context)
     const token = oidcBearerTokenGet(context.req.header("authorization"))
     if (token === null) return oidcUserInfoErrorResponseCreate(context)
     const userInfo = oidcUserInfoGet({
       database: options.database,
-      instanceId: instance.data.instanceId,
+      realmId: realm.data.realmId,
       token,
     })
     if (!userInfo.success) return oidcUserInfoErrorResponseCreate(context)
@@ -284,8 +283,8 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   })
 
   app.post("/oauth2/revoke", async (context) => {
-    const instance = oidcPublicInstanceResolve(options.database, context.req.header("host"), context.req.url)
-    if (!instance.success)
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success)
       return oidcTokenErrorResponseCreate(
         context,
         "invalid_request",
@@ -313,7 +312,7 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     const revoked = oidcTokenRevoke({
       database: options.database,
       input: input.output,
-      instanceId: instance.data.instanceId,
+      realmId: realm.data.realmId,
     })
     if (!revoked.success)
       return oidcTokenErrorResponseCreate(
@@ -345,7 +344,7 @@ function oidcManagementRoutesRegister(
       oidcClientList({
         context: authenticated.data,
         database: options.database,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
       }),
     )
   })
@@ -358,7 +357,7 @@ function oidcManagementRoutesRegister(
       oidcConsentList({
         context: authenticated.data,
         database: options.database,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
         userId: oidcParamGet(context, "userId"),
       }),
     )
@@ -372,7 +371,7 @@ function oidcManagementRoutesRegister(
       oidcConsentRevoke({
         context: authenticated.data,
         database: options.database,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
         clientId: oidcParamGet(context, "clientId"),
         userId: oidcParamGet(context, "userId"),
       }),
@@ -396,7 +395,7 @@ function oidcManagementRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
       }),
       201,
     )
@@ -411,7 +410,7 @@ function oidcManagementRoutesRegister(
         clientId: oidcParamGet(context, "clientId"),
         context: authenticated.data,
         database: options.database,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
       }),
     )
   })
@@ -434,7 +433,7 @@ function oidcManagementRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
       }),
     )
   })
@@ -457,7 +456,7 @@ function oidcManagementRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
       }),
     )
   })
@@ -471,7 +470,7 @@ function oidcManagementRoutesRegister(
         clientId: oidcParamGet(context, "clientId"),
         context: authenticated.data,
         database: options.database,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
       }),
     )
   })
@@ -484,7 +483,7 @@ function oidcManagementRoutesRegister(
       oidcSigningKeyList({
         context: authenticated.data,
         database: options.database,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
       }),
     )
   })
@@ -498,7 +497,7 @@ function oidcManagementRoutesRegister(
         context: authenticated.data,
         database: options.database,
         encryptionSecret: options.systemSecret,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
       }),
       201,
     )
@@ -521,7 +520,7 @@ function oidcManagementRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: oidcParamGet(context, "instanceId"),
+        realmId: oidcParamGet(context, "realmId"),
         signingKeyId: oidcParamGet(context, "signingKeyId"),
       }),
     )
@@ -532,7 +531,7 @@ function oidcSystemAuthenticate(authorization: string | undefined, configuredSec
   const token = oidcBearerTokenGet(authorization)
   if (configuredSecret === undefined || token === null || !secretMatches(token, configuredSecret))
     return { errorMessage: "System authorization is required.", op: "oidcSystemAuthorization", success: false as const }
-  return { data: instanceSystemContextCreate(), success: true as const }
+  return { data: realmSystemContextCreate(), success: true as const }
 }
 
 function oidcTenantAuthenticate(
@@ -541,21 +540,21 @@ function oidcTenantAuthenticate(
   requestUrl: string,
   authorization: string | undefined,
 ) {
-  const tenant = oidcPublicInstanceResolve(database, host, requestUrl)
+  const tenant = oidcPublicRealmResolve(database, host, requestUrl)
   if (!tenant.success) return tenant
-  return instanceBootstrapAdminAuthenticate({
+  return realmBootstrapAdminAuthenticate({
     context: { ...tenant.data, actor: { ...tenant.data.actor, kind: "anonymous" }, actorId: "anonymous" },
     database,
     secret: oidcBearerTokenGet(authorization) ?? "",
   })
 }
 
-function oidcPublicInstanceResolve(database: StorageDatabase, host: string | undefined, requestUrl: string) {
+function oidcPublicRealmResolve(database: StorageDatabase, host: string | undefined, requestUrl: string) {
   const resolvedHost = host ?? new URL(requestUrl).hostname
   const normalizedHost = resolvedHost.startsWith("[")
     ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
     : resolvedHost.split(":")[0]
-  return instanceTenantContextResolve({ database, host: normalizedHost ?? "" })
+  return realmTenantContextResolve({ database, host: normalizedHost ?? "" })
 }
 
 function oidcBearerTokenGet(authorization: string | undefined): string | null {

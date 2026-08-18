@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationBrandingChangedEventPayloadSchema } from "../events/organizationBrandingChangedEventPayloadSchema.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationBrandingRepositoryCreate } from "../persistence/organizationBrandingRepositoryCreate.js"
@@ -21,10 +21,10 @@ import {
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationBrandingSetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OrganizationBrandingSetRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -34,7 +34,7 @@ export function organizationBrandingSet(options: OrganizationBrandingSetOptions)
   const op = "organizationBrandingSet"
   const parsed = v.safeParse(organizationBrandingSetRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The organization branding is invalid.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The organization is not available in this tenant context.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
@@ -46,7 +46,7 @@ export function organizationBrandingSet(options: OrganizationBrandingSetOptions)
     if (!organization.success) return organization
     if (
       organization.data === null ||
-      organization.data.instanceId !== options.instanceId ||
+      organization.data.realmId !== options.realmId ||
       organization.data.status !== "active"
     )
       return resultErrorCreate(op, "The organization was not found.")
@@ -65,7 +65,7 @@ export function organizationBrandingSet(options: OrganizationBrandingSetOptions)
       current.data === null
         ? repository.organizationBrandingCreate({
             branding: JSON.stringify(parsed.output),
-            instanceId: options.instanceId,
+            realmId: options.realmId,
             organizationId: options.organizationId,
             updatedAt: now,
             version,
@@ -92,7 +92,7 @@ export function organizationBrandingSet(options: OrganizationBrandingSetOptions)
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.brandingChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: now,
         payload: payload.output,

@@ -10,7 +10,7 @@ export const passkeyCredentialTable = sqliteTable(
     credentialId: text("credential_id").notNull(),
     deviceType: text("device_type").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     lastUsedAt: integer("last_used_at"),
     publicKey: blob("public_key", { mode: "buffer" }).notNull(),
     revokedAt: integer("revoked_at"),
@@ -21,8 +21,8 @@ export const passkeyCredentialTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("passkey_credentials_rp_credential_idx").on(table.rpId, table.credentialId),
-    index("passkey_credentials_instance_user_idx").on(table.instanceId, table.userId),
-    index("passkey_credentials_instance_rp_idx").on(table.instanceId, table.rpId),
+    index("passkey_credentials_realm_user_idx").on(table.realmId, table.userId),
+    index("passkey_credentials_realm_rp_idx").on(table.realmId, table.rpId),
   ],
 )
 

@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcSigningKeyPublicViewCreate } from "../domain/oidcSigningKeyPublicViewCreate.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
@@ -21,10 +21,10 @@ import {
 import type { OidcSigningKeyResponse } from "../public/oidcSigningKeyResponseSchema.js"
 
 type OidcSigningKeyLifecycleSetOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OidcSigningKeyLifecycleRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly signingKeyId: string
   readonly correlationId?: string
@@ -34,7 +34,7 @@ export function oidcSigningKeyLifecycleSet(options: OidcSigningKeyLifecycleSetOp
   const op = "oidcSigningKeyLifecycleSet"
   const parsed = v.safeParse(oidcSigningKeyLifecycleRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The signing key lifecycle request is invalid.")
-  const authorized = oidcClientContextAuthorize({ context: options.context, instanceId: options.instanceId })
+  const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
   const runtime = options.runtime ?? options.database.runtime
   const retiredAt = runtime.now()
@@ -43,11 +43,11 @@ export function oidcSigningKeyLifecycleSet(options: OidcSigningKeyLifecycleSetOp
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
-    const current = repository.signingKeyGet(options.instanceId, options.signingKeyId)
+    const current = repository.signingKeyGet(options.realmId, options.signingKeyId)
     if (!current.success) return current
     if (current.data === null) return resultErrorCreate(op, "The signing key was not found.")
     if (current.data.status === "retired") return resultErrorCreate(op, "The signing key is already retired.")
-    const updated = repository.signingKeyUpdate(options.instanceId, options.signingKeyId, {
+    const updated = repository.signingKeyUpdate(options.realmId, options.signingKeyId, {
       retiredAt,
       status: parsed.output.status,
     })
@@ -65,7 +65,7 @@ export function oidcSigningKeyLifecycleSet(options: OidcSigningKeyLifecycleSetOp
         commandIndex: 0,
         correlationId,
         eventType: oidcEventTypes.signingKeyRetired,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "oidc", reason: "lifecycle" },
         occurredAt: retiredAt,
         payload: payload.output,

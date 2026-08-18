@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectApplicationPublicViewCreate } from "../domain/projectApplicationPublicViewCreate.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectApplicationStatusChangedEventPayloadSchema } from "../events/projectApplicationStatusChangedEventPayloadSchema.js"
@@ -22,10 +22,10 @@ import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectApplicationLifecycleSetOptions = {
   readonly applicationId: string
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: ProjectApplicationLifecycleRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -48,7 +48,7 @@ export function projectApplicationLifecycleSet(
     if (!current.success) return current
     if (
       current.data === null ||
-      current.data.instanceId !== options.instanceId ||
+      current.data.realmId !== options.realmId ||
       current.data.projectId !== options.projectId
     )
       return resultErrorCreate(op, "The application was not found.")
@@ -62,7 +62,7 @@ export function projectApplicationLifecycleSet(
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.app.write",
       project: project.data,
     })
@@ -89,7 +89,7 @@ export function projectApplicationLifecycleSet(
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.applicationStatusChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: updatedAt,
         payload: payload.output,

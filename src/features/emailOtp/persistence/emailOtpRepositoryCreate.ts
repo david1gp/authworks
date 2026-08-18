@@ -13,7 +13,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
       consumedAt: number | null
       expectedVersion: number
       id: string
-      instanceId: string
+      realmId: string
       version: number
     }): Result<EmailOtpChallengeRow | null> {
       try {
@@ -24,7 +24,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .where(
               and(
                 eq(emailOtpChallengeTable.id, input.id),
-                eq(emailOtpChallengeTable.instanceId, input.instanceId),
+                eq(emailOtpChallengeTable.realmId, input.realmId),
                 eq(emailOtpChallengeTable.version, input.expectedVersion),
                 isNull(emailOtpChallengeTable.consumedAt),
               ),
@@ -38,7 +38,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
     },
 
     emailOtpChallengeConsume(
-      instanceId: string,
+      realmId: string,
       id: string,
       expectedVersion: number,
       consumedAt: number,
@@ -51,7 +51,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .where(
               and(
                 eq(emailOtpChallengeTable.id, id),
-                eq(emailOtpChallengeTable.instanceId, instanceId),
+                eq(emailOtpChallengeTable.realmId, realmId),
                 eq(emailOtpChallengeTable.version, expectedVersion),
                 isNull(emailOtpChallengeTable.consumedAt),
               ),
@@ -75,13 +75,13 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    emailOtpChallengeGet(instanceId: string, id: string): Result<EmailOtpChallengeRow | null> {
+    emailOtpChallengeGet(realmId: string, id: string): Result<EmailOtpChallengeRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(emailOtpChallengeTable)
-            .where(and(eq(emailOtpChallengeTable.instanceId, instanceId), eq(emailOtpChallengeTable.id, id)))
+            .where(and(eq(emailOtpChallengeTable.realmId, realmId), eq(emailOtpChallengeTable.id, id)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -90,7 +90,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
     },
 
     emailOtpChallengeLatestGet(
-      instanceId: string,
+      realmId: string,
       emailHash: string,
       purpose: string,
     ): Result<EmailOtpChallengeRow | null> {
@@ -101,7 +101,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .from(emailOtpChallengeTable)
             .where(
               and(
-                eq(emailOtpChallengeTable.instanceId, instanceId),
+                eq(emailOtpChallengeTable.realmId, realmId),
                 eq(emailOtpChallengeTable.emailHash, emailHash),
                 eq(emailOtpChallengeTable.purpose, purpose),
               ),
@@ -115,7 +115,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
     },
 
     emailOtpChallengeExpirePrevious(
-      instanceId: string,
+      realmId: string,
       emailHash: string,
       purpose: string,
       consumedAt: number,
@@ -126,7 +126,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
           .set({ consumedAt })
           .where(
             and(
-              eq(emailOtpChallengeTable.instanceId, instanceId),
+              eq(emailOtpChallengeTable.realmId, realmId),
               eq(emailOtpChallengeTable.emailHash, emailHash),
               eq(emailOtpChallengeTable.purpose, purpose),
               isNull(emailOtpChallengeTable.consumedAt),
@@ -142,13 +142,13 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    emailOtpUserFindByEmail(instanceId: string, email: string): Result<UserRow | null> {
+    emailOtpUserFindByEmail(realmId: string, email: string): Result<UserRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(userTable)
-            .where(and(eq(userTable.instanceId, instanceId), eq(userTable.email, email)))
+            .where(and(eq(userTable.realmId, realmId), eq(userTable.email, email)))
             .orderBy(asc(userTable.createdAt))
             .get() ?? null,
         )
@@ -157,13 +157,13 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    emailOtpUserGet(instanceId: string, userId: string): Result<UserRow | null> {
+    emailOtpUserGet(realmId: string, userId: string): Result<UserRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(userTable)
-            .where(and(eq(userTable.instanceId, instanceId), eq(userTable.id, userId)))
+            .where(and(eq(userTable.realmId, realmId), eq(userTable.id, userId)))
             .get() ?? null,
         )
       } catch (_error) {

@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcClientPublicViewCreate } from "../domain/oidcClientPublicViewCreate.js"
 import { oidcRedirectUriValidate } from "../domain/oidcRedirectUriValidate.js"
@@ -20,10 +20,10 @@ import type { OidcClientResponse } from "../public/oidcClientResponseSchema.js"
 
 type OidcClientUpdateOptions = {
   readonly clientId: string
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OidcClientUpdateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -33,7 +33,7 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
   const parsed = v.safeParse(oidcClientUpdateRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The OIDC client update is invalid.")
   if (Object.keys(parsed.output).length === 0) return resultErrorCreate(op, "The OIDC client update is empty.")
-  const authorized = oidcClientContextAuthorize({ context: options.context, instanceId: options.instanceId })
+  const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
@@ -42,13 +42,13 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
-    const current = repository.clientGet(options.instanceId, options.clientId)
+    const current = repository.clientGet(options.realmId, options.clientId)
     if (!current.success) return current
     if (current.data === null || current.data.status === "removed")
       return resultErrorCreate(op, "The OIDC client was not found.")
     const configuration = oidcClientUpdateConfigurationValidate(parsed.output, current.data)
     if (!configuration.success) return configuration
-    const updated = repository.clientUpdate(options.instanceId, options.clientId, {
+    const updated = repository.clientUpdate(options.realmId, options.clientId, {
       allowedScopes: JSON.stringify(configuration.data.allowedScopes),
       applicationId:
         parsed.output.applicationId === undefined ? current.data.applicationId : parsed.output.applicationId,
@@ -83,7 +83,7 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
         commandIndex: 0,
         correlationId,
         eventType: oidcEventTypes.clientUpdated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "oidc" },
         occurredAt: updatedAt,
         payload: payload.output,

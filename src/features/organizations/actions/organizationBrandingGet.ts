@@ -11,7 +11,7 @@ import { organizationBrandingSchema } from "../public/organizationBrandingSchema
 
 type OrganizationBrandingGetOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId: string
 }
 
@@ -20,7 +20,7 @@ export function organizationBrandingGet(options: OrganizationBrandingGetOptions)
   if (!organization.success) return organization
   if (
     organization.data === null ||
-    organization.data.instanceId !== options.instanceId ||
+    organization.data.realmId !== options.realmId ||
     organization.data.status !== "active"
   )
     return resultErrorCreate("organizationBrandingGet", "The organization was not found.")

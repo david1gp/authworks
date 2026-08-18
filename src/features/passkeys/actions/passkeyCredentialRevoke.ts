@@ -20,7 +20,7 @@ type PasskeyCredentialRevokeOptions = {
   readonly correlationId?: string
   readonly database: StorageDatabase
   readonly input: PasskeyCredentialRevokeRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly userId: string
 }
@@ -37,14 +37,14 @@ export function passkeyCredentialRevoke(
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = passkeyRepositoryCreate(transaction)
-    const credential = repository.passkeyCredentialGet(options.instanceId, options.userId, input.output.credentialId)
+    const credential = repository.passkeyCredentialGet(options.realmId, options.userId, input.output.credentialId)
     if (!credential.success) return credential
     if (credential.data === null || credential.data.revokedAt !== null)
       return resultErrorCreate(op, "The passkey credential is invalid.")
-    const eventVersion = repository.passkeyEventVersionGet(options.instanceId, "passkey_credential", credential.data.id)
+    const eventVersion = repository.passkeyEventVersionGet(options.realmId, "passkey_credential", credential.data.id)
     if (!eventVersion.success) return eventVersion
     const revoked = repository.passkeyCredentialRevoke(
-      options.instanceId,
+      options.realmId,
       options.userId,
       credential.data.id,
       credential.data.version,
@@ -67,7 +67,7 @@ export function passkeyCredentialRevoke(
         commandIndex: 0,
         correlationId,
         eventType: passkeyEventTypes.credentialRevoked,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passkeys" },
         occurredAt: now,
         payload: payload.output,

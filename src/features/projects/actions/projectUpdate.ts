@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectNameNormalize } from "../domain/projectNameNormalize.js"
 import { projectPublicViewCreate } from "../domain/projectPublicViewCreate.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
@@ -19,10 +19,10 @@ import type { Project } from "../public/projectSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectUpdateOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: ProjectUpdateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -32,7 +32,7 @@ export function projectUpdate(options: ProjectUpdateOptions): Result<{ project: 
   const op = "projectUpdate"
   const parsed = v.safeParse(projectUpdateRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The project update is invalid.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The project is not available in this tenant context.")
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
@@ -43,12 +43,12 @@ export function projectUpdate(options: ProjectUpdateOptions): Result<{ project: 
     const repository = projectRepositoryCreate(transaction)
     const current = repository.projectGet(options.projectId)
     if (!current.success) return current
-    if (current.data === null || current.data.instanceId !== options.instanceId || current.data.status !== "active")
+    if (current.data === null || current.data.realmId !== options.realmId || current.data.status !== "active")
       return resultErrorCreate(op, "The project was not found.")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.write",
       project: current.data,
     })
@@ -91,7 +91,7 @@ export function projectUpdate(options: ProjectUpdateOptions): Result<{ project: 
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.updated,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: updatedAt,
         payload: payload.output,

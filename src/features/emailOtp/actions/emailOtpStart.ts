@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
 import { emailOtpCodeCreate } from "../domain/emailOtpCodeCreate.js"
 import { emailOtpCodeHashCreate } from "../domain/emailOtpCodeHashCreate.js"
@@ -29,10 +29,10 @@ const emailOtpExpiryMs = 10 * 60 * 1_000
 const emailOtpMaxAttempts = 5
 
 type EmailOtpStartOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: EmailOtpStartRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly organizationId?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -50,7 +50,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
   const op = "emailOtpStart"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The email OTP is not available in this tenant context.")
   const parsed = v.safeParse(emailOtpStartRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The email OTP request is invalid.")
@@ -66,11 +66,11 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
     })
   const email = userEmailNormalize(parsed.output.email)
   if (!email.success) return generic()
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success || instance.data.instance.status !== "active") return generic()
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success || realm.data.realm.status !== "active") return generic()
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     method: "email_otp",
     organizationId: options.organizationId ?? parsed.output.organizationId,
   })
@@ -82,7 +82,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const committed = storageTransactionRun(options.database, (transaction) => {
     const repository = emailOtpRepositoryCreate(transaction)
-    const latest = repository.emailOtpChallengeLatestGet(options.instanceId, emailHash, "sign_in")
+    const latest = repository.emailOtpChallengeLatestGet(options.realmId, emailHash, "sign_in")
     if (!latest.success) return latest
     if (latest.data !== null && latest.data.cooldownUntil > now) {
       return resultCreate<EmailOtpStartCommit>({
@@ -94,9 +94,9 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
         },
       })
     }
-    const previous = repository.emailOtpChallengeExpirePrevious(options.instanceId, emailHash, "sign_in", now)
+    const previous = repository.emailOtpChallengeExpirePrevious(options.realmId, emailHash, "sign_in", now)
     if (!previous.success) return previous
-    const user = repository.emailOtpUserFindByEmail(options.instanceId, email.data)
+    const user = repository.emailOtpUserFindByEmail(options.realmId, email.data)
     if (!user.success) return user
     const eligible =
       user.data !== null &&
@@ -114,7 +114,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
       emailHash,
       expiresAt,
       id: challengeId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       maxAttempts: emailOtpMaxAttempts,
       organizationId: options.organizationId ?? parsed.output.organizationId ?? null,
       purpose: "sign_in",
@@ -138,7 +138,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
         commandIndex: 0,
         correlationId,
         eventType: emailOtpEventTypes.requested,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "email_otp" },
         occurredAt: now,
         payload: payload.output,
@@ -157,11 +157,11 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
         code: code.data,
         email: user.data.email,
         expiresAt,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         purpose: "sign_in",
         userId: user.data.id,
       },
-      notification: { challengeId, instanceId: options.instanceId, kind: "requested", userId: user.data.id },
+      notification: { challengeId, realmId: options.realmId, kind: "requested", userId: user.data.id },
       response: { accepted: true, challengeId, expiresAt, retryAt: cooldownUntil },
     })
   })

@@ -18,7 +18,7 @@ type MfaPrimaryAuthenticationCompleteOptions<TSession> = {
     readonly userAgent?: string
   }
   readonly executor: StorageExecutor
-  readonly instanceId: string
+  readonly realmId: string
   readonly primaryAuthenticationMethod: SessionAuthenticationMethod
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionCreate?: () => Result<TSession>
@@ -30,17 +30,17 @@ export function mfaPrimaryAuthenticationComplete<TSession>(
 ): Result<{ readonly challenge?: MfaChallengeResponse; readonly session?: TSession }> {
   const op = "mfaPrimaryAuthenticationComplete"
   const repository = mfaRepositoryCreate(options.executor)
-  const policy = repository.mfaPolicyGet(options.instanceId)
+  const policy = repository.mfaPolicyGet(options.realmId)
   if (!policy.success) return policy
   if ((policy.data ?? mfaPolicyDefaults).mode === "required") {
-    const enrollment = repository.mfaEnrollmentActiveGet(options.instanceId, options.userId)
+    const enrollment = repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
     if (!enrollment.success) return enrollment
     if (enrollment.data === null) return resultErrorCreate(op, "MFA enrollment is required.")
     const challenge = mfaLoginChallengeStart({
       actorId: options.actorId,
       deviceMetadata: options.deviceMetadata,
       executor: options.executor,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       primaryAuthenticationMethod: options.primaryAuthenticationMethod,
       purpose: "login",
       runtime: options.runtime,

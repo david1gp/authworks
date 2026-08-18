@@ -37,13 +37,13 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    organizationList(instanceId: string): Result<OrganizationRow[]> {
+    organizationList(realmId: string): Result<OrganizationRow[]> {
       try {
         return resultCreate(
           database
             .select()
             .from(organizationTable)
-            .where(eq(organizationTable.instanceId, instanceId))
+            .where(eq(organizationTable.realmId, realmId))
             .orderBy(asc(organizationTable.createdAt))
             .all(),
         )

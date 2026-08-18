@@ -6,9 +6,9 @@ import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { instanceBootstrapAdminAuthenticate } from "../../instances/actions/instanceBootstrapAdminAuthenticate.js"
-import { instanceTenantContextResolve } from "../../instances/actions/instanceTenantContextResolve.js"
-import { instanceSystemContextCreate } from "../../instances/domain/instanceSystemContextCreate.js"
+import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { organizationCreate } from "../actions/organizationCreate.js"
 import { organizationBrandingGet } from "../actions/organizationBrandingGet.js"
 import { organizationBrandingSet } from "../actions/organizationBrandingSet.js"
@@ -17,8 +17,8 @@ import { organizationDomainDiscover } from "../actions/organizationDomainDiscove
 import { organizationDomainList } from "../actions/organizationDomainList.js"
 import { organizationDomainRemove } from "../actions/organizationDomainRemove.js"
 import { organizationDomainVerify } from "../actions/organizationDomainVerify.js"
-import { organizationInstanceLoginPolicyGet } from "../actions/organizationInstanceLoginPolicyGet.js"
-import { organizationInstanceLoginPolicySet } from "../actions/organizationInstanceLoginPolicySet.js"
+import { organizationRealmLoginPolicyGet } from "../actions/organizationRealmLoginPolicyGet.js"
+import { organizationRealmLoginPolicySet } from "../actions/organizationRealmLoginPolicySet.js"
 import { organizationLoginPolicyGet } from "../actions/organizationLoginPolicyGet.js"
 import { organizationLoginPolicySet } from "../actions/organizationLoginPolicySet.js"
 import { organizationDomainDnsVerificationPortCreate } from "../domain/organizationDomainDnsVerificationPortCreate.js"
@@ -57,7 +57,7 @@ type OrganizationServerAppCreateOptions = {
 
 export function organizationServerAppCreate(options: OrganizationServerAppCreateOptions) {
   const app = new Hono()
-  const systemContext = instanceSystemContextCreate("system")
+  const systemContext = realmSystemContextCreate("system")
   const domainVerificationPort = options.domainVerificationPort ?? organizationDomainDnsVerificationPortCreate()
 
   app.get("/organization-discovery", (context) =>
@@ -87,7 +87,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
 
   app.get("/organization-roles", (context) => context.json(organizationRoleList().data))
 
-  app.get("/system/instances/:instanceId/organizations", (context) => {
+  app.get("/system/realms/:realmId/organizations", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
@@ -95,12 +95,12 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
       organizationList({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/organizations", async (context) => {
+  app.post("/system/realms/:realmId/organizations", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -117,13 +117,13 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
       201,
     )
   })
 
-  app.get("/system/instances/:instanceId/organizations/:organizationId", (context) => {
+  app.get("/system/realms/:realmId/organizations/:organizationId", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
@@ -131,13 +131,13 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
       organizationGet({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.patch("/system/instances/:instanceId/organizations/:organizationId", async (context) => {
+  app.patch("/system/realms/:realmId/organizations/:organizationId", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -154,22 +154,22 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.get("/system/instances/:instanceId/login-policy", (context) => {
+  app.get("/system/realms/:realmId/login-policy", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
       context,
-      organizationInstanceLoginPolicyGet({ database: options.database, instanceId: context.req.param("instanceId") }),
+      organizationRealmLoginPolicyGet({ database: options.database, realmId: context.req.param("realmId") }),
     )
   })
 
-  app.patch("/system/instances/:instanceId/login-policy", async (context) => {
+  app.patch("/system/realms/:realmId/login-policy", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -178,33 +178,33 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!input.success)
       return organizationErrorResponseCreate(context, {
         errorMessage: "The login policy is invalid.",
-        op: "organizationInstanceLoginPolicySet",
+        op: "organizationRealmLoginPolicySet",
       })
     return organizationResultResponseCreate(
       context,
-      organizationInstanceLoginPolicySet({
+      organizationRealmLoginPolicySet({
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
 
-  app.get("/system/instances/:instanceId/organizations/:organizationId/branding", (context) => {
+  app.get("/system/realms/:realmId/organizations/:organizationId/branding", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
       context,
       organizationBrandingGet({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.put("/system/instances/:instanceId/organizations/:organizationId/branding", async (context) => {
+  app.put("/system/realms/:realmId/organizations/:organizationId/branding", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -221,26 +221,26 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.get("/system/instances/:instanceId/organizations/:organizationId/login-policy", (context) => {
+  app.get("/system/realms/:realmId/organizations/:organizationId/login-policy", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
       context,
       organizationLoginPolicyGet({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.patch("/system/instances/:instanceId/organizations/:organizationId/login-policy", async (context) => {
+  app.patch("/system/realms/:realmId/organizations/:organizationId/login-policy", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -257,26 +257,26 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.get("/system/instances/:instanceId/organizations/:organizationId/domains", (context) => {
+  app.get("/system/realms/:realmId/organizations/:organizationId/domains", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
       context,
       organizationDomainList({
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/organizations/:organizationId/domains", async (context) => {
+  app.post("/system/realms/:realmId/organizations/:organizationId/domains", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -293,14 +293,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
       201,
     )
   })
 
-  app.post("/system/instances/:instanceId/organizations/:organizationId/domains/:domain/verify", async (context) => {
+  app.post("/system/realms/:realmId/organizations/:organizationId/domains/:domain/verify", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
@@ -310,13 +310,13 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         database: options.database,
         dnsPort: domainVerificationPort,
         domain: context.req.param("domain"),
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.delete("/system/instances/:instanceId/organizations/:organizationId/domains/:domain", (context) => {
+  app.delete("/system/realms/:realmId/organizations/:organizationId/domains/:domain", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
@@ -325,13 +325,13 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         domain: context.req.param("domain"),
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/organizations/:organizationId/lifecycle", async (context) => {
+  app.post("/system/realms/:realmId/organizations/:organizationId/lifecycle", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -348,13 +348,13 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.get("/system/instances/:instanceId/organizations/:organizationId/memberships", (context) => {
+  app.get("/system/realms/:realmId/organizations/:organizationId/memberships", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
@@ -362,13 +362,13 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
       organizationMembershipList({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/organizations/:organizationId/memberships", async (context) => {
+  app.post("/system/realms/:realmId/organizations/:organizationId/memberships", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -385,44 +385,38 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
       201,
     )
   })
 
-  app.patch(
-    "/system/instances/:instanceId/organizations/:organizationId/memberships/:membershipId",
-    async (context) => {
-      const authorization = organizationSystemAuthorizationGet(
-        context.req.header("authorization"),
-        options.systemSecret,
-      )
-      if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
-      const body = await organizationRequestJsonRead(context)
-      if (!body.success) return organizationErrorResponseCreate(context, body)
-      const input = v.safeParse(organizationMembershipUpdateRequestSchema, body.data)
-      if (!input.success)
-        return organizationErrorResponseCreate(context, {
-          errorMessage: "The organization membership update is invalid.",
-          op: "organizationMembershipUpdate",
-        })
-      return organizationResultResponseCreate(
-        context,
-        organizationMembershipUpdate({
-          context: systemContext,
-          database: options.database,
-          input: input.output,
-          instanceId: context.req.param("instanceId"),
-          membershipId: context.req.param("membershipId"),
-          organizationId: context.req.param("organizationId"),
-        }),
-      )
-    },
-  )
+  app.patch("/system/realms/:realmId/organizations/:organizationId/memberships/:membershipId", async (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const body = await organizationRequestJsonRead(context)
+    if (!body.success) return organizationErrorResponseCreate(context, body)
+    const input = v.safeParse(organizationMembershipUpdateRequestSchema, body.data)
+    if (!input.success)
+      return organizationErrorResponseCreate(context, {
+        errorMessage: "The organization membership update is invalid.",
+        op: "organizationMembershipUpdate",
+      })
+    return organizationResultResponseCreate(
+      context,
+      organizationMembershipUpdate({
+        context: systemContext,
+        database: options.database,
+        input: input.output,
+        realmId: context.req.param("realmId"),
+        membershipId: context.req.param("membershipId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
 
-  app.delete("/system/instances/:instanceId/organizations/:organizationId/memberships/:membershipId", (context) => {
+  app.delete("/system/realms/:realmId/organizations/:organizationId/memberships/:membershipId", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
@@ -430,14 +424,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
       organizationMembershipRemove({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         membershipId: context.req.param("membershipId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.get("/system/instances/:instanceId/organizations/:organizationId/invitations", (context) => {
+  app.get("/system/realms/:realmId/organizations/:organizationId/invitations", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     return organizationResultResponseCreate(
@@ -445,13 +439,13 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
       organizationInvitationList({
         context: systemContext,
         database: options.database,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
     )
   })
 
-  app.post("/system/instances/:instanceId/organizations/:organizationId/invitations", async (context) => {
+  app.post("/system/realms/:realmId/organizations/:organizationId/invitations", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -468,33 +462,27 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
       201,
     )
   })
 
-  app.post(
-    "/system/instances/:instanceId/organizations/:organizationId/invitations/:invitationId/revoke",
-    (context) => {
-      const authorization = organizationSystemAuthorizationGet(
-        context.req.header("authorization"),
-        options.systemSecret,
-      )
-      if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
-      return organizationResultResponseCreate(
-        context,
-        organizationInvitationRevoke({
-          context: systemContext,
-          database: options.database,
-          instanceId: context.req.param("instanceId"),
-          invitationId: context.req.param("invitationId"),
-          organizationId: context.req.param("organizationId"),
-        }),
-      )
-    },
-  )
+  app.post("/system/realms/:realmId/organizations/:organizationId/invitations/:invitationId/revoke", (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    return organizationResultResponseCreate(
+      context,
+      organizationInvitationRevoke({
+        context: systemContext,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        invitationId: context.req.param("invitationId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+    )
+  })
 
   app.post("/organizations/invitations/accept", async (context) => {
     const body = await organizationRequestJsonRead(context)
@@ -526,7 +514,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     )
   })
 
-  app.post("/system/instances/:instanceId/organizations/switch", async (context) => {
+  app.post("/system/realms/:realmId/organizations/switch", async (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
     const body = await organizationRequestJsonRead(context)
@@ -543,7 +531,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
-        instanceId: context.req.param("instanceId"),
+        realmId: context.req.param("realmId"),
       }),
     )
   })
@@ -551,7 +539,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
   app.post("/organizations/switch", async (context) => {
     const tenant = organizationTenantContextResolve(options.database, context.req.header("host"), context.req.url)
     if (!tenant.success) return organizationErrorResponseCreate(context, tenant)
-    const authenticated = instanceBootstrapAdminAuthenticate({
+    const authenticated = realmBootstrapAdminAuthenticate({
       context: tenant.data,
       database: options.database,
       secret: organizationBearerTokenGet(context.req.header("authorization")) ?? "",
@@ -571,7 +559,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: authenticated.data,
         database: options.database,
         input: input.output,
-        instanceId: authenticated.data.instanceId,
+        realmId: authenticated.data.realmId,
       }),
     )
   })
@@ -657,7 +645,7 @@ function organizationTenantContextResolve(database: StorageDatabase, host: strin
   const normalizedHost = resolvedHost.startsWith("[")
     ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
     : resolvedHost.split(":")[0]
-  return instanceTenantContextResolve({ database, host: normalizedHost ?? "" })
+  return realmTenantContextResolve({ database, host: normalizedHost ?? "" })
 }
 
 function organizationRequestHostGet(host: string | undefined, requestUrl: string): string {

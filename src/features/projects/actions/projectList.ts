@@ -2,24 +2,24 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 import { projectPublicViewCreate } from "../domain/projectPublicViewCreate.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import type { Project } from "../public/projectSchema.js"
 
 type ProjectListOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
 }
 
 export function projectList(options: ProjectListOptions): Result<{ projects: Project[] }> {
   const op = "projectList"
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The projects are not available in this tenant context.")
-  const rows = projectRepositoryCreate(options.database.db).projectList(options.instanceId)
+  const rows = projectRepositoryCreate(options.database.db).projectList(options.realmId)
   if (!rows.success) return rows
   const projects: Project[] = []
   for (const project of rows.data) {
@@ -31,7 +31,7 @@ export function projectList(options: ProjectListOptions): Result<{ projects: Pro
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.read",
       project,
     })

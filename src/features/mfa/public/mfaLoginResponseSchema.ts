@@ -5,7 +5,7 @@ import { sessionCredentialResponseSchema } from "../../sessions/public/sessionCr
 export const mfaLoginResponseSchema = v.strictObject({
   authentication: v.strictObject({
     authenticatedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
-    instanceId: v.pipe(v.string(), v.minLength(1)),
+    realmId: v.pipe(v.string(), v.minLength(1)),
     userId: v.pipe(v.string(), v.minLength(1)),
   }),
   challenge: v.optional(mfaChallengeResponseSchema),

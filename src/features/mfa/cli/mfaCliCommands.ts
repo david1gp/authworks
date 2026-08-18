@@ -2,20 +2,20 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { mfaApiClientCreate } from "../client/mfaApiClientCreate.js"
 
 type MfaCliFlags = { readonly server?: string; readonly token?: string; readonly systemToken?: string }
-type MfaInstanceFlags = MfaCliFlags & { readonly instanceId: string }
+type MfaRealmFlags = MfaCliFlags & { readonly realmId: string }
 
 const mfaPolicyGetCommand = buildCommand({
-  async func(this: ApplicationContext, flags: MfaInstanceFlags) {
-    mfaCliResultWrite(this, await mfaCliClientCreate(this, flags).mfaPolicyGet(flags.instanceId))
+  async func(this: ApplicationContext, flags: MfaRealmFlags) {
+    mfaCliResultWrite(this, await mfaCliClientCreate(this, flags).mfaPolicyGet(flags.realmId))
   },
-  parameters: { flags: { ...mfaCommonFlags(), instanceId: mfaInstanceIdFlag() } },
+  parameters: { flags: { ...mfaCommonFlags(), realmId: mfaRealmIdFlag() } },
   docs: { brief: "Read the MFA policy" },
 })
 
 const mfaPolicySetCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: MfaInstanceFlags & {
+    flags: MfaRealmFlags & {
       lockoutDurationMs: number
       maxAttempts: number
       mode: "disabled" | "optional" | "required"
@@ -24,7 +24,7 @@ const mfaPolicySetCommand = buildCommand({
   ) {
     mfaCliResultWrite(
       this,
-      await mfaCliClientCreate(this, flags).mfaPolicySet(flags.instanceId, {
+      await mfaCliClientCreate(this, flags).mfaPolicySet(flags.realmId, {
         lockoutDurationMs: flags.lockoutDurationMs,
         maxAttempts: flags.maxAttempts,
         mode: flags.mode,
@@ -35,7 +35,7 @@ const mfaPolicySetCommand = buildCommand({
   parameters: {
     flags: {
       ...mfaCommonFlags(),
-      instanceId: mfaInstanceIdFlag(),
+      realmId: mfaRealmIdFlag(),
       mode: mfaModeFlag(),
       totpWindow: mfaNumberFlag("TOTP time-step window"),
       maxAttempts: mfaNumberFlag("Maximum MFA attempts"),
@@ -46,16 +46,16 @@ const mfaPolicySetCommand = buildCommand({
 })
 
 const mfaEnrollCommand = buildCommand({
-  async func(this: ApplicationContext, flags: MfaInstanceFlags & { label?: string }) {
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { label?: string }) {
     mfaCliResultWrite(
       this,
-      await mfaCliClientCreate(this, flags).mfaTotpEnrollmentStart(flags.instanceId, { label: flags.label }),
+      await mfaCliClientCreate(this, flags).mfaTotpEnrollmentStart(flags.realmId, { label: flags.label }),
     )
   },
   parameters: {
     flags: {
       ...mfaCommonFlags(),
-      instanceId: mfaInstanceIdFlag(),
+      realmId: mfaRealmIdFlag(),
       label: { ...mfaTextFlag("Authenticator label"), optional: true as const },
     },
   },
@@ -63,10 +63,10 @@ const mfaEnrollCommand = buildCommand({
 })
 
 const mfaConfirmCommand = buildCommand({
-  async func(this: ApplicationContext, flags: MfaInstanceFlags & { code: string; enrollmentId: string }) {
+  async func(this: ApplicationContext, flags: MfaRealmFlags & { code: string; enrollmentId: string }) {
     mfaCliResultWrite(
       this,
-      await mfaCliClientCreate(this, flags).mfaTotpEnrollmentConfirm(flags.instanceId, {
+      await mfaCliClientCreate(this, flags).mfaTotpEnrollmentConfirm(flags.realmId, {
         code: flags.code,
         enrollmentId: flags.enrollmentId,
       }),
@@ -75,7 +75,7 @@ const mfaConfirmCommand = buildCommand({
   parameters: {
     flags: {
       ...mfaCommonFlags(),
-      instanceId: mfaInstanceIdFlag(),
+      realmId: mfaRealmIdFlag(),
       enrollmentId: mfaTextFlag("Enrollment ID"),
       code: mfaTextFlag("TOTP code"),
     },
@@ -84,10 +84,10 @@ const mfaConfirmCommand = buildCommand({
 })
 
 const mfaRecoveryCommand = buildCommand({
-  async func(this: ApplicationContext, flags: MfaInstanceFlags) {
-    mfaCliResultWrite(this, await mfaCliClientCreate(this, flags).mfaRecoveryCodesGenerate(flags.instanceId))
+  async func(this: ApplicationContext, flags: MfaRealmFlags) {
+    mfaCliResultWrite(this, await mfaCliClientCreate(this, flags).mfaRecoveryCodesGenerate(flags.realmId))
   },
-  parameters: { flags: { ...mfaCommonFlags(), instanceId: mfaInstanceIdFlag() } },
+  parameters: { flags: { ...mfaCommonFlags(), realmId: mfaRealmIdFlag() } },
   docs: { brief: "Generate single-use recovery codes" },
 })
 
@@ -150,12 +150,12 @@ function mfaCommonFlags() {
   }
 }
 
-function mfaInstanceIdFlag() {
+function mfaRealmIdFlag() {
   return {
-    brief: "Instance UUID",
+    brief: "Realm UUID",
     kind: "parsed" as const,
     parse: (value: string) => value,
-    placeholder: "INSTANCE_ID",
+    placeholder: "REALM_ID",
   }
 }
 function mfaTextFlag(brief: string) {

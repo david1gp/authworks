@@ -9,7 +9,7 @@ export const oidcAuthorizationRequestTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     issuer: text("issuer").notNull(),
     nonceEncrypted: text("nonce_encrypted"),
     prompt: text("prompt"),
@@ -22,7 +22,7 @@ export const oidcAuthorizationRequestTable = sqliteTable(
     rejectedAt: integer("rejected_at"),
   },
   (table) => [
-    index("oidc_authorization_requests_instance_idx").on(table.instanceId),
+    index("oidc_authorization_requests_realm_idx").on(table.realmId),
     index("oidc_authorization_requests_expiry_idx").on(table.expiresAt),
   ],
 )

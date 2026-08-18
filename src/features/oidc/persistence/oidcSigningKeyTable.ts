@@ -8,14 +8,14 @@ export const oidcSigningKeyTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     encryptedPrivateKey: text("encrypted_private_key").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     publicJwk: text("public_jwk").notNull(),
     status: text("status").notNull(),
     retiredAt: integer("retired_at"),
   },
   (table) => [
-    index("oidc_signing_keys_instance_id_idx").on(table.instanceId, table.id),
-    index("oidc_signing_keys_instance_status_idx").on(table.instanceId, table.status),
+    index("oidc_signing_keys_realm_id_idx").on(table.realmId, table.id),
+    index("oidc_signing_keys_realm_status_idx").on(table.realmId, table.status),
   ],
 )
 

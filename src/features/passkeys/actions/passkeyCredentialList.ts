@@ -7,13 +7,13 @@ import type { PasskeyCredentialListResponse } from "../public/passkeyCredentialL
 
 type PasskeyCredentialListOptions = {
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly userId: string
 }
 
 export function passkeyCredentialList(options: PasskeyCredentialListOptions): Result<PasskeyCredentialListResponse> {
   const credentials = passkeyRepositoryCreate(options.database.db).passkeyCredentialList(
-    options.instanceId,
+    options.realmId,
     options.userId,
   )
   if (!credentials.success) return credentials

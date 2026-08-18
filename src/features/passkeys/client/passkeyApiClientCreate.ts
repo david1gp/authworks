@@ -46,14 +46,14 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
   const json = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
 
   return {
-    passkeyRegistrationStart(instanceId: string) {
+    passkeyRegistrationStart(realmId: string) {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys/registration/start`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys/registration/start`,
         json({}),
         passkeyRegistrationStartResponseSchema,
       )
     },
-    passkeyRegistrationComplete(instanceId: string, input: PasskeyRegistrationCompleteRequest) {
+    passkeyRegistrationComplete(realmId: string, input: PasskeyRegistrationCompleteRequest) {
       const checked = parsed(
         passkeyRegistrationCompleteRequestSchema,
         input,
@@ -61,12 +61,12 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
       )
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys/registration/complete`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys/registration/complete`,
         json(checked.data),
         passkeyRegistrationCompleteResponseSchema,
       )
     },
-    passkeyAuthenticationStart(instanceId: string, input: PasskeyAuthenticationStartRequest = {}) {
+    passkeyAuthenticationStart(realmId: string, input: PasskeyAuthenticationStartRequest = {}) {
       const checked = parsed(
         passkeyAuthenticationStartRequestSchema,
         input,
@@ -74,12 +74,12 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
       )
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys/authentication/start`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys/authentication/start`,
         json(checked.data),
         passkeyAuthenticationStartResponseSchema,
       )
     },
-    passkeyAuthenticationComplete(instanceId: string, input: PasskeyAuthenticationCompleteRequest) {
+    passkeyAuthenticationComplete(realmId: string, input: PasskeyAuthenticationCompleteRequest) {
       const checked = parsed(
         passkeyAuthenticationCompleteRequestSchema,
         input,
@@ -87,19 +87,19 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
       )
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys/authentication/complete`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys/authentication/complete`,
         json(checked.data),
         passkeyAuthenticationCompleteResponseSchema,
       )
     },
-    passkeyMfaStart(instanceId: string) {
+    passkeyMfaStart(realmId: string) {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys/mfa/start`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys/mfa/start`,
         json({}),
         passkeyAuthenticationStartResponseSchema,
       )
     },
-    passkeyMfaComplete(instanceId: string, input: PasskeyAuthenticationCompleteRequest) {
+    passkeyMfaComplete(realmId: string, input: PasskeyAuthenticationCompleteRequest) {
       const checked = parsed(
         passkeyAuthenticationCompleteRequestSchema,
         input,
@@ -107,19 +107,19 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
       )
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys/mfa/complete`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys/mfa/complete`,
         json(checked.data),
         passkeyAuthenticationCompleteResponseSchema,
       )
     },
-    passkeyStepUpStart(instanceId: string) {
+    passkeyStepUpStart(realmId: string) {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys/step-up/start`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys/step-up/start`,
         json({}),
         passkeyAuthenticationStartResponseSchema,
       )
     },
-    passkeyStepUpComplete(instanceId: string, input: PasskeyAuthenticationCompleteRequest) {
+    passkeyStepUpComplete(realmId: string, input: PasskeyAuthenticationCompleteRequest) {
       const checked = parsed(
         passkeyAuthenticationCompleteRequestSchema,
         input,
@@ -127,23 +127,23 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
       )
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys/step-up/complete`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys/step-up/complete`,
         json(checked.data),
         passkeyAuthenticationCompleteResponseSchema,
       )
     },
-    passkeyCredentialList(instanceId: string): Promise<Result<PasskeyCredentialListResponse>> {
+    passkeyCredentialList(realmId: string): Promise<Result<PasskeyCredentialListResponse>> {
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys`,
         { method: "GET" },
         passkeyCredentialListResponseSchema,
       )
     },
-    passkeyCredentialRevoke(instanceId: string, input: PasskeyCredentialRevokeRequest) {
+    passkeyCredentialRevoke(realmId: string, input: PasskeyCredentialRevokeRequest) {
       const checked = parsed(passkeyCredentialRevokeRequestSchema, input, "The passkey credential is invalid.")
       if (!checked.success) return Promise.resolve(checked)
       return request(
-        `/instances/${encodeURIComponent(instanceId)}/passkeys`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys`,
         { ...json(checked.data), method: "DELETE" },
         passkeyCredentialRevokeResponseSchema,
       )

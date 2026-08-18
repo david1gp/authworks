@@ -15,7 +15,7 @@ export function oidcSigningKeyPublicViewCreate(
       algorithm: row.algorithm,
       createdAt: row.createdAt,
       id: row.id,
-      instanceId: row.instanceId,
+      realmId: row.realmId,
       publicJwk,
       retiredAt: row.retiredAt,
       status: row.status,

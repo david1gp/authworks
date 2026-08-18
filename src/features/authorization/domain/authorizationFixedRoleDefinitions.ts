@@ -67,10 +67,10 @@ export const authorizationFixedRoleDefinitions: readonly AuthorizationRoleDefini
     roleId: "guest",
   },
   {
-    name: "Instance administrator",
+    name: "Realm administrator",
     permissions: [
-      authorizationPermissionDefinitions.instanceRead,
-      authorizationPermissionDefinitions.instanceWrite,
+      authorizationPermissionDefinitions.realmRead,
+      authorizationPermissionDefinitions.realmWrite,
       authorizationPermissionDefinitions.organizationManage,
       authorizationPermissionDefinitions.organizationMembersManage,
       authorizationPermissionDefinitions.organizationRead,
@@ -79,6 +79,6 @@ export const authorizationFixedRoleDefinitions: readonly AuthorizationRoleDefini
       authorizationPermissionDefinitions.userRead,
       authorizationPermissionDefinitions.userImpersonate,
     ],
-    roleId: "instance_admin",
+    roleId: "realm_admin",
   },
 ]

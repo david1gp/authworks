@@ -6,7 +6,7 @@ export const machineUserTable = sqliteTable(
     createdAt: integer("created_at").notNull(),
     displayName: text("display_name").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     scopes: text("scopes").notNull(),
     status: text("status").notNull(),
     updatedAt: integer("updated_at").notNull(),
@@ -14,8 +14,8 @@ export const machineUserTable = sqliteTable(
     version: integer("version").notNull(),
   },
   (table) => [
-    index("machine_users_instance_id_idx").on(table.instanceId),
-    uniqueIndex("machine_users_instance_user_name_idx").on(table.instanceId, table.userName),
+    index("machine_users_realm_id_idx").on(table.realmId),
+    uniqueIndex("machine_users_realm_user_name_idx").on(table.realmId, table.userName),
   ],
 )
 

@@ -7,17 +7,17 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationInvitationStatusEventPayloadSchema } from "../events/organizationInvitationStatusEventPayloadSchema.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationInvitationRevokeOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly invitationId: string
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -37,7 +37,7 @@ export function organizationInvitationRevoke(options: OrganizationInvitationRevo
     if (!invitation.success) return invitation
     if (
       invitation.data === null ||
-      invitation.data.instanceId !== options.instanceId ||
+      invitation.data.realmId !== options.realmId ||
       invitation.data.organizationId !== options.organizationId
     )
       return resultErrorCreate(op, "The organization invitation was not found.")
@@ -76,7 +76,7 @@ export function organizationInvitationRevoke(options: OrganizationInvitationRevo
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.invitationRevoked,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: updatedAt,
         payload: payload.output,

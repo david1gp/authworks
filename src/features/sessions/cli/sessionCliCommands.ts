@@ -2,14 +2,14 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { sessionApiClientCreate } from "../client/sessionApiClientCreate.js"
 
 type SessionCliFlags = {
-  readonly instanceId: string
+  readonly realmId: string
   readonly server?: string
   readonly token?: string
 }
 
 const sessionCurrentCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionCurrent(flags.instanceId))
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionCurrent(flags.realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "Read the current session" },
@@ -17,7 +17,7 @@ const sessionCurrentCommand = buildCommand({
 
 const sessionListCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionList(flags.instanceId))
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionList(flags.realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "List sessions" },
@@ -25,7 +25,7 @@ const sessionListCommand = buildCommand({
 
 const sessionRecentCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRecentList(flags.instanceId))
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRecentList(flags.realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "List recent sessions" },
@@ -33,7 +33,7 @@ const sessionRecentCommand = buildCommand({
 
 const sessionRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRotate(flags.instanceId))
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRotate(flags.realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "Rotate the current session credential" },
@@ -41,10 +41,7 @@ const sessionRotateCommand = buildCommand({
 
 const sessionRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags & { sessionId: string }) {
-    sessionCliResultWrite(
-      this,
-      await sessionCliClientCreate(this, flags).sessionRevoke(flags.instanceId, flags.sessionId),
-    )
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRevoke(flags.realmId, flags.sessionId))
   },
   parameters: { flags: { ...sessionCommonFlags(), sessionId: sessionIdFlag() } },
   docs: { brief: "Revoke a session" },
@@ -54,7 +51,7 @@ const sessionRevokeAllCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags & { keepCurrent: boolean }) {
     sessionCliResultWrite(
       this,
-      await sessionCliClientCreate(this, flags).sessionRevokeAll(flags.instanceId, { keepCurrent: flags.keepCurrent }),
+      await sessionCliClientCreate(this, flags).sessionRevokeAll(flags.realmId, { keepCurrent: flags.keepCurrent }),
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), keepCurrent: booleanFlag() } },
@@ -94,7 +91,7 @@ function sessionCliResultWrite(
 
 function sessionCommonFlags() {
   return {
-    instanceId: instanceIdFlag(),
+    realmId: realmIdFlag(),
     server: {
       brief: "ZITADEL v2 server URL",
       kind: "parsed" as const,
@@ -112,12 +109,12 @@ function sessionCommonFlags() {
   }
 }
 
-function instanceIdFlag() {
+function realmIdFlag() {
   return {
-    brief: "Instance UUID",
+    brief: "Realm UUID",
     kind: "parsed" as const,
     parse: (value: string) => value,
-    placeholder: "INSTANCE_ID",
+    placeholder: "REALM_ID",
   }
 }
 

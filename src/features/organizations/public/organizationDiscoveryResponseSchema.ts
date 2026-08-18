@@ -6,7 +6,7 @@ import { externalIdentityProviderTypeSchema } from "../../externalIdentities/pub
 
 const organizationDiscoveryOrganizationSchema = v.strictObject({
   id: organizationResourceIdSchema,
-  instanceId: organizationResourceIdSchema,
+  realmId: organizationResourceIdSchema,
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),
 })
 

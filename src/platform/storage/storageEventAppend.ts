@@ -18,7 +18,7 @@ export type StorageEventInput = {
   eventId?: string
   eventType: string
   id?: string
-  instanceId: string
+  realmId: string
   metadata: unknown
   occurredAt?: number
   payload: unknown
@@ -30,8 +30,8 @@ export function storageEventAppend(
   runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes"> = runtimeCreate(),
 ): Result<StorageEvent> {
   const op = "storageEventAppend"
-  if (input.instanceId.length === 0 || input.aggregateType.length === 0 || input.aggregateId.length === 0) {
-    return resultErrorCreate(op, "Event instance and aggregate identity are required.")
+  if (input.realmId.length === 0 || input.aggregateType.length === 0 || input.aggregateId.length === 0) {
+    return resultErrorCreate(op, "Event realm and aggregate identity are required.")
   }
   if (input.eventType.length === 0 || input.correlationId.length === 0)
     return resultErrorCreate(op, "Event type and correlation identity are required.")
@@ -67,7 +67,7 @@ export function storageEventAppend(
         correlationId: input.correlationId,
         eventType: input.eventType,
         id: eventId,
-        instanceId: input.instanceId,
+        realmId: input.realmId,
         metadata: metadata.data,
         occurredAt,
         payload: payload.data,

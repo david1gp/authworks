@@ -12,7 +12,7 @@ export const oidcClientSchema = v.strictObject({
   clientType: oidcClientTypeSchema,
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   id: oidcResourceIdSchema,
-  instanceId: oidcResourceIdSchema,
+  realmId: oidcResourceIdSchema,
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   postLogoutRedirectUris: v.pipe(v.array(oidcRedirectUriSchema), v.maxLength(100)),
   projectId: v.optional(oidcResourceIdSchema),

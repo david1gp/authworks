@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
 import { userNameNormalize } from "../../users/domain/userNameNormalize.js"
 import { userProfileNormalize } from "../../users/domain/userProfileNormalize.js"
@@ -35,10 +35,10 @@ import type { PasswordRegistrationResponse } from "../public/passwordRegistratio
 import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 type PasswordRegisterOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: PasswordRegistrationRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
   readonly onVerificationToken?: (delivery: PasswordRegistrationDelivery) => void
@@ -48,7 +48,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   const op = "passwordRegister"
   if (options.context === undefined || options.context === null)
     return resultErrorCreate(op, "A tenant context is required.")
-  if (options.context.kind === "tenant" && options.context.instanceId !== options.instanceId)
+  if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCreate(op, "The registration is not available in this tenant context.")
   const parsed = v.safeParse(passwordRegistrationRequestSchema, options.input)
   if (!parsed.success) return resultErrorCreate(op, "The registration request is invalid.")
@@ -58,17 +58,17 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   if (!userName.success) return resultErrorCreate(op, "The registration request is invalid.")
   const profile = userProfileNormalize(parsed.output.profile)
   if (!profile.success) return resultErrorCreate(op, "The registration request is invalid.")
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
   const loginPolicy = organizationLoginPolicyEnforce({
     database: options.database,
-    instanceId: options.instanceId,
+    realmId: options.realmId,
     method: "password",
     organizationId: parsed.output.organizationId,
   })
   if (!loginPolicy.success) return resultErrorCreate(op, "Password registration is disabled for this organization.")
-  const policyRow = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.instanceId)
+  const policyRow = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.realmId)
   if (!policyRow.success) return policyRow
   const policy =
     policyRow.data === null
@@ -95,13 +95,13 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   const existing = passwordRepositoryCreate(options.database.db).passwordUserFindByIdentifier(
-    options.instanceId,
+    options.realmId,
     email.data,
   )
   if (!existing.success) return existing
   if (existing.data !== null) return resultCreate({ accepted: true, verificationRequired: true })
   const existingName = passwordRepositoryCreate(options.database.db).passwordUserFindByIdentifier(
-    options.instanceId,
+    options.realmId,
     userName.data,
   )
   if (!existingName.success) return existingName
@@ -116,7 +116,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
         email: email.data,
         emailVerifiedAt: null,
         id: userId,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         state: "initial",
         updatedAt: now,
         userName: userName.data,
@@ -131,7 +131,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
         displayName: profile.data.displayName,
         firstName: profile.data.firstName,
         gender: profile.data.gender,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         lastName: profile.data.lastName,
         nickName: profile.data.nickName,
         preferredLanguage: profile.data.preferredLanguage,
@@ -146,7 +146,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
       changedAt: now,
       createdAt: now,
       hash: hash.data,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       userId,
       version: 1,
     })
@@ -155,7 +155,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
       createdAt: now,
       expiresAt: now + 24 * 60 * 60 * 1_000,
       id: challengeId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       kind: "verification",
       tokenHash: passwordTokenHashCreate(token.valueGet()),
       userId,
@@ -174,7 +174,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
         commandIndex: 0,
         correlationId,
         eventType: userEventTypes.created,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: userPayload.output,
@@ -194,7 +194,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
         commandIndex: 1,
         correlationId,
         eventType: passwordEventTypes.credentialChanged,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: credentialPayload.output,
@@ -214,7 +214,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
         commandIndex: 2,
         correlationId,
         eventType: passwordEventTypes.emailVerificationRequested,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: requestedPayload.output,
@@ -226,7 +226,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   })
   if (!created.success) return created
   try {
-    options.onVerificationToken?.({ instanceId: options.instanceId, token: token.valueGet(), userId })
+    options.onVerificationToken?.({ realmId: options.realmId, token: token.valueGet(), userId })
   } catch (_error) {}
   return resultCreate({ accepted: true, verificationRequired: true })
 }

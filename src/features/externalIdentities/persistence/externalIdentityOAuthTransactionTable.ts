@@ -15,7 +15,7 @@ export const externalIdentityOAuthTransactionTable = sqliteTable(
     externalUsername: text("external_username"),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     intent: text("intent").notNull(),
     nonceHash: text("nonce_hash"),
     nonce: text("nonce"),
@@ -29,7 +29,7 @@ export const externalIdentityOAuthTransactionTable = sqliteTable(
   },
   (table) => [
     uniqueIndex("external_identity_oauth_transactions_state_idx").on(table.stateHash),
-    index("external_identity_oauth_transactions_instance_idx").on(table.instanceId, table.providerId),
+    index("external_identity_oauth_transactions_realm_idx").on(table.realmId, table.providerId),
     index("external_identity_oauth_transactions_expiry_idx").on(table.expiresAt),
   ],
 )

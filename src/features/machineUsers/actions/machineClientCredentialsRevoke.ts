@@ -16,7 +16,7 @@ type MachineClientCredentialsRevokeOptions = {
   readonly clientId: string
   readonly clientSecret: string
   readonly database: StorageDatabase
-  readonly instanceId: string
+  readonly realmId: string
   readonly token: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -30,11 +30,11 @@ export function machineClientCredentialsRevoke(options: MachineClientCredentials
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const machineUser = repository.userGetByName(options.instanceId, options.clientId.trim().toLowerCase())
+    const machineUser = repository.userGetByName(options.realmId, options.clientId.trim().toLowerCase())
     if (!machineUser.success) return machineUser
     if (machineUser.data === null || machineUser.data.status !== "active")
       return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
-    const credentials = repository.credentialList(options.instanceId, machineUser.data.id)
+    const credentials = repository.credentialList(options.realmId, machineUser.data.id)
     if (!credentials.success) return credentials
     const clientCredential = credentials.data.find(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
@@ -50,7 +50,7 @@ export function machineClientCredentialsRevoke(options: MachineClientCredentials
       const tokenMatches = machineSecretHashVerify(options.token, candidate.secretHash)
       if (!tokenMatches.success) return tokenMatches
       if (!tokenMatches.data) continue
-      const revoked = repository.credentialRevoke(options.instanceId, candidate.id, now)
+      const revoked = repository.credentialRevoke(options.realmId, candidate.id, now)
       if (!revoked.success) return revoked
       if (revoked.data === null) return resultCreate(undefined)
       const payload = v.safeParse(machineCredentialRevokedEventPayloadSchema, {
@@ -68,7 +68,7 @@ export function machineClientCredentialsRevoke(options: MachineClientCredentials
           commandIndex: 0,
           correlationId,
           eventType: machineEventTypes.credentialRevoked,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { auditSafe: true, source: "machine-users", protocol: "oauth2" },
           occurredAt: now,
           payload: payload.output,

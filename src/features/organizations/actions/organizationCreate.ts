@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { instanceGet } from "../../instances/actions/instanceGet.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import { organizationNameNormalize } from "../domain/organizationNameNormalize.js"
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
 import { organizationRolesEncode } from "../domain/organizationRolesEncode.js"
@@ -23,10 +23,10 @@ import {
 import type { Organization } from "../public/organizationSchema.js"
 
 type OrganizationCreateOptions = {
-  readonly context: InstanceSystemContext
+  readonly context: RealmSystemContext
   readonly database: StorageDatabase
   readonly input: OrganizationCreateRequest
-  readonly instanceId: string
+  readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -39,9 +39,9 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
   if (!parsed.success) return resultErrorCreate(op, "The organization request is invalid.")
   const name = organizationNameNormalize(parsed.output.name)
   if (!name.success) return name
-  const instance = instanceGet({ context: options.context, database: options.database, instanceId: options.instanceId })
-  if (!instance.success) return instance
-  if (instance.data.instance.status !== "active") return resultErrorCreate(op, "The instance is not active.")
+  const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
+  if (!realm.success) return realm
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
 
   const runtime = options.runtime ?? options.database.runtime
   const organizationId = uuidv7Create(runtime)
@@ -55,7 +55,7 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
     const created = repository.organizationCreate({
       createdAt,
       id: organizationId,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       name: name.data,
       status: "active",
       updatedAt: createdAt,
@@ -63,7 +63,7 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
     })
     if (!created.success) {
       if (created.errorMessage === "The organization could not be created.")
-        return resultErrorCreate(op, "An organization with that name already exists in this instance.")
+        return resultErrorCreate(op, "An organization with that name already exists in this realm.")
       return created
     }
 
@@ -79,7 +79,7 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
         commandIndex: 0,
         correlationId,
         eventType: organizationEventTypes.created,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "organizations" },
         occurredAt: createdAt,
         payload: payload.output,
@@ -95,7 +95,7 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
       const membership = repository.organizationMembershipCreate({
         createdAt,
         id: membershipId,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         organizationId,
         roles: roles.data,
         updatedAt: createdAt,
@@ -119,7 +119,7 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
           commandIndex: 1,
           correlationId,
           eventType: organizationEventTypes.membershipAdded,
-          instanceId: options.instanceId,
+          realmId: options.realmId,
           metadata: { source: "organizations" },
           occurredAt: createdAt,
           payload: membershipPayload.output,

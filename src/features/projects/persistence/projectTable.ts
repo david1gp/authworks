@@ -6,7 +6,7 @@ export const projectTable = sqliteTable(
     authorizationRequired: integer("authorization_required").notNull(),
     createdAt: integer("created_at").notNull(),
     id: text("id").primaryKey(),
-    instanceId: text("instance_id").notNull(),
+    realmId: text("realm_id").notNull(),
     name: text("name").notNull(),
     organizationId: text("organization_id").notNull(),
     projectAccessRequired: integer("project_access_required").notNull(),
@@ -15,7 +15,7 @@ export const projectTable = sqliteTable(
     version: integer("version").notNull(),
   },
   (table) => [
-    index("projects_instance_id_idx").on(table.instanceId),
+    index("projects_realm_id_idx").on(table.realmId),
     index("projects_organization_id_idx").on(table.organizationId),
     uniqueIndex("projects_organization_name_idx").on(table.organizationId, table.name),
   ],

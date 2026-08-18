@@ -7,18 +7,18 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { InstanceSystemContext } from "../../instances/domain/instanceSystemContext.js"
-import type { InstanceTenantContext } from "../../instances/domain/instanceTenantContext.js"
+import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectGrantDeletedEventPayloadSchema } from "../events/projectGrantDeletedEventPayloadSchema.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectGrantDeleteOptions = {
-  readonly context: InstanceSystemContext | InstanceTenantContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly grantId: string
-  readonly instanceId: string
+  readonly realmId: string
   readonly projectId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -37,7 +37,7 @@ export function projectGrantDelete(options: ProjectGrantDeleteOptions): Result<{
     if (!current.success) return current
     if (
       current.data === null ||
-      current.data.instanceId !== options.instanceId ||
+      current.data.realmId !== options.realmId ||
       current.data.projectId !== options.projectId
     )
       return resultCreate({ deleted: true, grantId: options.grantId })
@@ -48,7 +48,7 @@ export function projectGrantDelete(options: ProjectGrantDeleteOptions): Result<{
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
-      instanceId: options.instanceId,
+      realmId: options.realmId,
       permission: "project.grant.delete",
       project: project.data,
     })
@@ -72,7 +72,7 @@ export function projectGrantDelete(options: ProjectGrantDeleteOptions): Result<{
         commandIndex: 0,
         correlationId,
         eventType: projectEventTypes.grantDeleted,
-        instanceId: options.instanceId,
+        realmId: options.realmId,
         metadata: { source: "projects" },
         occurredAt: deletedAt,
         payload: payload.output,

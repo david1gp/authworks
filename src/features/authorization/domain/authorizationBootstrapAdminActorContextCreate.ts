@@ -1,11 +1,11 @@
 import { authorizationActorContextCreate } from "./authorizationActorContextCreate.js"
 
-export function authorizationBootstrapAdminActorContextCreate(instanceId: string, actorId: string) {
+export function authorizationBootstrapAdminActorContextCreate(realmId: string, actorId: string) {
   return authorizationActorContextCreate({
     actorId,
     assurance: "authenticated",
     authenticationMethod: "bootstrap_admin",
-    instanceId,
+    realmId,
     kind: "bootstrap_admin",
   })
 }

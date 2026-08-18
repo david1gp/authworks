@@ -5,7 +5,7 @@ export function organizationPublicViewCreate(row: OrganizationRow): Organization
   return {
     createdAt: row.createdAt,
     id: row.id,
-    instanceId: row.instanceId,
+    realmId: row.realmId,
     name: row.name,
     status: row.status as Organization["status"],
     updatedAt: row.updatedAt,
