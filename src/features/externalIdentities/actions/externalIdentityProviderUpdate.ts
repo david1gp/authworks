@@ -1,7 +1,8 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { patchInputParse } from "../../../platform/http/patchInputParse.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -31,33 +32,41 @@ export function externalIdentityProviderUpdate(
 ): Result<{ provider: ExternalIdentityProvider }> {
   const op = "externalIdentityProviderUpdate"
   if (options.context?.kind !== "system")
-    return resultErrorCreate(op, "Only the system context can configure providers.")
-  const parsed = v.safeParse(externalIdentityProviderUpdateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The external identity provider update is invalid.")
+    return resultErrorCreate(op, "Only the system context can configure providers.", "external-identities.forbidden")
+  const parsed = patchInputParse(
+    op,
+    externalIdentityProviderUpdateRequestSchema,
+    options.input,
+    "external-identities.empty-patch",
+  )
+  if (!parsed.success) return parsed
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The provider timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The provider timestamp is invalid.", "external-identities.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = externalIdentityRepositoryCreate(transaction)
     const current = repository.externalIdentityProviderGet(options.realmId, options.providerId)
     if (!current.success) return current
-    if (current.data === null) return resultErrorCreate(op, "The external identity provider was not found.")
+    if (current.data === null)
+      return resultErrorCreate(op, "The external identity provider was not found.", "external-identities.not-found")
     const updated = repository.externalIdentityProviderUpdate(options.realmId, options.providerId, {
-      ...(parsed.output.allowAccountCreation === undefined
+      ...(parsed.data.allowAccountCreation === undefined
         ? {}
-        : { allowAccountCreation: parsed.output.allowAccountCreation }),
-      ...(parsed.output.clientId === undefined ? {} : { clientId: parsed.output.clientId }),
-      ...(parsed.output.clientSecret === undefined ? {} : { clientSecret: parsed.output.clientSecret }),
-      ...(parsed.output.displayName === undefined ? {} : { displayName: parsed.output.displayName }),
-      ...(parsed.output.enabled === undefined ? {} : { enabled: parsed.output.enabled }),
-      ...(parsed.output.redirectUri === undefined ? {} : { redirectUri: parsed.output.redirectUri }),
-      ...(parsed.output.scopes === undefined ? {} : { scopes: JSON.stringify(parsed.output.scopes) }),
+        : { allowAccountCreation: parsed.data.allowAccountCreation }),
+      ...(parsed.data.clientId === undefined ? {} : { clientId: parsed.data.clientId }),
+      ...(parsed.data.clientSecret === undefined ? {} : { clientSecret: parsed.data.clientSecret }),
+      ...(parsed.data.displayName === undefined ? {} : { displayName: parsed.data.displayName }),
+      ...(parsed.data.enabled === undefined ? {} : { enabled: parsed.data.enabled }),
+      ...(parsed.data.redirectUri === undefined ? {} : { redirectUri: parsed.data.redirectUri }),
+      ...(parsed.data.scopes === undefined ? {} : { scopes: JSON.stringify(parsed.data.scopes) }),
       updatedAt: now,
       version: current.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The external identity provider was not found.")
+    if (updated.data === null)
+      return resultErrorCreate(op, "The external identity provider was not found.", "external-identities.not-found")
     const disabled = current.data.enabled && updated.data.enabled === false
     const eventVersion = repository.externalIdentityProviderEventVersionGet(options.providerId)
     if (!eventVersion.success) return eventVersion
@@ -66,7 +75,8 @@ export function externalIdentityProviderUpdate(
       providerId: options.providerId,
       providerType: current.data.type,
     })
-    if (!payload.success) return resultErrorCreate(op, "The provider event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The provider event payload is invalid.", "external-identities.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,8 +1,18 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { projectApiClientCreate } from "../client/projectApiClientCreate.js"
 
-type ProjectCliFlags = { readonly server?: string; readonly token?: string }
+type ProjectCliFlags = {
+  readonly server?: string
+  readonly token?: string
+}
+type ProjectListCliFlags = ProjectCliFlags & {
+  readonly pageSize?: string
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
+}
 type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId: string; readonly realmId?: string }
 
 const projectCreateCommand = buildCommand({
@@ -35,12 +45,15 @@ const projectCreateCommand = buildCommand({
 })
 
 const projectListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectCliFlags & { realmId?: string }) {
+  async func(this: ApplicationContext, flags: ProjectListCliFlags & { realmId?: string }) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectList(realmId))
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(this, flags).projectList(realmId, projectListQueryCreate(flags)),
+    )
   },
-  parameters: { flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID") } },
+  parameters: { flags: { ...projectCommonFlags(), ...projectListFlags(), realmId: projectScopeIdFlag("Realm UUID") } },
   docs: { brief: "List projects" },
 })
 
@@ -126,16 +139,25 @@ const projectApplicationCreateCommand = buildCommand({
 })
 
 const projectApplicationListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
+  async func(this: ApplicationContext, flags: ProjectListCliFlags & ProjectIdCliFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectApplicationList(realmId, flags.projectId),
+      await projectCliClientCreate(this, flags).projectApplicationList(
+        realmId,
+        flags.projectId,
+        projectListQueryCreate(flags),
+      ),
     )
   },
   parameters: {
-    flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID"), projectId: idFlag("Project UUID") },
+    flags: {
+      ...projectCommonFlags(),
+      ...projectListFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: idFlag("Project UUID"),
+    },
   },
   docs: { brief: "List applications" },
 })
@@ -165,13 +187,25 @@ const projectRoleCreateCommand = buildCommand({
 })
 
 const projectRoleListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
+  async func(this: ApplicationContext, flags: ProjectListCliFlags & ProjectIdCliFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectRoleList(realmId, flags.projectId))
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(this, flags).projectRoleList(
+        realmId,
+        flags.projectId,
+        projectListQueryCreate(flags),
+      ),
+    )
   },
   parameters: {
-    flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID"), projectId: idFlag("Project UUID") },
+    flags: {
+      ...projectCommonFlags(),
+      ...projectListFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: idFlag("Project UUID"),
+    },
   },
   docs: { brief: "List project roles" },
 })
@@ -205,13 +239,25 @@ const projectGrantCreateCommand = buildCommand({
 })
 
 const projectGrantListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
+  async func(this: ApplicationContext, flags: ProjectListCliFlags & ProjectIdCliFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectGrantList(realmId, flags.projectId))
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(this, flags).projectGrantList(
+        realmId,
+        flags.projectId,
+        projectListQueryCreate(flags),
+      ),
+    )
   },
   parameters: {
-    flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID"), projectId: idFlag("Project UUID") },
+    flags: {
+      ...projectCommonFlags(),
+      ...projectListFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: idFlag("Project UUID"),
+    },
   },
   docs: { brief: "List project grants" },
 })
@@ -268,6 +314,35 @@ function projectCommonFlags() {
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
+  }
+}
+
+function projectListFlags() {
+  return {
+    pageSize: { ...textFlag("Maximum items per page"), optional: true as const },
+    pageToken: { ...textFlag("Opaque page token"), optional: true as const },
+    sortBy: { ...textFlag("Sort field"), optional: true as const },
+    sortDirection: {
+      ...textFlag("Sort direction"),
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+    },
+  }
+}
+
+function projectListQueryCreate(flags: ProjectListCliFlags): ListQuery | undefined {
+  if (
+    flags.pageSize === undefined &&
+    flags.pageToken === undefined &&
+    flags.sortBy === undefined &&
+    flags.sortDirection === undefined
+  )
+    return undefined
+  return {
+    ...(flags.pageSize === undefined ? {} : { pageSize: Number(flags.pageSize) }),
+    ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
+    ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
   }
 }
 

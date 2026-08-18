@@ -1,0 +1,26 @@
+import type { ErrorCatalogEntry } from "../../../platform/errors/errorCatalogEntrySchema.js"
+
+export const usersErrorCatalog = [
+  { code: "users.tenant-required", httpStatus: 400, retryable: false },
+  { code: "users.tenant-mismatch", httpStatus: 404, retryable: false },
+  { code: "users.not-found", httpStatus: 404, retryable: false },
+  { code: "users.invalid", httpStatus: 400, retryable: false },
+  { code: "users.empty-patch", httpStatus: 400, retryable: false },
+  { code: "users.invalid-cursor", httpStatus: 400, retryable: false },
+  { code: "users.invalid-page", httpStatus: 400, retryable: false },
+  { code: "users.invalid-timestamp", httpStatus: 400, retryable: false },
+  { code: "users.invalid-name", httpStatus: 400, retryable: false },
+  { code: "users.invalid-email", httpStatus: 400, retryable: false },
+  { code: "users.invalid-profile", httpStatus: 400, retryable: false },
+  { code: "users.unauthorized", httpStatus: 401, retryable: false },
+  { code: "users.forbidden", httpStatus: 403, retryable: false },
+  { code: "users.already-exists", httpStatus: 409, retryable: false },
+  { code: "users.already-deleted", httpStatus: 409, retryable: false },
+  { code: "users.conflict", httpStatus: 409, retryable: false },
+  { code: "users.not-active", httpStatus: 409, retryable: false },
+  { code: "users.lifecycle-forbidden", httpStatus: 409, retryable: false },
+  { code: "users.read-failed", httpStatus: 503, retryable: true },
+  { code: "users.write-failed", httpStatus: 503, retryable: true },
+  { code: "users.event-invalid", httpStatus: 500, retryable: false },
+  { code: "users.internal", httpStatus: 500, retryable: false },
+] as const satisfies readonly ErrorCatalogEntry[]

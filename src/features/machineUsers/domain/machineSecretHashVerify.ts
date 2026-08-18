@@ -1,7 +1,7 @@
 import { scryptSync, timingSafeEqual } from "node:crypto"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 
 export function machineSecretHashVerify(secret: string, encoded: string): Result<boolean> {
   const op = "machineSecretHashVerify"
@@ -17,6 +17,6 @@ export function machineSecretHashVerify(secret: string, encoded: string): Result
     const actual = Buffer.from(scryptSync(secret, salt, 32, { maxmem: 32 * 1024 * 1024, N: n, p, r }))
     return resultCreate(timingSafeEqual(actual, expected))
   } catch (_error) {
-    return resultErrorCreate(op, "The machine secret could not be verified.")
+    return resultErrorCreate(op, "The machine secret could not be verified.", "machine-users.invalid")
   }
 }

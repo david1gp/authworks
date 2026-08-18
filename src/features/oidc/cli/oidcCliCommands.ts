@@ -1,11 +1,23 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 
-type OidcCliFlags = { readonly server?: string; readonly token?: string }
+type OidcCliFlags = {
+  readonly server?: string
+  readonly token?: string
+}
+type OidcListCliFlags = OidcCliFlags & {
+  readonly pageSize?: string
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
+}
 type OidcRealmFlags = OidcCliFlags & { readonly realmId?: string }
+type OidcListRealmFlags = OidcListCliFlags & { readonly realmId?: string }
 type OidcClientFlags = OidcRealmFlags & { readonly clientId: string }
 type OidcConsentFlags = OidcRealmFlags & { readonly userId: string }
+type OidcConsentListFlags = OidcListRealmFlags & { readonly userId: string }
 
 const oidcClientCreateCommand = buildCommand({
   async func(
@@ -57,12 +69,12 @@ const oidcClientCreateCommand = buildCommand({
 })
 
 const oidcClientListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OidcRealmFlags) {
+  async func(this: ApplicationContext, flags: OidcListRealmFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientList(realmId))
+    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientList(realmId, oidcListQueryCreate(flags)))
   },
-  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
+  parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
   docs: { brief: "List OIDC clients" },
 })
 
@@ -101,12 +113,15 @@ const oidcSigningKeyCreateCommand = buildCommand({
 })
 
 const oidcSigningKeyListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OidcRealmFlags) {
+  async func(this: ApplicationContext, flags: OidcListRealmFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcSigningKeyList(realmId))
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(this, flags).oidcSigningKeyList(realmId, oidcListQueryCreate(flags)),
+    )
   },
-  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
+  parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
   docs: { brief: "List OIDC signing keys" },
 })
 
@@ -132,13 +147,16 @@ const oidcSigningKeyRetireCommand = buildCommand({
 })
 
 const oidcConsentListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OidcConsentFlags) {
+  async func(this: ApplicationContext, flags: OidcConsentListFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcConsentList(realmId, flags.userId))
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(this, flags).oidcConsentList(realmId, flags.userId, oidcListQueryCreate(flags)),
+    )
   },
   parameters: {
-    flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), userId: oidcIdFlag("User UUID") },
+    flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag(), userId: oidcIdFlag("User UUID") },
   },
   docs: { brief: "List persisted OIDC consents" },
 })
@@ -248,6 +266,35 @@ function oidcCommonFlags() {
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
+  }
+}
+
+function oidcListFlags() {
+  return {
+    pageSize: { ...oidcTextFlag("Maximum items per page"), optional: true as const },
+    pageToken: { ...oidcTextFlag("Opaque page token"), optional: true as const },
+    sortBy: { ...oidcTextFlag("Sort field"), optional: true as const },
+    sortDirection: {
+      ...oidcTextFlag("Sort direction"),
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+    },
+  }
+}
+
+function oidcListQueryCreate(flags: OidcListCliFlags): ListQuery | undefined {
+  if (
+    flags.pageSize === undefined &&
+    flags.pageToken === undefined &&
+    flags.sortBy === undefined &&
+    flags.sortDirection === undefined
+  )
+    return undefined
+  return {
+    ...(flags.pageSize === undefined ? {} : { pageSize: Number(flags.pageSize) }),
+    ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
+    ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
   }
 }
 

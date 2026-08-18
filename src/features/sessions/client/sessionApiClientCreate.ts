@@ -1,7 +1,9 @@
 import * as v from "valibot"
 import { type Result } from "#result"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import type { SessionCredentialResponse } from "../public/sessionCredentialResponseSchema.js"
 import { sessionCredentialResponseSchema } from "../public/sessionCredentialResponseSchema.js"
@@ -42,12 +44,16 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
         sessionResponseSchema,
       )
     },
-    sessionList(realmId: string): Promise<Result<SessionListResponse>> {
-      return request(`/realms/${encodeURIComponent(realmId)}/sessions`, { method: "GET" }, sessionListResponseSchema)
-    },
-    sessionRecentList(realmId: string): Promise<Result<SessionListResponse>> {
+    sessionList(realmId: string, query?: ListQuery): Promise<Result<SessionListResponse>> {
       return request(
-        `/realms/${encodeURIComponent(realmId)}/sessions/recent`,
+        `/realms/${encodeURIComponent(realmId)}/sessions${listQueryToSearchParams(query)}`,
+        { method: "GET" },
+        sessionListResponseSchema,
+      )
+    },
+    sessionRecentList(realmId: string, query?: ListQuery): Promise<Result<SessionListResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/sessions/recent${listQueryToSearchParams(query)}`,
         { method: "GET" },
         sessionListResponseSchema,
       )
@@ -69,7 +75,9 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
     sessionRevokeAll(realmId: string, input: SessionRevokeAllRequest = {}): Promise<Result<SessionRevocationResponse>> {
       const parsed = v.safeParse(sessionRevokeAllRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("sessionApiClientRevokeAll", "The request is invalid."))
+        return Promise.resolve(
+          resultErrorCreate("sessionApiClientRevokeAll", "The request is invalid.", "sessions.invalid"),
+        )
       return request(
         `/realms/${encodeURIComponent(realmId)}/sessions`,
         { body: JSON.stringify(parsed.output), method: "DELETE" },

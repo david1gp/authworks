@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
-import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
+import { oidcResourceIdSchema } from "../public/oidcResourceIdSchema.js"
+import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 
 export const oidcRefreshTokenRotatedEventPayloadSchema = v.strictObject({
   clientId: oidcResourceIdSchema,

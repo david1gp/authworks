@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
+import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 
 export const oidcAuthorizationConsentRequestSchema = v.strictObject({
   decision: v.picklist(["approve", "deny"]),

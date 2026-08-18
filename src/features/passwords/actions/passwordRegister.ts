@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -32,7 +32,7 @@ import {
   passwordRegistrationRequestSchema,
 } from "../public/passwordRegistrationRequestSchema.js"
 import type { PasswordRegistrationResponse } from "../public/passwordRegistrationResponseSchema.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 type PasswordRegisterOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
@@ -47,27 +47,33 @@ type PasswordRegisterOptions = {
 export function passwordRegister(options: PasswordRegisterOptions): Result<PasswordRegistrationResponse> {
   const op = "passwordRegister"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "passwords.tenant-required")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The registration is not available in this tenant context.")
+    return resultErrorCreate(
+      op,
+      "The registration is not available in this tenant context.",
+      "passwords.tenant-mismatch",
+    )
   const parsed = v.safeParse(passwordRegistrationRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The registration request is invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The registration request is invalid.", "passwords.invalid")
   const email = userEmailNormalize(parsed.output.email)
-  if (!email.success) return resultErrorCreate(op, "The registration request is invalid.")
+  if (!email.success) return resultErrorCreate(op, "The registration request is invalid.", "passwords.invalid")
   const userName = userNameNormalize(parsed.output.userName)
-  if (!userName.success) return resultErrorCreate(op, "The registration request is invalid.")
+  if (!userName.success) return resultErrorCreate(op, "The registration request is invalid.", "passwords.invalid")
   const profile = userProfileNormalize(parsed.output.profile)
-  if (!profile.success) return resultErrorCreate(op, "The registration request is invalid.")
+  if (!profile.success) return resultErrorCreate(op, "The registration request is invalid.", "passwords.invalid")
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCreate(op, "The realm is not active.", "passwords.invalid")
   const loginPolicy = organizationLoginPolicyEnforce({
     database: options.database,
     realmId: options.realmId,
     method: "password",
     organizationId: parsed.output.organizationId,
   })
-  if (!loginPolicy.success) return resultErrorCreate(op, "Password registration is disabled for this organization.")
+  if (!loginPolicy.success)
+    return resultErrorCreate(op, "Password registration is disabled for this organization.", "passwords.forbidden")
   const policyRow = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.realmId)
   if (!policyRow.success) return policyRow
   const policy =
@@ -88,7 +94,8 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   if (!hash.success) return hash
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The registration timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The registration timestamp is invalid.", "passwords.invalid-timestamp")
   const userId = uuidv7Create(runtime)
   const challengeId = uuidv7Create(runtime)
   const token = passwordTokenCreate(runtime)
@@ -124,7 +131,8 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
       })
       .returning()
       .get()
-    if (user === undefined) return resultErrorCreate(op, "The registration could not be completed.")
+    if (user === undefined)
+      return resultErrorCreate(op, "The registration could not be completed.", "passwords.write-failed")
     const createdProfile = transaction
       .insert(userProfileTable)
       .values({
@@ -140,7 +148,8 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
       })
       .returning()
       .get()
-    if (createdProfile === undefined) return resultErrorCreate(op, "The registration could not be completed.")
+    if (createdProfile === undefined)
+      return resultErrorCreate(op, "The registration could not be completed.", "passwords.write-failed")
     const repository = passwordRepositoryCreate(transaction)
     const credential = repository.passwordCredentialCreate({
       changedAt: now,
@@ -163,7 +172,8 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
     })
     if (!challenge.success) return challenge
     const userPayload = v.safeParse(userCreatedEventPayloadSchema, { emailVerified: false, state: "initial" })
-    if (!userPayload.success) return resultErrorCreate(op, "The registration event payload is invalid.")
+    if (!userPayload.success)
+      return resultErrorCreate(op, "The registration event payload is invalid.", "passwords.event-invalid")
     const userEvent = storageEventAppend(
       transaction,
       {
@@ -183,7 +193,8 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
     )
     if (!userEvent.success) return userEvent
     const credentialPayload = v.safeParse(passwordCredentialChangedEventPayloadSchema, { reason: "registration" })
-    if (!credentialPayload.success) return resultErrorCreate(op, "The password event payload is invalid.")
+    if (!credentialPayload.success)
+      return resultErrorCreate(op, "The password event payload is invalid.", "passwords.event-invalid")
     const credentialEvent = storageEventAppend(
       transaction,
       {
@@ -203,7 +214,8 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
     )
     if (!credentialEvent.success) return credentialEvent
     const requestedPayload = v.safeParse(passwordRegistrationEventPayloadSchema, { verificationRequired: true })
-    if (!requestedPayload.success) return resultErrorCreate(op, "The verification event payload is invalid.")
+    if (!requestedPayload.success)
+      return resultErrorCreate(op, "The verification event payload is invalid.", "passwords.event-invalid")
     const requestedEvent = storageEventAppend(
       transaction,
       {

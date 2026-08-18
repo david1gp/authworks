@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq, count } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -30,10 +30,11 @@ type ExternalIdentityUnlinkOptions = {
 export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): Result<ExternalIdentityUnlinkResponse> {
   const op = "externalIdentityUnlink"
   if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
-    return resultErrorCreate(op, "The session does not belong to this user.")
-  if (options.session.assurance === "none") return resultErrorCreate(op, "Session authorization is required.")
+    return resultErrorCreate(op, "The session does not belong to this user.", "external-identities.forbidden")
+  if (options.session.assurance === "none")
+    return resultErrorCreate(op, "Session authorization is required.", "external-identities.unauthorized")
   if (options.externalSubject.length === 0 || options.providerId.length === 0)
-    return resultErrorCreate(op, "The external identity is invalid.")
+    return resultErrorCreate(op, "The external identity is invalid.", "external-identities.invalid")
   const identity = externalIdentityRepositoryCreate(options.database.db).externalIdentityList(
     options.realmId,
     options.userId,
@@ -42,10 +43,12 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
   const selected = identity.data.find(
     (candidate) => candidate.providerId === options.providerId && candidate.externalSubject === options.externalSubject,
   )
-  if (selected === undefined) return resultErrorCreate(op, "The external identity was not found.")
+  if (selected === undefined)
+    return resultErrorCreate(op, "The external identity was not found.", "external-identities.not-found")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The external identity timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The external identity timestamp is invalid.", "external-identities.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = externalIdentityRepositoryCreate(transaction)
@@ -62,7 +65,11 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
       )
       .get()
     if ((others?.total ?? 0) <= 1 && password === undefined)
-      return resultErrorCreate(op, "The last usable authentication method cannot be removed.")
+      return resultErrorCreate(
+        op,
+        "The last usable authentication method cannot be removed.",
+        "external-identities.conflict",
+      )
     const removed = repository.externalIdentityDelete(
       options.realmId,
       options.userId,
@@ -70,7 +77,8 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
       options.externalSubject,
     )
     if (!removed.success) return removed
-    if (removed.data === null) return resultErrorCreate(op, "The external identity was not found.")
+    if (removed.data === null)
+      return resultErrorCreate(op, "The external identity was not found.", "external-identities.not-found")
     const version = repository.externalIdentityEventVersionGet(removed.data.id)
     if (!version.success) return version
     const payload = v.safeParse(externalIdentityEventPayloadSchema, {
@@ -80,7 +88,12 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
       providerId: removed.data.providerId,
       userId: options.userId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The external identity event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(
+        op,
+        "The external identity event payload is invalid.",
+        "external-identities.event-invalid",
+      )
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { secretGenerate } from "../../../platform/secrets/secretGenerate.js"
@@ -40,7 +40,8 @@ export function organizationInvitationCreate(
 ): Result<OrganizationInvitationCreateResponse> {
   const op = "organizationInvitationCreate"
   const parsed = v.safeParse(organizationInvitationCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The organization invitation request is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The organization invitation request is invalid.", "organizations.invalid")
   const email = organizationEmailNormalize(parsed.output.email)
   if (!email.success) return email
   const roles = organizationRolesEncode(parsed.output.roles)
@@ -48,10 +49,10 @@ export function organizationInvitationCreate(
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The invitation timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The invitation timestamp is invalid.", "organizations.invalid-timestamp")
   const expiresAt = parsed.output.expiresAt ?? createdAt + 7 * 24 * 60 * 60 * 1000
   if (!Number.isSafeInteger(expiresAt) || expiresAt <= createdAt)
-    return resultErrorCreate(op, "The invitation expiry is invalid.")
+    return resultErrorCodedCreate(op, "The invitation expiry is invalid.", "organizations.invalid-expiry")
   const token = secretGenerate(32, runtime)
   const invitationId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
@@ -64,7 +65,7 @@ export function organizationInvitationCreate(
       organization.data.realmId !== options.realmId ||
       organization.data.status !== "active"
     )
-      return resultErrorCreate(op, "The organization is not active or was not found.")
+      return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
@@ -83,12 +84,14 @@ export function organizationInvitationCreate(
         version: previous.data.version + 1,
       })
       if (!revoked.success) return revoked
-      if (revoked.data === null) return resultErrorCreate(op, "The previous invitation was not found.")
+      if (revoked.data === null)
+        return resultErrorCodedCreate(op, "The previous invitation was not found.", "organizations.not-found")
       const revokePayload = v.safeParse(organizationInvitationStatusEventPayloadSchema, {
         invitationId: revoked.data.id,
         status: "revoked",
       })
-      if (!revokePayload.success) return resultErrorCreate(op, "The invitation event payload is invalid.")
+      if (!revokePayload.success)
+        return resultErrorCodedCreate(op, "The invitation event payload is invalid.", "organizations.event-invalid")
       const revokeEvent = storageEventAppend(
         transaction,
         {
@@ -131,7 +134,8 @@ export function organizationInvitationCreate(
       invitationId,
       roles: parsed.output.roles,
     })
-    if (!payload.success) return resultErrorCreate(op, "The invitation event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The invitation event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

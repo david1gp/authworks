@@ -1,7 +1,7 @@
 import { and, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { passkeyCeremonyTable, type PasskeyCeremonyRow } from "./passkeyCeremonyTable.js"
@@ -13,10 +13,18 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(passkeyCeremonyTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("passkeyCeremonyCreate", "The passkey ceremony could not be created.")
+          return resultErrorCreate(
+            "passkeyCeremonyCreate",
+            "The passkey ceremony could not be created.",
+            "passkeys.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("passkeyCeremonyCreate", "The passkey ceremony could not be created.")
+        return resultErrorCreate(
+          "passkeyCeremonyCreate",
+          "The passkey ceremony could not be created.",
+          "passkeys.write-failed",
+        )
       }
     },
 
@@ -30,7 +38,11 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passkeyCeremonyGetByTokenHash", "The passkey ceremony could not be read.")
+        return resultErrorCreate(
+          "passkeyCeremonyGetByTokenHash",
+          "The passkey ceremony could not be read.",
+          "passkeys.read-failed",
+        )
       }
     },
 
@@ -59,7 +71,11 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passkeyCeremonyConsume", "The passkey ceremony could not be consumed.")
+        return resultErrorCreate(
+          "passkeyCeremonyConsume",
+          "The passkey ceremony could not be consumed.",
+          "passkeys.write-failed",
+        )
       }
     },
 
@@ -67,10 +83,18 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(passkeyCredentialTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("passkeyCredentialCreate", "The passkey credential could not be created.")
+          return resultErrorCreate(
+            "passkeyCredentialCreate",
+            "The passkey credential could not be created.",
+            "passkeys.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("passkeyCredentialCreate", "The passkey credential could not be created.")
+        return resultErrorCreate(
+          "passkeyCredentialCreate",
+          "The passkey credential could not be created.",
+          "passkeys.write-failed",
+        )
       }
     },
 
@@ -94,7 +118,11 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passkeyCredentialGetByCredentialId", "The passkey credential could not be read.")
+        return resultErrorCreate(
+          "passkeyCredentialGetByCredentialId",
+          "The passkey credential could not be read.",
+          "passkeys.read-failed",
+        )
       }
     },
 
@@ -108,7 +136,11 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("passkeyCredentialList", "The passkey credentials could not be read.")
+        return resultErrorCreate(
+          "passkeyCredentialList",
+          "The passkey credentials could not be read.",
+          "passkeys.read-failed",
+        )
       }
     },
 
@@ -128,7 +160,11 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passkeyCredentialGet", "The passkey credential could not be read.")
+        return resultErrorCreate(
+          "passkeyCredentialGet",
+          "The passkey credential could not be read.",
+          "passkeys.read-failed",
+        )
       }
     },
 
@@ -157,7 +193,11 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passkeyCredentialCounterUpdate", "The passkey credential could not be updated.")
+        return resultErrorCreate(
+          "passkeyCredentialCounterUpdate",
+          "The passkey credential could not be updated.",
+          "passkeys.write-failed",
+        )
       }
     },
 
@@ -186,7 +226,11 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passkeyCredentialRevoke", "The passkey credential could not be revoked.")
+        return resultErrorCreate(
+          "passkeyCredentialRevoke",
+          "The passkey credential could not be revoked.",
+          "passkeys.write-failed",
+        )
       }
     },
 
@@ -206,7 +250,11 @@ export function passkeyRepositoryCreate(database: StorageExecutor) {
           .get()
         return resultCreate(event?.aggregateVersion ?? 0)
       } catch (_error) {
-        return resultErrorCreate("passkeyEventVersionGet", "The passkey event version could not be read.")
+        return resultErrorCreate(
+          "passkeyEventVersionGet",
+          "The passkey event version could not be read.",
+          "passkeys.read-failed",
+        )
       }
     },
   }

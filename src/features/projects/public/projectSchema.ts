@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { projectStatusSchema } from "../domain/projectStatusSchema.js"
+import { projectStatusSchema } from "./projectStatusSchema.js"
 import { projectResourceIdSchema } from "./projectResourceIdSchema.js"
 
 export const projectSchema = v.strictObject({

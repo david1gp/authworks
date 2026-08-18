@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -41,29 +41,47 @@ type ImpersonationStartOptions = {
 export function impersonationStart(options: ImpersonationStartOptions): Result<ImpersonationStartResponse> {
   const op = "impersonationStart"
   if (options.realmId.length === 0 || options.targetUserId.length === 0)
-    return resultErrorCreate(op, "The impersonation target is invalid.")
+    return resultErrorCreate(op, "The impersonation target is invalid.", "impersonation.invalid")
   if (options.actor.impersonatorId !== undefined)
-    return resultErrorCreate(op, "Impersonation sessions cannot start another impersonation session.")
+    return resultErrorCreate(
+      op,
+      "Impersonation sessions cannot start another impersonation session.",
+      "authorization.impersonation-forbidden",
+    )
   if (options.actor.kind !== "user" && options.actor.kind !== "bootstrap_admin")
-    return resultErrorCreate(op, "The actor is not authorized to impersonate users.")
+    return resultErrorCreate(
+      op,
+      "The actor is not authorized to impersonate users.",
+      "authorization.impersonation-forbidden",
+    )
   if (options.actor.kind === "user" && options.actor.assurance !== "multi_factor")
-    return resultErrorCreate(op, "Multi-factor authentication is required to impersonate a user.")
+    return resultErrorCreate(
+      op,
+      "Multi-factor authentication is required to impersonate a user.",
+      "authorization.insufficient-assurance",
+    )
   if (options.actor.actorId === options.targetUserId)
-    return resultErrorCreate(op, "An administrator cannot impersonate itself.")
+    return resultErrorCreate(op, "An administrator cannot impersonate itself.", "authorization.impersonation-forbidden")
   if (
     !Number.isSafeInteger(options.durationMs) ||
     options.durationMs < 1_000 ||
     options.durationMs > impersonationMaxDurationMs
   )
-    return resultErrorCreate(op, "The impersonation duration must be between one second and fifteen minutes.")
+    return resultErrorCreate(
+      op,
+      "The impersonation duration must be between one second and fifteen minutes.",
+      "impersonation.invalid",
+    )
   if (options.reason.trim().length < 3 || options.reason.trim().length > 256)
-    return resultErrorCreate(op, "An impersonation reason is required.")
+    return resultErrorCreate(op, "An impersonation reason is required.", "impersonation.invalid")
 
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The impersonation timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The impersonation timestamp is invalid.", "impersonation.invalid-timestamp")
   const expiresAt = now + options.durationMs
-  if (!Number.isSafeInteger(expiresAt)) return resultErrorCreate(op, "The impersonation expiry is invalid.")
+  if (!Number.isSafeInteger(expiresAt))
+    return resultErrorCreate(op, "The impersonation expiry is invalid.", "impersonation.invalid-timestamp")
   const access = impersonationAccessResolve(options)
   if (!access.success) return access
   const correlationId = uuidv7Create(runtime)
@@ -82,7 +100,8 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
           ),
         )
         .get()
-      if (actorMembership === undefined) return resultErrorCreate(op, "The actor is not a member of this organization.")
+      if (actorMembership === undefined)
+        return resultErrorCreate(op, "The actor is not a member of this organization.", "authorization.forbidden")
       const decoded = organizationRolesDecode(actorMembership.roles)
       if (!decoded.success) return decoded
       const enforced = authorizationEnforce({
@@ -113,7 +132,11 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
       .where(and(eq(userTable.id, options.targetUserId), eq(userTable.realmId, options.realmId)))
       .get()
     if (target === undefined || target.state !== "active" || target.deletedAt !== null)
-      return resultErrorCreate(op, "The impersonation target was not found or is not active.")
+      return resultErrorCreate(
+        op,
+        "The impersonation target was not found or is not active.",
+        "impersonation.not-found",
+      )
     if (options.organizationId !== undefined) {
       const organization = transaction
         .select({
@@ -125,7 +148,11 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
         .where(and(eq(organizationTable.id, options.organizationId), eq(organizationTable.realmId, options.realmId)))
         .get()
       if (organization === undefined || organization.status !== "active")
-        return resultErrorCreate(op, "The impersonation organization was not found or is not active.")
+        return resultErrorCreate(
+          op,
+          "The impersonation organization was not found or is not active.",
+          "impersonation.not-found",
+        )
       const targetMembership = transaction
         .select({ id: organizationMembershipTable.id })
         .from(organizationMembershipTable)
@@ -138,7 +165,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
         )
         .get()
       if (targetMembership === undefined)
-        return resultErrorCreate(op, "The target is not a member of this organization.")
+        return resultErrorCreate(op, "The target is not a member of this organization.", "impersonation.not-found")
     }
     const issued = sessionIssue({
       actorId: options.actor.actorId,
@@ -167,7 +194,8 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
       sessionId: issued.data.session.id,
       subjectId: options.targetUserId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The impersonation event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The impersonation event payload is invalid.", "impersonation.event-invalid")
     const event = storageEventAppend(
       transaction,
       {
@@ -215,7 +243,11 @@ function impersonationAccessResolve(options: ImpersonationStartOptions): Result<
       )
       .get()
     if (membership === undefined)
-      return resultErrorCreate("impersonationAuthorization", "The actor is not a member of this organization.")
+      return resultErrorCreate(
+        "impersonationAuthorization",
+        "The actor is not a member of this organization.",
+        "authorization.forbidden",
+      )
     const decoded = organizationRolesDecode(membership.roles)
     if (!decoded.success) return decoded
     roles.push(...decoded.data)

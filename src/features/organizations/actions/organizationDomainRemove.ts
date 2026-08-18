@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -28,7 +28,8 @@ type OrganizationDomainRemoveOptions = {
 export function organizationDomainRemove(options: OrganizationDomainRemoveOptions): Result<{ removed: true }> {
   const op = "organizationDomainRemove"
   const normalized = realmDomainNormalize(options.domain)
-  if (!normalized.success) return resultErrorCreate(op, "The organization domain is invalid.")
+  if (!normalized.success)
+    return resultErrorCodedCreate(op, "The organization domain is invalid.", "organizations.invalid-domain")
   const domain = normalized.data
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
@@ -42,7 +43,7 @@ export function organizationDomainRemove(options: OrganizationDomainRemoveOption
       organization.data.realmId !== options.realmId ||
       organization.data.status === "removed"
     )
-      return resultErrorCreate(op, "The organization was not found.")
+      return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
@@ -54,16 +55,22 @@ export function organizationDomainRemove(options: OrganizationDomainRemoveOption
     const current = repository.organizationDomainGet(domain)
     if (!current.success) return current
     if (current.data === null || current.data.organizationId !== options.organizationId)
-      return resultErrorCreate(op, "The organization domain was not found.")
+      return resultErrorCodedCreate(op, "The organization domain was not found.", "organizations.domain-not-found")
     const domains = repository.organizationDomainList(options.organizationId)
     if (!domains.success) return domains
     if (current.data.isPrimary && domains.data.length > 1)
-      return resultErrorCreate(op, "The primary organization domain must be changed before removal.")
+      return resultErrorCodedCreate(
+        op,
+        "The primary organization domain must be changed before removal.",
+        "organizations.conflict",
+      )
     const removed = repository.organizationDomainDelete(domain, options.organizationId)
     if (!removed.success) return removed
-    if (removed.data === null) return resultErrorCreate(op, "The organization domain was not found.")
+    if (removed.data === null)
+      return resultErrorCodedCreate(op, "The organization domain was not found.", "organizations.domain-not-found")
     const payload = v.safeParse(organizationDomainRemovedEventPayloadSchema, { domain })
-    if (!payload.success) return resultErrorCreate(op, "The domain event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The domain event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -20,7 +20,7 @@ import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import type { OidcAuthorizationConsentRequest } from "../public/oidcAuthorizationConsentRequestSchema.js"
 import { oidcAuthorizationConsentRequestSchema } from "../public/oidcAuthorizationConsentRequestSchema.js"
 import type { OidcAuthorizationConsentResponse } from "../public/oidcAuthorizationConsentResponseSchema.js"
-import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
+import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 
 const oidcAuthorizationCodeLifetimeMs = 60 * 1_000
 
@@ -49,7 +49,8 @@ export function oidcAuthorizationRequestConsent(
   })
   if (!authenticated.success) return resultErrorCreate(op, "Session authorization is required.")
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The OIDC consent timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The OIDC consent timestamp is invalid.", undefined, "oidc.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   return storageTransactionRun(options.database, (transaction) => {

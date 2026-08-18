@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -26,11 +26,15 @@ type ProjectDeleteOptions = {
 export function projectDelete(options: ProjectDeleteOptions): Result<{ deleted: boolean; projectId: string }> {
   const op = "projectDelete"
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The project is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The project is not available in this tenant context.",
+      "projects.tenant-mismatch",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const deletedAt = runtime.now()
   if (!Number.isSafeInteger(deletedAt) || deletedAt < 0)
-    return resultErrorCreate(op, "The project timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The project timestamp is invalid.", "projects.timestamp-invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = projectRepositoryCreate(transaction)
@@ -50,7 +54,8 @@ export function projectDelete(options: ProjectDeleteOptions): Result<{ deleted: 
     if (!deleted.success) return deleted
     if (deleted.data === null) return resultCreate({ deleted: true, projectId: options.projectId })
     const payload = v.safeParse(projectDeletedEventPayloadSchema, { projectId: options.projectId })
-    if (!payload.success) return resultErrorCreate(op, "The project event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The project event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

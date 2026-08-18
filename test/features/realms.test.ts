@@ -59,6 +59,7 @@ test("realms are created with canonical IDs, defaults, safe events, and one-time
 
     const replay = realmBootstrapAdminCreate({ context, database, realmId: created.data.realm.id })
     expect(replay).toEqual({
+      code: "realms.already-exists",
       errorMessage: "The bootstrap administrator already exists.",
       op: "realmBootstrapAdminCreate",
       success: false,
@@ -88,6 +89,7 @@ test("tenant context resolves by host and cannot cross realm boundaries", async 
     expect(resolved.data.realmId).toBe(alpha.data.realm.id)
     expect(realmGet({ context: resolved.data, database, realmId: alpha.data.realm.id }).success).toBe(true)
     expect(realmGet({ context: resolved.data, database, realmId: beta.data.realm.id })).toEqual({
+      code: "realms.tenant-mismatch",
       errorMessage: "The realm is not available in this tenant context.",
       op: "realmGet",
       success: false,
@@ -142,6 +144,7 @@ test("bootstrap credentials authenticate only their resolved tenant", async () =
         secret: `${bootstrap.data.bootstrapAdmin.secret.valueGet()}-wrong`,
       }),
     ).toEqual({
+      code: "realms.unauthorized",
       errorMessage: "The bootstrap administrator credentials are invalid.",
       op: "realmBootstrapAdminAuthenticate",
       success: false,
@@ -238,6 +241,12 @@ test("server routes require system authorization and enforce host tenant isolati
       headers: { host: "alpha.example.com" },
     })
     expect(ownTenant.status).toBe(200)
+    const missingRealm = await app.request("http://server.test/system/realms/missing-realm", {
+      headers: { authorization: "Bearer system-secret" },
+    })
+    expect(missingRealm.status).toBe(404)
+    const missingRealmBody = (await missingRealm.json()) as { error: { code: string } }
+    expect(missingRealmBody.error.code).toBe("realms.not-found")
 
     const bootstrapResponse = await app.request(
       `http://server.test/system/realms/${created.realm.id}/bootstrap-admin`,
@@ -319,6 +328,7 @@ test("realm validation and authorization failures do not write state or events",
         },
       }),
     ).toEqual({
+      code: "realms.domain-not-unique",
       errorMessage: "Realm domains must be unique.",
       op: "realmCreate",
       success: false,

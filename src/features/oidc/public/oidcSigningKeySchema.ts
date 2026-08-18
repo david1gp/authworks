@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { oidcSigningKeyStatusSchema } from "../domain/oidcSigningKeyStatusSchema.js"
-import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
+import { oidcSigningKeyStatusSchema } from "./oidcSigningKeyStatusSchema.js"
+import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 import { oidcPublicJwkSchema } from "./oidcPublicJwkSchema.js"
 
 export const oidcSigningKeySchema = v.strictObject({

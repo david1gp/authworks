@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -42,16 +42,26 @@ export function externalIdentityLinkStart(
 ): Result<ExternalIdentityStartResponse> {
   const op = "externalIdentityLinkStart"
   const parsed = v.safeParse(externalIdentityStartRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The external identity link request is invalid.")
+  if (!parsed.success)
+    return resultErrorCreate(op, "The external identity link request is invalid.", "external-identities.invalid")
   if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
-    return resultErrorCreate(op, "The session does not belong to this user.")
+    return resultErrorCreate(op, "The session does not belong to this user.", "external-identities.forbidden")
   if (options.session.assurance === "none")
-    return resultErrorCreate(op, "A recent authentication is required before linking an external identity.")
+    return resultErrorCreate(
+      op,
+      "A recent authentication is required before linking an external identity.",
+      "external-identities.unauthorized",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The external identity timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The external identity timestamp is invalid.", "external-identities.invalid-timestamp")
   if (now - options.session.createdAt > externalIdentityRecentAuthenticationMs)
-    return resultErrorCreate(op, "A recent authentication is required before linking an external identity.")
+    return resultErrorCreate(
+      op,
+      "A recent authentication is required before linking an external identity.",
+      "external-identities.unauthorized",
+    )
   const repository = externalIdentityRepositoryCreate(options.database.db)
   const provider = repository.externalIdentityProviderGet(options.realmId, options.providerId)
   if (!provider.success) return provider
@@ -61,7 +71,7 @@ export function externalIdentityLinkStart(
     (parsed.output.organizationId === undefined && provider.data.organizationId !== null) ||
     (parsed.output.organizationId !== undefined && provider.data.organizationId !== parsed.output.organizationId)
   )
-    return resultErrorCreate(op, "The external identity provider is unavailable.")
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   if (parsed.output.organizationId !== undefined) {
     const organization = options.database.db
       .select({ id: organizationTable.id, realmId: organizationTable.realmId, status: organizationTable.status })
@@ -71,10 +81,11 @@ export function externalIdentityLinkStart(
       )
       .get()
     if (organization === undefined || organization.status !== "active")
-      return resultErrorCreate(op, "The external identity provider is unavailable.")
+      return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   }
   const port = options.providerPorts[provider.data.type as keyof ExternalIdentityProviderPorts]
-  if (port === undefined) return resultErrorCreate(op, "The external identity provider is unavailable.")
+  if (port === undefined)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   const state = externalIdentityOpaqueSecretCreate(runtime)
   const nonce = externalIdentityProviderDefaults[provider.data.type as keyof typeof externalIdentityProviderDefaults]
     .usesNonce
@@ -130,7 +141,12 @@ export function externalIdentityLinkStart(
       providerType: provider.data?.type,
       userId: options.userId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The external identity event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(
+        op,
+        "The external identity event payload is invalid.",
+        "external-identities.event-invalid",
+      )
     const event = storageEventAppend(
       transaction,
       {

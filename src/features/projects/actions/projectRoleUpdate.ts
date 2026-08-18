@@ -1,7 +1,8 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { patchInputParse } from "../../../platform/http/patchInputParse.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,13 +34,12 @@ type ProjectRoleUpdateOptions = {
 
 export function projectRoleUpdate(options: ProjectRoleUpdateOptions): Result<{ role: ProjectRole }> {
   const op = "projectRoleUpdate"
-  const parsed = v.safeParse(projectRoleUpdateRequestSchema, options.input)
-  if (!parsed.success || (parsed.output.displayName === undefined && parsed.output.group === undefined))
-    return resultErrorCreate(op, "The project role update is invalid.")
+  const parsed = patchInputParse(op, projectRoleUpdateRequestSchema, options.input, "projects.empty-patch")
+  if (!parsed.success) return parsed
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The project role timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The project role timestamp is invalid.", "projects.timestamp-invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = projectRepositoryCreate(transaction)
@@ -50,11 +50,11 @@ export function projectRoleUpdate(options: ProjectRoleUpdateOptions): Result<{ r
       current.data.realmId !== options.realmId ||
       current.data.projectId !== options.projectId
     )
-      return resultErrorCreate(op, "The project role was not found.")
+      return resultErrorCodedCreate(op, "The project role was not found.", "projects.not-found")
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
     if (project.data === null || project.data.status !== "active")
-      return resultErrorCreate(op, "The project was not found.")
+      return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
@@ -64,13 +64,14 @@ export function projectRoleUpdate(options: ProjectRoleUpdateOptions): Result<{ r
     })
     if (!authorized.success) return authorized
     const updated = repository.projectRoleUpdate(options.roleId, {
-      ...(parsed.output.displayName === undefined ? {} : { displayName: parsed.output.displayName }),
-      ...(parsed.output.group === undefined ? {} : { group: parsed.output.group }),
+      ...(parsed.data.displayName === undefined ? {} : { displayName: parsed.data.displayName }),
+      ...(parsed.data.group === undefined ? {} : { group: parsed.data.group }),
       updatedAt,
       version: current.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The project role was not found.")
+    if (updated.data === null)
+      return resultErrorCodedCreate(op, "The project role was not found.", "projects.not-found")
     const payload = v.safeParse(projectRoleUpdatedEventPayloadSchema, {
       displayName: updated.data.displayName,
       ...(updated.data.group === null ? {} : { group: updated.data.group }),
@@ -78,7 +79,8 @@ export function projectRoleUpdate(options: ProjectRoleUpdateOptions): Result<{ r
       projectId: options.projectId,
       roleId: options.roleId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The project role event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The project role event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

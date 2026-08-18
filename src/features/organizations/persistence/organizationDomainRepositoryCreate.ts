@@ -1,7 +1,7 @@
 import { and, asc, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { organizationDomainTable, type OrganizationDomainRow } from "./organizationDomainTable.js"
 
@@ -11,10 +11,18 @@ export function organizationDomainRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(organizationDomainTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("organizationDomainCreate", "The organization domain could not be claimed.")
+          return resultErrorCodedCreate(
+            "organizationDomainCreate",
+            "The organization domain could not be claimed.",
+            "organizations.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("organizationDomainCreate", "The organization domain could not be claimed.")
+        return resultErrorCodedCreate(
+          "organizationDomainCreate",
+          "The organization domain could not be claimed.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -33,7 +41,11 @@ export function organizationDomainRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationDomainDelete", "The organization domain could not be removed.")
+        return resultErrorCodedCreate(
+          "organizationDomainDelete",
+          "The organization domain could not be removed.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -44,7 +56,11 @@ export function organizationDomainRepositoryCreate(database: StorageExecutor) {
             null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationDomainGet", "The organization domain could not be read.")
+        return resultErrorCodedCreate(
+          "organizationDomainGet",
+          "The organization domain could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -55,11 +71,15 @@ export function organizationDomainRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(organizationDomainTable)
             .where(eq(organizationDomainTable.organizationId, organizationId))
-            .orderBy(asc(organizationDomainTable.createdAt))
+            .orderBy(asc(organizationDomainTable.createdAt), asc(organizationDomainTable.domain))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("organizationDomainList", "The organization domains could not be read.")
+        return resultErrorCodedCreate(
+          "organizationDomainList",
+          "The organization domains could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -77,7 +97,11 @@ export function organizationDomainRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationDomainUpdate", "The organization domain could not be updated.")
+        return resultErrorCodedCreate(
+          "organizationDomainUpdate",
+          "The organization domain could not be updated.",
+          "organizations.write-failed",
+        )
       }
     },
   }

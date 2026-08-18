@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -10,8 +10,8 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userPublicViewCreate } from "../domain/userPublicViewCreate.js"
-import { userEventTypes } from "../events/userEventTypes.js"
 import { userDeletedEventPayloadSchema } from "../events/userDeletedEventPayloadSchema.js"
+import { userEventTypes } from "../events/userEventTypes.js"
 import { userRepositoryCreate } from "../persistence/userRepositoryCreate.js"
 import type { User } from "../public/userSchema.js"
 
@@ -27,20 +27,22 @@ type UserDeleteOptions = {
 export function userDelete(options: UserDeleteOptions): Result<{ user: User }> {
   const op = "userDelete"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "users.tenant-required")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The user is not available in this tenant context.")
+    return resultErrorCreate(op, "The user is not available in this tenant context.", "users.tenant-mismatch")
   const runtime = options.runtime ?? options.database.runtime
   const deletedAt = runtime.now()
-  if (!Number.isSafeInteger(deletedAt) || deletedAt < 0) return resultErrorCreate(op, "The user timestamp is invalid.")
+  if (!Number.isSafeInteger(deletedAt) || deletedAt < 0)
+    return resultErrorCreate(op, "The user timestamp is invalid.", "users.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = userRepositoryCreate(transaction)
     const current = repository.userGet(options.realmId, options.userId)
     if (!current.success) return current
-    if (current.data === null) return resultErrorCreate(op, "The user was not found.")
-    if (current.data.state === "deleted") return resultErrorCreate(op, "The user has already been deleted.")
+    if (current.data === null) return resultErrorCreate(op, "The user was not found.", "users.not-found")
+    if (current.data.state === "deleted")
+      return resultErrorCreate(op, "The user has already been deleted.", "users.already-deleted")
     const deleted = repository.userUpdate(options.realmId, options.userId, {
       deletedAt,
       state: "deleted",
@@ -48,9 +50,10 @@ export function userDelete(options: UserDeleteOptions): Result<{ user: User }> {
       version: current.data.version + 1,
     })
     if (!deleted.success) return deleted
-    if (deleted.data === null) return resultErrorCreate(op, "The user was not found.")
+    if (deleted.data === null) return resultErrorCreate(op, "The user was not found.", "users.not-found")
     const payload = v.safeParse(userDeletedEventPayloadSchema, { deletedAt })
-    if (!payload.success) return resultErrorCreate(op, "The user deletion event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The user deletion event payload is invalid.", "users.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -30,11 +30,11 @@ export function projectApplicationGet(
     application.data.projectId !== options.projectId ||
     application.data.status !== "active"
   )
-    return resultErrorCreate(op, "The application was not found.")
+    return resultErrorCodedCreate(op, "The application was not found.", "projects.not-found")
   const project = repository.projectGet(options.projectId)
   if (!project.success) return project
   if (project.data === null || project.data.status !== "active")
-    return resultErrorCreate(op, "The project was not found.")
+    return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
   const authorized = projectContextAuthorize({
     context: options.context,
     database: options.database,

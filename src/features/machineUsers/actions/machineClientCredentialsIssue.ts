@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -37,13 +37,18 @@ export function machineClientCredentialsIssue(
   const op = "machineClientCredentialsIssue"
   const parsed = v.safeParse(machineClientCredentialsRequestSchema, options.input)
   if (!parsed.success)
-    return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
+    return resultErrorCreate(
+      "machineClientCredentialsInvalidClient",
+      "Client authentication failed.",
+      "machine-users.invalid-client",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
-    return resultErrorCreate(op, "The client credentials timestamp is invalid.")
+    return resultErrorCreate(op, "The client credentials timestamp is invalid.", "machine-users.invalid-timestamp")
   const expiresAt = now + machineAccessTokenLifetimeMs
-  if (!Number.isSafeInteger(expiresAt)) return resultErrorCreate(op, "The client credentials expiry is invalid.")
+  if (!Number.isSafeInteger(expiresAt))
+    return resultErrorCreate(op, "The client credentials expiry is invalid.", "machine-users.invalid")
   const generatedAccessToken =
     options.accessToken === undefined ? machineSecretCreate(runtime) : resultCreate(options.accessToken)
   if (!generatedAccessToken.success) return generatedAccessToken
@@ -56,7 +61,11 @@ export function machineClientCredentialsIssue(
     const machineUser = repository.userGetByName(options.realmId, parsed.output.clientId.trim().toLowerCase())
     if (!machineUser.success) return machineUser
     if (machineUser.data === null || machineUser.data.status !== "active")
-      return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidClient",
+        "Client authentication failed.",
+        "machine-users.invalid-client",
+      )
     const configuredScopes = machineScopesParse(machineUser.data.scopes)
     if (!configuredScopes.success) return configuredScopes
     const credentials = repository.credentialList(options.realmId, machineUser.data.id)
@@ -65,14 +74,26 @@ export function machineClientCredentialsIssue(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
     )
     if (clientCredential === undefined)
-      return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidClient",
+        "Client authentication failed.",
+        "machine-users.invalid-client",
+      )
     const verified = machineSecretHashVerify(parsed.output.clientSecret, clientCredential.secretHash)
     if (!verified.success) return verified
     if (!verified.data)
-      return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidClient",
+        "Client authentication failed.",
+        "machine-users.invalid-client",
+      )
     const scopes = parsed.output.scope ?? configuredScopes.data
     if (scopes.some((scope) => !configuredScopes.data.includes(scope)))
-      return resultErrorCreate("machineClientCredentialsInvalidScope", "The requested machine scopes are invalid.")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidScope",
+        "The requested machine scopes are invalid.",
+        "machine-users.invalid-scope",
+      )
     const uniqueScopes = [...new Set(scopes)]
     const credentialId = uuidv7Create(runtime)
     const created = repository.credentialCreate({
@@ -98,7 +119,8 @@ export function machineClientCredentialsIssue(
       name: "OAuth client credentials",
       scopes: uniqueScopes,
     })
-    if (!payload.success) return resultErrorCreate(op, "The machine credential event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The machine credential event payload is invalid.", "machine-users.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

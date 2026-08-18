@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { Result } from "#result"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -50,12 +50,15 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       context.req.param("realmId"),
     )
     if (!tenant.success) return externalIdentityErrorResponseCreate(context, tenant)
+    const query = listQueryFromSearchParams(context.req.query())
+    if (!query.success) return externalIdentityErrorResponseCreate(context, query)
     return externalIdentityResultResponseCreate(
       context,
       externalIdentityProviderList({
         database: options.database,
         realmId: context.req.param("realmId"),
         organizationId: context.req.query("organizationId"),
+        query: query.data,
       }),
     )
   })
@@ -66,6 +69,8 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       options.systemSecret,
     )
     if (!authorization.success) return externalIdentityErrorResponseCreate(context, authorization)
+    const query = listQueryFromSearchParams(context.req.query())
+    if (!query.success) return externalIdentityErrorResponseCreate(context, query)
     return externalIdentityResultResponseCreate(
       context,
       externalIdentityProviderList({
@@ -73,6 +78,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         includeDisabled: true,
         realmId: context.req.param("realmId"),
         organizationId: context.req.query("organizationId"),
+        query: query.data,
       }),
     )
   })
@@ -88,6 +94,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     const input = v.safeParse(externalIdentityProviderCreateRequestSchema, body.data)
     if (!input.success)
       return externalIdentityErrorResponseCreate(context, {
+        code: "external-identities.invalid",
         errorMessage: "The provider request is invalid.",
         op: "externalIdentityProviderCreate",
       })
@@ -131,6 +138,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     const input = v.safeParse(externalIdentityProviderUpdateRequestSchema, body.data)
     if (!input.success)
       return externalIdentityErrorResponseCreate(context, {
+        code: "external-identities.invalid",
         errorMessage: "The provider update is invalid.",
         op: "externalIdentityProviderUpdate",
       })
@@ -176,6 +184,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     const input = v.safeParse(externalIdentityStartRequestSchema, body.data)
     if (!input.success)
       return externalIdentityErrorResponseCreate(context, {
+        code: "external-identities.invalid",
         errorMessage: "The external identity start request is invalid.",
         op: "externalIdentityStart",
       })
@@ -222,6 +231,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       const input = v.safeParse(externalIdentityStartRequestSchema, body.data)
       if (!input.success)
         return externalIdentityErrorResponseCreate(context, {
+          code: "external-identities.invalid",
           errorMessage: "The external identity link request is invalid.",
           op: "externalIdentityLinkStart",
         })
@@ -249,6 +259,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       const input = v.safeParse(externalIdentityLinkCompleteRequestSchema, body.data)
       if (!input.success)
         return externalIdentityErrorResponseCreate(context, {
+          code: "external-identities.invalid",
           errorMessage: "Explicit link confirmation is required.",
           op: "externalIdentityLinkComplete",
         })
@@ -267,15 +278,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
   )
 
   app.get("/realms/:realmId/users/:userId/external-identities", protectedMiddleware, (context) =>
-    externalIdentityResultResponseCreate(
-      context,
-      externalIdentityList({
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        session: context.get("session"),
-        userId: context.req.param("userId"),
-      }),
-    ),
+    externalIdentityListRoute(context, options.database),
   )
 
   app.delete(
@@ -326,6 +329,7 @@ function externalIdentitySystemAuthorizationGet(
   const token = authorization?.match(/^Bearer (.+)$/)?.[1]
   if (configuredSecret === undefined || token === undefined || !secretMatches(token, configuredSecret))
     return {
+      code: "external-identities.authentication-required",
       errorMessage: "System authorization is required.",
       op: "externalIdentitySystemAuthorizationGet",
       success: false as const,
@@ -351,37 +355,66 @@ async function externalIdentityJsonRead(context: { req: { json: <T>() => Promise
   try {
     return { data: await context.req.json<unknown>(), success: true as const }
   } catch (_error) {
-    return { errorMessage: "The request body is invalid.", op: "externalIdentityJsonRead", success: false as const }
+    return {
+      code: "external-identities.invalid",
+      errorMessage: "The request body is invalid.",
+      op: "externalIdentityJsonRead",
+      success: false as const,
+    }
   }
 }
 
 function externalIdentityErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { errorMessage: string; op: string },
+  context: ExternalIdentityRouteContext,
+  result: { errorMessage: string; op: string; code?: string; success?: false },
 ) {
-  const message = result.errorMessage
-  const code =
-    result.op.includes("Authorization") || message.includes("authorization") || message.includes("session")
-      ? "unauthorized"
-      : message.includes("not found")
-        ? "not_found"
-        : message.includes("already") || message.includes("last usable")
-          ? "conflict"
-          : message.includes("disabled")
-            ? "forbidden"
-            : "bad_request"
-  return context.json(httpErrorResponseCreate(code, message), httpErrorStatusGet(code) as ContentfulStatusCode)
+  return httpResultResponseCreate(context, {
+    ...result,
+    success: false,
+    code: result.code ?? "external-identities.invalid",
+  } as Result<unknown>)
 }
 
 function externalIdentityResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  context: ExternalIdentityRouteContext,
+  result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
 ) {
   if (!result.success)
     return externalIdentityErrorResponseCreate(context, {
+      code: result.code,
       errorMessage: result.errorMessage ?? "The external identity request failed.",
       op: result.op ?? "externalIdentity",
+      success: false,
     })
-  return context.json(result.data, status as ContentfulStatusCode)
+  return httpResultResponseCreate(context, result as Result<T>, status)
+}
+
+function externalIdentityListRoute(context: ExternalIdentityRouteContext, database: StorageDatabase) {
+  const query = listQueryFromSearchParams(context.req.query())
+  if (!query.success) return externalIdentityErrorResponseCreate(context, query)
+  return externalIdentityResultResponseCreate(
+    context,
+    externalIdentityList({
+      database,
+      query: query.data,
+      realmId: context.req.param("realmId"),
+      session: context.get("session"),
+      userId: context.req.param("userId"),
+    }),
+  )
+}
+
+type ExternalIdentityRouteContext = {
+  readonly get: (key: "session") => import("../../sessions/public/sessionSchema.js").Session
+  readonly json: (body: unknown, status?: number) => Response
+  readonly req: {
+    readonly header: (name: string) => string | undefined
+    readonly param: (name: string) => string
+    readonly query: {
+      (): Record<string, string>
+      (name: string): string | undefined
+    }
+    readonly url: string
+  }
 }

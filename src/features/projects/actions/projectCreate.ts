@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,13 +33,18 @@ type ProjectCreateOptions = {
 export function projectCreate(options: ProjectCreateOptions): Result<{ project: Project }> {
   const op = "projectCreate"
   const parsed = v.safeParse(projectCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The project request is invalid.")
+  if (!parsed.success) return resultErrorCodedCreate(op, "The project request is invalid.", "projects.invalid")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The project is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The project is not available in this tenant context.",
+      "projects.tenant-mismatch",
+    )
   const systemContext = realmSystemContextCreate()
   const realm = realmGet({ context: systemContext, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCodedCreate(op, "The realm is not active.", "projects.not-active")
   const organization = organizationGet({
     context: systemContext,
     database: options.database,
@@ -48,9 +53,9 @@ export function projectCreate(options: ProjectCreateOptions): Result<{ project: 
   })
   if (!organization.success) return organization
   if (organization.data.organization.realmId !== options.realmId)
-    return resultErrorCreate(op, "The organization was not found.")
+    return resultErrorCodedCreate(op, "The organization was not found.", "projects.organization-not-found")
   if (organization.data.organization.status !== "active")
-    return resultErrorCreate(op, "The organization is not active.")
+    return resultErrorCodedCreate(op, "The organization is not active.", "projects.organization-not-active")
   const authorized = projectOrganizationAuthorize({
     context: options.context,
     database: options.database,
@@ -66,7 +71,7 @@ export function projectCreate(options: ProjectCreateOptions): Result<{ project: 
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The project timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The project timestamp is invalid.", "projects.timestamp-invalid")
   const projectId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
@@ -85,7 +90,11 @@ export function projectCreate(options: ProjectCreateOptions): Result<{ project: 
     })
     if (!created.success) {
       if (created.errorMessage === "The project could not be created.")
-        return resultErrorCreate(op, "A project with that name already exists in this organization.")
+        return resultErrorCodedCreate(
+          op,
+          "A project with that name already exists in this organization.",
+          "projects.already-exists",
+        )
       return created
     }
     const payload = v.safeParse(projectCreatedEventPayloadSchema, {
@@ -94,7 +103,8 @@ export function projectCreate(options: ProjectCreateOptions): Result<{ project: 
       organizationId: parsed.output.organizationId,
       projectAccessRequired,
     })
-    if (!payload.success) return resultErrorCreate(op, "The project event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The project event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

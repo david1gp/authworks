@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -35,23 +35,29 @@ export function organizationLifecycleSet(
 ): Result<{ organization: Organization }> {
   const op = "organizationLifecycleSet"
   const parsed = v.safeParse(organizationLifecycleRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The organization lifecycle request is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The organization lifecycle request is invalid.", "organizations.invalid")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The organization is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The organization is not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The organization timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The organization timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
     const current = repository.organizationGet(options.organizationId)
     if (!current.success) return current
     if (current.data === null || current.data.realmId !== options.realmId)
-      return resultErrorCreate(op, "The organization was not found.")
-    if (current.data.status === "removed") return resultErrorCreate(op, "The organization has been removed.")
+      return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
+    if (current.data.status === "removed")
+      return resultErrorCodedCreate(op, "The organization has been removed.", "organizations.not-active")
     if (current.data.status === parsed.output.status)
-      return resultErrorCreate(op, "The organization already has that status.")
+      return resultErrorCodedCreate(op, "The organization already has that status.", "organizations.conflict")
     if (options.context.kind === "tenant") {
       const authorized = organizationContextAuthorize({
         context: options.context,
@@ -67,9 +73,11 @@ export function organizationLifecycleSet(
       version: current.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The organization was not found.")
+    if (updated.data === null)
+      return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
     const payload = v.safeParse(organizationStatusChangedEventPayloadSchema, { status: updated.data.status })
-    if (!payload.success) return resultErrorCreate(op, "The organization event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The organization event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import * as v from "valibot"
 import { authorizationFixedRoleDefinitions } from "../domain/authorizationFixedRoleDefinitions.js"
 import { authorizationPolicyRuleSchema, type AuthorizationPolicyRule } from "../public/authorizationPolicyRuleSchema.js"
@@ -21,8 +21,10 @@ export function authorizationRolePermissionsResolve(
   const definitions = new Map(authorizationFixedRoleDefinitions.map((definition) => [definition.roleId, definition]))
   for (const customRole of options.customRoles ?? []) {
     const parsed = v.safeParse(authorizationRoleDefinitionSchema, customRole)
-    if (!parsed.success) return resultErrorCreate(op, "The custom role definition is invalid.")
-    if (definitions.has(parsed.output.roleId)) return resultErrorCreate(op, "The role is defined more than once.")
+    if (!parsed.success)
+      return resultErrorCodedCreate(op, "The custom role definition is invalid.", "authorization.invalid")
+    if (definitions.has(parsed.output.roleId))
+      return resultErrorCodedCreate(op, "The role is defined more than once.", "authorization.conflict")
     definitions.set(parsed.output.roleId, parsed.output)
   }
   const rules: AuthorizationPolicyRule[] = []
@@ -33,6 +35,6 @@ export function authorizationRolePermissionsResolve(
     for (const permission of definition.deniedPermissions ?? []) rules.push({ effect: "deny", permission })
   }
   const parsed = v.safeParse(v.array(authorizationPolicyRuleSchema), rules)
-  if (!parsed.success) return resultErrorCreate(op, "The role permissions are invalid.")
+  if (!parsed.success) return resultErrorCodedCreate(op, "The role permissions are invalid.", "authorization.invalid")
   return resultCreate(parsed.output)
 }

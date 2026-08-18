@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { projectStatusSchema } from "../domain/projectStatusSchema.js"
+import { projectStatusSchema } from "../public/projectStatusSchema.js"
 
 export const projectStatusChangedEventPayloadSchema = v.strictObject({ status: projectStatusSchema })
 

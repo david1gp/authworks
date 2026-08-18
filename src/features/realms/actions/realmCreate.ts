@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -28,7 +28,8 @@ type RealmCreateOptions = {
 
 export function realmCreate(options: RealmCreateOptions): Result<{ realm: Realm }> {
   const op = "realmCreate"
-  if (options.context?.kind !== "system") return resultErrorCreate(op, "Only the system context can create realms.")
+  if (options.context?.kind !== "system")
+    return resultErrorCreate(op, "Only the system context can create realms.", "realms.system-required")
 
   const name = realmNameNormalize(options.input.name)
   if (!name.success) return name
@@ -38,7 +39,8 @@ export function realmCreate(options: RealmCreateOptions): Result<{ realm: Realm 
   for (const candidate of options.input.domains ?? []) {
     const domain = realmDomainNormalize(candidate)
     if (!domain.success) return domain
-    if (domains.includes(domain.data)) return resultErrorCreate(op, "Realm domains must be unique.")
+    if (domains.includes(domain.data))
+      return resultErrorCreate(op, "Realm domains must be unique.", "realms.domain-not-unique")
     domains.push(domain.data)
   }
 
@@ -46,7 +48,8 @@ export function realmCreate(options: RealmCreateOptions): Result<{ realm: Realm 
   const realmId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const createdAt = runtime.now()
-  if (!Number.isSafeInteger(createdAt) || createdAt < 0) return resultErrorCreate(op, "The realm timestamp is invalid.")
+  if (!Number.isSafeInteger(createdAt) || createdAt < 0)
+    return resultErrorCreate(op, "The realm timestamp is invalid.", "realms.invalid-timestamp")
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = realmRepositoryCreate(transaction)
@@ -64,7 +67,7 @@ export function realmCreate(options: RealmCreateOptions): Result<{ realm: Realm 
     )
     if (!created.success) {
       if (created.errorMessage === "The realm could not be created.")
-        return resultErrorCreate(op, "A realm with that domain already exists.")
+        return resultErrorCreate(op, "A realm with that domain already exists.", "realms.already-exists")
       return created
     }
 
@@ -72,7 +75,8 @@ export function realmCreate(options: RealmCreateOptions): Result<{ realm: Realm 
       domain: primaryDomain.data,
       name: name.data,
     })
-    if (!payloadResult.success) return resultErrorCreate(op, "The realm event payload is invalid.")
+    if (!payloadResult.success)
+      return resultErrorCreate(op, "The realm event payload is invalid.", "realms.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

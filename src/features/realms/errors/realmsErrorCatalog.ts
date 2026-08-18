@@ -1,0 +1,25 @@
+import type { ErrorCatalogEntry } from "../../../platform/errors/errorCatalogEntrySchema.js"
+
+export const realmsErrorCatalog = [
+  { code: "realms.system-required", httpStatus: 403, retryable: false },
+  { code: "realms.tenant-required", httpStatus: 400, retryable: false },
+  { code: "realms.tenant-mismatch", httpStatus: 404, retryable: false },
+  { code: "realms.not-found", httpStatus: 404, retryable: false },
+  { code: "realms.invalid", httpStatus: 400, retryable: false },
+  { code: "realms.empty-patch", httpStatus: 400, retryable: false },
+  { code: "realms.invalid-cursor", httpStatus: 400, retryable: false },
+  { code: "realms.invalid-page", httpStatus: 400, retryable: false },
+  { code: "realms.invalid-timestamp", httpStatus: 400, retryable: false },
+  { code: "realms.domain-not-unique", httpStatus: 400, retryable: false },
+  { code: "realms.invalid-name", httpStatus: 400, retryable: false },
+  { code: "realms.invalid-domain", httpStatus: 400, retryable: false },
+  { code: "realms.unauthorized", httpStatus: 401, retryable: false },
+  { code: "realms.forbidden", httpStatus: 403, retryable: false },
+  { code: "realms.conflict", httpStatus: 409, retryable: false },
+  { code: "realms.already-exists", httpStatus: 409, retryable: false },
+  { code: "realms.not-active", httpStatus: 409, retryable: false },
+  { code: "realms.read-failed", httpStatus: 500, retryable: false },
+  { code: "realms.write-failed", httpStatus: 500, retryable: false },
+  { code: "realms.event-invalid", httpStatus: 500, retryable: false },
+  { code: "realms.internal", httpStatus: 500, retryable: false },
+] as const satisfies readonly ErrorCatalogEntry[]

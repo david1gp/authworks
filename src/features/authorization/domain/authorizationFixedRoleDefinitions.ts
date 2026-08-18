@@ -1,5 +1,5 @@
 import type { AuthorizationRoleDefinition } from "../public/authorizationRoleDefinitionSchema.js"
-import { authorizationPermissionDefinitions } from "./authorizationPermissionDefinitions.js"
+import { authorizationPermissionDefinitions } from "../public/authorizationPermissionDefinitions.js"
 
 export const authorizationFixedRoleDefinitions: readonly AuthorizationRoleDefinition[] = [
   {

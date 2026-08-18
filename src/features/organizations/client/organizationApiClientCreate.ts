@@ -1,7 +1,9 @@
 import * as v from "valibot"
 import { type Result } from "#result"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { patchInputParse } from "../../../platform/http/patchInputParse.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import {
   type OrganizationCreateRequest,
@@ -133,7 +135,13 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
     organizationCreate(realmId: string, input: OrganizationCreateRequest): Promise<Result<OrganizationResponse>> {
       const parsed = v.safeParse(organizationCreateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("organizationApiClientCreate", "The organization request is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "organizationApiClientCreate",
+            "The organization request is invalid.",
+            "organizations.invalid",
+          ),
+        )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations`,
         jsonRequest(parsed.output),
@@ -147,9 +155,9 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         organizationResponseSchema,
       )
     },
-    organizationList(realmId: string): Promise<Result<OrganizationListResponse>> {
+    organizationList(realmId: string, query?: ListQuery): Promise<Result<OrganizationListResponse>> {
       return request(
-        `/system/realms/${encodeURIComponent(realmId)}/organizations`,
+        organizationListPathCreate(`/system/realms/${encodeURIComponent(realmId)}/organizations`, query),
         { method: "GET" },
         organizationListResponseSchema,
       )
@@ -159,12 +167,17 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
       organizationId: string,
       input: OrganizationUpdateRequest,
     ): Promise<Result<OrganizationResponse>> {
-      const parsed = v.safeParse(organizationUpdateRequestSchema, input)
-      if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("organizationApiClientUpdate", "The organization update is invalid."))
+      const parsed = patchInputParse(
+        "organizationApiClientUpdate",
+        organizationUpdateRequestSchema,
+        input,
+        "organizations.empty-patch",
+        "organizations.invalid",
+      )
+      if (!parsed.success) return Promise.resolve(parsed)
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}`,
-        patchRequest(parsed.output),
+        patchRequest(parsed.data),
         organizationResponseSchema,
       )
     },
@@ -182,7 +195,13 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
     ): Promise<Result<OrganizationBrandingResponse>> {
       const parsed = v.safeParse(organizationBrandingSetRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("organizationApiClientBrandingSet", "The branding is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "organizationApiClientBrandingSet",
+            "The branding is invalid.",
+            "organizations.invalid",
+          ),
+        )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/branding`,
         { ...jsonRequest(parsed.output), method: "PUT" },
@@ -196,16 +215,29 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
     ): Promise<Result<OrganizationDomainResponse>> {
       const parsed = v.safeParse(organizationDomainClaimRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("organizationApiClientDomainClaim", "The domain claim is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "organizationApiClientDomainClaim",
+            "The domain claim is invalid.",
+            "organizations.invalid",
+          ),
+        )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/domains`,
         jsonRequest(parsed.output),
         organizationDomainResponseSchema,
       )
     },
-    organizationDomainList(realmId: string, organizationId: string): Promise<Result<OrganizationDomainListResponse>> {
+    organizationDomainList(
+      realmId: string,
+      organizationId: string,
+      query?: ListQuery,
+    ): Promise<Result<OrganizationDomainListResponse>> {
       return request(
-        `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/domains`,
+        organizationListPathCreate(
+          `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/domains`,
+          query,
+        ),
         { method: "GET" },
         organizationDomainListResponseSchema,
       )
@@ -253,7 +285,11 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
       const parsed = v.safeParse(organizationLoginPolicySetRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("organizationApiClientRealmLoginPolicySet", "The login policy is invalid."),
+          resultErrorCodedCreate(
+            "organizationApiClientRealmLoginPolicySet",
+            "The login policy is invalid.",
+            "organizations.invalid",
+          ),
         )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/login-policy`,
@@ -278,7 +314,13 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
     ): Promise<Result<OrganizationLoginPolicyResponse>> {
       const parsed = v.safeParse(organizationLoginPolicySetRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("organizationApiClientLoginPolicySet", "The login policy is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "organizationApiClientLoginPolicySet",
+            "The login policy is invalid.",
+            "organizations.invalid",
+          ),
+        )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/login-policy`,
         patchRequest(parsed.output),
@@ -293,7 +335,11 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
       const parsed = v.safeParse(organizationLifecycleRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("organizationApiClientLifecycleSet", "The organization lifecycle request is invalid."),
+          resultErrorCodedCreate(
+            "organizationApiClientLifecycleSet",
+            "The organization lifecycle request is invalid.",
+            "organizations.invalid",
+          ),
         )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/lifecycle`,
@@ -301,8 +347,12 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         organizationResponseSchema,
       )
     },
-    organizationRoleList(): Promise<Result<OrganizationRoleListResponse>> {
-      return request("/system/organization-roles", { method: "GET" }, organizationRoleListResponseSchema)
+    organizationRoleList(query?: ListQuery): Promise<Result<OrganizationRoleListResponse>> {
+      return request(
+        organizationListPathCreate("/system/organization-roles", query),
+        { method: "GET" },
+        organizationRoleListResponseSchema,
+      )
     },
     organizationMembershipCreate(
       realmId: string,
@@ -312,7 +362,11 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
       const parsed = v.safeParse(organizationMembershipCreateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("organizationApiClientMembershipCreate", "The membership request is invalid."),
+          resultErrorCodedCreate(
+            "organizationApiClientMembershipCreate",
+            "The membership request is invalid.",
+            "organizations.invalid",
+          ),
         )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/memberships`,
@@ -323,9 +377,13 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
     organizationMembershipList(
       realmId: string,
       organizationId: string,
+      query?: ListQuery,
     ): Promise<Result<OrganizationMembershipListResponse>> {
       return request(
-        `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/memberships`,
+        organizationListPathCreate(
+          `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/memberships`,
+          query,
+        ),
         { method: "GET" },
         organizationMembershipListResponseSchema,
       )
@@ -339,7 +397,11 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
       const parsed = v.safeParse(organizationMembershipUpdateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("organizationApiClientMembershipUpdate", "The membership update is invalid."),
+          resultErrorCodedCreate(
+            "organizationApiClientMembershipUpdate",
+            "The membership update is invalid.",
+            "organizations.invalid",
+          ),
         )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/memberships/${encodeURIComponent(membershipId)}`,
@@ -366,7 +428,11 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
       const parsed = v.safeParse(organizationInvitationCreateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("organizationApiClientInvitationCreate", "The invitation request is invalid."),
+          resultErrorCodedCreate(
+            "organizationApiClientInvitationCreate",
+            "The invitation request is invalid.",
+            "organizations.invalid",
+          ),
         )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/invitations`,
@@ -377,9 +443,13 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
     organizationInvitationList(
       realmId: string,
       organizationId: string,
+      query?: ListQuery,
     ): Promise<Result<OrganizationInvitationListResponse>> {
       return request(
-        `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/invitations`,
+        organizationListPathCreate(
+          `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/invitations`,
+          query,
+        ),
         { method: "GET" },
         organizationInvitationListResponseSchema,
       )
@@ -412,7 +482,13 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
     organizationSwitch(realmId: string, input: OrganizationSwitchRequest): Promise<Result<OrganizationSwitchResponse>> {
       const parsed = v.safeParse(organizationSwitchRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("organizationApiClientSwitch", "The switch request is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "organizationApiClientSwitch",
+            "The switch request is invalid.",
+            "organizations.invalid",
+          ),
+        )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/switch`,
         jsonRequest(parsed.output),
@@ -420,4 +496,15 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
       )
     },
   }
+}
+
+function organizationListPathCreate(path: string, query: ListQuery | undefined): string {
+  if (query === undefined) return path
+  const params = new URLSearchParams()
+  if (query.pageSize !== undefined) params.set("pageSize", String(query.pageSize))
+  if (query.pageToken !== undefined) params.set("pageToken", query.pageToken)
+  if (query.sortBy !== undefined) params.set("sortBy", query.sortBy)
+  if (query.sortDirection !== undefined) params.set("sortDirection", query.sortDirection)
+  const serialized = params.toString()
+  return serialized.length === 0 ? path : `${path}?${serialized}`
 }

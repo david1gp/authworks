@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import type { SessionAuthenticationMethod } from "../../sessions/public/sessionAuthenticationMethodSchema.js"
@@ -35,7 +35,7 @@ export function mfaPrimaryAuthenticationComplete<TSession>(
   if ((policy.data ?? mfaPolicyDefaults).mode === "required") {
     const enrollment = repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
     if (!enrollment.success) return enrollment
-    if (enrollment.data === null) return resultErrorCreate(op, "MFA enrollment is required.")
+    if (enrollment.data === null) return resultErrorCreate(op, "MFA enrollment is required.", "mfa.not-found")
     const challenge = mfaLoginChallengeStart({
       actorId: options.actorId,
       deviceMetadata: options.deviceMetadata,

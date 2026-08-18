@@ -1,8 +1,10 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import type { ExternalIdentityCallbackResponse } from "../public/externalIdentityCallbackResponseSchema.js"
 import { externalIdentityCallbackResponseSchema } from "../public/externalIdentityCallbackResponseSchema.js"
@@ -49,7 +51,8 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
 
   const parsedRequest = <T>(schema: v.GenericSchema<T>, input: unknown, message: string) => {
     const parsed = v.safeParse(schema, input)
-    if (!parsed.success) return resultErrorCreate("externalIdentityApiClientCreate", message)
+    if (!parsed.success)
+      return resultErrorCreate("externalIdentityApiClientCreate", message, "external-identities.invalid")
     return resultCreate(parsed.output)
   }
 
@@ -103,9 +106,13 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
         externalIdentityStartResponseSchema,
       )
     },
-    externalIdentityList(realmId: string, userId: string): Promise<Result<ExternalIdentityListResponse>> {
+    externalIdentityList(
+      realmId: string,
+      userId: string,
+      query?: ListQuery,
+    ): Promise<Result<ExternalIdentityListResponse>> {
       return request(
-        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/external-identities`,
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/external-identities${listQueryToSearchParams(query)}`,
         { method: "GET" },
         externalIdentityListResponseSchema,
       )
@@ -139,10 +146,13 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
     externalIdentityProviderList(
       realmId: string,
       organizationId?: string,
+      query?: ListQuery,
     ): Promise<Result<ExternalIdentityProviderListResponse>> {
-      const query = organizationId === undefined ? "" : `?organizationId=${encodeURIComponent(organizationId)}`
+      const queryParams = new URLSearchParams(listQueryToSearchParams(query).slice(1))
+      if (organizationId !== undefined) queryParams.set("organizationId", organizationId)
+      const queryString = queryParams.toString().length === 0 ? "" : `?${queryParams.toString()}`
       return request(
-        `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers${query}`,
+        `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers${queryString}`,
         { method: "GET" },
         externalIdentityProviderListResponseSchema,
       )
@@ -167,10 +177,13 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
     externalIdentityProviderPublicList(
       realmId: string,
       organizationId?: string,
+      query?: ListQuery,
     ): Promise<Result<ExternalIdentityProviderListResponse>> {
-      const query = organizationId === undefined ? "" : `?organizationId=${encodeURIComponent(organizationId)}`
+      const queryParams = new URLSearchParams(listQueryToSearchParams(query).slice(1))
+      if (organizationId !== undefined) queryParams.set("organizationId", organizationId)
+      const queryString = queryParams.toString().length === 0 ? "" : `?${queryParams.toString()}`
       return request(
-        `/realms/${encodeURIComponent(realmId)}/external-identity-providers${query}`,
+        `/realms/${encodeURIComponent(realmId)}/external-identity-providers${queryString}`,
         { method: "GET" },
         externalIdentityProviderListResponseSchema,
       )

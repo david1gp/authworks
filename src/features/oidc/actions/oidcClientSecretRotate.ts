@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -36,7 +36,7 @@ export function oidcClientSecretRotate(
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The client timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The client timestamp is invalid.", "oidc.invalid-timestamp")
   const secret = oidcClientSecretCreate(runtime)
   if (!secret.success) return secret
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
@@ -45,18 +45,19 @@ export function oidcClientSecretRotate(
     const current = repository.clientGet(options.realmId, options.clientId)
     if (!current.success) return current
     if (current.data === null || current.data.status === "removed")
-      return resultErrorCreate(op, "The OIDC client was not found.")
+      return resultErrorCodedCreate(op, "The OIDC client was not found.", "oidc.not-found")
     if (current.data.clientType !== "confidential")
-      return resultErrorCreate(op, "Public OIDC clients do not have a client secret.")
+      return resultErrorCodedCreate(op, "Public OIDC clients do not have a client secret.", "oidc.cannot-change")
     const updated = repository.clientUpdate(options.realmId, options.clientId, {
       secretHash: oidcSecretHashCreate(secret.data),
       updatedAt,
       version: current.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The OIDC client was not found.")
+    if (updated.data === null) return resultErrorCodedCreate(op, "The OIDC client was not found.", "oidc.not-found")
     const payload = v.safeParse(oidcClientSecretRotatedEventPayloadSchema, { clientType: "confidential" })
-    if (!payload.success) return resultErrorCreate(op, "The OIDC client event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The OIDC client event payload is invalid.", "oidc.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,7 @@
 import { and, asc, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { type ProjectApplicationRow, projectApplicationTable } from "./projectApplicationTable.js"
 import { type ProjectGrantRow, projectGrantTable } from "./projectGrantTable.js"
@@ -22,10 +22,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
     projectCreate(input: ProjectInsert): Result<ProjectRow> {
       try {
         const row = database.insert(projectTable).values(input).returning().get()
-        if (row === undefined) return resultErrorCreate("projectCreate", "The project could not be created.")
+        if (row === undefined)
+          return resultErrorCodedCreate("projectCreate", "The project could not be created.", "projects.write-failed")
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("projectCreate", "The project could not be created.")
+        return resultErrorCodedCreate("projectCreate", "The project could not be created.", "projects.write-failed")
       }
     },
 
@@ -35,7 +36,7 @@ export function projectRepositoryCreate(database: StorageExecutor) {
           database.delete(projectTable).where(eq(projectTable.id, projectId)).returning().get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectDelete", "The project could not be deleted.")
+        return resultErrorCodedCreate("projectDelete", "The project could not be deleted.", "projects.write-failed")
       }
     },
 
@@ -43,7 +44,7 @@ export function projectRepositoryCreate(database: StorageExecutor) {
       try {
         return resultCreate(database.select().from(projectTable).where(eq(projectTable.id, projectId)).get() ?? null)
       } catch (_error) {
-        return resultErrorCreate("projectGet", "The project could not be read.")
+        return resultErrorCodedCreate("projectGet", "The project could not be read.", "projects.read-failed")
       }
     },
 
@@ -54,11 +55,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(projectTable)
             .where(eq(projectTable.realmId, realmId))
-            .orderBy(asc(projectTable.createdAt))
+            .orderBy(asc(projectTable.createdAt), asc(projectTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("projectList", "The projects could not be read.")
+        return resultErrorCodedCreate("projectList", "The projects could not be read.", "projects.read-failed")
       }
     },
 
@@ -68,7 +69,7 @@ export function projectRepositoryCreate(database: StorageExecutor) {
           database.update(projectTable).set(input).where(eq(projectTable.id, projectId)).returning().get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectUpdate", "The project could not be updated.")
+        return resultErrorCodedCreate("projectUpdate", "The project could not be updated.", "projects.write-failed")
       }
     },
 
@@ -76,10 +77,18 @@ export function projectRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(projectApplicationTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("projectApplicationCreate", "The application could not be created.")
+          return resultErrorCodedCreate(
+            "projectApplicationCreate",
+            "The application could not be created.",
+            "projects.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("projectApplicationCreate", "The application could not be created.")
+        return resultErrorCodedCreate(
+          "projectApplicationCreate",
+          "The application could not be created.",
+          "projects.write-failed",
+        )
       }
     },
 
@@ -93,7 +102,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectApplicationDelete", "The application could not be deleted.")
+        return resultErrorCodedCreate(
+          "projectApplicationDelete",
+          "The application could not be deleted.",
+          "projects.write-failed",
+        )
       }
     },
 
@@ -104,7 +117,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectApplicationGet", "The application could not be read.")
+        return resultErrorCodedCreate(
+          "projectApplicationGet",
+          "The application could not be read.",
+          "projects.read-failed",
+        )
       }
     },
 
@@ -115,11 +132,15 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(projectApplicationTable)
             .where(eq(projectApplicationTable.projectId, projectId))
-            .orderBy(asc(projectApplicationTable.createdAt))
+            .orderBy(asc(projectApplicationTable.createdAt), asc(projectApplicationTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("projectApplicationList", "The applications could not be read.")
+        return resultErrorCodedCreate(
+          "projectApplicationList",
+          "The applications could not be read.",
+          "projects.read-failed",
+        )
       }
     },
 
@@ -137,17 +158,30 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectApplicationUpdate", "The application could not be updated.")
+        return resultErrorCodedCreate(
+          "projectApplicationUpdate",
+          "The application could not be updated.",
+          "projects.write-failed",
+        )
       }
     },
 
     projectGrantCreate(input: ProjectGrantInsert): Result<ProjectGrantRow> {
       try {
         const row = database.insert(projectGrantTable).values(input).returning().get()
-        if (row === undefined) return resultErrorCreate("projectGrantCreate", "The project grant could not be created.")
+        if (row === undefined)
+          return resultErrorCodedCreate(
+            "projectGrantCreate",
+            "The project grant could not be created.",
+            "projects.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("projectGrantCreate", "The project grant could not be created.")
+        return resultErrorCodedCreate(
+          "projectGrantCreate",
+          "The project grant could not be created.",
+          "projects.write-failed",
+        )
       }
     },
 
@@ -157,7 +191,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
           database.delete(projectGrantTable).where(eq(projectGrantTable.id, grantId)).returning().get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectGrantDelete", "The project grant could not be deleted.")
+        return resultErrorCodedCreate(
+          "projectGrantDelete",
+          "The project grant could not be deleted.",
+          "projects.write-failed",
+        )
       }
     },
 
@@ -167,7 +205,7 @@ export function projectRepositoryCreate(database: StorageExecutor) {
           database.select().from(projectGrantTable).where(eq(projectGrantTable.id, grantId)).get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectGrantGet", "The project grant could not be read.")
+        return resultErrorCodedCreate("projectGrantGet", "The project grant could not be read.", "projects.read-failed")
       }
     },
 
@@ -189,7 +227,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectGrantGetByProjectOrganization", "The project grant could not be read.")
+        return resultErrorCodedCreate(
+          "projectGrantGetByProjectOrganization",
+          "The project grant could not be read.",
+          "projects.read-failed",
+        )
       }
     },
 
@@ -200,11 +242,15 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(projectGrantTable)
             .where(eq(projectGrantTable.projectId, projectId))
-            .orderBy(asc(projectGrantTable.createdAt))
+            .orderBy(asc(projectGrantTable.createdAt), asc(projectGrantTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("projectGrantList", "The project grants could not be read.")
+        return resultErrorCodedCreate(
+          "projectGrantList",
+          "The project grants could not be read.",
+          "projects.read-failed",
+        )
       }
     },
 
@@ -215,17 +261,30 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectGrantUpdate", "The project grant could not be updated.")
+        return resultErrorCodedCreate(
+          "projectGrantUpdate",
+          "The project grant could not be updated.",
+          "projects.write-failed",
+        )
       }
     },
 
     projectRoleCreate(input: ProjectRoleInsert): Result<ProjectRoleRow> {
       try {
         const row = database.insert(projectRoleTable).values(input).returning().get()
-        if (row === undefined) return resultErrorCreate("projectRoleCreate", "The project role could not be created.")
+        if (row === undefined)
+          return resultErrorCodedCreate(
+            "projectRoleCreate",
+            "The project role could not be created.",
+            "projects.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("projectRoleCreate", "The project role could not be created.")
+        return resultErrorCodedCreate(
+          "projectRoleCreate",
+          "The project role could not be created.",
+          "projects.write-failed",
+        )
       }
     },
 
@@ -235,7 +294,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
           database.delete(projectRoleTable).where(eq(projectRoleTable.id, roleId)).returning().get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectRoleDelete", "The project role could not be removed.")
+        return resultErrorCodedCreate(
+          "projectRoleDelete",
+          "The project role could not be removed.",
+          "projects.write-failed",
+        )
       }
     },
 
@@ -245,7 +308,7 @@ export function projectRepositoryCreate(database: StorageExecutor) {
           database.select().from(projectRoleTable).where(eq(projectRoleTable.id, roleId)).get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectRoleGet", "The project role could not be read.")
+        return resultErrorCodedCreate("projectRoleGet", "The project role could not be read.", "projects.read-failed")
       }
     },
 
@@ -259,7 +322,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectRoleGetByProjectKey", "The project role could not be read.")
+        return resultErrorCodedCreate(
+          "projectRoleGetByProjectKey",
+          "The project role could not be read.",
+          "projects.read-failed",
+        )
       }
     },
 
@@ -270,11 +337,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(projectRoleTable)
             .where(eq(projectRoleTable.projectId, projectId))
-            .orderBy(asc(projectRoleTable.createdAt))
+            .orderBy(asc(projectRoleTable.createdAt), asc(projectRoleTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("projectRoleList", "The project roles could not be read.")
+        return resultErrorCodedCreate("projectRoleList", "The project roles could not be read.", "projects.read-failed")
       }
     },
 
@@ -284,7 +351,11 @@ export function projectRepositoryCreate(database: StorageExecutor) {
           database.update(projectRoleTable).set(input).where(eq(projectRoleTable.id, roleId)).returning().get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("projectRoleUpdate", "The project role could not be updated.")
+        return resultErrorCodedCreate(
+          "projectRoleUpdate",
+          "The project role could not be updated.",
+          "projects.write-failed",
+        )
       }
     },
   }

@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -34,11 +34,12 @@ type ProjectGrantLifecycleSetOptions = {
 export function projectGrantLifecycleSet(options: ProjectGrantLifecycleSetOptions): Result<{ grant: ProjectGrant }> {
   const op = "projectGrantLifecycleSet"
   const parsed = v.safeParse(projectGrantLifecycleRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The project grant lifecycle request is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The project grant lifecycle request is invalid.", "projects.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The project grant timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The project grant timestamp is invalid.", "projects.timestamp-invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = projectRepositoryCreate(transaction)
@@ -49,14 +50,15 @@ export function projectGrantLifecycleSet(options: ProjectGrantLifecycleSetOption
       current.data.realmId !== options.realmId ||
       current.data.projectId !== options.projectId
     )
-      return resultErrorCreate(op, "The project grant was not found.")
-    if (current.data.status === "removed") return resultErrorCreate(op, "The project grant has been removed.")
+      return resultErrorCodedCreate(op, "The project grant was not found.", "projects.not-found")
+    if (current.data.status === "removed")
+      return resultErrorCodedCreate(op, "The project grant has been removed.", "projects.removed")
     if (current.data.status === parsed.output.status)
-      return resultErrorCreate(op, "The project grant already has that status.")
+      return resultErrorCodedCreate(op, "The project grant already has that status.", "projects.conflict")
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
     if (project.data === null || project.data.status !== "active")
-      return resultErrorCreate(op, "The project was not found.")
+      return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
@@ -71,12 +73,14 @@ export function projectGrantLifecycleSet(options: ProjectGrantLifecycleSetOption
       version: current.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The project grant was not found.")
+    if (updated.data === null)
+      return resultErrorCodedCreate(op, "The project grant was not found.", "projects.not-found")
     const payload = v.safeParse(projectGrantStatusChangedEventPayloadSchema, {
       grantId: options.grantId,
       status: updated.data.status,
     })
-    if (!payload.success) return resultErrorCreate(op, "The project grant event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The project grant event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

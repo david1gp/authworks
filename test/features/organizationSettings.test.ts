@@ -19,7 +19,7 @@ import { organizationDomainVerify } from "../../src/features/organizations/actio
 import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
 import type { OrganizationDomainDnsVerificationPort } from "../../src/features/organizations/domain/organizationDomainDnsVerificationPort.js"
-import { organizationLoginPolicyEnforce } from "../../src/features/organizations/public/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyEnforce } from "../../src/features/organizations/actions/organizationLoginPolicyEnforce.js"
 import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
 import { passkeyAuthenticationStart } from "../../src/features/passkeys/actions/passkeyAuthenticationStart.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"

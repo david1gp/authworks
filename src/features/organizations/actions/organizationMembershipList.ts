@@ -1,12 +1,14 @@
 import { type Result } from "#result"
-import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
+import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationMembershipPublicViewCreate } from "../domain/organizationMembershipPublicViewCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
-import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
+import type { OrganizationMembershipListResponse } from "../public/organizationMembershipListResponseSchema.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationMembershipListOptions = {
@@ -14,14 +16,19 @@ type OrganizationMembershipListOptions = {
   readonly database: StorageDatabase
   readonly realmId: string
   readonly organizationId: string
+  readonly query?: ListQuery
 }
 
 export function organizationMembershipList(
   options: OrganizationMembershipListOptions,
-): Result<{ memberships: OrganizationMembership[] }> {
+): Result<OrganizationMembershipListResponse> {
   const op = "organizationMembershipList"
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The memberships are not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The memberships are not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   const repository = organizationRepositoryCreate(options.database.db)
   const organization = repository.organizationGet(options.organizationId)
   if (!organization.success) return organization
@@ -30,7 +37,7 @@ export function organizationMembershipList(
     organization.data.realmId !== options.realmId ||
     organization.data.status !== "active"
   )
-    return resultErrorCreate(op, "The organization is not active or was not found.")
+    return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
   const authorized = organizationContextAuthorize({
     context: options.context,
     organization: organization.data,
@@ -40,11 +47,22 @@ export function organizationMembershipList(
   if (!authorized.success) return authorized
   const rows = repository.organizationMembershipList(options.organizationId)
   if (!rows.success) return rows
-  const memberships: OrganizationMembership[] = []
+  const memberships: OrganizationMembershipListResponse["items"] = []
   for (const row of rows.data) {
     const view = organizationMembershipPublicViewCreate(row)
     if (!view.success) return view
     memberships.push(view.data)
   }
-  return resultCreate({ memberships })
+  const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id", "userId"], "createdAt")
+  if (!sortBy.success) return sortBy
+  return listRowsPage({
+    idGet: (membership) => membership.id,
+    query: options.query,
+    rows: memberships,
+    sortValueGet: (membership) => {
+      if (sortBy.data === "id") return membership.id
+      if (sortBy.data === "userId") return membership.userId
+      return membership.createdAt
+    },
+  })
 }

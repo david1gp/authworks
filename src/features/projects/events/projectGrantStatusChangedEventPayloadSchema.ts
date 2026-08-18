@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { projectGrantStatusSchema } from "../domain/projectGrantStatusSchema.js"
+import { projectGrantStatusSchema } from "../public/projectGrantStatusSchema.js"
 
 export const projectGrantStatusChangedEventPayloadSchema = v.strictObject({
   grantId: v.string(),

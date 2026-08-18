@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,31 +33,34 @@ type OidcClientLifecycleSetOptions = {
 export function oidcClientLifecycleSet(options: OidcClientLifecycleSetOptions): Result<OidcClientResponse> {
   const op = "oidcClientLifecycleSet"
   const parsed = v.safeParse(oidcClientLifecycleRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The OIDC client lifecycle request is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The OIDC client lifecycle request is invalid.", "oidc.invalid")
   const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The client timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The client timestamp is invalid.", "oidc.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
     const current = repository.clientGet(options.realmId, options.clientId)
     if (!current.success) return current
-    if (current.data === null) return resultErrorCreate(op, "The OIDC client was not found.")
-    if (current.data.status === "removed") return resultErrorCreate(op, "The OIDC client has been removed.")
+    if (current.data === null) return resultErrorCodedCreate(op, "The OIDC client was not found.", "oidc.not-found")
+    if (current.data.status === "removed")
+      return resultErrorCodedCreate(op, "The OIDC client has been removed.", "oidc.removed")
     if (current.data.status === parsed.output.status)
-      return resultErrorCreate(op, "The OIDC client already has that status.")
+      return resultErrorCodedCreate(op, "The OIDC client already has that status.", "oidc.conflict")
     const updated = repository.clientUpdate(options.realmId, options.clientId, {
       status: parsed.output.status,
       updatedAt,
       version: current.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The OIDC client was not found.")
+    if (updated.data === null) return resultErrorCodedCreate(op, "The OIDC client was not found.", "oidc.not-found")
     const payload = v.safeParse(oidcClientStatusChangedEventPayloadSchema, { status: updated.data.status })
-    if (!payload.success) return resultErrorCreate(op, "The OIDC client event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The OIDC client event payload is invalid.", "oidc.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,8 @@
 import * as v from "valibot"
 import { type Result } from "#result"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { type ProjectAccessResponse, projectAccessResponseSchema } from "../public/projectAccessResponseSchema.js"
 import {
@@ -106,7 +107,11 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       const parsed = v.safeParse(projectApplicationCreateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("projectApiClientApplicationCreate", "The application request is invalid."),
+          resultErrorCodedCreate(
+            "projectApiClientApplicationCreate",
+            "The application request is invalid.",
+            "projects.invalid",
+          ),
         )
       return request(
         `${projectPath(realmId, projectId)}/applications`,
@@ -145,7 +150,11 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       const parsed = v.safeParse(projectApplicationLifecycleRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("projectApiClientApplicationLifecycleSet", "The application lifecycle request is invalid."),
+          resultErrorCodedCreate(
+            "projectApiClientApplicationLifecycleSet",
+            "The application lifecycle request is invalid.",
+            "projects.invalid",
+          ),
         )
       return request(
         `${projectPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}/lifecycle`,
@@ -153,9 +162,13 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
         projectApplicationResponseSchema,
       )
     },
-    projectApplicationList(realmId: string, projectId: string): Promise<Result<ProjectApplicationListResponse>> {
+    projectApplicationList(
+      realmId: string,
+      projectId: string,
+      query?: ListQuery,
+    ): Promise<Result<ProjectApplicationListResponse>> {
       return request(
-        `${projectPath(realmId, projectId)}/applications`,
+        projectListPath(`${projectPath(realmId, projectId)}/applications`, query),
         { method: "GET" },
         projectApplicationListResponseSchema,
       )
@@ -169,7 +182,11 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       const parsed = v.safeParse(projectApplicationUpdateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("projectApiClientApplicationUpdate", "The application update is invalid."),
+          resultErrorCodedCreate(
+            "projectApiClientApplicationUpdate",
+            "The application update is invalid.",
+            "projects.invalid",
+          ),
         )
       return request(
         `${projectPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
@@ -180,7 +197,9 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
     projectCreate(realmId: string, input: ProjectCreateRequest): Promise<Result<ProjectResponse>> {
       const parsed = v.safeParse(projectCreateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("projectApiClientCreate", "The project request is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate("projectApiClientCreate", "The project request is invalid.", "projects.invalid"),
+        )
       return request(projectPath(realmId), jsonRequest(parsed.output), projectResponseSchema)
     },
     projectDelete(realmId: string, projectId: string): Promise<Result<ProjectDeleteResponse>> {
@@ -197,7 +216,11 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       const parsed = v.safeParse(projectGrantCreateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("projectApiClientGrantCreate", "The project grant request is invalid."),
+          resultErrorCodedCreate(
+            "projectApiClientGrantCreate",
+            "The project grant request is invalid.",
+            "projects.invalid",
+          ),
         )
       return request(
         `${projectPath(realmId, projectId)}/grants`,
@@ -225,7 +248,11 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       const parsed = v.safeParse(projectGrantLifecycleRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("projectApiClientGrantLifecycleSet", "The project grant lifecycle request is invalid."),
+          resultErrorCodedCreate(
+            "projectApiClientGrantLifecycleSet",
+            "The project grant lifecycle request is invalid.",
+            "projects.invalid",
+          ),
         )
       return request(
         `${projectPath(realmId, projectId)}/grants/${encodeURIComponent(grantId)}/lifecycle`,
@@ -233,8 +260,12 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
         projectGrantResponseSchema,
       )
     },
-    projectGrantList(realmId: string, projectId: string): Promise<Result<ProjectGrantListResponse>> {
-      return request(`${projectPath(realmId, projectId)}/grants`, { method: "GET" }, projectGrantListResponseSchema)
+    projectGrantList(realmId: string, projectId: string, query?: ListQuery): Promise<Result<ProjectGrantListResponse>> {
+      return request(
+        projectListPath(`${projectPath(realmId, projectId)}/grants`, query),
+        { method: "GET" },
+        projectGrantListResponseSchema,
+      )
     },
     projectGrantUpdate(
       realmId: string,
@@ -244,7 +275,13 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
     ): Promise<Result<ProjectGrantResponse>> {
       const parsed = v.safeParse(projectGrantUpdateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("projectApiClientGrantUpdate", "The project grant update is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientGrantUpdate",
+            "The project grant update is invalid.",
+            "projects.invalid",
+          ),
+        )
       return request(
         `${projectPath(realmId, projectId)}/grants/${encodeURIComponent(grantId)}`,
         patchRequest(parsed.output),
@@ -259,12 +296,16 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       const parsed = v.safeParse(projectLifecycleRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("projectApiClientLifecycleSet", "The project lifecycle request is invalid."),
+          resultErrorCodedCreate(
+            "projectApiClientLifecycleSet",
+            "The project lifecycle request is invalid.",
+            "projects.invalid",
+          ),
         )
       return request(`${projectPath(realmId, projectId)}/lifecycle`, jsonRequest(parsed.output), projectResponseSchema)
     },
-    projectList(realmId: string): Promise<Result<ProjectListResponse>> {
-      return request(projectPath(realmId), { method: "GET" }, projectListResponseSchema)
+    projectList(realmId: string, query?: ListQuery): Promise<Result<ProjectListResponse>> {
+      return request(projectListPath(projectPath(realmId), query), { method: "GET" }, projectListResponseSchema)
     },
     projectRoleCreate(
       realmId: string,
@@ -273,7 +314,13 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
     ): Promise<Result<ProjectRoleResponse>> {
       const parsed = v.safeParse(projectRoleCreateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("projectApiClientRoleCreate", "The project role request is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientRoleCreate",
+            "The project role request is invalid.",
+            "projects.invalid",
+          ),
+        )
       return request(`${projectPath(realmId, projectId)}/roles`, jsonRequest(parsed.output), projectRoleResponseSchema)
     },
     projectRoleDelete(realmId: string, projectId: string, roleId: string): Promise<Result<ProjectRoleDeleteResponse>> {
@@ -283,8 +330,12 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
         projectRoleDeleteResponseSchema,
       )
     },
-    projectRoleList(realmId: string, projectId: string): Promise<Result<ProjectRoleListResponse>> {
-      return request(`${projectPath(realmId, projectId)}/roles`, { method: "GET" }, projectRoleListResponseSchema)
+    projectRoleList(realmId: string, projectId: string, query?: ListQuery): Promise<Result<ProjectRoleListResponse>> {
+      return request(
+        projectListPath(`${projectPath(realmId, projectId)}/roles`, query),
+        { method: "GET" },
+        projectRoleListResponseSchema,
+      )
     },
     projectRoleUpdate(
       realmId: string,
@@ -294,7 +345,13 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
     ): Promise<Result<ProjectRoleResponse>> {
       const parsed = v.safeParse(projectRoleUpdateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("projectApiClientRoleUpdate", "The project role update is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientRoleUpdate",
+            "The project role update is invalid.",
+            "projects.invalid",
+          ),
+        )
       return request(
         `${projectPath(realmId, projectId)}/roles/${encodeURIComponent(roleId)}`,
         patchRequest(parsed.output),
@@ -304,8 +361,21 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
     projectUpdate(realmId: string, projectId: string, input: ProjectUpdateRequest): Promise<Result<ProjectResponse>> {
       const parsed = v.safeParse(projectUpdateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("projectApiClientUpdate", "The project update is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate("projectApiClientUpdate", "The project update is invalid.", "projects.invalid"),
+        )
       return request(projectPath(realmId, projectId), patchRequest(parsed.output), projectResponseSchema)
     },
   }
+}
+
+function projectListPath(path: string, query: ListQuery | undefined): string {
+  if (query === undefined) return path
+  const params = new URLSearchParams()
+  if (query.pageSize !== undefined) params.set("pageSize", String(query.pageSize))
+  if (query.pageToken !== undefined) params.set("pageToken", query.pageToken)
+  if (query.sortBy !== undefined) params.set("sortBy", query.sortBy)
+  if (query.sortDirection !== undefined) params.set("sortDirection", query.sortDirection)
+  const encoded = params.toString()
+  return encoded.length === 0 ? path : `${path}?${encoded}`
 }

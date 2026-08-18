@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test"
+import type { Hono } from "hono"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -20,7 +21,7 @@ import { passwordLogin } from "../../src/features/passwords/actions/passwordLogi
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { projectApiClientCreate } from "../../src/features/projects/client/projectApiClientCreate.js"
 import { sessionApiClientCreate } from "../../src/features/sessions/client/sessionApiClientCreate.js"
-import { sessionPasswordCreate } from "../../src/features/sessions/public/sessionPasswordCreate.js"
+import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
 import { storageDatabaseOpen, type StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -31,7 +32,7 @@ const systemSecret = "task-20-system-secret"
 type ConformanceFixture = {
   readonly alpha: { readonly id: string; readonly domain: string; readonly adminSecret: string }
   readonly beta: { readonly id: string; readonly domain: string; readonly adminSecret: string }
-  readonly app: ReturnType<typeof serverApplicationCreate>
+  readonly app: Hono
   readonly database: StorageDatabase
   readonly fetchFromServer: (input: string | URL | Request, init?: RequestInit) => Promise<Response>
   readonly systemBaseUrl: string
@@ -40,11 +41,17 @@ type ConformanceFixture = {
 async function withFixture<T>(operation: (fixture: ConformanceFixture) => Promise<T>): Promise<T> {
   const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-task-20-"))
   const databasePath = join(directory, "zitadel.sqlite")
-  const app = serverApplicationCreate({
+  const created = serverApplicationCreate({
     databasePath,
     publicOrigin: "https://alpha.task-20.example",
     systemSecret,
   })
+  expect(created.success).toBe(true)
+  if (!created.success) {
+    await rm(directory, { force: true, recursive: true })
+    throw new Error(created.errorMessage)
+  }
+  const app = created.data
   const opened = storageDatabaseOpen(databasePath)
   expect(opened.success).toBe(true)
   if (!opened.success) {
@@ -436,6 +443,7 @@ test("all public API clients reject malformed success responses and preserve tra
     token: "client-token",
   }).realmList()
   expect(unreachable).toEqual({
+    code: "platform.unreachable",
     errorMessage: "The server could not be reached.",
     op: "realmApiClientRequest",
     success: false,

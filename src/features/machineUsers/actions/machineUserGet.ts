@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -22,7 +22,8 @@ export function machineUserGet(options: MachineUserGetOptions): Result<MachineUs
   if (!authorized.success) return authorized
   const found = machineRepositoryCreate(options.database.db).userGet(options.realmId, options.machineUserId)
   if (!found.success) return found
-  if (found.data === null) return resultErrorCreate("machineUserGet", "The machine user was not found.")
+  if (found.data === null)
+    return resultErrorCreate("machineUserGet", "The machine user was not found.", "machine-users.not-found")
   const scopes = machineScopesParse(found.data.scopes)
   if (!scopes.success) return scopes
   return resultCreate({ machineUser: machineUserPublicViewCreate(found.data, scopes.data) })

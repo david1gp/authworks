@@ -1,7 +1,7 @@
 import { scryptSync, timingSafeEqual } from "node:crypto"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 
 export function passwordHashVerify(password: string, encoded: string): Result<boolean> {
   const op = "passwordHashVerify"
@@ -17,6 +17,6 @@ export function passwordHashVerify(password: string, encoded: string): Result<bo
     const actual = Buffer.from(scryptSync(password, salt, 32, { maxmem: 32 * 1024 * 1024, N: n, p, r }))
     return resultCreate(timingSafeEqual(actual, expected))
   } catch (_error) {
-    return resultErrorCreate(op, "The password could not be verified.")
+    return resultErrorCreate(op, "The password could not be verified.", "passwords.invalid")
   }
 }

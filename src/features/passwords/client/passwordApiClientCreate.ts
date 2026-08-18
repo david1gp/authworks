@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { type PasswordChangeRequest, passwordChangeRequestSchema } from "../public/passwordChangeRequestSchema.js"
@@ -67,7 +67,7 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
   const parsedRequest = <T>(schema: v.GenericSchema<T>, input: unknown, errorMessage: string) => {
     const parsed = v.safeParse(schema, input)
-    if (!parsed.success) return resultErrorCreate("passwordApiClientCreate", errorMessage)
+    if (!parsed.success) return resultErrorCreate("passwordApiClientCreate", errorMessage, "passwords.invalid")
     return resultCreate(parsed.output)
   }
 

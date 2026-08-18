@@ -1,5 +1,7 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -12,6 +14,7 @@ import type { MachineUserListResponse } from "../public/machineUserListResponseS
 type MachineUserListOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
+  readonly query?: ListQuery
   readonly realmId: string
 }
 
@@ -26,5 +29,10 @@ export function machineUserList(options: MachineUserListOptions): Result<Machine
     if (!scopes.success) return scopes
     machineUsers.push(machineUserPublicViewCreate(row, scopes.data))
   }
-  return resultCreate({ machineUsers })
+  return listRowsPage({
+    idGet: (machineUser) => machineUser.id,
+    query: options.query,
+    rows: machineUsers,
+    sortValueGet: (machineUser) => machineUser.createdAt,
+  })
 }

@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { Result } from "#result"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -73,11 +73,14 @@ function machineRoutesRegister(
   app.get(`${prefix}/machine-users`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(context.req.query())
+    if (!query.success) return machineErrorResponseCreate(context, query)
     return machineResultResponseCreate(
       context,
       machineUserList({
         context: authenticated.data,
         database: options.database,
+        query: query.data,
         realmId: machineParamGet(context, "realmId"),
       }),
     )
@@ -91,6 +94,7 @@ function machineRoutesRegister(
     const input = v.safeParse(machineUserCreateRequestSchema, body.data)
     if (!input.success)
       return machineErrorResponseCreate(context, {
+        code: "machine-users.invalid",
         errorMessage: "The machine user request is invalid.",
         op: "machineUserCreate",
       })
@@ -128,6 +132,7 @@ function machineRoutesRegister(
     const input = v.safeParse(machineUserLifecycleRequestSchema, body.data)
     if (!input.success)
       return machineErrorResponseCreate(context, {
+        code: "machine-users.invalid",
         errorMessage: "The machine user lifecycle request is invalid.",
         op: "machineUserLifecycleSet",
       })
@@ -160,6 +165,8 @@ function machineRoutesRegister(
   app.get(`${prefix}/machine-users/:machineUserId/credentials`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(context.req.query())
+    if (!query.success) return machineErrorResponseCreate(context, query)
     return machineResultResponseCreate(
       context,
       machineCredentialList({
@@ -167,6 +174,7 @@ function machineRoutesRegister(
         database: options.database,
         realmId: machineParamGet(context, "realmId"),
         machineUserId: machineParamGet(context, "machineUserId"),
+        query: query.data,
       }),
     )
   })
@@ -182,6 +190,7 @@ function machineRoutesRegister(
     })
     if (!input.success)
       return machineErrorResponseCreate(context, {
+        code: "machine-users.invalid",
         errorMessage: "The personal access token request is invalid.",
         op: "machinePersonalAccessTokenCreate",
       })
@@ -208,6 +217,7 @@ function machineRoutesRegister(
     })
     if (!input.success)
       return machineErrorResponseCreate(context, {
+        code: "machine-users.invalid",
         errorMessage: "The API key request is invalid.",
         op: "machineApiKeyCreate",
       })
@@ -231,6 +241,7 @@ function machineRoutesRegister(
     const input = v.safeParse(machineCredentialRevokeRequestSchema, body.data)
     if (!input.success)
       return machineErrorResponseCreate(context, {
+        code: "machine-users.invalid",
         errorMessage: "The machine credential revocation request is invalid.",
         op: "machineCredentialRevoke",
       })
@@ -251,6 +262,7 @@ function machineSystemAuthenticate(authorization: string | undefined, configured
   const token = machineBearerTokenGet(authorization)
   if (configuredSecret === undefined || token === null || !secretMatches(token, configuredSecret))
     return {
+      code: "machine-users.authentication-required",
       errorMessage: "System authorization is required.",
       op: "machineSystemAuthorization",
       success: false as const,
@@ -294,7 +306,12 @@ async function machineRequestJsonRead(context: { req: { json: <T>() => Promise<T
   try {
     return { data: await context.req.json<unknown>(), success: true as const }
   } catch (_error) {
-    return { errorMessage: "The request body is invalid.", op: "machineRequestJsonRead", success: false as const }
+    return {
+      code: "machine-users.invalid",
+      errorMessage: "The request body is invalid.",
+      op: "machineRequestJsonRead",
+      success: false as const,
+    }
   }
 }
 
@@ -304,32 +321,31 @@ function machineObjectGet(value: unknown): Record<string, unknown> {
 }
 
 function machineErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { errorMessage: string; op: string },
+  context: {
+    json: (body: unknown, status?: number) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: { errorMessage: string; op: string; code?: string; success?: false },
 ) {
-  const code = machineErrorCodeGet(result)
-  return context.json(
-    httpErrorResponseCreate(code, result.errorMessage),
-    httpErrorStatusGet(code) as ContentfulStatusCode,
-  )
+  return httpResultResponseCreate(context, {
+    ...result,
+    success: false,
+    code: result.code ?? "machine-users.invalid",
+  } as Result<unknown>)
 }
 
 function machineResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  context: {
+    json: (body: unknown, status?: number) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
 ) {
-  if (!result.success) return machineErrorResponseCreate(context, result as { errorMessage: string; op: string })
-  return context.json(result.data, status as ContentfulStatusCode)
-}
-
-function machineErrorCodeGet(result: { errorMessage: string; op: string }): string {
-  const message = result.errorMessage.toLowerCase()
-  const op = result.op.toLowerCase()
-  if (op.includes("authorization") || message.includes("authorization") || message.includes("authentication"))
-    return "unauthorized"
-  if (message.includes("not authorized") || message.includes("permission")) return "forbidden"
-  if (message.includes("not found")) return "not_found"
-  if (message.includes("already") || message.includes("active") || message.includes("exists")) return "conflict"
-  return "bad_request"
+  if (!result.success)
+    return machineErrorResponseCreate(
+      context,
+      result as { errorMessage: string; op: string; code?: string; success: false },
+    )
+  return httpResultResponseCreate(context, result as Result<T>, status)
 }

@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -20,7 +20,7 @@ import type { PasskeyAuthenticationStartResponse } from "../public/passkeyAuthen
 import { passkeyAuthenticationStartResponseSchema } from "../public/passkeyAuthenticationStartResponseSchema.js"
 import type { PasskeyCeremonyPurpose } from "../public/passkeyCeremonyPurposeSchema.js"
 import { passkeyTokenHashCreate } from "../domain/passkeyTokenHashCreate.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 type PasskeyAuthenticationStartOptions = {
   readonly database: StorageDatabase
@@ -48,14 +48,15 @@ export async function passkeyAuthenticationStart(
       method: "passkey",
       organizationId: options.organizationId,
     })
-    if (!policy.success) return resultErrorCreate(op, "The passkey login method is disabled for this organization.")
+    if (!policy.success)
+      return resultErrorCreate(op, "The passkey login method is disabled for this organization.", "passkeys.conflict")
   }
   const configuration = passkeyConfigurationValidate(options.rpId, options.origins, options.rpName)
   if (!configuration.success) return configuration
   if (options.purpose === "passwordless" && (options.userId !== undefined || options.sessionId !== undefined))
-    return resultErrorCreate(op, "The passwordless passkey request is invalid.")
+    return resultErrorCreate(op, "The passwordless passkey request is invalid.", "passkeys.invalid")
   if (options.purpose !== "passwordless" && (options.userId === undefined || options.sessionId === undefined))
-    return resultErrorCreate(op, "The passkey session is required.")
+    return resultErrorCreate(op, "The passkey session is required.", "passkeys.unauthorized")
   let credentials: PasskeyCredentialRow[] = []
   const repository = passkeyRepositoryCreate(options.database.db)
   if (options.userId === undefined) {
@@ -64,7 +65,7 @@ export async function passkeyAuthenticationStart(
     const found = repository.passkeyCredentialList(options.realmId, options.userId)
     if (!found.success) return found
     if (found.data.every((credential) => credential.revokedAt !== null))
-      return resultErrorCreate(op, "An active passkey credential is required.")
+      return resultErrorCreate(op, "An active passkey credential is required.", "passkeys.unauthorized")
     const session = options.database.db
       .select()
       .from(sessionTable)
@@ -82,12 +83,13 @@ export async function passkeyAuthenticationStart(
       session.expiresAt <= (options.runtime ?? options.database.runtime).now() ||
       session.assurance === "none"
     )
-      return resultErrorCreate(op, "The passkey session is invalid.")
+      return resultErrorCreate(op, "The passkey session is invalid.", "passkeys.invalid")
     credentials = found.data.filter((credential) => credential.revokedAt === null)
   }
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The passkey timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The passkey timestamp is invalid.", "passkeys.invalid-timestamp")
   const token = Buffer.from(runtime.randomBytes(32)).toString("base64url")
   const challenge = Buffer.from(runtime.randomBytes(32)).toString("base64url")
   let generated: Awaited<ReturnType<typeof generateAuthenticationOptions>>
@@ -106,7 +108,7 @@ export async function passkeyAuthenticationStart(
       userVerification: "required",
     })
   } catch (_error) {
-    return resultErrorCreate(op, "The passkey authentication options could not be created.")
+    return resultErrorCreate(op, "The passkey authentication options could not be created.", "passkeys.write-failed")
   }
   const stored = passkeyAuthenticationStartStore({
     actorId: options.actorId,
@@ -125,7 +127,8 @@ export async function passkeyAuthenticationStart(
   })
   if (!stored.success) return stored
   const response = v.safeParse(passkeyAuthenticationStartResponseSchema, { options: generated, token })
-  if (!response.success) return resultErrorCreate(op, "The passkey authentication options are invalid.")
+  if (!response.success)
+    return resultErrorCreate(op, "The passkey authentication options are invalid.", "passkeys.invalid")
   return resultCreate(response.output)
 }
 
@@ -174,7 +177,11 @@ function passkeyAuthenticationStartStore(options: PasskeyAuthenticationStartStor
       ...(options.userId === undefined ? {} : { userId: options.userId }),
     })
     if (!payload.success)
-      return resultErrorCreate("passkeyAuthenticationStart", "The passkey event payload is invalid.")
+      return resultErrorCreate(
+        "passkeyAuthenticationStart",
+        "The passkey event payload is invalid.",
+        "passkeys.event-invalid",
+      )
     const event = storageEventAppend(
       transaction,
       {

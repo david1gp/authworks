@@ -11,7 +11,7 @@ import { passwordEmailVerify } from "../../src/features/passwords/actions/passwo
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
-import { sessionPasswordCreate } from "../../src/features/sessions/public/sessionPasswordCreate.js"
+import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { passkeyApiClientCreate } from "../../src/features/passkeys/client/passkeyApiClientCreate.js"
 import { passkeyAuthenticationComplete } from "../../src/features/passkeys/actions/passkeyAuthenticationComplete.js"
 import { passkeyAuthenticationStart } from "../../src/features/passkeys/actions/passkeyAuthenticationStart.js"
@@ -609,7 +609,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     expect(revoked.success).toBe(true)
     const listed = passkeyCredentialList({ database, realmId: fixture.realm.id, userId: fixture.userId })
     expect(listed.success).toBe(true)
-    if (listed.success) expect(listed.data.credentials[0]?.revokedAt).not.toBeNull()
+    if (listed.success) expect(listed.data.items[0]?.revokedAt).not.toBeNull()
     expect(JSON.stringify(database.sqlite.query("SELECT payload FROM events").all())).not.toContain(
       credentialId.toString("base64url"),
     )

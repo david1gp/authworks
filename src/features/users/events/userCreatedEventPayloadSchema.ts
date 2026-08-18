@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { userStateSchema } from "../domain/userStateSchema.js"
+import { userStateSchema } from "../public/userStateSchema.js"
 
 export const userCreatedEventPayloadSchema = v.strictObject({
   emailVerified: v.boolean(),

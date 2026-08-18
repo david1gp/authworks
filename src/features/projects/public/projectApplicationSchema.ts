@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { projectApplicationStatusSchema } from "../domain/projectApplicationStatusSchema.js"
-import { projectApplicationTypeSchema } from "../domain/projectApplicationTypeSchema.js"
+import { projectApplicationStatusSchema } from "./projectApplicationStatusSchema.js"
+import { projectApplicationTypeSchema } from "./projectApplicationTypeSchema.js"
 import { projectResourceIdSchema } from "./projectResourceIdSchema.js"
 
 export const projectApplicationSchema = v.strictObject({

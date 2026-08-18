@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,7 +33,8 @@ export function oidcConsentRevoke(options: OidcConsentRevokeOptions): Result<Oid
   const op = "oidcConsentRevoke"
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The OIDC consent timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCodedCreate(op, "The OIDC consent timestamp is invalid.", "oidc.invalid-timestamp")
   let userId = options.userId
   let actorId = options.userId
   if (options.sessionToken !== undefined) {
@@ -43,11 +44,13 @@ export function oidcConsentRevoke(options: OidcConsentRevokeOptions): Result<Oid
       runtime,
       token: options.sessionToken,
     })
-    if (!authenticated.success) return resultErrorCreate(op, "Session authorization is required.")
+    if (!authenticated.success)
+      return resultErrorCodedCreate(op, "Session authorization is required.", "oidc.unauthorized")
     userId = authenticated.data.actor.actorId
     actorId = userId
   }
-  if (userId === undefined || userId.length === 0) return resultErrorCreate(op, "The consent user is required.")
+  if (userId === undefined || userId.length === 0)
+    return resultErrorCodedCreate(op, "The consent user is required.", "oidc.invalid")
   if (options.context !== undefined) {
     const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
     if (!authorized.success) return authorized
@@ -68,7 +71,8 @@ export function oidcConsentRevoke(options: OidcConsentRevokeOptions): Result<Oid
       clientId: options.clientId,
       userId: userId as string,
     })
-    if (!payload.success) return resultErrorCreate(op, "The consent event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The consent event payload is invalid.", "oidc.event-invalid")
     const consentVersion = repository.consentEventVersionGet(options.realmId, userId as string, options.clientId)
     if (!consentVersion.success) return consentVersion
     const event = storageEventAppend(

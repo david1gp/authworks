@@ -1,9 +1,10 @@
 import { Hono } from "hono"
-import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
+import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -77,11 +78,14 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
   app.get(`${prefix}/projects`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return projectErrorResponseCreate(context, query)
     return projectResultResponseCreate(
       context,
       projectList({
         context: authenticated.data,
         database: projectDatabaseGet(app),
+        query: query.data,
         realmId: projectParamGet(context, "realmId"),
       }),
     )
@@ -193,6 +197,8 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
   app.get(`${prefix}/projects/:projectId/applications`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return projectErrorResponseCreate(context, query)
     return projectResultResponseCreate(
       context,
       projectApplicationList({
@@ -200,6 +206,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
         database: projectDatabaseGet(app),
         realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
+        query: query.data,
       }),
     )
   })
@@ -306,6 +313,8 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
   app.get(`${prefix}/projects/:projectId/roles`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return projectErrorResponseCreate(context, query)
     return projectResultResponseCreate(
       context,
       projectRoleList({
@@ -313,6 +322,7 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
         database: projectDatabaseGet(app),
         realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
+        query: query.data,
       }),
     )
   })
@@ -382,6 +392,8 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
   app.get(`${prefix}/projects/:projectId/grants`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return projectErrorResponseCreate(context, query)
     return projectResultResponseCreate(
       context,
       projectGrantList({
@@ -389,6 +401,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
         database: projectDatabaseGet(app),
         realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
+        query: query.data,
       }),
     )
   })
@@ -501,11 +514,11 @@ function projectParamGet(context: { req: { param: (name: string) => string | und
 function projectSystemAuthenticate(authorization: string | undefined, configuredSecret: Secret | string | undefined) {
   const token = projectBearerTokenGet(authorization)
   if (configuredSecret === undefined || token === null || !secretMatches(token, configuredSecret))
-    return {
-      errorMessage: "System authorization is required.",
-      op: "projectSystemAuthorization",
-      success: false as const,
-    }
+    return resultErrorCodedCreate(
+      "projectSystemAuthorization",
+      "System authorization is required.",
+      "projects.unauthorized",
+    )
   return resultCreate(realmSystemContextCreate())
 }
 
@@ -535,52 +548,32 @@ function projectBearerTokenGet(authorization: string | undefined): string | null
 }
 
 function projectErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { errorMessage: string; op: string },
+  context: {
+    json: (body: unknown, status?: number) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: { errorMessage: string; op: string; code?: string; success?: false },
 ) {
-  const code = projectErrorCodeGet(result)
-  return context.json(
-    httpErrorResponseCreate(code, result.errorMessage),
-    httpErrorStatusGet(code) as ContentfulStatusCode,
-  )
-}
-
-function projectErrorCodeGet(result: { errorMessage: string; op: string }): string {
-  const message = result.errorMessage.toLowerCase()
-  if (result.op.includes("Authorization") || result.op.includes("Authenticate") || message.includes("authorization"))
-    return "unauthorized"
-  if (message.includes("not authorized") || message.includes("not a member")) return "forbidden"
-  if (message.includes("not found") || message.includes("not available")) return "not_found"
-  if (
-    message.includes("already") ||
-    message.includes("inactive") ||
-    message.includes("removed") ||
-    message.includes("cannot")
-  )
-    return "conflict"
-  if (
-    message.includes("invalid") ||
-    message.includes("empty") ||
-    message.includes("unique") ||
-    message.includes("must")
-  )
-    return "bad_request"
-  return "internal_server_error"
+  const coded =
+    result.code === undefined ? resultErrorCodedCreate(result.op, result.errorMessage, "projects.invalid") : result
+  return httpResultResponseCreate(context, coded as Result<never>)
 }
 
 function projectResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  context: {
+    json: (body: unknown, status?: number) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: Result<T>,
   status = 200,
 ) {
-  if (!result.success) return projectErrorResponseCreate(context, result as { errorMessage: string; op: string })
-  return context.json(result.data, status as ContentfulStatusCode)
+  return httpResultResponseCreate(context, result, status)
 }
 
 async function projectRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {
   try {
     return { data: await context.req.json<unknown>(), success: true as const }
   } catch (_error) {
-    return { errorMessage: "The request body is invalid.", op: "projectRequestJsonRead", success: false as const }
+    return resultErrorCodedCreate("projectRequestJsonRead", "The request body is invalid.", "projects.request-invalid")
   }
 }

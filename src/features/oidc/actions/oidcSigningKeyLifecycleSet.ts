@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,28 +33,31 @@ type OidcSigningKeyLifecycleSetOptions = {
 export function oidcSigningKeyLifecycleSet(options: OidcSigningKeyLifecycleSetOptions): Result<OidcSigningKeyResponse> {
   const op = "oidcSigningKeyLifecycleSet"
   const parsed = v.safeParse(oidcSigningKeyLifecycleRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The signing key lifecycle request is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The signing key lifecycle request is invalid.", "oidc.invalid")
   const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
   const runtime = options.runtime ?? options.database.runtime
   const retiredAt = runtime.now()
   if (!Number.isSafeInteger(retiredAt) || retiredAt < 0)
-    return resultErrorCreate(op, "The signing key timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The signing key timestamp is invalid.", "oidc.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
     const current = repository.signingKeyGet(options.realmId, options.signingKeyId)
     if (!current.success) return current
-    if (current.data === null) return resultErrorCreate(op, "The signing key was not found.")
-    if (current.data.status === "retired") return resultErrorCreate(op, "The signing key is already retired.")
+    if (current.data === null) return resultErrorCodedCreate(op, "The signing key was not found.", "oidc.not-found")
+    if (current.data.status === "retired")
+      return resultErrorCodedCreate(op, "The signing key is already retired.", "oidc.conflict")
     const updated = repository.signingKeyUpdate(options.realmId, options.signingKeyId, {
       retiredAt,
       status: parsed.output.status,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The signing key was not found.")
+    if (updated.data === null) return resultErrorCodedCreate(op, "The signing key was not found.", "oidc.not-found")
     const payload = v.safeParse(oidcSigningKeyRetiredEventPayloadSchema, { status: "retired" })
-    if (!payload.success) return resultErrorCreate(op, "The signing key event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The signing key event payload is invalid.", "oidc.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

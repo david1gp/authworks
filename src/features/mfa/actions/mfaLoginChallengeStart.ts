@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -47,12 +47,13 @@ export function mfaLoginChallengeStart(options: MfaLoginChallengeStartOptions): 
     )
   }
   if (options.purpose === "step_up" && options.sessionId === undefined)
-    return resultErrorCreate(op, "The MFA session is required.")
+    return resultErrorCreate(op, "The MFA session is required.", "mfa.unauthorized")
   const executor = options.executor ?? options.database?.db
-  if (executor === undefined) return resultErrorCreate(op, "MFA storage is required.")
+  if (executor === undefined) return resultErrorCreate(op, "MFA storage is required.", "mfa.invalid")
   const runtime = options.runtime ?? options.database?.runtime ?? runtimeCreate()
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The MFA challenge timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The MFA challenge timestamp is invalid.", "mfa.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return mfaLoginChallengeStartTransaction({ ...options, correlationId, executor, now, runtime })
 }
@@ -85,7 +86,8 @@ function mfaLoginChallengeStartTransaction(
   }
   const active = repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
   if (!active.success) return active
-  if (active.data === null) return resultErrorCreate("mfaLoginChallengeStart", "An active TOTP enrollment is required.")
+  if (active.data === null)
+    return resultErrorCreate("mfaLoginChallengeStart", "An active TOTP enrollment is required.", "mfa.not-found")
   let primaryAuthenticationMethod = options.primaryAuthenticationMethod
   if (options.purpose === "step_up") {
     const session = options.executor
@@ -105,14 +107,14 @@ function mfaLoginChallengeStartTransaction(
       session.expiresAt <= options.now ||
       session.assurance === "none"
     )
-      return resultErrorCreate("mfaLoginChallengeStart", "The MFA session is invalid.")
+      return resultErrorCreate("mfaLoginChallengeStart", "The MFA session is invalid.", "mfa.unauthorized")
     primaryAuthenticationMethod = session.authenticationMethod as SessionAuthenticationMethod
   }
   if (
     primaryAuthenticationMethod === undefined ||
     !["email_otp", "external_identity", "password", "passkey"].includes(primaryAuthenticationMethod)
   )
-    return resultErrorCreate("mfaLoginChallengeStart", "The primary authentication method is invalid.")
+    return resultErrorCreate("mfaLoginChallengeStart", "The primary authentication method is invalid.", "mfa.invalid")
   const tokenBytes = options.runtime.randomBytes(32)
   const token = Buffer.from(tokenBytes).toString("base64url")
   const challengeId = uuidv7Create(options.runtime)
@@ -139,7 +141,8 @@ function mfaLoginChallengeStartTransaction(
   })
   if (!created.success) return created
   const payload = v.safeParse(mfaEventPayloadSchema, { challengeId, purpose: options.purpose, userId: options.userId })
-  if (!payload.success) return resultErrorCreate("mfaLoginChallengeStart", "The MFA event payload is invalid.")
+  if (!payload.success)
+    return resultErrorCreate("mfaLoginChallengeStart", "The MFA event payload is invalid.", "mfa.event-invalid")
   const event = storageEventAppend(
     options.executor,
     {

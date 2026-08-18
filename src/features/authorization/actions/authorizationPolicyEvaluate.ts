@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { authorizationRolePermissionsResolve } from "./authorizationRolePermissionsResolve.js"
 import type { AuthorizationActorContext } from "../public/authorizationActorContextSchema.js"
 import { authorizationActorContextSchema } from "../public/authorizationActorContextSchema.js"
@@ -30,14 +30,15 @@ export function authorizationPolicyEvaluate(
 ): Result<AuthorizationDecision> {
   const op = "authorizationPolicyEvaluate"
   const actor = v.safeParse(authorizationActorContextSchema, options.actor)
-  if (!actor.success) return resultErrorCreate(op, "The actor context is invalid.")
+  if (!actor.success) return resultErrorCodedCreate(op, "The actor context is invalid.", "authorization.invalid")
   if (!authorizationActorContextIsConsistent(actor.output))
-    return resultErrorCreate(op, "The actor context is invalid.")
+    return resultErrorCodedCreate(op, "The actor context is invalid.", "authorization.invalid")
   const permission = v.safeParse(authorizationPermissionSchema, options.permission)
-  if (!permission.success) return resultErrorCreate(op, "The permission is invalid.")
-  if (options.realmId.length === 0) return resultErrorCreate(op, "The realm context is invalid.")
+  if (!permission.success) return resultErrorCodedCreate(op, "The permission is invalid.", "authorization.invalid")
+  if (options.realmId.length === 0)
+    return resultErrorCodedCreate(op, "The realm context is invalid.", "authorization.tenant-mismatch")
   if (options.resourceId !== undefined && options.resourceId.length === 0)
-    return resultErrorCreate(op, "The resource context is invalid.")
+    return resultErrorCodedCreate(op, "The resource context is invalid.", "authorization.invalid")
 
   const baseDecision = (allowed: boolean, reason: AuthorizationDecision["reason"]): AuthorizationDecision => ({
     actorId: actor.output.actorId,
@@ -73,7 +74,8 @@ export function authorizationPolicyEvaluate(
   const policies = options.policies ?? []
   for (const policy of policies) {
     const parsed = v.safeParse(authorizationPolicyRuleSchema, policy)
-    if (!parsed.success) return resultErrorCreate(op, "The authorization policy is invalid.")
+    if (!parsed.success)
+      return resultErrorCodedCreate(op, "The authorization policy is invalid.", "authorization.invalid")
   }
   const rules = [...roleRules.data, ...policies]
   const matches = (rule: AuthorizationPolicyRule) => {

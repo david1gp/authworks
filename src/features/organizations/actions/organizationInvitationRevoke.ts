@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -29,7 +29,7 @@ export function organizationInvitationRevoke(options: OrganizationInvitationRevo
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The invitation timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The invitation timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
@@ -40,11 +40,11 @@ export function organizationInvitationRevoke(options: OrganizationInvitationRevo
       invitation.data.realmId !== options.realmId ||
       invitation.data.organizationId !== options.organizationId
     )
-      return resultErrorCreate(op, "The organization invitation was not found.")
+      return resultErrorCodedCreate(op, "The organization invitation was not found.", "organizations.not-found")
     const organization = repository.organizationGet(invitation.data.organizationId)
     if (!organization.success) return organization
     if (organization.data === null || organization.data.status === "removed")
-      return resultErrorCreate(op, "The organization was not found.")
+      return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
@@ -53,19 +53,21 @@ export function organizationInvitationRevoke(options: OrganizationInvitationRevo
     })
     if (!authorized.success) return authorized
     if (invitation.data.status !== "pending")
-      return resultErrorCreate(op, "The organization invitation is not pending.")
+      return resultErrorCodedCreate(op, "The organization invitation is not pending.", "organizations.pending")
     const updated = repository.organizationInvitationUpdate(options.invitationId, {
       status: "revoked",
       updatedAt,
       version: invitation.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The organization invitation was not found.")
+    if (updated.data === null)
+      return resultErrorCodedCreate(op, "The organization invitation was not found.", "organizations.not-found")
     const payload = v.safeParse(organizationInvitationStatusEventPayloadSchema, {
       invitationId: updated.data.id,
       status: "revoked",
     })
-    if (!payload.success) return resultErrorCreate(op, "The invitation event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The invitation event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

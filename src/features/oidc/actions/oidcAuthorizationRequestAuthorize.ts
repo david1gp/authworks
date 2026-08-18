@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -16,7 +16,7 @@ import { oidcAuthorizationCodeCreate } from "../domain/oidcAuthorizationCodeCrea
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
 import { oidcRedirectUriMatches } from "../domain/oidcRedirectUriMatches.js"
-import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
+import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 import { oidcValueEncrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcAuthorizationCodeIssuedEventPayloadSchema } from "../events/oidcAuthorizationCodeIssuedEventPayloadSchema.js"
 import { oidcAuthorizationRequestValidatedEventPayloadSchema } from "../events/oidcAuthorizationRequestValidatedEventPayloadSchema.js"
@@ -71,7 +71,7 @@ export function oidcAuthorizationRequestAuthorize(
 
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
-    return resultErrorCreate(op, "The OIDC authorization timestamp is invalid.")
+    return resultErrorCreate(op, "The OIDC authorization timestamp is invalid.", undefined, "oidc.invalid-timestamp")
   const realm = realmGet({
     context: realmSystemContextCreate(),
     database: options.database,

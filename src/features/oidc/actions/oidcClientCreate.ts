@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,7 +33,7 @@ type OidcClientCreateOptions = {
 export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcClientCreateResponse> {
   const op = "oidcClientCreate"
   const parsed = v.safeParse(oidcClientCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The OIDC client request is invalid.")
+  if (!parsed.success) return resultErrorCodedCreate(op, "The OIDC client request is invalid.", "oidc.invalid")
   const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
   const realm = realmGet({
@@ -42,13 +42,14 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
     realmId: options.realmId,
   })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCodedCreate(op, "The realm is not active.", "oidc.not-active")
   const configuration = oidcClientConfigurationValidate(parsed.output)
   if (!configuration.success) return configuration
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The client timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The client timestamp is invalid.", "oidc.invalid-timestamp")
   const clientId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   let clientSecret: string | undefined
@@ -89,7 +90,8 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
       requireConsent: configuration.data.requireConsent,
       trusted: configuration.data.trusted,
     })
-    if (!payload.success) return resultErrorCreate(op, "The OIDC client event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The OIDC client event payload is invalid.", "oidc.event-invalid")
     const event = storageEventAppend(
       transaction,
       {
@@ -129,12 +131,13 @@ function oidcClientConfigurationValidate(input: OidcClientCreateRequest): Result
     new Set(redirectUris).size !== redirectUris.length ||
     new Set(postLogoutRedirectUris).size !== postLogoutRedirectUris.length
   )
-    return resultErrorCreate(op, "OIDC redirect URIs must be unique.")
+    return resultErrorCodedCreate(op, "OIDC redirect URIs must be unique.", "oidc.conflict")
   for (const uri of [...redirectUris, ...postLogoutRedirectUris]) {
     const valid = oidcRedirectUriValidate(uri)
     if (!valid.success) return valid
   }
-  if (new Set(allowedScopes).size !== allowedScopes.length) return resultErrorCreate(op, "OIDC scopes must be unique.")
+  if (new Set(allowedScopes).size !== allowedScopes.length)
+    return resultErrorCodedCreate(op, "OIDC scopes must be unique.", "oidc.conflict")
   return resultCreate({
     allowedScopes,
     postLogoutRedirectUris,

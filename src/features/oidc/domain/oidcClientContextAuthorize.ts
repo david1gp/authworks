@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 
@@ -13,8 +13,12 @@ export function oidcClientContextAuthorize(options: OidcClientContextAuthorizeOp
   const op = "oidcClientContextAuthorize"
   if (options.context.kind === "system") return resultCreate(undefined)
   if (options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The OIDC resource is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The OIDC resource is not available in this tenant context.",
+      "oidc.tenant-mismatch",
+    )
   if (options.context.actor.assurance === "none" || options.context.actor.kind === "anonymous")
-    return resultErrorCreate(op, "Authentication is required to manage OIDC resources.")
+    return resultErrorCodedCreate(op, "Authentication is required to manage OIDC resources.", "oidc.unauthorized")
   return resultCreate(undefined)
 }

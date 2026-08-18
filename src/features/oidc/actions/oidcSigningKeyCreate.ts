@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -40,11 +40,12 @@ export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Resu
     realmId: options.realmId,
   })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCodedCreate(op, "The realm is not active.", "oidc.not-active")
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The signing key timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The signing key timestamp is invalid.", "oidc.invalid-timestamp")
   const keyId = uuidv7Create(runtime)
   const material = oidcKeyMaterialCreate()
   if (!material.success) return material
@@ -63,9 +64,11 @@ export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Resu
         status: "retired",
       })
       if (!retired.success) return retired
-      if (retired.data === null) return resultErrorCreate(op, "The active signing key was not found.")
+      if (retired.data === null)
+        return resultErrorCodedCreate(op, "The active signing key was not found.", "oidc.not-found")
       const retiredPayload = v.safeParse(oidcSigningKeyRetiredEventPayloadSchema, { status: "retired" })
-      if (!retiredPayload.success) return resultErrorCreate(op, "The signing key event payload is invalid.")
+      if (!retiredPayload.success)
+        return resultErrorCodedCreate(op, "The signing key event payload is invalid.", "oidc.event-invalid")
       const retiredEvent = storageEventAppend(
         transaction,
         {
@@ -98,7 +101,8 @@ export function oidcSigningKeyCreate(options: OidcSigningKeyCreateOptions): Resu
     })
     if (!created.success) return created
     const payload = v.safeParse(oidcSigningKeyCreatedEventPayloadSchema, { algorithm: "RS256" })
-    if (!payload.success) return resultErrorCreate(op, "The signing key event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The signing key event payload is invalid.", "oidc.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,16 +33,17 @@ type PasswordPolicySetOptions = {
 export function passwordPolicySet(options: PasswordPolicySetOptions): Result<{ policy: PasswordPolicy }> {
   const op = "passwordPolicySet"
   if (options.context?.kind !== "system")
-    return resultErrorCreate(op, "Only the system context can change the password policy.")
+    return resultErrorCreate(op, "Only the system context can change the password policy.", "passwords.forbidden")
   const parsed = v.safeParse(passwordPolicySetRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The password policy is invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The password policy is invalid.", "passwords.invalid")
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCreate(op, "The realm is not active.", "passwords.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The password policy timestamp is invalid.")
+    return resultErrorCreate(op, "The password policy timestamp is invalid.", "passwords.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   return storageTransactionRun(options.database, (transaction) => {
@@ -55,7 +56,8 @@ export function passwordPolicySet(options: PasswordPolicySetOptions): Result<{ p
     )
     if (!row.success) return row
     const payload = v.safeParse(passwordPolicyChangedEventPayloadSchema, parsed.output)
-    if (!payload.success) return resultErrorCreate(op, "The password policy event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The password policy event payload is invalid.", "passwords.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

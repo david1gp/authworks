@@ -1,6 +1,6 @@
 import * as v from "valibot"
 import { type Result } from "#result"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import type { ImpersonationEndResponse } from "../public/impersonationEndResponseSchema.js"
@@ -41,7 +41,9 @@ export function impersonationApiClientCreate(options: ImpersonationApiClientCrea
     impersonationStart(realmId: string, input: ImpersonationStartRequest): Promise<Result<ImpersonationStartResponse>> {
       const parsed = v.safeParse(impersonationStartRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("impersonationApiClientStart", "The request is invalid."))
+        return Promise.resolve(
+          resultErrorCreate("impersonationApiClientStart", "The request is invalid.", "impersonation.invalid"),
+        )
       return request(
         `/realms/${encodeURIComponent(realmId)}/impersonations`,
         { body: JSON.stringify(parsed.output), method: "POST" },

@@ -1,5 +1,6 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { organizationApiClientCreate } from "../client/organizationApiClientCreate.js"
 import type { OrganizationBrandingSetRequest } from "../public/organizationBrandingSetRequestSchema.js"
 import type { OrganizationLoginPolicySetRequest } from "../public/organizationLoginPolicySetRequestSchema.js"
@@ -12,6 +13,28 @@ type OrganizationCliFlags = {
 type OrganizationIdCliFlags = OrganizationCliFlags & {
   readonly realmId?: string
   readonly organizationId?: string
+}
+
+type OrganizationListCliFlags = OrganizationCliFlags & {
+  readonly realmId?: string
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
+}
+
+type OrganizationNestedListCliFlags = OrganizationIdCliFlags & {
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
+}
+
+type OrganizationRoleListCliFlags = OrganizationCliFlags & {
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
 }
 
 const organizationCreateCommand = buildCommand({
@@ -41,12 +64,15 @@ const organizationCreateCommand = buildCommand({
 })
 
 const organizationListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationCliFlags & { realmId?: string }) {
+  async func(this: ApplicationContext, flags: OrganizationListCliFlags & { realmId?: string }) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    organizationCliResultWrite(this, await organizationCliClientCreate(this, flags).organizationList(realmId))
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(this, flags).organizationList(realmId, organizationListQueryCreate(flags)),
+    )
   },
-  parameters: { flags: { ...organizationCommonFlags(), realmId: realmIdFlag() } },
+  parameters: { flags: { ...organizationCommonFlags(), ...organizationListFlags(), realmId: realmIdFlag() } },
   docs: { brief: "List organizations" },
 })
 
@@ -136,16 +162,25 @@ const organizationDomainClaimCommand = buildCommand({
 })
 
 const organizationDomainListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+  async func(this: ApplicationContext, flags: OrganizationNestedListCliFlags) {
     const ids = organizationScopeIdsResolve(this, flags)
     if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationDomainList(ids.realmId, ids.organizationId),
+      await organizationCliClientCreate(this, flags).organizationDomainList(
+        ids.realmId,
+        ids.organizationId,
+        organizationListQueryCreate(flags),
+      ),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
+    flags: {
+      ...organizationCommonFlags(),
+      ...organizationListFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+    },
   },
   docs: { brief: "List organization domains" },
 })
@@ -226,10 +261,13 @@ const organizationLifecycleCommand = buildCommand({
 })
 
 const organizationRolesCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationCliFlags) {
-    organizationCliResultWrite(this, await organizationCliClientCreate(this, flags).organizationRoleList())
+  async func(this: ApplicationContext, flags: OrganizationRoleListCliFlags) {
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(this, flags).organizationRoleList(organizationListQueryCreate(flags)),
+    )
   },
-  parameters: { flags: organizationCommonFlags() },
+  parameters: { flags: { ...organizationCommonFlags(), ...organizationListFlags() } },
   docs: { brief: "List organization roles" },
 })
 
@@ -258,16 +296,25 @@ const organizationMemberAddCommand = buildCommand({
 })
 
 const organizationMemberListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+  async func(this: ApplicationContext, flags: OrganizationNestedListCliFlags) {
     const ids = organizationScopeIdsResolve(this, flags)
     if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationMembershipList(ids.realmId, ids.organizationId),
+      await organizationCliClientCreate(this, flags).organizationMembershipList(
+        ids.realmId,
+        ids.organizationId,
+        organizationListQueryCreate(flags),
+      ),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
+    flags: {
+      ...organizationCommonFlags(),
+      ...organizationListFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+    },
   },
   docs: { brief: "List organization members" },
 })
@@ -368,16 +415,25 @@ const organizationInvitationDeclineCommand = buildCommand({
 })
 
 const organizationInvitationListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+  async func(this: ApplicationContext, flags: OrganizationNestedListCliFlags) {
     const ids = organizationScopeIdsResolve(this, flags)
     if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationInvitationList(ids.realmId, ids.organizationId),
+      await organizationCliClientCreate(this, flags).organizationInvitationList(
+        ids.realmId,
+        ids.organizationId,
+        organizationListQueryCreate(flags),
+      ),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
+    flags: {
+      ...organizationCommonFlags(),
+      ...organizationListFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+    },
   },
   docs: { brief: "List organization invitations" },
 })
@@ -475,10 +531,29 @@ function organizationCliClientCreate(context: ApplicationContext, flags: Organiz
 
 function organizationCliResultWrite(
   context: ApplicationContext,
-  result: { data?: unknown; errorMessage?: string; success: boolean },
+  result: {
+    readonly data?: unknown
+    readonly errorData?: string | null
+    readonly errorMessage?: string
+    readonly code?: string
+    readonly op?: string
+    readonly statusCode?: number
+    readonly success: boolean
+  },
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    const details = organizationCliErrorDetailsParse(result.errorData)
+    context.process.stderr.write(
+      `${JSON.stringify({
+        error: {
+          code: result.code ?? "platform.internal",
+          ...(details === undefined ? {} : { details }),
+          message: result.errorMessage ?? "The request failed.",
+          op: result.op ?? "organizationCliResultWrite",
+          ...(result.statusCode === undefined ? {} : { status: result.statusCode }),
+        },
+      })}\n`,
+    )
     context.process.exitCode = 1
     return
   }
@@ -500,6 +575,21 @@ function organizationCommonFlags() {
       optional: true as const,
       parse: (value: string) => value,
       placeholder: "TOKEN",
+    },
+  }
+}
+
+function organizationListFlags() {
+  return {
+    pageSize: optionalNumberFlag("Page size"),
+    pageToken: optionalTextFlag("Page token"),
+    sortBy: optionalTextFlag("Sort field"),
+    sortDirection: {
+      brief: "Sort direction",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+      placeholder: "DIRECTION",
     },
   }
 }
@@ -557,6 +647,33 @@ function organizationCliJsonParse(value: string): unknown {
     return JSON.parse(value) as unknown
   } catch (_error) {
     return null
+  }
+}
+
+function organizationCliErrorDetailsParse(errorData: string | null | undefined): Record<string, unknown> | undefined {
+  if (errorData === undefined || errorData === null) return undefined
+  try {
+    const parsed: unknown = JSON.parse(errorData)
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return undefined
+    return parsed as Record<string, unknown>
+  } catch (_error) {
+    return undefined
+  }
+}
+
+function organizationListQueryCreate(flags: OrganizationListCliFlags): ListQuery | undefined {
+  if (
+    flags.pageSize === undefined &&
+    flags.pageToken === undefined &&
+    flags.sortBy === undefined &&
+    flags.sortDirection === undefined
+  )
+    return undefined
+  return {
+    pageSize: flags.pageSize,
+    pageToken: flags.pageToken,
+    sortBy: flags.sortBy,
+    sortDirection: flags.sortDirection,
   }
 }
 

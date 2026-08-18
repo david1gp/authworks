@@ -1,13 +1,15 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -24,8 +26,6 @@ import type { EmailOtpSecurityNotification } from "../public/emailOtpSecurityNot
 import type { EmailOtpVerifyRequest } from "../public/emailOtpVerifyRequestSchema.js"
 import { emailOtpVerifyRequestSchema } from "../public/emailOtpVerifyRequestSchema.js"
 import type { EmailOtpVerifyResponse } from "../public/emailOtpVerifyResponseSchema.js"
-import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 type EmailOtpVerifyOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
@@ -49,34 +49,36 @@ type EmailOtpVerifyCommit =
 export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpVerifyResponse> {
   const op = "emailOtpVerify"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "email-otp.invalid")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The email OTP is not available in this tenant context.")
+    return resultErrorCreate(op, "The email OTP is not available in this tenant context.", "email-otp.not-found")
   const parsed = v.safeParse(emailOtpVerifyRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The email OTP code is invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The email OTP code is invalid.", "email-otp.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The email OTP timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The email OTP timestamp is invalid.", "email-otp.invalid")
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success || realm.data.realm.status !== "active")
-    return resultErrorCreate(op, "The email OTP code is invalid.")
+    return resultErrorCreate(op, "The email OTP code is invalid.", "email-otp.invalid")
   const challenge = emailOtpRepositoryCreate(options.database.db).emailOtpChallengeGet(
     options.realmId,
     parsed.output.challengeId,
   )
+  if (!challenge.success) return challenge
   if (
-    !challenge.success ||
     challenge.data === null ||
     (parsed.output.organizationId !== undefined && parsed.output.organizationId !== challenge.data.organizationId)
   )
-    return resultErrorCreate(op, "The email OTP code is invalid.")
+    return resultErrorCreate(op, "The email OTP code is invalid.", "email-otp.invalid")
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
     realmId: options.realmId,
     method: "email_otp",
     organizationId: challenge.data.organizationId ?? undefined,
   })
-  if (!policy.success) return resultErrorCreate(op, "The email OTP login method is disabled for this organization.")
+  if (!policy.success)
+    return resultErrorCreate(op, "The email OTP login method is disabled for this organization.", "email-otp.conflict")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const committed = storageTransactionRun(options.database, (transaction) =>
     emailOtpVerifyTransaction({
@@ -93,7 +95,7 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
   if (!committed.success) return committed
   if (committed.data.notification !== undefined)
     emailOtpPortInvoke(options.onSecurityNotification, committed.data.notification)
-  if (committed.data.failure) return resultErrorCreate(op, committed.data.errorMessage)
+  if (committed.data.failure) return resultErrorCreate(op, committed.data.errorMessage, "email-otp.invalid")
   return resultCreate(committed.data.response)
 }
 
@@ -165,7 +167,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
   if (!user.success) return user
   const normalizedEmail =
     user.data === null
-      ? resultErrorCreate("emailOtpVerify", "The email OTP code is invalid.")
+      ? resultErrorCreate("emailOtpVerify", "The email OTP code is invalid.", "email-otp.invalid")
       : userEmailNormalize(user.data.email)
   const eligible =
     user.data !== null &&
@@ -198,7 +200,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
   if (consumed.data === null)
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
   const payload = v.safeParse(emailOtpVerifiedEventPayloadSchema, { challengeId: current.id, userId })
-  if (!payload.success) return resultErrorCreate(op, "The email OTP event payload is invalid.")
+  if (!payload.success) return resultErrorCreate(op, "The email OTP event payload is invalid.", "email-otp.internal")
   const event = storageEventAppend(
     options.database,
     {
@@ -240,7 +242,8 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
       }),
     userId,
   })
-  if (!authenticationResult.success) return resultErrorCreate(op, "The authenticated session could not be created.")
+  if (!authenticationResult.success)
+    return resultErrorCreate(op, "The authenticated session could not be created.", "email-otp.internal")
   return resultCreate({
     failure: false as const,
     notification: emailOtpNotificationCreate("verified", userId, current.id, options.realmId),
@@ -282,7 +285,8 @@ function emailOtpFailedEventAppend(
   reason: "authorization_failed" | "expired" | "invalid_code",
 ) {
   const payload = v.safeParse(emailOtpFailedEventPayloadSchema, { attempts, exhausted, reason })
-  if (!payload.success) return resultErrorCreate("emailOtpVerify", "The email OTP event payload is invalid.")
+  if (!payload.success)
+    return resultErrorCreate("emailOtpVerify", "The email OTP event payload is invalid.", "email-otp.internal")
   return storageEventAppend(
     options.database,
     {

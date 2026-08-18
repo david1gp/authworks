@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -36,11 +36,11 @@ type ProjectGrantCreateOptions = {
 export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{ grant: ProjectGrant }> {
   const op = "projectGrantCreate"
   const parsed = v.safeParse(projectGrantCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The project grant request is invalid.")
+  if (!parsed.success) return resultErrorCodedCreate(op, "The project grant request is invalid.", "projects.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The project grant timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The project grant timestamp is invalid.", "projects.timestamp-invalid")
   const grantId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
@@ -48,7 +48,7 @@ export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
     if (project.data === null || project.data.realmId !== options.realmId || project.data.status !== "active")
-      return resultErrorCreate(op, "The project was not found.")
+      return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
@@ -58,7 +58,7 @@ export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{
     })
     if (!authorized.success) return authorized
     if (parsed.output.grantedOrganizationId === project.data.organizationId)
-      return resultErrorCreate(op, "A project cannot be granted to its owning organization.")
+      return resultErrorCodedCreate(op, "A project cannot be granted to its owning organization.", "projects.conflict")
     const organization = organizationGet({
       context: realmSystemContextCreate(),
       database: options.database,
@@ -67,21 +67,30 @@ export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{
     })
     if (!organization.success) return organization
     if (organization.data.organization.realmId !== options.realmId)
-      return resultErrorCreate(op, "The granted organization was not found.")
+      return resultErrorCodedCreate(op, "The granted organization was not found.", "projects.organization-not-found")
     if (organization.data.organization.status !== "active")
-      return resultErrorCreate(op, "The granted organization is not active.")
+      return resultErrorCodedCreate(op, "The granted organization is not active.", "projects.organization-not-active")
     const existing = repository.projectGrantGetByProjectOrganization(
       options.projectId,
       parsed.output.grantedOrganizationId,
     )
     if (!existing.success) return existing
-    if (existing.data !== null) return resultErrorCreate(op, "The project is already granted to this organization.")
+    if (existing.data !== null)
+      return resultErrorCodedCreate(
+        op,
+        "The project is already granted to this organization.",
+        "projects.already-exists",
+      )
     const roles = projectRoleKeysEncode(parsed.output.roleKeys)
     if (!roles.success) return roles
     const projectRoles = repository.projectRoleList(options.projectId)
     if (!projectRoles.success) return projectRoles
     if (parsed.output.roleKeys.some((key) => !projectRoles.data.some((role) => role.key === key)))
-      return resultErrorCreate(op, "Every granted role key must belong to the project.")
+      return resultErrorCodedCreate(
+        op,
+        "Every granted role key must belong to the project.",
+        "projects.role-keys-invalid",
+      )
     const created = repository.projectGrantCreate({
       createdAt,
       grantedOrganizationId: parsed.output.grantedOrganizationId,
@@ -101,7 +110,8 @@ export function projectGrantCreate(options: ProjectGrantCreateOptions): Result<{
       projectId: options.projectId,
       roleKeys: parsed.output.roleKeys,
     })
-    if (!payload.success) return resultErrorCreate(op, "The project grant event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The project grant event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -13,7 +13,7 @@ import { oidcRefreshTokenFamilyRevokedEventPayloadSchema } from "../events/oidcR
 import { oidcClientSecretMatches } from "../domain/oidcClientSecretMatches.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
-import { machineClientCredentialsRevoke } from "../../machineUsers/public/machineClientCredentialsRevoke.js"
+import { machineClientCredentialsRevoke } from "../../machineUsers/actions/machineClientCredentialsRevoke.js"
 import type { OidcClientRow } from "../persistence/oidcClientTable.js"
 import type { OidcTokenRevokeRequest } from "../public/oidcTokenRevokeRequestSchema.js"
 import { oidcTokenRevokeRequestSchema } from "../public/oidcTokenRevokeRequestSchema.js"
@@ -35,7 +35,8 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
   const clientId = parsed.output.client_id
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The token revocation timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The token revocation timestamp is invalid.", undefined, "oidc.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   if (clientId !== undefined && !oidcClientIdIsUuid(clientId)) {

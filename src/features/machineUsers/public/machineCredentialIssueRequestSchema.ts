@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { machineScopeSchema } from "../domain/machineScopeSchema.js"
+import { machineScopeSchema } from "./machineScopeSchema.js"
 
 const machineCredentialUserIdSchema = v.pipe(
   v.string(),

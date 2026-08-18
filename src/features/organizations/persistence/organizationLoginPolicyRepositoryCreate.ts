@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { realmLoginPolicyTable, type RealmLoginPolicyRow } from "./realmLoginPolicyTable.js"
 import { organizationLoginPolicyTable, type OrganizationLoginPolicyRow } from "./organizationLoginPolicyTable.js"
@@ -12,10 +12,18 @@ export function organizationLoginPolicyRepositoryCreate(database: StorageExecuto
       try {
         const row = database.insert(realmLoginPolicyTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("realmLoginPolicyCreate", "The login policy could not be saved.")
+          return resultErrorCodedCreate(
+            "realmLoginPolicyCreate",
+            "The login policy could not be saved.",
+            "organizations.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("realmLoginPolicyCreate", "The login policy could not be saved.")
+        return resultErrorCodedCreate(
+          "realmLoginPolicyCreate",
+          "The login policy could not be saved.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -25,7 +33,11 @@ export function organizationLoginPolicyRepositoryCreate(database: StorageExecuto
           database.select().from(realmLoginPolicyTable).where(eq(realmLoginPolicyTable.realmId, realmId)).get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("realmLoginPolicyGet", "The login policy could not be read.")
+        return resultErrorCodedCreate(
+          "realmLoginPolicyGet",
+          "The login policy could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -43,7 +55,11 @@ export function organizationLoginPolicyRepositoryCreate(database: StorageExecuto
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("realmLoginPolicyUpdate", "The login policy could not be saved.")
+        return resultErrorCodedCreate(
+          "realmLoginPolicyUpdate",
+          "The login policy could not be saved.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -53,10 +69,18 @@ export function organizationLoginPolicyRepositoryCreate(database: StorageExecuto
       try {
         const row = database.insert(organizationLoginPolicyTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("organizationLoginPolicyCreate", "The login policy could not be saved.")
+          return resultErrorCodedCreate(
+            "organizationLoginPolicyCreate",
+            "The login policy could not be saved.",
+            "organizations.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("organizationLoginPolicyCreate", "The login policy could not be saved.")
+        return resultErrorCodedCreate(
+          "organizationLoginPolicyCreate",
+          "The login policy could not be saved.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -70,7 +94,11 @@ export function organizationLoginPolicyRepositoryCreate(database: StorageExecuto
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationLoginPolicyGet", "The login policy could not be read.")
+        return resultErrorCodedCreate(
+          "organizationLoginPolicyGet",
+          "The login policy could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -88,7 +116,11 @@ export function organizationLoginPolicyRepositoryCreate(database: StorageExecuto
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationLoginPolicyUpdate", "The login policy could not be saved.")
+        return resultErrorCodedCreate(
+          "organizationLoginPolicyUpdate",
+          "The login policy could not be saved.",
+          "organizations.write-failed",
+        )
       }
     },
   }

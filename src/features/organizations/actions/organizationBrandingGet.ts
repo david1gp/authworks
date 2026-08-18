@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { organizationBrandingDefaultCreate } from "../domain/organizationBrandingDefaultCreate.js"
 import { organizationBrandingRepositoryCreate } from "../persistence/organizationBrandingRepositoryCreate.js"
@@ -23,7 +23,11 @@ export function organizationBrandingGet(options: OrganizationBrandingGetOptions)
     organization.data.realmId !== options.realmId ||
     organization.data.status !== "active"
   )
-    return resultErrorCreate("organizationBrandingGet", "The organization was not found.")
+    return resultErrorCodedCreate(
+      "organizationBrandingGet",
+      "The organization was not found.",
+      "organizations.not-found",
+    )
   const branding = organizationBrandingRepositoryCreate(options.database.db).organizationBrandingGet(
     options.organizationId,
   )
@@ -39,7 +43,12 @@ export function organizationBrandingGet(options: OrganizationBrandingGetOptions)
   try {
     const parsed = JSON.parse(branding.data.branding) as unknown
     const checked = v.safeParse(organizationBrandingSchema, parsed)
-    if (!checked.success) return resultErrorCreate("organizationBrandingGet", "The organization branding is invalid.")
+    if (!checked.success)
+      return resultErrorCodedCreate(
+        "organizationBrandingGet",
+        "The organization branding is invalid.",
+        "organizations.event-invalid",
+      )
     return resultCreate({
       branding: checked.output,
       organizationId: options.organizationId,
@@ -47,6 +56,10 @@ export function organizationBrandingGet(options: OrganizationBrandingGetOptions)
       version: branding.data.version,
     })
   } catch (_error) {
-    return resultErrorCreate("organizationBrandingGet", "The organization branding is invalid.")
+    return resultErrorCodedCreate(
+      "organizationBrandingGet",
+      "The organization branding is invalid.",
+      "organizations.event-invalid",
+    )
   }
 }

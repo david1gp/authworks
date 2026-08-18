@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { oidcClientTypeSchema } from "../domain/oidcClientTypeSchema.js"
-import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
+import { oidcClientTypeSchema } from "../public/oidcClientTypeSchema.js"
+import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 
 export const oidcClientCreatedEventPayloadSchema = v.strictObject({
   allowedScopes: v.array(oidcScopeSchema),

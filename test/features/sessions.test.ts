@@ -19,7 +19,7 @@ import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.j
 import { sessionList } from "../../src/features/sessions/actions/sessionList.js"
 import { sessionRecentList } from "../../src/features/sessions/actions/sessionRecentList.js"
 import { sessionProtectedMiddlewareCreate } from "../../src/features/sessions/server/sessionProtectedMiddlewareCreate.js"
-import { sessionPasswordCreate } from "../../src/features/sessions/public/sessionPasswordCreate.js"
+import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { sessionRotate } from "../../src/features/sessions/actions/sessionRotate.js"
 import { sessionServerAppCreate } from "../../src/features/sessions/server/sessionServerAppCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -149,8 +149,8 @@ test("password success issues an opaque session and rotation rejects replay", as
     })
     expect(allSessions.success).toBe(true)
     if (!allSessions.success) return
-    expect(allSessions.data.total).toBe(2)
-    expect(allSessions.data.sessions[0]).toMatchObject({ current: true, id: second.data.session.id })
+    expect(allSessions.data.items).toHaveLength(2)
+    expect(allSessions.data.items[0]).toMatchObject({ current: true, id: second.data.session.id })
     const recentSessions = sessionRecentList({
       currentSessionId: second.data.session.id,
       database,
@@ -159,8 +159,8 @@ test("password success issues an opaque session and rotation rejects replay", as
     })
     expect(recentSessions.success).toBe(true)
     if (!recentSessions.success) return
-    expect(recentSessions.data.total).toBe(2)
-    expect(recentSessions.data.sessions[0]).toMatchObject({ id: second.data.session.id })
+    expect(recentSessions.data.items).toHaveLength(2)
+    expect(recentSessions.data.items[0]).toMatchObject({ id: second.data.session.id })
 
     const expiring = sessionIssue({
       assurance: "authenticated",
@@ -198,8 +198,8 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
     })
     expect(limited.success).toBe(true)
     if (!limited.success) return
-    expect(limited.data).toMatchObject({ total: 1 })
-    expect(limited.data.sessions[0]).toMatchObject({ current: true, id: sessions[5]!.session.id })
+    expect(limited.data.items).toHaveLength(1)
+    expect(limited.data.items[0]).toMatchObject({ current: true, id: sessions[5]!.session.id })
 
     const all = sessionList({
       currentSessionId: "unknown-session",
@@ -209,10 +209,25 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
     })
     expect(all.success).toBe(true)
     if (!all.success) return
-    expect(all.data.sessions.map((session) => session.id)).toEqual(
-      sessions.toReversed().map(({ session }) => session.id),
-    )
-    expect(all.data.sessions.every((session) => session.current === false)).toBe(true)
+    expect(all.data.items.map((session) => session.id)).toEqual(sessions.toReversed().map(({ session }) => session.id))
+    expect(all.data.items.every((session) => session.current === false)).toBe(true)
+
+    const firstPage = sessionList({
+      database,
+      query: { pageSize: 2 },
+      realmId: alpha.realm.id,
+      userId: alpha.userId,
+    })
+    expect(firstPage.success).toBe(true)
+    if (!firstPage.success || firstPage.data.nextPageToken === undefined) return
+    const secondPage = sessionList({
+      database,
+      query: { pageSize: 2, pageToken: firstPage.data.nextPageToken },
+      realmId: alpha.realm.id,
+      userId: alpha.userId,
+    })
+    expect(secondPage.success).toBe(true)
+    if (secondPage.success) expect(secondPage.data.items[0]?.id).not.toBe(firstPage.data.items[0]?.id)
 
     const recent = sessionRecentList({
       currentSessionId: sessions[5]!.session.id,
@@ -222,14 +237,14 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
     })
     expect(recent.success).toBe(true)
     if (!recent.success) return
-    expect(recent.data.sessions.map((session) => session.id)).toEqual(
+    expect(recent.data.items.map((session) => session.id)).toEqual(
       sessions
         .toReversed()
         .slice(0, 5)
         .map(({ session }) => session.id),
     )
-    expect(recent.data.total).toBe(5)
-    expect(recent.data.sessions.filter((session) => session.current).map((session) => session.id)).toEqual([
+    expect(recent.data.items).toHaveLength(5)
+    expect(recent.data.items.filter((session) => session.current).map((session) => session.id)).toEqual([
       sessions[5]!.session.id,
     ])
 
@@ -238,19 +253,20 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
       realmId: alpha.realm.id,
       userId: beta.userId,
     })
-    expect(differentUser).toMatchObject({ success: true, data: { total: 0, sessions: [] } })
+    expect(differentUser).toMatchObject({ success: true, data: { items: [] } })
 
     const differentRealm = sessionList({
       database,
       realmId: beta.realm.id,
       userId: beta.userId,
     })
-    expect(differentRealm).toMatchObject({ success: true, data: { total: 1 } })
-    if (differentRealm.success) expect(differentRealm.data.sessions[0]!.id).toBe(otherRealm.session.id)
+    expect(differentRealm.success).toBe(true)
+    if (differentRealm.success) expect(differentRealm.data.items).toHaveLength(1)
+    if (differentRealm.success) expect(differentRealm.data.items[0]!.id).toBe(otherRealm.session.id)
 
     expect(sessionList({ database, realmId: beta.realm.id, userId: alpha.userId })).toMatchObject({
       success: true,
-      data: { sessions: [], total: 0 },
+      data: { items: [] },
     })
 
     for (const limit of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
@@ -406,10 +422,10 @@ test("revoke-all preserves the requested session and rolls back on event failure
     const listed = sessionList({ database, realmId: realm.id, userId })
     expect(listed.success).toBe(true)
     if (!listed.success) return
-    expect(listed.data.sessions.find(({ id }) => id === sessions[0]!.session.id)?.revokedAt).not.toBeNull()
-    expect(listed.data.sessions.find(({ id }) => id === sessions[1]!.session.id)?.revokedAt).toBeNull()
-    expect(listed.data.sessions.find(({ id }) => id === sessions[2]!.session.id)?.revokedAt).not.toBeNull()
-    expect(listed.data.sessions.find(({ id }) => id === sessions[3]!.session.id)?.revokedAt).not.toBeNull()
+    expect(listed.data.items.find(({ id }) => id === sessions[0]!.session.id)?.revokedAt).not.toBeNull()
+    expect(listed.data.items.find(({ id }) => id === sessions[1]!.session.id)?.revokedAt).toBeNull()
+    expect(listed.data.items.find(({ id }) => id === sessions[2]!.session.id)?.revokedAt).not.toBeNull()
+    expect(listed.data.items.find(({ id }) => id === sessions[3]!.session.id)?.revokedAt).not.toBeNull()
 
     const revokeAllEvents = database.sqlite
       .query(
@@ -443,7 +459,7 @@ test("revoke-all preserves the requested session and rolls back on event failure
     expect(afterRollback.success).toBe(true)
     if (!afterRollback.success) return
     for (const issued of rollbackSessions) {
-      expect(afterRollback.data.sessions.find(({ id }) => id === issued.session.id)?.revokedAt).toBeNull()
+      expect(afterRollback.data.items.find(({ id }) => id === issued.session.id)?.revokedAt).toBeNull()
     }
     expect(
       database.sqlite.query("SELECT COUNT(*) AS count FROM events WHERE event_type = 'session.revoked_all'").get(),
@@ -498,7 +514,8 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
     const current = await client.sessionCurrent(alpha.realm.id)
     expect(current.success).toBe(true)
     const listed = await client.sessionList(alpha.realm.id)
-    expect(listed).toMatchObject({ success: true, data: { total: 1 } })
+    expect(listed.success).toBe(true)
+    if (listed.success) expect(listed.data.items).toHaveLength(1)
     const protectedResponse = await app.request(`http://server.test/realms/${alpha.realm.id}/protected`, {
       headers: { authorization: `Bearer ${token}` },
     })

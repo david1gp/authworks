@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { mfaTotpCodeCreate } from "./mfaTotpCodeCreate.js"
 
 export function mfaTotpCodeVerify(
@@ -19,7 +19,7 @@ export function mfaTotpCodeVerify(
     window < 0 ||
     window > 2
   )
-    return resultErrorCreate(op, "The TOTP code is invalid.")
+    return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.invalid")
   const currentStep = Math.floor(now / 30_000)
   for (let offset = -window; offset <= window; offset += 1) {
     const step = currentStep + offset
@@ -27,7 +27,7 @@ export function mfaTotpCodeVerify(
     const expected = mfaTotpCodeCreate(secret, step)
     if (expected.success && mfaTotpConstantTimeEqual(expected.data, code)) return resultCreate(step)
   }
-  return resultErrorCreate(op, "The TOTP code is invalid.")
+  return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.invalid")
 }
 
 function mfaTotpConstantTimeEqual(actual: string, expected: string): boolean {

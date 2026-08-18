@@ -1,7 +1,7 @@
 import { and, asc, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { type OrganizationInvitationRow, organizationInvitationTable } from "./organizationInvitationTable.js"
 import { type OrganizationMembershipRow, organizationMembershipTable } from "./organizationMembershipTable.js"
@@ -20,10 +20,18 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
       try {
         const organization = database.insert(organizationTable).values(input).returning().get()
         if (organization === undefined)
-          return resultErrorCreate("organizationCreate", "The organization could not be created.")
+          return resultErrorCodedCreate(
+            "organizationCreate",
+            "The organization could not be created.",
+            "organizations.write-failed",
+          )
         return resultCreate(organization)
       } catch (_error) {
-        return resultErrorCreate("organizationCreate", "The organization could not be created.")
+        return resultErrorCodedCreate(
+          "organizationCreate",
+          "The organization could not be created.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -33,7 +41,11 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
           database.select().from(organizationTable).where(eq(organizationTable.id, organizationId)).get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationGet", "The organization could not be read.")
+        return resultErrorCodedCreate(
+          "organizationGet",
+          "The organization could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -44,11 +56,15 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(organizationTable)
             .where(eq(organizationTable.realmId, realmId))
-            .orderBy(asc(organizationTable.createdAt))
+            .orderBy(asc(organizationTable.createdAt), asc(organizationTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("organizationList", "The organizations could not be read.")
+        return resultErrorCodedCreate(
+          "organizationList",
+          "The organizations could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -63,7 +79,11 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationUpdate", "The organization could not be updated.")
+        return resultErrorCodedCreate(
+          "organizationUpdate",
+          "The organization could not be updated.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -71,10 +91,18 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
       try {
         const membership = database.insert(organizationMembershipTable).values(input).returning().get()
         if (membership === undefined)
-          return resultErrorCreate("organizationMembershipCreate", "The organization membership could not be created.")
+          return resultErrorCodedCreate(
+            "organizationMembershipCreate",
+            "The organization membership could not be created.",
+            "organizations.write-failed",
+          )
         return resultCreate(membership)
       } catch (_error) {
-        return resultErrorCreate("organizationMembershipCreate", "The organization membership could not be created.")
+        return resultErrorCodedCreate(
+          "organizationMembershipCreate",
+          "The organization membership could not be created.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -88,7 +116,11 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationMembershipDelete", "The organization membership could not be removed.")
+        return resultErrorCodedCreate(
+          "organizationMembershipDelete",
+          "The organization membership could not be removed.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -102,7 +134,11 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationMembershipGet", "The organization membership could not be read.")
+        return resultErrorCodedCreate(
+          "organizationMembershipGet",
+          "The organization membership could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -124,9 +160,31 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate(
+        return resultErrorCodedCreate(
           "organizationMembershipGetByOrganizationUser",
           "The organization membership could not be read.",
+          "organizations.read-failed",
+        )
+      }
+    },
+
+    organizationMembershipListByRealmUser(realmId: string, userId: string): Result<OrganizationMembershipRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(organizationMembershipTable)
+            .where(
+              and(eq(organizationMembershipTable.realmId, realmId), eq(organizationMembershipTable.userId, userId)),
+            )
+            .orderBy(asc(organizationMembershipTable.createdAt), asc(organizationMembershipTable.id))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "organizationMembershipListByRealmUser",
+          "The organization memberships could not be read.",
+          "organizations.read-failed",
         )
       }
     },
@@ -138,11 +196,15 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(organizationMembershipTable)
             .where(eq(organizationMembershipTable.organizationId, organizationId))
-            .orderBy(asc(organizationMembershipTable.createdAt))
+            .orderBy(asc(organizationMembershipTable.createdAt), asc(organizationMembershipTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("organizationMembershipList", "The organization memberships could not be read.")
+        return resultErrorCodedCreate(
+          "organizationMembershipList",
+          "The organization memberships could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -160,7 +222,11 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationMembershipUpdate", "The organization membership could not be updated.")
+        return resultErrorCodedCreate(
+          "organizationMembershipUpdate",
+          "The organization membership could not be updated.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -168,10 +234,18 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
       try {
         const invitation = database.insert(organizationInvitationTable).values(input).returning().get()
         if (invitation === undefined)
-          return resultErrorCreate("organizationInvitationCreate", "The organization invitation could not be created.")
+          return resultErrorCodedCreate(
+            "organizationInvitationCreate",
+            "The organization invitation could not be created.",
+            "organizations.write-failed",
+          )
         return resultCreate(invitation)
       } catch (_error) {
-        return resultErrorCreate("organizationInvitationCreate", "The organization invitation could not be created.")
+        return resultErrorCodedCreate(
+          "organizationInvitationCreate",
+          "The organization invitation could not be created.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -185,7 +259,11 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationInvitationGet", "The organization invitation could not be read.")
+        return resultErrorCodedCreate(
+          "organizationInvitationGet",
+          "The organization invitation could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -199,9 +277,10 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate(
+        return resultErrorCodedCreate(
           "organizationInvitationGetByTokenHash",
           "The organization invitation could not be read.",
+          "organizations.read-failed",
         )
       }
     },
@@ -213,11 +292,15 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(organizationInvitationTable)
             .where(eq(organizationInvitationTable.organizationId, organizationId))
-            .orderBy(asc(organizationInvitationTable.createdAt))
+            .orderBy(asc(organizationInvitationTable.createdAt), asc(organizationInvitationTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("organizationInvitationList", "The organization invitations could not be read.")
+        return resultErrorCodedCreate(
+          "organizationInvitationList",
+          "The organization invitations could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -241,9 +324,10 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate(
+        return resultErrorCodedCreate(
           "organizationInvitationPendingByEmail",
           "The organization invitation could not be read.",
+          "organizations.read-failed",
         )
       }
     },
@@ -262,7 +346,11 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationInvitationUpdate", "The organization invitation could not be updated.")
+        return resultErrorCodedCreate(
+          "organizationInvitationUpdate",
+          "The organization invitation could not be updated.",
+          "organizations.write-failed",
+        )
       }
     },
   }

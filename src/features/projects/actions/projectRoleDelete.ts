@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -31,7 +31,7 @@ export function projectRoleDelete(options: ProjectRoleDeleteOptions): Result<{ d
   const runtime = options.runtime ?? options.database.runtime
   const deletedAt = runtime.now()
   if (!Number.isSafeInteger(deletedAt) || deletedAt < 0)
-    return resultErrorCreate(op, "The project role timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The project role timestamp is invalid.", "projects.timestamp-invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = projectRepositoryCreate(transaction)
@@ -46,7 +46,7 @@ export function projectRoleDelete(options: ProjectRoleDeleteOptions): Result<{ d
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
     if (project.data === null || project.data.status !== "active")
-      return resultErrorCreate(op, "The project was not found.")
+      return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
@@ -70,14 +70,16 @@ export function projectRoleDelete(options: ProjectRoleDeleteOptions): Result<{ d
         version: grant.version + 1,
       })
       if (!updatedGrant.success) return updatedGrant
-      if (updatedGrant.data === null) return resultErrorCreate(op, "The project grant was not found.")
+      if (updatedGrant.data === null)
+        return resultErrorCodedCreate(op, "The project grant was not found.", "projects.not-found")
       const grantPayload = v.safeParse(projectGrantUpdatedEventPayloadSchema, {
         grantedOrganizationId: grant.grantedOrganizationId,
         grantId: grant.id,
         projectId: options.projectId,
         roleKeys: updatedRoleKeys,
       })
-      if (!grantPayload.success) return resultErrorCreate(op, "The project grant event payload is invalid.")
+      if (!grantPayload.success)
+        return resultErrorCodedCreate(op, "The project grant event payload is invalid.", "projects.event-invalid")
       const grantEvent = storageEventAppend(
         transaction,
         {
@@ -105,7 +107,8 @@ export function projectRoleDelete(options: ProjectRoleDeleteOptions): Result<{ d
       projectId: options.projectId,
       roleId: options.roleId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The project role event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The project role event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

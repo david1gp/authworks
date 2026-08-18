@@ -1,8 +1,9 @@
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { Result } from "#result"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,9 +34,16 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
   app.get("/system/realms/:realmId/users", (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return userErrorResponseCreate(context, query)
     return userResultResponseCreate(
       context,
-      userList({ context: systemContext, database: options.database, realmId: context.req.param("realmId") }),
+      userList({
+        context: systemContext,
+        database: options.database,
+        query: query.data,
+        realmId: context.req.param("realmId"),
+      }),
     )
   })
 
@@ -46,7 +54,11 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     if (!body.success) return userErrorResponseCreate(context, body)
     const input = v.safeParse(userCreateRequestSchema, body.data)
     if (!input.success)
-      return userErrorResponseCreate(context, { errorMessage: "The user request is invalid.", op: "userCreate" })
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The user request is invalid.",
+        op: "userCreate",
+      })
     return userResultResponseCreate(
       context,
       userCreate({
@@ -81,6 +93,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     const input = v.safeParse(userProfileUpdateRequestSchema, body.data)
     if (!input.success)
       return userErrorResponseCreate(context, {
+        code: "users.invalid",
         errorMessage: "The user profile update is invalid.",
         op: "userProfileUpdate",
       })
@@ -104,6 +117,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     const input = v.safeParse(userLifecycleRequestSchema, body.data)
     if (!input.success)
       return userErrorResponseCreate(context, {
+        code: "users.invalid",
         errorMessage: "The user lifecycle request is invalid.",
         op: "userLifecycleSet",
       })
@@ -127,6 +141,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     const input = v.safeParse(userVerificationRequestSchema, body.data)
     if (!input.success)
       return userErrorResponseCreate(context, {
+        code: "users.invalid",
         errorMessage: "The user verification request is invalid.",
         op: "userEmailVerificationSet",
       })
@@ -164,11 +179,14 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       context.req.header("authorization"),
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return userErrorResponseCreate(context, query)
     return userResultResponseCreate(
       context,
       userList({
         context: authenticated.data,
         database: options.database,
+        query: query.data,
         realmId: context.req.param("realmId"),
       }),
     )
@@ -186,7 +204,11 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     if (!body.success) return userErrorResponseCreate(context, body)
     const input = v.safeParse(userCreateRequestSchema, body.data)
     if (!input.success)
-      return userErrorResponseCreate(context, { errorMessage: "The user request is invalid.", op: "userCreate" })
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The user request is invalid.",
+        op: "userCreate",
+      })
     return userResultResponseCreate(
       context,
       userCreate({
@@ -231,6 +253,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     const input = v.safeParse(userProfileUpdateRequestSchema, body.data)
     if (!input.success)
       return userErrorResponseCreate(context, {
+        code: "users.invalid",
         errorMessage: "The user profile update is invalid.",
         op: "userProfileUpdate",
       })
@@ -259,6 +282,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     const input = v.safeParse(userLifecycleRequestSchema, body.data)
     if (!input.success)
       return userErrorResponseCreate(context, {
+        code: "users.invalid",
         errorMessage: "The user lifecycle request is invalid.",
         op: "userLifecycleSet",
       })
@@ -287,6 +311,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     const input = v.safeParse(userVerificationRequestSchema, body.data)
     if (!input.success)
       return userErrorResponseCreate(context, {
+        code: "users.invalid",
         errorMessage: "The user verification request is invalid.",
         op: "userEmailVerificationSet",
       })
@@ -325,40 +350,45 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
 }
 
 function userErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { errorMessage: string; op: string },
+  context: {
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: { errorMessage: string; op: string; code?: string; success?: false },
 ) {
-  const code = userErrorCodeGet(result)
-  return context.json(
-    httpErrorResponseCreate(code, result.errorMessage),
-    httpErrorStatusGet(code) as ContentfulStatusCode,
-  )
-}
-
-function userErrorCodeGet(result: { errorMessage: string; op: string }): string {
-  const message = result.errorMessage.toLowerCase()
-  if (result.op.includes("Authorization") || result.op.includes("Authenticate") || message.includes("authorization"))
-    return "unauthorized"
-  if (message.includes("not available") || message.includes("not found")) return "not_found"
-  if (message.includes("already") || message.includes("transition") || message.includes("not active")) return "conflict"
-  if (message.includes("invalid") || message.includes("empty") || message.includes("required")) return "bad_request"
-  return "internal_server_error"
+  return httpResultResponseCreate(context, {
+    ...result,
+    code: result.code ?? "users.invalid",
+    success: false,
+  } as Result<unknown>)
 }
 
 function userResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  context: {
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
 ) {
-  if (!result.success) return userErrorResponseCreate(context, result as { errorMessage: string; op: string })
-  return context.json(result.data, status as ContentfulStatusCode)
+  if (!result.success)
+    return userErrorResponseCreate(
+      context,
+      result as { errorMessage: string; op: string; code?: string; success: false },
+    )
+  return httpResultResponseCreate(context, result as Result<T>, status)
 }
 
 async function userRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {
   try {
     return { data: await context.req.json<unknown>(), success: true as const }
   } catch (_error) {
-    return { errorMessage: "The request body is invalid.", op: "userRequestJsonRead", success: false as const }
+    return {
+      code: "users.invalid",
+      errorMessage: "The request body is invalid.",
+      op: "userRequestJsonRead",
+      success: false as const,
+    }
   }
 }
 
@@ -366,6 +396,7 @@ function userSystemAuthorizationGet(authorization: string | undefined, configure
   const token = userBearerTokenGet(authorization)
   if (configuredSecret === undefined || token === null || !secretMatches(token, configuredSecret))
     return {
+      code: "users.unauthorized",
       errorMessage: "System authorization is required.",
       op: "userSystemAuthorizationGet",
       success: false as const,
@@ -385,11 +416,15 @@ function userTenantAuthenticate(
     : resolvedHost.split(":")[0]
   const tenant = realmTenantContextResolve({ database, host: normalizedHost ?? "" })
   if (!tenant.success) return tenant
-  return realmBootstrapAdminAuthenticate({
+  const authenticated = realmBootstrapAdminAuthenticate({
     context: tenant.data,
     database,
     secret: userBearerTokenGet(authorization) ?? "",
   })
+  if (!authenticated.success && authenticated.code === "realms.unauthorized")
+    return { ...authenticated, code: "users.unauthorized" }
+  if (!authenticated.success) return authenticated
+  return authenticated
 }
 
 function userBearerTokenGet(authorization: string | undefined): string | null {

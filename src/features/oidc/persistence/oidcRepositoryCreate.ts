@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gt, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { type OidcAuthorizationCodeRow, oidcAuthorizationCodeTable } from "./oidcAuthorizationCodeTable.js"
@@ -51,7 +51,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcAuthorizationCodeConsume", "The authorization code could not be consumed.")
+        return resultErrorCodedCreate(
+          "oidcAuthorizationCodeConsume",
+          "The authorization code could not be consumed.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -59,10 +63,18 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(oidcAuthorizationCodeTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("oidcAuthorizationCodeCreate", "The authorization code could not be created.")
+          return resultErrorCodedCreate(
+            "oidcAuthorizationCodeCreate",
+            "The authorization code could not be created.",
+            "oidc.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("oidcAuthorizationCodeCreate", "The authorization code could not be created.")
+        return resultErrorCodedCreate(
+          "oidcAuthorizationCodeCreate",
+          "The authorization code could not be created.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -78,7 +90,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcAuthorizationCodeGetByTokenHash", "The authorization code could not be read.")
+        return resultErrorCodedCreate(
+          "oidcAuthorizationCodeGetByTokenHash",
+          "The authorization code could not be read.",
+          "oidc.read-failed",
+        )
       }
     },
 
@@ -86,10 +102,18 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(oidcAccessTokenTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("oidcAccessTokenCreate", "The access token could not be created.")
+          return resultErrorCodedCreate(
+            "oidcAccessTokenCreate",
+            "The access token could not be created.",
+            "oidc.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("oidcAccessTokenCreate", "The access token could not be created.")
+        return resultErrorCodedCreate(
+          "oidcAccessTokenCreate",
+          "The access token could not be created.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -103,7 +127,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcAccessTokenGetByTokenHash", "The access token could not be read.")
+        return resultErrorCodedCreate(
+          "oidcAccessTokenGetByTokenHash",
+          "The access token could not be read.",
+          "oidc.read-failed",
+        )
       }
     },
 
@@ -130,7 +158,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcAccessTokenRevoke", "The access token could not be revoked.")
+        return resultErrorCodedCreate(
+          "oidcAccessTokenRevoke",
+          "The access token could not be revoked.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -156,7 +188,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           .all()
         return resultCreate(rows)
       } catch (_error) {
-        return resultErrorCreate("oidcAccessTokenFamilyRevoke", "The access token family could not be revoked.")
+        return resultErrorCodedCreate(
+          "oidcAccessTokenFamilyRevoke",
+          "The access token family could not be revoked.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -164,10 +200,18 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(oidcRefreshTokenTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("oidcRefreshTokenCreate", "The refresh token could not be created.")
+          return resultErrorCodedCreate(
+            "oidcRefreshTokenCreate",
+            "The refresh token could not be created.",
+            "oidc.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("oidcRefreshTokenCreate", "The refresh token could not be created.")
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenCreate",
+          "The refresh token could not be created.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -193,7 +237,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           .all()
         return resultCreate(rows)
       } catch (_error) {
-        return resultErrorCreate("oidcRefreshTokenFamilyRevoke", "The refresh token family could not be revoked.")
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenFamilyRevoke",
+          "The refresh token family could not be revoked.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -207,7 +255,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcRefreshTokenGetByTokenHash", "The refresh token could not be read.")
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenGetByTokenHash",
+          "The refresh token could not be read.",
+          "oidc.read-failed",
+        )
       }
     },
 
@@ -236,7 +288,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcRefreshTokenRotate", "The refresh token could not be rotated.")
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenRotate",
+          "The refresh token could not be rotated.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -244,10 +300,18 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(oidcAuthorizationRequestTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("oidcAuthorizationRequestCreate", "The authorization request could not be created.")
+          return resultErrorCodedCreate(
+            "oidcAuthorizationRequestCreate",
+            "The authorization request could not be created.",
+            "oidc.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("oidcAuthorizationRequestCreate", "The authorization request could not be created.")
+        return resultErrorCodedCreate(
+          "oidcAuthorizationRequestCreate",
+          "The authorization request could not be created.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -263,7 +327,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcAuthorizationRequestGet", "The authorization request could not be read.")
+        return resultErrorCodedCreate(
+          "oidcAuthorizationRequestGet",
+          "The authorization request could not be read.",
+          "oidc.read-failed",
+        )
       }
     },
 
@@ -289,7 +357,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcAuthorizationRequestApprove", "The authorization request could not be approved.")
+        return resultErrorCodedCreate(
+          "oidcAuthorizationRequestApprove",
+          "The authorization request could not be approved.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -315,7 +387,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcAuthorizationRequestReject", "The authorization request could not be rejected.")
+        return resultErrorCodedCreate(
+          "oidcAuthorizationRequestReject",
+          "The authorization request could not be rejected.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -336,7 +412,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcConsentGet", "The OIDC consent could not be read.")
+        return resultErrorCodedCreate("oidcConsentGet", "The OIDC consent could not be read.", "oidc.read-failed")
       }
     },
 
@@ -353,11 +429,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
                 isNull(oidcConsentTable.revokedAt),
               ),
             )
-            .orderBy(asc(oidcConsentTable.createdAt))
+            .orderBy(asc(oidcConsentTable.createdAt), asc(oidcConsentTable.clientId))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("oidcConsentList", "The OIDC consents could not be read.")
+        return resultErrorCodedCreate("oidcConsentList", "The OIDC consents could not be read.", "oidc.read-failed")
       }
     },
 
@@ -376,7 +452,12 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           .get()
         if (existing === undefined) {
           const row = database.insert(oidcConsentTable).values(input).returning().get()
-          if (row === undefined) return resultErrorCreate("oidcConsentUpsert", "The OIDC consent could not be saved.")
+          if (row === undefined)
+            return resultErrorCodedCreate(
+              "oidcConsentUpsert",
+              "The OIDC consent could not be saved.",
+              "oidc.write-failed",
+            )
           return resultCreate(row)
         }
         const row = database
@@ -391,10 +472,15 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           )
           .returning()
           .get()
-        if (row === undefined) return resultErrorCreate("oidcConsentUpsert", "The OIDC consent could not be saved.")
+        if (row === undefined)
+          return resultErrorCodedCreate(
+            "oidcConsentUpsert",
+            "The OIDC consent could not be saved.",
+            "oidc.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("oidcConsentUpsert", "The OIDC consent could not be saved.")
+        return resultErrorCodedCreate("oidcConsentUpsert", "The OIDC consent could not be saved.", "oidc.write-failed")
       }
     },
 
@@ -416,7 +502,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcConsentRevoke", "The OIDC consent could not be revoked.")
+        return resultErrorCodedCreate(
+          "oidcConsentRevoke",
+          "The OIDC consent could not be revoked.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -436,7 +526,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
           .get()
         return resultCreate(event?.aggregateVersion ?? 0)
       } catch (_error) {
-        return resultErrorCreate("oidcConsentEventVersionGet", "The OIDC consent event version could not be read.")
+        return resultErrorCodedCreate(
+          "oidcConsentEventVersionGet",
+          "The OIDC consent event version could not be read.",
+          "oidc.read-failed",
+        )
       }
     },
 
@@ -457,7 +551,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("oidcAccessTokenSessionRevoke", "The access tokens could not be revoked.")
+        return resultErrorCodedCreate(
+          "oidcAccessTokenSessionRevoke",
+          "The access tokens could not be revoked.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -478,17 +576,26 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("oidcRefreshTokenSessionRevoke", "The refresh tokens could not be revoked.")
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenSessionRevoke",
+          "The refresh tokens could not be revoked.",
+          "oidc.write-failed",
+        )
       }
     },
 
     clientCreate(input: OidcClientInsert): Result<OidcClientRow> {
       try {
         const row = database.insert(oidcClientTable).values(input).returning().get()
-        if (row === undefined) return resultErrorCreate("oidcClientCreate", "The OIDC client could not be created.")
+        if (row === undefined)
+          return resultErrorCodedCreate(
+            "oidcClientCreate",
+            "The OIDC client could not be created.",
+            "oidc.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("oidcClientCreate", "The OIDC client could not be created.")
+        return resultErrorCodedCreate("oidcClientCreate", "The OIDC client could not be created.", "oidc.write-failed")
       }
     },
 
@@ -502,7 +609,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcClientGet", "The OIDC client could not be read.")
+        return resultErrorCodedCreate("oidcClientGet", "The OIDC client could not be read.", "oidc.read-failed")
       }
     },
 
@@ -513,11 +620,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(oidcClientTable)
             .where(eq(oidcClientTable.realmId, realmId))
-            .orderBy(asc(oidcClientTable.createdAt))
+            .orderBy(asc(oidcClientTable.createdAt), asc(oidcClientTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("oidcClientList", "The OIDC clients could not be read.")
+        return resultErrorCodedCreate("oidcClientList", "The OIDC clients could not be read.", "oidc.read-failed")
       }
     },
 
@@ -532,7 +639,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcClientUpdate", "The OIDC client could not be updated.")
+        return resultErrorCodedCreate("oidcClientUpdate", "The OIDC client could not be updated.", "oidc.write-failed")
       }
     },
 
@@ -540,10 +647,18 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(oidcSigningKeyTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("oidcSigningKeyCreate", "The OIDC signing key could not be created.")
+          return resultErrorCodedCreate(
+            "oidcSigningKeyCreate",
+            "The OIDC signing key could not be created.",
+            "oidc.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("oidcSigningKeyCreate", "The OIDC signing key could not be created.")
+        return resultErrorCodedCreate(
+          "oidcSigningKeyCreate",
+          "The OIDC signing key could not be created.",
+          "oidc.write-failed",
+        )
       }
     },
 
@@ -557,7 +672,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcSigningKeyGet", "The OIDC signing key could not be read.")
+        return resultErrorCodedCreate(
+          "oidcSigningKeyGet",
+          "The OIDC signing key could not be read.",
+          "oidc.read-failed",
+        )
       }
     },
 
@@ -568,11 +687,15 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .select()
             .from(oidcSigningKeyTable)
             .where(eq(oidcSigningKeyTable.realmId, realmId))
-            .orderBy(desc(oidcSigningKeyTable.createdAt))
+            .orderBy(desc(oidcSigningKeyTable.createdAt), desc(oidcSigningKeyTable.id))
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("oidcSigningKeyList", "The OIDC signing keys could not be read.")
+        return resultErrorCodedCreate(
+          "oidcSigningKeyList",
+          "The OIDC signing keys could not be read.",
+          "oidc.read-failed",
+        )
       }
     },
 
@@ -591,7 +714,11 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("oidcSigningKeyUpdate", "The OIDC signing key could not be updated.")
+        return resultErrorCodedCreate(
+          "oidcSigningKeyUpdate",
+          "The OIDC signing key could not be updated.",
+          "oidc.write-failed",
+        )
       }
     },
   }

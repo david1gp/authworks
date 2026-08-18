@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -37,31 +37,35 @@ export function machineUserLifecycleSet(options: MachineUserLifecycleSetOptions)
   const authorized = machineUserContextAuthorize(options)
   if (!authorized.success) return authorized
   const parsed = v.safeParse(machineUserLifecycleRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The machine user lifecycle request is invalid.")
+  if (!parsed.success)
+    return resultErrorCreate(op, "The machine user lifecycle request is invalid.", "machine-users.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The machine user timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The machine user timestamp is invalid.", "machine-users.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
     const found = repository.userGet(options.realmId, options.machineUserId)
     if (!found.success) return found
-    if (found.data === null) return resultErrorCreate(op, "The machine user was not found.")
+    if (found.data === null) return resultErrorCreate(op, "The machine user was not found.", "machine-users.not-found")
     if (found.data.status === "removed" && parsed.output.status !== "removed")
-      return resultErrorCreate(op, "A removed machine user cannot be reactivated.")
+      return resultErrorCreate(op, "A removed machine user cannot be reactivated.", "machine-users.not-active")
     if (found.data.status === parsed.output.status)
-      return resultErrorCreate(op, "The machine user already has that status.")
+      return resultErrorCreate(op, "The machine user already has that status.", "machine-users.conflict")
     const updated = repository.userUpdate(options.realmId, options.machineUserId, {
       status: parsed.output.status,
       updatedAt: now,
       version: found.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The machine user was not found.")
+    if (updated.data === null)
+      return resultErrorCreate(op, "The machine user was not found.", "machine-users.not-found")
     const scopes = machineScopesParse(updated.data.scopes)
     if (!scopes.success) return scopes
     const statusPayload = v.safeParse(machineUserStatusChangedEventPayloadSchema, { status: updated.data.status })
-    if (!statusPayload.success) return resultErrorCreate(op, "The machine user event payload is invalid.")
+    if (!statusPayload.success)
+      return resultErrorCreate(op, "The machine user event payload is invalid.", "machine-users.event-invalid")
     const statusEvent = storageEventAppend(
       transaction,
       {
@@ -90,7 +94,8 @@ export function machineUserLifecycleSet(options: MachineUserLifecycleSetOptions)
         credentialId: credential.id,
         credentialKind: credential.kind,
       })
-      if (!payload.success) return resultErrorCreate(op, "The machine credential event payload is invalid.")
+      if (!payload.success)
+        return resultErrorCreate(op, "The machine credential event payload is invalid.", "machine-users.event-invalid")
       const event = storageEventAppend(
         transaction,
         {

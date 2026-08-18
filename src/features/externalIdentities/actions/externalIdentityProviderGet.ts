@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { externalIdentityProviderViewCreate } from "../domain/externalIdentityProviderViewCreate.js"
 import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
@@ -22,6 +22,10 @@ export function externalIdentityProviderGet(
   )
   if (!provider.success) return provider
   if (provider.data === null || (!options.includeDisabled && !provider.data.enabled))
-    return resultErrorCreate("externalIdentityProviderGet", "The external identity provider was not found.")
+    return resultErrorCreate(
+      "externalIdentityProviderGet",
+      "The external identity provider was not found.",
+      "external-identities.not-found",
+    )
   return resultCreate({ provider: externalIdentityProviderViewCreate(provider.data) })
 }

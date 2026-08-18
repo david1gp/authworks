@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
+import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 
 export const oidcPublicJwkSchema = v.strictObject({
   alg: v.literal("RS256"),

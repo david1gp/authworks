@@ -1,5 +1,7 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -14,6 +16,7 @@ type MachineCredentialListOptions = {
   readonly database: StorageDatabase
   readonly realmId: string
   readonly machineUserId: string
+  readonly query?: ListQuery
 }
 
 export function machineCredentialList(options: MachineCredentialListOptions): Result<MachineCredentialListResponse> {
@@ -27,5 +30,10 @@ export function machineCredentialList(options: MachineCredentialListOptions): Re
     if (!scopes.success) return scopes
     credentials.push(machineCredentialPublicViewCreate(row, scopes.data))
   }
-  return resultCreate({ credentials })
+  return listRowsPage({
+    idGet: (credential) => credential.id,
+    query: options.query,
+    rows: credentials,
+    sortValueGet: (credential) => credential.createdAt,
+  })
 }

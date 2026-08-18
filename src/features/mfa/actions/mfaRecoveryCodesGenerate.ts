@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -29,13 +29,14 @@ export function mfaRecoveryCodesGenerate(options: MfaRecoveryCodesGenerateOption
   const op = "mfaRecoveryCodesGenerate"
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The recovery code timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The recovery code timestamp is invalid.", "mfa.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = mfaRepositoryCreate(transaction)
     const active = repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
     if (!active.success) return active
-    if (active.data === null) return resultErrorCreate(op, "An active TOTP enrollment is required.")
+    if (active.data === null) return resultErrorCreate(op, "An active TOTP enrollment is required.", "mfa.not-found")
     const deleted = repository.mfaRecoveryCodesDelete(options.realmId, options.userId)
     if (!deleted.success) return deleted
     const codes: string[] = []
@@ -61,7 +62,7 @@ export function mfaRecoveryCodesGenerate(options: MfaRecoveryCodesGenerateOption
       if (!created.success) return created
     }
     const payload = v.safeParse(mfaEventPayloadSchema, { codeCount: codes.length, userId: options.userId })
-    if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.")
+    if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
     const eventVersion = repository.mfaEventVersionGet(options.realmId, "mfa_recovery_codes", options.userId)
     if (!eventVersion.success) return eventVersion
     const event = storageEventAppend(

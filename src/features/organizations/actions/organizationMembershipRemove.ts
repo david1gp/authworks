@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -30,7 +30,7 @@ export function organizationMembershipRemove(options: OrganizationMembershipRemo
   const runtime = options.runtime ?? options.database.runtime
   const removedAt = runtime.now()
   if (!Number.isSafeInteger(removedAt) || removedAt < 0)
-    return resultErrorCreate(op, "The membership timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The membership timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
@@ -41,11 +41,11 @@ export function organizationMembershipRemove(options: OrganizationMembershipRemo
       current.data.realmId !== options.realmId ||
       current.data.organizationId !== options.organizationId
     )
-      return resultErrorCreate(op, "The organization membership was not found.")
+      return resultErrorCodedCreate(op, "The organization membership was not found.", "organizations.not-found")
     const organization = repository.organizationGet(current.data.organizationId)
     if (!organization.success) return organization
     if (organization.data === null || organization.data.status !== "active")
-      return resultErrorCreate(op, "The organization is not active or was not found.")
+      return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
@@ -64,16 +64,19 @@ export function organizationMembershipRemove(options: OrganizationMembershipRemo
         if (!membershipRoles.success) return membershipRoles
         if (membershipRoles.data.includes("owner")) ownerCount += 1
       }
-      if (ownerCount === 1) return resultErrorCreate(op, "The organization must retain an owner.")
+      if (ownerCount === 1)
+        return resultErrorCodedCreate(op, "The organization must retain an owner.", "organizations.must-retain")
     }
     const removed = repository.organizationMembershipDelete(options.membershipId)
     if (!removed.success) return removed
-    if (removed.data === null) return resultErrorCreate(op, "The organization membership was not found.")
+    if (removed.data === null)
+      return resultErrorCodedCreate(op, "The organization membership was not found.", "organizations.not-found")
     const payload = v.safeParse(organizationMembershipRemovedEventPayloadSchema, {
       membershipId: removed.data.id,
       userId: removed.data.userId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The membership event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The membership event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

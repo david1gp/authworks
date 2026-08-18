@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -13,7 +13,7 @@ import { oidcClientSecretMatches } from "../domain/oidcClientSecretMatches.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcPkceVerify } from "../domain/oidcPkceVerify.js"
 import { oidcRedirectUriMatches } from "../domain/oidcRedirectUriMatches.js"
-import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
+import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 import { oidcValueDecrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcAuthorizationCodeConsumedEventPayloadSchema } from "../events/oidcAuthorizationCodeConsumedEventPayloadSchema.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
@@ -41,7 +41,7 @@ export function oidcAuthorizationCodeRedeem(
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
-    return resultErrorCreate(op, "The authorization code timestamp is invalid.")
+    return resultErrorCreate(op, "The authorization code timestamp is invalid.", undefined, "oidc.invalid-timestamp")
   const tokenHash = oidcHashCreate(parsed.output.code)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 

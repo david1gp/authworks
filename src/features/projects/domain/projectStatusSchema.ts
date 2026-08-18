@@ -1,5 +1,2 @@
-import * as v from "valibot"
-
-export const projectStatusSchema = v.picklist(["active", "inactive", "removed"])
-
-export type ProjectStatus = v.InferOutput<typeof projectStatusSchema>
+export { projectStatusSchema } from "../public/projectStatusSchema.js"
+export type { ProjectStatus } from "../public/projectStatusSchema.js"

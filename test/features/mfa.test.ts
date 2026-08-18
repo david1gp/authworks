@@ -23,7 +23,7 @@ import { passwordEmailVerify } from "../../src/features/passwords/actions/passwo
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
-import { sessionPasswordCreate } from "../../src/features/sessions/public/sessionPasswordCreate.js"
+import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"

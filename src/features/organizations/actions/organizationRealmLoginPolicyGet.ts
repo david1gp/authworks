@@ -4,7 +4,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { organizationLoginPolicyOverrideViewCreate } from "../domain/organizationLoginPolicyOverrideViewCreate.js"
 import { organizationLoginPolicyRepositoryCreate } from "../persistence/organizationLoginPolicyRepositoryCreate.js"
 import type { OrganizationLoginPolicyResponse } from "../public/organizationLoginPolicyResponseSchema.js"
-import { organizationLoginPolicyResolve } from "../public/organizationLoginPolicyResolve.js"
+import { organizationLoginPolicyResolve } from "./organizationLoginPolicyResolve.js"
 
 type OrganizationRealmLoginPolicyGetOptions = {
   readonly database: StorageDatabase

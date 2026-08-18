@@ -2,15 +2,28 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { passkeyApiClientCreate } from "../client/passkeyApiClientCreate.js"
 
-type PasskeyCliFlags = { readonly server?: string; readonly token?: string; readonly realmId?: string }
+type PasskeyListFlags = {
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
+}
+type PasskeyCliFlags = {
+  readonly server?: string
+  readonly token?: string
+  readonly realmId?: string
+}
 
 const passkeyListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: PasskeyCliFlags) {
+  async func(this: ApplicationContext, flags: PasskeyCliFlags & PasskeyListFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    passkeyResultWrite(this, await passkeyClientCreate(this, flags).passkeyCredentialList(realmId))
+    passkeyResultWrite(
+      this,
+      await passkeyClientCreate(this, flags).passkeyCredentialList(realmId, passkeyListQueryCreate(flags)),
+    )
   },
-  parameters: { flags: { ...passkeyCommonFlags(), realmId: passkeyRealmIdFlag() } },
+  parameters: { flags: { ...passkeyCommonFlags(), ...passkeyListFlags(), realmId: passkeyRealmIdFlag() } },
   docs: { brief: "List passkey credentials" },
 })
 
@@ -75,6 +88,48 @@ function passkeyCommonFlags() {
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
+  }
+}
+
+function passkeyListFlags() {
+  return {
+    pageSize: {
+      brief: "Page size",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => Number(value),
+      placeholder: "NUMBER",
+    },
+    pageToken: {
+      brief: "Page token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    sortBy: {
+      brief: "Sort field",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "FIELD",
+    },
+    sortDirection: {
+      brief: "Sort direction",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+      placeholder: "DIRECTION",
+    },
+  }
+}
+
+function passkeyListQueryCreate(flags: PasskeyCliFlags & PasskeyListFlags) {
+  return {
+    ...(flags.pageSize === undefined ? {} : { pageSize: flags.pageSize }),
+    ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
+    ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
   }
 }
 

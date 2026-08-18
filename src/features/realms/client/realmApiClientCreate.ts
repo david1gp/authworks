@@ -1,6 +1,8 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import {
   type RealmBootstrapAdminResponse,
@@ -45,8 +47,8 @@ export function realmApiClientCreate(options: RealmApiClientCreateOptions) {
     realmGet(realmId: string): Promise<Result<RealmResponse>> {
       return request(`/system/realms/${encodeURIComponent(realmId)}`, { method: "GET" }, realmResponseSchema)
     },
-    realmList(): Promise<Result<RealmListResponse>> {
-      return request("/system/realms", { method: "GET" }, realmListResponseSchema)
+    realmList(query?: ListQuery): Promise<Result<RealmListResponse>> {
+      return request(`/system/realms${listQueryToSearchParams(query)}`, { method: "GET" }, realmListResponseSchema)
     },
     realmUpdate(realmId: string, input: RealmUpdateRequest): Promise<Result<RealmResponse>> {
       return request(

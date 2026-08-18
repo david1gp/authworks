@@ -234,6 +234,7 @@ test("actor scope isolation rejects forged tenant and organization contexts", ()
       roles: ["owner"],
     }),
   ).toEqual({
+    code: "authorization.tenant-mismatch",
     errorMessage: "The actor is not available in this tenant context.",
     op: "authorizationEnforce",
     success: false,

@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { Result } from "#result"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { sessionList } from "../actions/sessionList.js"
 import { sessionRecentList } from "../actions/sessionRecentList.js"
@@ -36,28 +36,10 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
     }),
   )
 
-  app.get("/realms/:realmId/sessions", protectedMiddleware, (context) =>
-    sessionResultResponseCreate(
-      context,
-      sessionList({
-        currentSessionId: context.get("session").id,
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        userId: context.get("authorizationActor").actorId,
-      }),
-    ),
-  )
+  app.get("/realms/:realmId/sessions", protectedMiddleware, (context) => sessionListRoute(context, options.database))
 
   app.get("/realms/:realmId/sessions/recent", protectedMiddleware, (context) =>
-    sessionResultResponseCreate(
-      context,
-      sessionRecentList({
-        currentSessionId: context.get("session").id,
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        userId: context.get("authorizationActor").actorId,
-      }),
-    ),
+    sessionRecentListRoute(context, options.database),
   )
 
   app.post("/realms/:realmId/sessions/rotate", protectedMiddleware, (context) =>
@@ -85,7 +67,7 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
 
   app.delete("/realms/:realmId/sessions", protectedMiddleware, async (context) => {
     const body = await sessionRevokeAllBodyRead(context)
-    if (!body.success) return sessionErrorResponseCreate(context, body.errorMessage, "bad_request")
+    if (!body.success) return sessionErrorResponseCreate(context, body)
     return sessionResultResponseCreate(
       context,
       sessionRevokeAll({
@@ -104,6 +86,36 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
   return app
 }
 
+function sessionListRoute(context: SessionRouteContext, database: StorageDatabase) {
+  const query = listQueryFromSearchParams(context.req.query())
+  if (!query.success) return sessionErrorResponseCreate(context, query)
+  return sessionResultResponseCreate(
+    context,
+    sessionList({
+      currentSessionId: context.get("session").id,
+      database,
+      query: query.data,
+      realmId: context.req.param("realmId"),
+      userId: context.get("authorizationActor").actorId,
+    }),
+  )
+}
+
+function sessionRecentListRoute(context: SessionRouteContext, database: StorageDatabase) {
+  const query = listQueryFromSearchParams(context.req.query())
+  if (!query.success) return sessionErrorResponseCreate(context, query)
+  return sessionResultResponseCreate(
+    context,
+    sessionRecentList({
+      currentSessionId: context.get("session").id,
+      database,
+      query: query.data,
+      realmId: context.req.param("realmId"),
+      userId: context.get("authorizationActor").actorId,
+    }),
+  )
+}
+
 function sessionBearerTokenGet(authorization: string | undefined): string {
   if (authorization === undefined) return ""
   const match = /^Bearer (.+)$/.exec(authorization)
@@ -114,7 +126,13 @@ async function sessionRevokeAllBodyRead(context: { req: { json: <T>() => Promise
   try {
     const raw = await context.req.json<unknown>()
     const parsed = v.safeParse(sessionRevokeAllRequestSchema, raw)
-    if (!parsed.success) return { errorMessage: "The session revocation request is invalid.", success: false as const }
+    if (!parsed.success)
+      return {
+        code: "sessions.invalid",
+        errorMessage: "The session revocation request is invalid.",
+        op: "sessionRevokeAllBodyRead",
+        success: false as const,
+      }
     return { data: parsed.output, success: true as const }
   } catch (_error) {
     return { data: {}, success: true as const }
@@ -122,19 +140,34 @@ async function sessionRevokeAllBodyRead(context: { req: { json: <T>() => Promise
 }
 
 function sessionErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  message: string,
-  code: string,
+  context: SessionRouteContext,
+  result: { errorMessage: string; op: string; code?: string; success: false },
 ) {
-  return context.json(httpErrorResponseCreate(code, message), httpErrorStatusGet(code) as ContentfulStatusCode)
+  return httpResultResponseCreate(context, result as Result<unknown>)
 }
 
 function sessionResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  context: SessionRouteContext,
+  result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
 ) {
   if (!result.success)
-    return sessionErrorResponseCreate(context, result.errorMessage ?? "The session request failed.", "bad_request")
-  return context.json(result.data, status as ContentfulStatusCode)
+    return sessionErrorResponseCreate(
+      context,
+      result as { errorMessage: string; op: string; code?: string; success: false },
+    )
+  return httpResultResponseCreate(context, result as Result<T>, status)
+}
+
+type SessionRouteContext = {
+  readonly get: {
+    (key: "authorizationActor"): AuthorizationActorContext
+    (key: "session"): Session
+  }
+  readonly json: (body: unknown, status?: number) => Response
+  readonly req: {
+    readonly header: (name: string) => string | undefined
+    readonly param: (name: string) => string
+    readonly query: () => Record<string, string>
+  }
 }

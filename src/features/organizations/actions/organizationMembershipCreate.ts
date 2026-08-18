@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -36,15 +36,20 @@ export function organizationMembershipCreate(
 ): Result<{ membership: OrganizationMembership }> {
   const op = "organizationMembershipCreate"
   const parsed = v.safeParse(organizationMembershipCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The organization membership request is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The organization membership request is invalid.", "organizations.invalid")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The membership is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The membership is not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   const roles = organizationRolesEncode(parsed.output.roles)
   if (!roles.success) return roles
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The membership timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The membership timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
@@ -55,7 +60,7 @@ export function organizationMembershipCreate(
       organization.data.realmId !== options.realmId ||
       organization.data.status !== "active"
     )
-      return resultErrorCreate(op, "The organization is not active or was not found.")
+      return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
@@ -68,7 +73,12 @@ export function organizationMembershipCreate(
       parsed.output.userId,
     )
     if (!existing.success) return existing
-    if (existing.data !== null) return resultErrorCreate(op, "The user is already a member of this organization.")
+    if (existing.data !== null)
+      return resultErrorCodedCreate(
+        op,
+        "The user is already a member of this organization.",
+        "organizations.already-exists",
+      )
     const membershipId = uuidv7Create(runtime)
     const membership = repository.organizationMembershipCreate({
       createdAt,
@@ -86,7 +96,8 @@ export function organizationMembershipCreate(
       roles: parsed.output.roles,
       userId: parsed.output.userId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The membership event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The membership event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -33,29 +33,31 @@ type MfaTotpVerifyTransactionResult =
 
 export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVerifyResponse> {
   const op = "mfaTotpVerify"
-  if (!/^\d{6}$/.test(options.code)) return resultErrorCreate(op, "The TOTP code is invalid.")
+  if (!/^\d{6}$/.test(options.code)) return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The TOTP verification timestamp is invalid.", "mfa.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const transactionResult = storageTransactionRun<MfaTotpVerifyTransactionResult>(options.database, (transaction) => {
     const repository = mfaRepositoryCreate(transaction)
     const enrollment = repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
     if (!enrollment.success) return enrollment
-    if (enrollment.data === null) return resultErrorCreate(op, "The TOTP code is invalid.")
+    if (enrollment.data === null) return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.not-found")
     const policy = repository.mfaPolicyGet(options.realmId)
     if (!policy.success) return policy
     const settings = policy.data ?? mfaPolicyDefaults
     const lockout = repository.mfaLockoutGet(options.realmId, options.userId)
     if (!lockout.success) return lockout
     if (lockout.data?.lockedUntil !== null && lockout.data?.lockedUntil !== undefined && lockout.data.lockedUntil > now)
-      return resultErrorCreate(op, "The TOTP code is invalid.")
+      return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.unauthorized")
     const secret = mfaTotpSecretProtect(
       "decrypt",
       enrollment.data.encryptedSecret,
       options.realmId,
       options.encryptionSecret,
     )
-    if (!secret.success) return resultErrorCreate(op, "The TOTP code is invalid.")
+    if (!secret.success) return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.invalid")
     const verified = mfaTotpCodeVerify(
       secret.data,
       options.code,
@@ -87,7 +89,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
       },
     )
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The TOTP code is invalid.")
+    if (updated.data === null) return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.write-failed")
     const reset = repository.mfaLockoutSet({
       failedAttempts: 0,
       realmId: options.realmId,
@@ -102,7 +104,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
       factor: "totp",
       userId: options.userId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.")
+    if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
     const event = storageEventAppend(
       transaction,
       {
@@ -124,6 +126,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
     return resultCreate({ kind: "verified", response: { method: "totp", verified: true } })
   })
   if (!transactionResult.success) return transactionResult
-  if (transactionResult.data.kind === "failed") return resultErrorCreate(op, "The TOTP code is invalid.")
+  if (transactionResult.data.kind === "failed")
+    return resultErrorCreate(op, "The TOTP code is invalid.", "mfa.unauthorized")
   return resultCreate(transactionResult.data.response)
 }

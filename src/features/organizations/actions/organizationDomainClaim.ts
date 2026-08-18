@@ -3,7 +3,7 @@ import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -41,14 +41,20 @@ type OrganizationDomainClaimOptions = {
 export function organizationDomainClaim(options: OrganizationDomainClaimOptions): Result<OrganizationDomainResponse> {
   const op = "organizationDomainClaim"
   const parsed = v.safeParse(organizationDomainClaimRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The organization domain claim is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The organization domain claim is invalid.", "organizations.invalid-domain")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The organization is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The organization is not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   const domain = realmDomainNormalize(parsed.output.domain)
   if (!domain.success) return domain
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The domain timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCodedCreate(op, "The domain timestamp is invalid.", "organizations.invalid-timestamp")
   const token = organizationDomainVerificationValueCreate(runtime)
   const tokenHash = createHash("sha256").update(token, "utf8").digest("hex")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
@@ -61,7 +67,7 @@ export function organizationDomainClaim(options: OrganizationDomainClaimOptions)
       organization.data.realmId !== options.realmId ||
       organization.data.status !== "active"
     )
-      return resultErrorCreate(op, "The organization was not found.")
+      return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
@@ -74,11 +80,13 @@ export function organizationDomainClaim(options: OrganizationDomainClaimOptions)
       .from(realmDomainTable)
       .where(eq(realmDomainTable.domain, domain.data))
       .get()
-    if (realmDomain !== undefined) return resultErrorCreate(op, "The domain is already assigned to a realm.")
+    if (realmDomain !== undefined)
+      return resultErrorCodedCreate(op, "The domain is already assigned to a realm.", "organizations.domain-assigned")
     const domains = organizationDomainRepositoryCreate(transaction)
     const current = domains.organizationDomainGet(domain.data)
     if (!current.success) return current
-    if (current.data !== null) return resultErrorCreate(op, "The domain is already claimed.")
+    if (current.data !== null)
+      return resultErrorCodedCreate(op, "The domain is already claimed.", "organizations.already-exists")
     const existing = domains.organizationDomainList(options.organizationId)
     if (!existing.success) return existing
     const isPrimary = parsed.output.isPrimary === true || existing.data.length === 0
@@ -100,13 +108,15 @@ export function organizationDomainClaim(options: OrganizationDomainClaimOptions)
       verified: false,
       version: 1,
     })
-    if (!created.success) return resultErrorCreate(op, "The domain is already claimed.")
+    if (!created.success)
+      return resultErrorCodedCreate(op, "The domain is already claimed.", "organizations.already-exists")
     const payload = v.safeParse(organizationDomainAddedEventPayloadSchema, {
       domain: domain.data,
       isPrimary,
       verified: false,
     })
-    if (!payload.success) return resultErrorCreate(op, "The domain event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The domain event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

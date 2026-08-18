@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -31,7 +31,7 @@ export function projectApplicationDelete(
   const runtime = options.runtime ?? options.database.runtime
   const deletedAt = runtime.now()
   if (!Number.isSafeInteger(deletedAt) || deletedAt < 0)
-    return resultErrorCreate(op, "The application timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The application timestamp is invalid.", "projects.timestamp-invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = projectRepositoryCreate(transaction)
@@ -46,7 +46,7 @@ export function projectApplicationDelete(
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
     if (project.data === null || project.data.status !== "active")
-      return resultErrorCreate(op, "The project was not found.")
+      return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
@@ -62,7 +62,8 @@ export function projectApplicationDelete(
       applicationId: options.applicationId,
       projectId: options.projectId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The application event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The application event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

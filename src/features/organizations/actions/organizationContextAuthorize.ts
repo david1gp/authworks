@@ -1,13 +1,14 @@
 import { type Result } from "#result"
-import { authorizationEnforce } from "../../authorization/public/authorizationEnforce.js"
+import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { organizationRolesDecode } from "../domain/organizationRolesDecode.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
+import type { OrganizationMembershipRow } from "../persistence/organizationMembershipTable.js"
 import type { OrganizationRow } from "../persistence/organizationTable.js"
 
 type OrganizationContextAuthorizeOptions = {
@@ -16,6 +17,7 @@ type OrganizationContextAuthorizeOptions = {
   readonly repository: ReturnType<typeof organizationRepositoryCreate>
   readonly requiredPermission?: AuthorizationPermission
   readonly requiredRole?: "member" | "admin"
+  readonly membership?: OrganizationMembershipRow | null
 }
 
 export function organizationContextAuthorize(options: OrganizationContextAuthorizeOptions): Result<void> {
@@ -27,10 +29,15 @@ export function organizationContextAuthorize(options: OrganizationContextAuthori
       : options.requiredRole === "member"
         ? authorizationPermissionDefinitions.organizationRead
         : undefined)
-  if (permission === undefined) return resultErrorCreate(op, "An authorization permission is required.")
+  if (permission === undefined)
+    return resultErrorCodedCreate(op, "An authorization permission is required.", "organizations.invalid")
   if (options.context.kind === "system") return resultCreate(undefined)
   if (options.context.realmId !== options.organization.realmId)
-    return resultErrorCreate(op, "The organization is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The organization is not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   if (options.context.actor.kind === "bootstrap_admin")
     return authorizationEnforce({
       actor: options.context.actor,
@@ -38,12 +45,13 @@ export function organizationContextAuthorize(options: OrganizationContextAuthori
       organizationId: options.organization.id,
       permission,
     })
-  const membership = options.repository.organizationMembershipGetByOrganizationUser(
-    options.organization.id,
-    options.context.actorId,
-  )
+  const membership =
+    options.membership === undefined
+      ? options.repository.organizationMembershipGetByOrganizationUser(options.organization.id, options.context.actorId)
+      : resultCreate(options.membership)
   if (!membership.success) return membership
-  if (membership.data === null) return resultErrorCreate(op, "The actor is not a member of this organization.")
+  if (membership.data === null)
+    return resultErrorCodedCreate(op, "The actor is not a member of this organization.", "organizations.not-member")
   const roles = organizationRolesDecode(membership.data.roles)
   if (!roles.success) return roles
   return authorizationEnforce({

@@ -1,8 +1,11 @@
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { Result } from "#result"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -82,20 +85,29 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
   app.get("/system/organization-roles", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
-    return context.json(organizationRoleList().data)
+    const query = organizationListQueryRead(context.req.url)
+    if (!query.success) return organizationErrorResponseCreate(context, query)
+    return organizationResultResponseCreate(context, organizationRoleList(query.data))
   })
 
-  app.get("/organization-roles", (context) => context.json(organizationRoleList().data))
+  app.get("/organization-roles", (context) => {
+    const query = organizationListQueryRead(context.req.url)
+    if (!query.success) return organizationErrorResponseCreate(context, query)
+    return organizationResultResponseCreate(context, organizationRoleList(query.data))
+  })
 
   app.get("/system/realms/:realmId/organizations", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const query = organizationListQueryRead(context.req.url)
+    if (!query.success) return organizationErrorResponseCreate(context, query)
     return organizationResultResponseCreate(
       context,
       organizationList({
         context: systemContext,
         database: options.database,
         realmId: context.req.param("realmId"),
+        query: query.data,
       }),
     )
   })
@@ -107,10 +119,10 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationCreateRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The organization request is invalid.",
-        op: "organizationCreate",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("organizationCreate", "The organization request is invalid.", "organizations.invalid"),
+      )
     return organizationResultResponseCreate(
       context,
       organizationCreate({
@@ -144,10 +156,10 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationUpdateRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The organization update is invalid.",
-        op: "organizationUpdate",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("organizationUpdate", "The organization update is invalid.", "organizations.invalid"),
+      )
     return organizationResultResponseCreate(
       context,
       organizationUpdate({
@@ -176,10 +188,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationLoginPolicySetRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The login policy is invalid.",
-        op: "organizationRealmLoginPolicySet",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationRealmLoginPolicySet",
+          "The login policy is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationRealmLoginPolicySet({
@@ -211,10 +227,10 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationBrandingSetRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The branding is invalid.",
-        op: "organizationBrandingSet",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("organizationBrandingSet", "The branding is invalid.", "organizations.invalid"),
+      )
     return organizationResultResponseCreate(
       context,
       organizationBrandingSet({
@@ -247,10 +263,10 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationLoginPolicySetRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The login policy is invalid.",
-        op: "organizationLoginPolicySet",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("organizationLoginPolicySet", "The login policy is invalid.", "organizations.invalid"),
+      )
     return organizationResultResponseCreate(
       context,
       organizationLoginPolicySet({
@@ -266,12 +282,15 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
   app.get("/system/realms/:realmId/organizations/:organizationId/domains", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const query = organizationListQueryRead(context.req.url)
+    if (!query.success) return organizationErrorResponseCreate(context, query)
     return organizationResultResponseCreate(
       context,
       organizationDomainList({
         database: options.database,
         realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
+        query: query.data,
       }),
     )
   })
@@ -283,10 +302,10 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationDomainClaimRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The domain claim is invalid.",
-        op: "organizationDomainClaim",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("organizationDomainClaim", "The domain claim is invalid.", "organizations.invalid"),
+      )
     return organizationResultResponseCreate(
       context,
       organizationDomainClaim({
@@ -338,10 +357,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationLifecycleRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The organization lifecycle request is invalid.",
-        op: "organizationLifecycleSet",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationLifecycleSet",
+          "The organization lifecycle request is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationLifecycleSet({
@@ -357,6 +380,8 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
   app.get("/system/realms/:realmId/organizations/:organizationId/memberships", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const query = organizationListQueryRead(context.req.url)
+    if (!query.success) return organizationErrorResponseCreate(context, query)
     return organizationResultResponseCreate(
       context,
       organizationMembershipList({
@@ -364,6 +389,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         database: options.database,
         realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
+        query: query.data,
       }),
     )
   })
@@ -375,10 +401,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationMembershipCreateRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The organization membership request is invalid.",
-        op: "organizationMembershipCreate",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationMembershipCreate",
+          "The organization membership request is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationMembershipCreate({
@@ -399,10 +429,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationMembershipUpdateRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The organization membership update is invalid.",
-        op: "organizationMembershipUpdate",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationMembershipUpdate",
+          "The organization membership update is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationMembershipUpdate({
@@ -434,6 +468,8 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
   app.get("/system/realms/:realmId/organizations/:organizationId/invitations", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const query = organizationListQueryRead(context.req.url)
+    if (!query.success) return organizationErrorResponseCreate(context, query)
     return organizationResultResponseCreate(
       context,
       organizationInvitationList({
@@ -441,6 +477,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         database: options.database,
         realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
+        query: query.data,
       }),
     )
   })
@@ -452,10 +489,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationInvitationCreateRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The organization invitation request is invalid.",
-        op: "organizationInvitationCreate",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationInvitationCreate",
+          "The organization invitation request is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationInvitationCreate({
@@ -489,10 +530,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationInvitationAcceptRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The invitation acceptance is invalid.",
-        op: "organizationInvitationAccept",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationInvitationAccept",
+          "The invitation acceptance is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationInvitationAccept({ database: options.database, input: input.output }),
@@ -504,10 +549,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationInvitationAcceptRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The invitation decline is invalid.",
-        op: "organizationInvitationDecline",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationInvitationDecline",
+          "The invitation decline is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationInvitationDecline({ database: options.database, input: input.output }),
@@ -521,10 +570,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationSwitchRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The organization switch request is invalid.",
-        op: "organizationSwitch",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationSwitch",
+          "The organization switch request is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationSwitch({
@@ -549,10 +602,14 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
     if (!body.success) return organizationErrorResponseCreate(context, body)
     const input = v.safeParse(organizationSwitchRequestSchema, body.data)
     if (!input.success)
-      return organizationErrorResponseCreate(context, {
-        errorMessage: "The organization switch request is invalid.",
-        op: "organizationSwitch",
-      })
+      return organizationErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "organizationSwitch",
+          "The organization switch request is invalid.",
+          "organizations.invalid",
+        ),
+      )
     return organizationResultResponseCreate(
       context,
       organizationSwitch({
@@ -568,55 +625,35 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
 }
 
 function organizationErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { errorMessage: string; op: string },
+  context: {
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: Result<unknown>,
 ) {
-  const code = organizationErrorCodeGet(result)
-  return context.json(
-    httpErrorResponseCreate(code, result.errorMessage),
-    httpErrorStatusGet(code) as ContentfulStatusCode,
-  )
-}
-
-function organizationErrorCodeGet(result: { errorMessage: string; op: string }): string {
-  const message = result.errorMessage.toLowerCase()
-  if (result.op.includes("systemAuthorization") || message.includes("authorization is required")) return "unauthorized"
-  if (message.includes("not a member") || message.includes("not authorized") || message.includes("only the system"))
-    return "forbidden"
-  if (message.includes("not found") || message.includes("not available")) return "not_found"
-  if (
-    message.includes("already") ||
-    message.includes("pending") ||
-    message.includes("must retain") ||
-    message.includes("removed") ||
-    message.includes("not active") ||
-    message.includes("expired")
-  )
-    return "conflict"
-  if (
-    message.includes("invalid") ||
-    message.includes("empty") ||
-    message.includes("unique") ||
-    message.includes("expiry")
-  )
-    return "bad_request"
-  return "internal_server_error"
+  return httpResultResponseCreate(context, result)
 }
 
 function organizationResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  context: {
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: Result<T>,
   status = 200,
 ) {
-  if (!result.success) return organizationErrorResponseCreate(context, result as { errorMessage: string; op: string })
-  return context.json(result.data, status as ContentfulStatusCode)
+  return httpResultResponseCreate(context, result, status)
 }
 
 async function organizationRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {
   try {
     return { data: await context.req.json<unknown>(), success: true as const }
   } catch (_error) {
-    return { errorMessage: "The request body is invalid.", op: "organizationRequestJsonRead", success: false as const }
+    return resultErrorCodedCreate(
+      "organizationRequestJsonRead",
+      "The request body is invalid.",
+      "organizations.invalid",
+    )
   }
 }
 
@@ -626,11 +663,11 @@ function organizationSystemAuthorizationGet(
 ) {
   const token = organizationBearerTokenGet(authorization)
   if (configuredSecret === undefined || token === null || !secretMatches(token, configuredSecret))
-    return {
-      errorMessage: "System authorization is required.",
-      op: "organizationSystemAuthorizationGet",
-      success: false as const,
-    }
+    return resultErrorCodedCreate(
+      "organizationSystemAuthorizationGet",
+      "System authorization is required.",
+      "organizations.unauthorized",
+    )
   return { data: undefined, success: true as const }
 }
 
@@ -638,6 +675,13 @@ function organizationBearerTokenGet(authorization: string | undefined): string |
   if (authorization === undefined) return null
   const match = /^Bearer (.+)$/.exec(authorization)
   return match?.[1] ?? null
+}
+
+function organizationListQueryRead(requestUrl: string): Result<ListQuery> {
+  const parsed = listQueryFromSearchParams(new URL(requestUrl).searchParams)
+  if (!parsed.success)
+    return resultErrorCodedCreate("organizationListQueryRead", "The list query is invalid.", "organizations.invalid")
+  return parsed
 }
 
 function organizationTenantContextResolve(database: StorageDatabase, host: string | undefined, requestUrl: string) {

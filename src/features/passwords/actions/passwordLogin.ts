@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -27,9 +27,9 @@ import { passwordLoginSucceededEventPayloadSchema } from "../events/passwordLogi
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
 import { type PasswordLoginRequest, passwordLoginRequestSchema } from "../public/passwordLoginRequestSchema.js"
 import type { PasswordLoginResponse } from "../public/passwordLoginResponseSchema.js"
-import type { PasswordSessionCreate } from "../public/passwordSessionCreate.js"
+import type { PasswordSessionCreate } from "../domain/passwordSessionCreate.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 type PasswordLoginOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
@@ -48,21 +48,21 @@ const passwordDummyHash = passwordDummyHashCreate()
 export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLoginResponse> {
   const op = "passwordLogin"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "passwords.tenant-required")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The login is not available in this tenant context.")
+    return resultErrorCreate(op, "The login is not available in this tenant context.", "passwords.tenant-mismatch")
   const parsed = v.safeParse(passwordLoginRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The credentials are invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   const identifier = passwordIdentifierNormalize(parsed.output.identifier)
   if (!identifier.success) {
     passwordHashVerify(parsed.output.password, passwordDummyHash)
-    return resultErrorCreate(op, "The credentials are invalid.")
+    return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   }
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
-  if (!realm.success) return resultErrorCreate(op, "The credentials are invalid.")
+  if (!realm.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   if (realm.data.realm.status !== "active") {
     passwordHashVerify(parsed.output.password, passwordDummyHash)
-    return resultErrorCreate(op, "The credentials are invalid.")
+    return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   }
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
@@ -72,46 +72,49 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
   })
   if (!policy.success) {
     passwordHashVerify(parsed.output.password, passwordDummyHash)
-    return resultErrorCreate(op, "The credentials are invalid.")
+    return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   }
   const repository = passwordRepositoryCreate(options.database.db)
   const user = repository.passwordUserFindByIdentifier(options.realmId, identifier.data)
-  if (!user.success) return resultErrorCreate(op, "The credentials are invalid.")
+  if (!user.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   if (user.data === null) {
     passwordHashVerify(parsed.output.password, passwordDummyHash)
-    return resultErrorCreate(op, "The credentials are invalid.")
+    return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   }
   const userRow = user.data
   const credential = repository.passwordCredentialGet(options.realmId, userRow.id)
   if (!credential.success) {
     passwordHashVerify(parsed.output.password, passwordDummyHash)
-    return resultErrorCreate(op, "The credentials are invalid.")
+    return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   }
   const verified = passwordHashVerify(parsed.output.password, credential.data?.hash ?? passwordDummyHash)
   if (!verified.success || !verified.data) return passwordLoginFailureRecord(options, userRow.id, "invalid_credentials")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The login timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The login timestamp is invalid.", "passwords.invalid-timestamp")
   const policyRow = repository.passwordPolicyGet(options.realmId)
-  if (!policyRow.success) return resultErrorCreate(op, "The credentials are invalid.")
+  if (!policyRow.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   const passwordPolicy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   const authenticated = storageTransactionRun(options.database, (transaction) => {
     const currentRepository = passwordRepositoryCreate(transaction)
     const current = currentRepository.passwordUserGet(options.realmId, userRow.id)
-    if (!current.success || current.data === null) return resultErrorCreate(op, "The credentials are invalid.")
+    if (!current.success || current.data === null)
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     const currentUser = current.data
     const currentCredential = currentRepository.passwordCredentialGet(options.realmId, current.data.id)
     if (!currentCredential.success || currentCredential.data === null)
-      return resultErrorCreate(op, "The credentials are invalid.")
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     const currentVerified = passwordHashVerify(parsed.output.password, currentCredential.data.hash)
-    if (!currentVerified.success || !currentVerified.data) return resultErrorCreate(op, "The credentials are invalid.")
+    if (!currentVerified.success || !currentVerified.data)
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     const currentLockout = currentRepository.passwordLockoutGet(options.realmId, current.data.id)
-    if (!currentLockout.success) return resultErrorCreate(op, "The credentials are invalid.")
+    if (!currentLockout.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     const lockedUntil = currentLockout.data?.lockedUntil
     if (current.data.state === "locked" && (lockedUntil === null || lockedUntil === undefined || lockedUntil > now))
-      return resultErrorCreate(op, "The credentials are invalid.")
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     let userVersion = current.data.version
     if (current.data.state === "locked") {
       const unlocked = transaction
@@ -120,10 +123,11 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
         .where(and(eq(userTable.id, current.data.id), eq(userTable.realmId, options.realmId)))
         .returning()
         .get()
-      if (unlocked === undefined) return resultErrorCreate(op, "The credentials are invalid.")
+      if (unlocked === undefined) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
       userVersion = unlocked.version
       const unlockedPayload = v.safeParse(userStateChangedEventPayloadSchema, { from: "locked", to: "active" })
-      if (!unlockedPayload.success) return resultErrorCreate(op, "The unlock event payload is invalid.")
+      if (!unlockedPayload.success)
+        return resultErrorCreate(op, "The unlock event payload is invalid.", "passwords.event-invalid")
       const unlockedEvent = storageEventAppend(
         transaction,
         {
@@ -144,8 +148,9 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
       if (!unlockedEvent.success) return unlockedEvent
     }
     if (current.data.state !== "active" && current.data.state !== "locked")
-      return resultErrorCreate(op, "The credentials are invalid.")
-    if (current.data.emailVerifiedAt === null) return resultErrorCreate(op, "The credentials are invalid.")
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
+    if (current.data.emailVerifiedAt === null)
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     const lockoutVersion = (currentLockout.data?.version ?? 0) + 1
     const lockout = currentRepository.passwordLockoutSet({
       failedAttempts: 0,
@@ -157,9 +162,9 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
     })
     if (!lockout.success) return lockout
     const eventVersion = currentRepository.passwordEventVersionGet(options.realmId, current.data.id)
-    if (!eventVersion.success) return resultErrorCreate(op, "The credentials are invalid.")
+    if (!eventVersion.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     const payload = v.safeParse(passwordLoginSucceededEventPayloadSchema, { authenticated: true })
-    if (!payload.success) return resultErrorCreate(op, "The login event payload is invalid.")
+    if (!payload.success) return resultErrorCreate(op, "The login event payload is invalid.", "passwords.event-invalid")
     const event = storageEventAppend(
       transaction,
       {
@@ -211,7 +216,8 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
               ),
       userId: currentUser.id,
     })
-    if (!authenticationResult.success) return resultErrorCreate(op, "The credentials are invalid.")
+    if (!authenticationResult.success)
+      return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     return resultCreate({ authentication, ...authenticationResult.data })
   })
   if (!authenticated.success) return authenticated
@@ -225,42 +231,48 @@ function passwordLoginFailureRecord(
 ): Result<PasswordLoginResponse> {
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const policyRow = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.realmId)
-  if (!policyRow.success) return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+  if (!policyRow.success)
+    return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
   const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
   const recorded = storageTransactionRun(options.database, (transaction) => {
     const repository = passwordRepositoryCreate(transaction)
     const current = repository.passwordUserGet(options.realmId, userId)
     if (!current.success || current.data === null)
-      return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+      return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
     const currentLockout = repository.passwordLockoutGet(options.realmId, userId)
-    if (!currentLockout.success) return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+    if (!currentLockout.success)
+      return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
     if (
       currentLockout.data?.lockedUntil !== null &&
       currentLockout.data?.lockedUntil !== undefined &&
       currentLockout.data.lockedUntil > now
     )
-      return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+      return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
     if (current.data.state !== "active" && current.data.state !== "locked")
-      return resultErrorCreate("passwordLogin", "The credentials are invalid.")
-    if (current.data.emailVerifiedAt === null) return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+      return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
+    if (current.data.emailVerifiedAt === null)
+      return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
     let userVersion = current.data.version
     if (current.data.state === "locked") {
       const existingUntil = currentLockout.data?.lockedUntil
       if (existingUntil === null || existingUntil === undefined || existingUntil > now)
-        return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+        return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
       const unlocked = transaction
         .update(userTable)
         .set({ state: "active", updatedAt: now, version: current.data.version + 1 })
         .where(and(eq(userTable.id, current.data.id), eq(userTable.realmId, options.realmId)))
         .returning()
         .get()
-      if (unlocked === undefined) return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+      if (unlocked === undefined)
+        return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
       userVersion = unlocked.version
       const unlockedPayload = v.safeParse(userStateChangedEventPayloadSchema, { from: "locked", to: "active" })
-      if (!unlockedPayload.success) return resultErrorCreate("passwordLogin", "The unlock event payload is invalid.")
+      if (!unlockedPayload.success)
+        return resultErrorCreate("passwordLogin", "The unlock event payload is invalid.", "passwords.event-invalid")
       const unlockedEvent = storageEventAppend(
         transaction,
         {
@@ -293,7 +305,8 @@ function passwordLoginFailureRecord(
     })
     if (!lockout.success) return lockout
     const eventVersion = repository.passwordEventVersionGet(options.realmId, userId)
-    if (!eventVersion.success) return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+    if (!eventVersion.success)
+      return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
     if (locked) {
       const updated = transaction
         .update(userTable)
@@ -301,9 +314,11 @@ function passwordLoginFailureRecord(
         .where(and(eq(userTable.id, userId), eq(userTable.realmId, options.realmId)))
         .returning()
         .get()
-      if (updated === undefined) return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+      if (updated === undefined)
+        return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
       const statePayload = v.safeParse(userStateChangedEventPayloadSchema, { from: "active", to: "locked" })
-      if (!statePayload.success) return resultErrorCreate("passwordLogin", "The lock event payload is invalid.")
+      if (!statePayload.success)
+        return resultErrorCreate("passwordLogin", "The lock event payload is invalid.", "passwords.event-invalid")
       const stateEvent = storageEventAppend(
         transaction,
         {
@@ -329,7 +344,7 @@ function passwordLoginFailureRecord(
       lockedUntil: now + policy.lockoutDurationMs,
     })
     if (!payload.success || !lockoutPayload.success)
-      return resultErrorCreate("passwordLogin", "The login event payload is invalid.")
+      return resultErrorCreate("passwordLogin", "The login event payload is invalid.", "passwords.event-invalid")
     const event = storageEventAppend(
       transaction,
       {
@@ -351,7 +366,7 @@ function passwordLoginFailureRecord(
     return resultCreate(undefined)
   })
   if (!recorded.success) return recorded
-  return resultErrorCreate("passwordLogin", "The credentials are invalid.")
+  return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
 }
 
 function passwordDummyHashCreate(): string {

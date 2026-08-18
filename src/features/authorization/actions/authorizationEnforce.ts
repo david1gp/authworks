@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { authorizationPolicyEvaluate } from "./authorizationPolicyEvaluate.js"
 import type { AuthorizationActorContext } from "../public/authorizationActorContextSchema.js"
 import type { AuthorizationPermission } from "../public/authorizationPermissionSchema.js"
@@ -25,14 +25,27 @@ export function authorizationEnforce(options: AuthorizationEnforceOptions): Resu
   const decision = authorizationPolicyEvaluate(options)
   if (!decision.success) return decision
   if (decision.data.allowed) return resultCreate(undefined)
-  if (decision.data.reason === "anonymous") return resultErrorCreate(op, "Authentication is required.")
+  if (decision.data.reason === "anonymous")
+    return resultErrorCodedCreate(op, "Authentication is required.", "authorization.authentication-required")
   if (decision.data.reason === "tenant_mismatch")
-    return resultErrorCreate(op, "The actor is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The actor is not available in this tenant context.",
+      "authorization.tenant-mismatch",
+    )
   if (decision.data.reason === "organization_mismatch")
-    return resultErrorCreate(op, "The actor is not available in this organization context.")
+    return resultErrorCodedCreate(
+      op,
+      "The actor is not available in this organization context.",
+      "authorization.tenant-mismatch",
+    )
   if (decision.data.reason === "insufficient_assurance")
-    return resultErrorCreate(op, "A stronger authentication is required.")
+    return resultErrorCodedCreate(op, "A stronger authentication is required.", "authorization.insufficient-assurance")
   if (decision.data.reason === "impersonation_limit")
-    return resultErrorCreate(op, "The impersonated session is not allowed to use this permission.")
-  return resultErrorCreate(op, "The actor is not authorized for this permission.")
+    return resultErrorCodedCreate(
+      op,
+      "The impersonated session is not allowed to use this permission.",
+      "authorization.impersonation-forbidden",
+    )
+  return resultErrorCodedCreate(op, "The actor is not authorized for this permission.", "authorization.forbidden")
 }

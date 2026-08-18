@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
-import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
+import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
+import { oidcScopeSchema } from "./oidcScopeSchema.js"
 
 export const oidcAuthorizationConsentRequiredSchema = v.strictObject({
   client_id: oidcResourceIdSchema,

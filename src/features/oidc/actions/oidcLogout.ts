@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, desc, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -53,7 +53,8 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
   if (!parsed.success) return resultErrorCreate(op, "The logout request is invalid.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The logout timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The logout timestamp is invalid.", undefined, "oidc.invalid-timestamp")
   const realm = realmGet({
     context: realmSystemContextCreate(),
     database: options.database,

@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { userStateSchema } from "../domain/userStateSchema.js"
-import { userVerificationStateSchema } from "../domain/userVerificationStateSchema.js"
+import { userStateSchema } from "./userStateSchema.js"
+import { userVerificationStateSchema } from "./userVerificationStateSchema.js"
 import { userProfileSchema } from "./userProfileSchema.js"
 import { userResourceIdSchema } from "./userResourceIdSchema.js"
 

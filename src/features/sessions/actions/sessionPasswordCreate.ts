@@ -1,5 +1,5 @@
-import type { PasswordSessionCreate } from "../../passwords/public/passwordSessionCreate.js"
-import { sessionIssue } from "../actions/sessionIssue.js"
+import type { PasswordSessionCreate } from "../../passwords/domain/passwordSessionCreate.js"
+import { sessionIssue } from "./sessionIssue.js"
 
 export function sessionPasswordCreate(): PasswordSessionCreate {
   return (authentication, options) =>

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -21,7 +21,7 @@ import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
 import { oidcJwtSign } from "../domain/oidcJwtSign.js"
 import { oidcPkceVerify } from "../domain/oidcPkceVerify.js"
 import { oidcRefreshTokenCreate } from "../domain/oidcRefreshTokenCreate.js"
-import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
+import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 import { oidcClientSecretMatches } from "../domain/oidcClientSecretMatches.js"
 import { oidcValueDecrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcPublicJwkSchema } from "../public/oidcPublicJwkSchema.js"
@@ -35,8 +35,8 @@ import { userProfileTable, type UserProfileRow } from "../../users/persistence/u
 import { userTable, type UserRow } from "../../users/persistence/userTable.js"
 import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { and, eq } from "drizzle-orm"
-import { machineClientCredentialsIssue } from "../../machineUsers/public/machineClientCredentialsIssue.js"
-import { machineClientCredentialsAuthenticate } from "../../machineUsers/public/machineClientCredentialsAuthenticate.js"
+import { machineClientCredentialsIssue } from "../../machineUsers/actions/machineClientCredentialsIssue.js"
+import { machineClientCredentialsAuthenticate } from "../../machineUsers/actions/machineClientCredentialsAuthenticate.js"
 
 const oidcAccessTokenLifetimeMs = 5 * 60 * 1_000
 const oidcRefreshTokenLifetimeMs = 30 * 24 * 60 * 60 * 1_000
@@ -74,7 +74,12 @@ export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcToken
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
-    return resultErrorCreate("oidcTokenInvalidRequest", "The token timestamp is invalid.")
+    return resultErrorCreate(
+      "oidcTokenInvalidRequest",
+      "The token timestamp is invalid.",
+      undefined,
+      "oidc.invalid-timestamp",
+    )
   const realm = realmGet({
     context: realmSystemContextCreate(),
     database: options.database,

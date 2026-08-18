@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { realmPublicViewCreate } from "../domain/realmPublicViewCreate.js"
 import type { RealmSystemContext } from "../domain/realmSystemContext.js"
@@ -17,14 +17,14 @@ type RealmGetOptions = {
 export function realmGet(options: RealmGetOptions): Result<{ realm: Realm }> {
   const op = "realmGet"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "realms.tenant-required")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The realm is not available in this tenant context.")
+    return resultErrorCreate(op, "The realm is not available in this tenant context.", "realms.tenant-mismatch")
 
   const repository = realmRepositoryCreate(options.database.db)
   const realm = repository.realmGet(options.realmId)
   if (!realm.success) return realm
-  if (realm.data === null) return resultErrorCreate(op, "The realm was not found.")
+  if (realm.data === null) return resultErrorCreate(op, "The realm was not found.", "realms.not-found")
   const domains = repository.realmDomainList(options.realmId)
   if (!domains.success) return domains
   return resultCreate({ realm: realmPublicViewCreate(realm.data, domains.data) })

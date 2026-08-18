@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { realmStatusSchema } from "../domain/realmStatusSchema.js"
+import { realmStatusSchema } from "./realmStatusSchema.js"
 
 export const realmSchema = v.strictObject({
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),

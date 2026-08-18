@@ -1,10 +1,10 @@
 import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import { userTable, type UserRow } from "../../users/persistence/userTable.js"
-import { emailOtpChallengeTable, type EmailOtpChallengeRow } from "./emailOtpChallengeTable.js"
+import { type UserRow, userTable } from "../../users/persistence/userTable.js"
+import { type EmailOtpChallengeRow, emailOtpChallengeTable } from "./emailOtpChallengeTable.js"
 
 export function emailOtpRepositoryCreate(database: StorageExecutor) {
   return {
@@ -33,7 +33,11 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("emailOtpChallengeAttemptRecord", "The email OTP attempt could not be recorded.")
+        return resultErrorCreate(
+          "emailOtpChallengeAttemptRecord",
+          "The email OTP attempt could not be recorded.",
+          "email-otp.write-failed",
+        )
       }
     },
 
@@ -60,7 +64,11 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("emailOtpChallengeConsume", "The email OTP challenge could not be consumed.")
+        return resultErrorCreate(
+          "emailOtpChallengeConsume",
+          "The email OTP challenge could not be consumed.",
+          "email-otp.write-failed",
+        )
       }
     },
 
@@ -68,10 +76,18 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(emailOtpChallengeTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("emailOtpChallengeCreate", "The email OTP challenge could not be created.")
+          return resultErrorCreate(
+            "emailOtpChallengeCreate",
+            "The email OTP challenge could not be created.",
+            "email-otp.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("emailOtpChallengeCreate", "The email OTP challenge could not be created.")
+        return resultErrorCreate(
+          "emailOtpChallengeCreate",
+          "The email OTP challenge could not be created.",
+          "email-otp.write-failed",
+        )
       }
     },
 
@@ -85,7 +101,11 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("emailOtpChallengeGet", "The email OTP challenge could not be read.")
+        return resultErrorCreate(
+          "emailOtpChallengeGet",
+          "The email OTP challenge could not be read.",
+          "email-otp.read-failed",
+        )
       }
     },
 
@@ -110,7 +130,11 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("emailOtpChallengeLatestGet", "The email OTP challenge could not be read.")
+        return resultErrorCreate(
+          "emailOtpChallengeLatestGet",
+          "The email OTP challenge could not be read.",
+          "email-otp.read-failed",
+        )
       }
     },
 
@@ -138,6 +162,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "emailOtpChallengeExpirePrevious",
           "The previous email OTP challenges could not be closed.",
+          "email-otp.write-failed",
         )
       }
     },
@@ -153,7 +178,11 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("emailOtpUserFindByEmail", "The email OTP user could not be read.")
+        return resultErrorCreate(
+          "emailOtpUserFindByEmail",
+          "The email OTP user could not be read.",
+          "email-otp.read-failed",
+        )
       }
     },
 
@@ -167,7 +196,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("emailOtpUserGet", "The email OTP user could not be read.")
+        return resultErrorCreate("emailOtpUserGet", "The email OTP user could not be read.", "email-otp.read-failed")
       }
     },
   }

@@ -1,8 +1,10 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import type { PasskeyAuthenticationCompleteRequest } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
 import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
@@ -41,7 +43,9 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
     })
   const parsed = <T>(schema: v.GenericSchema<T>, input: unknown, message: string): Result<T> => {
     const value = v.safeParse(schema, input)
-    return value.success ? resultCreate(value.output) : resultErrorCreate("passkeyApiClientCreate", message)
+    return value.success
+      ? resultCreate(value.output)
+      : resultErrorCreate("passkeyApiClientCreate", message, "passkeys.invalid")
   }
   const json = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
 
@@ -132,9 +136,9 @@ export function passkeyApiClientCreate(options: PasskeyApiClientCreateOptions) {
         passkeyAuthenticationCompleteResponseSchema,
       )
     },
-    passkeyCredentialList(realmId: string): Promise<Result<PasskeyCredentialListResponse>> {
+    passkeyCredentialList(realmId: string, query?: ListQuery): Promise<Result<PasskeyCredentialListResponse>> {
       return request(
-        `/realms/${encodeURIComponent(realmId)}/passkeys`,
+        `/realms/${encodeURIComponent(realmId)}/passkeys${listQueryToSearchParams(query)}`,
         { method: "GET" },
         passkeyCredentialListResponseSchema,
       )

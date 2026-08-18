@@ -1,7 +1,8 @@
 import * as v from "valibot"
 import { type Result } from "#result"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import {
   type OidcAuthorizationCodeRedeemRequest,
@@ -90,11 +91,13 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       invalidResponseErrorGet: (body) => {
         const consent = v.safeParse(oidcAuthorizationConsentRequiredSchema, body)
         if (!consent.success) return undefined
-        return resultErrorCreate(
+        const error = resultErrorCodedCreate(
           "oidcAuthorizationConsentRequired",
           "User consent is required.",
-          JSON.stringify(consent.output),
+          "oidc.authorization-consent-required",
         )
+        error.errorData = JSON.stringify(consent.output)
+        return error
       },
       op: "oidcApiClientRequest",
       path,
@@ -168,7 +171,11 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       const parsed = v.safeParse(oidcAuthorizationCodeRedeemRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("oidcApiClientAuthorizationCodeRedeem", "The authorization code request is invalid."),
+          resultErrorCodedCreate(
+            "oidcApiClientAuthorizationCodeRedeem",
+            "The authorization code request is invalid.",
+            "oidc.invalid",
+          ),
         )
       return request(
         "/oauth2/authorization-code/redeem",
@@ -181,7 +188,11 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       const parsed = v.safeParse(oidcAuthorizationRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("oidcApiClientAuthorizationRequestAuthorize", "The OIDC authorization request is invalid."),
+          resultErrorCodedCreate(
+            "oidcApiClientAuthorizationRequestAuthorize",
+            "The OIDC authorization request is invalid.",
+            "oidc.invalid-request",
+          ),
         )
       const query = new URLSearchParams()
       for (const [key, value] of Object.entries(parsed.output)) {
@@ -196,7 +207,11 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       const parsed = v.safeParse(oidcAuthorizationConsentRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("oidcApiClientAuthorizationRequestConsent", "The consent request is invalid."),
+          resultErrorCodedCreate(
+            "oidcApiClientAuthorizationRequestConsent",
+            "The consent request is invalid.",
+            "oidc.invalid-request",
+          ),
         )
       return request(
         "/oauth2/consent",
@@ -208,7 +223,9 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     oidcTokenIssue(input: OidcTokenRequest): Promise<Result<OidcTokenResponse>> {
       const parsed = v.safeParse(oidcTokenRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("oidcApiClientTokenIssue", "The token request is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate("oidcApiClientTokenIssue", "The token request is invalid.", "oidc.invalid-request"),
+        )
       return tokenRequest(parsed.output)
     },
 
@@ -224,7 +241,11 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       const parsed = v.safeParse(oidcTokenRevokeRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("oidcApiClientTokenRevoke", "The token revocation request is invalid."),
+          resultErrorCodedCreate(
+            "oidcApiClientTokenRevoke",
+            "The token revocation request is invalid.",
+            "oidc.invalid-request",
+          ),
         )
       return tokenRevokeRequest(parsed.output)
     },
@@ -232,7 +253,9 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     oidcLogout(input: OidcLogoutRequest): Promise<Result<OidcLogoutResponse>> {
       const parsed = v.safeParse(oidcLogoutRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("oidcApiClientLogout", "The logout request is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate("oidcApiClientLogout", "The logout request is invalid.", "oidc.invalid-request"),
+        )
       const query = new URLSearchParams()
       for (const [key, value] of Object.entries(parsed.output)) {
         if (value !== undefined) query.set(key, value)
@@ -240,9 +263,9 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       return request(`/oauth2/logout?${query.toString()}`, { method: "GET" }, oidcLogoutResponseSchema)
     },
 
-    oidcConsentList(realmId: string, userId: string): Promise<Result<OidcConsentListResponse>> {
+    oidcConsentList(realmId: string, userId: string, query?: ListQuery): Promise<Result<OidcConsentListResponse>> {
       return request(
-        managementPath(realmId, `/consents/${encodeURIComponent(userId)}`),
+        oidcListPath(managementPath(realmId, `/consents/${encodeURIComponent(userId)}`), query),
         { method: "GET" },
         oidcConsentListResponseSchema,
       )
@@ -255,7 +278,13 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     ): Promise<Result<OidcConsentRevokeResponse>> {
       const parsed = v.safeParse(oidcConsentRevokeRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("oidcApiClientConsentRevoke", "The consent request is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "oidcApiClientConsentRevoke",
+            "The consent request is invalid.",
+            "oidc.invalid-request",
+          ),
+        )
       return request(
         managementPath(
           realmId,
@@ -269,7 +298,9 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     oidcClientCreate(realmId: string, input: OidcClientCreateRequest): Promise<Result<OidcClientCreateResponse>> {
       const parsed = v.safeParse(oidcClientCreateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("oidcApiClientClientCreate", "The OIDC client request is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate("oidcApiClientClientCreate", "The OIDC client request is invalid.", "oidc.invalid"),
+        )
       return request(
         managementPath(realmId, "/clients"),
         { body: JSON.stringify(parsed.output), method: "POST" },
@@ -285,8 +316,12 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       )
     },
 
-    oidcClientList(realmId: string): Promise<Result<OidcClientListResponse>> {
-      return request(managementPath(realmId, "/clients"), { method: "GET" }, oidcClientListResponseSchema)
+    oidcClientList(realmId: string, query?: ListQuery): Promise<Result<OidcClientListResponse>> {
+      return request(
+        oidcListPath(managementPath(realmId, "/clients"), query),
+        { method: "GET" },
+        oidcClientListResponseSchema,
+      )
     },
 
     oidcClientUpdate(
@@ -296,7 +331,9 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     ): Promise<Result<OidcClientResponse>> {
       const parsed = v.safeParse(oidcClientUpdateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("oidcApiClientClientUpdate", "The OIDC client update is invalid."))
+        return Promise.resolve(
+          resultErrorCodedCreate("oidcApiClientClientUpdate", "The OIDC client update is invalid.", "oidc.invalid"),
+        )
       return request(
         managementPath(realmId, `/clients/${encodeURIComponent(clientId)}`),
         { body: JSON.stringify(parsed.output), method: "PATCH" },
@@ -312,7 +349,11 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       const parsed = v.safeParse(oidcClientLifecycleRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("oidcApiClientClientLifecycleSet", "The OIDC client lifecycle request is invalid."),
+          resultErrorCodedCreate(
+            "oidcApiClientClientLifecycleSet",
+            "The OIDC client lifecycle request is invalid.",
+            "oidc.invalid",
+          ),
         )
       return request(
         managementPath(realmId, `/clients/${encodeURIComponent(clientId)}/lifecycle`),
@@ -333,8 +374,12 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       return request(managementPath(realmId, "/signing-keys"), { method: "POST" }, oidcSigningKeyResponseSchema)
     },
 
-    oidcSigningKeyList(realmId: string): Promise<Result<OidcSigningKeyListResponse>> {
-      return request(managementPath(realmId, "/signing-keys"), { method: "GET" }, oidcSigningKeyListResponseSchema)
+    oidcSigningKeyList(realmId: string, query?: ListQuery): Promise<Result<OidcSigningKeyListResponse>> {
+      return request(
+        oidcListPath(managementPath(realmId, "/signing-keys"), query),
+        { method: "GET" },
+        oidcSigningKeyListResponseSchema,
+      )
     },
 
     oidcSigningKeyLifecycleSet(
@@ -345,7 +390,11 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       const parsed = v.safeParse(oidcSigningKeyLifecycleRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("oidcApiClientSigningKeyLifecycleSet", "The signing key lifecycle request is invalid."),
+          resultErrorCodedCreate(
+            "oidcApiClientSigningKeyLifecycleSet",
+            "The signing key lifecycle request is invalid.",
+            "oidc.invalid",
+          ),
         )
       return request(
         managementPath(realmId, `/signing-keys/${encodeURIComponent(signingKeyId)}/lifecycle`),
@@ -362,4 +411,15 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       return request("/.well-known/jwks.json", { method: "GET" }, oidcJwksSchema)
     },
   }
+}
+
+function oidcListPath(path: string, query: ListQuery | undefined): string {
+  if (query === undefined) return path
+  const params = new URLSearchParams()
+  if (query.pageSize !== undefined) params.set("pageSize", String(query.pageSize))
+  if (query.pageToken !== undefined) params.set("pageToken", query.pageToken)
+  if (query.sortBy !== undefined) params.set("sortBy", query.sortBy)
+  if (query.sortDirection !== undefined) params.set("sortDirection", query.sortDirection)
+  const encoded = params.toString()
+  return encoded.length === 0 ? path : `${path}?${encoded}`
 }

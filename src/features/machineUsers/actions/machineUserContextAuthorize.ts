@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
@@ -17,7 +17,11 @@ export function machineUserContextAuthorize(options: MachineUserContextAuthorize
   const op = "machineUserContextAuthorize"
   if (options.context.kind === "system") return resultCreate(undefined)
   if (options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The machine user is not available in this tenant context.")
+    return resultErrorCreate(
+      op,
+      "The machine user is not available in this tenant context.",
+      "machine-users.tenant-mismatch",
+    )
   return authorizationEnforce({
     actor: options.context.actor,
     realmId: options.realmId,

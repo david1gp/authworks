@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import type { OidcClientRow } from "../persistence/oidcClientTable.js"
 import { oidcClientSchema } from "../public/oidcClientSchema.js"
 
@@ -24,9 +24,9 @@ export function oidcClientPublicViewCreate(row: OidcClientRow): Result<v.InferOu
       trusted: row.trusted === 1,
       updatedAt: row.updatedAt,
     })
-    if (!parsed.success) return resultErrorCreate(op, "The OIDC client is invalid.")
+    if (!parsed.success) return resultErrorCreate(op, "The OIDC client is invalid.", "oidc.client-invalid")
     return resultCreate(parsed.output)
   } catch (_error) {
-    return resultErrorCreate(op, "The OIDC client is invalid.")
+    return resultErrorCreate(op, "The OIDC client is invalid.", "oidc.client-invalid")
   }
 }

@@ -54,11 +54,17 @@ test("CLI realm identifiers use the realm flag and vocabulary", async () => {
 
 test("CLI scoped commands use environment defaults and explicit flags take precedence", async () => {
   const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-cli-scope-defaults-"))
+  const created = serverApplicationCreate({
+    databasePath: join(directory, "zitadel.sqlite"),
+    systemSecret: "cli-scope-secret",
+  })
+  expect(created.success).toBe(true)
+  if (!created.success) {
+    await rm(directory, { force: true, recursive: true })
+    return
+  }
   const server = Bun.serve({
-    fetch: serverApplicationCreate({
-      databasePath: join(directory, "zitadel.sqlite"),
-      systemSecret: "cli-scope-secret",
-    }).fetch,
+    fetch: created.data.fetch,
     port: 0,
   })
 
@@ -89,7 +95,7 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
     )
     expect(realmDefault.exitCode).toBe(0)
     expect(realmDefault.stderr).toBe("")
-    expect(JSON.parse(realmDefault.stdout)).toMatchObject({ users: [] })
+    expect(JSON.parse(realmDefault.stdout)).toMatchObject({ items: [] })
 
     const organizationCreate = await cliRunWithEnvironment(
       { ZITADEL_V2_REALM_ID: realmId },
@@ -202,11 +208,17 @@ test("CLI reports transport errors and succeeds through the composed server", as
   expect(unavailable.stderr).toContain("could not be reached")
 
   const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-cli-surfaces-"))
+  const created = serverApplicationCreate({
+    databasePath: join(directory, "zitadel.sqlite"),
+    systemSecret: "cli-system-secret",
+  })
+  expect(created.success).toBe(true)
+  if (!created.success) {
+    await rm(directory, { force: true, recursive: true })
+    return
+  }
   const server = Bun.serve({
-    fetch: serverApplicationCreate({
-      databasePath: join(directory, "zitadel.sqlite"),
-      systemSecret: "cli-system-secret",
-    }).fetch,
+    fetch: created.data.fetch,
     port: 0,
   })
   try {

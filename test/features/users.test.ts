@@ -88,13 +88,15 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
     const alphaUsers = userList({ context: system, database, realmId: alpha.id })
     expect(alphaUsers.success).toBe(true)
     if (!alphaUsers.success) return
-    expect(alphaUsers.data.users).toHaveLength(1)
+    expect(alphaUsers.data.items).toHaveLength(1)
     expect(userGet({ context: system, database, realmId: beta.id, userId: created.data.user.id })).toEqual({
+      code: "users.not-found",
       errorMessage: "The user was not found.",
       op: "userGet",
       success: false,
     })
     expect(userList({ context: realmTenantContextCreate(alpha.id, "actor"), database, realmId: beta.id })).toEqual({
+      code: "users.tenant-mismatch",
       errorMessage: "The users are not available in this tenant context.",
       op: "userList",
       success: false,
@@ -173,7 +175,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
     const remainingUsers = userList({ context: system, database, realmId: alpha.id })
     expect(remainingUsers.success).toBe(true)
     if (!remainingUsers.success) return
-    expect(remainingUsers.data.users).toHaveLength(0)
+    expect(remainingUsers.data.items).toHaveLength(0)
     expect(userGet({ context: system, database, realmId: alpha.id, userId: created.data.user.id }).success).toBe(false)
     const deletedEvents = database.db
       .select()
@@ -183,6 +185,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
     expect(deletedEvents.at(-1)?.eventType).toBe(userEventTypes.deleted)
     const deletedEventCount = database.db.select().from(storageEventTable).all().length
     expect(userDelete({ context: system, database, realmId: alpha.id, userId: created.data.user.id })).toEqual({
+      code: "users.already-deleted",
       errorMessage: "The user has already been deleted.",
       op: "userDelete",
       success: false,
@@ -195,7 +198,12 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
         realmId: alpha.id,
         userId: created.data.user.id,
       }),
-    ).toEqual({ errorMessage: "The user was not found.", op: "userProfileUpdate", success: false })
+    ).toEqual({
+      code: "users.not-found",
+      errorMessage: "The user was not found.",
+      op: "userProfileUpdate",
+      success: false,
+    })
     expect(
       userEmailVerificationSet({
         context: system,
@@ -204,7 +212,12 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
         realmId: alpha.id,
         userId: created.data.user.id,
       }),
-    ).toEqual({ errorMessage: "The user was not found.", op: "userEmailVerificationSet", success: false })
+    ).toEqual({
+      code: "users.not-found",
+      errorMessage: "The user was not found.",
+      op: "userEmailVerificationSet",
+      success: false,
+    })
     expect(
       userLifecycleSet({
         context: system,
@@ -213,7 +226,12 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
         realmId: alpha.id,
         userId: created.data.user.id,
       }),
-    ).toEqual({ errorMessage: "The user was not found.", op: "userLifecycleSet", success: false })
+    ).toEqual({
+      code: "users.not-found",
+      errorMessage: "The user was not found.",
+      op: "userLifecycleSet",
+      success: false,
+    })
     expect(database.db.select().from(storageEventTable).all()).toHaveLength(deletedEventCount)
   })
 })
@@ -240,6 +258,7 @@ test("user creation rejects normalized duplicate names and emails without changi
         realmId: realm.id,
       }),
     ).toEqual({
+      code: "users.already-exists",
       errorMessage: "A user with that name or email already exists in this realm.",
       op: "userCreate",
       success: false,
@@ -252,6 +271,7 @@ test("user creation rejects normalized duplicate names and emails without changi
         realmId: realm.id,
       }),
     ).toEqual({
+      code: "users.already-exists",
       errorMessage: "A user with that name or email already exists in this realm.",
       op: "userCreate",
       success: false,
@@ -259,7 +279,7 @@ test("user creation rejects normalized duplicate names and emails without changi
     expect(database.db.select().from(storageEventTable).all()).toHaveLength(eventCount)
     const listed = userList({ context: system, database, realmId: realm.id })
     expect(listed.success).toBe(true)
-    if (listed.success) expect(listed.data.users).toHaveLength(1)
+    if (listed.success) expect(listed.data.items).toHaveLength(1)
   })
 })
 
@@ -311,6 +331,7 @@ test("user profile and email verification no-ops preserve the aggregate", async 
       userId: created.data.user.id,
     })
     expect(duplicateVerified).toEqual({
+      code: "users.conflict",
       errorMessage: "The user already has that verification state.",
       op: "userEmailVerificationSet",
       success: false,
@@ -338,6 +359,7 @@ test("user profile and email verification no-ops preserve the aggregate", async 
         userId: created.data.user.id,
       }),
     ).toEqual({
+      code: "users.conflict",
       errorMessage: "The user already has that verification state.",
       op: "userEmailVerificationSet",
       success: false,
@@ -387,7 +409,12 @@ test("user lifecycle rejects same-state changes and supports suspended users", a
         realmId: realm.id,
         userId: created.data.user.id,
       }),
-    ).toEqual({ errorMessage: "The user lifecycle transition is not allowed.", op: "userLifecycleSet", success: false })
+    ).toEqual({
+      code: "users.lifecycle-forbidden",
+      errorMessage: "The user lifecycle transition is not allowed.",
+      op: "userLifecycleSet",
+      success: false,
+    })
     expect(database.db.select().from(storageEventTable).all()).toHaveLength(eventCount)
 
     const active = userLifecycleSet({
@@ -507,10 +534,16 @@ test("user routes and API client enforce public schemas and authorization", asyn
     const created = await client.userCreate(realm.id, createInput("api-user", "api@example.com"))
     expect(created.success).toBe(true)
     if (!created.success) return
+    const missing = await app.request(`http://server.test/system/realms/${realm.id}/users/missing-user`, {
+      headers: { authorization: "Bearer system-secret" },
+    })
+    expect(missing.status).toBe(404)
+    const missingBody = (await missing.json()) as { error: { code: string } }
+    expect(missingBody.error.code).toBe("users.not-found")
     const listed = await client.userList(realm.id)
     expect(listed.success).toBe(true)
     if (!listed.success) return
-    expect(listed.data.users).toHaveLength(1)
+    expect(listed.data.items).toHaveLength(1)
     const profile = await client.userProfileUpdate(realm.id, created.data.user.id, { displayName: "API User" })
     expect(profile.success).toBe(true)
     const unauthorized = await userApiClientCreate({

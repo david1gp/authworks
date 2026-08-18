@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -37,15 +37,24 @@ export function externalIdentityLinkComplete(
 ): Result<ExternalIdentityLinkCompleteResponse> {
   const op = "externalIdentityLinkComplete"
   const parsed = v.safeParse(externalIdentityLinkCompleteRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "Explicit link confirmation is required.")
+  if (!parsed.success)
+    return resultErrorCreate(op, "Explicit link confirmation is required.", "external-identities.invalid")
   if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
-    return resultErrorCreate(op, "The session does not belong to this user.")
+    return resultErrorCreate(op, "The session does not belong to this user.", "external-identities.forbidden")
   if (options.session.assurance === "none")
-    return resultErrorCreate(op, "A recent authentication is required before linking an external identity.")
+    return resultErrorCreate(
+      op,
+      "A recent authentication is required before linking an external identity.",
+      "external-identities.unauthorized",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0 || now - options.session.createdAt > externalIdentityRecentAuthenticationMs)
-    return resultErrorCreate(op, "A recent authentication is required before linking an external identity.")
+    return resultErrorCreate(
+      op,
+      "A recent authentication is required before linking an external identity.",
+      "external-identities.unauthorized",
+    )
   const repository = externalIdentityRepositoryCreate(options.database.db)
   const pending = repository.externalIdentityOAuthTransactionGetByConfirmationToken(
     options.realmId,
@@ -62,15 +71,15 @@ export function externalIdentityLinkComplete(
     pending.data.expiresAt <= now ||
     pending.data.externalSubject === null
   )
-    return resultErrorCreate(op, "The external identity link confirmation is invalid.")
+    return resultErrorCreate(op, "The external identity link confirmation is invalid.", "external-identities.invalid")
   const pendingRow = pending.data
   if (pendingRow.externalSubject === null)
-    return resultErrorCreate(op, "The external identity link confirmation is invalid.")
+    return resultErrorCreate(op, "The external identity link confirmation is invalid.", "external-identities.invalid")
   const externalSubject = pendingRow.externalSubject
   const provider = repository.externalIdentityProviderGet(options.realmId, pending.data.providerId)
   if (!provider.success) return provider
   if (provider.data === null || !provider.data.enabled || provider.data.redirectUri !== pending.data.redirectUri)
-    return resultErrorCreate(op, "The external identity link confirmation is invalid.")
+    return resultErrorCreate(op, "The external identity link confirmation is invalid.", "external-identities.invalid")
   const providerRow = provider.data
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
@@ -81,13 +90,17 @@ export function externalIdentityLinkComplete(
     )
     if (!current.success) return current
     if (current.data === null || current.data.version !== pendingRow.version)
-      return resultErrorCreate(op, "The external identity link confirmation is invalid.")
+      return resultErrorCreate(op, "The external identity link confirmation is invalid.", "external-identities.invalid")
     const duplicate = currentRepository.externalIdentityGetByProviderSubject(pendingRow.providerId, externalSubject)
     if (!duplicate.success) return duplicate
     if (duplicate.data !== null) {
       if (duplicate.data.userId === options.userId)
-        return resultErrorCreate(op, "The external identity is already linked.")
-      return resultErrorCreate(op, "The external identity is already linked to another account.")
+        return resultErrorCreate(op, "The external identity is already linked.", "external-identities.already-exists")
+      return resultErrorCreate(
+        op,
+        "The external identity is already linked to another account.",
+        "external-identities.already-exists",
+      )
     }
     const identity = currentRepository.externalIdentityCreate({
       createdAt: now,
@@ -103,10 +116,16 @@ export function externalIdentityLinkComplete(
       username: pendingRow.externalUsername,
       version: 1,
     })
-    if (!identity.success) return resultErrorCreate(op, "The external identity is already linked to another account.")
+    if (!identity.success)
+      return resultErrorCreate(
+        op,
+        "The external identity is already linked to another account.",
+        "external-identities.already-exists",
+      )
     const consumed = currentRepository.externalIdentityOAuthTransactionConsume(pendingRow.id, pendingRow.version, now)
     if (!consumed.success) return consumed
-    if (consumed.data === null) return resultErrorCreate(op, "The external identity link confirmation is invalid.")
+    if (consumed.data === null)
+      return resultErrorCreate(op, "The external identity link confirmation is invalid.", "external-identities.invalid")
     const payload = v.safeParse(externalIdentityEventPayloadSchema, {
       action: "linked",
       externalSubject: identity.data.externalSubject,
@@ -115,7 +134,12 @@ export function externalIdentityLinkComplete(
       providerType: providerRow.type,
       userId: options.userId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The external identity event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(
+        op,
+        "The external identity event payload is invalid.",
+        "external-identities.event-invalid",
+      )
     const identityEvent = storageEventAppend(
       transaction,
       {

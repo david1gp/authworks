@@ -1,12 +1,14 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import type { OrganizationRole } from "./organizationRoleSchema.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 
-export function organizationRolesNormalize(input: readonly OrganizationRole[]): Result<OrganizationRole[]> {
+export function organizationRolesNormalize(input: readonly OrganizationRoleId[]): Result<OrganizationRoleId[]> {
   const op = "organizationRolesNormalize"
   const roles = [...new Set(input)]
-  if (roles.length === 0) return resultErrorCreate(op, "At least one organization role is required.")
-  if (roles.length !== input.length) return resultErrorCreate(op, "Organization roles must be unique.")
+  if (roles.length === 0)
+    return resultErrorCodedCreate(op, "At least one organization role is required.", "organizations.invalid")
+  if (roles.length !== input.length)
+    return resultErrorCodedCreate(op, "Organization roles must be unique.", "organizations.invalid")
   return resultCreate(roles.sort())
 }

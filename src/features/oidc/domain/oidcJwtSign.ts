@@ -1,7 +1,7 @@
 import { createPrivateKey, createSign } from "node:crypto"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcBase64UrlEncode } from "./oidcBase64UrlEncode.js"
 import { oidcBase64UrlDecode } from "./oidcBase64UrlDecode.js"
 
@@ -16,7 +16,7 @@ export function oidcJwtSign(
     const encodedPayload = oidcBase64UrlEncode(JSON.stringify(payload))
     const input = `${encodedHeader}.${encodedPayload}`
     const privateKey = oidcBase64UrlDecode(privateKeyEncoded)
-    if (privateKey === null) return resultErrorCreate(op, "The signing key is invalid.")
+    if (privateKey === null) return resultErrorCreate(op, "The signing key is invalid.", "oidc.invalid")
     const signer = createSign("RSA-SHA256")
     signer.update(input)
     signer.end()
@@ -24,6 +24,6 @@ export function oidcJwtSign(
       `${input}.${oidcBase64UrlEncode(signer.sign(createPrivateKey({ format: "der", key: privateKey, type: "pkcs8" })))} `.trim(),
     )
   } catch (_error) {
-    return resultErrorCreate(op, "The token could not be signed.")
+    return resultErrorCreate(op, "The token could not be signed.", "oidc.write-failed")
   }
 }

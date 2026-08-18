@@ -2,7 +2,7 @@ import { verifyRegistrationResponse, type VerifiedRegistrationResponse } from "@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -37,12 +37,14 @@ export async function passkeyRegistrationComplete(
 ): Promise<Result<PasskeyRegistrationCompleteResponse>> {
   const op = "passkeyRegistrationComplete"
   const input = v.safeParse(passkeyRegistrationCompleteRequestSchema, options.input)
-  if (!input.success) return resultErrorCreate(op, "The passkey registration response is invalid.")
+  if (!input.success) return resultErrorCreate(op, "The passkey registration response is invalid.", "passkeys.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The passkey timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The passkey timestamp is invalid.", "passkeys.invalid-timestamp")
   const configuration = passkeyConfigurationValidate(options.rpId, options.origins, options.rpName)
-  if (!configuration.success) return resultErrorCreate(op, "The passkey registration ceremony is invalid.")
+  if (!configuration.success)
+    return resultErrorCreate(op, "The passkey registration ceremony is invalid.", "passkeys.invalid")
   const tokenHash = passkeyTokenHashCreate(input.output.token)
   const ceremony = passkeyRepositoryCreate(options.database.db).passkeyCeremonyGetByTokenHash(
     options.realmId,
@@ -57,16 +59,17 @@ export async function passkeyRegistrationComplete(
     ceremony.data.userId === null ||
     (options.userId !== undefined && ceremony.data.userId !== options.userId)
   )
-    return resultErrorCreate(op, "The passkey registration ceremony is invalid.")
+    return resultErrorCreate(op, "The passkey registration ceremony is invalid.", "passkeys.invalid")
   const origins = passkeyOriginsParse(ceremony.data.origins)
-  if (origins === null) return resultErrorCreate(op, "The passkey registration ceremony is invalid.")
+  if (origins === null)
+    return resultErrorCreate(op, "The passkey registration ceremony is invalid.", "passkeys.invalid")
   const storedConfiguration = passkeyConfigurationValidate(ceremony.data.rpId, origins, options.rpName)
   if (
     !storedConfiguration.success ||
     storedConfiguration.data.rpId !== options.rpId ||
     !passkeyOriginsEqual(storedConfiguration.data.origins, configuration.data.origins)
   )
-    return resultErrorCreate(op, "The passkey registration ceremony is invalid.")
+    return resultErrorCreate(op, "The passkey registration ceremony is invalid.", "passkeys.invalid")
   let verified: VerifiedRegistrationResponse
   try {
     verified = await verifyRegistrationResponse({
@@ -79,13 +82,14 @@ export async function passkeyRegistrationComplete(
       response: input.output.response,
     })
   } catch (_error) {
-    return resultErrorCreate(op, "The passkey registration response is invalid.")
+    return resultErrorCreate(op, "The passkey registration response is invalid.", "passkeys.invalid")
   }
-  if (!verified.verified) return resultErrorCreate(op, "The passkey registration response is invalid.")
+  if (!verified.verified)
+    return resultErrorCreate(op, "The passkey registration response is invalid.", "passkeys.invalid")
   if (verified.registrationInfo.credential.id.length > 500)
-    return resultErrorCreate(op, "The passkey credential ID is invalid.")
+    return resultErrorCreate(op, "The passkey credential ID is invalid.", "passkeys.invalid")
   if (verified.registrationInfo.credential.id !== input.output.response.rawId)
-    return resultErrorCreate(op, "The passkey credential ID is invalid.")
+    return resultErrorCreate(op, "The passkey credential ID is invalid.", "passkeys.invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) =>
     passkeyRegistrationCompleteTransaction({
@@ -126,7 +130,7 @@ function passkeyRegistrationCompleteTransaction(
     ceremony.data.expiresAt <= options.now ||
     ceremony.data.userId === null
   )
-    return resultErrorCreate(op, "The passkey registration ceremony is invalid.")
+    return resultErrorCreate(op, "The passkey registration ceremony is invalid.", "passkeys.invalid")
   const credential = options.verified.registrationInfo.credential
   const consumed = repository.passkeyCeremonyConsume(
     options.realmId,
@@ -136,7 +140,8 @@ function passkeyRegistrationCompleteTransaction(
     options.now,
   )
   if (!consumed.success) return consumed
-  if (consumed.data === null) return resultErrorCreate(op, "The passkey registration ceremony is invalid.")
+  if (consumed.data === null)
+    return resultErrorCreate(op, "The passkey registration ceremony is invalid.", "passkeys.invalid")
   const created = repository.passkeyCredentialCreate({
     aaguid: options.verified.registrationInfo.aaguid,
     backedUp: options.verified.registrationInfo.credentialBackedUp ? 1 : 0,
@@ -154,7 +159,8 @@ function passkeyRegistrationCompleteTransaction(
     userId: ceremony.data.userId,
     version: 1,
   })
-  if (!created.success) return resultErrorCreate(op, "The passkey credential is already registered.")
+  if (!created.success)
+    return resultErrorCreate(op, "The passkey credential is already registered.", "passkeys.already-exists")
   const credentialPayload = v.safeParse(passkeyEventPayloadSchema, {
     backedUp: options.verified.registrationInfo.credentialBackedUp,
     credentialId: created.data.id,
@@ -162,7 +168,8 @@ function passkeyRegistrationCompleteTransaction(
     userId: ceremony.data.userId,
     userVerified: options.verified.registrationInfo.userVerified,
   })
-  if (!credentialPayload.success) return resultErrorCreate(op, "The passkey event payload is invalid.")
+  if (!credentialPayload.success)
+    return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
   const credentialEvent = storageEventAppend(
     options.database,
     {
@@ -187,7 +194,8 @@ function passkeyRegistrationCompleteTransaction(
     purpose: ceremony.data.purpose,
     userId: ceremony.data.userId,
   })
-  if (!ceremonyPayload.success) return resultErrorCreate(op, "The passkey event payload is invalid.")
+  if (!ceremonyPayload.success)
+    return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
   const ceremonyEvent = storageEventAppend(
     options.database,
     {

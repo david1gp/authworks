@@ -17,6 +17,7 @@ import { organizationMembershipList } from "../../src/features/organizations/act
 import { organizationMembershipRemove } from "../../src/features/organizations/actions/organizationMembershipRemove.js"
 import { organizationMembershipUpdate } from "../../src/features/organizations/actions/organizationMembershipUpdate.js"
 import { organizationSwitch } from "../../src/features/organizations/actions/organizationSwitch.js"
+import { organizationUpdate } from "../../src/features/organizations/actions/organizationUpdate.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
 import { organizationEventTypes } from "../../src/features/organizations/events/organizationEventTypes.js"
 import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
@@ -97,6 +98,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
       }),
     ).toEqual({
       errorMessage: "The memberships are not available in this tenant context.",
+      code: "organizations.tenant-mismatch",
       op: "organizationMembershipList",
       success: false,
     })
@@ -118,6 +120,16 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
     })
     expect(added.success).toBe(true)
     if (!added.success) return
+    expect(
+      organizationMembershipUpdate({
+        context: owner,
+        database,
+        input: {} as never,
+        realmId: alpha.id,
+        membershipId: added.data.membership.id,
+        organizationId: created.data.organization.id,
+      }),
+    ).toMatchObject({ code: "organizations.invalid", success: false })
     expect(
       organizationMembershipCreate({
         context: owner,
@@ -163,7 +175,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
     })
     expect(memberships.success).toBe(true)
     if (!memberships.success) return
-    const ownerMembership = memberships.data.memberships.find((membership) => membership.userId === "user-alpha")
+    const ownerMembership = memberships.data.items.find((membership) => membership.userId === "user-alpha")
     expect(ownerMembership).toBeDefined()
     if (ownerMembership === undefined) return
     const eventCount = database.db.select().from(storageEventTable).all().length
@@ -225,7 +237,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
     const listed = organizationList({ context: system, database, realmId: alpha.id })
     expect(listed.success).toBe(true)
     if (!listed.success) return
-    expect(listed.data.organizations).toEqual([])
+    expect(listed.data.items).toEqual([])
   })
 })
 
@@ -342,6 +354,39 @@ test("organization names and lifecycle transitions enforce their preconditions",
         organizationId: "missing-organization",
       }).success,
     ).toBe(false)
+  })
+})
+
+test("organization lists paginate and PATCH rejects empty input", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "pagination.example.com")
+    const context = realmSystemContextCreate("system")
+    for (const name of ["First", "Second", "Third"]) {
+      expect(organizationCreate({ context, database, input: { name }, realmId: realm.id }).success).toBe(true)
+    }
+    const first = organizationList({ context, database, realmId: realm.id, query: { pageSize: 2 } })
+    expect(first.success).toBe(true)
+    if (!first.success || first.data.nextPageToken === undefined) return
+    expect(first.data.items).toHaveLength(2)
+    const second = organizationList({
+      context,
+      database,
+      realmId: realm.id,
+      query: { pageSize: 2, pageToken: first.data.nextPageToken },
+    })
+    expect(second.success).toBe(true)
+    if (!second.success) return
+    expect(second.data.items).toHaveLength(1)
+    expect(new Set([...first.data.items, ...second.data.items].map((item) => item.id)).size).toBe(3)
+
+    const emptyPatch = organizationUpdate({
+      context,
+      database,
+      input: {},
+      realmId: realm.id,
+      organizationId: "missing",
+    })
+    expect(emptyPatch).toMatchObject({ code: "organizations.empty-patch", success: false })
   })
 })
 
@@ -605,10 +650,14 @@ test("organization routes and API clients use the same public contracts", async 
     const listed = await client.organizationList(realm.id)
     expect(listed.success).toBe(true)
     if (!listed.success) return
+    const emptyPatch = await client.organizationUpdate(realm.id, created.data.organization.id, {})
+    expect(emptyPatch).toMatchObject({ code: "organizations.empty-patch", success: false })
+    const missing = await client.organizationGet(realm.id, "missing-organization")
+    expect(missing).toMatchObject({ code: "organizations.not-found", statusCode: 404, success: false })
     const roles = await client.organizationRoleList()
     expect(roles.success).toBe(true)
     if (!roles.success) return
-    expect(roles.data.roles.map((role) => role.id)).toEqual(["owner", "admin", "member", "guest"])
+    expect(roles.data.items.map((role) => role.id)).toEqual(["owner", "admin", "member", "guest"])
     const unauthorized = await organizationApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),

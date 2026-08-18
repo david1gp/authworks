@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { Result } from "#result"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
@@ -37,11 +37,12 @@ type PasskeyRouteContext = {
     (key: "authorizationActor"): { actorId: string }
     (key: "session"): { id: string }
   }
-  readonly json: (body: unknown, status?: ContentfulStatusCode) => Response
+  readonly json: (body: unknown, status?: number) => Response
   readonly req: {
     readonly header: (name: string) => string | undefined
     readonly json: <T>() => Promise<T>
     readonly param: (name: string) => string
+    readonly query: () => Record<string, string>
   }
 }
 
@@ -59,7 +60,7 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
       ? v.safeParse(passkeyRegistrationStartRequestSchema, body.data)
       : v.safeParse(passkeyRegistrationStartRequestSchema, {})
     if (!input.success)
-      return passkeyErrorResponseCreate(context, "The passkey registration request is invalid.", "bad_request")
+      return passkeyErrorResponseCreate(context, "The passkey registration request is invalid.", "passkeys.invalid")
     return passkeyResultResponseCreate(
       context,
       await passkeyRegistrationStart({
@@ -76,10 +77,10 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
 
   app.post("/realms/:realmId/passkeys/registration/complete", protectedMiddleware, async (context) => {
     const body = await passkeyJsonRead(context)
-    if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "bad_request")
+    if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "passkeys.invalid")
     const input = v.safeParse(passkeyRegistrationCompleteRequestSchema, body.data)
     if (!input.success)
-      return passkeyErrorResponseCreate(context, "The passkey registration response is invalid.", "bad_request")
+      return passkeyErrorResponseCreate(context, "The passkey registration response is invalid.", "passkeys.invalid")
     return passkeyResultResponseCreate(
       context,
       await passkeyRegistrationComplete({
@@ -103,13 +104,13 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
       context.req.url,
       context.req.param("realmId"),
     )
-    if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "not_found")
+    if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "passkeys.not-found")
     const body = await passkeyJsonRead(context)
     const input = body.success
       ? v.safeParse(passkeyAuthenticationStartRequestSchema, body.data)
       : v.safeParse(passkeyAuthenticationStartRequestSchema, {})
     if (!input.success)
-      return passkeyErrorResponseCreate(context, "The passkey authentication request is invalid.", "bad_request")
+      return passkeyErrorResponseCreate(context, "The passkey authentication request is invalid.", "passkeys.invalid")
     return passkeyResultResponseCreate(
       context,
       await passkeyAuthenticationStart({
@@ -131,12 +132,12 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
       context.req.url,
       context.req.param("realmId"),
     )
-    if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "not_found")
+    if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "passkeys.not-found")
     const body = await passkeyJsonRead(context)
-    if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "bad_request")
+    if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "passkeys.invalid")
     const input = v.safeParse(passkeyAuthenticationCompleteRequestSchema, body.data)
     if (!input.success)
-      return passkeyErrorResponseCreate(context, "The passkey authentication response is invalid.", "bad_request")
+      return passkeyErrorResponseCreate(context, "The passkey authentication response is invalid.", "passkeys.invalid")
     return passkeyResultResponseCreate(
       context,
       await passkeyAuthenticationComplete({
@@ -193,21 +194,15 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
   )
 
   app.get("/realms/:realmId/passkeys", protectedMiddleware, (context) =>
-    passkeyResultResponseCreate(
-      context,
-      passkeyCredentialList({
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        userId: context.get("authorizationActor").actorId,
-      }),
-    ),
+    passkeyCredentialListRoute(context, options.database),
   )
 
   app.delete("/realms/:realmId/passkeys", strongMiddleware, async (context) => {
     const body = await passkeyJsonRead(context)
-    if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "bad_request")
+    if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "passkeys.invalid")
     const input = v.safeParse(passkeyCredentialRevokeRequestSchema, body.data)
-    if (!input.success) return passkeyErrorResponseCreate(context, "The passkey credential is invalid.", "bad_request")
+    if (!input.success)
+      return passkeyErrorResponseCreate(context, "The passkey credential is invalid.", "passkeys.invalid")
     return passkeyResultResponseCreate(
       context,
       passkeyCredentialRevoke({
@@ -250,10 +245,10 @@ async function passkeyAuthenticationCompleteRoute(
   purpose: "mfa" | "step_up",
 ) {
   const body = await passkeyJsonRead(context)
-  if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "bad_request")
+  if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "passkeys.invalid")
   const input = v.safeParse(passkeyAuthenticationCompleteRequestSchema, body.data)
   if (!input.success)
-    return passkeyErrorResponseCreate(context, "The passkey authentication response is invalid.", "bad_request")
+    return passkeyErrorResponseCreate(context, "The passkey authentication response is invalid.", "passkeys.invalid")
   return passkeyResultResponseCreate(
     context,
     await passkeyAuthenticationComplete({
@@ -283,23 +278,37 @@ function passkeyBearerTokenGet(authorization: string | undefined): string {
   return /^Bearer (.+)$/.exec(authorization)?.[1] ?? ""
 }
 
-function passkeyErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  message: string,
-  code: string,
-) {
-  return context.json(httpErrorResponseCreate(code, message), httpErrorStatusGet(code) as ContentfulStatusCode)
+function passkeyErrorResponseCreate(context: PasskeyRouteContext, message: string, code = "passkeys.invalid") {
+  return httpResultResponseCreate(context, {
+    code,
+    errorMessage: message,
+    op: "passkeyServerRequest",
+    success: false,
+  } as Result<unknown>)
 }
 
 function passkeyResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
+  context: PasskeyRouteContext,
   result:
-    | { data?: T; errorMessage?: string; success: boolean }
-    | Promise<{ data?: T; errorMessage?: string; success: boolean }>,
+    | { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean }
+    | Promise<{ data?: T; errorMessage?: string; op?: string; code?: string; success: boolean }>,
 ) {
   return Promise.resolve(result).then((resolved) => {
-    if (!resolved.success)
-      return passkeyErrorResponseCreate(context, resolved.errorMessage ?? "The passkey request failed.", "bad_request")
-    return context.json(resolved.data)
+    if (!resolved.success) return httpResultResponseCreate(context, resolved as Result<unknown>)
+    return httpResultResponseCreate(context, resolved as Result<T>)
   })
+}
+
+function passkeyCredentialListRoute(context: PasskeyRouteContext, database: StorageDatabase) {
+  const query = listQueryFromSearchParams(context.req.query())
+  if (!query.success) return httpResultResponseCreate(context, query as Result<unknown>)
+  return passkeyResultResponseCreate(
+    context,
+    passkeyCredentialList({
+      database,
+      query: query.data,
+      realmId: context.req.param("realmId"),
+      userId: context.get("authorizationActor").actorId,
+    }),
+  )
 }

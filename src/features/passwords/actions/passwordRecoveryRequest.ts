@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -19,7 +19,7 @@ import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreat
 import { type PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliverySchema.js"
 import { type PasswordRecoveryRequest, passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
 import type { PasswordRecoveryResponse } from "../public/passwordRecoveryResponseSchema.js"
-import { organizationLoginPolicyResolve } from "../../organizations/public/organizationLoginPolicyResolve.js"
+import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 
 type PasswordRecoveryRequestOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
@@ -34,11 +34,11 @@ type PasswordRecoveryRequestOptions = {
 export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions): Result<PasswordRecoveryResponse> {
   const op = "passwordRecoveryRequest"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "passwords.tenant-required")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The recovery is not available in this tenant context.")
+    return resultErrorCreate(op, "The recovery is not available in this tenant context.", "passwords.tenant-mismatch")
   const parsed = v.safeParse(passwordRecoveryRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The recovery request is invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The recovery request is invalid.", "passwords.invalid")
   const email = userEmailNormalize(parsed.output.email)
   if (!email.success) return resultCreate({ accepted: true })
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
@@ -57,7 +57,8 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   const userRow = user.data
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The recovery timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The recovery timestamp is invalid.", "passwords.invalid-timestamp")
   const token = passwordTokenCreate(runtime)
   const challengeId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
@@ -77,9 +78,11 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
     })
     if (!challenge.success) return challenge
     const eventVersion = txRepository.passwordEventVersionGet(options.realmId, userRow.id)
-    if (!eventVersion.success) return resultErrorCreate(op, "The recovery event version is invalid.")
+    if (!eventVersion.success)
+      return resultErrorCreate(op, "The recovery event version is invalid.", "passwords.invalid")
     const payload = v.safeParse(passwordRecoveryEventPayloadSchema, { accepted: true })
-    if (!payload.success) return resultErrorCreate(op, "The recovery event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The recovery event payload is invalid.", "passwords.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -38,11 +38,12 @@ export function organizationInvitationAccept(
 ): Result<{ membership: OrganizationMembership }> {
   const op = "organizationInvitationAccept"
   const parsed = v.safeParse(organizationInvitationAcceptRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The organization invitation acceptance is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The organization invitation acceptance is invalid.", "organizations.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const acceptedAt = runtime.now()
   if (!Number.isSafeInteger(acceptedAt) || acceptedAt < 0)
-    return resultErrorCreate(op, "The invitation timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The invitation timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const outcome = storageTransactionRun<OrganizationInvitationAcceptOutcome>(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
@@ -50,13 +51,14 @@ export function organizationInvitationAccept(
       organizationInvitationTokenHashCreate(parsed.output.token),
     )
     if (!invitation.success) return invitation
-    if (invitation.data === null) return resultErrorCreate(op, "The organization invitation is invalid.")
+    if (invitation.data === null)
+      return resultErrorCodedCreate(op, "The organization invitation is invalid.", "organizations.not-found")
     if (invitation.data.status !== "pending")
-      return resultErrorCreate(op, "The organization invitation is no longer pending.")
+      return resultErrorCodedCreate(op, "The organization invitation is no longer pending.", "organizations.pending")
     const organization = repository.organizationGet(invitation.data.organizationId)
     if (!organization.success) return organization
     if (organization.data === null || organization.data.status !== "active")
-      return resultErrorCreate(op, "The organization is not active or was not found.")
+      return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
     if (acceptedAt >= invitation.data.expiresAt) {
       const expired = repository.organizationInvitationUpdate(invitation.data.id, {
         status: "expired",
@@ -64,12 +66,14 @@ export function organizationInvitationAccept(
         version: invitation.data.version + 1,
       })
       if (!expired.success) return expired
-      if (expired.data === null) return resultErrorCreate(op, "The organization invitation was not found.")
+      if (expired.data === null)
+        return resultErrorCodedCreate(op, "The organization invitation was not found.", "organizations.not-found")
       const expiredPayload = v.safeParse(organizationInvitationStatusEventPayloadSchema, {
         invitationId: expired.data.id,
         status: "expired",
       })
-      if (!expiredPayload.success) return resultErrorCreate(op, "The invitation event payload is invalid.")
+      if (!expiredPayload.success)
+        return resultErrorCodedCreate(op, "The invitation event payload is invalid.", "organizations.event-invalid")
       const expiredEvent = storageEventAppend(
         transaction,
         {
@@ -122,7 +126,8 @@ export function organizationInvitationAccept(
         roles: invitationRoles.data,
         userId: parsed.output.userId,
       })
-      if (!membershipPayload.success) return resultErrorCreate(op, "The membership event payload is invalid.")
+      if (!membershipPayload.success)
+        return resultErrorCodedCreate(op, "The membership event payload is invalid.", "organizations.event-invalid")
       const membershipEvent = storageEventAppend(
         transaction,
         {
@@ -153,7 +158,8 @@ export function organizationInvitationAccept(
         version: existing.data.version + 1,
       })
       if (!updated.success) return updated
-      if (updated.data === null) return resultErrorCreate(op, "The organization membership was not found.")
+      if (updated.data === null)
+        return resultErrorCodedCreate(op, "The organization membership was not found.", "organizations.not-found")
       const view = organizationMembershipPublicViewCreate(updated.data)
       if (!view.success) return view
       membership = view.data
@@ -162,7 +168,8 @@ export function organizationInvitationAccept(
         roles: combinedRoles.data,
         userId: updated.data.userId,
       })
-      if (!membershipPayload.success) return resultErrorCreate(op, "The membership event payload is invalid.")
+      if (!membershipPayload.success)
+        return resultErrorCodedCreate(op, "The membership event payload is invalid.", "organizations.event-invalid")
       const membershipEvent = storageEventAppend(
         transaction,
         {
@@ -190,13 +197,15 @@ export function organizationInvitationAccept(
       version: invitation.data.version + 1,
     })
     if (!accepted.success) return accepted
-    if (accepted.data === null) return resultErrorCreate(op, "The organization invitation was not found.")
+    if (accepted.data === null)
+      return resultErrorCodedCreate(op, "The organization invitation was not found.", "organizations.not-found")
     const acceptedPayload = v.safeParse(organizationInvitationStatusEventPayloadSchema, {
       invitationId: accepted.data.id,
       status: "accepted",
       userId: parsed.output.userId,
     })
-    if (!acceptedPayload.success) return resultErrorCreate(op, "The invitation event payload is invalid.")
+    if (!acceptedPayload.success)
+      return resultErrorCodedCreate(op, "The invitation event payload is invalid.", "organizations.event-invalid")
     const acceptedEvent = storageEventAppend(
       transaction,
       {
@@ -218,7 +227,9 @@ export function organizationInvitationAccept(
     return resultCreate({ expired: false, membership })
   })
   if (!outcome.success) return outcome
-  if (outcome.data.expired) return resultErrorCreate(op, "The organization invitation has expired.")
-  if (outcome.data.membership === undefined) return resultErrorCreate(op, "The membership could not be created.")
+  if (outcome.data.expired)
+    return resultErrorCodedCreate(op, "The organization invitation has expired.", "organizations.expired")
+  if (outcome.data.membership === undefined)
+    return resultErrorCodedCreate(op, "The membership could not be created.", "organizations.write-failed")
   return resultCreate({ membership: outcome.data.membership })
 }

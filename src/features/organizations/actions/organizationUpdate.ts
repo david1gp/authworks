@@ -1,7 +1,8 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { patchInputParse } from "../../../platform/http/patchInputParse.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,23 +34,31 @@ type OrganizationUpdateOptions = {
 
 export function organizationUpdate(options: OrganizationUpdateOptions): Result<{ organization: Organization }> {
   const op = "organizationUpdate"
-  const parsed = v.safeParse(organizationUpdateRequestSchema, options.input)
-  if (!parsed.success || parsed.output.name === undefined)
-    return resultErrorCreate(op, "The organization update is invalid.")
-  const requestedName = parsed.output.name
+  const parsed = patchInputParse(
+    op,
+    organizationUpdateRequestSchema,
+    options.input,
+    "organizations.empty-patch",
+    "organizations.invalid",
+  )
+  if (!parsed.success) return parsed
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The organization is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The organization is not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The organization timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The organization timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
     const current = repository.organizationGet(options.organizationId)
     if (!current.success) return current
     if (current.data === null || current.data.realmId !== options.realmId || current.data.status !== "active")
-      return resultErrorCreate(op, "The organization was not found.")
+      return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: current.data,
@@ -57,17 +66,24 @@ export function organizationUpdate(options: OrganizationUpdateOptions): Result<{
       requiredPermission: "organization.manage",
     })
     if (!authorized.success) return authorized
-    const name = organizationNameNormalize(requestedName)
+    const name = organizationNameNormalize(parsed.data.name ?? current.data.name)
     if (!name.success) return name
     const updated = repository.organizationUpdate(options.organizationId, {
       name: name.data,
       updatedAt,
       version: current.data.version + 1,
     })
-    if (!updated.success) return resultErrorCreate(op, "An organization with that name already exists in this realm.")
-    if (updated.data === null) return resultErrorCreate(op, "The organization was not found.")
+    if (!updated.success)
+      return resultErrorCodedCreate(
+        op,
+        "An organization with that name already exists in this realm.",
+        "organizations.already-exists",
+      )
+    if (updated.data === null)
+      return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
     const payload = v.safeParse(organizationUpdatedEventPayloadSchema, { name: name.data })
-    if (!payload.success) return resultErrorCreate(op, "The organization event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The organization event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

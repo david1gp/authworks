@@ -1,1 +1,28 @@
-export { authorizationPermissionDefinitions } from "../domain/authorizationPermissionDefinitions.js"
+import type { AuthorizationPermission } from "./authorizationPermissionSchema.js"
+
+export const authorizationPermissionDefinitions = {
+  realmRead: "realm.read",
+  realmWrite: "realm.write",
+  machineCredentialManage: "machine.credential.manage",
+  machineUserManage: "machine.user.manage",
+  organizationManage: "organization.manage",
+  organizationMembersManage: "organization.members.manage",
+  organizationRead: "organization.read",
+  organizationSwitch: "organization.switch",
+  projectAppDelete: "project.app.delete",
+  projectAppRead: "project.app.read",
+  projectAppWrite: "project.app.write",
+  projectCreate: "project.create",
+  projectDelete: "project.delete",
+  projectGrantCreate: "project.grant.create",
+  projectGrantDelete: "project.grant.delete",
+  projectGrantRead: "project.grant.read",
+  projectGrantWrite: "project.grant.write",
+  projectRead: "project.read",
+  projectRoleRead: "project.role.read",
+  projectRoleWrite: "project.role.write",
+  projectWrite: "project.write",
+  userManage: "user.manage",
+  userImpersonate: "user.impersonate",
+  userRead: "user.read",
+} as const satisfies Record<string, AuthorizationPermission>

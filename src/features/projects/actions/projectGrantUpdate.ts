@@ -1,7 +1,8 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { patchInputParse } from "../../../platform/http/patchInputParse.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -10,6 +11,7 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectGrantPublicViewCreate } from "../domain/projectGrantPublicViewCreate.js"
+import { projectRoleKeysDecode } from "../domain/projectRoleKeysDecode.js"
 import { projectRoleKeysEncode } from "../domain/projectRoleKeysEncode.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectGrantUpdatedEventPayloadSchema } from "../events/projectGrantUpdatedEventPayloadSchema.js"
@@ -34,12 +36,12 @@ type ProjectGrantUpdateOptions = {
 
 export function projectGrantUpdate(options: ProjectGrantUpdateOptions): Result<{ grant: ProjectGrant }> {
   const op = "projectGrantUpdate"
-  const parsed = v.safeParse(projectGrantUpdateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The project grant update is invalid.")
+  const parsed = patchInputParse(op, projectGrantUpdateRequestSchema, options.input, "projects.empty-patch")
+  if (!parsed.success) return parsed
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The project grant timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The project grant timestamp is invalid.", "projects.timestamp-invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = projectRepositoryCreate(transaction)
@@ -50,11 +52,11 @@ export function projectGrantUpdate(options: ProjectGrantUpdateOptions): Result<{
       current.data.realmId !== options.realmId ||
       current.data.projectId !== options.projectId
     )
-      return resultErrorCreate(op, "The project grant was not found.")
+      return resultErrorCodedCreate(op, "The project grant was not found.", "projects.not-found")
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
     if (project.data === null || project.data.status !== "active")
-      return resultErrorCreate(op, "The project was not found.")
+      return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
@@ -63,28 +65,40 @@ export function projectGrantUpdate(options: ProjectGrantUpdateOptions): Result<{
       project: project.data,
     })
     if (!authorized.success) return authorized
-    if (parsed.output.grantedOrganizationId !== current.data.grantedOrganizationId)
-      return resultErrorCreate(op, "The granted organization cannot be changed.")
-    const roles = projectRoleKeysEncode(parsed.output.roleKeys)
+    if (
+      parsed.data.grantedOrganizationId !== undefined &&
+      parsed.data.grantedOrganizationId !== current.data.grantedOrganizationId
+    )
+      return resultErrorCodedCreate(op, "The granted organization cannot be changed.", "projects.cannot-change")
+    const currentRoleKeys = projectRoleKeysDecode(current.data.roleKeys)
+    if (!currentRoleKeys.success) return currentRoleKeys
+    const roleKeys = parsed.data.roleKeys ?? currentRoleKeys.data
+    const roles = projectRoleKeysEncode(roleKeys)
     if (!roles.success) return roles
     const projectRoles = repository.projectRoleList(options.projectId)
     if (!projectRoles.success) return projectRoles
-    if (parsed.output.roleKeys.some((key) => !projectRoles.data.some((role) => role.key === key)))
-      return resultErrorCreate(op, "Every granted role key must belong to the project.")
+    if (roleKeys.some((key) => !projectRoles.data.some((role) => role.key === key)))
+      return resultErrorCodedCreate(
+        op,
+        "Every granted role key must belong to the project.",
+        "projects.role-keys-invalid",
+      )
     const updated = repository.projectGrantUpdate(options.grantId, {
       roleKeys: roles.data,
       updatedAt,
       version: current.data.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The project grant was not found.")
+    if (updated.data === null)
+      return resultErrorCodedCreate(op, "The project grant was not found.", "projects.not-found")
     const payload = v.safeParse(projectGrantUpdatedEventPayloadSchema, {
       grantedOrganizationId: updated.data.grantedOrganizationId,
       grantId: options.grantId,
       projectId: options.projectId,
-      roleKeys: parsed.output.roleKeys,
+      roleKeys,
     })
-    if (!payload.success) return resultErrorCreate(op, "The project grant event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The project grant event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

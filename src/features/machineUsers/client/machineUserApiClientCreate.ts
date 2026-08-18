@@ -1,7 +1,9 @@
 import * as v from "valibot"
 import { type Result } from "#result"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import {
   type MachineApiKeyCreateRequest,
@@ -81,7 +83,13 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
     ): Promise<Result<MachineCredentialIssueResponse>> {
       const parsed = v.safeParse(machineApiKeyCreateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("machineUserApiClientApiKeyCreate", "The API key request is invalid."))
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientApiKeyCreate",
+            "The API key request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
       return request(
         managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/api-keys`),
         { body: JSON.stringify(parsed.output), method: "POST" },
@@ -89,9 +97,13 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       )
     },
 
-    machineCredentialList(realmId: string, machineUserId: string): Promise<Result<MachineCredentialListResponse>> {
+    machineCredentialList(
+      realmId: string,
+      machineUserId: string,
+      query?: ListQuery,
+    ): Promise<Result<MachineCredentialListResponse>> {
       return request(
-        managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/credentials`),
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/credentials`)}${listQueryToSearchParams(query)}`,
         { method: "GET" },
         machineCredentialListResponseSchema,
       )
@@ -105,7 +117,11 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       const parsed = v.safeParse(machineCredentialRevokeRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("machineUserApiClientCredentialRevoke", "The revocation request is invalid."),
+          resultErrorCreate(
+            "machineUserApiClientCredentialRevoke",
+            "The revocation request is invalid.",
+            "machine-users.invalid",
+          ),
         )
       return request(
         managementPath(realmId, `/machine-credentials/${encodeURIComponent(credentialId)}/revoke`),
@@ -125,6 +141,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           resultErrorCreate(
             "machineUserApiClientPersonalAccessTokenCreate",
             "The personal access token request is invalid.",
+            "machine-users.invalid",
           ),
         )
       return request(
@@ -148,7 +165,13 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
     machineUserCreate(realmId: string, input: MachineUserCreateRequest): Promise<Result<MachineUserCreateResponse>> {
       const parsed = v.safeParse(machineUserCreateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("machineUserApiClientCreate", "The machine user request is invalid."))
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientCreate",
+            "The machine user request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
       return request(
         managementPath(realmId, "/machine-users"),
         { body: JSON.stringify(parsed.output), method: "POST" },
@@ -172,7 +195,11 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       const parsed = v.safeParse(machineUserLifecycleRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("machineUserApiClientLifecycleSet", "The lifecycle request is invalid."),
+          resultErrorCreate(
+            "machineUserApiClientLifecycleSet",
+            "The lifecycle request is invalid.",
+            "machine-users.invalid",
+          ),
         )
       return request(
         managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/lifecycle`),
@@ -181,8 +208,12 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       )
     },
 
-    machineUserList(realmId: string): Promise<Result<MachineUserListResponse>> {
-      return request(managementPath(realmId, "/machine-users"), { method: "GET" }, machineUserListResponseSchema)
+    machineUserList(realmId: string, query?: ListQuery): Promise<Result<MachineUserListResponse>> {
+      return request(
+        `${managementPath(realmId, "/machine-users")}${listQueryToSearchParams(query)}`,
+        { method: "GET" },
+        machineUserListResponseSchema,
+      )
     },
 
     machineProtectedApiGet(realmId: string) {
@@ -200,7 +231,11 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       const parsed = v.safeParse(machineCredentialIssueRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("machineUserApiClientCredentialIssue", "The credential request is invalid."),
+          resultErrorCreate(
+            "machineUserApiClientCredentialIssue",
+            "The credential request is invalid.",
+            "machine-users.invalid",
+          ),
         )
       return request(
         managementPath(realmId, `/machine-users/${encodeURIComponent(parsed.output.machineUserId)}/api-keys`),

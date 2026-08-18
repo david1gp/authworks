@@ -2,6 +2,12 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { machineUserApiClientCreate } from "../client/machineUserApiClientCreate.js"
 
+type MachineListFlags = {
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
+}
 type MachineCliFlags = { readonly server?: string; readonly token?: string }
 type MachineRealmFlags = MachineCliFlags & { readonly realmId?: string }
 type MachineUserFlags = MachineRealmFlags & { readonly machineUserId: string }
@@ -35,12 +41,15 @@ const machineUserCreateCommand = buildCommand({
 })
 
 const machineUserListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: MachineRealmFlags) {
+  async func(this: ApplicationContext, flags: MachineRealmFlags & MachineListFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    machineCliResultWrite(this, await machineCliClientCreate(this, flags).machineUserList(realmId))
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(this, flags).machineUserList(realmId, machineListQueryCreate(flags)),
+    )
   },
-  parameters: { flags: { ...machineCommonFlags(), realmId: machineRealmIdFlag() } },
+  parameters: { flags: { ...machineCommonFlags(), ...machineListFlags(), realmId: machineRealmIdFlag() } },
   docs: { brief: "List machine users" },
 })
 
@@ -161,17 +170,22 @@ const machineApiKeyCommand = buildCommand({
 })
 
 const machineCredentialListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: MachineUserFlags) {
+  async func(this: ApplicationContext, flags: MachineUserFlags & MachineListFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machineCredentialList(realmId, flags.machineUserId),
+      await machineCliClientCreate(this, flags).machineCredentialList(
+        realmId,
+        flags.machineUserId,
+        machineListQueryCreate(flags),
+      ),
     )
   },
   parameters: {
     flags: {
       ...machineCommonFlags(),
+      ...machineListFlags(),
       realmId: machineRealmIdFlag(),
       machineUserId: machineIdFlag("Machine user UUID"),
     },
@@ -251,6 +265,48 @@ function machineCommonFlags() {
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
+  }
+}
+
+function machineListFlags() {
+  return {
+    pageSize: {
+      brief: "Page size",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => Number(value),
+      placeholder: "NUMBER",
+    },
+    pageToken: {
+      brief: "Page token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    sortBy: {
+      brief: "Sort field",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "FIELD",
+    },
+    sortDirection: {
+      brief: "Sort direction",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+      placeholder: "DIRECTION",
+    },
+  }
+}
+
+function machineListQueryCreate(flags: MachineListFlags) {
+  return {
+    ...(flags.pageSize === undefined ? {} : { pageSize: flags.pageSize }),
+    ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
+    ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
   }
 }
 

@@ -1,12 +1,12 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { organizationLoginPolicyOverrideViewCreate } from "../domain/organizationLoginPolicyOverrideViewCreate.js"
 import { organizationLoginPolicyRepositoryCreate } from "../persistence/organizationLoginPolicyRepositoryCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { OrganizationLoginPolicyResponse } from "../public/organizationLoginPolicyResponseSchema.js"
-import { organizationLoginPolicyResolve } from "../public/organizationLoginPolicyResolve.js"
+import { organizationLoginPolicyResolve } from "./organizationLoginPolicyResolve.js"
 
 type OrganizationLoginPolicyGetOptions = {
   readonly database: StorageDatabase
@@ -24,7 +24,11 @@ export function organizationLoginPolicyGet(
     organization.data.realmId !== options.realmId ||
     organization.data.status !== "active"
   )
-    return resultErrorCreate("organizationLoginPolicyGet", "The organization was not found.")
+    return resultErrorCodedCreate(
+      "organizationLoginPolicyGet",
+      "The organization was not found.",
+      "organizations.not-found",
+    )
   const policy = organizationLoginPolicyResolve(options)
   if (!policy.success) return policy
   const override = organizationLoginPolicyRepositoryCreate(options.database.db).organizationLoginPolicyGet(

@@ -1,11 +1,11 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
-import { machineClientCredentialsSupported } from "../../machineUsers/public/machineClientCredentialsSupported.js"
+import { machineClientCredentialsSupported } from "../../machineUsers/actions/machineClientCredentialsSupported.js"
 import type { OidcDiscovery } from "../public/oidcDiscoverySchema.js"
 
 type OidcDiscoveryGetOptions = {
@@ -21,7 +21,8 @@ export function oidcDiscoveryGet(options: OidcDiscoveryGetOptions): Result<OidcD
     realmId: options.realmId,
   })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCodedCreate(op, "The realm is not active.", "oidc.not-active")
   const issuer = oidcIssuerCreate(realm.data.realm.domain)
   const machineCredentials = machineClientCredentialsSupported({
     database: options.database,

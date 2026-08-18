@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -30,7 +30,11 @@ export function realmBootstrapAdminCreate(
 ): Result<{ bootstrapAdmin: { adminId: string; secret: Secret }; realm: Realm }> {
   const op = "realmBootstrapAdminCreate"
   if (options.context?.kind !== "system")
-    return resultErrorCreate(op, "Only the system context can create the bootstrap administrator.")
+    return resultErrorCreate(
+      op,
+      "Only the system context can create the bootstrap administrator.",
+      "realms.system-required",
+    )
 
   const runtime = options.runtime ?? options.database.runtime
   const secret = secretGenerate(32, runtime)
@@ -38,16 +42,17 @@ export function realmBootstrapAdminCreate(
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The bootstrap timestamp is invalid.")
+    return resultErrorCreate(op, "The bootstrap timestamp is invalid.", "realms.invalid-timestamp")
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = realmRepositoryCreate(transaction)
     const current = repository.realmGet(options.realmId)
     if (!current.success) return current
-    if (current.data === null) return resultErrorCreate(op, "The realm was not found.")
+    if (current.data === null) return resultErrorCreate(op, "The realm was not found.", "realms.not-found")
     const existing = repository.realmBootstrapAdminGet(options.realmId)
     if (!existing.success) return existing
-    if (existing.data !== null) return resultErrorCreate(op, "The bootstrap administrator already exists.")
+    if (existing.data !== null)
+      return resultErrorCreate(op, "The bootstrap administrator already exists.", "realms.already-exists")
 
     const admin = repository.realmBootstrapAdminCreate({
       adminId,
@@ -64,10 +69,11 @@ export function realmBootstrapAdminCreate(
       version,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The realm was not found.")
+    if (updated.data === null) return resultErrorCreate(op, "The realm was not found.", "realms.not-found")
 
     const payloadResult = v.safeParse(realmBootstrapAdminCreatedEventPayloadSchema, { adminId })
-    if (!payloadResult.success) return resultErrorCreate(op, "The bootstrap event payload is invalid.")
+    if (!payloadResult.success)
+      return resultErrorCreate(op, "The bootstrap event payload is invalid.", "realms.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

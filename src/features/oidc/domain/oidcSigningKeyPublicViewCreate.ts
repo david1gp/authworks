@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import type { OidcSigningKeyRow } from "../persistence/oidcSigningKeyTable.js"
 import { oidcSigningKeySchema } from "../public/oidcSigningKeySchema.js"
 
@@ -20,9 +20,9 @@ export function oidcSigningKeyPublicViewCreate(
       retiredAt: row.retiredAt,
       status: row.status,
     })
-    if (!parsed.success) return resultErrorCreate(op, "The signing key is invalid.")
+    if (!parsed.success) return resultErrorCreate(op, "The signing key is invalid.", "oidc.invalid")
     return resultCreate(parsed.output)
   } catch (_error) {
-    return resultErrorCreate(op, "The signing key is invalid.")
+    return resultErrorCreate(op, "The signing key is invalid.", "oidc.invalid")
   }
 }

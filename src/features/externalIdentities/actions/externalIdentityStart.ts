@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -22,7 +22,7 @@ import { externalIdentityRepositoryCreate } from "../persistence/externalIdentit
 import type { ExternalIdentityStartRequest } from "../public/externalIdentityStartRequestSchema.js"
 import { externalIdentityStartRequestSchema } from "../public/externalIdentityStartRequestSchema.js"
 import type { ExternalIdentityStartResponse } from "../public/externalIdentityStartResponseSchema.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 const externalIdentityStateLifetimeMs = 10 * 60 * 1_000
 
@@ -39,11 +39,12 @@ type ExternalIdentityStartOptions = {
 export function externalIdentityStart(options: ExternalIdentityStartOptions): Result<ExternalIdentityStartResponse> {
   const op = "externalIdentityStart"
   const parsed = v.safeParse(externalIdentityStartRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The external identity start request is invalid.")
+  if (!parsed.success)
+    return resultErrorCreate(op, "The external identity start request is invalid.", "external-identities.invalid")
   const context = realmTenantContextCreate(options.realmId, "anonymous")
   const realm = realmGet({ context, database: options.database, realmId: options.realmId })
   if (!realm.success || realm.data.realm.status !== "active")
-    return resultErrorCreate(op, "The external identity provider is unavailable.")
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   const repository = externalIdentityRepositoryCreate(options.database.db)
   const provider = repository.externalIdentityProviderGet(options.realmId, options.providerId)
   if (!provider.success) return provider
@@ -55,7 +56,7 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
       provider.data.organizationId !== null &&
       provider.data.organizationId !== parsed.output.organizationId)
   )
-    return resultErrorCreate(op, "The external identity provider is unavailable.")
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   if (parsed.output.organizationId !== undefined) {
     const organization = options.database.db
       .select({ id: organizationTable.id, realmId: organizationTable.realmId, status: organizationTable.status })
@@ -65,7 +66,7 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
       )
       .get()
     if (organization === undefined || organization.status !== "active")
-      return resultErrorCreate(op, "The external identity provider is unavailable.")
+      return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   }
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
@@ -74,12 +75,15 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
     organizationId: parsed.output.organizationId,
     providerId: options.providerId,
   })
-  if (!policy.success) return resultErrorCreate(op, "The external identity provider is unavailable.")
+  if (!policy.success)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   const port = options.providerPorts[provider.data.type as keyof ExternalIdentityProviderPorts]
-  if (port === undefined) return resultErrorCreate(op, "The external identity provider is unavailable.")
+  if (port === undefined)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The external identity timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The external identity timestamp is invalid.", "external-identities.invalid-timestamp")
   const state = externalIdentityOpaqueSecretCreate(runtime)
   const nonce = externalIdentityProviderDefaults[provider.data.type as keyof typeof externalIdentityProviderDefaults]
     .usesNonce
@@ -143,7 +147,12 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
       providerId: options.providerId,
       providerType: provider.data?.type,
     })
-    if (!payload.success) return resultErrorCreate(op, "The external identity event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(
+        op,
+        "The external identity event payload is invalid.",
+        "external-identities.event-invalid",
+      )
     const event = storageEventAppend(
       transaction,
       {

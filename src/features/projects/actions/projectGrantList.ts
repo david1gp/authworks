@@ -1,6 +1,9 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
+import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -14,15 +17,18 @@ type ProjectGrantListOptions = {
   readonly database: StorageDatabase
   readonly realmId: string
   readonly projectId: string
+  readonly query?: ListQuery
 }
 
-export function projectGrantList(options: ProjectGrantListOptions): Result<{ grants: ProjectGrant[] }> {
+export function projectGrantList(
+  options: ProjectGrantListOptions,
+): Result<{ items: ProjectGrant[]; nextPageToken?: string }> {
   const op = "projectGrantList"
   const repository = projectRepositoryCreate(options.database.db)
   const project = repository.projectGet(options.projectId)
   if (!project.success) return project
   if (project.data === null || project.data.realmId !== options.realmId || project.data.status !== "active")
-    return resultErrorCreate(op, "The project was not found.")
+    return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
   const authorized = projectContextAuthorize({
     context: options.context,
     database: options.database,
@@ -40,5 +46,12 @@ export function projectGrantList(options: ProjectGrantListOptions): Result<{ gra
     if (!view.success) return view
     grants.push(view.data)
   }
-  return resultCreate({ grants })
+  const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id"], "createdAt")
+  if (!sortBy.success) return sortBy
+  return listRowsPage({
+    idGet: (grant) => grant.id,
+    query: options.query,
+    rows: grants,
+    sortValueGet: (grant) => (sortBy.data === "id" ? grant.id : grant.createdAt),
+  })
 }

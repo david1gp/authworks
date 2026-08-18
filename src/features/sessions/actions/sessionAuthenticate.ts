@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationActorContextCreate } from "../../authorization/domain/authorizationActorContextCreate.js"
@@ -30,23 +30,25 @@ type SessionAuthentication = {
 export function sessionAuthenticate(options: SessionAuthenticateOptions): Result<SessionAuthentication> {
   const op = "sessionAuthenticate"
   if (options.realmId.length === 0 || options.token.length === 0)
-    return resultErrorCreate(op, "Session authorization is required.")
+    return resultErrorCreate(op, "Session authorization is required.", "sessions.unauthorized")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "Session authorization is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   const repository = sessionRepositoryCreate(options.database.db)
   const found = repository.sessionGetByTokenHash(sessionCredentialHashCreate(options.token))
   if (!found.success) return found
   if (found.data === null || found.data.realmId !== options.realmId)
-    return resultErrorCreate(op, "Session authorization is invalid.")
+    return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   if (found.data.revokedAt !== null || found.data.expiresAt <= now)
-    return resultErrorCreate(op, "Session authorization is invalid.")
+    return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   const user = options.database.db
     .select({ id: userTable.id, state: userTable.state })
     .from(userTable)
     .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, found.data.userId)))
     .get()
-  if (user === undefined || user.state !== "active") return resultErrorCreate(op, "Session authorization is invalid.")
+  if (user === undefined || user.state !== "active")
+    return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   let impersonationPermissions: string[] | undefined
   if (
     found.data.impersonatorId === null &&
@@ -54,12 +56,12 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
       found.data.impersonationPermissions !== null ||
       found.data.impersonationReason !== null)
   )
-    return resultErrorCreate(op, "Session authorization is invalid.")
+    return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   if (found.data.impersonatorId !== null) {
     if (found.data.impersonationReason === null || found.data.impersonationPermissions === null)
-      return resultErrorCreate(op, "Session authorization is invalid.")
+      return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
     const permissions = sessionImpersonationPermissionsParse(found.data.impersonationPermissions)
-    if (!permissions.success) return resultErrorCreate(op, "Session authorization is invalid.")
+    if (!permissions.success) return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
     impersonationPermissions = permissions.data
     const impersonator = options.database.db
       .select({ id: userTable.id, state: userTable.state })
@@ -77,7 +79,7 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
       )
       .get()
     if ((impersonator === undefined || impersonator.state !== "active") && bootstrap === undefined)
-      return resultErrorCreate(op, "Session authorization is invalid.")
+      return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   }
   const used = repository.sessionLastUsedUpdate(
     options.realmId,
@@ -85,7 +87,8 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
     sessionCredentialHashCreate(options.token),
     now,
   )
-  if (!used.success || used.data === null) return resultErrorCreate(op, "Session authorization is invalid.")
+  if (!used.success || used.data === null)
+    return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   const actor = authorizationActorContextCreate({
     actorId: found.data.userId,
     assurance: found.data.assurance as AuthorizationActorContext["assurance"],
@@ -106,9 +109,17 @@ function sessionImpersonationPermissionsParse(value: string): Result<string[]> {
   try {
     const parsed = v.safeParse(v.array(authorizationPermissionSchema), JSON.parse(value))
     if (!parsed.success)
-      return resultErrorCreate("sessionImpersonationPermissionsParse", "The session permissions are invalid.")
+      return resultErrorCreate(
+        "sessionImpersonationPermissionsParse",
+        "The session permissions are invalid.",
+        "sessions.forbidden",
+      )
     return resultCreate(parsed.output)
   } catch (_error) {
-    return resultErrorCreate("sessionImpersonationPermissionsParse", "The session permissions are invalid.")
+    return resultErrorCreate(
+      "sessionImpersonationPermissionsParse",
+      "The session permissions are invalid.",
+      "sessions.forbidden",
+    )
   }
 }

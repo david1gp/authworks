@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -51,12 +51,17 @@ function organizationLoginPolicySetRun(
   const op = options.scope === "realm" ? "organizationRealmLoginPolicySet" : "organizationLoginPolicySet"
   const parsed = v.safeParse(organizationLoginPolicySetRequestSchema, options.input)
   if (!parsed.success || Object.keys(parsed.output).length === 0)
-    return resultErrorCreate(op, "The login policy update is invalid.")
+    return resultErrorCodedCreate(op, "The login policy update is invalid.", "organizations.invalid")
   if (options.context.kind !== "system")
-    return resultErrorCreate(op, "Only the system context can configure login policy.")
+    return resultErrorCodedCreate(
+      op,
+      "Only the system context can configure login policy.",
+      "organizations.system-required",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The login policy timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCodedCreate(op, "The login policy timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun<OrganizationLoginPolicyResponse>(options.database, (transaction) => {
     const repository = organizationLoginPolicyRepositoryCreate(transaction)
@@ -69,7 +74,7 @@ function organizationLoginPolicySetRun(
         organization.data.realmId !== options.realmId ||
         organization.data.status !== "active"
       )
-        return resultErrorCreate(op, "The organization was not found.")
+        return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
       const realm = repository.realmLoginPolicyGet(options.realmId)
       if (!realm.success) return realm
       const authorized = organizationContextAuthorize({
@@ -96,7 +101,8 @@ function organizationLoginPolicySetRun(
               version: current.data.version + 1,
             })
       if (!saved.success) return saved
-      if (saved.data === null) return resultErrorCreate(op, "The login policy could not be saved.")
+      if (saved.data === null)
+        return resultErrorCodedCreate(op, "The login policy could not be saved.", "organizations.write-failed")
       const effective = organizationLoginPolicyViewCreate(realm.data, saved.data)
       const event = organizationLoginPolicyChangedEventAppend({
         aggregateId: options.organizationId ?? "",
@@ -134,7 +140,8 @@ function organizationLoginPolicySetRun(
             version: current.data.version + 1,
           })
     if (!saved.success) return saved
-    if (saved.data === null) return resultErrorCreate(op, "The login policy could not be saved.")
+    if (saved.data === null)
+      return resultErrorCodedCreate(op, "The login policy could not be saved.", "organizations.write-failed")
     const effective = organizationLoginPolicyViewCreate(saved.data, null)
     const event = organizationLoginPolicyChangedEventAppend({
       aggregateId: options.realmId,
@@ -212,7 +219,11 @@ function organizationLoginPolicyChangedEventAppend(
 ): Result<unknown> {
   const payload = v.safeParse(organizationLoginPolicyChangedEventPayloadSchema, { policy: options.effective })
   if (!payload.success)
-    return resultErrorCreate("organizationLoginPolicySet", "The login policy event payload is invalid.")
+    return resultErrorCodedCreate(
+      "organizationLoginPolicySet",
+      "The login policy event payload is invalid.",
+      "organizations.event-invalid",
+    )
   return storageEventAppend(
     options.transaction,
     {

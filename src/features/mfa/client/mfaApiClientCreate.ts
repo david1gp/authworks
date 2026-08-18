@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import type { MfaChallengeCompleteRequest } from "../public/mfaChallengeCompleteRequestSchema.js"
@@ -58,7 +58,7 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
     })
   const parsed = <T>(schema: v.GenericSchema<T>, input: unknown, message: string): Result<T> => {
     const value = v.safeParse(schema, input)
-    return value.success ? resultCreate(value.output) : resultErrorCreate("mfaApiClientCreate", message)
+    return value.success ? resultCreate(value.output) : resultErrorCreate("mfaApiClientCreate", message, "mfa.invalid")
   }
   const json = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
 

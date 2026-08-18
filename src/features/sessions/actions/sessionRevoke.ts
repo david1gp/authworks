@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -29,17 +29,18 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
   const op = "sessionRevoke"
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The session timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The session timestamp is invalid.", "sessions.invalid-timestamp")
   const reason = options.reason ?? "user_requested"
   if (reason.length === 0 || reason.length > 128)
-    return resultErrorCreate(op, "The session revocation reason is invalid.")
+    return resultErrorCreate(op, "The session revocation reason is invalid.", "sessions.invalid")
   const correlationId = uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = sessionRepositoryCreate(transaction)
     const current = repository.sessionGet(options.realmId, options.sessionId)
     if (!current.success) return current
     if (current.data === null || current.data.userId !== options.userId)
-      return resultErrorCreate(op, "The session was not found.")
+      return resultErrorCreate(op, "The session was not found.", "sessions.not-found")
     if (current.data.revokedAt !== null) return resultCreate<SessionRevocationResponse>({ revoked: false })
     const revoked = repository.sessionVersionUpdate(options.realmId, options.sessionId, current.data.version, {
       revocationReason: reason,
@@ -47,7 +48,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
       version: current.data.version + 1,
     })
     if (!revoked.success) return revoked
-    if (revoked.data === null) return resultErrorCreate(op, "The session was not found.")
+    if (revoked.data === null) return resultErrorCreate(op, "The session was not found.", "sessions.not-found")
     const eventVersion = repository.sessionEventVersionGet(options.realmId, options.sessionId)
     if (!eventVersion.success) return eventVersion
     const payload = v.safeParse(sessionRevokedEventPayloadSchema, {
@@ -55,7 +56,8 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
       revokedAt: now,
       sessionId: options.sessionId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The session event payload is invalid.", "sessions.event-invalid")
     const event = storageEventAppend(
       transaction,
       {
@@ -87,7 +89,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
         .orderBy(desc(storageEventTable.aggregateVersion))
         .get()?.aggregateVersion
       if (impersonationVersion === undefined)
-        return resultErrorCreate(op, "The impersonation audit event was not found.")
+        return resultErrorCreate(op, "The impersonation audit event was not found.", "sessions.not-found")
       const endedPayload = v.safeParse(impersonationEndedEventPayloadSchema, {
         actorId: current.data.impersonatorId,
         endedAt: now,
@@ -99,7 +101,8 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
         sessionId: options.sessionId,
         subjectId: current.data.userId,
       })
-      if (!endedPayload.success) return resultErrorCreate(op, "The impersonation event payload is invalid.")
+      if (!endedPayload.success)
+        return resultErrorCreate(op, "The impersonation event payload is invalid.", "sessions.event-invalid")
       const endedEvent = storageEventAppend(
         transaction,
         {

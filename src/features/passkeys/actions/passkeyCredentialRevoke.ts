@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -30,17 +30,18 @@ export function passkeyCredentialRevoke(
 ): Result<PasskeyCredentialRevokeResponse> {
   const op = "passkeyCredentialRevoke"
   const input = v.safeParse(passkeyCredentialRevokeRequestSchema, options.input)
-  if (!input.success) return resultErrorCreate(op, "The passkey credential is invalid.")
+  if (!input.success) return resultErrorCreate(op, "The passkey credential is invalid.", "passkeys.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The passkey timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The passkey timestamp is invalid.", "passkeys.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = passkeyRepositoryCreate(transaction)
     const credential = repository.passkeyCredentialGet(options.realmId, options.userId, input.output.credentialId)
     if (!credential.success) return credential
     if (credential.data === null || credential.data.revokedAt !== null)
-      return resultErrorCreate(op, "The passkey credential is invalid.")
+      return resultErrorCreate(op, "The passkey credential is invalid.", "passkeys.invalid")
     const eventVersion = repository.passkeyEventVersionGet(options.realmId, "passkey_credential", credential.data.id)
     if (!eventVersion.success) return eventVersion
     const revoked = repository.passkeyCredentialRevoke(
@@ -51,12 +52,13 @@ export function passkeyCredentialRevoke(
       now,
     )
     if (!revoked.success) return revoked
-    if (revoked.data === null) return resultErrorCreate(op, "The passkey credential is invalid.")
+    if (revoked.data === null) return resultErrorCreate(op, "The passkey credential is invalid.", "passkeys.invalid")
     const payload = v.safeParse(passkeyEventPayloadSchema, {
       credentialId: credential.data.id,
       userId: options.userId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The passkey event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { organizationBrandingTable, type OrganizationBrandingRow } from "./organizationBrandingTable.js"
 
@@ -11,10 +11,18 @@ export function organizationBrandingRepositoryCreate(database: StorageExecutor) 
       try {
         const row = database.insert(organizationBrandingTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("organizationBrandingCreate", "The branding could not be saved.")
+          return resultErrorCodedCreate(
+            "organizationBrandingCreate",
+            "The branding could not be saved.",
+            "organizations.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("organizationBrandingCreate", "The branding could not be saved.")
+        return resultErrorCodedCreate(
+          "organizationBrandingCreate",
+          "The branding could not be saved.",
+          "organizations.write-failed",
+        )
       }
     },
 
@@ -28,7 +36,11 @@ export function organizationBrandingRepositoryCreate(database: StorageExecutor) 
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationBrandingGet", "The branding could not be read.")
+        return resultErrorCodedCreate(
+          "organizationBrandingGet",
+          "The branding could not be read.",
+          "organizations.read-failed",
+        )
       }
     },
 
@@ -46,7 +58,11 @@ export function organizationBrandingRepositoryCreate(database: StorageExecutor) 
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("organizationBrandingUpdate", "The branding could not be saved.")
+        return resultErrorCodedCreate(
+          "organizationBrandingUpdate",
+          "The branding could not be saved.",
+          "organizations.write-failed",
+        )
       }
     },
   }

@@ -1,6 +1,9 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
+import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -14,17 +17,18 @@ type ProjectApplicationListOptions = {
   readonly database: StorageDatabase
   readonly realmId: string
   readonly projectId: string
+  readonly query?: ListQuery
 }
 
 export function projectApplicationList(
   options: ProjectApplicationListOptions,
-): Result<{ applications: ProjectApplication[] }> {
+): Result<{ items: ProjectApplication[]; nextPageToken?: string }> {
   const op = "projectApplicationList"
   const repository = projectRepositoryCreate(options.database.db)
   const project = repository.projectGet(options.projectId)
   if (!project.success) return project
   if (project.data === null || project.data.realmId !== options.realmId || project.data.status !== "active")
-    return resultErrorCreate(op, "The project was not found.")
+    return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
   const authorized = projectContextAuthorize({
     context: options.context,
     database: options.database,
@@ -35,9 +39,15 @@ export function projectApplicationList(
   if (!authorized.success) return authorized
   const rows = repository.projectApplicationList(options.projectId)
   if (!rows.success) return rows
-  return resultCreate({
-    applications: rows.data
-      .filter((application) => application.status === "active")
-      .map(projectApplicationPublicViewCreate),
+  const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id"], "createdAt")
+  if (!sortBy.success) return sortBy
+  const applications = rows.data
+    .filter((application) => application.status === "active")
+    .map(projectApplicationPublicViewCreate)
+  return listRowsPage({
+    idGet: (application) => application.id,
+    query: options.query,
+    rows: applications,
+    sortValueGet: (application) => (sortBy.data === "id" ? application.id : application.createdAt),
   })
 }

@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -35,12 +35,14 @@ export function externalIdentityProviderCreate(
 ): Result<{ provider: ExternalIdentityProvider }> {
   const op = "externalIdentityProviderCreate"
   if (options.context?.kind !== "system")
-    return resultErrorCreate(op, "Only the system context can configure providers.")
+    return resultErrorCreate(op, "Only the system context can configure providers.", "external-identities.forbidden")
   const parsed = v.safeParse(externalIdentityProviderCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The external identity provider request is invalid.")
+  if (!parsed.success)
+    return resultErrorCreate(op, "The external identity provider request is invalid.", "external-identities.invalid")
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCreate(op, "The realm is not active.", "external-identities.not-active")
   if (parsed.output.organizationId !== undefined) {
     const organization = options.database.db
       .select({ id: organizationTable.id, realmId: organizationTable.realmId, status: organizationTable.status })
@@ -48,11 +50,12 @@ export function externalIdentityProviderCreate(
       .where(eq(organizationTable.id, parsed.output.organizationId))
       .get()
     if (organization === undefined || organization.realmId !== options.realmId || organization.status !== "active")
-      return resultErrorCreate(op, "The organization was not found.")
+      return resultErrorCreate(op, "The organization was not found.", "external-identities.not-found")
   }
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The provider timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The provider timestamp is invalid.", "external-identities.invalid-timestamp")
   const providerId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const defaults = externalIdentityProviderDefaults[parsed.output.type]
@@ -73,7 +76,11 @@ export function externalIdentityProviderCreate(
       )
       .get()
     if (duplicate !== undefined)
-      return resultErrorCreate(op, "An external identity provider with that scope already exists.")
+      return resultErrorCreate(
+        op,
+        "An external identity provider with that scope already exists.",
+        "external-identities.already-exists",
+      )
     const created = repository.externalIdentityProviderCreate({
       allowAccountCreation: parsed.output.allowAccountCreation,
       clientId: parsed.output.clientId,
@@ -90,13 +97,19 @@ export function externalIdentityProviderCreate(
       updatedAt: now,
       version: 1,
     })
-    if (!created.success) return resultErrorCreate(op, "An external identity provider with that scope already exists.")
+    if (!created.success)
+      return resultErrorCreate(
+        op,
+        "An external identity provider with that scope already exists.",
+        "external-identities.already-exists",
+      )
     const payload = v.safeParse(externalIdentityEventPayloadSchema, {
       action: "provider_created",
       providerId,
       providerType: parsed.output.type,
     })
-    if (!payload.success) return resultErrorCreate(op, "The provider event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The provider event payload is invalid.", "external-identities.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

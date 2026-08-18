@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 
 const mfaTotpAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
@@ -21,9 +21,9 @@ export function mfaTotpSecretCreate(runtime: Pick<ReturnType<typeof runtimeCreat
       }
     }
     if (bits > 0) value += mfaTotpAlphabet[(buffer << (5 - bits)) & 31]
-    if (value.length < 32) return resultErrorCreate(op, "The TOTP secret could not be created.")
+    if (value.length < 32) return resultErrorCreate(op, "The TOTP secret could not be created.", "mfa.invalid")
     return resultCreate(value)
   } catch (_error) {
-    return resultErrorCreate(op, "The TOTP secret could not be created.")
+    return resultErrorCreate(op, "The TOTP secret could not be created.", "mfa.invalid")
   }
 }

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -32,11 +32,11 @@ type UserCreateOptions = {
 export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
   const op = "userCreate"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "users.tenant-required")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The user is not available in this tenant context.")
+    return resultErrorCreate(op, "The user is not available in this tenant context.", "users.tenant-mismatch")
   const parsed = v.safeParse(userCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The user request is invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The user request is invalid.", "users.invalid")
   const userName = userNameNormalize(parsed.output.userName)
   if (!userName.success) return userName
   const email = userEmailNormalize(parsed.output.email)
@@ -45,13 +45,14 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
   if (!profile.success) return profile
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.", "users.not-active")
 
   const runtime = options.runtime ?? options.database.runtime
   const userId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const createdAt = runtime.now()
-  if (!Number.isSafeInteger(createdAt) || createdAt < 0) return resultErrorCreate(op, "The user timestamp is invalid.")
+  if (!Number.isSafeInteger(createdAt) || createdAt < 0)
+    return resultErrorCreate(op, "The user timestamp is invalid.", "users.invalid-timestamp")
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = userRepositoryCreate(transaction)
@@ -81,11 +82,15 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
     )
     if (!created.success) {
       if (created.errorMessage === "The user could not be created.")
-        return resultErrorCreate(op, "A user with that name or email already exists in this realm.")
+        return resultErrorCreate(
+          op,
+          "A user with that name or email already exists in this realm.",
+          "users.already-exists",
+        )
       return created
     }
     const payload = v.safeParse(userCreatedEventPayloadSchema, { emailVerified: false, state: "initial" })
-    if (!payload.success) return resultErrorCreate(op, "The user event payload is invalid.")
+    if (!payload.success) return resultErrorCreate(op, "The user event payload is invalid.", "users.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

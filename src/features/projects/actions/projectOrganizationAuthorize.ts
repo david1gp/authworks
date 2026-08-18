@@ -1,8 +1,8 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { authorizationEnforce } from "../../authorization/public/authorizationEnforce.js"
+import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -20,7 +20,11 @@ export function projectOrganizationAuthorize(options: ProjectOrganizationAuthori
   const op = "projectOrganizationAuthorize"
   if (options.context.kind === "system") return resultCreate(undefined)
   if (options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The project is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The project is not available in this tenant context.",
+      "projects.tenant-mismatch",
+    )
   if (options.context.actor.kind === "bootstrap_admin")
     return authorizationEnforce({
       actor: options.context.actor,
@@ -34,10 +38,11 @@ export function projectOrganizationAuthorize(options: ProjectOrganizationAuthori
     userId: options.context.actorId,
   })
   if (!memberships.success) return memberships
-  const membership = memberships.data.memberships.find(
+  const membership = memberships.data.items.find(
     (candidate) => candidate.organizationId === options.organizationId && candidate.status === "active",
   )
-  if (membership === undefined) return resultErrorCreate(op, "The actor is not a member of this organization.")
+  if (membership === undefined)
+    return resultErrorCodedCreate(op, "The actor is not a member of this organization.", "projects.membership-required")
   return authorizationEnforce({
     actor: options.context.actor,
     realmId: options.realmId,

@@ -1,7 +1,8 @@
 import { type Result } from "#result"
 import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { patchInputParse } from "../../../platform/http/patchInputParse.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -30,21 +31,25 @@ type ProjectUpdateOptions = {
 
 export function projectUpdate(options: ProjectUpdateOptions): Result<{ project: Project }> {
   const op = "projectUpdate"
-  const parsed = v.safeParse(projectUpdateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The project update is invalid.")
+  const parsed = patchInputParse(op, projectUpdateRequestSchema, options.input, "projects.empty-patch")
+  if (!parsed.success) return parsed
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The project is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The project is not available in this tenant context.",
+      "projects.tenant-mismatch",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
-    return resultErrorCreate(op, "The project timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The project timestamp is invalid.", "projects.timestamp-invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = projectRepositoryCreate(transaction)
     const current = repository.projectGet(options.projectId)
     if (!current.success) return current
     if (current.data === null || current.data.realmId !== options.realmId || current.data.status !== "active")
-      return resultErrorCreate(op, "The project was not found.")
+      return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const authorized = projectContextAuthorize({
       context: options.context,
       database: options.database,
@@ -54,33 +59,39 @@ export function projectUpdate(options: ProjectUpdateOptions): Result<{ project: 
     })
     if (!authorized.success) return authorized
     const name =
-      parsed.output.name === undefined ? resultCreate(current.data.name) : projectNameNormalize(parsed.output.name)
+      parsed.data.name === undefined ? resultCreate(current.data.name) : projectNameNormalize(parsed.data.name)
     if (!name.success) return name
     const updated = repository.projectUpdate(options.projectId, {
       authorizationRequired:
-        parsed.output.authorizationRequired === undefined
+        parsed.data.authorizationRequired === undefined
           ? current.data.authorizationRequired
-          : parsed.output.authorizationRequired
+          : parsed.data.authorizationRequired
             ? 1
             : 0,
       name: name.data,
       projectAccessRequired:
-        parsed.output.projectAccessRequired === undefined
+        parsed.data.projectAccessRequired === undefined
           ? current.data.projectAccessRequired
-          : parsed.output.projectAccessRequired
+          : parsed.data.projectAccessRequired
             ? 1
             : 0,
       updatedAt,
       version: current.data.version + 1,
     })
-    if (!updated.success) return resultErrorCreate(op, "A project with that name already exists in this organization.")
-    if (updated.data === null) return resultErrorCreate(op, "The project was not found.")
+    if (!updated.success)
+      return resultErrorCodedCreate(
+        op,
+        "A project with that name already exists in this organization.",
+        "projects.already-exists",
+      )
+    if (updated.data === null) return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const payload = v.safeParse(projectUpdatedEventPayloadSchema, {
       authorizationRequired: updated.data.authorizationRequired === 1,
       name: updated.data.name,
       projectAccessRequired: updated.data.projectAccessRequired === 1,
     })
-    if (!payload.success) return resultErrorCreate(op, "The project event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The project event payload is invalid.", "projects.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

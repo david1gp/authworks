@@ -1,6 +1,6 @@
 import { createPublicKey, verify } from "node:crypto"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type {
   ExternalIdentityProviderPort,
   ExternalIdentityProviderPortCallbackInput,
@@ -91,19 +91,32 @@ async function providerTokenFetch(
     })
     const raw = (await response.json().catch(() => undefined)) as unknown
     if (!response.ok || typeof raw !== "object" || raw === null)
-      return resultErrorCreate("externalIdentityProviderCallback", "The external provider token response is invalid.")
+      return resultErrorCreate(
+        "externalIdentityProviderCallback",
+        "The external provider token response is invalid.",
+        "external-identities.invalid",
+      )
     const accessToken = providerStringGet(raw, "access_token")
     const idToken = providerStringGet(raw, "id_token")
     if (accessToken === null)
-      return resultErrorCreate("externalIdentityProviderCallback", "The external provider token response is invalid.")
+      return resultErrorCreate(
+        "externalIdentityProviderCallback",
+        "The external provider token response is invalid.",
+        "external-identities.invalid",
+      )
     if ((configuration.type === "google" || configuration.type === "microsoft") && idToken === null)
       return resultErrorCreate(
         "externalIdentityProviderCallback",
         "The external provider identity response is invalid.",
+        "external-identities.invalid",
       )
     return resultCreate({ accessToken, ...(idToken === null ? {} : { idToken }) })
   } catch (_error) {
-    return resultErrorCreate("externalIdentityProviderCallback", "The external provider could not be reached.")
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider could not be reached.",
+      "external-identities.read-failed",
+    )
   }
 }
 
@@ -116,7 +129,11 @@ async function googleIdentityFetch(
   clientId: string,
 ): Promise<ReturnType<typeof resultCreate<ExternalIdentityProviderIdentity>> | ReturnType<typeof resultErrorCreate>> {
   if (idToken === undefined)
-    return resultErrorCreate("externalIdentityProviderCallback", "The external provider identity response is invalid.")
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
   const tokenClaims = await providerJwtClaimsVerify(
     fetcher,
     timeoutMs,
@@ -138,7 +155,11 @@ async function googleIdentityFetch(
     nonce !== expectedNonce ||
     (userInfoSubject !== null && userInfoSubject !== subject)
   )
-    return resultErrorCreate("externalIdentityProviderCallback", "The external provider identity response is invalid.")
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
   return resultCreate({
     displayName: providerStringGet(userInfo.data, "name") ?? providerStringGet(tokenClaims.data, "name") ?? undefined,
     email: providerStringGet(userInfo.data, "email") ?? providerStringGet(tokenClaims.data, "email") ?? undefined,
@@ -202,7 +223,11 @@ async function githubIdentityFetch(
       username: providerStringGet(raw, "login") ?? undefined,
     })
   } catch (_error) {
-    return resultErrorCreate("externalIdentityProviderCallback", "The external provider identity response is invalid.")
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
   }
 }
 
@@ -214,7 +239,11 @@ async function microsoftIdentityCreate(
   clientId: string,
 ): Promise<ReturnType<typeof resultCreate<ExternalIdentityProviderIdentity>> | ReturnType<typeof resultErrorCreate>> {
   if (idToken === undefined)
-    return resultErrorCreate("externalIdentityProviderCallback", "The external provider identity response is invalid.")
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
   const claims = await providerJwtClaimsVerify(
     fetcher,
     timeoutMs,
@@ -233,7 +262,11 @@ async function microsoftIdentityCreate(
     audience !== clientId ||
     nonce !== expectedNonce
   )
-    return resultErrorCreate("externalIdentityProviderCallback", "The external provider identity response is invalid.")
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
   return resultCreate({
     displayName: providerStringGet(claims.data, "name") ?? undefined,
     email: providerStringGet(claims.data, "email") ?? providerStringGet(claims.data, "preferred_username") ?? undefined,
@@ -262,10 +295,15 @@ async function providerClaimsGet(
       return resultErrorCreate(
         "externalIdentityProviderCallback",
         "The external provider identity response is invalid.",
+        "external-identities.invalid",
       )
     return resultCreate(raw as Record<string, unknown>)
   } catch (_error) {
-    return resultErrorCreate("externalIdentityProviderCallback", `The ${type} provider could not be reached.`)
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      `The ${type} provider could not be reached.`,
+      "external-identities.read-failed",
+    )
   }
 }
 
@@ -309,7 +347,11 @@ async function providerJwtClaimsVerify(
       throw new Error("invalid signature")
     return resultCreate(claims as Record<string, unknown>)
   } catch (_error) {
-    return resultErrorCreate("externalIdentityProviderCallback", "The external provider identity response is invalid.")
+    return resultErrorCreate(
+      "externalIdentityProviderCallback",
+      "The external provider identity response is invalid.",
+      "external-identities.invalid",
+    )
   }
 }
 

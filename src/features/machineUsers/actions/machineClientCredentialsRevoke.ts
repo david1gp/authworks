@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -26,25 +26,38 @@ export function machineClientCredentialsRevoke(options: MachineClientCredentials
   const op = "machineClientCredentialsRevoke"
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The token revocation timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The token revocation timestamp is invalid.", "machine-users.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
     const machineUser = repository.userGetByName(options.realmId, options.clientId.trim().toLowerCase())
     if (!machineUser.success) return machineUser
     if (machineUser.data === null || machineUser.data.status !== "active")
-      return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidClient",
+        "Client authentication failed.",
+        "machine-users.invalid-client",
+      )
     const credentials = repository.credentialList(options.realmId, machineUser.data.id)
     if (!credentials.success) return credentials
     const clientCredential = credentials.data.find(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
     )
     if (clientCredential === undefined)
-      return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidClient",
+        "Client authentication failed.",
+        "machine-users.invalid-client",
+      )
     const verified = machineSecretHashVerify(options.clientSecret, clientCredential.secretHash)
     if (!verified.success) return verified
     if (!verified.data)
-      return resultErrorCreate("machineClientCredentialsInvalidClient", "Client authentication failed.")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidClient",
+        "Client authentication failed.",
+        "machine-users.invalid-client",
+      )
     for (const candidate of credentials.data) {
       if (candidate.kind !== "access_token" || candidate.revokedAt !== null) continue
       const tokenMatches = machineSecretHashVerify(options.token, candidate.secretHash)
@@ -57,7 +70,8 @@ export function machineClientCredentialsRevoke(options: MachineClientCredentials
         credentialId: candidate.id,
         credentialKind: candidate.kind,
       })
-      if (!payload.success) return resultErrorCreate(op, "The machine credential event payload is invalid.")
+      if (!payload.success)
+        return resultErrorCreate(op, "The machine credential event payload is invalid.", "machine-users.event-invalid")
       const event = storageEventAppend(
         transaction,
         {

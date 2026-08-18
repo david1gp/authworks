@@ -1,6 +1,8 @@
 import { type Result } from "#result"
-import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
+import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -14,14 +16,19 @@ type OrganizationInvitationListOptions = {
   readonly database: StorageDatabase
   readonly realmId: string
   readonly organizationId: string
+  readonly query?: ListQuery
 }
 
 export function organizationInvitationList(
   options: OrganizationInvitationListOptions,
-): Result<{ invitations: OrganizationInvitation[] }> {
+): Result<{ items: OrganizationInvitation[]; nextPageToken?: string }> {
   const op = "organizationInvitationList"
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The invitations are not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The invitations are not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   const repository = organizationRepositoryCreate(options.database.db)
   const organization = repository.organizationGet(options.organizationId)
   if (!organization.success) return organization
@@ -30,7 +37,7 @@ export function organizationInvitationList(
     organization.data.realmId !== options.realmId ||
     organization.data.status !== "active"
   )
-    return resultErrorCreate(op, "The organization is not active or was not found.")
+    return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
   const authorized = organizationContextAuthorize({
     context: options.context,
     organization: organization.data,
@@ -46,5 +53,17 @@ export function organizationInvitationList(
     if (!view.success) return view
     invitations.push(view.data)
   }
-  return resultCreate({ invitations })
+  const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id", "email", "status"], "createdAt")
+  if (!sortBy.success) return sortBy
+  return listRowsPage({
+    idGet: (invitation) => invitation.id,
+    query: options.query,
+    rows: invitations,
+    sortValueGet: (invitation) => {
+      if (sortBy.data === "id") return invitation.id
+      if (sortBy.data === "email") return invitation.email
+      if (sortBy.data === "status") return invitation.status
+      return invitation.createdAt
+    },
+  })
 }

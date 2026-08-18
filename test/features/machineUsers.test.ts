@@ -20,7 +20,7 @@ import { machineUserList } from "../../src/features/machineUsers/actions/machine
 import { machineUserApiClientCreate } from "../../src/features/machineUsers/client/machineUserApiClientCreate.js"
 import { machineCredentialTable } from "../../src/features/machineUsers/persistence/machineCredentialTable.js"
 import { machineUserTable } from "../../src/features/machineUsers/persistence/machineUserTable.js"
-import { machineClientCredentialsRevoke } from "../../src/features/machineUsers/public/machineClientCredentialsRevoke.js"
+import { machineClientCredentialsRevoke } from "../../src/features/machineUsers/actions/machineClientCredentialsRevoke.js"
 import { machineUserCreateResponseSchema } from "../../src/features/machineUsers/public/machineUserCreateResponseSchema.js"
 import { machineUserServerAppCreate } from "../../src/features/machineUsers/server/machineUserServerAppCreate.js"
 import { oidcDiscoverySchema } from "../../src/features/oidc/public/oidcDiscoverySchema.js"
@@ -299,7 +299,7 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
     if (!created.success) return
     const betaUsers = machineUserList({ context: realmSystemContextCreate(), database, realmId: beta.id })
     expect(betaUsers.success).toBe(true)
-    if (betaUsers.success) expect(betaUsers.data.machineUsers).toHaveLength(0)
+    if (betaUsers.success) expect(betaUsers.data.items).toHaveLength(0)
     expect(
       machineUserGet({
         context: realmSystemContextCreate(),
@@ -326,7 +326,7 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
     expect(managed.success).toBe(true)
     const listed = await client.machineUserList(alpha.id)
     expect(listed.success).toBe(true)
-    if (listed.success) expect(listed.data.machineUsers).toHaveLength(2)
+    if (listed.success) expect(listed.data.items).toHaveLength(2)
 
     const apiKey = machineApiKeyCreate({
       context: realmSystemContextCreate(),
@@ -407,7 +407,7 @@ test("machine API client validates public contracts and requests", async () => {
     baseUrl: "https://example.com",
     fetch: async (input, init) => {
       calls.push({ url: input instanceof Request ? input.url : input.toString() })
-      return Response.json({ machineUsers: [] })
+      return Response.json({ items: [] })
     },
   })
   const result = await client.machineUserList("01900000-0000-7000-8000-000000000000")

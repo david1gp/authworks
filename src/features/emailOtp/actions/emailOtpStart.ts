@@ -1,12 +1,13 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -22,7 +23,6 @@ import type { EmailOtpSecurityNotification } from "../public/emailOtpSecurityNot
 import type { EmailOtpStartRequest } from "../public/emailOtpStartRequestSchema.js"
 import { emailOtpStartRequestSchema } from "../public/emailOtpStartRequestSchema.js"
 import type { EmailOtpStartResponse } from "../public/emailOtpStartResponseSchema.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
 
 const emailOtpCooldownMs = 60 * 1_000
 const emailOtpExpiryMs = 10 * 60 * 1_000
@@ -49,14 +49,15 @@ type EmailOtpStartCommit = {
 export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpStartResponse> {
   const op = "emailOtpStart"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "email-otp.invalid")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The email OTP is not available in this tenant context.")
+    return resultErrorCreate(op, "The email OTP is not available in this tenant context.", "email-otp.not-found")
   const parsed = v.safeParse(emailOtpStartRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The email OTP request is invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The email OTP request is invalid.", "email-otp.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The email OTP timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The email OTP timestamp is invalid.", "email-otp.invalid")
   const generic = () =>
     resultCreate<EmailOtpStartResponse>({
       accepted: true,
@@ -74,7 +75,8 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
     method: "email_otp",
     organizationId: options.organizationId ?? parsed.output.organizationId,
   })
-  if (!policy.success) return resultErrorCreate(op, "The email OTP login method is disabled for this organization.")
+  if (!policy.success)
+    return resultErrorCreate(op, "The email OTP login method is disabled for this organization.", "email-otp.conflict")
   const emailHash = emailOtpEmailHashCreate(email.data)
   const code = emailOtpCodeCreate(runtime)
   if (!code.success) return code
@@ -127,7 +129,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
       expiresAt,
       purpose: "sign_in",
     })
-    if (!payload.success) return resultErrorCreate(op, "The email OTP event payload is invalid.")
+    if (!payload.success) return resultErrorCreate(op, "The email OTP event payload is invalid.", "email-otp.internal")
     const event = storageEventAppend(
       transaction,
       {

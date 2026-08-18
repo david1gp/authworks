@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import {
@@ -17,10 +17,18 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(externalIdentityTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("externalIdentityCreate", "The external identity could not be created.")
+          return resultErrorCreate(
+            "externalIdentityCreate",
+            "The external identity could not be created.",
+            "external-identities.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("externalIdentityCreate", "The external identity could not be created.")
+        return resultErrorCreate(
+          "externalIdentityCreate",
+          "The external identity could not be created.",
+          "external-identities.write-failed",
+        )
       }
     },
 
@@ -46,7 +54,11 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("externalIdentityDelete", "The external identity could not be removed.")
+        return resultErrorCreate(
+          "externalIdentityDelete",
+          "The external identity could not be removed.",
+          "external-identities.write-failed",
+        )
       }
     },
 
@@ -68,7 +80,11 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("externalIdentityGetByProviderSubject", "The external identity could not be read.")
+        return resultErrorCreate(
+          "externalIdentityGetByProviderSubject",
+          "The external identity could not be read.",
+          "external-identities.read-failed",
+        )
       }
     },
 
@@ -83,7 +99,11 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("externalIdentityList", "The external identities could not be read.")
+        return resultErrorCreate(
+          "externalIdentityList",
+          "The external identities could not be read.",
+          "external-identities.read-failed",
+        )
       }
     },
 
@@ -96,12 +116,14 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
           return resultErrorCreate(
             "externalIdentityOAuthTransactionCreate",
             "The external authentication transaction could not be created.",
+            "external-identities.write-failed",
           )
         return resultCreate(row)
       } catch (_error) {
         return resultErrorCreate(
           "externalIdentityOAuthTransactionCreate",
           "The external authentication transaction could not be created.",
+          "external-identities.write-failed",
         )
       }
     },
@@ -127,6 +149,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "externalIdentityOAuthTransactionGetByState",
           "The external authentication transaction could not be read.",
+          "external-identities.read-failed",
         )
       }
     },
@@ -152,6 +175,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "externalIdentityOAuthTransactionGetByConfirmationToken",
           "The external identity link confirmation could not be read.",
+          "external-identities.read-failed",
         )
       }
     },
@@ -180,6 +204,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "externalIdentityOAuthTransactionConsume",
           "The external authentication transaction could not be consumed.",
+          "external-identities.write-failed",
         )
       }
     },
@@ -208,6 +233,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "externalIdentityOAuthTransactionValidateAndStore",
           "The external authentication transaction could not be updated.",
+          "external-identities.write-failed",
         )
       }
     },
@@ -221,12 +247,14 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
           return resultErrorCreate(
             "externalIdentityProviderCreate",
             "The external identity provider could not be created.",
+            "external-identities.write-failed",
           )
         return resultCreate(row)
       } catch (_error) {
         return resultErrorCreate(
           "externalIdentityProviderCreate",
           "The external identity provider could not be created.",
+          "external-identities.write-failed",
         )
       }
     },
@@ -243,7 +271,11 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("externalIdentityProviderGet", "The external identity provider could not be read.")
+        return resultErrorCreate(
+          "externalIdentityProviderGet",
+          "The external identity provider could not be read.",
+          "external-identities.read-failed",
+        )
       }
     },
 
@@ -268,7 +300,11 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("externalIdentityProviderList", "The external identity providers could not be read.")
+        return resultErrorCreate(
+          "externalIdentityProviderList",
+          "The external identity providers could not be read.",
+          "external-identities.read-failed",
+        )
       }
     },
 
@@ -292,6 +328,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "externalIdentityProviderUpdate",
           "The external identity provider could not be updated.",
+          "external-identities.write-failed",
         )
       }
     },
@@ -314,6 +351,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "externalIdentityProviderEventVersionGet",
           "The external identity provider event version could not be read.",
+          "external-identities.read-failed",
         )
       }
     },
@@ -336,6 +374,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "externalIdentityEventVersionGet",
           "The external identity event version could not be read.",
+          "external-identities.read-failed",
         )
       }
     },

@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { machineScopeSchema } from "../domain/machineScopeSchema.js"
+import { machineScopeSchema } from "./machineScopeSchema.js"
 
 export const machineClientCredentialsRequestSchema = v.strictObject({
   clientId: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),

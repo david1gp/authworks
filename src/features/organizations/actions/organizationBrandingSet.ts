@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,12 +33,18 @@ type OrganizationBrandingSetOptions = {
 export function organizationBrandingSet(options: OrganizationBrandingSetOptions): Result<OrganizationBrandingResponse> {
   const op = "organizationBrandingSet"
   const parsed = v.safeParse(organizationBrandingSetRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The organization branding is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The organization branding is invalid.", "organizations.invalid")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The organization is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The organization is not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The branding timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCodedCreate(op, "The branding timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const organizations = organizationRepositoryCreate(transaction)
@@ -49,7 +55,7 @@ export function organizationBrandingSet(options: OrganizationBrandingSetOptions)
       organization.data.realmId !== options.realmId ||
       organization.data.status !== "active"
     )
-      return resultErrorCreate(op, "The organization was not found.")
+      return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
@@ -76,12 +82,14 @@ export function organizationBrandingSet(options: OrganizationBrandingSetOptions)
             version,
           })
     if (!saved.success) return saved
-    if (saved.data === null) return resultErrorCreate(op, "The organization branding could not be saved.")
+    if (saved.data === null)
+      return resultErrorCodedCreate(op, "The organization branding could not be saved.", "organizations.write-failed")
     const payload = v.safeParse(organizationBrandingChangedEventPayloadSchema, {
       organizationId: options.organizationId,
       version,
     })
-    if (!payload.success) return resultErrorCreate(op, "The branding event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The branding event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

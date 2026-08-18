@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,13 +33,18 @@ type OrganizationSwitchOptions = {
 export function organizationSwitch(options: OrganizationSwitchOptions): Result<OrganizationSwitchResponse> {
   const op = "organizationSwitch"
   const parsed = v.safeParse(organizationSwitchRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The organization switch request is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The organization switch request is invalid.", "organizations.invalid")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The organization is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The organization is not available in this tenant context.",
+      "organizations.tenant-mismatch",
+    )
   const runtime = options.runtime ?? options.database.runtime
   const switchedAt = runtime.now()
   if (!Number.isSafeInteger(switchedAt) || switchedAt < 0)
-    return resultErrorCreate(op, "The organization timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The organization timestamp is invalid.", "organizations.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
@@ -50,7 +55,7 @@ export function organizationSwitch(options: OrganizationSwitchOptions): Result<O
       organization.data.realmId !== options.realmId ||
       organization.data.status !== "active"
     )
-      return resultErrorCreate(op, "The organization is not active or was not found.")
+      return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
@@ -59,7 +64,8 @@ export function organizationSwitch(options: OrganizationSwitchOptions): Result<O
     })
     if (!authorized.success) return authorized
     const payload = v.safeParse(organizationSwitchedEventPayloadSchema, { organizationId: organization.data.id })
-    if (!payload.success) return resultErrorCreate(op, "The organization event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The organization event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

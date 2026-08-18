@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -28,7 +28,7 @@ import type { ExternalIdentityOAuthTransactionRow } from "../persistence/externa
 import type { ExternalIdentityProviderRow } from "../persistence/externalIdentityProviderTable.js"
 import type { ExternalIdentityCallbackResponse } from "../public/externalIdentityCallbackResponseSchema.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 const externalIdentityTransactionExpiryMessage = "The external identity callback is invalid."
 
@@ -54,10 +54,11 @@ export async function externalIdentityCallback(
     options.state.length < 20 ||
     options.state.length > 4096
   )
-    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const repository = externalIdentityRepositoryCreate(options.database.db)
   const transaction = repository.externalIdentityOAuthTransactionGetByState(
     options.realmId,
@@ -71,15 +72,16 @@ export async function externalIdentityCallback(
     transaction.data.expiresAt <= now ||
     (transaction.data.intent === "link" && transaction.data.callbackValidatedAt !== null)
   )
-    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const transactionRow = transaction.data
   const provider = repository.externalIdentityProviderGet(options.realmId, options.providerId)
   if (!provider.success) return provider
   if (provider.data === null || !provider.data.enabled || provider.data.redirectUri !== transactionRow.redirectUri)
-    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const providerRow = provider.data
   const port = options.providerPorts[providerRow.type as keyof ExternalIdentityProviderPorts]
-  if (port === undefined) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+  if (port === undefined)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const identity = await port.callbackExchange(
     {
       clientId: providerRow.clientId,
@@ -94,9 +96,10 @@ export async function externalIdentityCallback(
       pkceVerifier: transactionRow.pkceVerifier,
     },
   )
-  if (!identity.success) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+  if (!identity.success)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   if (!externalIdentityClaimsValidate(identity.data, providerRow.type, transactionRow.nonceHash))
-    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   if (transactionRow.intent === "link") {
     const confirmationToken = externalIdentityOpaqueSecretCreate(runtime)
@@ -123,7 +126,8 @@ export async function externalIdentityCallback(
     organizationId: transactionRow.organizationId ?? undefined,
     providerId: options.providerId,
   })
-  if (!policy.success) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+  if (!policy.success)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const committed = storageTransactionRun(options.database, (executor) =>
     externalIdentitySignInCommit({
       correlationId,
@@ -173,7 +177,11 @@ function externalIdentityLinkCallbackCommit(
   )
   if (!updated.success) return updated
   if (updated.data === null)
-    return resultErrorCreate("externalIdentityCallback", externalIdentityTransactionExpiryMessage)
+    return resultErrorCreate(
+      "externalIdentityCallback",
+      externalIdentityTransactionExpiryMessage,
+      "external-identities.invalid",
+    )
   const payload = v.safeParse(externalIdentityEventPayloadSchema, {
     action: "authentication_succeeded",
     externalSubject: options.identity.externalSubject,
@@ -182,7 +190,11 @@ function externalIdentityLinkCallbackCommit(
     userId: options.transaction.userId ?? undefined,
   })
   if (!payload.success)
-    return resultErrorCreate("externalIdentityCallback", "The external identity event payload is invalid.")
+    return resultErrorCreate(
+      "externalIdentityCallback",
+      "The external identity event payload is invalid.",
+      "external-identities.event-invalid",
+    )
   const event = storageEventAppend(
     options.database,
     {
@@ -229,34 +241,52 @@ function externalIdentitySignInCommit(
   let userId: string
   let identityRow = existing.data
   if (identityRow !== null) {
-    if (identityRow.realmId !== options.realmId) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+    if (identityRow.realmId !== options.realmId)
+      return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
     const user = options.database
       .select({ id: userTable.id, state: userTable.state, deletedAt: userTable.deletedAt })
       .from(userTable)
       .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, identityRow.userId)))
       .get()
     if (user === undefined || user.state !== "active" || user.deletedAt !== null)
-      return resultErrorCreate(op, "The external identity could not authenticate this account.")
+      return resultErrorCreate(
+        op,
+        "The external identity could not authenticate this account.",
+        "external-identities.unauthorized",
+      )
     userId = user.id
   } else {
     if (!options.provider.allowAccountCreation)
-      return resultErrorCreate(op, "External account creation is disabled for this provider.")
+      return resultErrorCreate(
+        op,
+        "External account creation is disabled for this provider.",
+        "external-identities.conflict",
+      )
     const email =
       options.identity.email === undefined
         ? resultErrorCreate(
             "externalIdentityCallback",
             "The external identity did not provide a verified email address.",
+            "external-identities.invalid",
           )
         : userEmailNormalize(options.identity.email)
     if (!email.success || !options.identity.emailVerified)
-      return resultErrorCreate(op, "The external identity did not provide a verified email address.")
+      return resultErrorCreate(
+        op,
+        "The external identity did not provide a verified email address.",
+        "external-identities.invalid",
+      )
     const existingEmail = options.database
       .select({ id: userTable.id })
       .from(userTable)
       .where(and(eq(userTable.realmId, options.realmId), eq(userTable.email, email.data)))
       .get()
     if (existingEmail !== undefined)
-      return resultErrorCreate(op, "An account already exists for this email. Sign in and link this provider.")
+      return resultErrorCreate(
+        op,
+        "An account already exists for this email. Sign in and link this provider.",
+        "external-identities.already-exists",
+      )
     userId = uuidv7Create(options.runtime)
     const userName = externalIdentityUserNameCreate(options.database, options.realmId, options.identity, email.data)
     if (!userName.success) return userName
@@ -276,7 +306,8 @@ function externalIdentitySignInCommit(
       })
       .returning()
       .get()
-    if (user === undefined) return resultErrorCreate(op, "The external account could not be created.")
+    if (user === undefined)
+      return resultErrorCreate(op, "The external account could not be created.", "external-identities.write-failed")
     const profile = options.database
       .insert(userProfileTable)
       .values({
@@ -292,9 +323,11 @@ function externalIdentitySignInCommit(
       })
       .returning()
       .get()
-    if (profile === undefined) return resultErrorCreate(op, "The external account could not be created.")
+    if (profile === undefined)
+      return resultErrorCreate(op, "The external account could not be created.", "external-identities.write-failed")
     const userPayload = v.safeParse(userCreatedEventPayloadSchema, { emailVerified: true, state: "active" })
-    if (!userPayload.success) return resultErrorCreate(op, "The user event payload is invalid.")
+    if (!userPayload.success)
+      return resultErrorCreate(op, "The user event payload is invalid.", "external-identities.event-invalid")
     const userEvent = storageEventAppend(
       options.database,
       {
@@ -320,7 +353,8 @@ function externalIdentitySignInCommit(
     options.now,
   )
   if (!consumed.success) return consumed
-  if (consumed.data === null) return resultErrorCreate(op, externalIdentityTransactionExpiryMessage)
+  if (consumed.data === null)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   if (identityRow === null) {
     const created = repository.externalIdentityCreate({
       createdAt: options.now,
@@ -336,7 +370,8 @@ function externalIdentitySignInCommit(
       username: options.identity.username ?? null,
       version: 1,
     })
-    if (!created.success) return resultErrorCreate(op, "The external identity could not be linked.")
+    if (!created.success)
+      return resultErrorCreate(op, "The external identity could not be linked.", "external-identities.write-failed")
     identityRow = created.data
     const identityPayload = v.safeParse(externalIdentityEventPayloadSchema, {
       action: "account_created",
@@ -346,7 +381,12 @@ function externalIdentitySignInCommit(
       providerType: options.provider.type,
       userId,
     })
-    if (!identityPayload.success) return resultErrorCreate(op, "The external identity event payload is invalid.")
+    if (!identityPayload.success)
+      return resultErrorCreate(
+        op,
+        "The external identity event payload is invalid.",
+        "external-identities.event-invalid",
+      )
     const identityEvent = storageEventAppend(
       options.database,
       {
@@ -374,7 +414,8 @@ function externalIdentitySignInCommit(
     providerType: options.provider.type,
     userId,
   })
-  if (!authPayload.success) return resultErrorCreate(op, "The external identity event payload is invalid.")
+  if (!authPayload.success)
+    return resultErrorCreate(op, "The external identity event payload is invalid.", "external-identities.event-invalid")
   const authEvent = storageEventAppend(
     options.database,
     {
@@ -415,7 +456,8 @@ function externalIdentitySignInCommit(
       }),
     userId,
   })
-  if (!authenticationResult.success) return resultErrorCreate(op, "The authenticated session could not be created.")
+  if (!authenticationResult.success)
+    return resultErrorCreate(op, "The authenticated session could not be created.", "external-identities.write-failed")
   return resultCreate({
     authentication: { authenticatedAt: options.now, realmId: options.realmId, userId },
     identity: externalIdentityViewCreate(identityRow, options.provider.type),
@@ -461,5 +503,9 @@ function externalIdentityUserNameCreate(
     const ending = `-${suffix}`
     candidate = `${base.data.slice(0, 128 - ending.length)}${ending}`
   }
-  return resultErrorCreate("externalIdentityCallback", "The external account name could not be allocated.")
+  return resultErrorCreate(
+    "externalIdentityCallback",
+    "The external account name could not be allocated.",
+    "external-identities.write-failed",
+  )
 }

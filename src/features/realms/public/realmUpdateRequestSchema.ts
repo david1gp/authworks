@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { realmStatusSchema } from "../domain/realmStatusSchema.js"
+import { realmStatusSchema } from "./realmStatusSchema.js"
 
 export const realmUpdateRequestSchema = v.strictObject({
   domain: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(253))),

@@ -2,6 +2,12 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { sessionApiClientCreate } from "../client/sessionApiClientCreate.js"
 
+type SessionListFlags = {
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
+}
 type SessionCliFlags = {
   readonly realmId?: string
   readonly server?: string
@@ -19,22 +25,28 @@ const sessionCurrentCommand = buildCommand({
 })
 
 const sessionListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: SessionCliFlags) {
+  async func(this: ApplicationContext, flags: SessionCliFlags & SessionListFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionList(realmId))
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(this, flags).sessionList(realmId, sessionListQueryCreate(flags)),
+    )
   },
-  parameters: { flags: sessionCommonFlags() },
+  parameters: { flags: { ...sessionCommonFlags(), ...sessionListFlags() } },
   docs: { brief: "List sessions" },
 })
 
 const sessionRecentCommand = buildCommand({
-  async func(this: ApplicationContext, flags: SessionCliFlags) {
+  async func(this: ApplicationContext, flags: SessionCliFlags & SessionListFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRecentList(realmId))
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(this, flags).sessionRecentList(realmId, sessionListQueryCreate(flags)),
+    )
   },
-  parameters: { flags: sessionCommonFlags() },
+  parameters: { flags: { ...sessionCommonFlags(), ...sessionListFlags() } },
   docs: { brief: "List recent sessions" },
 })
 
@@ -119,6 +131,48 @@ function sessionCommonFlags() {
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
+  }
+}
+
+function sessionListFlags() {
+  return {
+    pageSize: {
+      brief: "Page size",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => Number(value),
+      placeholder: "NUMBER",
+    },
+    pageToken: {
+      brief: "Page token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    sortBy: {
+      brief: "Sort field",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "FIELD",
+    },
+    sortDirection: {
+      brief: "Sort direction",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+      placeholder: "DIRECTION",
+    },
+  }
+}
+
+function sessionListQueryCreate(flags: SessionCliFlags & SessionListFlags) {
+  return {
+    ...(flags.pageSize === undefined ? {} : { pageSize: flags.pageSize }),
+    ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
+    ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
   }
 }
 

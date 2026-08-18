@@ -1,9 +1,9 @@
 import type { Result } from "#result"
 import type { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import type { PasswordAuthentication } from "./passwordAuthenticationSchema.js"
 import type { SessionCredentialResponse } from "../../sessions/public/sessionCredentialResponseSchema.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
+import type { PasswordAuthentication } from "../public/passwordAuthenticationSchema.js"
 
 type PasswordSessionCreateOptions = {
   readonly actorId?: string | null

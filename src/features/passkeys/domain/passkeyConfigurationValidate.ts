@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 
 type PasskeyConfiguration = {
   readonly origins: readonly string[]
@@ -21,16 +21,18 @@ export function passkeyConfigurationValidate(
     !/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$/.test(normalizedRpId) ||
     normalizedRpId.includes("..")
   )
-    return resultErrorCreate(op, "The passkey RP ID is invalid.")
-  if (rpName.trim().length === 0 || rpName.length > 128) return resultErrorCreate(op, "The passkey RP name is invalid.")
-  if (origins.length === 0 || origins.length > 16) return resultErrorCreate(op, "The passkey origins are invalid.")
+    return resultErrorCreate(op, "The passkey RP ID is invalid.", "passkeys.invalid")
+  if (rpName.trim().length === 0 || rpName.length > 128)
+    return resultErrorCreate(op, "The passkey RP name is invalid.", "passkeys.invalid")
+  if (origins.length === 0 || origins.length > 16)
+    return resultErrorCreate(op, "The passkey origins are invalid.", "passkeys.invalid")
   const normalizedOrigins: string[] = []
   for (const origin of origins) {
     let url: URL
     try {
       url = new URL(origin)
     } catch (_error) {
-      return resultErrorCreate(op, "The passkey origin is invalid.")
+      return resultErrorCreate(op, "The passkey origin is invalid.", "passkeys.invalid")
     }
     if (
       !["http:", "https:"].includes(url.protocol) ||
@@ -40,9 +42,9 @@ export function passkeyConfigurationValidate(
       url.search !== "" ||
       url.hash !== ""
     )
-      return resultErrorCreate(op, "The passkey origin is invalid.")
+      return resultErrorCreate(op, "The passkey origin is invalid.", "passkeys.invalid")
     if (url.hostname !== normalizedRpId && !url.hostname.endsWith(`.${normalizedRpId}`))
-      return resultErrorCreate(op, "The passkey RP ID is not valid for the configured origin.")
+      return resultErrorCreate(op, "The passkey RP ID is not valid for the configured origin.", "passkeys.invalid")
     const normalized = url.origin
     if (!normalizedOrigins.includes(normalized)) normalizedOrigins.push(normalized)
   }

@@ -3,6 +3,12 @@ import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { externalIdentityApiClientCreate } from "../client/externalIdentityApiClientCreate.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 
+type ExternalIdentityListFlags = {
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
+}
 type ExternalIdentityCliFlags = {
   readonly server?: string
   readonly token?: string
@@ -55,17 +61,28 @@ const externalIdentityProviderCreateCommand = buildCommand({
 })
 
 const externalIdentityProviderListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ExternalIdentityCliFlags & { organizationId?: string }) {
+  async func(
+    this: ApplicationContext,
+    flags: ExternalIdentityCliFlags & ExternalIdentityListFlags & { organizationId?: string },
+  ) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
     if (realmId === undefined) return
     externalIdentityCliResultWrite(
       this,
-      await externalIdentityCliClientCreate(this, flags).externalIdentityProviderList(realmId, organizationId),
+      await externalIdentityCliClientCreate(this, flags).externalIdentityProviderList(
+        realmId,
+        organizationId,
+        externalIdentityListQueryCreate(flags),
+      ),
     )
   },
   parameters: {
-    flags: { ...externalIdentityCommonFlags(), organizationId: externalIdentityOptionalTextFlag("Organization UUID") },
+    flags: {
+      ...externalIdentityCommonFlags(),
+      ...externalIdentityListFlags(),
+      organizationId: externalIdentityOptionalTextFlag("Organization UUID"),
+    },
   },
   docs: { brief: "List external identity providers" },
 })
@@ -157,6 +174,48 @@ function externalIdentityCommonFlags() {
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
+  }
+}
+
+function externalIdentityListFlags() {
+  return {
+    pageSize: {
+      brief: "Page size",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => Number(value),
+      placeholder: "NUMBER",
+    },
+    pageToken: {
+      brief: "Page token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    sortBy: {
+      brief: "Sort field",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "FIELD",
+    },
+    sortDirection: {
+      brief: "Sort direction",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+      placeholder: "DIRECTION",
+    },
+  }
+}
+
+function externalIdentityListQueryCreate(flags: ExternalIdentityCliFlags & ExternalIdentityListFlags) {
+  return {
+    ...(flags.pageSize === undefined ? {} : { pageSize: flags.pageSize }),
+    ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
+    ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
   }
 }
 

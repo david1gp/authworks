@@ -2,10 +2,17 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { realmApiClientCreate } from "../client/realmApiClientCreate.js"
 import type { RealmCreateRequest } from "../public/realmCreateRequestSchema.js"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 
 type RealmCliFlags = {
   readonly server?: string
   readonly token?: string
+}
+type RealmListCliFlags = RealmCliFlags & {
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
 }
 
 type RealmCreateCliFlags = RealmCliFlags & {
@@ -55,8 +62,8 @@ const realmCreateCommand = buildCommand({
 })
 
 const realmListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: RealmCliFlags) {
-    const result = await realmCliClientCreate(this, flags).realmList()
+  async func(this: ApplicationContext, flags: RealmListCliFlags) {
+    const result = await realmCliClientCreate(this, flags).realmList(realmListQueryCreate(flags))
     realmCliResultWrite(this, result)
   },
   parameters: {
@@ -75,6 +82,7 @@ const realmListCommand = buildCommand({
         parse: (value: string) => value,
         placeholder: "TOKEN",
       },
+      ...realmListFlags(),
     },
   },
   docs: { brief: "List realms" },
@@ -128,6 +136,55 @@ function realmCliClientCreate(context: ApplicationContext, flags: RealmCliFlags)
   const baseUrl = flags.server ?? context.process.env?.ZITADEL_V2_URL ?? "http://127.0.0.1:3000"
   const token = flags.token ?? context.process.env?.ZITADEL_V2_TOKEN
   return realmApiClientCreate({ baseUrl, token })
+}
+
+function realmListFlags() {
+  return {
+    pageSize: {
+      brief: "Maximum items per page",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => Number(value),
+      placeholder: "NUMBER",
+    },
+    pageToken: {
+      brief: "Opaque page token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    sortBy: {
+      brief: "Sort field",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "FIELD",
+    },
+    sortDirection: {
+      brief: "Sort direction",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+      placeholder: "DIRECTION",
+    },
+  }
+}
+
+function realmListQueryCreate(flags: RealmListCliFlags): ListQuery | undefined {
+  if (
+    flags.pageSize === undefined &&
+    flags.pageToken === undefined &&
+    flags.sortBy === undefined &&
+    flags.sortDirection === undefined
+  )
+    return undefined
+  return {
+    ...(flags.pageSize === undefined ? {} : { pageSize: flags.pageSize }),
+    ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
+    ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
+  }
 }
 
 function realmCliResultWrite(

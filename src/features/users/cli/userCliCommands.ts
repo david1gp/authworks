@@ -1,10 +1,17 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { userApiClientCreate } from "../client/userApiClientCreate.js"
 
 type UserCliFlags = {
   readonly server?: string
   readonly token?: string
+}
+type UserListCliFlags = UserCliFlags & {
+  readonly pageSize?: number
+  readonly pageToken?: string
+  readonly sortBy?: string
+  readonly sortDirection?: "asc" | "desc"
 }
 
 type UserIdCliFlags = UserCliFlags & {
@@ -41,12 +48,12 @@ const userCreateCommand = buildCommand({
 })
 
 const userListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: UserCliFlags & { realmId?: string }) {
+  async func(this: ApplicationContext, flags: UserListCliFlags & { realmId?: string }) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userList(realmId))
+    userCliResultWrite(this, await userCliClientCreate(this, flags).userList(realmId, userListQueryCreate(flags)))
   },
-  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag() } },
+  parameters: { flags: { ...userCommonFlags(), ...userListFlags(), realmId: userRealmIdFlag() } },
   docs: { brief: "List users" },
 })
 
@@ -185,6 +192,55 @@ function userCommonFlags() {
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
+  }
+}
+
+function userListFlags() {
+  return {
+    pageSize: {
+      brief: "Maximum items per page",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => Number(value),
+      placeholder: "NUMBER",
+    },
+    pageToken: {
+      brief: "Opaque page token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    sortBy: {
+      brief: "Sort field",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "FIELD",
+    },
+    sortDirection: {
+      brief: "Sort direction",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value as "asc" | "desc",
+      placeholder: "DIRECTION",
+    },
+  }
+}
+
+function userListQueryCreate(flags: UserListCliFlags): ListQuery | undefined {
+  if (
+    flags.pageSize === undefined &&
+    flags.pageToken === undefined &&
+    flags.sortBy === undefined &&
+    flags.sortDirection === undefined
+  )
+    return undefined
+  return {
+    ...(flags.pageSize === undefined ? {} : { pageSize: flags.pageSize }),
+    ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
+    ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
   }
 }
 

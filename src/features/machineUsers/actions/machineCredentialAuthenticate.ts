@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationActorContextCreate } from "../../authorization/domain/authorizationActorContextCreate.js"
@@ -24,10 +24,11 @@ export function machineCredentialAuthenticate(
 ): Result<MachineCredentialAuthentication> {
   const op = "machineCredentialAuthenticate"
   if (options.realmId.length === 0 || options.token.length === 0)
-    return resultErrorCreate(op, "Machine authorization is required.")
+    return resultErrorCreate(op, "Machine authorization is required.", "machine-users.unauthorized")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "Machine authorization is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "Machine authorization is invalid.", "machine-users.invalid")
   const repository = machineRepositoryCreate(options.database.db)
   const credentials = repository.credentialListForRealm(options.realmId)
   if (!credentials.success) return credentials
@@ -47,15 +48,20 @@ export function machineCredentialAuthenticate(
   const credential = tokenHashCandidates.find(
     (candidate) => candidate.revokedAt === null && (candidate.expiresAt === null || candidate.expiresAt > now),
   )
-  if (credential === undefined) return resultErrorCreate(op, "Machine authorization is invalid.")
+  if (credential === undefined)
+    return resultErrorCreate(op, "Machine authorization is invalid.", "machine-users.invalid")
   const machineUser = repository.userGet(options.realmId, credential.machineUserId)
   if (!machineUser.success) return machineUser
   if (machineUser.data === null || machineUser.data.status !== "active")
-    return resultErrorCreate(op, "Machine authorization is invalid.")
+    return resultErrorCreate(op, "Machine authorization is invalid.", "machine-users.invalid")
   const scopes = machineScopesParse(credential.scopes)
   if (!scopes.success) return scopes
   if (options.requiredScope !== undefined && !scopes.data.includes(options.requiredScope))
-    return resultErrorCreate(op, "The machine credential is not authorized for this permission.")
+    return resultErrorCreate(
+      op,
+      "The machine credential is not authorized for this permission.",
+      "machine-users.forbidden",
+    )
   const authenticationMethod =
     credential.kind === "api_key"
       ? "api_key"

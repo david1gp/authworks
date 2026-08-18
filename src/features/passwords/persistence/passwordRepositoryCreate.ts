@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, isNull, or } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { userTable, type UserRow } from "../../users/persistence/userTable.js"
 import { passwordChallengeTable, type PasswordChallengeRow } from "./passwordChallengeTable.js"
@@ -16,10 +16,18 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(passwordChallengeTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("passwordChallengeCreate", "The password challenge could not be created.")
+          return resultErrorCreate(
+            "passwordChallengeCreate",
+            "The password challenge could not be created.",
+            "passwords.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("passwordChallengeCreate", "The password challenge could not be created.")
+        return resultErrorCreate(
+          "passwordChallengeCreate",
+          "The password challenge could not be created.",
+          "passwords.write-failed",
+        )
       }
     },
 
@@ -39,7 +47,11 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passwordChallengeGet", "The password challenge could not be read.")
+        return resultErrorCreate(
+          "passwordChallengeGet",
+          "The password challenge could not be read.",
+          "passwords.read-failed",
+        )
       }
     },
 
@@ -60,7 +72,11 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passwordChallengeConsume", "The password challenge could not be consumed.")
+        return resultErrorCreate(
+          "passwordChallengeConsume",
+          "The password challenge could not be consumed.",
+          "passwords.write-failed",
+        )
       }
     },
 
@@ -83,6 +99,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "passwordChallengeExpirePrevious",
           "The previous password challenges could not be closed.",
+          "passwords.write-failed",
         )
       }
     },
@@ -91,10 +108,18 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
       try {
         const row = database.insert(passwordCredentialTable).values(input).returning().get()
         if (row === undefined)
-          return resultErrorCreate("passwordCredentialCreate", "The password credential could not be created.")
+          return resultErrorCreate(
+            "passwordCredentialCreate",
+            "The password credential could not be created.",
+            "passwords.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("passwordCredentialCreate", "The password credential could not be created.")
+        return resultErrorCreate(
+          "passwordCredentialCreate",
+          "The password credential could not be created.",
+          "passwords.write-failed",
+        )
       }
     },
 
@@ -108,7 +133,11 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passwordCredentialGet", "The password credential could not be read.")
+        return resultErrorCreate(
+          "passwordCredentialGet",
+          "The password credential could not be read.",
+          "passwords.read-failed",
+        )
       }
     },
 
@@ -127,7 +156,11 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passwordCredentialUpdate", "The password credential could not be updated.")
+        return resultErrorCreate(
+          "passwordCredentialUpdate",
+          "The password credential could not be updated.",
+          "passwords.write-failed",
+        )
       }
     },
 
@@ -147,7 +180,11 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
           .get()
         return resultCreate(event?.aggregateVersion ?? 0)
       } catch (_error) {
-        return resultErrorCreate("passwordEventVersionGet", "The password event version could not be read.")
+        return resultErrorCreate(
+          "passwordEventVersionGet",
+          "The password event version could not be read.",
+          "passwords.read-failed",
+        )
       }
     },
 
@@ -161,7 +198,11 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passwordLockoutGet", "The password lockout state could not be read.")
+        return resultErrorCreate(
+          "passwordLockoutGet",
+          "The password lockout state could not be read.",
+          "passwords.read-failed",
+        )
       }
     },
 
@@ -182,10 +223,18 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
           .returning()
           .get()
         if (row === undefined)
-          return resultErrorCreate("passwordLockoutSet", "The password lockout state could not be written.")
+          return resultErrorCreate(
+            "passwordLockoutSet",
+            "The password lockout state could not be written.",
+            "passwords.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("passwordLockoutSet", "The password lockout state could not be written.")
+        return resultErrorCreate(
+          "passwordLockoutSet",
+          "The password lockout state could not be written.",
+          "passwords.write-failed",
+        )
       }
     },
 
@@ -195,7 +244,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
           database.select().from(passwordPolicyTable).where(eq(passwordPolicyTable.realmId, realmId)).get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passwordPolicyGet", "The password policy could not be read.")
+        return resultErrorCreate("passwordPolicyGet", "The password policy could not be read.", "passwords.read-failed")
       }
     },
 
@@ -221,10 +270,18 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
           .returning()
           .get()
         if (row === undefined)
-          return resultErrorCreate("passwordPolicySet", "The password policy could not be written.")
+          return resultErrorCreate(
+            "passwordPolicySet",
+            "The password policy could not be written.",
+            "passwords.write-failed",
+          )
         return resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("passwordPolicySet", "The password policy could not be written.")
+        return resultErrorCreate(
+          "passwordPolicySet",
+          "The password policy could not be written.",
+          "passwords.write-failed",
+        )
       }
     },
 
@@ -244,7 +301,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passwordUserFindByIdentifier", "The user could not be read.")
+        return resultErrorCreate("passwordUserFindByIdentifier", "The user could not be read.", "passwords.read-failed")
       }
     },
 
@@ -258,7 +315,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("passwordUserGet", "The user could not be read.")
+        return resultErrorCreate("passwordUserGet", "The user could not be read.", "passwords.read-failed")
       }
     },
   }

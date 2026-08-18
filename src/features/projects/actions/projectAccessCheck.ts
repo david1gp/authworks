@@ -1,5 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -20,7 +21,7 @@ export function projectAccessCheck(
   const project = repository.projectGet(options.projectId)
   if (!project.success) return project
   if (project.data === null || project.data.realmId !== options.realmId || project.data.status !== "active")
-    return { errorMessage: "The project was not found.", op: "projectAccessCheck", success: false }
+    return resultErrorCodedCreate("projectAccessCheck", "The project was not found.", "projects.not-found")
   const authorized = projectContextAuthorize({
     context: options.context,
     database: options.database,

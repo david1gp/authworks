@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -24,7 +24,8 @@ export function sessionRevokeAll(options: SessionRevokeAllOptions): Result<Sessi
   const op = "sessionRevokeAll"
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The session timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The session timestamp is invalid.", "sessions.invalid-timestamp")
   const correlationId = uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = sessionRepositoryCreate(transaction)
@@ -40,7 +41,8 @@ export function sessionRevokeAll(options: SessionRevokeAllOptions): Result<Sessi
         version: session.version + 1,
       })
       if (!updated.success) return updated
-      if (updated.data === null) return resultErrorCreate(op, "The sessions could not be revoked.")
+      if (updated.data === null)
+        return resultErrorCreate(op, "The sessions could not be revoked.", "sessions.write-failed")
       const eventVersion = repository.sessionEventVersionGet(options.realmId, session.id)
       if (!eventVersion.success) return eventVersion
       const payload = v.safeParse(sessionRevokedEventPayloadSchema, {
@@ -48,7 +50,8 @@ export function sessionRevokeAll(options: SessionRevokeAllOptions): Result<Sessi
         revokedAt: now,
         sessionId: session.id,
       })
-      if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.")
+      if (!payload.success)
+        return resultErrorCreate(op, "The session event payload is invalid.", "sessions.event-invalid")
       const event = storageEventAppend(
         transaction,
         {

@@ -1,8 +1,7 @@
 import { Hono } from "hono"
-import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { Result } from "#result"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -25,9 +24,9 @@ import { passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequest
 import { passwordRegistrationRequestSchema } from "../public/passwordRegistrationRequestSchema.js"
 import type { PasswordRegistrationDelivery } from "../public/passwordRegistrationDeliverySchema.js"
 import type { PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliverySchema.js"
-import type { PasswordSessionCreate } from "../public/passwordSessionCreate.js"
+import type { PasswordSessionCreate } from "../domain/passwordSessionCreate.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
-import { sessionPasswordCreate } from "../../sessions/public/sessionPasswordCreate.js"
+import { sessionPasswordCreate } from "../../sessions/actions/sessionPasswordCreate.js"
 
 type PasswordServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -304,34 +303,32 @@ function passwordDeviceMetadataGet(context: {
 }
 
 function passwordErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { errorMessage: string; op: string },
+  context: PasswordRouteContext,
+  result: { errorMessage: string; op: string; code?: string; success?: false },
 ) {
-  const code = passwordErrorCodeGet(result)
-  return context.json(
-    httpErrorResponseCreate(code, result.errorMessage),
-    httpErrorStatusGet(code) as ContentfulStatusCode,
-  )
-}
-
-function passwordErrorCodeGet(result: { errorMessage: string; op: string }): string {
-  const message = result.errorMessage.toLowerCase()
-  if (message.includes("credentials") || message.includes("current password")) return "unauthorized"
-  if (result.op.includes("Authorization") || result.op.includes("Authenticate") || message.includes("authorization"))
-    return "unauthorized"
-  if (message.includes("not found") || message.includes("not available")) return "not_found"
-  if (message.includes("already") || message.includes("not active")) return "conflict"
-  if (message.includes("invalid") || message.includes("required") || message.includes("policy")) return "bad_request"
-  return "internal_server_error"
+  return httpResultResponseCreate(context, {
+    ...result,
+    code: result.code ?? "passwords.invalid",
+    success: false,
+  } as Result<unknown>)
 }
 
 function passwordResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  context: PasswordRouteContext,
+  result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
 ) {
-  if (!result.success) return passwordErrorResponseCreate(context, result as { errorMessage: string; op: string })
-  return context.json(result.data, status as ContentfulStatusCode)
+  if (!result.success)
+    return passwordErrorResponseCreate(
+      context,
+      result as { errorMessage: string; op: string; code?: string; success: false },
+    )
+  return httpResultResponseCreate(context, result as Result<T>, status)
+}
+
+type PasswordRouteContext = {
+  readonly json: (body: unknown, status?: number) => Response
+  readonly req: { readonly header: (name: string) => string | undefined }
 }
 
 async function passwordRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

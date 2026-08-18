@@ -141,7 +141,7 @@ test("projects, applications, roles, and lifecycles are tenant-isolated", async 
       projectId: created.data.project.id,
     })
     expect(listedApplications.success).toBe(true)
-    if (listedApplications.success) expect(listedApplications.data.applications).toHaveLength(0)
+    if (listedApplications.success) expect(listedApplications.data.items).toHaveLength(0)
   })
 })
 

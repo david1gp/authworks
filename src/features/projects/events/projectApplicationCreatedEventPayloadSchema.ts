@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { projectApplicationTypeSchema } from "../domain/projectApplicationTypeSchema.js"
+import { projectApplicationTypeSchema } from "../public/projectApplicationTypeSchema.js"
 
 export const projectApplicationCreatedEventPayloadSchema = v.strictObject({
   applicationType: projectApplicationTypeSchema,

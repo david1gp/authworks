@@ -1,8 +1,8 @@
 import * as v from "valibot"
-import { oidcClientStatusSchema } from "../domain/oidcClientStatusSchema.js"
-import { oidcClientTypeSchema } from "../domain/oidcClientTypeSchema.js"
-import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
-import { oidcScopeSchema } from "../domain/oidcScopeSchema.js"
+import { oidcClientStatusSchema } from "./oidcClientStatusSchema.js"
+import { oidcClientTypeSchema } from "./oidcClientTypeSchema.js"
+import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
+import { oidcScopeSchema } from "./oidcScopeSchema.js"
 
 const oidcRedirectUriSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(2048))
 

@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { machineScopeSchema } from "../domain/machineScopeSchema.js"
-import { machineUserStatusSchema } from "../domain/machineUserStatusSchema.js"
+import { machineScopeSchema } from "../public/machineScopeSchema.js"
+import { machineUserStatusSchema } from "../public/machineUserStatusSchema.js"
 
 export const machineUserCreatedEventPayloadSchema = v.strictObject({
   displayName: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),

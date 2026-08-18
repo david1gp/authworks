@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -35,17 +35,18 @@ type ImpersonationEndCommit = {
 export function impersonationEnd(options: ImpersonationEndOptions): Result<ImpersonationEndResponse> {
   const op = "impersonationEnd"
   if (options.realmId.length === 0 || options.sessionId.length === 0)
-    return resultErrorCreate(op, "The impersonation session is invalid.")
+    return resultErrorCreate(op, "The impersonation session is invalid.", "impersonation.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The impersonation timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The impersonation timestamp is invalid.", "impersonation.invalid-timestamp")
   const correlationId = uuidv7Create(runtime)
   const committed = storageTransactionRun(options.database, (transaction) => {
     const repository = sessionRepositoryCreate(transaction)
     const current = repository.sessionGet(options.realmId, options.sessionId)
     if (!current.success) return current
     if (current.data === null || current.data.impersonatorId === null)
-      return resultErrorCreate(op, "The impersonation session was not found.")
+      return resultErrorCreate(op, "The impersonation session was not found.", "impersonation.not-found")
     const isImpersonator =
       options.actor.actorId === current.data.impersonatorId && options.actor.impersonatorId === undefined
     const isSubject =
@@ -53,7 +54,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
       options.actor.impersonationSessionId === options.sessionId &&
       options.actor.impersonatorId === current.data.impersonatorId
     if (!isImpersonator && !isSubject)
-      return resultErrorCreate(op, "The actor is not authorized to end this impersonation.")
+      return resultErrorCreate(op, "The actor is not authorized to end this impersonation.", "authorization.forbidden")
     if (current.data.revokedAt !== null)
       return resultCreate<ImpersonationEndCommit>({ response: { ended: false, sessionId: options.sessionId } })
     const revoked = repository.sessionVersionUpdate(options.realmId, options.sessionId, current.data.version, {
@@ -62,7 +63,8 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
       version: current.data.version + 1,
     })
     if (!revoked.success) return revoked
-    if (revoked.data === null) return resultErrorCreate(op, "The impersonation session was not found.")
+    if (revoked.data === null)
+      return resultErrorCreate(op, "The impersonation session was not found.", "impersonation.not-found")
     const sessionVersion = repository.sessionEventVersionGet(options.realmId, options.sessionId)
     if (!sessionVersion.success) return sessionVersion
     const revokedPayload = v.safeParse(sessionRevokedEventPayloadSchema, {
@@ -70,7 +72,8 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
       revokedAt: now,
       sessionId: options.sessionId,
     })
-    if (!revokedPayload.success) return resultErrorCreate(op, "The session event payload is invalid.")
+    if (!revokedPayload.success)
+      return resultErrorCreate(op, "The session event payload is invalid.", "impersonation.event-invalid")
     const revokedEvent = storageEventAppend(
       transaction,
       {
@@ -97,7 +100,8 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
       )
       .orderBy(desc(storageEventTable.aggregateVersion))
       .get()?.aggregateVersion
-    if (impersonationVersion === undefined) return resultErrorCreate(op, "The impersonation audit event was not found.")
+    if (impersonationVersion === undefined)
+      return resultErrorCreate(op, "The impersonation audit event was not found.", "impersonation.not-found")
     const endedPayload = v.safeParse(impersonationEndedEventPayloadSchema, {
       actorId: current.data.impersonatorId,
       endedAt: now,
@@ -109,7 +113,8 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
       sessionId: options.sessionId,
       subjectId: current.data.userId,
     })
-    if (!endedPayload.success) return resultErrorCreate(op, "The impersonation event payload is invalid.")
+    if (!endedPayload.success)
+      return resultErrorCreate(op, "The impersonation event payload is invalid.", "impersonation.event-invalid")
     const endedEvent = storageEventAppend(
       transaction,
       {

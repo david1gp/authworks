@@ -22,11 +22,14 @@ test("all feature clients round-trip through the composed server", async () => {
   const domain = "composed-surfaces.example.com"
   const systemSecret = "composed-system-secret"
   try {
-    const app = serverApplicationCreate({
+    const created = serverApplicationCreate({
       databasePath: join(directory, "zitadel.sqlite"),
       publicOrigin: `https://${domain}`,
       systemSecret,
     })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+    const app = created.data
     const fetchFromServer = async (input: string | URL | Request, init?: RequestInit) =>
       app.request(input instanceof Request ? input : input.toString(), init)
     const baseUrl = `https://${domain}`

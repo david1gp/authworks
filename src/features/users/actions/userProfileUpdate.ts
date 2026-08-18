@@ -1,7 +1,8 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { patchInputParse } from "../../../platform/http/patchInputParse.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -33,17 +34,17 @@ type UserProfileUpdateOptions = {
 export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ user: User }> {
   const op = "userProfileUpdate"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "users.tenant-required")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The user is not available in this tenant context.")
-  const parsed = v.safeParse(userProfileUpdateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The user profile update is invalid.")
-  if (Object.keys(parsed.output).length === 0) return resultErrorCreate(op, "The user profile update is empty.")
-  const profile = userProfileNormalize(parsed.output)
+    return resultErrorCreate(op, "The user is not available in this tenant context.", "users.tenant-mismatch")
+  const parsed = patchInputParse(op, userProfileUpdateRequestSchema, options.input, "users.empty-patch")
+  if (!parsed.success) return parsed
+  const profile = userProfileNormalize(parsed.data)
   if (!profile.success) return profile
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
-  if (!Number.isSafeInteger(updatedAt) || updatedAt < 0) return resultErrorCreate(op, "The user timestamp is invalid.")
+  if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)
+    return resultErrorCreate(op, "The user timestamp is invalid.", "users.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   return storageTransactionRun(options.database, (transaction) => {
@@ -51,7 +52,7 @@ export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ u
     const current = repository.userGet(options.realmId, options.userId)
     if (!current.success) return current
     if (current.data === null || current.data.state === "deleted")
-      return resultErrorCreate(op, "The user was not found.")
+      return resultErrorCreate(op, "The user was not found.", "users.not-found")
     const currentUser = current.data
     const changedFields = Object.keys(profile.data).filter((field) => {
       const key = field as keyof typeof profile.data
@@ -64,15 +65,16 @@ export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ u
       updatedAt,
     })
     if (!updatedProfile.success) return updatedProfile
-    if (updatedProfile.data === null) return resultErrorCreate(op, "The user was not found.")
+    if (updatedProfile.data === null) return resultErrorCreate(op, "The user was not found.", "users.not-found")
     const updated = repository.userUpdate(options.realmId, options.userId, {
       updatedAt,
       version: currentUser.version + 1,
     })
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The user was not found.")
+    if (updated.data === null) return resultErrorCreate(op, "The user was not found.", "users.not-found")
     const payload = v.safeParse(userProfileUpdatedEventPayloadSchema, { fields: changedFields })
-    if (!payload.success) return resultErrorCreate(op, "The user profile event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The user profile event payload is invalid.", "users.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

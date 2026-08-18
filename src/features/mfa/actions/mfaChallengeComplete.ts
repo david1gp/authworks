@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
@@ -43,10 +43,11 @@ type MfaChallengeCompleteOptions = {
 export function mfaChallengeComplete(options: MfaChallengeCompleteOptions): Result<MfaLoginResponse> {
   const op = "mfaChallengeComplete"
   const input = v.safeParse(mfaChallengeCompleteRequestSchema, options.input)
-  if (!input.success) return resultErrorCreate(op, "The MFA code is invalid.")
+  if (!input.success) return resultErrorCreate(op, "The MFA code is invalid.", "mfa.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The MFA timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The MFA timestamp is invalid.", "mfa.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) =>
     mfaChallengeCompleteTransaction({
@@ -89,9 +90,9 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
     challenge.data.expiresAt <= options.now ||
     challenge.data.attempts >= challenge.data.maxAttempts
   )
-    return resultErrorCreate(op, "The MFA challenge is invalid.")
+    return resultErrorCreate(op, "The MFA challenge is invalid.", "mfa.invalid")
   if (challenge.data.purpose === "step_up" && options.sessionToken === undefined)
-    return resultErrorCreate(op, "The MFA session is required.")
+    return resultErrorCreate(op, "The MFA session is required.", "mfa.unauthorized")
   const policyRow = repository.mfaPolicyGet(options.realmId)
   if (!policyRow.success) return policyRow
   const policy = policyRow.data === null ? mfaPolicyDefaults : policyRow.data
@@ -102,12 +103,12 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
     currentLockout.data?.lockedUntil !== undefined &&
     currentLockout.data.lockedUntil > options.now
   )
-    return resultErrorCreate(op, "The MFA code is invalid.")
+    return resultErrorCreate(op, "The MFA code is invalid.", "mfa.unauthorized")
   const active = repository.mfaEnrollmentActiveGet(options.realmId, challenge.data.userId)
   if (!active.success) return active
-  if (active.data === null) return resultErrorCreate(op, "The MFA challenge is invalid.")
+  if (active.data === null) return resultErrorCreate(op, "The MFA challenge is invalid.", "mfa.not-found")
   const secret = mfaTotpSecretProtect("decrypt", active.data.encryptedSecret, options.realmId, options.encryptionSecret)
-  if (!secret.success) return resultErrorCreate(op, "The MFA challenge is invalid.")
+  if (!secret.success) return resultErrorCreate(op, "The MFA challenge is invalid.", "mfa.invalid")
   const totp = mfaTotpCodeVerify(
     secret.data,
     options.input.code,
@@ -165,14 +166,14 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
       },
     )
     if (!updated.success) return updated
-    if (updated.data === null) return resultErrorCreate(op, "The MFA code is invalid.")
+    if (updated.data === null) return resultErrorCreate(op, "The MFA code is invalid.", "mfa.write-failed")
   }
   if (factor === "recovery_code" && recoveryCodeId !== undefined && recoveryCodeVersion !== undefined) {
     const recoveryPayload = v.safeParse(mfaEventPayloadSchema, {
       factor: "recovery_code",
       userId: challenge.data.userId,
     })
-    if (!recoveryPayload.success) return resultErrorCreate(op, "The MFA event payload is invalid.")
+    if (!recoveryPayload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
     const recoveryEvent = storageEventAppend(
       options.database,
       {
@@ -197,7 +198,7 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
     version: challenge.data.version + 1,
   })
   if (!consumedChallenge.success) return consumedChallenge
-  if (consumedChallenge.data === null) return resultErrorCreate(op, "The MFA challenge is invalid.")
+  if (consumedChallenge.data === null) return resultErrorCreate(op, "The MFA challenge is invalid.", "mfa.write-failed")
   const reset = repository.mfaLockoutSet({
     failedAttempts: 0,
     realmId: options.realmId,
@@ -213,7 +214,7 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
     purpose: challenge.data.purpose,
     userId: challenge.data.userId,
   })
-  if (!completedPayload.success) return resultErrorCreate(op, "The MFA event payload is invalid.")
+  if (!completedPayload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
   const completedEvent = storageEventAppend(
     options.database,
     {
@@ -256,7 +257,8 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
       runtime: options.runtime,
       userId: challenge.data.userId,
     })
-    if (!session.success) return resultErrorCreate(op, "The multi-factor session could not be created.")
+    if (!session.success)
+      return resultErrorCreate(op, "The multi-factor session could not be created.", "mfa.write-failed")
     return resultCreate({
       authentication: {
         authenticatedAt: authentication.authenticatedAt,
@@ -286,7 +288,8 @@ function mfaChallengeFailureRecord(
     version: expectedVersion + 1,
   })
   if (!updated.success) return updated
-  if (updated.data === null) return resultErrorCreate("mfaChallengeComplete", "The MFA challenge is invalid.")
+  if (updated.data === null)
+    return resultErrorCreate("mfaChallengeComplete", "The MFA challenge is invalid.", "mfa.write-failed")
   const lockout = repository.mfaLockoutGet(options.realmId, userId)
   if (!lockout.success) return lockout
   const policy = repository.mfaPolicyGet(options.realmId)
@@ -310,7 +313,8 @@ function mfaChallengeFailureRecord(
     locked: consumedAt !== null,
     userId,
   })
-  if (!payload.success) return resultErrorCreate("mfaChallengeComplete", "The MFA event payload is invalid.")
+  if (!payload.success)
+    return resultErrorCreate("mfaChallengeComplete", "The MFA event payload is invalid.", "mfa.event-invalid")
   const event = storageEventAppend(
     options.database,
     {
@@ -329,7 +333,7 @@ function mfaChallengeFailureRecord(
     options.runtime,
   )
   if (!event.success) return event
-  return resultErrorCreate("mfaChallengeComplete", "The MFA code is invalid.")
+  return resultErrorCreate("mfaChallengeComplete", "The MFA code is invalid.", "mfa.unauthorized")
 }
 
 function mfaStepUpSessionRotate(
@@ -339,7 +343,8 @@ function mfaStepUpSessionRotate(
   authentication: MfaAuthentication,
 ): Result<MfaLoginResponse> {
   const op = "mfaChallengeComplete"
-  if (options.sessionToken === undefined) return resultErrorCreate(op, "The MFA session is required.")
+  if (options.sessionToken === undefined)
+    return resultErrorCreate(op, "The MFA session is required.", "mfa.unauthorized")
   const current = options.database
     .select()
     .from(sessionTable)
@@ -357,7 +362,7 @@ function mfaStepUpSessionRotate(
     current.revokedAt !== null ||
     current.expiresAt <= options.now
   )
-    return resultErrorCreate(op, "The MFA session is invalid.")
+    return resultErrorCreate(op, "The MFA session is invalid.", "mfa.unauthorized")
   const nextToken = sessionCredentialCreate(options.runtime)
   const rotated = sessionRepositoryCreate(options.database).sessionAssuranceRotate(
     options.realmId,
@@ -370,11 +375,11 @@ function mfaStepUpSessionRotate(
     factor,
   )
   if (!rotated.success) return rotated
-  if (rotated.data === null) return resultErrorCreate(op, "The MFA session is invalid.")
+  if (rotated.data === null) return resultErrorCreate(op, "The MFA session is invalid.", "mfa.write-failed")
   const eventVersion = sessionRepositoryCreate(options.database).sessionEventVersionGet(options.realmId, current.id)
   if (!eventVersion.success) return eventVersion
   const payload = v.safeParse(sessionRotatedEventPayloadSchema, { rotatedAt: options.now, sessionId: current.id })
-  if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.")
+  if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.", "mfa.event-invalid")
   const event = storageEventAppend(
     options.database,
     {

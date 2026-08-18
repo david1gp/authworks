@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -38,18 +38,20 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
   const authorized = machineUserContextAuthorize(options)
   if (!authorized.success) return authorized
   const parsed = v.safeParse(machineUserCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The machine user request is invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The machine user request is invalid.", "machine-users.invalid")
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCreate(op, "The realm is not active.", "machine-users.not-active")
 
   const userName = parsed.output.userName.trim().toLowerCase()
-  if (!/^[a-z][a-z0-9._:-]*$/.test(userName)) return resultErrorCreate(op, "The machine user request is invalid.")
+  if (!/^[a-z][a-z0-9._:-]*$/.test(userName))
+    return resultErrorCreate(op, "The machine user request is invalid.", "machine-users.invalid")
   const scopes = [...new Set(parsed.output.scopes ?? [])]
   const runtime = options.runtime ?? options.database.runtime
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The machine user timestamp is invalid.")
+    return resultErrorCreate(op, "The machine user timestamp is invalid.", "machine-users.invalid-timestamp")
   const machineUserId = uuidv7Create(runtime)
   const credentialId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
@@ -73,7 +75,11 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
     })
     if (!user.success) {
       if (user.errorMessage === "The machine user could not be created.")
-        return resultErrorCreate(op, "A machine user with that name already exists in this realm.")
+        return resultErrorCreate(
+          op,
+          "A machine user with that name already exists in this realm.",
+          "machine-users.already-exists",
+        )
       return user
     }
     const credential = repository.credentialCreate({
@@ -105,7 +111,7 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
       scopes,
     })
     if (!userPayload.success || !credentialPayload.success)
-      return resultErrorCreate(op, "The machine user event payload is invalid.")
+      return resultErrorCreate(op, "The machine user event payload is invalid.", "machine-users.event-invalid")
     const userEvent = storageEventAppend(
       transaction,
       {

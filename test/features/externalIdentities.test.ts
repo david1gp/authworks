@@ -12,6 +12,7 @@ import { externalIdentityLinkComplete } from "../../src/features/externalIdentit
 import { externalIdentityLinkStart } from "../../src/features/externalIdentities/actions/externalIdentityLinkStart.js"
 import { externalIdentityList } from "../../src/features/externalIdentities/actions/externalIdentityList.js"
 import { externalIdentityProviderCreate } from "../../src/features/externalIdentities/actions/externalIdentityProviderCreate.js"
+import { externalIdentityProviderUpdate } from "../../src/features/externalIdentities/actions/externalIdentityProviderUpdate.js"
 import { externalIdentityProviderPortCreate } from "../../src/features/externalIdentities/domain/externalIdentityProviderPortCreate.js"
 import type { ExternalIdentityProviderPort } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { externalIdentityOAuthTransactionTable } from "../../src/features/externalIdentities/persistence/externalIdentityOAuthTransactionTable.js"
@@ -109,6 +110,25 @@ async function createProvider(database: StorageDatabase, realmId: string, allowA
   if (!created.success) throw new Error(created.errorMessage)
   return created.data.provider
 }
+
+test("external identity provider PATCH rejects an empty patch with a stable code", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "external-patch.example.com")
+    const provider = await createProvider(database, realm.id)
+    const updated = externalIdentityProviderUpdate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {},
+      providerId: provider.id,
+      realmId: realm.id,
+    })
+    expect(updated).toMatchObject({
+      code: "external-identities.empty-patch",
+      errorMessage: "The patch is empty.",
+      success: false,
+    })
+  })
+})
 
 test("external identity login validates state and creates a session without exposing provider secrets", async () => {
   await withDatabase(async (database, testkit) => {
@@ -664,7 +684,8 @@ test("external identity HTTP, client, and CLI surfaces keep configuration and se
     if (!created.success) return
     expect(JSON.stringify(created.data)).not.toContain("client-secret")
     const listed = await client.externalIdentityProviderPublicList(realm.id)
-    expect(listed).toMatchObject({ success: true, data: { total: 1 } })
+    expect(listed.success).toBe(true)
+    if (listed.success) expect(listed.data.items).toHaveLength(1)
     const started = await client.externalIdentityStart(realm.id, created.data.provider.id)
     expect(started.success).toBe(true)
     if (!started.success) return

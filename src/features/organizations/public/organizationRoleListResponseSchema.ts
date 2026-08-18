@@ -1,6 +1,7 @@
-import * as v from "valibot"
+import type * as v from "valibot"
+import { listResponseSchemaCreate } from "../../../platform/http/listResponseSchemaCreate.js"
 import { organizationRoleSchema } from "./organizationRoleSchema.js"
 
-export const organizationRoleListResponseSchema = v.strictObject({ roles: v.array(organizationRoleSchema) })
+export const organizationRoleListResponseSchema = listResponseSchemaCreate(organizationRoleSchema)
 
 export type OrganizationRoleListResponse = v.InferOutput<typeof organizationRoleListResponseSchema>

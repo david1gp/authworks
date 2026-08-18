@@ -7,7 +7,7 @@ import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -32,7 +32,7 @@ import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAut
 import type { PasskeyAuthenticationCompleteResponse } from "../public/passkeyAuthenticationCompleteResponseSchema.js"
 import { passkeyTokenHashCreate } from "../domain/passkeyTokenHashCreate.js"
 import { passkeyUserHandleCreate } from "../domain/passkeyUserHandleCreate.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/public/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 type PasskeyAuthenticationCompleteOptions = {
   readonly database: StorageDatabase
@@ -53,12 +53,14 @@ export async function passkeyAuthenticationComplete(
 ): Promise<Result<PasskeyAuthenticationCompleteResponse>> {
   const op = "passkeyAuthenticationComplete"
   const input = v.safeParse(passkeyAuthenticationCompleteRequestSchema, options.input)
-  if (!input.success) return resultErrorCreate(op, "The passkey authentication response is invalid.")
+  if (!input.success)
+    return resultErrorCreate(op, "The passkey authentication response is invalid.", "passkeys.invalid")
   const configuration = passkeyConfigurationValidate(options.rpId, options.origins, options.rpName)
   if (!configuration.success) return configuration
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The passkey timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The passkey timestamp is invalid.", "passkeys.invalid-timestamp")
   const tokenHash = passkeyTokenHashCreate(input.output.token)
   const repository = passkeyRepositoryCreate(options.database.db)
   const ceremony = repository.passkeyCeremonyGetByTokenHash(options.realmId, tokenHash)
@@ -69,9 +71,9 @@ export async function passkeyAuthenticationComplete(
     ceremony.data.consumedAt !== null ||
     ceremony.data.expiresAt <= now
   )
-    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
+    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
   if (options.expectedPurpose !== undefined && ceremony.data.purpose !== options.expectedPurpose)
-    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
+    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
   if (ceremony.data.purpose === "passwordless") {
     const policy = organizationLoginPolicyEnforce({
       database: options.database,
@@ -79,17 +81,19 @@ export async function passkeyAuthenticationComplete(
       method: "passkey",
       organizationId: ceremony.data.organizationId ?? undefined,
     })
-    if (!policy.success) return resultErrorCreate(op, "The passkey login method is disabled for this organization.")
+    if (!policy.success)
+      return resultErrorCreate(op, "The passkey login method is disabled for this organization.", "passkeys.conflict")
   }
   const origins = passkeyOriginsParse(ceremony.data.origins)
-  if (origins === null) return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
+  if (origins === null)
+    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
   const storedConfiguration = passkeyConfigurationValidate(ceremony.data.rpId, origins, options.rpName)
   if (
     !storedConfiguration.success ||
     storedConfiguration.data.rpId !== configuration.data.rpId ||
     !passkeyOriginsEqual(storedConfiguration.data.origins, configuration.data.origins)
   )
-    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
+    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
   const credential = repository.passkeyCredentialGetByCredentialId(
     options.realmId,
     ceremony.data.rpId,
@@ -101,13 +105,14 @@ export async function passkeyAuthenticationComplete(
     credential.data.revokedAt !== null ||
     (ceremony.data.userId !== null && credential.data.userId !== ceremony.data.userId)
   )
-    return resultErrorCreate(op, "The passkey authentication response is invalid.")
+    return resultErrorCreate(op, "The passkey authentication response is invalid.", "passkeys.invalid")
   const user = options.database.db
     .select({ state: userTable.state })
     .from(userTable)
     .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, credential.data.userId)))
     .get()
-  if (user?.state !== "active") return resultErrorCreate(op, "The passkey authentication response is invalid.")
+  if (user?.state !== "active")
+    return resultErrorCreate(op, "The passkey authentication response is invalid.", "passkeys.invalid")
   const webAuthnCredential: WebAuthnCredential = {
     counter: credential.data.counter,
     id: credential.data.credentialId,
@@ -126,15 +131,16 @@ export async function passkeyAuthenticationComplete(
       response: input.output.response,
     })
   } catch (_error) {
-    return resultErrorCreate(op, "The passkey authentication response is invalid.")
+    return resultErrorCreate(op, "The passkey authentication response is invalid.", "passkeys.invalid")
   }
-  if (!verified.verified) return resultErrorCreate(op, "The passkey authentication response is invalid.")
+  if (!verified.verified)
+    return resultErrorCreate(op, "The passkey authentication response is invalid.", "passkeys.invalid")
   if (verified.authenticationInfo.credentialID !== credential.data.credentialId)
-    return resultErrorCreate(op, "The passkey credential ID is invalid.")
+    return resultErrorCreate(op, "The passkey credential ID is invalid.", "passkeys.invalid")
   if (!passkeyUserHandleMatches(input.output.response.response.userHandle, credential.data.userId))
-    return resultErrorCreate(op, "The passkey user handle is invalid.")
+    return resultErrorCreate(op, "The passkey user handle is invalid.", "passkeys.invalid")
   if (ceremony.data.purpose !== "passwordless" && options.sessionToken === undefined)
-    return resultErrorCreate(op, "The passkey session is required.")
+    return resultErrorCreate(op, "The passkey session is required.", "passkeys.unauthorized")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) =>
     passkeyAuthenticationCompleteTransaction({
@@ -178,7 +184,7 @@ function passkeyAuthenticationCompleteTransaction(
     ceremony.data.consumedAt !== null ||
     ceremony.data.expiresAt <= options.now
   )
-    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
+    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
   const credentialId = options.input.response.id
   const credential = repository.passkeyCredentialGetByCredentialId(options.realmId, ceremony.data.rpId, credentialId)
   if (!credential.success) return credential
@@ -187,7 +193,7 @@ function passkeyAuthenticationCompleteTransaction(
     credential.data.revokedAt !== null ||
     (ceremony.data.userId !== null && credential.data.userId !== ceremony.data.userId)
   )
-    return resultErrorCreate(op, "The passkey authentication response is invalid.")
+    return resultErrorCreate(op, "The passkey authentication response is invalid.", "passkeys.invalid")
   const consumed = repository.passkeyCeremonyConsume(
     options.realmId,
     ceremony.data.id,
@@ -196,10 +202,11 @@ function passkeyAuthenticationCompleteTransaction(
     options.now,
   )
   if (!consumed.success) return consumed
-  if (consumed.data === null) return resultErrorCreate(op, "The passkey authentication ceremony is invalid.")
+  if (consumed.data === null)
+    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
   const newCounter = options.verified.authenticationInfo.newCounter
   if ((newCounter > 0 || credential.data.counter > 0) && newCounter <= credential.data.counter)
-    return resultErrorCreate(op, "The passkey authenticator counter is invalid.")
+    return resultErrorCreate(op, "The passkey authenticator counter is invalid.", "passkeys.invalid")
   const updated = repository.passkeyCredentialCounterUpdate(
     options.realmId,
     credential.data.id,
@@ -209,7 +216,8 @@ function passkeyAuthenticationCompleteTransaction(
     options.now,
   )
   if (!updated.success) return updated
-  if (updated.data === null) return resultErrorCreate(op, "The passkey authentication response is invalid.")
+  if (updated.data === null)
+    return resultErrorCreate(op, "The passkey authentication response is invalid.", "passkeys.invalid")
   const credentialVersion = repository.passkeyEventVersionGet(options.realmId, "passkey_credential", credential.data.id)
   if (!credentialVersion.success) return credentialVersion
   const credentialPayload = v.safeParse(passkeyEventPayloadSchema, {
@@ -219,7 +227,8 @@ function passkeyAuthenticationCompleteTransaction(
     userId: credential.data.userId,
     userVerified: options.verified.authenticationInfo.userVerified,
   })
-  if (!credentialPayload.success) return resultErrorCreate(op, "The passkey event payload is invalid.")
+  if (!credentialPayload.success)
+    return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
   const credentialEvent = storageEventAppend(
     options.database,
     {
@@ -244,7 +253,8 @@ function passkeyAuthenticationCompleteTransaction(
     userId: credential.data.userId,
     userVerified: options.verified.authenticationInfo.userVerified,
   })
-  if (!authenticationPayload.success) return resultErrorCreate(op, "The passkey event payload is invalid.")
+  if (!authenticationPayload.success)
+    return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
   const authenticationEvent = storageEventAppend(
     options.database,
     {
@@ -280,7 +290,8 @@ function passkeyAuthenticationCompleteTransaction(
       runtime: options.runtime,
       userId: credential.data.userId,
     })
-    if (!session.success) return resultErrorCreate(op, "The passkey session could not be created.")
+    if (!session.success)
+      return resultErrorCreate(op, "The passkey session could not be created.", "passkeys.write-failed")
     return resultCreate({
       authentication: {
         authenticatedAt: authentication.authenticatedAt,
@@ -301,7 +312,7 @@ function passkeySessionAssuranceRotate(
 ): Result<PasskeyAuthenticationCompleteResponse> {
   const op = "passkeyAuthenticationComplete"
   if (sessionId === null || options.sessionToken === undefined)
-    return resultErrorCreate(op, "The passkey session is required.")
+    return resultErrorCreate(op, "The passkey session is required.", "passkeys.unauthorized")
   const current = options.database
     .select()
     .from(sessionTable)
@@ -315,7 +326,7 @@ function passkeySessionAssuranceRotate(
     current.revokedAt !== null ||
     current.expiresAt <= options.now
   )
-    return resultErrorCreate(op, "The passkey session is invalid.")
+    return resultErrorCreate(op, "The passkey session is invalid.", "passkeys.invalid")
   const nextToken = sessionCredentialCreate(options.runtime)
   const rotated = sessionRepositoryCreate(options.database).sessionAssuranceRotate(
     options.realmId,
@@ -328,11 +339,11 @@ function passkeySessionAssuranceRotate(
     "passkey",
   )
   if (!rotated.success) return rotated
-  if (rotated.data === null) return resultErrorCreate(op, "The passkey session is invalid.")
+  if (rotated.data === null) return resultErrorCreate(op, "The passkey session is invalid.", "passkeys.invalid")
   const eventVersion = sessionRepositoryCreate(options.database).sessionEventVersionGet(options.realmId, current.id)
   if (!eventVersion.success) return eventVersion
   const payload = v.safeParse(sessionRotatedEventPayloadSchema, { rotatedAt: options.now, sessionId: current.id })
-  if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.")
+  if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.", "passkeys.event-invalid")
   const event = storageEventAppend(
     options.database,
     {

@@ -1,6 +1,9 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
+import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -12,13 +15,20 @@ import type { Project } from "../public/projectSchema.js"
 type ProjectListOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
+  readonly query?: ListQuery
   readonly realmId: string
 }
 
-export function projectList(options: ProjectListOptions): Result<{ projects: Project[] }> {
+export function projectList(options: ProjectListOptions): Result<{ items: Project[]; nextPageToken?: string }> {
   const op = "projectList"
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The projects are not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The projects are not available in this tenant context.",
+      "projects.tenant-mismatch",
+    )
+  const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id"], "createdAt")
+  if (!sortBy.success) return sortBy
   const rows = projectRepositoryCreate(options.database.db).projectList(options.realmId)
   if (!rows.success) return rows
   const projects: Project[] = []
@@ -37,5 +47,10 @@ export function projectList(options: ProjectListOptions): Result<{ projects: Pro
     })
     if (authorized.success) projects.push(projectPublicViewCreate(project))
   }
-  return resultCreate({ projects })
+  return listRowsPage({
+    idGet: (project) => project.id,
+    query: options.query,
+    rows: projects,
+    sortValueGet: (project) => (sortBy.data === "id" ? project.id : project.createdAt),
+  })
 }

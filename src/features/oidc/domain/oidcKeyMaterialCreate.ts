@@ -1,7 +1,7 @@
 import { createPublicKey, generateKeyPairSync } from "node:crypto"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcBase64UrlEncode } from "./oidcBase64UrlEncode.js"
 
 export function oidcKeyMaterialCreate(): Result<{ privateKey: string; publicJwk: Record<string, string> }> {
@@ -24,6 +24,6 @@ export function oidcKeyMaterialCreate(): Result<{ privateKey: string; publicJwk:
       publicJwk: { alg: "RS256", e: publicKey.e, kty: publicKey.kty, n: publicKey.n, use: "sig" },
     })
   } catch (_error) {
-    return resultErrorCreate(op, "The signing key could not be generated.")
+    return resultErrorCreate(op, "The signing key could not be generated.", "oidc.write-failed")
   }
 }

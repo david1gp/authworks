@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
+import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 
 export const oidcLogoutRequestSchema = v.strictObject({
   client_id: v.optional(oidcResourceIdSchema),

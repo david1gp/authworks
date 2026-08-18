@@ -1,8 +1,9 @@
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
+import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -246,7 +247,8 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
       input: input.output,
       realmId: realm.data.realmId,
     })
-    if (!token.success) return oidcTokenErrorResponseCreate(context, oidcTokenErrorCodeGet(token), token.errorMessage)
+    if (!token.success)
+      return oidcTokenErrorResponseCreate(context, oidcTokenErrorCodeResolve(token), token.errorMessage)
     context.header("cache-control", "no-store")
     context.header("pragma", "no-cache")
     return context.json(token.data)
@@ -317,7 +319,7 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     if (!revoked.success)
       return oidcTokenErrorResponseCreate(
         context,
-        oidcTokenRevokeErrorCodeGet(revoked),
+        oidcTokenRevokeErrorCodeResolve(revoked),
         revoked.errorMessage,
         "oauth2/revoke",
       )
@@ -338,35 +340,41 @@ function oidcManagementRoutesRegister(
 ) {
   app.get(`${prefix}/clients`, (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
-    return oidcResultResponseCreate(
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return oidcManagementErrorResponseCreate(context, query)
+    return oidcManagementResultResponseCreate(
       context,
       oidcClientList({
         context: authenticated.data,
         database: options.database,
         realmId: oidcParamGet(context, "realmId"),
+        query: query.data,
       }),
     )
   })
 
   app.get(`${prefix}/consents/:userId`, (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
-    return oidcResultResponseCreate(
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return oidcManagementErrorResponseCreate(context, query)
+    return oidcManagementResultResponseCreate(
       context,
       oidcConsentList({
         context: authenticated.data,
         database: options.database,
         realmId: oidcParamGet(context, "realmId"),
         userId: oidcParamGet(context, "userId"),
+        query: query.data,
       }),
     )
   })
 
   app.post(`${prefix}/consents/:userId/:clientId/revoke`, (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
-    return oidcResultResponseCreate(
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    return oidcManagementResultResponseCreate(
       context,
       oidcConsentRevoke({
         context: authenticated.data,
@@ -380,16 +388,16 @@ function oidcManagementRoutesRegister(
 
   app.post(`${prefix}/clients`, async (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
     const body = await oidcRequestJsonRead(context)
-    if (!body.success) return oidcErrorResponseCreate(context, body)
+    if (!body.success) return oidcManagementErrorResponseCreate(context, body)
     const input = v.safeParse(oidcClientCreateRequestSchema, body.data)
     if (!input.success)
-      return oidcErrorResponseCreate(context, {
-        errorMessage: "The OIDC client request is invalid.",
-        op: "oidcClientCreate",
-      })
-    return oidcResultResponseCreate(
+      return oidcManagementErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("oidcClientCreate", "The OIDC client request is invalid.", "oidc.invalid"),
+      )
+    return oidcManagementResultResponseCreate(
       context,
       oidcClientCreate({
         context: authenticated.data,
@@ -403,8 +411,8 @@ function oidcManagementRoutesRegister(
 
   app.get(`${prefix}/clients/:clientId`, (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
-    return oidcResultResponseCreate(
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    return oidcManagementResultResponseCreate(
       context,
       oidcClientGet({
         clientId: oidcParamGet(context, "clientId"),
@@ -417,16 +425,16 @@ function oidcManagementRoutesRegister(
 
   app.patch(`${prefix}/clients/:clientId`, async (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
     const body = await oidcRequestJsonRead(context)
-    if (!body.success) return oidcErrorResponseCreate(context, body)
+    if (!body.success) return oidcManagementErrorResponseCreate(context, body)
     const input = v.safeParse(oidcClientUpdateRequestSchema, body.data)
     if (!input.success)
-      return oidcErrorResponseCreate(context, {
-        errorMessage: "The OIDC client update is invalid.",
-        op: "oidcClientUpdate",
-      })
-    return oidcResultResponseCreate(
+      return oidcManagementErrorResponseCreate(
+        context,
+        resultErrorCodedCreate("oidcClientUpdate", "The OIDC client update is invalid.", "oidc.invalid"),
+      )
+    return oidcManagementResultResponseCreate(
       context,
       oidcClientUpdate({
         clientId: oidcParamGet(context, "clientId"),
@@ -440,16 +448,20 @@ function oidcManagementRoutesRegister(
 
   app.post(`${prefix}/clients/:clientId/lifecycle`, async (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
     const body = await oidcRequestJsonRead(context)
-    if (!body.success) return oidcErrorResponseCreate(context, body)
+    if (!body.success) return oidcManagementErrorResponseCreate(context, body)
     const input = v.safeParse(oidcClientLifecycleRequestSchema, body.data)
     if (!input.success)
-      return oidcErrorResponseCreate(context, {
-        errorMessage: "The OIDC client lifecycle request is invalid.",
-        op: "oidcClientLifecycleSet",
-      })
-    return oidcResultResponseCreate(
+      return oidcManagementErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "oidcClientLifecycleSet",
+          "The OIDC client lifecycle request is invalid.",
+          "oidc.invalid",
+        ),
+      )
+    return oidcManagementResultResponseCreate(
       context,
       oidcClientLifecycleSet({
         clientId: oidcParamGet(context, "clientId"),
@@ -463,8 +475,8 @@ function oidcManagementRoutesRegister(
 
   app.post(`${prefix}/clients/:clientId/secret/rotate`, (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
-    return oidcResultResponseCreate(
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    return oidcManagementResultResponseCreate(
       context,
       oidcClientSecretRotate({
         clientId: oidcParamGet(context, "clientId"),
@@ -477,21 +489,24 @@ function oidcManagementRoutesRegister(
 
   app.get(`${prefix}/signing-keys`, (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
-    return oidcResultResponseCreate(
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return oidcManagementErrorResponseCreate(context, query)
+    return oidcManagementResultResponseCreate(
       context,
       oidcSigningKeyList({
         context: authenticated.data,
         database: options.database,
         realmId: oidcParamGet(context, "realmId"),
+        query: query.data,
       }),
     )
   })
 
   app.post(`${prefix}/signing-keys`, (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
-    return oidcResultResponseCreate(
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    return oidcManagementResultResponseCreate(
       context,
       oidcSigningKeyCreate({
         context: authenticated.data,
@@ -505,16 +520,20 @@ function oidcManagementRoutesRegister(
 
   app.post(`${prefix}/signing-keys/:signingKeyId/lifecycle`, async (context) => {
     const authenticated = authenticate(context)
-    if (!authenticated.success) return oidcErrorResponseCreate(context, authenticated)
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
     const body = await oidcRequestJsonRead(context)
-    if (!body.success) return oidcErrorResponseCreate(context, body)
+    if (!body.success) return oidcManagementErrorResponseCreate(context, body)
     const input = v.safeParse(oidcSigningKeyLifecycleRequestSchema, body.data)
     if (!input.success)
-      return oidcErrorResponseCreate(context, {
-        errorMessage: "The signing key lifecycle request is invalid.",
-        op: "oidcSigningKeyLifecycleSet",
-      })
-    return oidcResultResponseCreate(
+      return oidcManagementErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "oidcSigningKeyLifecycleSet",
+          "The signing key lifecycle request is invalid.",
+          "oidc.invalid",
+        ),
+      )
+    return oidcManagementResultResponseCreate(
       context,
       oidcSigningKeyLifecycleSet({
         context: authenticated.data,
@@ -530,7 +549,7 @@ function oidcManagementRoutesRegister(
 function oidcSystemAuthenticate(authorization: string | undefined, configuredSecret: Secret | string | undefined) {
   const token = oidcBearerTokenGet(authorization)
   if (configuredSecret === undefined || token === null || !secretMatches(token, configuredSecret))
-    return { errorMessage: "System authorization is required.", op: "oidcSystemAuthorization", success: false as const }
+    return resultErrorCodedCreate("oidcSystemAuthorization", "System authorization is required.", "oidc.unauthorized")
   return { data: realmSystemContextCreate(), success: true as const }
 }
 
@@ -587,13 +606,25 @@ function oidcParamGet(context: { req: { param: (name: string) => string | undefi
 
 function oidcErrorResponseCreate(
   context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { errorMessage: string; op: string },
+  result: { errorMessage: string; op: string; code?: string },
 ) {
-  const code = oidcErrorCodeGet(result)
+  const code = oidcProtocolErrorCodeResolve(result)
   return context.json(
-    httpErrorResponseCreate(code, result.errorMessage),
-    httpErrorStatusGet(code) as ContentfulStatusCode,
+    { error: code, error_description: result.errorMessage },
+    (code === "invalid_client" ? 401 : code === "server_error" ? 500 : 400) as ContentfulStatusCode,
   )
+}
+
+function oidcManagementErrorResponseCreate(
+  context: {
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: { errorMessage: string; op: string; code?: string; success?: false },
+) {
+  const coded =
+    result.code === undefined ? resultErrorCodedCreate(result.op, result.errorMessage, "oidc.invalid") : result
+  return httpResultResponseCreate(context, coded as never)
 }
 
 function oidcAuthorizationConsentRequiredResponseCreate(
@@ -601,14 +632,14 @@ function oidcAuthorizationConsentRequiredResponseCreate(
   result: { errorData?: string | null },
 ) {
   if (result.errorData === undefined || result.errorData === null)
-    return context.json({ error: { code: "bad_request", message: "User consent is required." } }, 400)
+    return context.json({ error: "invalid_request", error_description: "User consent is required." }, 400)
   try {
     const parsed = v.safeParse(oidcAuthorizationConsentRequiredSchema, JSON.parse(result.errorData))
     if (!parsed.success)
-      return context.json({ error: { code: "bad_request", message: "User consent is required." } }, 400)
+      return context.json({ error: "invalid_request", error_description: "User consent is required." }, 400)
     return context.json(parsed.output, 200)
   } catch (_error) {
-    return context.json({ error: { code: "bad_request", message: "User consent is required." } }, 400)
+    return context.json({ error: "invalid_request", error_description: "User consent is required." }, 400)
   }
 }
 
@@ -659,14 +690,22 @@ function oidcUserInfoErrorResponseCreate(context: {
   return context.json({ error: "invalid_token", error_description: "The access token is invalid." }, 401)
 }
 
-function oidcTokenRevokeErrorCodeGet(result: { errorMessage: string; op: string }) {
+function oidcTokenRevokeErrorCodeResolve(result: { errorMessage: string; op: string; code?: string }) {
+  if (result.code === "oidc.invalid-timestamp" || result.code === "oidc.internal") return "server_error" as const
+  if (result.code === "oidc.invalid-client") return "invalid_client" as const
+  if (result.code === "oidc.invalid-request") return "invalid_request" as const
   if (result.op === "oidcTokenRevokeInvalidClient" || result.op === "machineClientCredentialsInvalidClient")
     return "invalid_client" as const
   if (result.op === "oidcTokenRevoke") return "invalid_request" as const
   return "server_error" as const
 }
 
-function oidcTokenErrorCodeGet(result: { errorMessage: string; op: string }) {
+function oidcTokenErrorCodeResolve(result: { errorMessage: string; op: string; code?: string }) {
+  if (result.code === "oidc.invalid-timestamp" || result.code === "oidc.internal") return "server_error" as const
+  if (result.code === "oidc.invalid-client") return "invalid_client" as const
+  if (result.code === "oidc.invalid-scope") return "invalid_scope" as const
+  if (result.code === "oidc.invalid-request") return "invalid_request" as const
+  if (result.code === "oidc.invalid-grant") return "invalid_grant" as const
   if (result.op === "oidcTokenInvalidClient") return "invalid_client" as const
   if (result.op === "oidcTokenInvalidScope") return "invalid_scope" as const
   if (result.op === "oidcTokenInvalidRequest") return "invalid_request" as const
@@ -674,45 +713,43 @@ function oidcTokenErrorCodeGet(result: { errorMessage: string; op: string }) {
   return "server_error" as const
 }
 
-function oidcErrorCodeGet(result: { errorMessage: string; op: string }): string {
-  const message = result.errorMessage.toLowerCase()
-  const op = result.op.toLowerCase()
-  if (op.includes("oidclogout") || op.includes("oidcauthorizationinteractionrequired")) return "bad_request"
-  if (
-    op.includes("systemauthorization") ||
-    op.includes("authenticate") ||
-    message.includes("authentication") ||
-    message.includes("session authorization") ||
-    message.includes("credentials")
-  )
-    return "unauthorized"
-  if (message.includes("not authorized") || message.includes("forbidden")) return "forbidden"
-  if (message.includes("not found") || message.includes("not available") || message.includes("tenant host"))
-    return "not_found"
-  if (
-    message.includes("already") ||
-    message.includes("removed") ||
-    message.includes("inactive") ||
-    message.includes("do not have")
-  )
-    return "conflict"
-  if (
-    message.includes("invalid") ||
-    message.includes("empty") ||
-    message.includes("unique") ||
-    message.includes("must")
-  )
-    return "bad_request"
-  return "internal_server_error"
+function oidcProtocolErrorCodeResolve(result: { op: string; code?: string }) {
+  if (result.code === "oidc.invalid-client") return "invalid_client" as const
+  if (result.code === "oidc.invalid-grant") return "invalid_grant" as const
+  if (result.code === "oidc.invalid-scope") return "invalid_scope" as const
+  if (result.code === "oidc.invalid-token") return "invalid_token" as const
+  if (result.code === "oidc.invalid-timestamp") return "server_error" as const
+  if (result.code === "oidc.internal") return "server_error" as const
+  if (result.code === "oidc.authorization-interaction-required") return "interaction_required" as const
+  if (result.code === "oidc.invalid-request") return "invalid_request" as const
+  if (result.op === "oidcAuthorizationInteractionRequired") return "interaction_required" as const
+  if (result.op === "oidcLogout") return "invalid_request" as const
+  if (result.op === "oidcAuthorizationCodeRedeem") return "invalid_grant" as const
+  if (result.op === "oidcTokenIssue") return "server_error" as const
+  return "invalid_request" as const
 }
 
 function oidcResultResponseCreate<T>(
   context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
 ) {
-  if (!result.success) return oidcErrorResponseCreate(context, result as { errorMessage: string; op: string })
+  if (!result.success)
+    return oidcErrorResponseCreate(context, result as { errorMessage: string; op: string; code?: string })
   return context.json(result.data, status as ContentfulStatusCode)
+}
+
+function oidcManagementResultResponseCreate<T>(
+  context: {
+    json: (body: unknown, status?: ContentfulStatusCode) => Response
+    req: { header: (name: string) => string | undefined }
+  },
+  result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
+  status = 200,
+) {
+  if (!result.success)
+    return oidcManagementErrorResponseCreate(context, result as { errorMessage: string; op: string; code?: string })
+  return httpResultResponseCreate(context, result as never, status)
 }
 
 async function oidcRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

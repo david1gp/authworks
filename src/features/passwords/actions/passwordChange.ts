@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -34,21 +34,25 @@ type PasswordChangeOptions = {
 export function passwordChange(options: PasswordChangeOptions): Result<PasswordChangeResponse> {
   const op = "passwordChange"
   if (options.context === undefined || options.context === null)
-    return resultErrorCreate(op, "A tenant context is required.")
+    return resultErrorCreate(op, "A tenant context is required.", "passwords.tenant-required")
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The password is not available in this tenant context.")
+    return resultErrorCreate(op, "The password is not available in this tenant context.", "passwords.tenant-mismatch")
   const parsed = v.safeParse(passwordChangeRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The password change request is invalid.")
+  if (!parsed.success) return resultErrorCreate(op, "The password change request is invalid.", "passwords.invalid")
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
-  if (!realm.success) return resultErrorCreate(op, "The current password is invalid.")
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The current password is invalid.")
+  if (!realm.success) return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
   const repository = passwordRepositoryCreate(options.database.db)
   const credential = repository.passwordCredentialGet(options.realmId, options.userId)
-  if (!credential.success || credential.data === null) return resultErrorCreate(op, "The current password is invalid.")
+  if (!credential.success || credential.data === null)
+    return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
   const current = passwordHashVerify(parsed.output.currentPassword, credential.data.hash)
-  if (!current.success || !current.data) return resultErrorCreate(op, "The current password is invalid.")
+  if (!current.success || !current.data)
+    return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
   const policyRow = repository.passwordPolicyGet(options.realmId)
-  if (!policyRow.success) return resultErrorCreate(op, "The password change could not be completed.")
+  if (!policyRow.success)
+    return resultErrorCreate(op, "The password change could not be completed.", "passwords.write-failed")
   const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
   const checked = passwordPolicyCheck(parsed.output.newPassword, policy)
   if (!checked.success) return checked
@@ -56,27 +60,31 @@ export function passwordChange(options: PasswordChangeOptions): Result<PasswordC
   if (!hash.success) return hash
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The password timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The password timestamp is invalid.", "passwords.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   return storageTransactionRun(options.database, (transaction) => {
     const txRepository = passwordRepositoryCreate(transaction)
     const user = txRepository.passwordUserGet(options.realmId, options.userId)
     if (!user.success || user.data === null || user.data.state === "deleted" || user.data.state === "locked")
-      return resultErrorCreate(op, "The current password is invalid.")
+      return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
     const existing = txRepository.passwordCredentialGet(options.realmId, options.userId)
-    if (!existing.success || existing.data === null) return resultErrorCreate(op, "The current password is invalid.")
+    if (!existing.success || existing.data === null)
+      return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
     const currentCheck = passwordHashVerify(parsed.output.currentPassword, existing.data.hash)
-    if (!currentCheck.success || !currentCheck.data) return resultErrorCreate(op, "The current password is invalid.")
+    if (!currentCheck.success || !currentCheck.data)
+      return resultErrorCreate(op, "The current password is invalid.", "passwords.unauthorized")
     const updated = txRepository.passwordCredentialUpdate(options.realmId, options.userId, {
       changedAt: now,
       hash: hash.data,
       version: existing.data.version + 1,
     })
     if (!updated.success || updated.data === null)
-      return resultErrorCreate(op, "The password change could not be completed.")
+      return resultErrorCreate(op, "The password change could not be completed.", "passwords.write-failed")
     const lockout = txRepository.passwordLockoutGet(options.realmId, options.userId)
-    if (!lockout.success) return resultErrorCreate(op, "The password change could not be completed.")
+    if (!lockout.success)
+      return resultErrorCreate(op, "The password change could not be completed.", "passwords.write-failed")
     const reset = txRepository.passwordLockoutSet({
       failedAttempts: 0,
       realmId: options.realmId,
@@ -87,9 +95,11 @@ export function passwordChange(options: PasswordChangeOptions): Result<PasswordC
     })
     if (!reset.success) return reset
     const eventVersion = txRepository.passwordEventVersionGet(options.realmId, options.userId)
-    if (!eventVersion.success) return resultErrorCreate(op, "The password change event version is invalid.")
+    if (!eventVersion.success)
+      return resultErrorCreate(op, "The password change event version is invalid.", "passwords.invalid")
     const payload = v.safeParse(passwordCredentialChangedEventPayloadSchema, { reason: "change" })
-    if (!payload.success) return resultErrorCreate(op, "The password event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The password event payload is invalid.", "passwords.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

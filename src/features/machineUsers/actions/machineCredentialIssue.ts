@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -16,7 +16,7 @@ import { machineSecretHashCreate } from "../domain/machineSecretHashCreate.js"
 import { machineScopesParse } from "../domain/machineScopesParse.js"
 import { machineCredentialPublicViewCreate } from "../domain/machineCredentialPublicViewCreate.js"
 import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
-import type { MachineCredentialKind } from "../domain/machineCredentialKindSchema.js"
+import type { MachineCredentialKind } from "../public/machineCredentialKindSchema.js"
 import {
   machineCredentialIssueRequestSchema,
   type MachineCredentialIssueRequest,
@@ -39,14 +39,15 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
   const authorized = machineUserContextAuthorize({ ...options, permission: "machine.credential.manage" })
   if (!authorized.success) return authorized
   const parsed = v.safeParse(machineCredentialIssueRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The machine credential request is invalid.")
+  if (!parsed.success)
+    return resultErrorCreate(op, "The machine credential request is invalid.", "machine-users.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
-    return resultErrorCreate(op, "The machine credential timestamp is invalid.")
+    return resultErrorCreate(op, "The machine credential timestamp is invalid.", "machine-users.invalid-timestamp")
   const expiresAt = parsed.output.expiresAt ?? now + 365 * 24 * 60 * 60 * 1_000
   if (!Number.isSafeInteger(expiresAt) || expiresAt <= now)
-    return resultErrorCreate(op, "The machine credential expiry must be in the future.")
+    return resultErrorCreate(op, "The machine credential expiry must be in the future.", "machine-users.invalid")
   const secret = machineSecretCreate(runtime)
   if (!secret.success) return secret
   const secretHash = machineSecretHashCreate(secret.data, runtime)
@@ -58,13 +59,15 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
     const repository = machineRepositoryCreate(transaction)
     const machineUser = repository.userGet(options.realmId, parsed.output.machineUserId)
     if (!machineUser.success) return machineUser
-    if (machineUser.data === null) return resultErrorCreate(op, "The machine user was not found.")
-    if (machineUser.data.status !== "active") return resultErrorCreate(op, "The machine user is not active.")
+    if (machineUser.data === null)
+      return resultErrorCreate(op, "The machine user was not found.", "machine-users.not-found")
+    if (machineUser.data.status !== "active")
+      return resultErrorCreate(op, "The machine user is not active.", "machine-users.not-active")
     const configuredScopes = machineScopesParse(machineUser.data.scopes)
     if (!configuredScopes.success) return configuredScopes
     const scopes = [...new Set(parsed.output.scopes ?? configuredScopes.data)]
     if (scopes.some((scope) => !configuredScopes.data.includes(scope)))
-      return resultErrorCreate(op, "The requested machine scopes are not allowed.")
+      return resultErrorCreate(op, "The requested machine scopes are not allowed.", "machine-users.invalid-scope")
     const credential = repository.credentialCreate({
       createdAt: now,
       expiresAt,
@@ -88,7 +91,8 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
       name: parsed.output.name,
       scopes,
     })
-    if (!payload.success) return resultErrorCreate(op, "The machine credential event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The machine credential event payload is invalid.", "machine-users.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

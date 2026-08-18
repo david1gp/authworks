@@ -1,5 +1,2 @@
-import * as v from "valibot"
-
-export const oidcClientTypeSchema = v.picklist(["public", "confidential"])
-
-export type OidcClientType = v.InferOutput<typeof oidcClientTypeSchema>
+export { oidcClientTypeSchema } from "../public/oidcClientTypeSchema.js"
+export type { OidcClientType } from "../public/oidcClientTypeSchema.js"

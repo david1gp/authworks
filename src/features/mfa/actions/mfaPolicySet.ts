@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -28,15 +28,16 @@ type MfaPolicySetOptions = {
 export function mfaPolicySet(options: MfaPolicySetOptions): Result<{ policy: MfaPolicy }> {
   const op = "mfaPolicySet"
   if (options.context?.kind !== "system")
-    return resultErrorCreate(op, "Only the system context can set the MFA policy.")
+    return resultErrorCreate(op, "Only the system context can set the MFA policy.", "mfa.forbidden")
   const input = v.safeParse(mfaPolicySetRequestSchema, options.input)
-  if (!input.success) return resultErrorCreate(op, "The MFA policy is invalid.")
+  if (!input.success) return resultErrorCreate(op, "The MFA policy is invalid.", "mfa.invalid")
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The MFA policy timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The MFA policy timestamp is invalid.", "mfa.invalid-timestamp")
   return storageTransactionRun(options.database, (transaction) => {
     const repository = mfaRepositoryCreate(transaction)
     const existing = repository.mfaPolicyGet(options.realmId)
@@ -52,7 +53,7 @@ export function mfaPolicySet(options: MfaPolicySetOptions): Result<{ policy: Mfa
     })
     if (!row.success) return row
     const payload = v.safeParse(mfaEventPayloadSchema, { mode: input.output.mode })
-    if (!payload.success) return resultErrorCreate(op, "The MFA policy event payload is invalid.")
+    if (!payload.success) return resultErrorCreate(op, "The MFA policy event payload is invalid.", "mfa.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

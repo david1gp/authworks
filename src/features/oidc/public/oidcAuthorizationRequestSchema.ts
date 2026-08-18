@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { oidcResourceIdSchema } from "../domain/oidcResourceIdSchema.js"
+import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 
 export const oidcAuthorizationRequestSchema = v.strictObject({
   acr_values: v.optional(v.pipe(v.string(), v.maxLength(256))),

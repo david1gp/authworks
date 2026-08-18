@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import type { EmailOtpStartRequest } from "../public/emailOtpStartRequestSchema.js"
 import { emailOtpStartRequestSchema } from "../public/emailOtpStartRequestSchema.js"
@@ -32,7 +32,7 @@ export function emailOtpApiClientCreate(options: EmailOtpApiClientCreateOptions)
 
   const parsedRequest = <T>(schema: v.GenericSchema<T>, input: unknown, errorMessage: string) => {
     const parsed = v.safeParse(schema, input)
-    if (!parsed.success) return resultErrorCreate("emailOtpApiClientCreate", errorMessage)
+    if (!parsed.success) return resultErrorCreate("emailOtpApiClientCreate", errorMessage, "email-otp.invalid")
     return resultCreate(parsed.output)
   }
 

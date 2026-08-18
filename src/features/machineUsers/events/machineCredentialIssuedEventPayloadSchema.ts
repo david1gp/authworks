@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { machineCredentialKindSchema } from "../domain/machineCredentialKindSchema.js"
-import { machineScopeSchema } from "../domain/machineScopeSchema.js"
+import { machineCredentialKindSchema } from "../public/machineCredentialKindSchema.js"
+import { machineScopeSchema } from "../public/machineScopeSchema.js"
 
 export const machineCredentialIssuedEventPayloadSchema = v.strictObject({
   credentialId: v.pipe(v.string(), v.minLength(1)),

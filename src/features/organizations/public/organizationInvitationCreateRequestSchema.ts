@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { organizationRolesSchema } from "../domain/organizationRolesSchema.js"
+import { organizationRolesSchema } from "./organizationRolesSchema.js"
 
 export const organizationInvitationCreateRequestSchema = v.strictObject({
   email: v.pipe(v.string(), v.minLength(3), v.maxLength(320)),

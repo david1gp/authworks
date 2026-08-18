@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -36,7 +36,8 @@ export function machineUserClientSecretRotate(
   if (!authorized.success) return authorized
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The machine secret timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The machine secret timestamp is invalid.", "machine-users.invalid-timestamp")
   const secret = machineSecretCreate(runtime)
   if (!secret.success) return secret
   const secretHash = machineSecretHashCreate(secret.data, runtime)
@@ -48,8 +49,9 @@ export function machineUserClientSecretRotate(
     const repository = machineRepositoryCreate(transaction)
     const user = repository.userGet(options.realmId, options.machineUserId)
     if (!user.success) return user
-    if (user.data === null) return resultErrorCreate(op, "The machine user was not found.")
-    if (user.data.status !== "active") return resultErrorCreate(op, "The machine user is not active.")
+    if (user.data === null) return resultErrorCreate(op, "The machine user was not found.", "machine-users.not-found")
+    if (user.data.status !== "active")
+      return resultErrorCreate(op, "The machine user is not active.", "machine-users.not-active")
     const scopes = machineScopesParse(user.data.scopes)
     if (!scopes.success) return scopes
     const credentials = repository.credentialList(options.realmId, options.machineUserId)
@@ -57,14 +59,16 @@ export function machineUserClientSecretRotate(
     const current = credentials.data.find(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
     )
-    if (current === undefined) return resultErrorCreate(op, "The machine user has no active client secret.")
+    if (current === undefined)
+      return resultErrorCreate(op, "The machine user has no active client secret.", "machine-users.invalid")
     const revoked = repository.credentialUpdate(options.realmId, current.id, {
       replacedById: replacementId,
       revokedAt: now,
       version: current.version + 1,
     })
     if (!revoked.success) return revoked
-    if (revoked.data === null) return resultErrorCreate(op, "The machine secret could not be rotated.")
+    if (revoked.data === null)
+      return resultErrorCreate(op, "The machine secret could not be rotated.", "machine-users.write-failed")
     const replacement = repository.credentialCreate({
       createdAt: now,
       expiresAt: null,
@@ -85,7 +89,8 @@ export function machineUserClientSecretRotate(
       credentialKind: "client_secret",
       replacementCredentialId: replacementId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The machine credential event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The machine credential event payload is invalid.", "machine-users.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,12 +1,12 @@
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { organizationLoginPolicyViewCreate } from "../domain/organizationLoginPolicyViewCreate.js"
 import { organizationTable } from "../persistence/organizationTable.js"
 import { organizationLoginPolicyRepositoryCreate } from "../persistence/organizationLoginPolicyRepositoryCreate.js"
-import type { OrganizationLoginPolicy } from "./organizationLoginPolicySchema.js"
-import { organizationLoginPolicyViewCreate } from "../domain/organizationLoginPolicyViewCreate.js"
+import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 
 type OrganizationLoginPolicyResolveOptions = {
   readonly database: StorageDatabase
@@ -27,7 +27,11 @@ export function organizationLoginPolicyResolve(
     .where(and(eq(organizationTable.id, options.organizationId), eq(organizationTable.realmId, options.realmId)))
     .get()
   if (organization === undefined || organization.status !== "active")
-    return resultErrorCreate("organizationLoginPolicyResolve", "The organization login policy is unavailable.")
+    return resultErrorCodedCreate(
+      "organizationLoginPolicyResolve",
+      "The organization login policy is unavailable.",
+      "organizations.not-found",
+    )
   const override = repository.organizationLoginPolicyGet(options.organizationId)
   if (!override.success) return override
   return resultCreate(organizationLoginPolicyViewCreate(realm.data, override.data))

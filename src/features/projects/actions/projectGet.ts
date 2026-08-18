@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -19,12 +19,16 @@ type ProjectGetOptions = {
 export function projectGet(options: ProjectGetOptions): Result<{ project: Project }> {
   const op = "projectGet"
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
-    return resultErrorCreate(op, "The project is not available in this tenant context.")
+    return resultErrorCodedCreate(
+      op,
+      "The project is not available in this tenant context.",
+      "projects.tenant-mismatch",
+    )
   const repository = projectRepositoryCreate(options.database.db)
   const project = repository.projectGet(options.projectId)
   if (!project.success) return project
   if (project.data === null || project.data.realmId !== options.realmId || project.data.status !== "active")
-    return resultErrorCreate(op, "The project was not found.")
+    return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
   const authorized = projectContextAuthorize({
     context: options.context,
     database: options.database,

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -34,21 +34,27 @@ type OrganizationCreateOptions = {
 export function organizationCreate(options: OrganizationCreateOptions): Result<{ organization: Organization }> {
   const op = "organizationCreate"
   if (options.context?.kind !== "system")
-    return resultErrorCreate(op, "Only the system context can create organizations.")
+    return resultErrorCodedCreate(
+      op,
+      "Only the system context can create organizations.",
+      "organizations.system-required",
+    )
   const parsed = v.safeParse(organizationCreateRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate(op, "The organization request is invalid.")
+  if (!parsed.success)
+    return resultErrorCodedCreate(op, "The organization request is invalid.", "organizations.invalid")
   const name = organizationNameNormalize(parsed.output.name)
   if (!name.success) return name
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (realm.data.realm.status !== "active")
+    return resultErrorCodedCreate(op, "The realm is not active.", "organizations.not-active")
 
   const runtime = options.runtime ?? options.database.runtime
   const organizationId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const createdAt = runtime.now()
   if (!Number.isSafeInteger(createdAt) || createdAt < 0)
-    return resultErrorCreate(op, "The organization timestamp is invalid.")
+    return resultErrorCodedCreate(op, "The organization timestamp is invalid.", "organizations.invalid-timestamp")
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
@@ -63,12 +69,17 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
     })
     if (!created.success) {
       if (created.errorMessage === "The organization could not be created.")
-        return resultErrorCreate(op, "An organization with that name already exists in this realm.")
+        return resultErrorCodedCreate(
+          op,
+          "An organization with that name already exists in this realm.",
+          "organizations.already-exists",
+        )
       return created
     }
 
     const payload = v.safeParse(organizationCreatedEventPayloadSchema, { name: name.data })
-    if (!payload.success) return resultErrorCreate(op, "The organization event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCodedCreate(op, "The organization event payload is invalid.", "organizations.event-invalid")
     const event = storageEventAppend(
       transaction,
       {
@@ -108,7 +119,8 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
         roles: ["owner"],
         userId: parsed.output.ownerUserId,
       })
-      if (!membershipPayload.success) return resultErrorCreate(op, "The membership event payload is invalid.")
+      if (!membershipPayload.success)
+        return resultErrorCodedCreate(op, "The membership event payload is invalid.", "organizations.event-invalid")
       const membershipEvent = storageEventAppend(
         transaction,
         {

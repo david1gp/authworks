@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -38,26 +38,31 @@ export function machineCredentialRevoke(
   const authorized = machineUserContextAuthorize({ ...options, permission: "machine.credential.manage" })
   if (!authorized.success) return authorized
   const parsed = v.safeParse(machineCredentialRevokeRequestSchema, options.input ?? {})
-  if (!parsed.success) return resultErrorCreate(op, "The machine credential revocation request is invalid.")
+  if (!parsed.success)
+    return resultErrorCreate(op, "The machine credential revocation request is invalid.", "machine-users.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
-    return resultErrorCreate(op, "The machine credential timestamp is invalid.")
+    return resultErrorCreate(op, "The machine credential timestamp is invalid.", "machine-users.invalid-timestamp")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
     const found = repository.credentialGet(options.realmId, options.credentialId)
     if (!found.success) return found
-    if (found.data === null) return resultErrorCreate(op, "The machine credential was not found.")
-    if (found.data.revokedAt !== null) return resultErrorCreate(op, "The machine credential is already revoked.")
+    if (found.data === null)
+      return resultErrorCreate(op, "The machine credential was not found.", "machine-users.not-found")
+    if (found.data.revokedAt !== null)
+      return resultErrorCreate(op, "The machine credential is already revoked.", "machine-users.conflict")
     const revoked = repository.credentialRevoke(options.realmId, options.credentialId, now)
     if (!revoked.success) return revoked
-    if (revoked.data === null) return resultErrorCreate(op, "The machine credential is already revoked.")
+    if (revoked.data === null)
+      return resultErrorCreate(op, "The machine credential is already revoked.", "machine-users.conflict")
     const payload = v.safeParse(machineCredentialRevokedEventPayloadSchema, {
       credentialId: revoked.data.id,
       credentialKind: revoked.data.kind,
     })
-    if (!payload.success) return resultErrorCreate(op, "The machine credential event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The machine credential event payload is invalid.", "machine-users.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

@@ -1,4 +1,4 @@
-import type { UserState } from "./userStateSchema.js"
+import type { UserState } from "../public/userStateSchema.js"
 
 export function userStateTransitionAllowed(from: UserState, to: UserState): boolean {
   if (from === to || from === "deleted") return false

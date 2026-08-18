@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -29,7 +29,8 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
   const op = "sessionRotate"
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "Session rotation is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
   const nextToken = sessionCredentialCreate(runtime)
   const nextHash = sessionCredentialHashCreate(nextToken)
   const correlationId = uuidv7Create(runtime)
@@ -43,13 +44,14 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
       current.data.revokedAt !== null ||
       current.data.expiresAt <= now
     )
-      return resultErrorCreate(op, "Session rotation is invalid.")
+      return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
     const user = transaction
       .select({ state: userTable.state })
       .from(userTable)
       .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, current.data.userId)))
       .get()
-    if (user === undefined || user.state !== "active") return resultErrorCreate(op, "Session rotation is invalid.")
+    if (user === undefined || user.state !== "active")
+      return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
     if (current.data.impersonatorId !== null) {
       const impersonator = transaction
         .select({ id: userTable.id, state: userTable.state })
@@ -67,7 +69,7 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
         )
         .get()
       if ((impersonator === undefined || impersonator.state !== "active") && bootstrap === undefined)
-        return resultErrorCreate(op, "Session rotation is invalid.")
+        return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
     }
     const rotated = repository.sessionRotate(
       options.realmId,
@@ -79,11 +81,12 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
       current.data.version + 1,
     )
     if (!rotated.success) return rotated
-    if (rotated.data === null) return resultErrorCreate(op, "Session rotation is invalid.")
+    if (rotated.data === null) return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
     const eventVersion = repository.sessionEventVersionGet(options.realmId, current.data.id)
     if (!eventVersion.success) return eventVersion
     const payload = v.safeParse(sessionRotatedEventPayloadSchema, { rotatedAt: now, sessionId: current.data.id })
-    if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(op, "The session event payload is invalid.", "sessions.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

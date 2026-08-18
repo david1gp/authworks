@@ -1,6 +1,6 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -22,7 +22,8 @@ export function oidcClientGet(options: OidcClientGetOptions): Result<OidcClientR
   if (!authorized.success) return authorized
   const row = oidcRepositoryCreate(options.database.db).clientGet(options.realmId, options.clientId)
   if (!row.success) return row
-  if (row.data === null || row.data.status === "removed") return resultErrorCreate(op, "The OIDC client was not found.")
+  if (row.data === null || row.data.status === "removed")
+    return resultErrorCodedCreate(op, "The OIDC client was not found.", "oidc.not-found")
   const client = oidcClientPublicViewCreate(row.data)
   if (!client.success) return client
   return resultCreate({ client: client.data })

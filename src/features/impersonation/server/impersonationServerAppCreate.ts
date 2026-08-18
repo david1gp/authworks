@@ -1,8 +1,7 @@
 import { Hono } from "hono"
-import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
-import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
-import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { Result } from "#result"
+import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
@@ -90,35 +89,40 @@ async function impersonationRequestBodyRead(context: { req: { json: <T>() => Pro
 }
 
 function impersonationErrorResponseCreate(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { errorMessage: string; op: string },
+  context: ImpersonationRouteContext,
+  result: { errorMessage: string; op: string; code?: string; success?: false },
 ) {
-  const code = impersonationErrorCodeGet(result)
-  return context.json(
-    httpErrorResponseCreate(code, result.errorMessage),
-    httpErrorStatusGet(code) as ContentfulStatusCode,
-  )
-}
-
-function impersonationErrorCodeGet(result: { errorMessage: string; op: string }): string {
-  const message = result.errorMessage.toLowerCase()
-  if (message.includes("authorized") || message.includes("authentication") || message.includes("actor"))
-    return "forbidden"
-  if (message.includes("not found") || message.includes("not active") || message.includes("not a member"))
-    return "not_found"
-  if (message.includes("invalid") || message.includes("required") || message.includes("duration")) return "bad_request"
-  return "internal_server_error"
+  return httpResultResponseCreate(context, {
+    ...result,
+    code: result.code ?? "impersonation.invalid",
+    success: false,
+  } as Result<unknown>)
 }
 
 function impersonationResultResponseCreate<T>(
-  context: { json: (body: unknown, status?: ContentfulStatusCode) => Response },
-  result: { data?: T; errorMessage?: string; op?: string; success: boolean },
+  context: ImpersonationRouteContext,
+  result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
 ) {
   if (!result.success)
     return impersonationErrorResponseCreate(context, {
+      code: result.code,
       errorMessage: result.errorMessage ?? "The impersonation request failed.",
       op: result.op ?? "impersonation",
+      success: false,
     })
-  return context.json(result.data, status as ContentfulStatusCode)
+  return httpResultResponseCreate(context, result as Result<T>, status)
+}
+
+type ImpersonationRouteContext = {
+  readonly get: {
+    (key: "authorizationActor"): AuthorizationActorContext
+    (key: "session"): Session
+  }
+  readonly json: (body: unknown, status?: number) => Response
+  readonly req: {
+    readonly json: <T>() => Promise<T>
+    readonly param: (name: string) => string
+    readonly header: (name: string) => string | undefined
+  }
 }

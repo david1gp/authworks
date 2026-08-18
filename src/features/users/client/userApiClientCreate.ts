@@ -1,7 +1,9 @@
 import * as v from "valibot"
 import { type Result } from "#result"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { type UserCreateRequest, userCreateRequestSchema } from "../public/userCreateRequestSchema.js"
 import { type UserLifecycleRequest, userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
@@ -40,7 +42,9 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
     userCreate(realmId: string, input: UserCreateRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userCreateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("userApiClientCreate", "The user request is invalid."))
+        return Promise.resolve(
+          resultErrorCreate("userApiClientCreate", "The user request is invalid.", "users.invalid"),
+        )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/users`,
         jsonRequest(parsed.output),
@@ -54,13 +58,19 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         userResponseSchema,
       )
     },
-    userList(realmId: string): Promise<Result<UserListResponse>> {
-      return request(`/system/realms/${encodeURIComponent(realmId)}/users`, { method: "GET" }, userListResponseSchema)
+    userList(realmId: string, query?: ListQuery): Promise<Result<UserListResponse>> {
+      return request(
+        `/system/realms/${encodeURIComponent(realmId)}/users${listQueryToSearchParams(query)}`,
+        { method: "GET" },
+        userListResponseSchema,
+      )
     },
     userProfileUpdate(realmId: string, userId: string, input: UserProfileUpdateRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userProfileUpdateRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("userApiClientProfileUpdate", "The user profile update is invalid."))
+        return Promise.resolve(
+          resultErrorCreate("userApiClientProfileUpdate", "The user profile update is invalid.", "users.invalid"),
+        )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/profile`,
         patchRequest(parsed.output),
@@ -70,7 +80,9 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
     userLifecycleSet(realmId: string, userId: string, input: UserLifecycleRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userLifecycleRequestSchema, input)
       if (!parsed.success)
-        return Promise.resolve(resultErrorCreate("userApiClientLifecycleSet", "The user lifecycle request is invalid."))
+        return Promise.resolve(
+          resultErrorCreate("userApiClientLifecycleSet", "The user lifecycle request is invalid.", "users.invalid"),
+        )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/lifecycle`,
         jsonRequest(parsed.output),
@@ -85,7 +97,11 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
       const parsed = v.safeParse(userVerificationRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
-          resultErrorCreate("userApiClientVerificationSet", "The user verification request is invalid."),
+          resultErrorCreate(
+            "userApiClientVerificationSet",
+            "The user verification request is invalid.",
+            "users.invalid",
+          ),
         )
       return request(
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/verification`,

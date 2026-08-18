@@ -2,7 +2,7 @@ import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
@@ -30,11 +30,13 @@ export function mfaTotpEnrollmentRemove(
   options: MfaTotpEnrollmentRemoveOptions,
 ): Result<MfaTotpEnrollmentRemoveResponse> {
   const op = "mfaTotpEnrollmentRemove"
-  if (options.sessionToken.length === 0) return resultErrorCreate(op, "MFA step-up authorization is required.")
+  if (options.sessionToken.length === 0)
+    return resultErrorCreate(op, "MFA step-up authorization is required.", "mfa.unauthorized")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The TOTP removal timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The TOTP removal timestamp is invalid.", "mfa.invalid-timestamp")
   return storageTransactionRun(options.database, (transaction) => {
     const session = transaction
       .select()
@@ -53,7 +55,7 @@ export function mfaTotpEnrollmentRemove(
       session.expiresAt <= now ||
       session.assurance !== "multi_factor"
     )
-      return resultErrorCreate(op, "MFA step-up authorization is required.")
+      return resultErrorCreate(op, "MFA step-up authorization is required.", "mfa.unauthorized")
     const repository = mfaRepositoryCreate(transaction)
     const enrollment =
       options.enrollmentId === undefined
@@ -61,7 +63,7 @@ export function mfaTotpEnrollmentRemove(
         : repository.mfaEnrollmentGet(options.realmId, options.userId, options.enrollmentId)
     if (!enrollment.success) return enrollment
     if (enrollment.data === null || enrollment.data.status !== "active")
-      return resultErrorCreate(op, "The TOTP enrollment was not found.")
+      return resultErrorCreate(op, "The TOTP enrollment was not found.", "mfa.not-found")
     const removed = repository.mfaEnrollmentDelete(
       options.realmId,
       options.userId,
@@ -69,13 +71,13 @@ export function mfaTotpEnrollmentRemove(
       enrollment.data.version,
     )
     if (!removed.success) return removed
-    if (!removed.data) return resultErrorCreate(op, "The TOTP enrollment was not found.")
+    if (!removed.data) return resultErrorCreate(op, "The TOTP enrollment was not found.", "mfa.not-found")
     const payload = v.safeParse(mfaEventPayloadSchema, {
       enrollmentId: enrollment.data.id,
       factor: "totp",
       userId: options.userId,
     })
-    if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.")
+    if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
     const event = storageEventAppend(
       transaction,
       {

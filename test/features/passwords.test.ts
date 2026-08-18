@@ -86,6 +86,7 @@ test("password registration, email verification, login, change, recovery, and lo
       realmId: realm.id,
     })
     expect(beforeVerification).toEqual({
+      code: "passwords.unauthorized",
       errorMessage: "The credentials are invalid.",
       op: "passwordLogin",
       success: false,

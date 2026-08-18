@@ -40,7 +40,7 @@ import { oidcServerAppCreate } from "../../src/features/oidc/server/oidcServerAp
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
-import { sessionPasswordCreate } from "../../src/features/sessions/public/sessionPasswordCreate.js"
+import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -262,7 +262,7 @@ test("OIDC clients are tenant-isolated, return secrets once, and write safe even
     })
     expect(betaClients.success).toBe(true)
     if (!betaClients.success) return
-    expect(betaClients.data.clients).toEqual([])
+    expect(betaClients.data.items).toEqual([])
     const events = database.db.select().from(storageEventTable).all()
     expect(JSON.stringify(events)).not.toContain(created.data.clientSecret)
     expect(JSON.stringify(events)).not.toContain("secretHash")
@@ -376,10 +376,10 @@ test("signing keys rotate without exposing private material and serve discovery 
     const keys = oidcSigningKeyList({ context: realmSystemContextCreate(), database, realmId: realm.id })
     expect(keys.success).toBe(true)
     if (!keys.success) return
-    expect(keys.data?.signingKeys).toHaveLength(2)
-    expect(keys.data?.signingKeys[0]?.status).toBe("active")
-    expect(keys.data?.signingKeys[1]?.status).toBe("retired")
-    expect(keys.data?.signingKeys[0]).not.toHaveProperty("encryptedPrivateKey")
+    expect(keys.data?.items).toHaveLength(2)
+    expect(keys.data?.items[0]?.status).toBe("active")
+    expect(keys.data?.items[1]?.status).toBe("retired")
+    expect(keys.data?.items[0]).not.toHaveProperty("encryptedPrivateKey")
     const jwks = oidcJwksGet({ database, realmId: realm.id })
     expect(jwks.success).toBe(true)
     if (!jwks.success) return

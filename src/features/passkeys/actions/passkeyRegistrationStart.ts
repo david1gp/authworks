@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
@@ -43,7 +43,8 @@ export async function passkeyRegistrationStart(
     .from(userTable)
     .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, options.userId)))
     .get()
-  if (user === undefined || user.state !== "active") return resultErrorCreate(op, "The passkey user is invalid.")
+  if (user === undefined || user.state !== "active")
+    return resultErrorCreate(op, "The passkey user is invalid.", "passkeys.invalid")
   const credentials = passkeyRepositoryCreate(options.database.db).passkeyCredentialList(
     options.realmId,
     options.userId,
@@ -51,7 +52,8 @@ export async function passkeyRegistrationStart(
   if (!credentials.success) return credentials
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0) return resultErrorCreate(op, "The passkey timestamp is invalid.")
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The passkey timestamp is invalid.", "passkeys.invalid-timestamp")
   const token = Buffer.from(runtime.randomBytes(32)).toString("base64url")
   const challenge = Buffer.from(runtime.randomBytes(32)).toString("base64url")
   let generated: Awaited<ReturnType<typeof generateRegistrationOptions>>
@@ -74,7 +76,7 @@ export async function passkeyRegistrationStart(
       userName: user.email,
     })
   } catch (_error) {
-    return resultErrorCreate(op, "The passkey registration options could not be created.")
+    return resultErrorCreate(op, "The passkey registration options could not be created.", "passkeys.write-failed")
   }
   const parsed = await passkeyRegistrationStartStore({
     actorId: options.actorId,
@@ -91,7 +93,8 @@ export async function passkeyRegistrationStart(
   })
   if (!parsed.success) return parsed
   const response = v.safeParse(passkeyRegistrationStartResponseSchema, { options: generated, token })
-  if (!response.success) return resultErrorCreate(op, "The passkey registration options are invalid.")
+  if (!response.success)
+    return resultErrorCreate(op, "The passkey registration options are invalid.", "passkeys.invalid")
   return resultCreate(response.output)
 }
 
@@ -136,7 +139,12 @@ function passkeyRegistrationStartStore(options: PasskeyRegistrationStartStoreOpt
       purpose: options.purpose,
       userId: options.userId,
     })
-    if (!payload.success) return resultErrorCreate("passkeyRegistrationStart", "The passkey event payload is invalid.")
+    if (!payload.success)
+      return resultErrorCreate(
+        "passkeyRegistrationStart",
+        "The passkey event payload is invalid.",
+        "passkeys.event-invalid",
+      )
     const event = storageEventAppend(
       transaction,
       {

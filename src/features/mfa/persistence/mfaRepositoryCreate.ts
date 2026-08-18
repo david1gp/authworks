@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { mfaChallengeTable, type MfaChallengeRow } from "./mfaChallengeTable.js"
 import { mfaLockoutTable, type MfaLockoutRow } from "./mfaLockoutTable.js"
 import { mfaPolicyTable, type MfaPolicyRow } from "./mfaPolicyTable.js"
@@ -28,17 +28,17 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
           .get()
         return resultCreate(event?.aggregateVersion ?? 0)
       } catch (_error) {
-        return resultErrorCreate("mfaEventVersionGet", "The MFA event version could not be read.")
+        return resultErrorCreate("mfaEventVersionGet", "The MFA event version could not be read.", "mfa.read-failed")
       }
     },
     mfaChallengeCreate(input: typeof mfaChallengeTable.$inferInsert): Result<MfaChallengeRow> {
       try {
         const row = database.insert(mfaChallengeTable).values(input).returning().get()
         return row === undefined
-          ? resultErrorCreate("mfaChallengeCreate", "The MFA challenge could not be created.")
+          ? resultErrorCreate("mfaChallengeCreate", "The MFA challenge could not be created.", "mfa.write-failed")
           : resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("mfaChallengeCreate", "The MFA challenge could not be created.")
+        return resultErrorCreate("mfaChallengeCreate", "The MFA challenge could not be created.", "mfa.write-failed")
       }
     },
     mfaChallengeGetByTokenHash(realmId: string, tokenHash: string): Result<MfaChallengeRow | null> {
@@ -51,7 +51,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaChallengeGet", "The MFA challenge could not be read.")
+        return resultErrorCreate("mfaChallengeGet", "The MFA challenge could not be read.", "mfa.read-failed")
       }
     },
     mfaChallengeUpdate(
@@ -76,17 +76,17 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaChallengeUpdate", "The MFA challenge could not be updated.")
+        return resultErrorCreate("mfaChallengeUpdate", "The MFA challenge could not be updated.", "mfa.write-failed")
       }
     },
     mfaEnrollmentCreate(input: typeof mfaTotpEnrollmentTable.$inferInsert): Result<MfaTotpEnrollmentRow> {
       try {
         const row = database.insert(mfaTotpEnrollmentTable).values(input).returning().get()
         return row === undefined
-          ? resultErrorCreate("mfaEnrollmentCreate", "The TOTP enrollment could not be created.")
+          ? resultErrorCreate("mfaEnrollmentCreate", "The TOTP enrollment could not be created.", "mfa.write-failed")
           : resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("mfaEnrollmentCreate", "The TOTP enrollment could not be created.")
+        return resultErrorCreate("mfaEnrollmentCreate", "The TOTP enrollment could not be created.", "mfa.write-failed")
       }
     },
     mfaEnrollmentGet(realmId: string, userId: string, id?: string): Result<MfaTotpEnrollmentRow | null> {
@@ -101,7 +101,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaEnrollmentGet", "The TOTP enrollment could not be read.")
+        return resultErrorCreate("mfaEnrollmentGet", "The TOTP enrollment could not be read.", "mfa.read-failed")
       }
     },
     mfaEnrollmentActiveGet(realmId: string, userId: string): Result<MfaTotpEnrollmentRow | null> {
@@ -120,7 +120,11 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaEnrollmentActiveGet", "The active TOTP enrollment could not be read.")
+        return resultErrorCreate(
+          "mfaEnrollmentActiveGet",
+          "The active TOTP enrollment could not be read.",
+          "mfa.read-failed",
+        )
       }
     },
     mfaEnrollmentPendingDelete(realmId: string, userId: string): Result<void> {
@@ -137,7 +141,11 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
           .run()
         return resultCreate(undefined)
       } catch (_error) {
-        return resultErrorCreate("mfaEnrollmentPendingDelete", "The pending TOTP enrollment could not be replaced.")
+        return resultErrorCreate(
+          "mfaEnrollmentPendingDelete",
+          "The pending TOTP enrollment could not be replaced.",
+          "mfa.write-failed",
+        )
       }
     },
     mfaEnrollmentDelete(realmId: string, userId: string, id: string, expectedVersion: number): Result<boolean> {
@@ -157,7 +165,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
           .get()
         return resultCreate(updated !== undefined)
       } catch (_error) {
-        return resultErrorCreate("mfaEnrollmentDelete", "The TOTP enrollment could not be removed.")
+        return resultErrorCreate("mfaEnrollmentDelete", "The TOTP enrollment could not be removed.", "mfa.write-failed")
       }
     },
     mfaEnrollmentUpdate(
@@ -184,7 +192,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaEnrollmentUpdate", "The TOTP enrollment could not be updated.")
+        return resultErrorCreate("mfaEnrollmentUpdate", "The TOTP enrollment could not be updated.", "mfa.write-failed")
       }
     },
     mfaEnrollmentList(realmId: string, userId: string): Result<MfaTotpEnrollmentRow[]> {
@@ -198,7 +206,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("mfaEnrollmentList", "The TOTP enrollments could not be read.")
+        return resultErrorCreate("mfaEnrollmentList", "The TOTP enrollments could not be read.", "mfa.read-failed")
       }
     },
     mfaLockoutGet(realmId: string, userId: string): Result<MfaLockoutRow | null> {
@@ -211,7 +219,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaLockoutGet", "The MFA lockout could not be read.")
+        return resultErrorCreate("mfaLockoutGet", "The MFA lockout could not be read.", "mfa.read-failed")
       }
     },
     mfaLockoutSet(input: typeof mfaLockoutTable.$inferInsert): Result<MfaLockoutRow> {
@@ -220,7 +228,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
         if (existing === undefined) {
           const row = database.insert(mfaLockoutTable).values(input).returning().get()
           return row === undefined
-            ? resultErrorCreate("mfaLockoutSet", "The MFA lockout could not be updated.")
+            ? resultErrorCreate("mfaLockoutSet", "The MFA lockout could not be updated.", "mfa.write-failed")
             : resultCreate(row)
         }
         const row = database
@@ -230,10 +238,10 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
           .returning()
           .get()
         return row === undefined
-          ? resultErrorCreate("mfaLockoutSet", "The MFA lockout could not be updated.")
+          ? resultErrorCreate("mfaLockoutSet", "The MFA lockout could not be updated.", "mfa.write-failed")
           : resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("mfaLockoutSet", "The MFA lockout could not be updated.")
+        return resultErrorCreate("mfaLockoutSet", "The MFA lockout could not be updated.", "mfa.write-failed")
       }
     },
     mfaPolicyGet(realmId: string): Result<MfaPolicyRow | null> {
@@ -242,7 +250,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
           database.select().from(mfaPolicyTable).where(eq(mfaPolicyTable.realmId, realmId)).get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaPolicyGet", "The MFA policy could not be read.")
+        return resultErrorCreate("mfaPolicyGet", "The MFA policy could not be read.", "mfa.read-failed")
       }
     },
     mfaPolicySet(input: typeof mfaPolicyTable.$inferInsert): Result<MfaPolicyRow> {
@@ -251,7 +259,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
         if (existing === undefined) {
           const row = database.insert(mfaPolicyTable).values(input).returning().get()
           return row === undefined
-            ? resultErrorCreate("mfaPolicySet", "The MFA policy could not be updated.")
+            ? resultErrorCreate("mfaPolicySet", "The MFA policy could not be updated.", "mfa.write-failed")
             : resultCreate(row)
         }
         const row = database
@@ -261,20 +269,20 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
           .returning()
           .get()
         return row === undefined
-          ? resultErrorCreate("mfaPolicySet", "The MFA policy could not be updated.")
+          ? resultErrorCreate("mfaPolicySet", "The MFA policy could not be updated.", "mfa.write-failed")
           : resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("mfaPolicySet", "The MFA policy could not be updated.")
+        return resultErrorCreate("mfaPolicySet", "The MFA policy could not be updated.", "mfa.write-failed")
       }
     },
     mfaRecoveryCodeCreate(input: typeof mfaRecoveryCodeTable.$inferInsert): Result<MfaRecoveryCodeRow> {
       try {
         const row = database.insert(mfaRecoveryCodeTable).values(input).returning().get()
         return row === undefined
-          ? resultErrorCreate("mfaRecoveryCodeCreate", "The recovery code could not be created.")
+          ? resultErrorCreate("mfaRecoveryCodeCreate", "The recovery code could not be created.", "mfa.write-failed")
           : resultCreate(row)
       } catch (_error) {
-        return resultErrorCreate("mfaRecoveryCodeCreate", "The recovery code could not be created.")
+        return resultErrorCreate("mfaRecoveryCodeCreate", "The recovery code could not be created.", "mfa.write-failed")
       }
     },
     mfaRecoveryCodesDelete(realmId: string, userId: string): Result<void> {
@@ -285,7 +293,11 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
           .run()
         return resultCreate(undefined)
       } catch (_error) {
-        return resultErrorCreate("mfaRecoveryCodesDelete", "The recovery codes could not be replaced.")
+        return resultErrorCreate(
+          "mfaRecoveryCodesDelete",
+          "The recovery codes could not be replaced.",
+          "mfa.write-failed",
+        )
       }
     },
     mfaRecoveryCodeGet(realmId: string, userId: string, codeHash: string): Result<MfaRecoveryCodeRow | null> {
@@ -305,7 +317,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaRecoveryCodeGet", "The recovery code could not be read.")
+        return resultErrorCreate("mfaRecoveryCodeGet", "The recovery code could not be read.", "mfa.read-failed")
       }
     },
     mfaRecoveryCodeConsume(
@@ -331,7 +343,11 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("mfaRecoveryCodeConsume", "The recovery code could not be consumed.")
+        return resultErrorCreate(
+          "mfaRecoveryCodeConsume",
+          "The recovery code could not be consumed.",
+          "mfa.write-failed",
+        )
       }
     },
     mfaRecoveryCodeList(realmId: string, userId: string): Result<MfaRecoveryCodeRow[]> {
@@ -345,7 +361,7 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
             .all(),
         )
       } catch (_error) {
-        return resultErrorCreate("mfaRecoveryCodeList", "The recovery codes could not be read.")
+        return resultErrorCreate("mfaRecoveryCodeList", "The recovery codes could not be read.", "mfa.read-failed")
       }
     },
   }
