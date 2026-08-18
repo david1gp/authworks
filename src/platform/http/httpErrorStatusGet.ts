@@ -1,4 +1,6 @@
-const statusByErrorCode: Record<string, number> = {
+import { errorCatalogHttpMappingGet } from "../errors/errorCatalogHttpMappingGet.js"
+
+const legacyStatusByErrorCode: Record<string, number> = {
   bad_request: 400,
   conflict: 409,
   forbidden: 403,
@@ -10,5 +12,5 @@ const statusByErrorCode: Record<string, number> = {
 }
 
 export function httpErrorStatusGet(code: string): number {
-  return statusByErrorCode[code] ?? 500
+  return legacyStatusByErrorCode[code] ?? errorCatalogHttpMappingGet(code).httpStatus
 }

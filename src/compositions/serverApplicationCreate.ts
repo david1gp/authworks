@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { type Result } from "#result"
 import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpServerAppCreate.js"
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { realmServerAppCreate } from "../features/realms/server/realmServerAppCreate.js"
@@ -10,10 +11,11 @@ import { mfaServerAppCreate } from "../features/mfa/server/mfaServerAppCreate.js
 import { impersonationServerAppCreate } from "../features/impersonation/server/impersonationServerAppCreate.js"
 import { machineUserServerAppCreate } from "../features/machineUsers/server/machineUserServerAppCreate.js"
 import { passkeyServerAppCreate } from "../features/passkeys/server/passkeyServerAppCreate.js"
-import { sessionPasswordCreate } from "../features/sessions/public/sessionPasswordCreate.js"
+import { sessionPasswordCreate } from "../features/sessions/actions/sessionPasswordCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
 import { userServerAppCreate } from "../features/users/server/userServerAppCreate.js"
 import { storageDatabaseOpen } from "../platform/storage/storageDatabaseOpen.js"
+import { resultCreate } from "../platform/errors/resultCreate.js"
 
 type ServerApplicationCreateOptions = {
   readonly databasePath: string
@@ -24,9 +26,9 @@ type ServerApplicationCreateOptions = {
   readonly publicOrigin?: string
 }
 
-export function serverApplicationCreate(options: ServerApplicationCreateOptions) {
+export function serverApplicationCreate(options: ServerApplicationCreateOptions): Result<Hono> {
   const database = storageDatabaseOpen(options.databasePath)
-  if (!database.success) return new Hono()
+  if (!database.success) return database
   const publicOrigin = options.publicOrigin ?? "http://127.0.0.1:3000"
   const passkeyRpId = options.passkeyRpId ?? new URL(publicOrigin).hostname
   const application = realmServerAppCreate({ database: database.data, systemSecret: options.systemSecret })
@@ -67,5 +69,5 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
       systemSecret: options.systemSecret,
     }),
   )
-  return application
+  return resultCreate(application)
 }

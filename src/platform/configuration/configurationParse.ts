@@ -28,13 +28,14 @@ export function configurationParse(input: unknown): Result<Configuration> {
   }
 
   const publicOrigin = new URL(parsed.output.publicOrigin)
-  if (!isPublicOrigin(publicOrigin))
+  if (!isPublicOrigin(publicOrigin, parsed.output.publicOrigin))
     return resultErrorCreate(op, "Configuration is invalid. Invalid fields: publicOrigin.")
   if (parsed.output.nodeEnv === "production" && publicOrigin.protocol !== "https:") {
     return resultErrorCreate(op, "Configuration is invalid. Invalid fields: publicOrigin.")
   }
 
-  return createResult({ ...parsed.output, publicOrigin: publicOrigin.toString() })
+  const pathname = publicOrigin.pathname === "/" ? "" : publicOrigin.pathname.replace(/\/+$/, "")
+  return createResult({ ...parsed.output, publicOrigin: publicOrigin.origin + pathname })
 }
 
 function configurationInputNormalize(input: Record<string, unknown>): Result<Record<string, unknown>> {
@@ -75,12 +76,15 @@ function normalizeConfigurationValue(field: string, value: unknown): unknown {
   return value
 }
 
-function isPublicOrigin(url: URL): boolean {
+function isPublicOrigin(url: URL, input: string): boolean {
+  const rawPathname = input.match(/^[a-z][a-z\d+.-]*:\/\/[^/?#]*(\/[^?#]*)?/i)?.[1] ?? "/"
+  const normalizedRawPathname = rawPathname.replaceAll(/%2e/gi, ".")
   return (
     (url.protocol === "http:" || url.protocol === "https:") &&
     url.username === "" &&
     url.password === "" &&
-    url.pathname === "/" &&
+    url.pathname.startsWith("/") &&
+    !normalizedRawPathname.includes("..") &&
     url.search === "" &&
     url.hash === ""
   )
