@@ -6,9 +6,9 @@ import { emailOtpStart } from "../../src/features/emailOtp/actions/emailOtpStart
 import { externalIdentityProviderCreate } from "../../src/features/externalIdentities/actions/externalIdentityProviderCreate.js"
 import { externalIdentityStart } from "../../src/features/externalIdentities/actions/externalIdentityStart.js"
 import type { ExternalIdentityProviderPorts } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { organizationBrandingGet } from "../../src/features/organizations/actions/organizationBrandingGet.js"
 import { organizationBrandingSet } from "../../src/features/organizations/actions/organizationBrandingSet.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
@@ -46,22 +46,22 @@ async function withDatabase<T>(
 }
 
 async function createOrganization(database: StorageDatabase) {
-  const instance = instanceCreate({
-    context: instanceSystemContextCreate(),
+  const realm = realmCreate({
+    context: realmSystemContextCreate(),
     database,
-    input: { domain: "instance.example.com", name: "Instance" },
+    input: { domain: "realm.example.com", name: "Realm" },
   })
-  expect(instance.success).toBe(true)
-  if (!instance.success) throw new Error(instance.errorMessage)
+  expect(realm.success).toBe(true)
+  if (!realm.success) throw new Error(realm.errorMessage)
   const organization = organizationCreate({
-    context: instanceSystemContextCreate(),
+    context: realmSystemContextCreate(),
     database,
     input: { name: "Organization" },
-    instanceId: instance.data.instance.id,
+    realmId: realm.data.realm.id,
   })
   expect(organization.success).toBe(true)
   if (!organization.success) throw new Error(organization.errorMessage)
-  return { instance: instance.data.instance, organization: organization.data.organization }
+  return { realm: realm.data.realm, organization: organization.data.organization }
 }
 
 const branding = {
@@ -89,20 +89,20 @@ const branding = {
 
 test("branding and verified domain discovery are tenant-safe and DNS-port based", async () => {
   await withDatabase(async (database) => {
-    const { instance, organization } = await createOrganization(database)
+    const { realm, organization } = await createOrganization(database)
     const set = organizationBrandingSet({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: branding,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(set.success).toBe(true)
     const claimed = organizationDomainClaim({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { domain: "Login.Example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(claimed.success).toBe(true)
@@ -118,11 +118,11 @@ test("branding and verified domain discovery are tenant-safe and DNS-port based"
     expect(
       (
         await organizationDomainVerify({
-          context: instanceSystemContextCreate(),
+          context: realmSystemContextCreate(),
           database,
           dnsPort: port,
           domain: "login.example.com",
-          instanceId: instance.id,
+          realmId: realm.id,
           organizationId: organization.id,
         })
       ).success,
@@ -145,96 +145,94 @@ test("branding and verified domain discovery are tenant-safe and DNS-port based"
 
 test("branding validation rejects insecure assets without changing the default", async () => {
   await withDatabase(async (database) => {
-    const { instance, organization } = await createOrganization(database)
+    const { realm, organization } = await createOrganization(database)
     const invalid = organizationBrandingSet({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { ...branding, fontUrl: "http://assets.example.com/font.woff2" },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(invalid.success).toBe(false)
-    expect(
-      organizationBrandingGet({ database, instanceId: instance.id, organizationId: organization.id }),
-    ).toMatchObject({
+    expect(organizationBrandingGet({ database, realmId: realm.id, organizationId: organization.id })).toMatchObject({
       data: { branding: { disableWatermark: false }, version: 1 },
       success: true,
     })
   })
 })
 
-test("organization domains reject instance conflicts, preserve primary invariants, and require the DNS proof", async () => {
+test("organization domains reject realm conflicts, preserve primary invariants, and require the DNS proof", async () => {
   await withDatabase(async (database) => {
-    const { instance, organization } = await createOrganization(database)
+    const { realm, organization } = await createOrganization(database)
     expect(
       organizationDomainClaim({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
-        input: { domain: instance.domain },
-        instanceId: instance.id,
+        input: { domain: realm.domain },
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(false)
 
     const primary = organizationDomainClaim({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { domain: "primary.example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     const secondary = organizationDomainClaim({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { domain: "secondary.example.com", isPrimary: false },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(primary.success && secondary.success).toBe(true)
     expect(
       organizationDomainRemove({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         domain: "primary.example.com",
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(false)
     expect(
       organizationDomainRemove({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         domain: "secondary.example.com",
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(true)
     expect(
       organizationDomainRemove({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         domain: "primary.example.com",
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(true)
 
     const claimed = organizationDomainClaim({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { domain: "verified.example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(claimed.success).toBe(true)
     if (!claimed.success) return
     const token = claimed.data.domain.verification?.recordValue ?? ""
     const wrongProof = await organizationDomainVerify({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       dnsPort: { txtRecordsGet: async () => resultCreate(["wrong-proof"]) },
       domain: "verified.example.com",
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(wrongProof.success).toBe(false)
@@ -244,7 +242,7 @@ test("organization domains reject instance conflicts, preserve primary invariant
     })
     let calls = 0
     const verified = await organizationDomainVerify({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       dnsPort: {
         txtRecordsGet: async () => {
@@ -253,18 +251,18 @@ test("organization domains reject instance conflicts, preserve primary invariant
         },
       },
       domain: "verified.example.com",
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(verified.success).toBe(true)
     expect(
       (
         await organizationDomainVerify({
-          context: instanceSystemContextCreate(),
+          context: realmSystemContextCreate(),
           database,
           dnsPort: { txtRecordsGet: async () => resultCreate(["unused"]) },
           domain: "verified.example.com",
-          instanceId: instance.id,
+          realmId: realm.id,
           organizationId: organization.id,
         })
       ).success,
@@ -275,9 +273,9 @@ test("organization domains reject instance conflicts, preserve primary invariant
 
 test("organization login policy inherits, overrides, filters providers, and blocks existing login methods", async () => {
   await withDatabase(async (database) => {
-    const { instance, organization } = await createOrganization(database)
+    const { realm, organization } = await createOrganization(database)
     const provider = externalIdentityProviderCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowAccountCreation: true,
@@ -287,39 +285,39 @@ test("organization login policy inherits, overrides, filters providers, and bloc
         redirectUri: "https://app.example.com/callback",
         type: "google",
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(provider.success).toBe(true)
     if (!provider.success) return
     expect(
       organizationLoginPolicySet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: { allowPassword: false, providerIds: ["other-provider"] },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(true)
     expect(
       organizationLoginPolicyEnforce({
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         method: "password",
       }).success,
     ).toBe(false)
     expect(
       organizationLoginPolicySet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: { allowPassword: true, providerIds: [provider.data.provider.id] },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(true)
     const partial = organizationLoginPolicySet({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { allowEmailOtp: false },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(partial).toMatchObject({
@@ -328,17 +326,17 @@ test("organization login policy inherits, overrides, filters providers, and bloc
     })
     expect(
       organizationLoginPolicySet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: {},
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(false)
     expect(
       organizationLoginPolicyEnforce({
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         method: "password",
         organizationId: organization.id,
       }).success,
@@ -346,51 +344,51 @@ test("organization login policy inherits, overrides, filters providers, and bloc
     expect(
       organizationLoginPolicyEnforce({
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         method: "external_identity",
         organizationId: organization.id,
         providerId: "other-provider",
       }).success,
     ).toBe(false)
     const cleared = organizationLoginPolicySet({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { providerIds: null },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(cleared).toMatchObject({ data: { policy: { providerIds: ["other-provider"] } }, success: true })
     if (cleared.success) expect(cleared.data.overrides.providerIds).toBeUndefined()
     expect(
       passwordLogin({
-        context: instanceTenantContextCreate(instance.id, "anonymous"),
+        context: realmTenantContextCreate(realm.id, "anonymous"),
         database,
         input: { identifier: "unknown", organizationId: undefined, password: "wrong" },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: undefined,
       }).success,
     ).toBe(false)
     const disabled = organizationLoginPolicySet({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { allowEmailOtp: false, allowExternalIdentity: false, allowPasskey: false },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(disabled.success).toBe(true)
     expect(
       emailOtpStart({
-        context: instanceTenantContextCreate(instance.id, "anonymous"),
+        context: realmTenantContextCreate(realm.id, "anonymous"),
         database,
         input: { email: "person@example.com", organizationId: organization.id },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     expect(
       (
         await passkeyAuthenticationStart({
           database,
-          instanceId: instance.id,
+          realmId: realm.id,
           organizationId: organization.id,
           origins: ["https://app.example.com"],
           purpose: "passwordless",
@@ -414,7 +412,7 @@ test("organization login policy inherits, overrides, filters providers, and bloc
       externalIdentityStart({
         database,
         input: { organizationId: organization.id },
-        instanceId: instance.id,
+        realmId: realm.id,
         providerId: provider.data.provider.id,
         providerPorts: ports,
       }).success,
@@ -424,9 +422,9 @@ test("organization login policy inherits, overrides, filters providers, and bloc
 
 test("organization discovery honors its domain policy and provider allowlist", async () => {
   await withDatabase(async (database) => {
-    const { instance, organization } = await createOrganization(database)
+    const { realm, organization } = await createOrganization(database)
     const globalProvider = externalIdentityProviderCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowAccountCreation: true,
@@ -436,10 +434,10 @@ test("organization discovery honors its domain policy and provider allowlist", a
         redirectUri: "https://app.example.com/google",
         type: "google",
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     const organizationProvider = externalIdentityProviderCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowAccountCreation: true,
@@ -450,16 +448,16 @@ test("organization discovery honors its domain policy and provider allowlist", a
         redirectUri: "https://app.example.com/github",
         type: "github",
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(globalProvider.success && organizationProvider.success).toBe(true)
     if (!globalProvider.success || !organizationProvider.success) return
 
     const claimed = organizationDomainClaim({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { domain: "discover.example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(claimed.success).toBe(true)
@@ -468,11 +466,11 @@ test("organization discovery honors its domain policy and provider allowlist", a
     expect(
       (
         await organizationDomainVerify({
-          context: instanceSystemContextCreate(),
+          context: realmSystemContextCreate(),
           database,
           dnsPort: { txtRecordsGet: async () => resultCreate([token]) },
           domain: "discover.example.com",
-          instanceId: instance.id,
+          realmId: realm.id,
           organizationId: organization.id,
         })
       ).success,
@@ -480,10 +478,10 @@ test("organization discovery honors its domain policy and provider allowlist", a
 
     expect(
       organizationLoginPolicySet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: { allowDomainDiscovery: false, providerIds: [organizationProvider.data.provider.id] },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(true)
@@ -494,10 +492,10 @@ test("organization discovery honors its domain policy and provider allowlist", a
 
     expect(
       organizationLoginPolicySet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: { allowDomainDiscovery: true, providerIds: [organizationProvider.data.provider.id] },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(true)
@@ -514,41 +512,41 @@ test("organization discovery honors its domain policy and provider allowlist", a
 
 test("branding, domain claims, and policies roll back with rejected events", async () => {
   await withDatabase(async (database) => {
-    const { instance, organization } = await createOrganization(database)
+    const { realm, organization } = await createOrganization(database)
     database.sqlite.run(
       "CREATE TRIGGER reject_organization_settings BEFORE INSERT ON events WHEN NEW.aggregate_type IN ('organization_branding', 'organization_domain', 'login_policy') BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
     )
     expect(
       organizationBrandingSet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: branding,
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(false)
     const brandingAfter = organizationBrandingGet({
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(brandingAfter.success && brandingAfter.data.version).toBe(1)
     expect(
       organizationDomainClaim({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: { domain: "rollback.example.com" },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(false)
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM organization_domains").get()).toEqual({ count: 0 })
     expect(
       organizationLoginPolicySet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: { allowPassword: false },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.id,
       }).success,
     ).toBe(false)
@@ -560,18 +558,18 @@ test("branding, domain claims, and policies roll back with rejected events", asy
 
 test("organization settings routes and clients preserve public contracts", async () => {
   await withDatabase(async (database) => {
-    const { instance, organization } = await createOrganization(database)
+    const { realm, organization } = await createOrganization(database)
     const app = organizationServerAppCreate({ database, systemSecret: "system-secret" })
     const client = organizationApiClientCreate({
       baseUrl: "https://server.example",
       fetch: async (input, init) => app.request(input.toString(), init),
       token: "system-secret",
     })
-    const updated = await client.organizationBrandingSet(instance.id, organization.id, branding)
+    const updated = await client.organizationBrandingSet(realm.id, organization.id, branding)
     expect(updated.success).toBe(true)
-    const policy = await client.organizationLoginPolicySet(instance.id, organization.id, { allowPassword: false })
+    const policy = await client.organizationLoginPolicySet(realm.id, organization.id, { allowPassword: false })
     expect(policy.success).toBe(true)
-    const claimed = await client.organizationDomainClaim(instance.id, organization.id, { domain: "api.example.com" })
+    const claimed = await client.organizationDomainClaim(realm.id, organization.id, { domain: "api.example.com" })
     expect(claimed.success).toBe(true)
     const discovery = await organizationApiClientCreate({
       baseUrl: "https://server.example",
@@ -581,7 +579,7 @@ test("organization settings routes and clients preserve public contracts", async
     const unauthorized = await organizationApiClientCreate({
       baseUrl: "https://server.example",
       fetch: async (input, init) => app.request(input.toString(), init),
-    }).organizationLoginPolicyGet(instance.id, organization.id)
+    }).organizationLoginPolicyGet(realm.id, organization.id)
     expect(unauthorized.success).toBe(false)
   })
   const helpProcess = Bun.spawn(["bun", "src/outputs/cli.ts", "organizations", "--help"], {

@@ -5,10 +5,10 @@ import { join } from "node:path"
 import { emailOtpApiClientCreate } from "../../src/features/emailOtp/client/emailOtpApiClientCreate.js"
 import { externalIdentityApiClientCreate } from "../../src/features/externalIdentities/client/externalIdentityApiClientCreate.js"
 import { impersonationApiClientCreate } from "../../src/features/impersonation/client/impersonationApiClientCreate.js"
-import { instanceApiClientCreate } from "../../src/features/instances/client/instanceApiClientCreate.js"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmApiClientCreate } from "../../src/features/realms/client/realmApiClientCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { machineUserApiClientCreate } from "../../src/features/machineUsers/client/machineUserApiClientCreate.js"
 import { mfaApiClientCreate } from "../../src/features/mfa/client/mfaApiClientCreate.js"
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
@@ -55,13 +55,13 @@ async function withFixture<T>(operation: (fixture: ConformanceFixture) => Promis
   const fetchFromServer = async (input: string | URL | Request, init?: RequestInit) =>
     app.request(input instanceof Request ? input : input.toString(), init)
   const systemBaseUrl = "https://system.task-20.example"
-  const instances = instanceApiClientCreate({ baseUrl: systemBaseUrl, fetch: fetchFromServer, token: systemSecret })
+  const realms = realmApiClientCreate({ baseUrl: systemBaseUrl, fetch: fetchFromServer, token: systemSecret })
 
   try {
-    const alpha = await instanceCreateThroughServer(instances, "alpha.task-20.example", "Alpha")
-    const beta = await instanceCreateThroughServer(instances, "beta.task-20.example", "Beta")
-    const alphaAdmin = await instanceBootstrapThroughServer(instances, alpha.id)
-    const betaAdmin = await instanceBootstrapThroughServer(instances, beta.id)
+    const alpha = await realmCreateThroughServer(realms, "alpha.task-20.example", "Alpha")
+    const beta = await realmCreateThroughServer(realms, "beta.task-20.example", "Beta")
+    const alphaAdmin = await realmBootstrapThroughServer(realms, alpha.id)
+    const betaAdmin = await realmBootstrapThroughServer(realms, beta.id)
     return await operation({
       alpha: { ...alpha, adminSecret: alphaAdmin },
       app,
@@ -76,19 +76,19 @@ async function withFixture<T>(operation: (fixture: ConformanceFixture) => Promis
   }
 }
 
-async function instanceCreateThroughServer(
-  client: ReturnType<typeof instanceApiClientCreate>,
+async function realmCreateThroughServer(
+  client: ReturnType<typeof realmApiClientCreate>,
   domain: string,
   name: string,
 ): Promise<{ readonly domain: string; readonly id: string }> {
-  const created = await client.instanceCreate({ domain, name })
+  const created = await client.realmCreate({ domain, name })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  return { domain, id: created.data.instance.id }
+  return { domain, id: created.data.realm.id }
 }
 
-async function instanceBootstrapThroughServer(client: ReturnType<typeof instanceApiClientCreate>, instanceId: string) {
-  const bootstrap = await client.instanceBootstrapAdminCreate(instanceId)
+async function realmBootstrapThroughServer(client: ReturnType<typeof realmApiClientCreate>, realmId: string) {
+  const bootstrap = await client.realmBootstrapAdminCreate(realmId)
   expect(bootstrap.success).toBe(true)
   if (!bootstrap.success) throw new Error(bootstrap.errorMessage)
   return bootstrap.data.bootstrapAdmin.secret
@@ -99,8 +99,8 @@ function clientFetch(fixture: ConformanceFixture, baseUrl: string) {
     fixture.app.request(input instanceof Request ? input : input.toString(), init)
 }
 
-async function createSession(database: StorageDatabase, instanceId: string, domain: string) {
-  const context = instanceTenantContextCreate(instanceId, "anonymous")
+async function createSession(database: StorageDatabase, realmId: string, domain: string) {
+  const context = realmTenantContextCreate(realmId, "anonymous")
   let verificationToken = ""
   const registered = passwordRegister({
     context,
@@ -111,18 +111,18 @@ async function createSession(database: StorageDatabase, instanceId: string, doma
       profile: { displayName: "Task 20 user" },
       userName: domain.replaceAll(".", "-"),
     },
-    instanceId,
+    realmId,
     onVerificationToken: ({ token }) => {
       verificationToken = token
     },
   })
   expect(registered.success).toBe(true)
-  expect(passwordEmailVerify({ context, database, input: { token: verificationToken }, instanceId }).success).toBe(true)
+  expect(passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId }).success).toBe(true)
   const login = passwordLogin({
     context,
     database,
     input: { identifier: domain.replaceAll(".", "-"), password: "Correct Horse 12" },
-    instanceId,
+    realmId,
     sessionCreate: sessionPasswordCreate(),
   })
   expect(login.success).toBe(true)
@@ -340,52 +340,52 @@ test("all public API clients reject malformed success responses and preserve tra
   }
   const calls = [
     {
-      call: () => instanceApiClientCreate(options).instanceList(),
-      feature: "instances",
+      call: () => realmApiClientCreate(options).realmList(),
+      feature: "realms",
       method: "GET",
-      path: "/system/instances",
+      path: "/system/realms",
     },
     {
-      call: () => userApiClientCreate(options).userList("instance"),
+      call: () => userApiClientCreate(options).userList("realm"),
       feature: "users",
       method: "GET",
-      path: "/system/instances/instance/users",
+      path: "/system/realms/realm/users",
     },
     {
-      call: () => organizationApiClientCreate(options).organizationList("instance"),
+      call: () => organizationApiClientCreate(options).organizationList("realm"),
       feature: "organizations",
       method: "GET",
-      path: "/system/instances/instance/organizations",
+      path: "/system/realms/realm/organizations",
     },
     {
-      call: () => projectApiClientCreate(options).projectList("instance"),
+      call: () => projectApiClientCreate(options).projectList("realm"),
       feature: "projects",
       method: "GET",
-      path: "/system/instances/instance/projects",
+      path: "/system/realms/realm/projects",
     },
     {
-      call: () => passwordApiClientCreate(options).passwordPolicyGet("instance"),
+      call: () => passwordApiClientCreate(options).passwordPolicyGet("realm"),
       feature: "passwords",
       method: "GET",
-      path: "/instances/instance/password-policy",
+      path: "/realms/realm/password-policy",
     },
     {
-      call: () => sessionApiClientCreate(options).sessionCurrent("instance"),
+      call: () => sessionApiClientCreate(options).sessionCurrent("realm"),
       feature: "sessions",
       method: "GET",
-      path: "/instances/instance/sessions/current",
+      path: "/realms/realm/sessions/current",
     },
     {
-      call: () => emailOtpApiClientCreate(options).emailOtpStart("instance", { email: "user@example.com" }),
+      call: () => emailOtpApiClientCreate(options).emailOtpStart("realm", { email: "user@example.com" }),
       feature: "emailOtp",
       method: "POST",
-      path: "/instances/instance/email-otp/start",
+      path: "/realms/realm/email-otp/start",
     },
     {
-      call: () => externalIdentityApiClientCreate(options).externalIdentityProviderPublicList("instance"),
+      call: () => externalIdentityApiClientCreate(options).externalIdentityProviderPublicList("realm"),
       feature: "externalIdentities",
       method: "GET",
-      path: "/instances/instance/external-identity-providers",
+      path: "/realms/realm/external-identity-providers",
     },
     {
       call: () => oidcApiClientCreate(options).oidcDiscoveryGet(),
@@ -394,28 +394,28 @@ test("all public API clients reject malformed success responses and preserve tra
       path: "/.well-known/openid-configuration",
     },
     {
-      call: () => mfaApiClientCreate(options).mfaPolicyGet("instance"),
+      call: () => mfaApiClientCreate(options).mfaPolicyGet("realm"),
       feature: "mfa",
       method: "GET",
-      path: "/instances/instance/mfa-policy",
+      path: "/realms/realm/mfa-policy",
     },
     {
-      call: () => passkeyApiClientCreate(options).passkeyAuthenticationStart("instance"),
+      call: () => passkeyApiClientCreate(options).passkeyAuthenticationStart("realm"),
       feature: "passkeys",
       method: "POST",
-      path: "/instances/instance/passkeys/authentication/start",
+      path: "/realms/realm/passkeys/authentication/start",
     },
     {
-      call: () => machineUserApiClientCreate(options).machineUserList("instance"),
+      call: () => machineUserApiClientCreate(options).machineUserList("realm"),
       feature: "machineUsers",
       method: "GET",
-      path: "/system/instances/instance/machine-users",
+      path: "/system/realms/realm/machine-users",
     },
     {
-      call: () => impersonationApiClientCreate(options).impersonationEnd("instance", "session"),
+      call: () => impersonationApiClientCreate(options).impersonationEnd("realm", "session"),
       feature: "impersonation",
       method: "POST",
-      path: "/instances/instance/impersonations/session/end",
+      path: "/realms/realm/impersonations/session/end",
     },
   ]
 
@@ -431,13 +431,13 @@ test("all public API clients reject malformed success responses and preserve tra
     )
   }
 
-  const unreachable = await instanceApiClientCreate({
+  const unreachable = await realmApiClientCreate({
     baseUrl: "http://127.0.0.1:1",
     token: "client-token",
-  }).instanceList()
+  }).realmList()
   expect(unreachable).toEqual({
     errorMessage: "The server could not be reached.",
-    op: "instanceApiClientRequest",
+    op: "realmApiClientRequest",
     success: false,
   })
 })

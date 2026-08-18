@@ -4,9 +4,9 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import * as v from "valibot"
 import { authorizationEnforce } from "../../src/features/authorization/actions/authorizationEnforce.js"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { machineApiKeyCreate } from "../../src/features/machineUsers/actions/machineApiKeyCreate.js"
 import { machineClientCredentialsIssue } from "../../src/features/machineUsers/actions/machineClientCredentialsIssue.js"
 import { machineCredentialAuthenticate } from "../../src/features/machineUsers/actions/machineCredentialAuthenticate.js"
@@ -47,21 +47,21 @@ async function withDatabase<T>(
   }
 }
 
-async function createInstance(database: StorageDatabase, domain: string) {
-  const created = instanceCreate({ context: instanceSystemContextCreate(), database, input: { domain, name: domain } })
+async function createRealm(database: StorageDatabase, domain: string) {
+  const created = realmCreate({ context: realmSystemContextCreate(), database, input: { domain, name: domain } })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  return created.data.instance
+  return created.data.realm
 }
 
 test("machine users issue one-time client secrets and keep credential material hashed", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "machine-users.example.com")
+    const realm = await createRealm(database, "machine-users.example.com")
     const created = machineUserCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { displayName: "Build worker", scopes: ["api.read", "api.write"], userName: " Build.Worker " },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
@@ -73,9 +73,9 @@ test("machine users issue one-time client secrets and keep credential material h
     expect(storedUser?.scopes).toBe(JSON.stringify(["api.read", "api.write"]))
     expect(storedCredential?.secretHash).not.toContain(created.data.clientSecret)
     const fetched = machineUserGet({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       machineUserId: created.data.machineUser.id,
     })
     expect(fetched.success).toBe(true)
@@ -90,64 +90,62 @@ test("machine users issue one-time client secrets and keep credential material h
 
 test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocation are enforced", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "credentials.example.com")
+    const realm = await createRealm(database, "credentials.example.com")
     const created = machineUserCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { displayName: "Worker", scopes: ["api.read", "api.write"], userName: "worker" },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
     const token = machineClientCredentialsIssue({
       database,
       input: { clientId: "worker", clientSecret: created.data.clientSecret, scope: ["api.read"] },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(token.success).toBe(true)
     if (!token.success) return
     const authenticated = machineCredentialAuthenticate({
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       token: token.data.accessToken,
     })
     expect(authenticated.success).toBe(true)
     if (!authenticated.success) return
     expect(authenticated.data.scopes).toEqual(["api.read"])
     expect(
-      authorizationEnforce({ actor: authenticated.data.actor, instanceId: instance.id, permission: "api.read" })
-        .success,
+      authorizationEnforce({ actor: authenticated.data.actor, realmId: realm.id, permission: "api.read" }).success,
     ).toBe(true)
     expect(
-      authorizationEnforce({ actor: authenticated.data.actor, instanceId: instance.id, permission: "api.write" })
-        .success,
+      authorizationEnforce({ actor: authenticated.data.actor, realmId: realm.id, permission: "api.write" }).success,
     ).toBe(false)
     expect(
       machineClientCredentialsIssue({
         database,
         input: { clientId: "worker", clientSecret: "wrong", scope: ["api.read"] },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     expect(
       machineClientCredentialsIssue({
         database,
         input: { clientId: "", clientSecret: created.data.clientSecret },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     expect(
       machineClientCredentialsIssue({
         database,
         input: { clientId: "unknown", clientSecret: created.data.clientSecret },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     expect(
       machineClientCredentialsIssue({
         database,
         input: { clientId: "worker", clientSecret: created.data.clientSecret, scope: ["api.admin"] },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
 
@@ -156,19 +154,19 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
         clientId: "worker",
         clientSecret: created.data.clientSecret,
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         token: token.data.accessToken,
       }).success,
     ).toBe(true)
-    expect(
-      machineCredentialAuthenticate({ database, instanceId: instance.id, token: token.data.accessToken }).success,
-    ).toBe(false)
+    expect(machineCredentialAuthenticate({ database, realmId: realm.id, token: token.data.accessToken }).success).toBe(
+      false,
+    )
 
     const secretless = machineUserCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { displayName: "Secretless", scopes: ["api.read"], userName: "secretless" },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(secretless.success).toBe(true)
     if (!secretless.success) return
@@ -184,22 +182,22 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
     if (secretlessCredential === undefined) return
     expect(
       machineCredentialRevoke({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         credentialId: secretlessCredential.id,
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(true)
     expect(
       machineClientCredentialsIssue({
         database,
         input: { clientId: "secretless", clientSecret: secretless.data.clientSecret },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
 
     const personal = machinePersonalAccessTokenCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         expiresAt: testkit.runtime.now() + 1_000,
@@ -207,49 +205,49 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
         name: "deploy",
         scopes: ["api.write"],
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(personal.success).toBe(true)
     if (!personal.success) return
-    expect(
-      machineCredentialAuthenticate({ database, instanceId: instance.id, token: personal.data.secret }).success,
-    ).toBe(true)
+    expect(machineCredentialAuthenticate({ database, realmId: realm.id, token: personal.data.secret }).success).toBe(
+      true,
+    )
     testkit.advance(1_001)
-    expect(
-      machineCredentialAuthenticate({ database, instanceId: instance.id, token: personal.data.secret }).success,
-    ).toBe(false)
+    expect(machineCredentialAuthenticate({ database, realmId: realm.id, token: personal.data.secret }).success).toBe(
+      false,
+    )
 
     const apiKey = machineApiKeyCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { machineUserId: created.data.machineUser.id, name: "service", scopes: ["api.read"] },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(apiKey.success).toBe(true)
     if (!apiKey.success) return
     const revoked = machineCredentialRevoke({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       credentialId: apiKey.data.credential.id,
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(revoked.success).toBe(true)
-    expect(
-      machineCredentialAuthenticate({ database, instanceId: instance.id, token: apiKey.data.secret }).success,
-    ).toBe(false)
+    expect(machineCredentialAuthenticate({ database, realmId: realm.id, token: apiKey.data.secret }).success).toBe(
+      false,
+    )
     expect(
       machineCredentialRevoke({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         credentialId: apiKey.data.credential.id,
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
 
     const rotated = machineUserClientSecretRotate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       machineUserId: created.data.machineUser.id,
     })
     expect(rotated.success).toBe(true)
@@ -258,22 +256,22 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
       machineClientCredentialsIssue({
         database,
         input: { clientId: "worker", clientSecret: created.data.clientSecret },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     expect(
       machineClientCredentialsIssue({
         database,
         input: { clientId: "worker", clientSecret: rotated.data.clientSecret },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(true)
     expect(
       machineUserLifecycleSet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         input: { status: "inactive" },
-        instanceId: instance.id,
+        realmId: realm.id,
         machineUserId: created.data.machineUser.id,
       }).success,
     ).toBe(true)
@@ -281,7 +279,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
       machineClientCredentialsIssue({
         database,
         input: { clientId: "worker", clientSecret: rotated.data.clientSecret },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
   })
@@ -289,30 +287,29 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
 
 test("machine users isolate tenants, protected APIs accept issued credentials, and OAuth client credentials work", async () => {
   await withDatabase(async (database) => {
-    const alpha = await createInstance(database, "alpha-machine.example.com")
-    const beta = await createInstance(database, "beta-machine.example.com")
+    const alpha = await createRealm(database, "alpha-machine.example.com")
+    const beta = await createRealm(database, "beta-machine.example.com")
     const created = machineUserCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { displayName: "Alpha", scopes: ["api.read"], userName: "alpha" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
-    const betaUsers = machineUserList({ context: instanceSystemContextCreate(), database, instanceId: beta.id })
+    const betaUsers = machineUserList({ context: realmSystemContextCreate(), database, realmId: beta.id })
     expect(betaUsers.success).toBe(true)
     if (betaUsers.success) expect(betaUsers.data.machineUsers).toHaveLength(0)
     expect(
       machineUserGet({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
-        instanceId: beta.id,
+        realmId: beta.id,
         machineUserId: created.data.machineUser.id,
       }).success,
     ).toBe(false)
     expect(
-      machineUserList({ context: instanceTenantContextCreate(alpha.id, "actor"), database, instanceId: beta.id })
-        .success,
+      machineUserList({ context: realmTenantContextCreate(alpha.id, "actor"), database, realmId: beta.id }).success,
     ).toBe(false)
 
     const managementApp = machineUserServerAppCreate({ database, systemSecret: "system" })
@@ -332,19 +329,19 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
     if (listed.success) expect(listed.data.machineUsers).toHaveLength(2)
 
     const apiKey = machineApiKeyCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { machineUserId: created.data.machineUser.id, name: "protected", scopes: ["api.read"] },
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(apiKey.success).toBe(true)
     if (!apiKey.success) return
     const protectedApp = machineUserServerAppCreate({ database })
-    const protectedResponse = await protectedApp.request(`/instances/${alpha.id}/protected-api`, {
+    const protectedResponse = await protectedApp.request(`/realms/${alpha.id}/protected-api`, {
       headers: { authorization: `Bearer ${apiKey.data.secret}` },
     })
     expect(protectedResponse.status).toBe(200)
-    const wrongTenant = await protectedApp.request(`/instances/${beta.id}/protected-api`, {
+    const wrongTenant = await protectedApp.request(`/realms/${beta.id}/protected-api`, {
       headers: { authorization: `Bearer ${apiKey.data.secret}` },
     })
     expect(wrongTenant.status).toBe(401)
@@ -376,7 +373,7 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
     expect(oauth.id_token).toBeUndefined()
     expect(
       (
-        await protectedApp.request(`/instances/${alpha.id}/protected-api`, {
+        await protectedApp.request(`/realms/${alpha.id}/protected-api`, {
           headers: { authorization: `Bearer ${oauth.access_token}` },
         })
       ).status,
@@ -386,16 +383,16 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
 
 test("machine user state and events roll back together when event append fails", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "atomic-machine.example.com")
+    const realm = await createRealm(database, "atomic-machine.example.com")
     const beforeUsers = database.db.select().from(machineUserTable).all().length
     const beforeCredentials = database.db.select().from(machineCredentialTable).all().length
     const beforeEvents = database.db.select().from(storageEventTable).all().length
     const result = machineUserCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       correlationId: "",
       database,
       input: { displayName: "Atomic", userName: "atomic" },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(result.success).toBe(false)
     expect(database.db.select().from(machineUserTable).all()).toHaveLength(beforeUsers)
@@ -415,7 +412,7 @@ test("machine API client validates public contracts and requests", async () => {
   })
   const result = await client.machineUserList("01900000-0000-7000-8000-000000000000")
   expect(result.success).toBe(true)
-  expect(calls[0]?.url).toContain("/system/instances/01900000-0000-7000-8000-000000000000/machine-users")
+  expect(calls[0]?.url).toContain("/system/realms/01900000-0000-7000-8000-000000000000/machine-users")
 })
 
 test("machine user CLI exposes management commands", async () => {

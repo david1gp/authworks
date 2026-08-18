@@ -2,9 +2,9 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { userCreate } from "../../src/features/users/actions/userCreate.js"
 import { userDelete } from "../../src/features/users/actions/userDelete.js"
 import { userEmailVerificationSet } from "../../src/features/users/actions/userEmailVerificationSet.js"
@@ -39,15 +39,15 @@ async function withDatabase<T>(
   }
 }
 
-async function createInstance(database: StorageDatabase, domain: string) {
-  const created = instanceCreate({
-    context: instanceSystemContextCreate("system"),
+async function createRealm(database: StorageDatabase, domain: string) {
+  const created = realmCreate({
+    context: realmSystemContextCreate("system"),
     database,
     input: { domain, name: domain },
   })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  return created.data.instance
+  return created.data.realm
 }
 
 function createInput(userName: string, email: string) {
@@ -60,14 +60,14 @@ function createInput(userName: string, email: string) {
 
 test("users, profiles, verification, lifecycle, and deletion are tenant scoped", async () => {
   await withDatabase(async (database, testkit) => {
-    const alpha = await createInstance(database, "users-alpha.example.com")
-    const beta = await createInstance(database, "users-beta.example.com")
-    const system = instanceSystemContextCreate("system")
+    const alpha = await createRealm(database, "users-alpha.example.com")
+    const beta = await createRealm(database, "users-beta.example.com")
+    const system = realmSystemContextCreate("system")
     const created = userCreate({
       context: system,
       database,
       input: createInput(" Ada ", "Ada@Example.com"),
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
@@ -82,28 +82,30 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
       context: system,
       database,
       input: createInput("Grace", "grace@example.com"),
-      instanceId: beta.id,
+      realmId: beta.id,
     })
     expect(betaUser.success).toBe(true)
-    const alphaUsers = userList({ context: system, database, instanceId: alpha.id })
+    const alphaUsers = userList({ context: system, database, realmId: alpha.id })
     expect(alphaUsers.success).toBe(true)
     if (!alphaUsers.success) return
     expect(alphaUsers.data.users).toHaveLength(1)
-    expect(userGet({ context: system, database, instanceId: beta.id, userId: created.data.user.id })).toEqual({
+    expect(userGet({ context: system, database, realmId: beta.id, userId: created.data.user.id })).toEqual({
       errorMessage: "The user was not found.",
       op: "userGet",
       success: false,
     })
-    expect(
-      userList({ context: instanceTenantContextCreate(alpha.id, "actor"), database, instanceId: beta.id }),
-    ).toEqual({ errorMessage: "The users are not available in this tenant context.", op: "userList", success: false })
+    expect(userList({ context: realmTenantContextCreate(alpha.id, "actor"), database, realmId: beta.id })).toEqual({
+      errorMessage: "The users are not available in this tenant context.",
+      op: "userList",
+      success: false,
+    })
 
     const profileEventCount = database.db.select().from(storageEventTable).all().length
     const profile = userProfileUpdate({
-      context: instanceTenantContextCreate(alpha.id, "actor"),
+      context: realmTenantContextCreate(alpha.id, "actor"),
       database,
       input: { displayName: "  Ada L.  " },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       userId: created.data.user.id,
     })
     expect(profile.success).toBe(true)
@@ -114,7 +116,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
         context: system,
         database,
         input: {},
-        instanceId: alpha.id,
+        realmId: alpha.id,
         userId: created.data.user.id,
       }).success,
     ).toBe(false)
@@ -124,7 +126,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
       context: system,
       database,
       input: { state: "verified" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       userId: created.data.user.id,
     })
     expect(verified.success).toBe(true)
@@ -138,7 +140,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
         context: system,
         database,
         input: { state: "locked" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         userId: created.data.user.id,
       }).success,
     ).toBe(false)
@@ -146,7 +148,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
       context: system,
       database,
       input: { state: "active" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       userId: created.data.user.id,
     })
     expect(active.success).toBe(true)
@@ -154,7 +156,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
       context: system,
       database,
       input: { state: "locked" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       userId: created.data.user.id,
     })
     expect(locked.success).toBe(true)
@@ -162,19 +164,17 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
     const deleted = userDelete({
       context: system,
       database,
-      instanceId: alpha.id,
+      realmId: alpha.id,
       userId: created.data.user.id,
     })
     expect(deleted.success).toBe(true)
     if (!deleted.success) return
     expect(deleted.data.user.state).toBe("deleted")
-    const remainingUsers = userList({ context: system, database, instanceId: alpha.id })
+    const remainingUsers = userList({ context: system, database, realmId: alpha.id })
     expect(remainingUsers.success).toBe(true)
     if (!remainingUsers.success) return
     expect(remainingUsers.data.users).toHaveLength(0)
-    expect(userGet({ context: system, database, instanceId: alpha.id, userId: created.data.user.id }).success).toBe(
-      false,
-    )
+    expect(userGet({ context: system, database, realmId: alpha.id, userId: created.data.user.id }).success).toBe(false)
     const deletedEvents = database.db
       .select()
       .from(storageEventTable)
@@ -182,7 +182,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
       .filter((event) => event.aggregateId === created.data.user.id)
     expect(deletedEvents.at(-1)?.eventType).toBe(userEventTypes.deleted)
     const deletedEventCount = database.db.select().from(storageEventTable).all().length
-    expect(userDelete({ context: system, database, instanceId: alpha.id, userId: created.data.user.id })).toEqual({
+    expect(userDelete({ context: system, database, realmId: alpha.id, userId: created.data.user.id })).toEqual({
       errorMessage: "The user has already been deleted.",
       op: "userDelete",
       success: false,
@@ -192,7 +192,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
         context: system,
         database,
         input: { displayName: "After deletion" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         userId: created.data.user.id,
       }),
     ).toEqual({ errorMessage: "The user was not found.", op: "userProfileUpdate", success: false })
@@ -201,7 +201,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
         context: system,
         database,
         input: { state: "verified" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         userId: created.data.user.id,
       }),
     ).toEqual({ errorMessage: "The user was not found.", op: "userEmailVerificationSet", success: false })
@@ -210,7 +210,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
         context: system,
         database,
         input: { state: "active" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         userId: created.data.user.id,
       }),
     ).toEqual({ errorMessage: "The user was not found.", op: "userLifecycleSet", success: false })
@@ -220,13 +220,13 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
 
 test("user creation rejects normalized duplicate names and emails without changing state", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "duplicate-users.example.com")
-    const system = instanceSystemContextCreate("system")
+    const realm = await createRealm(database, "duplicate-users.example.com")
+    const system = realmSystemContextCreate("system")
     const created = userCreate({
       context: system,
       database,
       input: createInput("Ada", "ada@example.com"),
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
@@ -237,10 +237,10 @@ test("user creation rejects normalized duplicate names and emails without changi
         context: system,
         database,
         input: createInput(" ADA ", "other@example.com"),
-        instanceId: instance.id,
+        realmId: realm.id,
       }),
     ).toEqual({
-      errorMessage: "A user with that name or email already exists in this instance.",
+      errorMessage: "A user with that name or email already exists in this realm.",
       op: "userCreate",
       success: false,
     })
@@ -249,15 +249,15 @@ test("user creation rejects normalized duplicate names and emails without changi
         context: system,
         database,
         input: createInput("other", " ADA@EXAMPLE.COM "),
-        instanceId: instance.id,
+        realmId: realm.id,
       }),
     ).toEqual({
-      errorMessage: "A user with that name or email already exists in this instance.",
+      errorMessage: "A user with that name or email already exists in this realm.",
       op: "userCreate",
       success: false,
     })
     expect(database.db.select().from(storageEventTable).all()).toHaveLength(eventCount)
-    const listed = userList({ context: system, database, instanceId: instance.id })
+    const listed = userList({ context: system, database, realmId: realm.id })
     expect(listed.success).toBe(true)
     if (listed.success) expect(listed.data.users).toHaveLength(1)
   })
@@ -265,18 +265,18 @@ test("user creation rejects normalized duplicate names and emails without changi
 
 test("user profile and email verification no-ops preserve the aggregate", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "user-no-ops.example.com")
-    const system = instanceSystemContextCreate("system")
+    const realm = await createRealm(database, "user-no-ops.example.com")
+    const system = realmSystemContextCreate("system")
     const created = userCreate({
       context: system,
       database,
       input: createInput("no-op-user", "no-op@example.com"),
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
 
-    const before = userGet({ context: system, database, instanceId: instance.id, userId: created.data.user.id })
+    const before = userGet({ context: system, database, realmId: realm.id, userId: created.data.user.id })
     expect(before.success).toBe(true)
     if (!before.success) return
     const eventCount = database.db.select().from(storageEventTable).all().length
@@ -284,7 +284,7 @@ test("user profile and email verification no-ops preserve the aggregate", async 
       context: system,
       database,
       input: { displayName: "  Ada Lovelace  " },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(unchangedProfile.success).toBe(true)
@@ -298,7 +298,7 @@ test("user profile and email verification no-ops preserve the aggregate", async 
       context: system,
       database,
       input: { state: "verified" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(verified.success).toBe(true)
@@ -307,7 +307,7 @@ test("user profile and email verification no-ops preserve the aggregate", async 
       context: system,
       database,
       input: { state: "verified" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(duplicateVerified).toEqual({
@@ -321,7 +321,7 @@ test("user profile and email verification no-ops preserve the aggregate", async 
       context: system,
       database,
       input: { state: "unverified" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(unverified.success).toBe(true)
@@ -334,7 +334,7 @@ test("user profile and email verification no-ops preserve the aggregate", async 
         context: system,
         database,
         input: { state: "unverified" },
-        instanceId: instance.id,
+        realmId: realm.id,
         userId: created.data.user.id,
       }),
     ).toEqual({
@@ -358,13 +358,13 @@ test("user profile and email verification no-ops preserve the aggregate", async 
 
 test("user lifecycle rejects same-state changes and supports suspended users", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "lifecycle-users.example.com")
-    const system = instanceSystemContextCreate("system")
+    const realm = await createRealm(database, "lifecycle-users.example.com")
+    const system = realmSystemContextCreate("system")
     const created = userCreate({
       context: system,
       database,
       input: createInput("lifecycle-user", "lifecycle@example.com"),
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
@@ -373,7 +373,7 @@ test("user lifecycle rejects same-state changes and supports suspended users", a
       context: system,
       database,
       input: { state: "inactive" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(inactive.success).toBe(true)
@@ -384,7 +384,7 @@ test("user lifecycle rejects same-state changes and supports suspended users", a
         context: system,
         database,
         input: { state: "inactive" },
-        instanceId: instance.id,
+        realmId: realm.id,
         userId: created.data.user.id,
       }),
     ).toEqual({ errorMessage: "The user lifecycle transition is not allowed.", op: "userLifecycleSet", success: false })
@@ -394,7 +394,7 @@ test("user lifecycle rejects same-state changes and supports suspended users", a
       context: system,
       database,
       input: { state: "active" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(active.success).toBe(true)
@@ -402,7 +402,7 @@ test("user lifecycle rejects same-state changes and supports suspended users", a
       context: system,
       database,
       input: { state: "suspended" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(suspended.success).toBe(true)
@@ -410,7 +410,7 @@ test("user lifecycle rejects same-state changes and supports suspended users", a
       context: system,
       database,
       input: { state: "active" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(reactivated.success).toBe(true)
@@ -432,13 +432,13 @@ test("user lifecycle rejects same-state changes and supports suspended users", a
 
 test("user events are audit-safe, versioned, and atomically rolled back", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "events-users.example.com")
-    const system = instanceSystemContextCreate("system")
+    const realm = await createRealm(database, "events-users.example.com")
+    const system = realmSystemContextCreate("system")
     const created = userCreate({
       context: system,
       database,
       input: createInput("event-user", "secret@example.com"),
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
@@ -463,7 +463,7 @@ test("user events are audit-safe, versioned, and atomically rolled back", async 
       context: system,
       database,
       input: createInput("rolled-back", "rollback@example.com"),
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(rejected.success).toBe(false)
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()).toEqual(before)
@@ -481,7 +481,7 @@ test("user events are audit-safe, versioned, and atomically rolled back", async 
       context: system,
       database,
       input: { state: "verified" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: created.data.user.id,
     })
     expect(verified.success).toBe(true)
@@ -491,34 +491,34 @@ test("user events are audit-safe, versioned, and atomically rolled back", async 
       .all()
       .filter((event) => event.aggregateType === "user")
     expect(finalEvents.map((event) => event.aggregateVersion)).toEqual([1, 2])
-    expect(finalEvents.map((event) => event.instanceId)).toEqual([instance.id, instance.id])
+    expect(finalEvents.map((event) => event.realmId)).toEqual([realm.id, realm.id])
   })
 })
 
 test("user routes and API client enforce public schemas and authorization", async () => {
   await withDatabase(async (database) => {
     const app = userServerAppCreate({ database, systemSecret: "system-secret" })
-    const instance = await createInstance(database, "api-users.example.com")
+    const realm = await createRealm(database, "api-users.example.com")
     const client = userApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),
       token: "system-secret",
     })
-    const created = await client.userCreate(instance.id, createInput("api-user", "api@example.com"))
+    const created = await client.userCreate(realm.id, createInput("api-user", "api@example.com"))
     expect(created.success).toBe(true)
     if (!created.success) return
-    const listed = await client.userList(instance.id)
+    const listed = await client.userList(realm.id)
     expect(listed.success).toBe(true)
     if (!listed.success) return
     expect(listed.data.users).toHaveLength(1)
-    const profile = await client.userProfileUpdate(instance.id, created.data.user.id, { displayName: "API User" })
+    const profile = await client.userProfileUpdate(realm.id, created.data.user.id, { displayName: "API User" })
     expect(profile.success).toBe(true)
     const unauthorized = await userApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),
-    }).userList(instance.id)
+    }).userList(realm.id)
     expect(unauthorized.success).toBe(false)
-    const malformed = await client.userCreate(instance.id, { email: "bad", profile: {}, userName: "" })
+    const malformed = await client.userCreate(realm.id, { email: "bad", profile: {}, userName: "" })
     expect(malformed.success).toBe(false)
   })
 })

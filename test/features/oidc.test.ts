@@ -4,10 +4,10 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import * as v from "valibot"
-import { instanceBootstrapAdminCreate } from "../../src/features/instances/actions/instanceBootstrapAdminCreate.js"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { oidcAuthorizationCodeRedeem } from "../../src/features/oidc/actions/oidcAuthorizationCodeRedeem.js"
 import { oidcAuthorizationRequestAuthorize } from "../../src/features/oidc/actions/oidcAuthorizationRequestAuthorize.js"
 import { oidcAuthorizationRequestConsent } from "../../src/features/oidc/actions/oidcAuthorizationRequestConsent.js"
@@ -62,19 +62,19 @@ async function withDatabase<T>(
   }
 }
 
-async function createInstance(database: StorageDatabase, domain: string) {
-  const created = instanceCreate({ context: instanceSystemContextCreate(), database, input: { domain, name: domain } })
+async function createRealm(database: StorageDatabase, domain: string) {
+  const created = realmCreate({ context: realmSystemContextCreate(), database, input: { domain, name: domain } })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  return created.data.instance
+  return created.data.realm
 }
 
 async function createAuthenticatedSession(
   database: StorageDatabase,
   domain: string,
-): Promise<{ instance: Awaited<ReturnType<typeof createInstance>>; token: string; userId: string }> {
-  const instance = await createInstance(database, domain)
-  const context = instanceTenantContextCreate(instance.id, "anonymous")
+): Promise<{ realm: Awaited<ReturnType<typeof createRealm>>; token: string; userId: string }> {
+  const realm = await createRealm(database, domain)
+  const context = realmTenantContextCreate(realm.id, "anonymous")
   let verificationToken = ""
   const registered = passwordRegister({
     context,
@@ -85,7 +85,7 @@ async function createAuthenticatedSession(
       profile: { displayName: "OIDC User" },
       userName: domain.replaceAll(".", "-"),
     },
-    instanceId: instance.id,
+    realmId: realm.id,
     onVerificationToken: (delivery) => {
       verificationToken = delivery.token
     },
@@ -96,19 +96,19 @@ async function createAuthenticatedSession(
       context,
       database,
       input: { token: verificationToken },
-      instanceId: instance.id,
+      realmId: realm.id,
     }).success,
   ).toBe(true)
   const login = passwordLogin({
     context,
     database,
     input: { identifier: domain.replaceAll(".", "-"), password: "Correct Horse 12" },
-    instanceId: instance.id,
+    realmId: realm.id,
     sessionCreate: sessionPasswordCreate(),
   })
   expect(login.success).toBe(true)
   if (!login.success || login.data.session === undefined) throw new Error("The OIDC test session could not be created.")
-  return { instance, token: login.data.session.token, userId: login.data.authentication.userId }
+  return { realm, token: login.data.session.token, userId: login.data.authentication.userId }
 }
 
 function pkceChallengeCreate(verifier: string): string {
@@ -132,7 +132,7 @@ async function oidcTokenRequest(
 async function createOidcTokenFixture(database: StorageDatabase, domain: string, scope = "openid profile email") {
   const authenticated = await createAuthenticatedSession(database, domain)
   const client = oidcClientCreate({
-    context: instanceSystemContextCreate(),
+    context: realmSystemContextCreate(),
     database,
     input: {
       allowedScopes: ["openid", "profile", "email"],
@@ -141,14 +141,14 @@ async function createOidcTokenFixture(database: StorageDatabase, domain: string,
       redirectUris: ["https://client.example/callback"],
       trusted: true,
     },
-    instanceId: authenticated.instance.id,
+    realmId: authenticated.realm.id,
   })
   if (!client.success || client.data.clientSecret === undefined) throw new Error("The OIDC fixture client failed.")
   const key = oidcSigningKeyCreate({
-    context: instanceSystemContextCreate(),
+    context: realmSystemContextCreate(),
     database,
     encryptionSecret: "oidc-fixture-secret",
-    instanceId: authenticated.instance.id,
+    realmId: authenticated.realm.id,
   })
   if (!key.success) throw new Error(key.errorMessage)
   const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
@@ -163,7 +163,7 @@ async function createOidcTokenFixture(database: StorageDatabase, domain: string,
       scope,
       state: "fixture-state",
     },
-    instanceId: authenticated.instance.id,
+    realmId: authenticated.realm.id,
     sessionToken: authenticated.token,
   })
   if (!authorization.success) throw new Error(authorization.errorMessage)
@@ -215,10 +215,10 @@ test("PKCE accepts only a valid S256 verifier and challenge pair", () => {
 
 test("OIDC clients are tenant-isolated, return secrets once, and write safe events", async () => {
   await withDatabase(async (database) => {
-    const alpha = await createInstance(database, "oidc-alpha.example.com")
-    const beta = await createInstance(database, "oidc-beta.example.com")
+    const alpha = await createRealm(database, "oidc-alpha.example.com")
+    const beta = await createRealm(database, "oidc-beta.example.com")
     const created = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowedScopes: ["openid", "profile"],
@@ -226,7 +226,7 @@ test("OIDC clients are tenant-isolated, return secrets once, and write safe even
         name: "Alpha client",
         redirectUris: ["https://client.example/callback"],
       },
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     if (!created.success) throw new Error(created.errorMessage)
     expect(created.success).toBe(true)
@@ -240,25 +240,25 @@ test("OIDC clients are tenant-isolated, return secrets once, and write safe even
     expect(row?.secretHash).not.toBe(created.data.clientSecret)
     const client = oidcClientGet({
       clientId: created.data.client.id,
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
     expect(client.data.client).not.toHaveProperty("clientSecret")
-    const alphaContext = instanceTenantContextCreate(alpha.id, "alpha-admin")
+    const alphaContext = realmTenantContextCreate(alpha.id, "alpha-admin")
     const crossTenantClient = oidcClientGet({
       clientId: created.data.client.id,
       context: alphaContext,
       database,
-      instanceId: beta.id,
+      realmId: beta.id,
     })
     expect(crossTenantClient.success).toBe(false)
     const betaClients = oidcClientList({
-      context: instanceTenantContextCreate(beta.id, "beta-admin"),
+      context: realmTenantContextCreate(beta.id, "beta-admin"),
       database,
-      instanceId: beta.id,
+      realmId: beta.id,
     })
     expect(betaClients.success).toBe(true)
     if (!betaClients.success) return
@@ -274,13 +274,13 @@ test("client updates keep exact redirects and secret rotation invalidates old cr
     const fixture = await createOidcTokenFixture(database, "client-management.example.com")
     const updated = oidcClientUpdate({
       clientId: fixture.client.id,
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         name: "Updated client",
         redirectUris: ["https://client.example/callback?channel=two"],
       },
-      instanceId: fixture.authenticated.instance.id,
+      realmId: fixture.authenticated.realm.id,
     })
     expect(updated.success).toBe(true)
     if (!updated.success) return
@@ -302,7 +302,7 @@ test("client updates keep exact redirects and secret rotation invalidates old cr
           scope: "openid",
           state: "old-redirect",
         },
-        instanceId: fixture.authenticated.instance.id,
+        realmId: fixture.authenticated.realm.id,
         sessionToken: fixture.authenticated.token,
       }).success,
     ).toBe(false)
@@ -318,16 +318,16 @@ test("client updates keep exact redirects and secret rotation invalidates old cr
           scope: "openid",
           state: "new-redirect",
         },
-        instanceId: fixture.authenticated.instance.id,
+        realmId: fixture.authenticated.realm.id,
         sessionToken: fixture.authenticated.token,
       }).success,
     ).toBe(true)
 
     const rotated = oidcClientSecretRotate({
       clientId: fixture.client.id,
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
-      instanceId: fixture.authenticated.instance.id,
+      realmId: fixture.authenticated.realm.id,
     })
     expect(rotated.success).toBe(true)
     if (!rotated.success || rotated.data.clientSecret === undefined) return
@@ -356,35 +356,35 @@ test("client updates keep exact redirects and secret rotation invalidates old cr
 
 test("signing keys rotate without exposing private material and serve discovery and JWKS", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "keys.example.com")
+    const realm = await createRealm(database, "keys.example.com")
     const first = oidcSigningKeyCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       encryptionSecret: "test-encryption-secret",
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(first.success).toBe(true)
     if (!first.success) return
     const second = oidcSigningKeyCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       encryptionSecret: "test-encryption-secret",
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(second.success).toBe(true)
     if (!second.success) return
-    const keys = oidcSigningKeyList({ context: instanceSystemContextCreate(), database, instanceId: instance.id })
+    const keys = oidcSigningKeyList({ context: realmSystemContextCreate(), database, realmId: realm.id })
     expect(keys.success).toBe(true)
     if (!keys.success) return
     expect(keys.data?.signingKeys).toHaveLength(2)
     expect(keys.data?.signingKeys[0]?.status).toBe("active")
     expect(keys.data?.signingKeys[1]?.status).toBe("retired")
     expect(keys.data?.signingKeys[0]).not.toHaveProperty("encryptedPrivateKey")
-    const jwks = oidcJwksGet({ database, instanceId: instance.id })
+    const jwks = oidcJwksGet({ database, realmId: realm.id })
     expect(jwks.success).toBe(true)
     if (!jwks.success) return
     expect(jwks.data?.keys).toHaveLength(2)
-    const discovery = oidcDiscoveryGet({ database, instanceId: instance.id })
+    const discovery = oidcDiscoveryGet({ database, realmId: realm.id })
     expect(discovery.success).toBe(true)
     if (!discovery.success) return
     expect(discovery.data?.issuer).toBe("https://keys.example.com")
@@ -396,7 +396,7 @@ test("signing keys rotate without exposing private material and serve discovery 
       .get(first.data.signingKey.id) as { encryptedPrivateKey: string; publicJwk: string } | null
     expect(encrypted?.encryptedPrivateKey).toBeString()
     expect(encrypted?.publicJwk).not.toContain("private")
-    const privateKey = oidcValueDecrypt(encrypted?.encryptedPrivateKey ?? "", instance.id, "test-encryption-secret")
+    const privateKey = oidcValueDecrypt(encrypted?.encryptedPrivateKey ?? "", realm.id, "test-encryption-secret")
     expect(privateKey.success).toBe(true)
     if (!privateKey.success) return
     const token = oidcJwtSign(
@@ -412,23 +412,23 @@ test("signing keys rotate without exposing private material and serve discovery 
 
 test("OIDC management routes use system auth while discovery and JWKS are public tenant routes", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "routes.example.com")
-    const bootstrap = instanceBootstrapAdminCreate({
-      context: instanceSystemContextCreate(),
+    const realm = await createRealm(database, "routes.example.com")
+    const bootstrap = realmBootstrapAdminCreate({
+      context: realmSystemContextCreate(),
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(bootstrap.success).toBe(true)
     if (!bootstrap.success) return
     const app = oidcServerAppCreate({ database, systemSecret: "system-secret" })
-    const unauthorized = await app.fetch(new Request(`https://server/system/instances/${instance.id}/oidc/clients`))
+    const unauthorized = await app.fetch(new Request(`https://server/system/realms/${realm.id}/oidc/clients`))
     expect(unauthorized.status).toBe(401)
     const client = oidcApiClientCreate({
       baseUrl: "https://server",
       token: "system-secret",
       fetch: async (input, init) => app.request(input.toString(), init),
     })
-    const created = await client.oidcClientCreate(instance.id, {
+    const created = await client.oidcClientCreate(realm.id, {
       clientType: "public",
       name: "Route client",
       redirectUris: ["https://client.example/callback"],
@@ -447,7 +447,7 @@ test("OIDC management routes use system auth while discovery and JWKS are public
     expect(discoveryBody.grant_types_supported).toEqual(["authorization_code", "refresh_token"])
     expect(discoveryBody.token_endpoint).toBe("https://routes.example.com/oauth2/token")
     const tenant = await app.fetch(
-      new Request(`https://routes.example.com/instances/${instance.id}/oidc/clients`, {
+      new Request(`https://routes.example.com/realms/${realm.id}/oidc/clients`, {
         headers: { authorization: `Bearer ${bootstrap.data.bootstrapAdmin.secret.valueGet()}` },
       }),
     )
@@ -459,7 +459,7 @@ test("authenticated authorization issues a bound short-lived code and preserves 
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "authorize.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowedScopes: ["openid", "profile"],
@@ -468,7 +468,7 @@ test("authenticated authorization issues a bound short-lived code and preserves 
         redirectUris: ["https://client.example/callback?channel=one"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
@@ -486,7 +486,7 @@ test("authenticated authorization issues a bound short-lived code and preserves 
         scope: "openid profile",
         state: "state-value",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       runtime: database.runtime,
       sessionToken: authenticated.token,
     })
@@ -496,7 +496,7 @@ test("authenticated authorization issues a bound short-lived code and preserves 
     expect(authorization.data.expires_at).toBe(database.runtime.now() + 60_000)
     const stored = database.sqlite
       .query(
-        "SELECT r.state_encrypted, r.nonce_encrypted, c.token_hash FROM oidc_authorization_requests r JOIN oidc_authorization_codes c ON c.instance_id = r.instance_id",
+        "SELECT r.state_encrypted, r.nonce_encrypted, c.token_hash FROM oidc_authorization_requests r JOIN oidc_authorization_codes c ON c.realm_id = r.realm_id",
       )
       .get() as { state_encrypted: string; nonce_encrypted: string; token_hash: string } | null
     expect(stored?.state_encrypted).not.toBe("state-value")
@@ -517,7 +517,7 @@ test("authenticated authorization issues a bound short-lived code and preserves 
         code_verifier: verifier,
         redirect_uri: authorization.data.redirect_uri,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       runtime: database.runtime,
     })
     expect(redeemed).toMatchObject({
@@ -540,7 +540,7 @@ test("authenticated authorization issues a bound short-lived code and preserves 
           code_verifier: verifier,
           redirect_uri: authorization.data.redirect_uri,
         },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
         runtime: database.runtime,
       }).success,
     ).toBe(false)
@@ -552,7 +552,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
     const authenticated = await createAuthenticatedSession(database, "authorize-negative.example.com")
     const other = await createAuthenticatedSession(database, "authorize-other.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "public",
@@ -560,12 +560,12 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
         redirectUris: ["https://client.example/callback"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
     const otherClient = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "public",
@@ -573,7 +573,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
         redirectUris: ["https://client.example/callback"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(otherClient.success).toBe(true)
     if (!otherClient.success) return
@@ -591,7 +591,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
       oidcAuthorizationRequestAuthorize({
         database,
         input: { ...input, redirect_uri: "https://client.example/other" },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
         sessionToken: authenticated.token,
       }).success,
     ).toBe(false)
@@ -599,7 +599,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
       oidcAuthorizationRequestAuthorize({
         database,
         input: { ...input, state: "" },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
         sessionToken: authenticated.token,
       }).success,
     ).toBe(false)
@@ -607,7 +607,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
       oidcAuthorizationRequestAuthorize({
         database,
         input: { ...input, scope: "openid openid" },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
         sessionToken: authenticated.token,
       }).success,
     ).toBe(false)
@@ -615,14 +615,14 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
       oidcAuthorizationRequestAuthorize({
         database,
         input: { ...input, scope: "openid profile" },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
         sessionToken: authenticated.token,
       }).success,
     ).toBe(false)
     const issued = oidcAuthorizationRequestAuthorize({
       database,
       input,
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       runtime: database.runtime,
       sessionToken: authenticated.token,
     })
@@ -637,7 +637,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
           code_verifier: verifier,
           redirect_uri: issued.data.redirect_uri,
         },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
       }).success,
     ).toBe(false)
     expect(
@@ -649,7 +649,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
           code_verifier: verifier,
           redirect_uri: "https://client.example/other",
         },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
       }).success,
     ).toBe(false)
     expect(
@@ -661,7 +661,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
           code_verifier: "wrong-verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~",
           redirect_uri: issued.data.redirect_uri,
         },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
       }).success,
     ).toBe(false)
     expect(
@@ -673,7 +673,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
           code_verifier: verifier,
           redirect_uri: issued.data.redirect_uri,
         },
-        instanceId: other.instance.id,
+        realmId: other.realm.id,
       }).success,
     ).toBe(false)
     testkit.advance(60_000)
@@ -686,7 +686,7 @@ test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expi
           code_verifier: verifier,
           redirect_uri: issued.data.redirect_uri,
         },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
       }).success,
     ).toBe(false)
   })
@@ -697,10 +697,10 @@ test("inactive clients cannot authorize or refresh existing grants", async () =>
     const fixture = await createOidcTokenFixture(database, "inactive-client.example.com")
     const inactive = oidcClientLifecycleSet({
       clientId: fixture.client.id,
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { status: "inactive" },
-      instanceId: fixture.authenticated.instance.id,
+      realmId: fixture.authenticated.realm.id,
     })
     expect(inactive.success).toBe(true)
     if (!inactive.success) return
@@ -718,7 +718,7 @@ test("inactive clients cannot authorize or refresh existing grants", async () =>
         scope: "openid",
         state: "inactive-state",
       },
-      instanceId: fixture.authenticated.instance.id,
+      realmId: fixture.authenticated.realm.id,
       sessionToken: fixture.authenticated.token,
     })
     expect(authorization.success).toBe(false)
@@ -738,7 +738,7 @@ test("authorization and code consumption roll back with their audit events", asy
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "authorize-atomic.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "public",
@@ -746,7 +746,7 @@ test("authorization and code consumption roll back with their audit events", asy
         redirectUris: ["https://client.example/callback"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
@@ -767,7 +767,7 @@ test("authorization and code consumption roll back with their audit events", asy
       oidcAuthorizationRequestAuthorize({
         database,
         input,
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
         sessionToken: authenticated.token,
       }).success,
     ).toBe(false)
@@ -780,7 +780,7 @@ test("authorization and code consumption roll back with their audit events", asy
     const issued = oidcAuthorizationRequestAuthorize({
       database,
       input,
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(issued.success).toBe(true)
@@ -797,7 +797,7 @@ test("authorization and code consumption roll back with their audit events", asy
           code_verifier: verifier,
           redirect_uri: issued.data.redirect_uri,
         },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
       }).success,
     ).toBe(false)
     expect(database.sqlite.query("SELECT used_at FROM oidc_authorization_codes").get()).toEqual({ used_at: null })
@@ -808,7 +808,7 @@ test("authorization routes use the authenticated session and the API client cont
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "authorize-route.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "public",
@@ -816,7 +816,7 @@ test("authorization routes use the authenticated session and the API client cont
         redirectUris: ["https://client.example/callback"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
@@ -869,7 +869,7 @@ test("authorization redirects preserve registered query parameters and never red
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "redirect-route.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "public",
@@ -877,7 +877,7 @@ test("authorization redirects preserve registered query parameters and never red
         redirectUris: ["https://client.example/callback?channel=one"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
@@ -937,7 +937,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "token.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowedScopes: ["openid", "profile", "email"],
@@ -946,15 +946,15 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
         redirectUris: ["https://client.example/callback"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success || client.data.clientSecret === undefined) return
     const key = oidcSigningKeyCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       encryptionSecret: "token-secret",
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(key.success).toBe(true)
     if (!key.success) return
@@ -972,7 +972,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
         scope: "openid profile email",
         state: "token-state",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(authorization.success).toBe(true)
@@ -1070,7 +1070,7 @@ test("the token endpoint supports public clients and confidential basic authenti
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "token-auth.example.com")
     const publicClient = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "public",
@@ -1078,15 +1078,15 @@ test("the token endpoint supports public clients and confidential basic authenti
         redirectUris: ["https://client.example/callback"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(publicClient.success).toBe(true)
     if (!publicClient.success) return
     const key = oidcSigningKeyCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       encryptionSecret: "token-auth-secret",
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(key.success).toBe(true)
     if (!key.success) return
@@ -1103,7 +1103,7 @@ test("the token endpoint supports public clients and confidential basic authenti
         scope: "openid",
         state: "state",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(authorization.success).toBe(true)
@@ -1129,7 +1129,7 @@ test("the token endpoint supports public clients and confidential basic authenti
         scope: "openid",
         state: "api-state",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(apiAuthorization.success).toBe(true)
@@ -1148,7 +1148,7 @@ test("the token endpoint supports public clients and confidential basic authenti
     expect(apiToken.success).toBe(true)
 
     const confidential = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "confidential",
@@ -1156,7 +1156,7 @@ test("the token endpoint supports public clients and confidential basic authenti
         redirectUris: ["https://client.example/callback"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(confidential.success).toBe(true)
     if (!confidential.success || confidential.data.clientSecret === undefined) return
@@ -1171,7 +1171,7 @@ test("the token endpoint supports public clients and confidential basic authenti
         scope: "openid",
         state: "state",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(basicAuthorization.success).toBe(true)
@@ -1202,7 +1202,7 @@ test("the token endpoint supports public clients and confidential basic authenti
         grant_type: "authorization_code",
         redirect_uri: authorization.data.redirect_uri,
       },
-      instanceId: "018f0b7b-5c6e-7b7d-8e8f-901234567890",
+      realmId: "018f0b7b-5c6e-7b7d-8e8f-901234567890",
     })
     expect(foreign.success).toBe(false)
   })
@@ -1212,7 +1212,7 @@ test("token exchange is atomic with code consumption and token audit events", as
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "token-atomic.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "public",
@@ -1220,16 +1220,16 @@ test("token exchange is atomic with code consumption and token audit events", as
         redirectUris: ["https://client.example/callback"],
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
     expect(
       oidcSigningKeyCreate({
-        context: instanceSystemContextCreate(),
+        context: realmSystemContextCreate(),
         database,
         encryptionSecret: "atomic-token-secret",
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
       }).success,
     ).toBe(true)
     const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
@@ -1244,7 +1244,7 @@ test("token exchange is atomic with code consumption and token audit events", as
         scope: "openid",
         state: "state",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(authorization.success).toBe(true)
@@ -1262,7 +1262,7 @@ test("token exchange is atomic with code consumption and token audit events", as
         grant_type: "authorization_code",
         redirect_uri: authorization.data.redirect_uri,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(failed.success).toBe(false)
     expect(database.sqlite.query("SELECT used_at FROM oidc_authorization_codes").get()).toEqual({ used_at: null })
@@ -1328,7 +1328,7 @@ test("UserInfo validates bearer tokens, isolates tenants, and filters claims by 
     expect(openidIdToken.data).not.toHaveProperty("preferred_username")
     expect(openidIdToken.data).not.toHaveProperty("name")
 
-    await createInstance(database, "userinfo-beta.example.com")
+    await createRealm(database, "userinfo-beta.example.com")
     const foreign = await fixture.app.fetch(
       new Request("https://userinfo-beta.example.com/oauth2/userinfo", {
         headers: { authorization: `Bearer ${fixture.token.access_token}` },
@@ -1368,12 +1368,12 @@ test("OIDC revocation authenticates clients, is idempotent, isolates tenants, an
     expect(invalidClient.status).toBe(401)
     expect(invalidClient.headers.get("www-authenticate")).toContain("oauth2/revoke")
 
-    const beta = await createInstance(database, "revoke-beta.example.com")
+    const beta = await createRealm(database, "revoke-beta.example.com")
     const betaClient = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: { clientType: "confidential", name: "Beta client", redirectUris: ["https://client.example/callback"] },
-      instanceId: beta.id,
+      realmId: beta.id,
     })
     expect(betaClient.success).toBe(true)
     if (!betaClient.success || betaClient.data.clientSecret === undefined) return
@@ -1455,8 +1455,8 @@ test("OIDC revocation authenticates clients, is idempotent, isolates tenants, an
     expect(failed.status).toBe(500)
     expect(
       database.sqlite
-        .query("SELECT revoked_at FROM oidc_refresh_tokens WHERE instance_id = ?")
-        .get(atomic.authenticated.instance.id),
+        .query("SELECT revoked_at FROM oidc_refresh_tokens WHERE realm_id = ?")
+        .get(atomic.authenticated.realm.id),
     ).toEqual({ revoked_at: null })
     database.sqlite.run("DROP TRIGGER reject_oidc_revocation_events")
   })
@@ -1466,7 +1466,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "consent.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowedScopes: ["openid", "profile", "email"],
@@ -1475,7 +1475,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
         redirectUris: ["https://client.example/callback"],
         requireConsent: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
@@ -1491,7 +1491,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
         scope: "openid profile",
         state: "consent-state",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(pending.success).toBe(false)
@@ -1509,7 +1509,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
     const rejectedApproval = oidcAuthorizationRequestConsent({
       database,
       input: { decision: "approve", request_id: required.request_id ?? "" },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(rejectedApproval.success).toBe(false)
@@ -1522,7 +1522,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
     const approved = oidcAuthorizationRequestConsent({
       database,
       input: { decision: "approve", request_id: required.request_id ?? "" },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(approved).toMatchObject({ success: true, data: { approved: true, state: "consent-state" } })
@@ -1541,7 +1541,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
         scope: "openid profile",
         state: "reused-state",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(reused.success).toBe(true)
@@ -1557,7 +1557,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
         scope: "openid profile email",
         state: "incremental-state",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(incremental.success).toBe(false)
@@ -1567,7 +1567,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
     const incrementalApproval = oidcAuthorizationRequestConsent({
       database,
       input: { decision: "approve", request_id: incrementalRequired.request_id ?? "" },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(incrementalApproval.success).toBe(true)
@@ -1578,7 +1578,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
     const revoked = oidcConsentRevoke({
       database,
       clientId: client.data.client.id,
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(revoked).toEqual({ data: { revoked: true }, success: true })
@@ -1593,7 +1593,7 @@ test("authorization requires consent, reuses grants, supports incremental scopes
         scope: "openid profile",
         state: "after-revoke",
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(afterRevoke.success).toBe(false)
@@ -1618,7 +1618,7 @@ test("RP-initiated logout validates exact redirects, revokes the session and OID
         id_token_hint: fixture.token.id_token,
         post_logout_redirect_uri: "https://client.example/other",
       },
-      instanceId: fixture.authenticated.instance.id,
+      realmId: fixture.authenticated.realm.id,
     })
     expect(invalidRedirect.success).toBe(false)
     expect(database.sqlite.query("SELECT revoked_at FROM sessions").get()).toEqual({ revoked_at: null })
@@ -1630,7 +1630,7 @@ test("RP-initiated logout validates exact redirects, revokes the session and OID
       database,
       encryptionSecret: "oidc-fixture-secret",
       input: { id_token_hint: fixture.token.id_token },
-      instanceId: fixture.authenticated.instance.id,
+      realmId: fixture.authenticated.realm.id,
     })
     expect(failedLogout.success).toBe(false)
     expect(database.sqlite.query("SELECT revoked_at FROM sessions").get()).toEqual({ revoked_at: null })
@@ -1677,7 +1677,7 @@ test("consent denial is terminal, prompt none requires interaction, and trusted 
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "consent-corner-case.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowedScopes: ["openid"],
@@ -1686,7 +1686,7 @@ test("consent denial is terminal, prompt none requires interaction, and trusted 
         redirectUris: ["https://client.example/callback"],
         requireConsent: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
@@ -1704,7 +1704,7 @@ test("consent denial is terminal, prompt none requires interaction, and trusted 
     const silent = oidcAuthorizationRequestAuthorize({
       database,
       input: { ...input, prompt: "none" },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(silent.success).toBe(false)
@@ -1717,7 +1717,7 @@ test("consent denial is terminal, prompt none requires interaction, and trusted 
     const pending = oidcAuthorizationRequestAuthorize({
       database,
       input,
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(pending.success).toBe(false)
@@ -1727,7 +1727,7 @@ test("consent denial is terminal, prompt none requires interaction, and trusted 
     const denied = oidcAuthorizationRequestConsent({
       database,
       input: { decision: "deny", request_id: required.request_id ?? "" },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(denied).toMatchObject({
@@ -1742,7 +1742,7 @@ test("consent denial is terminal, prompt none requires interaction, and trusted 
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_authorization_codes").get()).toEqual({ count: 0 })
 
     const trusted = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         allowedScopes: ["openid"],
@@ -1752,7 +1752,7 @@ test("consent denial is terminal, prompt none requires interaction, and trusted 
         requireConsent: true,
         trusted: true,
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(trusted.success).toBe(true)
     if (!trusted.success) return
@@ -1760,7 +1760,7 @@ test("consent denial is terminal, prompt none requires interaction, and trusted 
       oidcAuthorizationRequestAuthorize({
         database,
         input: { ...input, client_id: trusted.data.client.id, state: "trusted-state" },
-        instanceId: authenticated.instance.id,
+        realmId: authenticated.realm.id,
         sessionToken: authenticated.token,
       }).success,
     ).toBe(true)
@@ -1771,21 +1771,21 @@ test("logout without an ID token hint requires and revokes only the authenticate
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "logout-session.example.com")
     const client = oidcClientCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       database,
       input: {
         clientType: "public",
         name: "Session logout client",
         redirectUris: ["https://client.example/callback"],
       },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
     })
     expect(client.success).toBe(true)
     if (!client.success) return
     const wrongSession = oidcLogout({
       database,
       input: { client_id: client.data.client.id },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: "not-the-session-token",
     })
     expect(wrongSession.success).toBe(false)
@@ -1794,7 +1794,7 @@ test("logout without an ID token hint requires and revokes only the authenticate
     const loggedOut = oidcLogout({
       database,
       input: { client_id: client.data.client.id },
-      instanceId: authenticated.instance.id,
+      realmId: authenticated.realm.id,
       sessionToken: authenticated.token,
     })
     expect(loggedOut).toEqual({ data: { revoked: true }, success: true })

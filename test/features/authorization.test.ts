@@ -8,11 +8,11 @@ import { authorizationRolePermissionsResolve } from "../../src/features/authoriz
 import { authorizationBootstrapAdminActorContextCreate } from "../../src/features/authorization/domain/authorizationBootstrapAdminActorContextCreate.js"
 import { authorizationSystemActorContextCreate } from "../../src/features/authorization/domain/authorizationSystemActorContextCreate.js"
 import { authorizationUserActorContextCreate } from "../../src/features/authorization/domain/authorizationUserActorContextCreate.js"
-import { instanceBootstrapAdminAuthenticate } from "../../src/features/instances/actions/instanceBootstrapAdminAuthenticate.js"
-import { instanceBootstrapAdminCreate } from "../../src/features/instances/actions/instanceBootstrapAdminCreate.js"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmBootstrapAdminAuthenticate } from "../../src/features/realms/actions/realmBootstrapAdminAuthenticate.js"
+import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationGet } from "../../src/features/organizations/actions/organizationGet.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
@@ -37,10 +37,10 @@ async function withDatabase<T>(operation: (database: StorageDatabase) => Promise
 }
 
 test("fixed roles allow only their declared permissions", () => {
-  const member = authorizationUserActorContextCreate("instance-a", "user-a")
+  const member = authorizationUserActorContextCreate("realm-a", "user-a")
   const read = authorizationPolicyEvaluate({
     actor: member,
-    instanceId: "instance-a",
+    realmId: "realm-a",
     organizationId: "organization-a",
     permission: "organization.read",
     roles: ["member"],
@@ -49,7 +49,7 @@ test("fixed roles allow only their declared permissions", () => {
 
   const manage = authorizationPolicyEvaluate({
     actor: member,
-    instanceId: "instance-a",
+    realmId: "realm-a",
     organizationId: "organization-a",
     permission: "organization.manage",
     roles: ["member"],
@@ -58,7 +58,7 @@ test("fixed roles allow only their declared permissions", () => {
 
   const owner = authorizationPolicyEvaluate({
     actor: member,
-    instanceId: "instance-a",
+    realmId: "realm-a",
     organizationId: "organization-a",
     permission: "organization.members.manage",
     roles: ["owner"],
@@ -67,7 +67,7 @@ test("fixed roles allow only their declared permissions", () => {
 })
 
 test("custom roles and fine-grained policy rules support resource scoping and deny precedence", () => {
-  const actor = authorizationUserActorContextCreate("instance-a", "user-a")
+  const actor = authorizationUserActorContextCreate("realm-a", "user-a")
   const role = {
     name: "Project reader",
     permissions: ["project.read"],
@@ -80,7 +80,7 @@ test("custom roles and fine-grained policy rules support resource scoping and de
   const resourceRead = authorizationPolicyEvaluate({
     actor,
     customRoles: [role],
-    instanceId: "instance-a",
+    realmId: "realm-a",
     permission: "project.read",
     resourceId: "project-a",
     roles: ["project_reader"],
@@ -90,7 +90,7 @@ test("custom roles and fine-grained policy rules support resource scoping and de
   const denied = authorizationPolicyEvaluate({
     actor,
     customRoles: [role],
-    instanceId: "instance-a",
+    realmId: "realm-a",
     permission: "project.read",
     policies: [{ effect: "deny", permission: "project.read", resourceId: "project-a" }],
     resourceId: "project-a",
@@ -108,7 +108,7 @@ test("custom roles and fine-grained policy rules support resource scoping and de
         roleId: "project_blocked",
       },
     ],
-    instanceId: "instance-a",
+    realmId: "realm-a",
     permission: "project.read",
     roles: ["project_blocked"],
   })
@@ -116,7 +116,7 @@ test("custom roles and fine-grained policy rules support resource scoping and de
 
   const otherResource = authorizationPolicyEvaluate({
     actor,
-    instanceId: "instance-a",
+    realmId: "realm-a",
     permission: "project.read",
     policies: [{ effect: "allow", permission: "project.read", resourceId: "project-a" }],
     resourceId: "project-b",
@@ -126,8 +126,8 @@ test("custom roles and fine-grained policy rules support resource scoping and de
 
 test("global policy permissions cover a resource while scoped denies stay local", () => {
   const decision = authorizationPolicyEvaluate({
-    actor: authorizationUserActorContextCreate("instance-a", "user-a"),
-    instanceId: "instance-a",
+    actor: authorizationUserActorContextCreate("realm-a", "user-a"),
+    realmId: "realm-a",
     permission: "project.read",
     policies: [
       { effect: "allow", permission: "project.read" },
@@ -169,15 +169,15 @@ test("role resolution aggregates known roles, ignores unknown roles, and rejects
 test("assurance requirements allow multi-factor actors and reject weaker actors", () => {
   const policy = [{ effect: "allow" as const, minimumAssurance: "authenticated" as const, permission: "project.read" }]
   const authenticated = authorizationPolicyEvaluate({
-    actor: authorizationUserActorContextCreate("instance-a", "user-a"),
-    instanceId: "instance-a",
+    actor: authorizationUserActorContextCreate("realm-a", "user-a"),
+    realmId: "realm-a",
     minimumAssurance: "multi_factor",
     permission: "project.read",
     policies: policy,
   })
   const multiFactor = authorizationPolicyEvaluate({
-    actor: { ...authorizationUserActorContextCreate("instance-a", "user-a"), assurance: "multi_factor" as const },
-    instanceId: "instance-a",
+    actor: { ...authorizationUserActorContextCreate("realm-a", "user-a"), assurance: "multi_factor" as const },
+    realmId: "realm-a",
     minimumAssurance: "multi_factor",
     permission: "project.read",
     policies: policy,
@@ -190,16 +190,16 @@ test("assurance requirements allow multi-factor actors and reject weaker actors"
 test("actor validation runs before bootstrap privileges and rejects incompatible context metadata", () => {
   expect(
     authorizationPolicyEvaluate({
-      actor: authorizationBootstrapAdminActorContextCreate("instance-a", "admin-a"),
-      instanceId: "instance-b",
+      actor: authorizationBootstrapAdminActorContextCreate("realm-a", "admin-a"),
+      realmId: "realm-b",
       permission: "anything.write",
     }),
   ).toMatchObject({ success: true, data: { allowed: false, reason: "tenant_mismatch" } })
 
   expect(
     authorizationPolicyEvaluate({
-      actor: { ...instanceTenantContextCreate("instance-a", "anonymous").actor },
-      instanceId: "instance-a",
+      actor: { ...realmTenantContextCreate("realm-a", "anonymous").actor },
+      realmId: "realm-a",
       permission: "project.read",
       policies: [{ effect: "allow", permission: "project.read" }],
       roles: ["owner"],
@@ -208,27 +208,27 @@ test("actor validation runs before bootstrap privileges and rejects incompatible
 
   expect(
     authorizationPolicyEvaluate({
-      actor: { ...authorizationSystemActorContextCreate(), instanceId: "instance-a" },
-      instanceId: "instance-a",
+      actor: { ...authorizationSystemActorContextCreate(), realmId: "realm-a" },
+      realmId: "realm-a",
       permission: "project.read",
     }),
   ).toMatchObject({ success: false, op: "authorizationPolicyEvaluate" })
 
   expect(
     authorizationPolicyEvaluate({
-      actor: { ...authorizationUserActorContextCreate("instance-a", "user-a"), impersonatorId: "admin-a" },
-      instanceId: "instance-a",
+      actor: { ...authorizationUserActorContextCreate("realm-a", "user-a"), impersonatorId: "admin-a" },
+      realmId: "realm-a",
       permission: "project.read",
     }),
   ).toMatchObject({ success: false, op: "authorizationPolicyEvaluate" })
 })
 
 test("actor scope isolation rejects forged tenant and organization contexts", () => {
-  const actor = authorizationUserActorContextCreate("instance-a", "user-a", "organization-a")
+  const actor = authorizationUserActorContextCreate("realm-a", "user-a", "organization-a")
   expect(
     authorizationEnforce({
       actor,
-      instanceId: "instance-b",
+      realmId: "realm-b",
       organizationId: "organization-a",
       permission: "organization.read",
       roles: ["owner"],
@@ -241,7 +241,7 @@ test("actor scope isolation rejects forged tenant and organization contexts", ()
   expect(
     authorizationPolicyEvaluate({
       actor,
-      instanceId: "instance-a",
+      realmId: "realm-a",
       organizationId: "organization-b",
       permission: "organization.read",
       roles: ["owner"],
@@ -249,8 +249,8 @@ test("actor scope isolation rejects forged tenant and organization contexts", ()
   ).toMatchObject({ success: true, data: { allowed: false, reason: "organization_mismatch" } })
   expect(
     authorizationPolicyEvaluate({
-      actor: authorizationUserActorContextCreate("instance-a", "user-a"),
-      instanceId: "instance-a",
+      actor: authorizationUserActorContextCreate("realm-a", "user-a"),
+      realmId: "realm-a",
       permission: "organization.read",
       roles: ["owner"],
     }),
@@ -260,23 +260,23 @@ test("actor scope isolation rejects forged tenant and organization contexts", ()
 test("anonymous, system, and bootstrap actors have explicit boundary behavior", () => {
   expect(
     authorizationPolicyEvaluate({
-      actor: instanceTenantContextCreate("instance-a", "anonymous").actor,
-      instanceId: "instance-a",
-      permission: "instance.read",
+      actor: realmTenantContextCreate("realm-a", "anonymous").actor,
+      realmId: "realm-a",
+      permission: "realm.read",
     }),
   ).toMatchObject({ success: true, data: { allowed: false, reason: "anonymous" } })
   expect(
     authorizationPolicyEvaluate({
       actor: authorizationSystemActorContextCreate(),
-      instanceId: "instance-b",
+      realmId: "realm-b",
       organizationId: "organization-b",
       permission: "anything.read",
     }),
   ).toMatchObject({ success: true, data: { allowed: true, reason: "system" } })
   expect(
     authorizationPolicyEvaluate({
-      actor: authorizationBootstrapAdminActorContextCreate("instance-a", "admin-a"),
-      instanceId: "instance-a",
+      actor: authorizationBootstrapAdminActorContextCreate("realm-a", "admin-a"),
+      realmId: "realm-a",
       organizationId: "organization-a",
       permission: "anything.write",
     }),
@@ -285,13 +285,13 @@ test("anonymous, system, and bootstrap actors have explicit boundary behavior", 
 
 test("organization enforcement uses database membership and keeps bootstrap administration tenant scoped", async () => {
   await withDatabase(async (database) => {
-    const system = instanceSystemContextCreate()
-    const alpha = instanceCreate({
+    const system = realmSystemContextCreate()
+    const alpha = realmCreate({
       context: system,
       database,
       input: { domain: "auth-alpha.example.com", name: "Alpha" },
     })
-    const beta = instanceCreate({
+    const beta = realmCreate({
       context: system,
       database,
       input: { domain: "auth-beta.example.com", name: "Beta" },
@@ -302,43 +302,43 @@ test("organization enforcement uses database membership and keeps bootstrap admi
       context: system,
       database,
       input: { name: "Alpha", ownerUserId: "user-a" },
-      instanceId: alpha.data.instance.id,
+      realmId: alpha.data.realm.id,
     })
     const betaOrganization = organizationCreate({
       context: system,
       database,
       input: { name: "Beta", ownerUserId: "user-b" },
-      instanceId: beta.data.instance.id,
+      realmId: beta.data.realm.id,
     })
     expect(alphaOrganization.success && betaOrganization.success).toBe(true)
     if (!alphaOrganization.success || !betaOrganization.success) return
 
     expect(
       organizationGet({
-        context: instanceTenantContextCreate(alpha.data.instance.id, "user-a"),
+        context: realmTenantContextCreate(alpha.data.realm.id, "user-a"),
         database,
-        instanceId: alpha.data.instance.id,
+        realmId: alpha.data.realm.id,
         organizationId: alphaOrganization.data.organization.id,
       }).success,
     ).toBe(true)
     expect(
       organizationGet({
-        context: instanceTenantContextCreate(alpha.data.instance.id, "user-a"),
+        context: realmTenantContextCreate(alpha.data.realm.id, "user-a"),
         database,
-        instanceId: beta.data.instance.id,
+        realmId: beta.data.realm.id,
         organizationId: betaOrganization.data.organization.id,
       }).success,
     ).toBe(false)
 
-    const bootstrap = instanceBootstrapAdminCreate({
+    const bootstrap = realmBootstrapAdminCreate({
       context: system,
       database,
-      instanceId: alpha.data.instance.id,
+      realmId: alpha.data.realm.id,
     })
     expect(bootstrap.success).toBe(true)
     if (!bootstrap.success) return
-    const authenticated = instanceBootstrapAdminAuthenticate({
-      context: instanceTenantContextCreate(alpha.data.instance.id, "anonymous"),
+    const authenticated = realmBootstrapAdminAuthenticate({
+      context: realmTenantContextCreate(alpha.data.realm.id, "anonymous"),
       database,
       secret: bootstrap.data.bootstrapAdmin.secret.valueGet(),
     })
@@ -348,7 +348,7 @@ test("organization enforcement uses database membership and keeps bootstrap admi
       organizationGet({
         context: authenticated.data,
         database,
-        instanceId: alpha.data.instance.id,
+        realmId: alpha.data.realm.id,
         organizationId: alphaOrganization.data.organization.id,
       }).success,
     ).toBe(true)
@@ -357,7 +357,7 @@ test("organization enforcement uses database membership and keeps bootstrap admi
         context: authenticated.data,
         database,
         input: { roles: ["member"], userId: "user-c" },
-        instanceId: beta.data.instance.id,
+        realmId: beta.data.realm.id,
         organizationId: betaOrganization.data.organization.id,
       }).success,
     ).toBe(false)

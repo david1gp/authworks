@@ -11,7 +11,7 @@ type CliRun = {
 }
 
 const featureRoutes = [
-  "instances",
+  "realms",
   "email-otp",
   "external-identities",
   "organizations",
@@ -29,7 +29,8 @@ const featureRoutes = [
 test("every completed feature command tree has clean subprocess help", async () => {
   const root = await cliRun("--help")
   expect(root.exitCode).toBe(0)
-  expect(root.stdout).toContain("instances")
+  expect(root.stdout).toContain("realms")
+  expect(root.stdout).not.toContain("instances")
   expect(root.stdout).not.toContain("ZITADEL v2 scaffold")
   expect(root.stdout).not.toContain("status")
 
@@ -41,8 +42,18 @@ test("every completed feature command tree has clean subprocess help", async () 
   }
 })
 
+test("CLI realm identifiers use the realm flag and vocabulary", async () => {
+  const result = await cliRun("users", "create", "--help")
+  expect(result.exitCode).toBe(0)
+  expect(result.stderr).toBe("")
+  expect(result.stdout).toContain("--realm-id REALM_ID")
+  expect(result.stdout).toContain("Realm UUID")
+  expect(result.stdout).not.toContain("--instance-id")
+  expect(result.stdout).not.toContain("Instance UUID")
+})
+
 test("CLI reports transport errors and succeeds through the composed server", async () => {
-  const unavailable = await cliRun("instances", "list", "--server", "http://127.0.0.1:1")
+  const unavailable = await cliRun("realms", "list", "--server", "http://127.0.0.1:1")
   expect(unavailable.exitCode).not.toBe(0)
   expect(unavailable.stdout).toBe("")
   expect(unavailable.stderr).toContain("could not be reached")
@@ -57,7 +68,7 @@ test("CLI reports transport errors and succeeds through the composed server", as
   })
   try {
     const available = await cliRun(
-      "instances",
+      "realms",
       "create",
       "--server",
       server.url.toString(),
@@ -66,11 +77,11 @@ test("CLI reports transport errors and succeeds through the composed server", as
       "--domain",
       "cli.example.com",
       "--name",
-      "CLI instance",
+      "CLI realm",
     )
     expect(available.exitCode).toBe(0)
     expect(available.stderr).toBe("")
-    expect(JSON.parse(available.stdout)).toMatchObject({ instance: { domains: ["cli.example.com"] } })
+    expect(JSON.parse(available.stdout)).toMatchObject({ realm: { domains: ["cli.example.com"] } })
   } finally {
     server.stop(true)
     await rm(directory, { force: true, recursive: true })

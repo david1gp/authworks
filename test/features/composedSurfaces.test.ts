@@ -5,7 +5,7 @@ import { join } from "node:path"
 import { emailOtpApiClientCreate } from "../../src/features/emailOtp/client/emailOtpApiClientCreate.js"
 import { externalIdentityApiClientCreate } from "../../src/features/externalIdentities/client/externalIdentityApiClientCreate.js"
 import { impersonationApiClientCreate } from "../../src/features/impersonation/client/impersonationApiClientCreate.js"
-import { instanceApiClientCreate } from "../../src/features/instances/client/instanceApiClientCreate.js"
+import { realmApiClientCreate } from "../../src/features/realms/client/realmApiClientCreate.js"
 import { machineUserApiClientCreate } from "../../src/features/machineUsers/client/machineUserApiClientCreate.js"
 import { mfaApiClientCreate } from "../../src/features/mfa/client/mfaApiClientCreate.js"
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
@@ -32,16 +32,16 @@ test("all feature clients round-trip through the composed server", async () => {
     const baseUrl = `https://${domain}`
     const system = { baseUrl, fetch: fetchFromServer, token: systemSecret }
 
-    const instances = instanceApiClientCreate(system)
-    const createdInstance = await instances.instanceCreate({ domain, name: "Composed surfaces" })
-    expect(createdInstance.success).toBe(true)
-    if (!createdInstance.success) return
-    const instanceId = createdInstance.data.instance.id
-    expect((await instances.instanceList()).success).toBe(true)
-    expect((await instances.instanceGet(instanceId)).success).toBe(true)
+    const realms = realmApiClientCreate(system)
+    const createdRealm = await realms.realmCreate({ domain, name: "Composed surfaces" })
+    expect(createdRealm.success).toBe(true)
+    if (!createdRealm.success) return
+    const realmId = createdRealm.data.realm.id
+    expect((await realms.realmList()).success).toBe(true)
+    expect((await realms.realmGet(realmId)).success).toBe(true)
 
     const users = userApiClientCreate(system)
-    const createdUser = await users.userCreate(instanceId, {
+    const createdUser = await users.userCreate(realmId, {
       email: "surface-user@example.com",
       profile: { displayName: "Surface User" },
       userName: "surface-user",
@@ -49,23 +49,23 @@ test("all feature clients round-trip through the composed server", async () => {
     expect(createdUser.success).toBe(true)
     if (!createdUser.success) return
     const userId = createdUser.data.user.id
-    expect((await users.userList(instanceId)).success).toBe(true)
+    expect((await users.userList(realmId)).success).toBe(true)
 
     const organizations = organizationApiClientCreate(system)
-    const createdOrganization = await organizations.organizationCreate(instanceId, {
+    const createdOrganization = await organizations.organizationCreate(realmId, {
       name: "Surface organization",
       ownerUserId: userId,
     })
     expect(createdOrganization.success).toBe(true)
     if (!createdOrganization.success) return
     const organizationId = createdOrganization.data.organization.id
-    expect((await organizations.organizationList(instanceId)).success).toBe(true)
+    expect((await organizations.organizationList(realmId)).success).toBe(true)
     expect((await organizations.organizationRoleList()).success).toBe(true)
 
     const passwords = passwordApiClientCreate(system)
     expect(
       (
-        await passwords.passwordRegister(instanceId, {
+        await passwords.passwordRegister(realmId, {
           email: "surface-password@example.com",
           password: "Correct Horse 12",
           profile: {},
@@ -73,15 +73,15 @@ test("all feature clients round-trip through the composed server", async () => {
         })
       ).success,
     ).toBe(true)
-    expect((await passwords.passwordPolicyGet(instanceId)).success).toBe(true)
+    expect((await passwords.passwordPolicyGet(realmId)).success).toBe(true)
 
     const emailOtp = emailOtpApiClientCreate({ baseUrl, fetch: fetchFromServer })
-    expect((await emailOtp.emailOtpStart(instanceId, { email: "unknown@example.com" })).success).toBe(true)
+    expect((await emailOtp.emailOtpStart(realmId, { email: "unknown@example.com" })).success).toBe(true)
 
     const externalIdentities = externalIdentityApiClientCreate(system)
     expect(
       (
-        await externalIdentities.externalIdentityProviderCreate(instanceId, {
+        await externalIdentities.externalIdentityProviderCreate(realmId, {
           allowAccountCreation: true,
           clientId: "surface-client",
           clientSecret: "surface-secret",
@@ -92,39 +92,39 @@ test("all feature clients round-trip through the composed server", async () => {
         })
       ).success,
     ).toBe(true)
-    expect((await externalIdentities.externalIdentityProviderList(instanceId)).success).toBe(true)
+    expect((await externalIdentities.externalIdentityProviderList(realmId)).success).toBe(true)
 
     const oidc = oidcApiClientCreate(system)
     expect(
       (
-        await oidc.oidcClientCreate(instanceId, {
+        await oidc.oidcClientCreate(realmId, {
           clientType: "public",
           name: "Surface OIDC client",
           redirectUris: ["https://client.example/callback"],
         })
       ).success,
     ).toBe(true)
-    expect((await oidc.oidcClientList(instanceId)).success).toBe(true)
+    expect((await oidc.oidcClientList(realmId)).success).toBe(true)
     expect((await oidc.oidcDiscoveryGet()).success).toBe(true)
     expect((await oidc.oidcJwksGet()).success).toBe(true)
 
     const mfa = mfaApiClientCreate({ baseUrl, fetch: fetchFromServer, systemToken: systemSecret })
-    expect((await mfa.mfaPolicyGet(instanceId)).success).toBe(true)
+    expect((await mfa.mfaPolicyGet(realmId)).success).toBe(true)
 
     const passkeys = passkeyApiClientCreate({ baseUrl, fetch: fetchFromServer })
-    expect((await passkeys.passkeyAuthenticationStart(instanceId)).success).toBe(true)
+    expect((await passkeys.passkeyAuthenticationStart(realmId)).success).toBe(true)
 
     const machines = machineUserApiClientCreate(system)
-    const machineUser = await machines.machineUserCreate(instanceId, {
+    const machineUser = await machines.machineUserCreate(realmId, {
       displayName: "Surface machine",
       scopes: ["api.read"],
       userName: "surface-machine",
     })
     expect(machineUser.success).toBe(true)
-    expect((await machines.machineUserList(instanceId)).success).toBe(true)
+    expect((await machines.machineUserList(realmId)).success).toBe(true)
 
     const projects = projectApiClientCreate(system)
-    const project = await projects.projectCreate(instanceId, {
+    const project = await projects.projectCreate(realmId, {
       authorizationRequired: false,
       name: "Surface project",
       organizationId,
@@ -132,15 +132,15 @@ test("all feature clients round-trip through the composed server", async () => {
     })
     expect(project.success).toBe(true)
     if (!project.success) return
-    expect((await projects.projectList(instanceId)).success).toBe(true)
+    expect((await projects.projectList(realmId)).success).toBe(true)
 
     const sessions = sessionApiClientCreate({ baseUrl, fetch: fetchFromServer, token: systemSecret })
-    expect((await sessions.sessionCurrent(instanceId)).success).toBe(false)
+    expect((await sessions.sessionCurrent(realmId)).success).toBe(false)
 
     const impersonation = impersonationApiClientCreate({ baseUrl, fetch: fetchFromServer, token: systemSecret })
     expect(
       (
-        await impersonation.impersonationStart(instanceId, {
+        await impersonation.impersonationStart(realmId, {
           durationSeconds: 60,
           reason: "surface verification",
           targetUserId: userId,

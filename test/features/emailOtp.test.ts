@@ -2,9 +2,9 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { emailOtpApiClientCreate } from "../../src/features/emailOtp/client/emailOtpApiClientCreate.js"
 import { emailOtpStart } from "../../src/features/emailOtp/actions/emailOtpStart.js"
 import { emailOtpVerify } from "../../src/features/emailOtp/actions/emailOtpVerify.js"
@@ -39,14 +39,14 @@ async function withDatabase<T>(
 }
 
 async function createVerifiedUser(database: StorageDatabase, domain: string) {
-  const created = instanceCreate({
-    context: instanceSystemContextCreate("system"),
+  const created = realmCreate({
+    context: realmSystemContextCreate("system"),
     database,
     input: { domain, name: domain },
   })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  const context = instanceTenantContextCreate(created.data.instance.id, "anonymous")
+  const context = realmTenantContextCreate(created.data.realm.id, "anonymous")
   let verificationToken = ""
   const registered = passwordRegister({
     context,
@@ -57,7 +57,7 @@ async function createVerifiedUser(database: StorageDatabase, domain: string) {
       profile: { displayName: "OTP User" },
       userName: "otp-user",
     },
-    instanceId: created.data.instance.id,
+    realmId: created.data.realm.id,
     onVerificationToken: ({ token }) => {
       verificationToken = token
     },
@@ -67,23 +67,23 @@ async function createVerifiedUser(database: StorageDatabase, domain: string) {
     context,
     database,
     input: { token: verificationToken },
-    instanceId: created.data.instance.id,
+    realmId: created.data.realm.id,
   })
   expect(verified.success).toBe(true)
   if (!verified.success) throw new Error(verified.errorMessage)
-  return { context, instance: created.data.instance, userId: verified.data.user.id }
+  return { context, realm: created.data.realm, userId: verified.data.user.id }
 }
 
 test("email OTP authenticates once, applies cooldown, and calls ports after commit", async () => {
   await withDatabase(async (database, testkit) => {
-    const { context, instance } = await createVerifiedUser(database, "email-otp.example.com")
+    const { context, realm } = await createVerifiedUser(database, "email-otp.example.com")
     let delivery: { challengeId: string; code: string } | undefined
     const notifications: string[] = []
     const started = emailOtpStart({
       context,
       database,
       input: { email: " OTP@example.com " },
-      instanceId: instance.id,
+      realmId: realm.id,
       onDelivery: (value) => {
         delivery = value
         throw new Error("delivery must not roll back committed state")
@@ -109,7 +109,7 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
       context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       onDelivery: () => {
         resendCount += 1
       },
@@ -123,7 +123,7 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
       context,
       database,
       input: { challengeId: delivery.challengeId, code: delivery.code },
-      instanceId: instance.id,
+      realmId: realm.id,
       onSecurityNotification: (value) => {
         notifications.push(value.kind)
       },
@@ -137,15 +137,13 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
     expect(verified.data.session.session.assurance).toBe("authenticated")
     expect(notifications).toEqual(["requested", "verified"])
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM sessions").get()).not.toEqual(beforeVerify)
-    expect(sessionAuthenticate({ database, instanceId: instance.id, token: verified.data.session.token }).success).toBe(
-      true,
-    )
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: verified.data.session.token }).success).toBe(true)
     expect(
       emailOtpVerify({
         context,
         database,
         input: { challengeId: delivery.challengeId, code: delivery.code },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(false)
@@ -156,7 +154,7 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
       context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       onDelivery: (value) => {
         replacement = value
       },
@@ -169,11 +167,11 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
 
 test("required MFA turns email OTP authentication into a TOTP challenge", async () => {
   await withDatabase(async (database, testkit) => {
-    const { context, instance, userId } = await createVerifiedUser(database, "email-mfa.example.com")
+    const { context, realm, userId } = await createVerifiedUser(database, "email-mfa.example.com")
     const enrollment = mfaTotpEnrollmentStart({
       database,
       encryptionSecret: "mfa-test-secret",
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       userId,
     })
@@ -187,17 +185,17 @@ test("required MFA turns email OTP authentication into a TOTP challenge", async 
         database,
         encryptionSecret: "mfa-test-secret",
         input: { code: enrollmentCode.data, enrollmentId: enrollment.data.enrollment.id },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
         userId,
       }).success,
     ).toBe(true)
     expect(
       mfaPolicySet({
-        context: instanceSystemContextCreate("system"),
+        context: realmSystemContextCreate("system"),
         database,
         input: { lockoutDurationMs: 900_000, maxAttempts: 3, mode: "required", totpWindow: 1 },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(true)
@@ -207,7 +205,7 @@ test("required MFA turns email OTP authentication into a TOTP challenge", async 
       context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       onDelivery: (value) => {
         delivery = value
       },
@@ -219,7 +217,7 @@ test("required MFA turns email OTP authentication into a TOTP challenge", async 
       context,
       database,
       input: { challengeId: delivery.challengeId, code: delivery.code },
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
     })
     expect(verified.success).toBe(true)
@@ -235,7 +233,7 @@ test("required MFA turns email OTP authentication into a TOTP challenge", async 
       database,
       encryptionSecret: "mfa-test-secret",
       input: { code: challengeCode.data, token: verified.data.challenge.token },
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
     })
     expect(completed).toMatchObject({
@@ -252,7 +250,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
     const failedNotifications: Array<{
       attempts?: number
       challengeId: string
-      instanceId: string
+      realmId: string
       kind: "failed" | "requested" | "verified"
       userId: string
     }> = []
@@ -261,7 +259,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
       context: alpha.context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       onDelivery: ({ code }) => {
         knownCode = code
       },
@@ -271,7 +269,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
       context: alpha.context,
       database,
       input: { email: "missing@example.com" },
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       onDelivery: () => {
         throw new Error("unknown users must not receive delivery")
       },
@@ -286,7 +284,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
         context: beta.context,
         database,
         input: { challengeId: known.data.challengeId, code: knownCode },
-        instanceId: beta.instance.id,
+        realmId: beta.realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(false)
@@ -297,7 +295,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
           context: alpha.context,
           database,
           input: { challengeId: known.data.challengeId, code: "999999" },
-          instanceId: alpha.instance.id,
+          realmId: alpha.realm.id,
           onSecurityNotification: (value) => {
             failedNotifications.push(value)
           },
@@ -309,7 +307,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
       Array.from({ length: 5 }, (_, index) => ({
         attempts: index + 1,
         challengeId: known.data.challengeId,
-        instanceId: alpha.instance.id,
+        realmId: alpha.realm.id,
         kind: "failed",
         userId: alpha.userId,
       })),
@@ -319,7 +317,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
         context: alpha.context,
         database,
         input: { challengeId: known.data.challengeId, code: knownCode },
-        instanceId: alpha.instance.id,
+        realmId: alpha.realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(false)
@@ -334,7 +332,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
       context: alpha.context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       onDelivery: ({ challengeId }) => {
         expiredChallenge = challengeId
       },
@@ -346,7 +344,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
         context: alpha.context,
         database,
         input: { challengeId: expiredChallenge, code: "000000" },
-        instanceId: alpha.instance.id,
+        realmId: alpha.realm.id,
         onSecurityNotification: (value) => {
           failedNotifications.push(value)
         },
@@ -356,7 +354,7 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
     expect(failedNotifications.at(-1)).toEqual({
       attempts: 0,
       challengeId: expiredChallenge,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       kind: "failed",
       userId: alpha.userId,
     })
@@ -365,13 +363,13 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
 
 test("email OTP invalidates an unconsumed challenge before issuing a replacement", async () => {
   await withDatabase(async (database, testkit) => {
-    const { context, instance } = await createVerifiedUser(database, "email-otp-replay.example.com")
+    const { context, realm } = await createVerifiedUser(database, "email-otp-replay.example.com")
     let first: { challengeId: string; code: string } | undefined
     const firstStarted = emailOtpStart({
       context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       onDelivery: (value) => {
         first = value
       },
@@ -387,7 +385,7 @@ test("email OTP invalidates an unconsumed challenge before issuing a replacement
       context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       onDelivery: (value) => {
         replacement = value
       },
@@ -402,7 +400,7 @@ test("email OTP invalidates an unconsumed challenge before issuing a replacement
         context,
         database,
         input: { challengeId: first.challengeId, code: first.code },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(false)
@@ -411,7 +409,7 @@ test("email OTP invalidates an unconsumed challenge before issuing a replacement
         context,
         database,
         input: { challengeId: replacement.challengeId, code: replacement.code },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(true)
@@ -420,7 +418,7 @@ test("email OTP invalidates an unconsumed challenge before issuing a replacement
 
 test("email OTP challenge and session writes roll back with event failures", async () => {
   await withDatabase(async (database, testkit) => {
-    const { context, instance } = await createVerifiedUser(database, "email-otp-atomic.example.com")
+    const { context, realm } = await createVerifiedUser(database, "email-otp-atomic.example.com")
     database.sqlite.run(
       "CREATE TRIGGER reject_email_otp_events BEFORE INSERT ON events WHEN NEW.aggregate_type = 'email_otp' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
     )
@@ -428,7 +426,7 @@ test("email OTP challenge and session writes roll back with event failures", asy
       context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
     })
     expect(rejected.success).toBe(false)
@@ -440,7 +438,7 @@ test("email OTP challenge and session writes roll back with event failures", asy
       context,
       database,
       input: { email: "otp@example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       onDelivery: (value) => {
         code = value.code
       },
@@ -458,7 +456,7 @@ test("email OTP challenge and session writes roll back with event failures", asy
         context,
         database,
         input: { challengeId: started.data.challengeId, code },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(false)
@@ -469,7 +467,7 @@ test("email OTP challenge and session writes roll back with event failures", asy
 
 test("email OTP HTTP and client contracts expose no code material", async () => {
   await withDatabase(async (database, testkit) => {
-    const { instance } = await createVerifiedUser(database, "email-otp-api.example.com")
+    const { realm } = await createVerifiedUser(database, "email-otp-api.example.com")
     let code = ""
     const app = emailOtpServerAppCreate({
       database,
@@ -481,11 +479,11 @@ test("email OTP HTTP and client contracts expose no code material", async () => 
       baseUrl: "https://email-otp-api.example.com",
       fetch: async (input, init) => app.request(input.toString(), init),
     })
-    const started = await client.emailOtpStart(instance.id, { email: "otp@example.com" })
+    const started = await client.emailOtpStart(realm.id, { email: "otp@example.com" })
     expect(started.success).toBe(true)
     if (!started.success) return
     expect(JSON.stringify(started.data)).not.toContain(code)
-    const verified = await client.emailOtpVerify(instance.id, { challengeId: started.data.challengeId, code })
+    const verified = await client.emailOtpVerify(realm.id, { challengeId: started.data.challengeId, code })
     expect(verified.success).toBe(true)
     expect(testkit.runtime.now()).toBe(1_700_000_000_000)
   })

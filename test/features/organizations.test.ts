@@ -2,9 +2,9 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationInvitationAccept } from "../../src/features/organizations/actions/organizationInvitationAccept.js"
 import { organizationInvitationCreate } from "../../src/features/organizations/actions/organizationInvitationCreate.js"
@@ -44,27 +44,27 @@ async function withDatabase<T>(
   }
 }
 
-async function createInstance(database: StorageDatabase, domain: string) {
-  const created = instanceCreate({
-    context: instanceSystemContextCreate("system"),
+async function createRealm(database: StorageDatabase, domain: string) {
+  const created = realmCreate({
+    context: realmSystemContextCreate("system"),
     database,
     input: { domain, name: domain },
   })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  return created.data.instance
+  return created.data.realm
 }
 
-test("organizations, roles, memberships, lifecycle, and switching stay inside an instance", async () => {
+test("organizations, roles, memberships, lifecycle, and switching stay inside an realm", async () => {
   await withDatabase(async (database) => {
-    const alpha = await createInstance(database, "alpha.example.com")
-    const beta = await createInstance(database, "beta.example.com")
-    const system = instanceSystemContextCreate("system")
+    const alpha = await createRealm(database, "alpha.example.com")
+    const beta = await createRealm(database, "beta.example.com")
+    const system = realmSystemContextCreate("system")
     const created = organizationCreate({
       context: system,
       database,
       input: { name: " Alpha Org ", ownerUserId: "user-alpha" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
@@ -74,17 +74,17 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
       context: system,
       database,
       input: { name: "Beta Org", ownerUserId: "user-beta" },
-      instanceId: beta.id,
+      realmId: beta.id,
     })
     expect(betaOrg.success).toBe(true)
     if (!betaOrg.success) return
 
-    const owner = instanceTenantContextCreate(alpha.id, "user-alpha")
+    const owner = realmTenantContextCreate(alpha.id, "user-alpha")
     expect(
       organizationMembershipList({
         context: owner,
         database,
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(true)
@@ -92,7 +92,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
       organizationMembershipList({
         context: owner,
         database,
-        instanceId: beta.id,
+        realmId: beta.id,
         organizationId: betaOrg.data.organization.id,
       }),
     ).toEqual({
@@ -105,7 +105,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
         context: owner,
         database,
         input: { organizationId: betaOrg.data.organization.id },
-        instanceId: alpha.id,
+        realmId: alpha.id,
       }).success,
     ).toBe(false)
 
@@ -113,7 +113,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
       context: owner,
       database,
       input: { roles: ["admin"], userId: "user-member" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       organizationId: created.data.organization.id,
     })
     expect(added.success).toBe(true)
@@ -123,16 +123,16 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
         context: owner,
         database,
         input: { roles: ["member"], userId: "user-member" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(false)
     expect(
       organizationSwitch({
-        context: instanceTenantContextCreate(alpha.id, "user-member"),
+        context: realmTenantContextCreate(alpha.id, "user-member"),
         database,
         input: { organizationId: created.data.organization.id },
-        instanceId: alpha.id,
+        realmId: alpha.id,
       }).success,
     ).toBe(true)
 
@@ -140,7 +140,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
       context: owner,
       database,
       input: { roles: ["guest"] },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       membershipId: added.data.membership.id,
       organizationId: created.data.organization.id,
     })
@@ -149,7 +149,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
       organizationMembershipRemove({
         context: owner,
         database,
-        instanceId: alpha.id,
+        realmId: alpha.id,
         membershipId: added.data.membership.id,
         organizationId: created.data.organization.id,
       }).success,
@@ -158,7 +158,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
     const memberships = organizationMembershipList({
       context: system,
       database,
-      instanceId: alpha.id,
+      realmId: alpha.id,
       organizationId: created.data.organization.id,
     })
     expect(memberships.success).toBe(true)
@@ -172,7 +172,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
         context: system,
         database,
         input: { roles: ["member"] },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         membershipId: ownerMembership.id,
         organizationId: created.data.organization.id,
       }).success,
@@ -181,7 +181,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
       organizationMembershipRemove({
         context: system,
         database,
-        instanceId: alpha.id,
+        realmId: alpha.id,
         membershipId: ownerMembership.id,
         organizationId: created.data.organization.id,
       }).success,
@@ -192,7 +192,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
       context: system,
       database,
       input: { status: "inactive" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       organizationId: created.data.organization.id,
     })
     expect(inactive.success).toBe(true)
@@ -201,7 +201,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
         context: owner,
         database,
         input: { organizationId: created.data.organization.id },
-        instanceId: alpha.id,
+        realmId: alpha.id,
       }).success,
     ).toBe(false)
     expect(
@@ -209,7 +209,7 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
         context: system,
         database,
         input: { status: "active" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(true)
@@ -218,11 +218,11 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
         context: system,
         database,
         input: { status: "removed" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(true)
-    const listed = organizationList({ context: system, database, instanceId: alpha.id })
+    const listed = organizationList({ context: system, database, realmId: alpha.id })
     expect(listed.success).toBe(true)
     if (!listed.success) return
     expect(listed.data.organizations).toEqual([])
@@ -231,16 +231,16 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
 
 test("organization names and lifecycle transitions enforce their preconditions", async () => {
   await withDatabase(async (database) => {
-    const alpha = await createInstance(database, "lifecycle-alpha.example.com")
-    const beta = await createInstance(database, "lifecycle-beta.example.com")
-    const system = instanceSystemContextCreate("system")
+    const alpha = await createRealm(database, "lifecycle-alpha.example.com")
+    const beta = await createRealm(database, "lifecycle-beta.example.com")
+    const system = realmSystemContextCreate("system")
 
     expect(
       organizationCreate({
         context: system,
         database,
         input: { name: "   " },
-        instanceId: alpha.id,
+        realmId: alpha.id,
       }).success,
     ).toBe(false)
 
@@ -248,7 +248,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
       context: system,
       database,
       input: { name: "Lifecycle Org" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
@@ -258,7 +258,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { name: " Lifecycle Org " },
-        instanceId: alpha.id,
+        realmId: alpha.id,
       }).success,
     ).toBe(false)
     expect(
@@ -266,7 +266,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { name: "Lifecycle Org" },
-        instanceId: beta.id,
+        realmId: beta.id,
       }).success,
     ).toBe(true)
 
@@ -275,7 +275,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { status: "active" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(false)
@@ -284,7 +284,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { status: "inactive" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(true)
@@ -293,7 +293,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { status: "inactive" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(false)
@@ -302,7 +302,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { status: "active" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(true)
@@ -311,7 +311,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { status: "removed" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(true)
@@ -320,7 +320,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { status: "active" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(false)
@@ -329,7 +329,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { status: "active" },
-        instanceId: beta.id,
+        realmId: beta.id,
         organizationId: created.data.organization.id,
       }).success,
     ).toBe(false)
@@ -338,7 +338,7 @@ test("organization names and lifecycle transitions enforce their preconditions",
         context: system,
         database,
         input: { status: "inactive" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: "missing-organization",
       }).success,
     ).toBe(false)
@@ -347,32 +347,32 @@ test("organization names and lifecycle transitions enforce their preconditions",
 
 test("membership role validation and membership identity stay tenant scoped", async () => {
   await withDatabase(async (database) => {
-    const alpha = await createInstance(database, "membership-alpha.example.com")
-    const beta = await createInstance(database, "membership-beta.example.com")
-    const system = instanceSystemContextCreate("system")
+    const alpha = await createRealm(database, "membership-alpha.example.com")
+    const beta = await createRealm(database, "membership-beta.example.com")
+    const system = realmSystemContextCreate("system")
     const alphaOrganization = organizationCreate({
       context: system,
       database,
       input: { name: "Alpha Memberships", ownerUserId: "alpha-owner" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     const betaOrganization = organizationCreate({
       context: system,
       database,
       input: { name: "Beta Memberships" },
-      instanceId: beta.id,
+      realmId: beta.id,
     })
     expect(alphaOrganization.success).toBe(true)
     expect(betaOrganization.success).toBe(true)
     if (!alphaOrganization.success || !betaOrganization.success) return
 
-    const owner = instanceTenantContextCreate(alpha.id, "alpha-owner")
+    const owner = realmTenantContextCreate(alpha.id, "alpha-owner")
     expect(
       organizationMembershipCreate({
         context: owner,
         database,
         input: { roles: [], userId: "member" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: alphaOrganization.data.organization.id,
       }).success,
     ).toBe(false)
@@ -381,7 +381,7 @@ test("membership role validation and membership identity stay tenant scoped", as
         context: owner,
         database,
         input: { roles: ["member", "member"], userId: "member" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: alphaOrganization.data.organization.id,
       }).success,
     ).toBe(false)
@@ -390,7 +390,7 @@ test("membership role validation and membership identity stay tenant scoped", as
         context: owner,
         database,
         input: { roles: ["invalid-role" as never], userId: "member" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         organizationId: alphaOrganization.data.organization.id,
       }).success,
     ).toBe(false)
@@ -399,7 +399,7 @@ test("membership role validation and membership identity stay tenant scoped", as
       context: owner,
       database,
       input: { roles: ["member"], userId: "member" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       organizationId: alphaOrganization.data.organization.id,
     })
     expect(added.success).toBe(true)
@@ -409,7 +409,7 @@ test("membership role validation and membership identity stay tenant scoped", as
         context: owner,
         database,
         input: { roles: ["admin"] },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         membershipId: added.data.membership.id,
         organizationId: betaOrganization.data.organization.id,
       }).success,
@@ -418,7 +418,7 @@ test("membership role validation and membership identity stay tenant scoped", as
       organizationMembershipRemove({
         context: owner,
         database,
-        instanceId: alpha.id,
+        realmId: alpha.id,
         membershipId: added.data.membership.id,
         organizationId: betaOrganization.data.organization.id,
       }).success,
@@ -426,15 +426,15 @@ test("membership role validation and membership identity stay tenant scoped", as
   })
 })
 
-test("invitations are hashed, one-time, atomic, and instance-scoped", async () => {
+test("invitations are hashed, one-time, atomic, and realm-scoped", async () => {
   await withDatabase(async (database, testkit) => {
-    const alpha = await createInstance(database, "invite.example.com")
-    const system = instanceSystemContextCreate("system")
+    const alpha = await createRealm(database, "invite.example.com")
+    const system = realmSystemContextCreate("system")
     const organization = organizationCreate({
       context: system,
       database,
       input: { name: "Invites" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(organization.success).toBe(true)
     if (!organization.success) return
@@ -442,7 +442,7 @@ test("invitations are hashed, one-time, atomic, and instance-scoped", async () =
       context: system,
       database,
       input: { email: "Person@Example.com", roles: ["member"] },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       organizationId: organization.data.organization.id,
     })
     expect(invitation.success).toBe(true)
@@ -464,7 +464,7 @@ test("invitations are hashed, one-time, atomic, and instance-scoped", async () =
       context: system,
       database,
       input: { email: "decline@example.com", roles: ["guest"], expiresAt: 1_700_000_000_100 },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       organizationId: organization.data.organization.id,
     })
     expect(second.success).toBe(true)
@@ -480,7 +480,7 @@ test("invitations are hashed, one-time, atomic, and instance-scoped", async () =
       context: system,
       database,
       input: { email: "revoke@example.com", roles: ["member"] },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       organizationId: organization.data.organization.id,
     })
     expect(third.success).toBe(true)
@@ -489,7 +489,7 @@ test("invitations are hashed, one-time, atomic, and instance-scoped", async () =
       organizationInvitationRevoke({
         context: system,
         database,
-        instanceId: alpha.id,
+        realmId: alpha.id,
         invitationId: third.data.invitation.id,
         organizationId: organization.data.organization.id,
       }).success,
@@ -502,7 +502,7 @@ test("invitations are hashed, one-time, atomic, and instance-scoped", async () =
       context: system,
       database,
       input: { email: "expired@example.com", roles: ["member"], expiresAt: 1_700_000_000_010 },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       organizationId: organization.data.organization.id,
     })
     expect(expired.success).toBe(true)
@@ -519,19 +519,19 @@ test("invitations are hashed, one-time, atomic, and instance-scoped", async () =
 
 test("invitation replacement and acceptance remain organization-scoped", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "invitation-scope.example.com")
-    const system = instanceSystemContextCreate("system")
+    const realm = await createRealm(database, "invitation-scope.example.com")
+    const system = realmSystemContextCreate("system")
     const alpha = organizationCreate({
       context: system,
       database,
       input: { name: "Alpha Invitations", ownerUserId: "existing-user" },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     const beta = organizationCreate({
       context: system,
       database,
       input: { name: "Beta Invitations" },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(alpha.success).toBe(true)
     expect(beta.success).toBe(true)
@@ -541,7 +541,7 @@ test("invitation replacement and acceptance remain organization-scoped", async (
       context: system,
       database,
       input: { email: "Person@Example.com", roles: ["member"] },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: alpha.data.organization.id,
     })
     expect(original.success).toBe(true)
@@ -551,7 +551,7 @@ test("invitation replacement and acceptance remain organization-scoped", async (
       context: system,
       database,
       input: { email: " person@example.com ", roles: ["guest"] },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: alpha.data.organization.id,
     })
     expect(replacement.success).toBe(true)
@@ -576,7 +576,7 @@ test("invitation replacement and acceptance remain organization-scoped", async (
       context: system,
       database,
       input: { email: "person@example.com", roles: ["member"] },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: beta.data.organization.id,
     })
     expect(otherOrganizationInvitation.success).toBe(true)
@@ -593,16 +593,16 @@ test("invitation replacement and acceptance remain organization-scoped", async (
 test("organization routes and API clients use the same public contracts", async () => {
   await withDatabase(async (database) => {
     const app = organizationServerAppCreate({ database, systemSecret: "system-secret" })
-    const instance = await createInstance(database, "api.example.com")
+    const realm = await createRealm(database, "api.example.com")
     const client = organizationApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),
       token: "system-secret",
     })
-    const created = await client.organizationCreate(instance.id, { name: "API org", ownerUserId: "api-user" })
+    const created = await client.organizationCreate(realm.id, { name: "API org", ownerUserId: "api-user" })
     expect(created.success).toBe(true)
     if (!created.success) return
-    const listed = await client.organizationList(instance.id)
+    const listed = await client.organizationList(realm.id)
     expect(listed.success).toBe(true)
     if (!listed.success) return
     const roles = await client.organizationRoleList()
@@ -612,9 +612,9 @@ test("organization routes and API clients use the same public contracts", async 
     const unauthorized = await organizationApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),
-    }).organizationList(instance.id)
+    }).organizationList(realm.id)
     expect(unauthorized.success).toBe(false)
-    const switched = await client.organizationSwitch(instance.id, { organizationId: created.data.organization.id })
+    const switched = await client.organizationSwitch(realm.id, { organizationId: created.data.organization.id })
     expect(switched.success).toBe(true)
     if (!switched.success) return
     expect(switched.data.context.organizationId).toBe(created.data.organization.id)

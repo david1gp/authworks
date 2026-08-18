@@ -2,9 +2,9 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { authorizationUserActorContextCreate } from "../../src/features/authorization/domain/authorizationUserActorContextCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
@@ -45,19 +45,19 @@ async function withDatabase<T>(operation: (database: StorageDatabase) => Promise
   }
 }
 
-async function createInstance(database: StorageDatabase, domain: string) {
-  const result = instanceCreate({ context: instanceSystemContextCreate(), database, input: { domain, name: domain } })
+async function createRealm(database: StorageDatabase, domain: string) {
+  const result = realmCreate({ context: realmSystemContextCreate(), database, input: { domain, name: domain } })
   expect(result.success).toBe(true)
   if (!result.success) throw new Error(result.errorMessage)
-  return result.data.instance
+  return result.data.realm
 }
 
-async function createOrganization(database: StorageDatabase, instanceId: string, name: string, ownerUserId: string) {
+async function createOrganization(database: StorageDatabase, realmId: string, name: string, ownerUserId: string) {
   const result = organizationCreate({
-    context: instanceSystemContextCreate(),
+    context: realmSystemContextCreate(),
     database,
     input: { name, ownerUserId },
-    instanceId,
+    realmId,
   })
   expect(result.success).toBe(true)
   if (!result.success) throw new Error(result.errorMessage)
@@ -65,16 +65,16 @@ async function createOrganization(database: StorageDatabase, instanceId: string,
 }
 
 function actorTenantContext(actor: ReturnType<typeof authorizationUserActorContextCreate>) {
-  return { actor, actorId: actor.actorId, instanceId: actor.instanceId ?? "", kind: "tenant" as const }
+  return { actor, actorId: actor.actorId, realmId: actor.realmId ?? "", kind: "tenant" as const }
 }
 
 test("projects, applications, roles, and lifecycles are tenant-isolated", async () => {
   await withDatabase(async (database) => {
-    const alpha = await createInstance(database, "projects-alpha.example.com")
-    const beta = await createInstance(database, "projects-beta.example.com")
+    const alpha = await createRealm(database, "projects-alpha.example.com")
+    const beta = await createRealm(database, "projects-beta.example.com")
     const alphaOrganization = await createOrganization(database, alpha.id, "Alpha", "alpha-owner")
     const betaOrganization = await createOrganization(database, beta.id, "Beta", "beta-owner")
-    const alphaContext = instanceTenantContextCreate(alpha.id, "alpha-owner")
+    const alphaContext = realmTenantContextCreate(alpha.id, "alpha-owner")
     const created = projectCreate({
       context: alphaContext,
       database,
@@ -84,16 +84,16 @@ test("projects, applications, roles, and lifecycles are tenant-isolated", async 
         organizationId: alphaOrganization.id,
         projectAccessRequired: true,
       },
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
     expect(
-      projectGet({ context: alphaContext, database, instanceId: beta.id, projectId: created.data.project.id }).success,
+      projectGet({ context: alphaContext, database, realmId: beta.id, projectId: created.data.project.id }).success,
     ).toBe(false)
     expect(
       projectCreate({
-        context: instanceTenantContextCreate(beta.id, "beta-owner"),
+        context: realmTenantContextCreate(beta.id, "beta-owner"),
         database,
         input: {
           authorizationRequired: false,
@@ -101,15 +101,15 @@ test("projects, applications, roles, and lifecycles are tenant-isolated", async 
           organizationId: alphaOrganization.id,
           projectAccessRequired: false,
         },
-        instanceId: beta.id,
+        realmId: beta.id,
       }).success,
     ).toBe(false)
-    expect(betaOrganization.instanceId).toBe(beta.id)
+    expect(betaOrganization.realmId).toBe(beta.id)
     const application = projectApplicationCreate({
       context: alphaContext,
       database,
       input: { applicationType: "api", name: "Alpha API" },
-      instanceId: alpha.id,
+      realmId: alpha.id,
       projectId: created.data.project.id,
     })
     expect(application.success).toBe(true)
@@ -120,7 +120,7 @@ test("projects, applications, roles, and lifecycles are tenant-isolated", async 
         context: alphaContext,
         database,
         input: { status: "inactive" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         projectId: created.data.project.id,
       }).success,
     ).toBe(true)
@@ -130,14 +130,14 @@ test("projects, applications, roles, and lifecycles are tenant-isolated", async 
         context: alphaContext,
         database,
         input: { status: "inactive" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
         projectId: created.data.project.id,
       }).success,
     ).toBe(false)
     const listedApplications = projectApplicationList({
       context: alphaContext,
       database,
-      instanceId: alpha.id,
+      realmId: alpha.id,
       projectId: created.data.project.id,
     })
     expect(listedApplications.success).toBe(true)
@@ -147,11 +147,11 @@ test("projects, applications, roles, and lifecycles are tenant-isolated", async 
 
 test("project lifecycle guards and updates preserve active-resource rules", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "project-rules.example.com")
-    const ownerOrganization = await createOrganization(database, instance.id, "Owner", "owner-user")
-    const otherOrganization = await createOrganization(database, instance.id, "Other", "other-user")
+    const realm = await createRealm(database, "project-rules.example.com")
+    const ownerOrganization = await createOrganization(database, realm.id, "Owner", "owner-user")
+    const otherOrganization = await createOrganization(database, realm.id, "Other", "other-user")
     const ownerContext = actorTenantContext(
-      authorizationUserActorContextCreate(instance.id, "owner-user", ownerOrganization.id),
+      authorizationUserActorContextCreate(realm.id, "owner-user", ownerOrganization.id),
     )
     const project = projectCreate({
       context: ownerContext,
@@ -162,7 +162,7 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
         organizationId: ownerOrganization.id,
         projectAccessRequired: false,
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(project.success).toBe(true)
     if (!project.success) return
@@ -172,7 +172,7 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
         context: ownerContext,
         database,
         input: { status: "active" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -181,7 +181,7 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
       context: ownerContext,
       database,
       input: { authorizationRequired: true, name: "Renamed" },
-      instanceId: instance.id,
+      realmId: realm.id,
       projectId: project.data.project.id,
     })
     expect(renamed).toMatchObject({
@@ -198,7 +198,7 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
         organizationId: ownerOrganization.id,
         projectAccessRequired: false,
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(duplicateProject.success).toBe(true)
     if (!duplicateProject.success) return
@@ -207,13 +207,13 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
         context: ownerContext,
         database,
         input: { name: "Renamed" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: duplicateProject.data.project.id,
       }).success,
     ).toBe(false)
 
     const sameNameInOtherOrganization = projectCreate({
-      context: actorTenantContext(authorizationUserActorContextCreate(instance.id, "other-user", otherOrganization.id)),
+      context: actorTenantContext(authorizationUserActorContextCreate(realm.id, "other-user", otherOrganization.id)),
       database,
       input: {
         authorizationRequired: false,
@@ -221,7 +221,7 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
         organizationId: otherOrganization.id,
         projectAccessRequired: false,
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(sameNameInOtherOrganization.success).toBe(true)
 
@@ -230,7 +230,7 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
         context: ownerContext,
         database,
         input: { status: "inactive" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(true)
@@ -239,7 +239,7 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
         context: ownerContext,
         database,
         input: { status: "inactive" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -248,7 +248,7 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
         context: ownerContext,
         database,
         input: { name: "Inactive update" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -257,11 +257,11 @@ test("project lifecycle guards and updates preserve active-resource rules", asyn
 
 test("application, role, and grant state guards reject stale or cross-scope changes", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "project-children.example.com")
-    const ownerOrganization = await createOrganization(database, instance.id, "Owner", "owner-user")
-    const grantedOrganization = await createOrganization(database, instance.id, "Granted", "granted-user")
+    const realm = await createRealm(database, "project-children.example.com")
+    const ownerOrganization = await createOrganization(database, realm.id, "Owner", "owner-user")
+    const grantedOrganization = await createOrganization(database, realm.id, "Granted", "granted-user")
     const ownerContext = actorTenantContext(
-      authorizationUserActorContextCreate(instance.id, "owner-user", ownerOrganization.id),
+      authorizationUserActorContextCreate(realm.id, "owner-user", ownerOrganization.id),
     )
     const project = projectCreate({
       context: ownerContext,
@@ -272,7 +272,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
         organizationId: ownerOrganization.id,
         projectAccessRequired: false,
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(project.success).toBe(true)
     if (!project.success) return
@@ -281,7 +281,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
       context: ownerContext,
       database,
       input: { displayName: "Reader", key: "reader" },
-      instanceId: instance.id,
+      realmId: realm.id,
       projectId: project.data.project.id,
     })
     expect(role.success).toBe(true)
@@ -291,7 +291,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
         context: ownerContext,
         database,
         input: {},
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
         roleId: role.data.role.id,
       }).success,
@@ -301,7 +301,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
         context: ownerContext,
         database,
         input: { displayName: "Updated reader" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
         roleId: role.data.role.id,
       }).success,
@@ -311,7 +311,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
       context: ownerContext,
       database,
       input: { applicationType: "api", name: "API" },
-      instanceId: instance.id,
+      realmId: realm.id,
       projectId: project.data.project.id,
     })
     expect(application.success).toBe(true)
@@ -322,7 +322,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
         context: ownerContext,
         database,
         input: { name: "Updated API" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: "wrong-project",
       }).success,
     ).toBe(false)
@@ -332,7 +332,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
         context: ownerContext,
         database,
         input: { status: "active" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -341,7 +341,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
       context: ownerContext,
       database,
       input: { grantedOrganizationId: grantedOrganization.id, roleKeys: ["reader"] },
-      instanceId: instance.id,
+      realmId: realm.id,
       projectId: project.data.project.id,
     })
     expect(grant.success).toBe(true)
@@ -351,7 +351,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
         context: ownerContext,
         database,
         input: { grantedOrganizationId: grantedOrganization.id, roleKeys: ["reader"] },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -361,7 +361,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
         database,
         grantId: grant.data.grant.id,
         input: { grantedOrganizationId: ownerOrganization.id, roleKeys: ["reader"] },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -371,7 +371,7 @@ test("application, role, and grant state guards reject stale or cross-scope chan
         database,
         grantId: grant.data.grant.id,
         input: { status: "active" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -380,18 +380,18 @@ test("application, role, and grant state guards reject stale or cross-scope chan
 
 test("project roles and cross-organization grants enforce access and revocation", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "grants.example.com")
-    const ownerOrganization = await createOrganization(database, instance.id, "Owner", "owner-user")
-    const grantedOrganization = await createOrganization(database, instance.id, "Granted", "granted-user")
-    const otherOrganization = await createOrganization(database, instance.id, "Other", "other-user")
+    const realm = await createRealm(database, "grants.example.com")
+    const ownerOrganization = await createOrganization(database, realm.id, "Owner", "owner-user")
+    const grantedOrganization = await createOrganization(database, realm.id, "Granted", "granted-user")
+    const otherOrganization = await createOrganization(database, realm.id, "Other", "other-user")
     const ownerContext = actorTenantContext(
-      authorizationUserActorContextCreate(instance.id, "owner-user", ownerOrganization.id),
+      authorizationUserActorContextCreate(realm.id, "owner-user", ownerOrganization.id),
     )
     const grantedContext = actorTenantContext(
-      authorizationUserActorContextCreate(instance.id, "granted-user", grantedOrganization.id),
+      authorizationUserActorContextCreate(realm.id, "granted-user", grantedOrganization.id),
     )
     const otherContext = actorTenantContext(
-      authorizationUserActorContextCreate(instance.id, "other-user", otherOrganization.id),
+      authorizationUserActorContextCreate(realm.id, "other-user", otherOrganization.id),
     )
     const project = projectCreate({
       context: ownerContext,
@@ -402,7 +402,7 @@ test("project roles and cross-organization grants enforce access and revocation"
         organizationId: ownerOrganization.id,
         projectAccessRequired: true,
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(project.success).toBe(true)
     if (!project.success) return
@@ -410,7 +410,7 @@ test("project roles and cross-organization grants enforce access and revocation"
       context: ownerContext,
       database,
       input: { displayName: "Administrator", key: "admin" },
-      instanceId: instance.id,
+      realmId: realm.id,
       projectId: project.data.project.id,
     })
     expect(role.success).toBe(true)
@@ -420,7 +420,7 @@ test("project roles and cross-organization grants enforce access and revocation"
         context: ownerContext,
         database,
         input: { displayName: "Duplicate", key: "admin" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -429,7 +429,7 @@ test("project roles and cross-organization grants enforce access and revocation"
         context: ownerContext,
         database,
         input: { grantedOrganizationId: grantedOrganization.id, roleKeys: ["missing"] },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -437,25 +437,23 @@ test("project roles and cross-organization grants enforce access and revocation"
       context: ownerContext,
       database,
       input: { grantedOrganizationId: grantedOrganization.id, roleKeys: ["admin"] },
-      instanceId: instance.id,
+      realmId: realm.id,
       projectId: project.data.project.id,
     })
     expect(grant.success).toBe(true)
     if (!grant.success) return
     expect(
-      projectGet({ context: grantedContext, database, instanceId: instance.id, projectId: project.data.project.id })
-        .success,
+      projectGet({ context: grantedContext, database, realmId: realm.id, projectId: project.data.project.id }).success,
     ).toBe(true)
     expect(
-      projectGet({ context: otherContext, database, instanceId: instance.id, projectId: project.data.project.id })
-        .success,
+      projectGet({ context: otherContext, database, realmId: realm.id, projectId: project.data.project.id }).success,
     ).toBe(false)
     expect(
       projectUpdate({
         context: grantedContext,
         database,
         input: { name: "Granted update" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -464,7 +462,7 @@ test("project roles and cross-organization grants enforce access and revocation"
         context: grantedContext,
         database,
         input: { displayName: "Granted writer", key: "granted-writer" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -473,7 +471,7 @@ test("project roles and cross-organization grants enforce access and revocation"
       database,
       grantId: grant.data.grant.id,
       input: { status: "inactive" },
-      instanceId: instance.id,
+      realmId: realm.id,
       projectId: project.data.project.id,
     })
     expect(inactive.success).toBe(true)
@@ -483,13 +481,12 @@ test("project roles and cross-organization grants enforce access and revocation"
         database,
         grantId: grant.data.grant.id,
         input: { status: "inactive" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
     expect(
-      projectGet({ context: grantedContext, database, instanceId: instance.id, projectId: project.data.project.id })
-        .success,
+      projectGet({ context: grantedContext, database, realmId: realm.id, projectId: project.data.project.id }).success,
     ).toBe(false)
     expect(
       projectGrantLifecycleSet({
@@ -497,14 +494,14 @@ test("project roles and cross-organization grants enforce access and revocation"
         database,
         grantId: grant.data.grant.id,
         input: { status: "active" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(true)
     const roles = projectRoleList({
       context: grantedContext,
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       projectId: project.data.project.id,
     })
     expect(roles.success).toBe(true)
@@ -514,10 +511,10 @@ test("project roles and cross-organization grants enforce access and revocation"
 
 test("project deletion is idempotent and leaves no readable parent", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "project-delete.example.com")
-    const organization = await createOrganization(database, instance.id, "Owner", "owner-user")
+    const realm = await createRealm(database, "project-delete.example.com")
+    const organization = await createOrganization(database, realm.id, "Owner", "owner-user")
     const ownerContext = actorTenantContext(
-      authorizationUserActorContextCreate(instance.id, "owner-user", organization.id),
+      authorizationUserActorContextCreate(realm.id, "owner-user", organization.id),
     )
     const project = projectCreate({
       context: ownerContext,
@@ -528,7 +525,7 @@ test("project deletion is idempotent and leaves no readable parent", async () =>
         organizationId: organization.id,
         projectAccessRequired: false,
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(project.success).toBe(true)
     if (!project.success) return
@@ -538,7 +535,7 @@ test("project deletion is idempotent and leaves no readable parent", async () =>
       projectDelete({
         context: ownerContext,
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }),
     ).toEqual({ data: { deleted: true, projectId: project.data.project.id }, success: true })
@@ -547,21 +544,20 @@ test("project deletion is idempotent and leaves no readable parent", async () =>
       projectDelete({
         context: ownerContext,
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }),
     ).toEqual({ data: { deleted: true, projectId: project.data.project.id }, success: true })
     expect(database.db.select().from(storageEventTable).all()).toHaveLength(eventCount + 1)
     expect(
-      projectGet({ context: ownerContext, database, instanceId: instance.id, projectId: project.data.project.id })
-        .success,
+      projectGet({ context: ownerContext, database, realmId: realm.id, projectId: project.data.project.id }).success,
     ).toBe(false)
     expect(
       projectRoleCreate({
         context: ownerContext,
         database,
         input: { displayName: "Unreachable", key: "unreachable" },
-        instanceId: instance.id,
+        realmId: realm.id,
         projectId: project.data.project.id,
       }).success,
     ).toBe(false)
@@ -570,19 +566,19 @@ test("project deletion is idempotent and leaves no readable parent", async () =>
 
 test("membership authorization and state plus event writes are atomic", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "atomic.example.com")
-    const organization = await createOrganization(database, instance.id, "Atomic", "owner")
+    const realm = await createRealm(database, "atomic.example.com")
+    const organization = await createOrganization(database, realm.id, "Atomic", "owner")
     const member = organizationMembershipCreate({
-      context: instanceTenantContextCreate(instance.id, "owner"),
+      context: realmTenantContextCreate(realm.id, "owner"),
       database,
       input: { roles: ["member"], userId: "member" },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.id,
     })
     expect(member.success).toBe(true)
     expect(
       projectCreate({
-        context: actorTenantContext(authorizationUserActorContextCreate(instance.id, "member", organization.id)),
+        context: actorTenantContext(authorizationUserActorContextCreate(realm.id, "member", organization.id)),
         database,
         input: {
           authorizationRequired: false,
@@ -590,12 +586,12 @@ test("membership authorization and state plus event writes are atomic", async ()
           organizationId: organization.id,
           projectAccessRequired: false,
         },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     const eventCount = database.db.select().from(storageEventTable).all().length
     const failed = projectCreate({
-      context: instanceSystemContextCreate(),
+      context: realmSystemContextCreate(),
       correlationId: "",
       database,
       input: {
@@ -604,13 +600,12 @@ test("membership authorization and state plus event writes are atomic", async ()
         organizationId: organization.id,
         projectAccessRequired: false,
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(failed.success).toBe(false)
     expect(database.db.select().from(storageEventTable).all()).toHaveLength(eventCount)
     expect(
-      projectGet({ context: instanceSystemContextCreate(), database, instanceId: instance.id, projectId: "missing" })
-        .success,
+      projectGet({ context: realmSystemContextCreate(), database, realmId: realm.id, projectId: "missing" }).success,
     ).toBe(false)
   })
 })
@@ -618,14 +613,14 @@ test("membership authorization and state plus event writes are atomic", async ()
 test("project routes, API client, and CLI expose public contracts", async () => {
   await withDatabase(async (database) => {
     const app = projectServerAppCreate({ database, systemSecret: "project-secret" })
-    const instance = await createInstance(database, "api-projects.example.com")
+    const realm = await createRealm(database, "api-projects.example.com")
     const client = projectApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),
       token: "project-secret",
     })
-    const organization = await createOrganization(database, instance.id, "API owner", "api-owner")
-    const created = await client.projectCreate(instance.id, {
+    const organization = await createOrganization(database, realm.id, "API owner", "api-owner")
+    const created = await client.projectCreate(realm.id, {
       authorizationRequired: false,
       name: "API project",
       organizationId: organization.id,
@@ -633,12 +628,12 @@ test("project routes, API client, and CLI expose public contracts", async () => 
     })
     expect(created.success).toBe(true)
     if (!created.success) return
-    const listed = await client.projectList(instance.id)
+    const listed = await client.projectList(realm.id)
     expect(listed.success).toBe(true)
     const unauthorized = await projectApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),
-    }).projectList(instance.id)
+    }).projectList(realm.id)
     expect(unauthorized.success).toBe(false)
   })
   const helpProcess = Bun.spawn(["bun", "src/outputs/cli.ts", "projects", "--help"], { stderr: "pipe", stdout: "pipe" })

@@ -4,9 +4,9 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { isoCBOR } from "@simplewebauthn/server/helpers"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
@@ -47,14 +47,14 @@ async function withDatabase<T>(
 }
 
 async function createUser(database: StorageDatabase, domain: string) {
-  const instance = instanceCreate({
-    context: instanceSystemContextCreate("system"),
+  const realm = realmCreate({
+    context: realmSystemContextCreate("system"),
     database,
     input: { domain, name: domain },
   })
-  expect(instance.success).toBe(true)
-  if (!instance.success) throw new Error(instance.errorMessage)
-  const context = instanceTenantContextCreate(instance.data.instance.id, "anonymous")
+  expect(realm.success).toBe(true)
+  if (!realm.success) throw new Error(realm.errorMessage)
+  const context = realmTenantContextCreate(realm.data.realm.id, "anonymous")
   let token = ""
   const registered = passwordRegister({
     context,
@@ -65,16 +65,16 @@ async function createUser(database: StorageDatabase, domain: string) {
       profile: {},
       userName: domain.replaceAll(".", "-"),
     },
-    instanceId: instance.data.instance.id,
+    realmId: realm.data.realm.id,
     onVerificationToken: (delivery) => {
       token = delivery.token
     },
   })
   expect(registered.success).toBe(true)
-  const verified = passwordEmailVerify({ context, database, input: { token }, instanceId: instance.data.instance.id })
+  const verified = passwordEmailVerify({ context, database, input: { token }, realmId: realm.data.realm.id })
   expect(verified.success).toBe(true)
   if (!verified.success) throw new Error(verified.errorMessage)
-  return { context, instance: instance.data.instance, userId: verified.data.user.id }
+  return { context, realm: realm.data.realm, userId: verified.data.user.id }
 }
 
 function publicKeyCoordinates(publicKey: ReturnType<typeof createPublicKey>) {
@@ -190,7 +190,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     const started = await passkeyRegistrationStart({
       actorId: fixture.userId,
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -211,7 +211,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
       actorId: fixture.userId,
       database,
       input: registrationInput,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -227,7 +227,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
       context: fixture.context,
       database,
       input: { identifier: "passkeys-example-com", password: "Correct Horse 12" },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
       sessionCreate: sessionPasswordCreate(),
     })
@@ -237,7 +237,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
 
     const authenticationStarted = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -257,7 +257,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     const authenticated = await passkeyAuthenticationComplete({
       database,
       input: { response: authenticationResponse, token: authenticationStarted.data.token },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -272,7 +272,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
         await passkeyAuthenticationComplete({
           database,
           input: { response: authenticationResponse, token: authenticationStarted.data.token },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -283,7 +283,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
 
     const invalidOriginStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -306,7 +306,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
             ),
             token: invalidOriginStart.data.token,
           },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -317,7 +317,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
 
     const mismatchedChallengeStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -339,7 +339,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
             ),
             token: mismatchedChallengeStart.data.token,
           },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -350,7 +350,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
 
     const noPresenceStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -373,7 +373,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
             ),
             token: noPresenceStart.data.token,
           },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -383,7 +383,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     ).toBe(false)
     const noVerificationStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -406,7 +406,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
             ),
             token: noVerificationStart.data.token,
           },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -417,7 +417,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
 
     const expiredStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -440,7 +440,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
             ),
             token: expiredStart.data.token,
           },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -451,7 +451,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
 
     const mfaWithoutSession = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "mfa",
       rpId,
@@ -463,7 +463,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
 
     const invalidSignatureStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -484,7 +484,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
         await passkeyAuthenticationComplete({
           database,
           input: { response: invalidSignature, token: invalidSignatureStart.data.token },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -494,7 +494,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     ).toBe(false)
     const invalidTypeStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -517,7 +517,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
             ),
             token: invalidTypeStart.data.token,
           },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -527,7 +527,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     ).toBe(false)
     const counterStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -549,7 +549,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
             ),
             token: counterStart.data.token,
           },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -561,7 +561,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     const stepUpStart = await passkeyAuthenticationStart({
       actorId: fixture.userId,
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "step_up",
       rpId,
@@ -586,7 +586,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
         ),
         token: stepUpStart.data.token,
       },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -595,19 +595,19 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     })
     expect(steppedUp.success).toBe(true)
     if (steppedUp.success) expect(steppedUp.data.session?.session.mfaMethod).toBe("passkey")
-    expect(
-      sessionAuthenticate({ database, instanceId: fixture.instance.id, token: passwordSession.token }).success,
-    ).toBe(false)
+    expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: passwordSession.token }).success).toBe(
+      false,
+    )
     const revoked = passkeyCredentialRevoke({
       actorId: fixture.userId,
       database,
       input: { credentialId: registered.data.credential.id },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
       userId: fixture.userId,
     })
     expect(revoked.success).toBe(true)
-    const listed = passkeyCredentialList({ database, instanceId: fixture.instance.id, userId: fixture.userId })
+    const listed = passkeyCredentialList({ database, realmId: fixture.realm.id, userId: fixture.userId })
     expect(listed.success).toBe(true)
     if (listed.success) expect(listed.data.credentials[0]?.revokedAt).not.toBeNull()
     expect(JSON.stringify(database.sqlite.query("SELECT payload FROM events").all())).not.toContain(
@@ -616,7 +616,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
 
     const revokedAuthenticationStart = await passkeyAuthenticationStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       purpose: "passwordless",
       rpId,
@@ -639,7 +639,7 @@ test("passkeys perform real registration, discoverable authentication, protocol 
             ),
             token: revokedAuthenticationStart.data.token,
           },
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           origins: [origin],
           rpId,
           rpName: "Test RP",
@@ -658,7 +658,7 @@ test("passkey registration binds origin and challenge before consuming its cerem
     const started = await passkeyRegistrationStart({
       actorId: fixture.userId,
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -679,7 +679,7 @@ test("passkey registration binds origin and challenge before consuming its cerem
         ),
         token: started.data.token,
       },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -699,7 +699,7 @@ test("passkey registration binds origin and challenge before consuming its cerem
         ),
         token: started.data.token,
       },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -711,7 +711,7 @@ test("passkey registration binds origin and challenge before consuming its cerem
     const invalidOriginStart = await passkeyRegistrationStart({
       actorId: fixture.userId,
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -735,7 +735,7 @@ test("passkey registration binds origin and challenge before consuming its cerem
         ),
         token: invalidOriginStart.data.token,
       },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",
@@ -754,7 +754,7 @@ test("passkey route and API client preserve tenant isolation and bounded public 
       context: alpha.context,
       database,
       input: { identifier: "passkey-alpha-example-com", password: "Correct Horse 12" },
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       runtime: testkit.runtime,
       sessionCreate: sessionPasswordCreate(),
     })
@@ -766,13 +766,13 @@ test("passkey route and API client preserve tenant isolation and bounded public 
       fetch: async (input, init) => app.request(input.toString(), init),
       token: login.data.session.token,
     })
-    const start = await client.passkeyRegistrationStart(alpha.instance.id)
+    const start = await client.passkeyRegistrationStart(alpha.realm.id)
     expect(start.success).toBe(true)
     if (!start.success) return
     const betaList = await passkeyApiClientCreate({
       baseUrl: "https://example.com",
       fetch: async (input, init) => app.request(input.toString(), init),
-    }).passkeyCredentialList(beta.instance.id)
+    }).passkeyCredentialList(beta.realm.id)
     expect(betaList.success).toBe(false)
     expect(start.data.options.user.id).toBe(passkeyUserHandleCreate(alpha.userId))
   })
@@ -787,7 +787,7 @@ test("passkey ceremony and event writes are atomic when audit persistence fails"
     const started = await passkeyRegistrationStart({
       actorId: fixture.userId,
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       origins: [origin],
       rpId,
       rpName: "Test RP",

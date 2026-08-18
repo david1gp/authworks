@@ -2,9 +2,9 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
 import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
 import { mfaRecoveryCodesGenerate } from "../../src/features/mfa/actions/mfaRecoveryCodesGenerate.js"
@@ -46,14 +46,14 @@ async function withDatabase<T>(
 }
 
 async function createUser(database: StorageDatabase, domain: string) {
-  const instance = instanceCreate({
-    context: instanceSystemContextCreate("system"),
+  const realm = realmCreate({
+    context: realmSystemContextCreate("system"),
     database,
     input: { domain, name: domain },
   })
-  expect(instance.success).toBe(true)
-  if (!instance.success) throw new Error(instance.errorMessage)
-  const context = instanceTenantContextCreate(instance.data.instance.id, "anonymous")
+  expect(realm.success).toBe(true)
+  if (!realm.success) throw new Error(realm.errorMessage)
+  const context = realmTenantContextCreate(realm.data.realm.id, "anonymous")
   let token = ""
   const registered = passwordRegister({
     context,
@@ -64,28 +64,28 @@ async function createUser(database: StorageDatabase, domain: string) {
       profile: {},
       userName: domain.replaceAll(".", "-"),
     },
-    instanceId: instance.data.instance.id,
+    realmId: realm.data.realm.id,
     onVerificationToken: (delivery) => {
       token = delivery.token
     },
   })
   expect(registered.success).toBe(true)
-  const verified = passwordEmailVerify({ context, database, input: { token }, instanceId: instance.data.instance.id })
+  const verified = passwordEmailVerify({ context, database, input: { token }, realmId: realm.data.realm.id })
   expect(verified.success).toBe(true)
   if (!verified.success) throw new Error(verified.errorMessage)
-  return { context, instance: instance.data.instance, userId: verified.data.user.id }
+  return { context, realm: realm.data.realm, userId: verified.data.user.id }
 }
 
 async function enrollTotp(
   database: StorageDatabase,
   testkit: ReturnType<typeof platformTestkitCreate>,
-  instanceId: string,
+  realmId: string,
   userId: string,
 ) {
   const started = mfaTotpEnrollmentStart({
     database,
     encryptionSecret: "mfa-test-secret",
-    instanceId,
+    realmId,
     runtime: testkit.runtime,
     userId,
   })
@@ -98,7 +98,7 @@ async function enrollTotp(
     database,
     encryptionSecret: "mfa-test-secret",
     input: { code: code.data, enrollmentId: started.data.enrollment.id },
-    instanceId,
+    realmId,
     runtime: testkit.runtime,
     userId,
   })
@@ -119,12 +119,12 @@ test("TOTP follows RFC values, enforces a bounded time window, and rejects repla
         code: "000000",
         database,
         encryptionSecret: "mfa-test-secret",
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
     ).toBe(false)
-    const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    const enrolled = await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
     testkit.advance(30_000)
     const code = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
     expect(code.success).toBe(true)
@@ -134,7 +134,7 @@ test("TOTP follows RFC values, enforces a bounded time window, and rejects repla
         database,
         encryptionSecret: "mfa-test-secret",
         code: code.data,
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -144,7 +144,7 @@ test("TOTP follows RFC values, enforces a bounded time window, and rejects repla
         database,
         encryptionSecret: "mfa-test-secret",
         code: code.data,
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -155,12 +155,12 @@ test("TOTP follows RFC values, enforces a bounded time window, and rejects repla
 test("TOTP applies the configured window and resets existing failed attempts after a valid code", async () => {
   await withDatabase(async (database, testkit) => {
     const fixture = await createUser(database, "totp-window.example.com")
-    const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    const enrolled = await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
     const policy = mfaPolicySet({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { lockoutDurationMs: 1_000, maxAttempts: 5, mode: "optional", totpWindow: 0 },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
     })
     expect(policy.success).toBe(true)
@@ -173,8 +173,8 @@ test("TOTP applies the configured window and resets existing failed attempts aft
     expect(previousCode.success && nextCode.success && currentCode.success).toBe(true)
     if (!previousCode.success || !nextCode.success || !currentCode.success) return
     database.sqlite.run(
-      "UPDATE mfa_lockouts SET failed_attempts = ?, locked_until = ?, updated_at = ?, version = ? WHERE instance_id = ? AND user_id = ?",
-      [2, null, testkit.runtime.now(), 2, fixture.instance.id, fixture.userId],
+      "UPDATE mfa_lockouts SET failed_attempts = ?, locked_until = ?, updated_at = ?, version = ? WHERE realm_id = ? AND user_id = ?",
+      [2, null, testkit.runtime.now(), 2, fixture.realm.id, fixture.userId],
     )
 
     expect(
@@ -182,7 +182,7 @@ test("TOTP applies the configured window and resets existing failed attempts aft
         code: previousCode.data,
         database,
         encryptionSecret: "mfa-test-secret",
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -192,7 +192,7 @@ test("TOTP applies the configured window and resets existing failed attempts aft
         code: nextCode.data,
         database,
         encryptionSecret: "mfa-test-secret",
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -202,7 +202,7 @@ test("TOTP applies the configured window and resets existing failed attempts aft
         code: currentCode.data,
         database,
         encryptionSecret: "mfa-test-secret",
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -221,22 +221,22 @@ test("TOTP applies the configured window and resets existing failed attempts aft
 test("TOTP lockout blocks verification until expiry", async () => {
   await withDatabase(async (database, testkit) => {
     const fixture = await createUser(database, "totp-lockout.example.com")
-    const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    const enrolled = await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
     testkit.advance(30_000)
     const currentStep = Math.floor(testkit.runtime.now() / 30_000)
     const validCode = mfaTotpCodeCreate(enrolled.secret, currentStep)
     expect(validCode.success).toBe(true)
     if (!validCode.success) return
     database.sqlite.run(
-      "UPDATE mfa_lockouts SET failed_attempts = ?, locked_until = ?, updated_at = ?, version = ? WHERE instance_id = ? AND user_id = ?",
-      [2, testkit.runtime.now() + 1_000, testkit.runtime.now(), 2, fixture.instance.id, fixture.userId],
+      "UPDATE mfa_lockouts SET failed_attempts = ?, locked_until = ?, updated_at = ?, version = ? WHERE realm_id = ? AND user_id = ?",
+      [2, testkit.runtime.now() + 1_000, testkit.runtime.now(), 2, fixture.realm.id, fixture.userId],
     )
     expect(
       mfaTotpVerify({
         code: validCode.data,
         database,
         encryptionSecret: "mfa-test-secret",
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -248,7 +248,7 @@ test("TOTP lockout blocks verification until expiry", async () => {
         code: validCode.data,
         database,
         encryptionSecret: "mfa-test-secret",
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -259,12 +259,12 @@ test("TOTP lockout blocks verification until expiry", async () => {
 test("TOTP failed attempts persist and create lockout at the configured threshold", async () => {
   await withDatabase(async (database, testkit) => {
     const fixture = await createUser(database, "totp-failed-attempts.example.com")
-    const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    const enrolled = await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
     const policy = mfaPolicySet({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { lockoutDurationMs: 1_000, maxAttempts: 3, mode: "optional", totpWindow: 0 },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
     })
     expect(policy.success).toBe(true)
@@ -280,15 +280,15 @@ test("TOTP failed attempts persist and create lockout at the configured threshol
           code: invalidCode,
           database,
           encryptionSecret: "mfa-test-secret",
-          instanceId: fixture.instance.id,
+          realmId: fixture.realm.id,
           runtime: testkit.runtime,
           userId: fixture.userId,
         }).success,
       ).toBe(false)
       expect(
         database.sqlite
-          .query("SELECT failed_attempts, locked_until FROM mfa_lockouts WHERE instance_id = ? AND user_id = ?")
-          .get(fixture.instance.id, fixture.userId),
+          .query("SELECT failed_attempts, locked_until FROM mfa_lockouts WHERE realm_id = ? AND user_id = ?")
+          .get(fixture.realm.id, fixture.userId),
       ).toEqual({
         failed_attempts: attempts,
         locked_until: attempts === 3 ? testkit.runtime.now() + 1_000 : null,
@@ -299,7 +299,7 @@ test("TOTP failed attempts persist and create lockout at the configured threshol
         code: validCode.data,
         database,
         encryptionSecret: "mfa-test-secret",
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -311,8 +311,8 @@ test("enrollment and recovery codes are tenant-scoped, protected, and single-use
   await withDatabase(async (database, testkit) => {
     const alpha = await createUser(database, "mfa-alpha.example.com")
     const beta = await createUser(database, "mfa-beta.example.com")
-    const enrolled = await enrollTotp(database, testkit, alpha.instance.id, alpha.userId)
-    const generated = mfaRecoveryCodesGenerate({ database, instanceId: alpha.instance.id, userId: alpha.userId })
+    const enrolled = await enrollTotp(database, testkit, alpha.realm.id, alpha.userId)
+    const generated = mfaRecoveryCodesGenerate({ database, realmId: alpha.realm.id, userId: alpha.userId })
     expect(generated.success).toBe(true)
     if (!generated.success) return
     const code = generated.data.codes[0]!
@@ -320,27 +320,21 @@ test("enrollment and recovery codes are tenant-scoped, protected, and single-use
       encrypted_secret: enrolled.secret,
     })
     expect(JSON.stringify(database.sqlite.query("SELECT payload FROM events").all())).not.toContain(code)
-    expect(mfaRecoveryCodeVerify({ code, database, instanceId: beta.instance.id, userId: beta.userId }).success).toBe(
-      false,
-    )
-    expect(mfaRecoveryCodeVerify({ code, database, instanceId: alpha.instance.id, userId: alpha.userId }).success).toBe(
-      true,
-    )
-    expect(mfaRecoveryCodeVerify({ code, database, instanceId: alpha.instance.id, userId: alpha.userId }).success).toBe(
-      false,
-    )
+    expect(mfaRecoveryCodeVerify({ code, database, realmId: beta.realm.id, userId: beta.userId }).success).toBe(false)
+    expect(mfaRecoveryCodeVerify({ code, database, realmId: alpha.realm.id, userId: alpha.userId }).success).toBe(true)
+    expect(mfaRecoveryCodeVerify({ code, database, realmId: alpha.realm.id, userId: alpha.userId }).success).toBe(false)
   })
 })
 
 test("MFA policy creates a login challenge and step-up rotates the session atomically", async () => {
   await withDatabase(async (database, testkit) => {
     const fixture = await createUser(database, "mfa-login.example.com")
-    const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    const enrolled = await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
     const login = passwordLogin({
       context: fixture.context,
       database,
       input: { identifier: "mfa-login-example-com", password: "Correct Horse 12" },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
       sessionCreate: sessionPasswordCreate(),
     })
@@ -348,7 +342,7 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
     if (!login.success || login.data.session === undefined) return
     const stepUp = mfaStepUpStart({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       sessionId: login.data.session.session.id,
       userId: fixture.userId,
       runtime: testkit.runtime,
@@ -362,7 +356,7 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
       database,
       encryptionSecret: "mfa-test-secret",
       input: { code: nextCode.data, token: stepUp.data.token },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
       sessionToken: login.data.session.token,
     })
@@ -371,22 +365,22 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
       data: { session: { session: { assurance: "multi_factor", mfaMethod: "totp" } } },
     })
     if (!upgraded.success) return
-    expect(
-      sessionAuthenticate({ database, instanceId: fixture.instance.id, token: login.data.session.token }).success,
-    ).toBe(false)
+    expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: login.data.session.token }).success).toBe(
+      false,
+    )
     const authenticated = sessionAuthenticate({
       database,
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       token: upgraded.data.session!.token,
     })
     expect(authenticated.success).toBe(true)
     if (authenticated.success) expect(authenticated.data.session.assurance).toBe("multi_factor")
 
     const policy = mfaPolicySet({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { lockoutDurationMs: 900_000, maxAttempts: 3, mode: "required", totpWindow: 1 },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
     })
     expect(policy.success).toBe(true)
@@ -395,16 +389,16 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
         context: fixture.context,
         database,
         input: { lockoutDurationMs: 900_000, maxAttempts: 3, mode: "required", totpWindow: 1 },
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(false)
     expect(
       mfaPolicySet({
-        context: instanceSystemContextCreate("system"),
+        context: realmSystemContextCreate("system"),
         database,
         input: { lockoutDurationMs: 900_000, maxAttempts: 0, mode: "required", totpWindow: 1 },
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(false)
@@ -413,7 +407,7 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
       context: fixture.context,
       database,
       input: { identifier: "mfa-login-example-com", password: "Correct Horse 12" },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
       sessionCreate: sessionPasswordCreate(),
     })
@@ -425,7 +419,7 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
       database,
       encryptionSecret: "mfa-test-secret",
       input: { code: loginCode.data, token: challenged.data.challenge.token },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
     })
     expect(completedLogin.success).toBe(true)
@@ -435,7 +429,7 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
         database,
         encryptionSecret: "mfa-test-secret",
         input: { code: nextCode.data, token: stepUp.data.token },
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         sessionToken: login.data.session.token,
       }).success,
@@ -444,7 +438,7 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
       mfaTotpEnrollmentRemove({
         database,
         enrollmentId: enrolled.enrollmentId,
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         sessionToken: login.data.session.token,
         userId: fixture.userId,
@@ -454,7 +448,7 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
       mfaTotpEnrollmentRemove({
         database,
         enrollmentId: enrolled.enrollmentId,
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         sessionToken: upgraded.data.session!.token,
         userId: fixture.userId,
@@ -465,7 +459,7 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
         database,
         encryptionSecret: "mfa-test-secret",
         code: loginCode.data,
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -476,17 +470,16 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
 test("recovery-code event failure does not consume the code", async () => {
   await withDatabase(async (database, testkit) => {
     const fixture = await createUser(database, "mfa-recovery-rollback.example.com")
-    await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
-    const generated = mfaRecoveryCodesGenerate({ database, instanceId: fixture.instance.id, userId: fixture.userId })
+    await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
+    const generated = mfaRecoveryCodesGenerate({ database, realmId: fixture.realm.id, userId: fixture.userId })
     expect(generated.success).toBe(true)
     if (!generated.success) return
 
     expect(
-      mfaRecoveryCodeVerify({ code: "", database, instanceId: fixture.instance.id, userId: fixture.userId }).success,
+      mfaRecoveryCodeVerify({ code: "", database, realmId: fixture.realm.id, userId: fixture.userId }).success,
     ).toBe(false)
     expect(
-      mfaRecoveryCodeVerify({ code: "short", database, instanceId: fixture.instance.id, userId: fixture.userId })
-        .success,
+      mfaRecoveryCodeVerify({ code: "short", database, realmId: fixture.realm.id, userId: fixture.userId }).success,
     ).toBe(false)
     database.sqlite.run(
       "CREATE TRIGGER reject_mfa_recovery_events BEFORE INSERT ON events WHEN NEW.aggregate_type = 'mfa_recovery_code' BEGIN SELECT RAISE(ABORT, 'rejected'); END",
@@ -495,14 +488,14 @@ test("recovery-code event failure does not consume the code", async () => {
       mfaRecoveryCodeVerify({
         code: generated.data.codes[0]!,
         database,
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         userId: fixture.userId,
       }).success,
     ).toBe(false)
     expect(
       database.sqlite
-        .query("SELECT consumed_at FROM mfa_recovery_codes WHERE instance_id = ? AND user_id = ?")
-        .all(fixture.instance.id, fixture.userId)
+        .query("SELECT consumed_at FROM mfa_recovery_codes WHERE realm_id = ? AND user_id = ?")
+        .all(fixture.realm.id, fixture.userId)
         .every((row) => (row as { consumed_at: number | null }).consumed_at === null),
     ).toBe(true)
   })
@@ -514,7 +507,7 @@ test("MFA event failures roll back state, and the API client/CLI surfaces remain
     const started = mfaTotpEnrollmentStart({
       database,
       encryptionSecret: "mfa-test-secret",
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
       userId: fixture.userId,
     })
@@ -530,7 +523,7 @@ test("MFA event failures roll back state, and the API client/CLI surfaces remain
         database,
         encryptionSecret: "mfa-test-secret",
         input: { code: code.data, enrollmentId: started.data.enrollment.id },
-        instanceId: fixture.instance.id,
+        realmId: fixture.realm.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
       }).success,
@@ -543,7 +536,7 @@ test("MFA event failures roll back state, and the API client/CLI surfaces remain
       context: fixture.context,
       database,
       input: { identifier: "mfa-api-example-com", password: "Correct Horse 12" },
-      instanceId: fixture.instance.id,
+      realmId: fixture.realm.id,
       runtime: testkit.runtime,
       sessionCreate: sessionPasswordCreate(),
     })
@@ -558,11 +551,11 @@ test("MFA event failures roll back state, and the API client/CLI surfaces remain
     const unauthenticatedPolicy = await mfaApiClientCreate({
       baseUrl: "http://mfa.test",
       fetch: async (input, init) => app.request(input.toString(), init),
-    }).mfaPolicyGet(fixture.instance.id)
+    }).mfaPolicyGet(fixture.realm.id)
     expect(unauthenticatedPolicy.success).toBe(false)
-    const policy = await client.mfaPolicyGet(fixture.instance.id)
+    const policy = await client.mfaPolicyGet(fixture.realm.id)
     expect(policy.success).toBe(true)
-    const apiStarted = await client.mfaTotpEnrollmentStart(fixture.instance.id)
+    const apiStarted = await client.mfaTotpEnrollmentStart(fixture.realm.id)
     expect(apiStarted.success).toBe(true)
     expect(apiStarted.success ? JSON.stringify(apiStarted.data) : "").not.toContain("encrypted_secret")
     const help = Bun.spawn(["bun", "src/outputs/cli.ts", "mfa", "--help"], { stderr: "pipe", stdout: "pipe" })

@@ -20,16 +20,17 @@ test("built library, server, and CLI outputs are executable", async () => {
   const packageImport = await processRun([
     "bun",
     "-e",
-    'const subpaths = ["authorization", "emailOtp", "externalIdentities", "impersonation", "instances", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/zitadel-v2/" + path))); const root = await import("@adaptive-ds/zitadel-v2"); if (typeof root.packageName !== "string" || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
+    'const subpaths = ["authorization", "emailOtp", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/zitadel-v2/" + path))); const root = await import("@adaptive-ds/zitadel-v2"); if (typeof root.packageName !== "string" || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
   ])
   expect(packageImport).toEqual({ exitCode: 0, stderr: "", stdout: "" })
 
   const cliHelp = await processRun(["bun", "dist/cli/cli.js", "--help"])
   expect(cliHelp.exitCode).toBe(0)
   expect(cliHelp.stderr).toBe("")
-  expect(cliHelp.stdout).toContain("instances")
+  expect(cliHelp.stdout).toContain("realms")
+  expect(cliHelp.stdout).not.toContain("instances")
   for (const route of [
-    "instances",
+    "realms",
     "email-otp",
     "external-identities",
     "organizations",
@@ -49,6 +50,14 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(routeHelp.stdout.length, route).toBeGreaterThan(0)
   }
 
+  const cliRealmHelp = await processRun(["bun", "dist/cli/cli.js", "users", "create", "--help"])
+  expect(cliRealmHelp.exitCode).toBe(0)
+  expect(cliRealmHelp.stderr).toBe("")
+  expect(cliRealmHelp.stdout).toContain("--realm-id REALM_ID")
+  expect(cliRealmHelp.stdout).toContain("Realm UUID")
+  expect(cliRealmHelp.stdout).not.toContain("--instance-id")
+  expect(cliRealmHelp.stdout).not.toContain("Instance UUID")
+
   const directory = await mkdtemp(join(tmpdir(), "zitadel-v2-built-outputs-"))
   const child = Bun.spawn(["bun", "dist/server/server.js"], {
     env: {
@@ -65,7 +74,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     let ready = false
     for (let attempt = 0; attempt < 40; attempt += 1) {
       try {
-        const response = await fetch("http://127.0.0.1:3000/system/instances", {
+        const response = await fetch("http://127.0.0.1:3000/system/realms", {
           headers: { authorization: "Bearer built-output-secret" },
         })
         if (response.status === 200) {
@@ -81,7 +90,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     const cliCreate = await processRun([
       "bun",
       "dist/cli/cli.js",
-      "instances",
+      "realms",
       "create",
       "--server",
       "http://127.0.0.1:3000",
@@ -90,11 +99,11 @@ test("built library, server, and CLI outputs are executable", async () => {
       "--domain",
       "built-output.task-20.example",
       "--name",
-      "Built output instance",
+      "Built output realm",
     ])
     expect(cliCreate.exitCode).toBe(0)
     expect(cliCreate.stderr).toBe("")
-    expect(JSON.parse(cliCreate.stdout)).toMatchObject({ instance: { domains: ["built-output.task-20.example"] } })
+    expect(JSON.parse(cliCreate.stdout)).toMatchObject({ realm: { domains: ["built-output.task-20.example"] } })
   } finally {
     child.kill()
     await child.exited

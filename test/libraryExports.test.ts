@@ -3,7 +3,7 @@ import * as authorization from "../src/outputs/library/authorization.js"
 import * as emailOtp from "../src/outputs/library/emailOtp.js"
 import * as externalIdentities from "../src/outputs/library/externalIdentities.js"
 import * as impersonation from "../src/outputs/library/impersonation.js"
-import * as instances from "../src/outputs/library/instances.js"
+import * as realms from "../src/outputs/library/realms.js"
 import * as machineUsers from "../src/outputs/library/machineUsers.js"
 import * as mfa from "../src/outputs/library/mfa.js"
 import * as oidc from "../src/outputs/library/oidc.js"
@@ -19,7 +19,7 @@ test("every completed feature has a public library subpath and client", () => {
   expect(emailOtp.emailOtpApiClientCreate).toBeFunction()
   expect(externalIdentities.externalIdentityApiClientCreate).toBeFunction()
   expect(impersonation.impersonationApiClientCreate).toBeFunction()
-  expect(instances.instanceApiClientCreate).toBeFunction()
+  expect(realms.realmApiClientCreate).toBeFunction()
   expect(machineUsers.machineUserApiClientCreate).toBeFunction()
   expect(mfa.mfaApiClientCreate).toBeFunction()
   expect(oidc.oidcApiClientCreate).toBeFunction()
@@ -42,12 +42,12 @@ test("public contracts include the previously omitted transport schemas", () => 
 
 test("every API client publishes its complete method set", () => {
   const options = { baseUrl: "https://identity.example.test" }
-  expect(Object.keys(instances.instanceApiClientCreate(options))).toEqual([
-    "instanceBootstrapAdminCreate",
-    "instanceCreate",
-    "instanceGet",
-    "instanceList",
-    "instanceUpdate",
+  expect(Object.keys(realms.realmApiClientCreate(options))).toEqual([
+    "realmBootstrapAdminCreate",
+    "realmCreate",
+    "realmGet",
+    "realmList",
+    "realmUpdate",
   ])
   expect(Object.keys(organizations.organizationApiClientCreate(options))).toHaveLength(27)
   expect(Object.keys(users.userApiClientCreate(options))).toHaveLength(7)

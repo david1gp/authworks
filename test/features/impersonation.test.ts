@@ -3,9 +3,9 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { Hono } from "hono"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { authorizationActorContextCreate } from "../../src/features/authorization/domain/authorizationActorContextCreate.js"
 import { authorizationPolicyEvaluate } from "../../src/features/authorization/actions/authorizationPolicyEvaluate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
@@ -40,31 +40,31 @@ async function withDatabase<T>(
   }
 }
 
-async function createInstance(database: StorageDatabase, domain: string) {
-  const created = instanceCreate({
-    context: instanceSystemContextCreate("system"),
+async function createRealm(database: StorageDatabase, domain: string) {
+  const created = realmCreate({
+    context: realmSystemContextCreate("system"),
     database,
     input: { domain, name: domain },
   })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  return created.data.instance
+  return created.data.realm
 }
 
-function createActiveUser(database: StorageDatabase, instanceId: string, userName: string) {
+function createActiveUser(database: StorageDatabase, realmId: string, userName: string) {
   const created = userCreate({
-    context: instanceSystemContextCreate("system"),
+    context: realmSystemContextCreate("system"),
     database,
     input: { email: `${userName}@example.com`, profile: { displayName: userName }, userName },
-    instanceId,
+    realmId,
   })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
   const active = userLifecycleSet({
-    context: instanceSystemContextCreate("system"),
+    context: realmSystemContextCreate("system"),
     database,
     input: { state: "active" },
-    instanceId,
+    realmId,
     userId: created.data.user.id,
   })
   expect(active.success).toBe(true)
@@ -74,25 +74,25 @@ function createActiveUser(database: StorageDatabase, instanceId: string, userNam
 
 test("impersonation enforces MFA, organization membership, short lifetime, and a narrow permission", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "impersonation.example.com")
-    const otherInstance = await createInstance(database, "impersonation-other.example.com")
-    const admin = createActiveUser(database, instance.id, "admin")
-    const target = createActiveUser(database, instance.id, "target")
-    const other = createActiveUser(database, instance.id, "other")
-    const otherTenantTarget = createActiveUser(database, otherInstance.id, "other-tenant-target")
+    const realm = await createRealm(database, "impersonation.example.com")
+    const otherRealm = await createRealm(database, "impersonation-other.example.com")
+    const admin = createActiveUser(database, realm.id, "admin")
+    const target = createActiveUser(database, realm.id, "target")
+    const other = createActiveUser(database, realm.id, "other")
+    const otherTenantTarget = createActiveUser(database, otherRealm.id, "other-tenant-target")
     const organization = organizationCreate({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { name: "Operations", ownerUserId: admin.id },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(organization.success).toBe(true)
     if (!organization.success) return
     const membership = organizationMembershipCreate({
-      context: instanceTenantContextCreate(instance.id, admin.id),
+      context: realmTenantContextCreate(realm.id, admin.id),
       database,
       input: { roles: ["admin"], userId: target.id },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
     })
     expect(membership.success).toBe(true)
@@ -101,14 +101,14 @@ test("impersonation enforces MFA, organization membership, short lifetime, and a
       actorId: admin.id,
       assurance: "multi_factor",
       authenticationMethod: "trusted",
-      instanceId: instance.id,
+      realmId: realm.id,
       kind: "user",
     })
     const deniedAssurance = impersonationStart({
       actor: { ...actor, assurance: "authenticated" },
       database,
       durationMs: 1_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Support case",
       targetUserId: target.id,
@@ -118,7 +118,7 @@ test("impersonation enforces MFA, organization membership, short lifetime, and a
       actor,
       database,
       durationMs: 1_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Support case",
       targetUserId: other.id,
@@ -128,7 +128,7 @@ test("impersonation enforces MFA, organization membership, short lifetime, and a
       actor,
       database,
       durationMs: 1_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       reason: "Support case",
       targetUserId: other.id,
     })
@@ -137,7 +137,7 @@ test("impersonation enforces MFA, organization membership, short lifetime, and a
       actor,
       database,
       durationMs: 1_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Cross tenant test",
       targetUserId: otherTenantTarget.id,
@@ -148,7 +148,7 @@ test("impersonation enforces MFA, organization membership, short lifetime, and a
       actor,
       database,
       durationMs: 5_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Support case 123",
       runtime: testkit.runtime,
@@ -163,7 +163,7 @@ test("impersonation enforces MFA, organization membership, short lifetime, and a
       impersonatorId: admin.id,
       userId: target.id,
     })
-    const authenticated = sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token })
+    const authenticated = sessionAuthenticate({ database, realmId: realm.id, token: started.data.token })
     expect(authenticated.success).toBe(true)
     if (!authenticated.success) return
     expect(authenticated.data.actor).toMatchObject({
@@ -176,7 +176,7 @@ test("impersonation enforces MFA, organization membership, short lifetime, and a
       actor: authenticated.data.actor,
       database,
       durationMs: 1_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Chain attempt",
       targetUserId: admin.id,
@@ -184,42 +184,42 @@ test("impersonation enforces MFA, organization membership, short lifetime, and a
     expect(chained.success).toBe(false)
     const deniedPrivilege = authorizationPolicyEvaluate({
       actor: authenticated.data.actor,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       permission: "user.impersonate",
       roles: ["admin"],
     })
     expect(deniedPrivilege).toMatchObject({ data: { allowed: false, reason: "impersonation_limit" }, success: true })
     testkit.advance(5_001)
-    expect(sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token }).success).toBe(false)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: started.data.token }).success).toBe(false)
   })
 })
 
 test("impersonation HTTP start/end exposes actor and subject, not credentials, and emits immutable audit events", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "impersonation-http.example.com")
-    const admin = createActiveUser(database, instance.id, "http-admin")
-    const target = createActiveUser(database, instance.id, "http-target")
+    const realm = await createRealm(database, "impersonation-http.example.com")
+    const admin = createActiveUser(database, realm.id, "http-admin")
+    const target = createActiveUser(database, realm.id, "http-target")
     const organization = organizationCreate({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { name: "Support", ownerUserId: admin.id },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(organization.success).toBe(true)
     if (!organization.success) return
     organizationMembershipCreate({
-      context: instanceTenantContextCreate(instance.id, admin.id),
+      context: realmTenantContextCreate(realm.id, admin.id),
       database,
       input: { roles: ["admin"], userId: target.id },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
     })
     const adminSession = sessionIssue({
       assurance: "multi_factor",
       authenticationMethod: "totp",
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: admin.id,
     })
     expect(adminSession.success).toBe(true)
@@ -241,7 +241,7 @@ test("impersonation HTTP start/end exposes actor and subject, not credentials, a
       fetch: async (input, init) => app.request(input.toString(), init),
       token: adminSession.data.token,
     })
-    const started = await client.impersonationStart(instance.id, {
+    const started = await client.impersonationStart(realm.id, {
       durationSeconds: 30,
       organizationId: organization.data.organization.id,
       reason: "Customer support",
@@ -250,7 +250,7 @@ test("impersonation HTTP start/end exposes actor and subject, not credentials, a
     expect(started.success).toBe(true)
     if (!started.success) return
     expect(started.data.token).toHaveLength(43)
-    const protectedResponse = await app.request(`http://server.test/instances/${instance.id}/protected`, {
+    const protectedResponse = await app.request(`http://server.test/realms/${realm.id}/protected`, {
       headers: { authorization: `Bearer ${started.data.token}` },
     })
     expect(protectedResponse.status).toBe(200)
@@ -258,7 +258,7 @@ test("impersonation HTTP start/end exposes actor and subject, not credentials, a
       actor: { actorId: target.id, impersonatorId: admin.id },
       session: { impersonated: true, impersonatorId: admin.id, userId: target.id },
     })
-    const ended = await client.impersonationEnd(instance.id, started.data.session.id)
+    const ended = await client.impersonationEnd(realm.id, started.data.session.id)
     expect(ended).toEqual({ data: { ended: true, sessionId: started.data.session.id }, success: true })
     const events = database.db.select().from(storageEventTable).all()
     const impersonationEvents = events.filter((event) => event.aggregateType === "impersonation")
@@ -281,22 +281,22 @@ test("impersonation HTTP start/end exposes actor and subject, not credentials, a
 
 test("impersonation state and audit event roll back together", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "impersonation-atomic.example.com")
-    const admin = createActiveUser(database, instance.id, "atomic-admin")
-    const target = createActiveUser(database, instance.id, "atomic-target")
+    const realm = await createRealm(database, "impersonation-atomic.example.com")
+    const admin = createActiveUser(database, realm.id, "atomic-admin")
+    const target = createActiveUser(database, realm.id, "atomic-target")
     const organization = organizationCreate({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { name: "Atomic", ownerUserId: admin.id },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(organization.success).toBe(true)
     if (!organization.success) return
     organizationMembershipCreate({
-      context: instanceTenantContextCreate(instance.id, admin.id),
+      context: realmTenantContextCreate(realm.id, admin.id),
       database,
       input: { roles: ["admin"], userId: target.id },
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
     })
     database.sqlite.run(
@@ -309,12 +309,12 @@ test("impersonation state and audit event roll back together", async () => {
         actorId: admin.id,
         assurance: "multi_factor",
         authenticationMethod: "trusted",
-        instanceId: instance.id,
+        realmId: realm.id,
         kind: "user",
       }),
       database,
       durationMs: 1_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       onSecurityNotification: (notification) => {
         notifications.push(notification)
@@ -330,23 +330,23 @@ test("impersonation state and audit event roll back together", async () => {
 
 test("impersonation authorization is explicit and marked sessions cannot widen their permissions", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "impersonation-permissions.example.com")
-    const admin = createActiveUser(database, instance.id, "permission-admin")
-    const target = createActiveUser(database, instance.id, "permission-target")
+    const realm = await createRealm(database, "impersonation-permissions.example.com")
+    const admin = createActiveUser(database, realm.id, "permission-admin")
+    const target = createActiveUser(database, realm.id, "permission-target")
     const organization = organizationCreate({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { name: "Permissions", ownerUserId: target.id },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(organization.success).toBe(true)
     if (!organization.success) return
     expect(
       organizationMembershipCreate({
-        context: instanceSystemContextCreate("system"),
+        context: realmSystemContextCreate("system"),
         database,
         input: { roles: ["member"], userId: admin.id },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.data.organization.id,
       }).success,
     ).toBe(true)
@@ -354,7 +354,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
       actorId: admin.id,
       assurance: "multi_factor",
       authenticationMethod: "trusted",
-      instanceId: instance.id,
+      realmId: realm.id,
       kind: "user",
       scopes: ["user.read"],
     })
@@ -363,7 +363,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
       actor,
       database,
       durationMs: 1_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Permission test",
       targetUserId: target.id,
@@ -375,7 +375,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
       actor: allowedActor,
       database,
       durationMs: 15 * 60 * 1_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Permission test",
       runtime: testkit.runtime,
@@ -384,13 +384,13 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
     if (!started.success) throw new Error(started.errorMessage)
     expect(started.success).toBe(true)
 
-    const authenticated = sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token })
+    const authenticated = sessionAuthenticate({ database, realmId: realm.id, token: started.data.token })
     expect(authenticated.success).toBe(true)
     if (!authenticated.success) return
     expect(
       authorizationPolicyEvaluate({
         actor: authenticated.data.actor,
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.data.organization.id,
         permission: "organization.manage",
         roles: ["owner"],
@@ -399,7 +399,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
     expect(
       authorizationPolicyEvaluate({
         actor: authenticated.data.actor,
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.data.organization.id,
         permission: "user.impersonate",
         roles: ["owner"],
@@ -409,7 +409,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
     expect(
       authorizationPolicyEvaluate({
         actor: { ...authenticated.data.actor, impersonationSessionId: undefined },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.data.organization.id,
         permission: "organization.manage",
         roles: ["owner"],
@@ -420,7 +420,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
       actor: allowedActor,
       database,
       durationMs: 15 * 60 * 1_000 + 1,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Permission test",
       targetUserId: target.id,
@@ -431,25 +431,25 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
 
 test("impersonation end is isolated by tenant and subject authorization", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "impersonation-end.example.com")
-    const otherInstance = await createInstance(database, "impersonation-end-other.example.com")
-    const admin = createActiveUser(database, instance.id, "end-admin")
-    const target = createActiveUser(database, instance.id, "end-target")
-    const otherSubject = createActiveUser(database, otherInstance.id, "end-other-subject")
+    const realm = await createRealm(database, "impersonation-end.example.com")
+    const otherRealm = await createRealm(database, "impersonation-end-other.example.com")
+    const admin = createActiveUser(database, realm.id, "end-admin")
+    const target = createActiveUser(database, realm.id, "end-target")
+    const otherSubject = createActiveUser(database, otherRealm.id, "end-other-subject")
     const organization = organizationCreate({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { name: "End", ownerUserId: admin.id },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(organization.success).toBe(true)
     if (!organization.success) return
     expect(
       organizationMembershipCreate({
-        context: instanceTenantContextCreate(instance.id, admin.id),
+        context: realmTenantContextCreate(realm.id, admin.id),
         database,
         input: { roles: ["member"], userId: target.id },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.data.organization.id,
       }).success,
     ).toBe(true)
@@ -457,7 +457,7 @@ test("impersonation end is isolated by tenant and subject authorization", async 
       actorId: admin.id,
       assurance: "multi_factor",
       authenticationMethod: "trusted",
-      instanceId: instance.id,
+      realmId: realm.id,
       kind: "user",
       scopes: ["user.impersonate"],
     })
@@ -465,7 +465,7 @@ test("impersonation end is isolated by tenant and subject authorization", async 
       actor,
       database,
       durationMs: 5_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       reason: "Tenant end test",
       runtime: testkit.runtime,
@@ -478,7 +478,7 @@ test("impersonation end is isolated by tenant and subject authorization", async 
       impersonationEnd({
         actor,
         database,
-        instanceId: otherInstance.id,
+        realmId: otherRealm.id,
         runtime: testkit.runtime,
         sessionId: started.data.session.id,
       }).success,
@@ -489,38 +489,38 @@ test("impersonation end is isolated by tenant and subject authorization", async 
           actorId: otherSubject.id,
           assurance: "authenticated",
           authenticationMethod: "trusted",
-          instanceId: otherInstance.id,
+          realmId: otherRealm.id,
           kind: "user",
         }),
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
         sessionId: started.data.session.id,
       }).success,
     ).toBe(false)
-    expect(sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token }).success).toBe(true)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: started.data.token }).success).toBe(true)
   })
 })
 
 test("impersonation audit events distinguish the ending subject and commit atomically", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "impersonation-audit.example.com")
-    const admin = createActiveUser(database, instance.id, "audit-admin")
-    const target = createActiveUser(database, instance.id, "audit-target")
+    const realm = await createRealm(database, "impersonation-audit.example.com")
+    const admin = createActiveUser(database, realm.id, "audit-admin")
+    const target = createActiveUser(database, realm.id, "audit-target")
     const organization = organizationCreate({
-      context: instanceSystemContextCreate("system"),
+      context: realmSystemContextCreate("system"),
       database,
       input: { name: "Audit", ownerUserId: admin.id },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(organization.success).toBe(true)
     if (!organization.success) return
     expect(
       organizationMembershipCreate({
-        context: instanceTenantContextCreate(instance.id, admin.id),
+        context: realmTenantContextCreate(realm.id, admin.id),
         database,
         input: { roles: ["member"], userId: target.id },
-        instanceId: instance.id,
+        realmId: realm.id,
         organizationId: organization.data.organization.id,
       }).success,
     ).toBe(true)
@@ -528,7 +528,7 @@ test("impersonation audit events distinguish the ending subject and commit atomi
       actorId: admin.id,
       assurance: "multi_factor",
       authenticationMethod: "trusted",
-      instanceId: instance.id,
+      realmId: realm.id,
       kind: "user",
       scopes: ["user.impersonate"],
     })
@@ -537,7 +537,7 @@ test("impersonation audit events distinguish the ending subject and commit atomi
       actor,
       database,
       durationMs: 5_000,
-      instanceId: instance.id,
+      realmId: realm.id,
       organizationId: organization.data.organization.id,
       onSecurityNotification: (notification) => {
         notifications.push(notification)
@@ -556,14 +556,14 @@ test("impersonation audit events distinguish the ending subject and commit atomi
     expect(startedEvent?.payload).toMatchObject({
       actorId: admin.id,
       expiresAt: started.data.session.expiresAt,
-      instanceId: instance.id,
+      realmId: realm.id,
       reason: "Audit reason",
       sessionId: started.data.session.id,
       subjectId: target.id,
     })
     expect(notifications).toHaveLength(1)
 
-    const authenticated = sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token })
+    const authenticated = sessionAuthenticate({ database, realmId: realm.id, token: started.data.token })
     expect(authenticated.success).toBe(true)
     if (!authenticated.success) return
     database.sqlite.run(
@@ -572,7 +572,7 @@ test("impersonation audit events distinguish the ending subject and commit atomi
     const failedEnd = impersonationEnd({
       actor: authenticated.data.actor,
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       onSecurityNotification: (notification) => {
         notifications.push(notification)
       },
@@ -580,14 +580,14 @@ test("impersonation audit events distinguish the ending subject and commit atomi
       sessionId: started.data.session.id,
     })
     expect(failedEnd.success).toBe(false)
-    expect(sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token }).success).toBe(true)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: started.data.token }).success).toBe(true)
     expect(notifications).toHaveLength(1)
     database.sqlite.run("DROP TRIGGER reject_impersonation_end")
 
     const ended = impersonationEnd({
       actor: authenticated.data.actor,
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       onSecurityNotification: (notification) => {
         notifications.push(notification)
       },
@@ -604,7 +604,7 @@ test("impersonation audit events distinguish the ending subject and commit atomi
     expect(impersonationEvents[1]?.payload).toMatchObject({
       actorId: admin.id,
       endedById: target.id,
-      instanceId: instance.id,
+      realmId: realm.id,
       sessionId: started.data.session.id,
       subjectId: target.id,
     })
@@ -613,7 +613,7 @@ test("impersonation audit events distinguish the ending subject and commit atomi
     const repeatedEnd = impersonationEnd({
       actor: authenticated.data.actor,
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       sessionId: started.data.session.id,
     })

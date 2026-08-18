@@ -3,9 +3,9 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { Hono } from "hono"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
@@ -43,14 +43,14 @@ async function withDatabase<T>(
 }
 
 async function createVerifiedUser(database: StorageDatabase, domain: string) {
-  const instance = instanceCreate({
-    context: instanceSystemContextCreate("system"),
+  const realm = realmCreate({
+    context: realmSystemContextCreate("system"),
     database,
     input: { domain, name: domain },
   })
-  expect(instance.success).toBe(true)
-  if (!instance.success) throw new Error(instance.errorMessage)
-  const context = instanceTenantContextCreate(instance.data.instance.id, "anonymous")
+  expect(realm.success).toBe(true)
+  if (!realm.success) throw new Error(realm.errorMessage)
+  const context = realmTenantContextCreate(realm.data.realm.id, "anonymous")
   let token = ""
   let userId = ""
   const registered = passwordRegister({
@@ -62,30 +62,28 @@ async function createVerifiedUser(database: StorageDatabase, domain: string) {
       profile: { displayName: "Session User" },
       userName: "session-user",
     },
-    instanceId: instance.data.instance.id,
+    realmId: realm.data.realm.id,
     onVerificationToken: (delivery) => {
       token = delivery.token
       userId = delivery.userId
     },
   })
   expect(registered.success).toBe(true)
-  expect(
-    passwordEmailVerify({ context, database, input: { token }, instanceId: instance.data.instance.id }).success,
-  ).toBe(true)
-  return { context, instance: instance.data.instance, userId }
+  expect(passwordEmailVerify({ context, database, input: { token }, realmId: realm.data.realm.id }).success).toBe(true)
+  return { context, realm: realm.data.realm, userId }
 }
 
 function issueTestSession(
   database: StorageDatabase,
   runtime: ReturnType<typeof platformTestkitCreate>["runtime"],
-  instanceId: string,
+  realmId: string,
   userId: string,
 ) {
   const issued = sessionIssue({
     assurance: "authenticated",
     authenticationMethod: "password",
     database,
-    instanceId,
+    realmId,
     runtime,
     userId,
   })
@@ -95,7 +93,7 @@ function issueTestSession(
 
 test("password success issues an opaque session and rotation rejects replay", async () => {
   await withDatabase(async (database, testkit) => {
-    const { context, instance } = await createVerifiedUser(database, "sessions.example.com")
+    const { context, realm } = await createVerifiedUser(database, "sessions.example.com")
     const loggedIn = passwordLogin({
       context,
       database,
@@ -106,7 +104,7 @@ test("password success issues an opaque session and rotation rejects replay", as
         userAgent: "test-agent",
       },
       input: { identifier: "session-user", password: "Correct Horse 12" },
-      instanceId: instance.id,
+      realmId: realm.id,
       sessionCreate: sessionPasswordCreate(),
     })
     expect(loggedIn.success).toBe(true)
@@ -122,14 +120,14 @@ test("password success issues an opaque session and rotation rejects replay", as
       userAgent: "test-agent",
     })
 
-    const authenticated = sessionAuthenticate({ database, instanceId: instance.id, token: oldToken })
+    const authenticated = sessionAuthenticate({ database, realmId: realm.id, token: oldToken })
     expect(authenticated.success).toBe(true)
     testkit.advance(1)
-    const rotated = sessionRotate({ database, instanceId: instance.id, token: oldToken })
+    const rotated = sessionRotate({ database, realmId: realm.id, token: oldToken })
     expect(rotated.success).toBe(true)
     if (!rotated.success) return
-    expect(sessionAuthenticate({ database, instanceId: instance.id, token: oldToken }).success).toBe(false)
-    expect(sessionAuthenticate({ database, instanceId: instance.id, token: rotated.data.token }).success).toBe(true)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: oldToken }).success).toBe(false)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: rotated.data.token }).success).toBe(true)
 
     testkit.advance(1)
     const second = sessionIssue({
@@ -137,7 +135,7 @@ test("password success issues an opaque session and rotation rejects replay", as
       authenticationMethod: "password",
       database,
       deviceMetadata: { description: "Phone" },
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       userId: loggedIn.data.authentication.userId,
     })
@@ -146,7 +144,7 @@ test("password success issues an opaque session and rotation rejects replay", as
     const allSessions = sessionList({
       currentSessionId: second.data.session.id,
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: loggedIn.data.authentication.userId,
     })
     expect(allSessions.success).toBe(true)
@@ -156,7 +154,7 @@ test("password success issues an opaque session and rotation rejects replay", as
     const recentSessions = sessionRecentList({
       currentSessionId: second.data.session.id,
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       userId: loggedIn.data.authentication.userId,
     })
     expect(recentSessions.success).toBe(true)
@@ -169,14 +167,14 @@ test("password success issues an opaque session and rotation rejects replay", as
       authenticationMethod: "password",
       database,
       expiresAt: testkit.runtime.now() + 1,
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       userId: loggedIn.data.authentication.userId,
     })
     expect(expiring.success).toBe(true)
     if (!expiring.success) return
     testkit.advance(2)
-    expect(sessionRotate({ database, instanceId: instance.id, token: expiring.data.token }).success).toBe(false)
+    expect(sessionRotate({ database, realmId: realm.id, token: expiring.data.token }).success).toBe(false)
   })
 })
 
@@ -186,15 +184,15 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
     const beta = await createVerifiedUser(database, "sessions-list-beta.example.com")
     const sessions = []
     for (let index = 0; index < 6; index += 1) {
-      sessions.push(issueTestSession(database, testkit.runtime, alpha.instance.id, alpha.userId))
+      sessions.push(issueTestSession(database, testkit.runtime, alpha.realm.id, alpha.userId))
       testkit.advance(1)
     }
-    const otherInstance = issueTestSession(database, testkit.runtime, beta.instance.id, beta.userId)
+    const otherRealm = issueTestSession(database, testkit.runtime, beta.realm.id, beta.userId)
 
     const limited = sessionList({
       currentSessionId: sessions[5]!.session.id,
       database,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       limit: 1,
       userId: alpha.userId,
     })
@@ -206,7 +204,7 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
     const all = sessionList({
       currentSessionId: "unknown-session",
       database,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       userId: alpha.userId,
     })
     expect(all.success).toBe(true)
@@ -219,7 +217,7 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
     const recent = sessionRecentList({
       currentSessionId: sessions[5]!.session.id,
       database,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       userId: alpha.userId,
     })
     expect(recent.success).toBe(true)
@@ -237,40 +235,40 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
 
     const differentUser = sessionList({
       database,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       userId: beta.userId,
     })
     expect(differentUser).toMatchObject({ success: true, data: { total: 0, sessions: [] } })
 
-    const differentInstance = sessionList({
+    const differentRealm = sessionList({
       database,
-      instanceId: beta.instance.id,
+      realmId: beta.realm.id,
       userId: beta.userId,
     })
-    expect(differentInstance).toMatchObject({ success: true, data: { total: 1 } })
-    if (differentInstance.success) expect(differentInstance.data.sessions[0]!.id).toBe(otherInstance.session.id)
+    expect(differentRealm).toMatchObject({ success: true, data: { total: 1 } })
+    if (differentRealm.success) expect(differentRealm.data.sessions[0]!.id).toBe(otherRealm.session.id)
 
-    expect(sessionList({ database, instanceId: beta.instance.id, userId: alpha.userId })).toMatchObject({
+    expect(sessionList({ database, realmId: beta.realm.id, userId: alpha.userId })).toMatchObject({
       success: true,
       data: { sessions: [], total: 0 },
     })
 
     for (const limit of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
-      expect(sessionList({ database, instanceId: alpha.instance.id, limit, userId: alpha.userId }).success).toBe(false)
+      expect(sessionList({ database, realmId: alpha.realm.id, limit, userId: alpha.userId }).success).toBe(false)
     }
-    expect(sessionList({ database, instanceId: "", userId: alpha.userId }).success).toBe(false)
-    expect(sessionList({ database, instanceId: alpha.instance.id, userId: "" }).success).toBe(false)
+    expect(sessionList({ database, realmId: "", userId: alpha.userId }).success).toBe(false)
+    expect(sessionList({ database, realmId: alpha.realm.id, userId: "" }).success).toBe(false)
   })
 })
 
 test("multi-factor sessions carry assurance and satisfy protected-session requirements", async () => {
   await withDatabase(async (database, testkit) => {
-    const { context, instance } = await createVerifiedUser(database, "sessions-assurance.example.com")
+    const { context, realm } = await createVerifiedUser(database, "sessions-assurance.example.com")
     const loggedIn = passwordLogin({
       context,
       database,
       input: { identifier: "session-user", password: "Correct Horse 12" },
-      instanceId: instance.id,
+      realmId: realm.id,
       sessionCreate: sessionPasswordCreate(),
     })
     expect(loggedIn.success).toBe(true)
@@ -282,7 +280,7 @@ test("multi-factor sessions carry assurance and satisfy protected-session requir
       authenticationMethod: "password",
       database,
       deviceMetadata: { description: "Authenticator" },
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       userId: loggedIn.data.authentication.userId,
     })
@@ -292,15 +290,15 @@ test("multi-factor sessions carry assurance and satisfy protected-session requir
 
     const protectedApp = new Hono()
     protectedApp.get(
-      "/instances/:instanceId/strong",
+      "/realms/:realmId/strong",
       sessionProtectedMiddlewareCreate({ database, minimumAssurance: "multi_factor" }),
       (request) => request.json({ ok: true }),
     )
-    const response = await protectedApp.request(`http://server.test/instances/${instance.id}/strong`, {
+    const response = await protectedApp.request(`http://server.test/realms/${realm.id}/strong`, {
       headers: { authorization: `Bearer ${elevated.data.token}` },
     })
     expect(response.status).toBe(200)
-    const weakerResponse = await protectedApp.request(`http://server.test/instances/${instance.id}/strong`, {
+    const weakerResponse = await protectedApp.request(`http://server.test/realms/${realm.id}/strong`, {
       headers: { authorization: `Bearer ${loggedIn.data.session.token}` },
     })
     expect(weakerResponse.status).toBe(403)
@@ -310,7 +308,7 @@ test("multi-factor sessions carry assurance and satisfy protected-session requir
       authenticationMethod: "password",
       database,
       deviceMetadata: { userAgent: "x".repeat(513) },
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       userId: loggedIn.data.authentication.userId,
     })
@@ -322,11 +320,11 @@ test("session revocation is idempotent, isolated, and audit-safe", async () => {
   await withDatabase(async (database, testkit) => {
     const alpha = await createVerifiedUser(database, "sessions-revoke-alpha.example.com")
     const beta = await createVerifiedUser(database, "sessions-revoke-beta.example.com")
-    const issued = issueTestSession(database, testkit.runtime, alpha.instance.id, alpha.userId)
+    const issued = issueTestSession(database, testkit.runtime, alpha.realm.id, alpha.userId)
 
     const revoked = sessionRevoke({
       database,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       reason: "security review",
       sessionId: issued.session.id,
       userId: alpha.userId,
@@ -345,7 +343,7 @@ test("session revocation is idempotent, isolated, and audit-safe", async () => {
 
     const repeated = sessionRevoke({
       database,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       sessionId: issued.session.id,
       userId: alpha.userId,
     })
@@ -361,7 +359,7 @@ test("session revocation is idempotent, isolated, and audit-safe", async () => {
     expect(
       sessionRevoke({
         database,
-        instanceId: alpha.instance.id,
+        realmId: alpha.realm.id,
         sessionId: issued.session.id,
         userId: "different-user",
       }).success,
@@ -369,7 +367,7 @@ test("session revocation is idempotent, isolated, and audit-safe", async () => {
     expect(
       sessionRevoke({
         database,
-        instanceId: beta.instance.id,
+        realmId: beta.realm.id,
         sessionId: issued.session.id,
         userId: alpha.userId,
       }).success,
@@ -379,19 +377,19 @@ test("session revocation is idempotent, isolated, and audit-safe", async () => {
 
 test("revoke-all preserves the requested session and rolls back on event failure", async () => {
   await withDatabase(async (database, testkit) => {
-    const { instance, userId } = await createVerifiedUser(database, "sessions-revoke-all.example.com")
-    const sessions = [issueTestSession(database, testkit.runtime, instance.id, userId)]
+    const { realm, userId } = await createVerifiedUser(database, "sessions-revoke-all.example.com")
+    const sessions = [issueTestSession(database, testkit.runtime, realm.id, userId)]
     testkit.advance(1)
-    sessions.push(issueTestSession(database, testkit.runtime, instance.id, userId))
+    sessions.push(issueTestSession(database, testkit.runtime, realm.id, userId))
     testkit.advance(1)
-    sessions.push(issueTestSession(database, testkit.runtime, instance.id, userId))
+    sessions.push(issueTestSession(database, testkit.runtime, realm.id, userId))
     testkit.advance(1)
-    sessions.push(issueTestSession(database, testkit.runtime, instance.id, userId))
+    sessions.push(issueTestSession(database, testkit.runtime, realm.id, userId))
     testkit.advance(1)
     expect(
       sessionRevoke({
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         sessionId: sessions[0]!.session.id,
         userId,
       }).success,
@@ -400,12 +398,12 @@ test("revoke-all preserves the requested session and rolls back on event failure
     const allRevoked = sessionRevokeAll({
       database,
       exceptSessionId: sessions[1]!.session.id,
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       userId,
     })
     expect(allRevoked).toEqual({ data: { revoked: true }, success: true })
-    const listed = sessionList({ database, instanceId: instance.id, userId })
+    const listed = sessionList({ database, realmId: realm.id, userId })
     expect(listed.success).toBe(true)
     if (!listed.success) return
     expect(listed.data.sessions.find(({ id }) => id === sessions[0]!.session.id)?.revokedAt).not.toBeNull()
@@ -426,22 +424,22 @@ test("revoke-all preserves the requested session and rolls back on event failure
     expect(revokeAllEvents.map(({ command_index }) => command_index)).toEqual([0, 1])
     expect(new Set(revokeAllEvents.map(({ occurred_at }) => occurred_at)).size).toBe(1)
 
-    const rollbackSessions = [issueTestSession(database, testkit.runtime, instance.id, userId)]
+    const rollbackSessions = [issueTestSession(database, testkit.runtime, realm.id, userId)]
     testkit.advance(1)
-    rollbackSessions.push(issueTestSession(database, testkit.runtime, instance.id, userId))
+    rollbackSessions.push(issueTestSession(database, testkit.runtime, realm.id, userId))
     database.sqlite.run(
       "CREATE TRIGGER reject_session_revoke_all_events BEFORE INSERT ON events WHEN NEW.event_type = 'session.revoked_all' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
     )
     const failed = sessionRevokeAll({
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       userId,
     })
     expect(failed.success).toBe(false)
     database.sqlite.run("DROP TRIGGER reject_session_revoke_all_events")
 
-    const afterRollback = sessionList({ database, instanceId: instance.id, userId })
+    const afterRollback = sessionList({ database, realmId: realm.id, userId })
     expect(afterRollback.success).toBe(true)
     if (!afterRollback.success) return
     for (const issued of rollbackSessions) {
@@ -455,9 +453,9 @@ test("revoke-all preserves the requested session and rolls back on event failure
 
 test("the password HTTP success seam returns a session with device metadata", async () => {
   await withDatabase(async (database) => {
-    const { instance } = await createVerifiedUser(database, "sessions-http.example.com")
+    const { realm } = await createVerifiedUser(database, "sessions-http.example.com")
     const app = passwordServerAppCreate({ database })
-    const response = await app.request(`https://sessions-http.example.com/instances/${instance.id}/password/login`, {
+    const response = await app.request(`https://sessions-http.example.com/realms/${realm.id}/password/login`, {
       body: JSON.stringify({ identifier: "session-user", password: "Correct Horse 12" }),
       headers: {
         "content-type": "application/json",
@@ -483,13 +481,13 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
       context: alpha.context,
       database,
       input: { identifier: "session-user", password: "Correct Horse 12" },
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       sessionCreate: sessionPasswordCreate(),
     })
     expect(alphaLogin.success).toBe(true)
     if (!alphaLogin.success || alphaLogin.data.session === undefined) return
     const token = alphaLogin.data.session.token
-    expect(sessionAuthenticate({ database, instanceId: beta.instance.id, token }).success).toBe(false)
+    expect(sessionAuthenticate({ database, realmId: beta.realm.id, token }).success).toBe(false)
 
     const app = sessionServerAppCreate({ database })
     const client = sessionApiClientCreate({
@@ -497,33 +495,33 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
       fetch: async (input, init) => app.request(input.toString(), init),
       token,
     })
-    const current = await client.sessionCurrent(alpha.instance.id)
+    const current = await client.sessionCurrent(alpha.realm.id)
     expect(current.success).toBe(true)
-    const listed = await client.sessionList(alpha.instance.id)
+    const listed = await client.sessionList(alpha.realm.id)
     expect(listed).toMatchObject({ success: true, data: { total: 1 } })
-    const protectedResponse = await app.request(`http://server.test/instances/${alpha.instance.id}/protected`, {
+    const protectedResponse = await app.request(`http://server.test/realms/${alpha.realm.id}/protected`, {
       headers: { authorization: `Bearer ${token}` },
     })
     expect(protectedResponse.status).toBe(200)
     const protectedBody = (await protectedResponse.json()) as { session: { id: string } }
     expect(protectedBody.session.id).toBe(alphaLogin.data.session.session.id)
-    expect((await app.request(`http://server.test/instances/${alpha.instance.id}/protected`)).status).toBe(401)
+    expect((await app.request(`http://server.test/realms/${alpha.realm.id}/protected`)).status).toBe(401)
 
     const revoked = sessionRevoke({
       database,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       sessionId: alphaLogin.data.session.session.id,
       userId: alphaLogin.data.authentication.userId,
     })
     expect(revoked).toEqual({ data: { revoked: true }, success: true })
-    expect(sessionAuthenticate({ database, instanceId: alpha.instance.id, token }).success).toBe(false)
+    expect(sessionAuthenticate({ database, realmId: alpha.realm.id, token }).success).toBe(false)
 
     const short = sessionIssue({
       assurance: "authenticated",
       authenticationMethod: "password",
       executor: database.db,
       expiresAt: testkit.runtime.now() + 10,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       runtime: testkit.runtime,
       userId: alphaLogin.data.authentication.userId,
     })
@@ -532,23 +530,21 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
       assurance: "authenticated",
       authenticationMethod: "password",
       executor: database.db,
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       userId: alphaLogin.data.authentication.userId,
     })
     expect(ordinary.success).toBe(true)
     if (!ordinary.success) return
     testkit.advance(11)
-    expect(sessionAuthenticate({ database, instanceId: alpha.instance.id, token: short.data.token }).success).toBe(
-      false,
-    )
+    expect(sessionAuthenticate({ database, realmId: alpha.realm.id, token: short.data.token }).success).toBe(false)
 
     const protectedApp = new Hono()
     protectedApp.get(
-      "/instances/:instanceId/strong",
+      "/realms/:realmId/strong",
       sessionProtectedMiddlewareCreate({ database, minimumAssurance: "multi_factor" }),
       (context) => context.json({ ok: true }),
     )
-    const strongResponse = await protectedApp.request(`http://server.test/instances/${alpha.instance.id}/strong`, {
+    const strongResponse = await protectedApp.request(`http://server.test/realms/${alpha.realm.id}/strong`, {
       headers: { authorization: `Bearer ${ordinary.data.token}` },
     })
     expect(strongResponse.status).toBe(403)
@@ -558,21 +554,21 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
         actorId: alphaLogin.data.authentication.userId,
         assurance: "authenticated",
         authenticationMethod: "trusted",
-        instanceId: alpha.instance.id,
+        realmId: alpha.realm.id,
         kind: "user",
       },
-      instanceId: alpha.instance.id,
+      realmId: alpha.realm.id,
       permission: "sessions.read",
       policies: [{ effect: "allow", minimumAssurance: "multi_factor", permission: "sessions.read" }],
     })
     expect(decision).toMatchObject({ data: { allowed: false, reason: "insufficient_assurance" }, success: true })
-    expect(beta.instance.id).not.toBe(alpha.instance.id)
+    expect(beta.realm.id).not.toBe(alpha.realm.id)
   })
 })
 
 test("session issuance rolls back password success and events atomically", async () => {
   await withDatabase(async (database) => {
-    const { context, instance } = await createVerifiedUser(database, "sessions-atomic.example.com")
+    const { context, realm } = await createVerifiedUser(database, "sessions-atomic.example.com")
     database.sqlite.run(
       "CREATE TRIGGER reject_session_events BEFORE INSERT ON events WHEN NEW.aggregate_type = 'session' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
     )
@@ -581,7 +577,7 @@ test("session issuance rolls back password success and events atomically", async
       context,
       database,
       input: { identifier: "session-user", password: "Correct Horse 12" },
-      instanceId: instance.id,
+      realmId: realm.id,
       sessionCreate: sessionPasswordCreate(),
     })
     expect(failed.success).toBe(false)

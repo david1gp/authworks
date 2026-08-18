@@ -30,7 +30,7 @@ function eventInput() {
     commandIndex: 0,
     correlationId: "correlation-1",
     eventType: "user.created",
-    instanceId: "instance-1",
+    realmId: "realm-1",
     metadata: { source: "test" },
     payload: { displayName: "Ada" },
   }
@@ -59,7 +59,7 @@ test("event append rejects invalid envelope values and rolls back preceding stat
     if (!opened.success) return
 
     const invalidInputs = [
-      { instanceId: "" },
+      { realmId: "" },
       { aggregateType: "" },
       { aggregateId: "" },
       { eventType: "" },

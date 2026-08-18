@@ -4,9 +4,9 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { externalIdentityApiClientCreate } from "../../src/features/externalIdentities/client/externalIdentityApiClientCreate.js"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { externalIdentityCallback } from "../../src/features/externalIdentities/actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../../src/features/externalIdentities/actions/externalIdentityLinkComplete.js"
 import { externalIdentityLinkStart } from "../../src/features/externalIdentities/actions/externalIdentityLinkStart.js"
@@ -48,11 +48,11 @@ async function withDatabase<T>(
   }
 }
 
-async function createInstance(database: StorageDatabase, domain: string) {
-  const created = instanceCreate({ context: instanceSystemContextCreate(), database, input: { domain, name: domain } })
+async function createRealm(database: StorageDatabase, domain: string) {
+  const created = realmCreate({ context: realmSystemContextCreate(), database, input: { domain, name: domain } })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  return created.data.instance
+  return created.data.realm
 }
 
 function testPort(email = "new@example.com"): ExternalIdentityProviderPort {
@@ -91,9 +91,9 @@ function providerFetchCreate(
   return Object.assign(handler, { preconnect: fetch.preconnect })
 }
 
-async function createProvider(database: StorageDatabase, instanceId: string, allowAccountCreation = true) {
+async function createProvider(database: StorageDatabase, realmId: string, allowAccountCreation = true) {
   const created = externalIdentityProviderCreate({
-    context: instanceSystemContextCreate(),
+    context: realmSystemContextCreate(),
     database,
     input: {
       allowAccountCreation,
@@ -103,7 +103,7 @@ async function createProvider(database: StorageDatabase, instanceId: string, all
       redirectUri: "https://app.test/callback",
       type: "google",
     },
-    instanceId,
+    realmId,
   })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
@@ -112,13 +112,13 @@ async function createProvider(database: StorageDatabase, instanceId: string, all
 
 test("external identity login validates state and creates a session without exposing provider secrets", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "external-login.example.com")
-    const provider = await createProvider(database, instance.id)
+    const realm = await createRealm(database, "external-login.example.com")
+    const provider = await createProvider(database, realm.id)
     const ports = { google: testPort() }
     const started = externalIdentityStart({
       database,
       input: {},
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       runtime: testkit.runtime,
@@ -129,7 +129,7 @@ test("external identity login validates state and creates a session without expo
     const callback = await externalIdentityCallback({
       code: "provider-code",
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       state,
@@ -140,14 +140,12 @@ test("external identity login validates state and creates a session without expo
     expect(callback.data.session).toBeDefined()
     if (callback.data.session === undefined) return
     expect(callback.data.session.session.authenticationMethod).toBe("external_identity")
-    expect(sessionAuthenticate({ database, instanceId: instance.id, token: callback.data.session.token }).success).toBe(
-      true,
-    )
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: callback.data.session.token }).success).toBe(true)
     expect(
       externalIdentityUnlink({
         database,
         externalSubject: "subject-1",
-        instanceId: instance.id,
+        realmId: realm.id,
         providerId: provider.id,
         session: callback.data.session.session,
         userId: callback.data.authentication.userId,
@@ -161,7 +159,7 @@ test("external identity login validates state and creates a session without expo
         await externalIdentityCallback({
           code: "provider-code",
           database,
-          instanceId: instance.id,
+          realmId: realm.id,
           providerId: provider.id,
           providerPorts: ports,
           state,
@@ -174,10 +172,10 @@ test("external identity login validates state and creates a session without expo
 
 test("required MFA turns external identity authentication into a TOTP challenge", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "external-mfa.example.com")
-    const provider = await createProvider(database, instance.id)
+    const realm = await createRealm(database, "external-mfa.example.com")
+    const provider = await createProvider(database, realm.id)
     const ports = { google: testPort() }
-    const context = instanceTenantContextCreate(instance.id, "anonymous")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
     let verificationToken = ""
     const registered = passwordRegister({
       context,
@@ -188,7 +186,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
         profile: {},
         userName: "external-mfa-user",
       },
-      instanceId: instance.id,
+      realmId: realm.id,
       onVerificationToken: ({ token }) => {
         verificationToken = token
       },
@@ -199,14 +197,14 @@ test("required MFA turns external identity authentication into a TOTP challenge"
       context,
       database,
       input: { token: verificationToken },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(verified.success).toBe(true)
     if (!verified.success) return
     const enrollment = mfaTotpEnrollmentStart({
       database,
       encryptionSecret: "mfa-test-secret",
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
       userId: verified.data.user.id,
     })
@@ -219,7 +217,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
         database,
         encryptionSecret: "mfa-test-secret",
         input: { code: enrollmentCode.data, enrollmentId: enrollment.data.enrollment.id },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
         userId: verified.data.user.id,
       }).success,
@@ -228,7 +226,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
       context,
       database,
       input: { identifier: "external-mfa-user", password: "Correct Horse 12" },
-      instanceId: instance.id,
+      realmId: realm.id,
       runtime: testkit.runtime,
     })
     expect(login.success).toBe(true)
@@ -236,7 +234,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
     const linkStart = externalIdentityLinkStart({
       database,
       input: {},
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       session: login.data.session.session,
@@ -256,7 +254,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
     const pending = await externalIdentityCallback({
       code: "link-code",
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       state: linkState,
@@ -268,7 +266,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
       externalIdentityLinkComplete({
         database,
         input: { confirm: true, confirmationToken: pending.data.confirmationToken },
-        instanceId: instance.id,
+        realmId: realm.id,
         providerId: provider.id,
         session: login.data.session.session,
         userId: verified.data.user.id,
@@ -277,17 +275,17 @@ test("required MFA turns external identity authentication into a TOTP challenge"
     ).toBe(true)
     expect(
       mfaPolicySet({
-        context: instanceSystemContextCreate("system"),
+        context: realmSystemContextCreate("system"),
         database,
         input: { lockoutDurationMs: 900_000, maxAttempts: 3, mode: "required", totpWindow: 1 },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
       }).success,
     ).toBe(true)
     const started = externalIdentityStart({
       database,
       input: {},
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       runtime: testkit.runtime,
@@ -298,7 +296,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
     const callback = await externalIdentityCallback({
       code: "provider-code",
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       state,
@@ -317,7 +315,7 @@ test("required MFA turns external identity authentication into a TOTP challenge"
         database,
         encryptionSecret: "mfa-test-secret",
         input: { code: challengeCode.data, token: callback.data.challenge.token },
-        instanceId: instance.id,
+        realmId: realm.id,
         runtime: testkit.runtime,
       }),
     ).toMatchObject({
@@ -329,10 +327,10 @@ test("required MFA turns external identity authentication into a TOTP challenge"
 
 test("external identities never auto-link by email and linking requires confirmation", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "external-link.example.com")
-    const provider = await createProvider(database, instance.id)
+    const realm = await createRealm(database, "external-link.example.com")
+    const provider = await createProvider(database, realm.id)
     const ports = { google: testPort("existing@example.com") }
-    const anonymous = instanceTenantContextCreate(instance.id, "anonymous")
+    const anonymous = realmTenantContextCreate(realm.id, "anonymous")
     let token = ""
     const registered = passwordRegister({
       context: anonymous,
@@ -343,19 +341,19 @@ test("external identities never auto-link by email and linking requires confirma
         profile: { displayName: "Existing" },
         userName: "existing",
       },
-      instanceId: instance.id,
+      realmId: realm.id,
       onVerificationToken: (delivery) => {
         token = delivery.token
       },
     })
     expect(registered.success).toBe(true)
-    expect(
-      passwordEmailVerify({ context: anonymous, database, input: { token }, instanceId: instance.id }).success,
-    ).toBe(true)
+    expect(passwordEmailVerify({ context: anonymous, database, input: { token }, realmId: realm.id }).success).toBe(
+      true,
+    )
     const conflictStart = externalIdentityStart({
       database,
       input: {},
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       runtime: testkit.runtime,
@@ -366,7 +364,7 @@ test("external identities never auto-link by email and linking requires confirma
     const conflict = await externalIdentityCallback({
       code: "code",
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       state: conflictState,
@@ -380,14 +378,14 @@ test("external identities never auto-link by email and linking requires confirma
       context: anonymous,
       database,
       input: { identifier: "existing", password: "Correct Horse 12" },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(login.success).toBe(true)
     if (!login.success || login.data.session === undefined) return
     expect(
       externalIdentityList({
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         session: login.data.session.session,
         userId: "another-user",
       }).success,
@@ -395,7 +393,7 @@ test("external identities never auto-link by email and linking requires confirma
     const linkStart = externalIdentityLinkStart({
       database,
       input: {},
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       session: login.data.session.session,
@@ -408,7 +406,7 @@ test("external identities never auto-link by email and linking requires confirma
     const pending = await externalIdentityCallback({
       code: "link-code",
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       state: linkState,
@@ -419,7 +417,7 @@ test("external identities never auto-link by email and linking requires confirma
     expect(
       externalIdentityList({
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         session: login.data.session.session,
         userId: login.data.authentication.userId,
       }),
@@ -427,7 +425,7 @@ test("external identities never auto-link by email and linking requires confirma
     const linked = externalIdentityLinkComplete({
       database,
       input: { confirm: true, confirmationToken: pending.data.confirmationToken },
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       session: login.data.session.session,
       userId: login.data.authentication.userId,
@@ -438,7 +436,7 @@ test("external identities never auto-link by email and linking requires confirma
       externalIdentityLinkComplete({
         database,
         input: { confirm: true, confirmationToken: pending.data.confirmationToken },
-        instanceId: instance.id,
+        realmId: realm.id,
         providerId: provider.id,
         session: login.data.session.session,
         userId: login.data.authentication.userId,
@@ -448,7 +446,7 @@ test("external identities never auto-link by email and linking requires confirma
     expect(
       externalIdentityList({
         database,
-        instanceId: instance.id,
+        realmId: realm.id,
         session: login.data.session.session,
         userId: login.data.authentication.userId,
       }),
@@ -457,7 +455,7 @@ test("external identities never auto-link by email and linking requires confirma
       externalIdentityUnlink({
         database,
         externalSubject: "subject-1",
-        instanceId: instance.id,
+        realmId: realm.id,
         providerId: provider.id,
         session: login.data.session.session,
         userId: login.data.authentication.userId,
@@ -469,13 +467,13 @@ test("external identities never auto-link by email and linking requires confirma
 
 test("external identity account and event writes roll back together", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "external-atomic.example.com")
-    const provider = await createProvider(database, instance.id)
+    const realm = await createRealm(database, "external-atomic.example.com")
+    const provider = await createProvider(database, realm.id)
     const ports = { google: testPort() }
     const started = externalIdentityStart({
       database,
       input: {},
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       runtime: testkit.runtime,
@@ -490,7 +488,7 @@ test("external identity account and event writes roll back together", async () =
     const callback = await externalIdentityCallback({
       code: "code",
       database,
-      instanceId: instance.id,
+      realmId: realm.id,
       providerId: provider.id,
       providerPorts: ports,
       state,
@@ -523,13 +521,13 @@ test("provider adapters use fixed endpoints and reject invalid state isolation",
   expect(url.success).toBe(true)
   if (url.success) expect(url.data).toStartWith("https://accounts.google.com/o/oauth2/v2/auth?")
   await withDatabase(async (database, testkit) => {
-    const alpha = await createInstance(database, "external-alpha.example.com")
-    const beta = await createInstance(database, "external-beta.example.com")
+    const alpha = await createRealm(database, "external-alpha.example.com")
+    const beta = await createRealm(database, "external-beta.example.com")
     const provider = await createProvider(database, alpha.id)
     const started = externalIdentityStart({
       database,
       input: {},
-      instanceId: alpha.id,
+      realmId: alpha.id,
       providerId: provider.id,
       providerPorts: { google: testPort() },
       runtime: testkit.runtime,
@@ -542,7 +540,7 @@ test("provider adapters use fixed endpoints and reject invalid state isolation",
         await externalIdentityCallback({
           code: "code",
           database,
-          instanceId: beta.id,
+          realmId: beta.id,
           providerId: provider.id,
           providerPorts: { google: testPort() },
           state,
@@ -643,7 +641,7 @@ test("provider adapters reject incomplete token responses and safely handle GitH
 
 test("external identity HTTP, client, and CLI surfaces keep configuration and session contracts public-safe", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "external-http.example.com")
+    const realm = await createRealm(database, "external-http.example.com")
     const app = externalIdentityServerAppCreate({
       database,
       providerPorts: { google: testPort() },
@@ -654,7 +652,7 @@ test("external identity HTTP, client, and CLI surfaces keep configuration and se
       fetch: async (input, init) => app.request(input.toString(), init),
       token: "system-secret",
     })
-    const created = await client.externalIdentityProviderCreate(instance.id, {
+    const created = await client.externalIdentityProviderCreate(realm.id, {
       allowAccountCreation: true,
       clientId: "client-id",
       clientSecret: "client-secret",
@@ -665,13 +663,13 @@ test("external identity HTTP, client, and CLI surfaces keep configuration and se
     expect(created.success).toBe(true)
     if (!created.success) return
     expect(JSON.stringify(created.data)).not.toContain("client-secret")
-    const listed = await client.externalIdentityProviderPublicList(instance.id)
+    const listed = await client.externalIdentityProviderPublicList(realm.id)
     expect(listed).toMatchObject({ success: true, data: { total: 1 } })
-    const started = await client.externalIdentityStart(instance.id, created.data.provider.id)
+    const started = await client.externalIdentityStart(realm.id, created.data.provider.id)
     expect(started.success).toBe(true)
     if (!started.success) return
     const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
-    const callback = await client.externalIdentityCallback(instance.id, created.data.provider.id, "code", state)
+    const callback = await client.externalIdentityCallback(realm.id, created.data.provider.id, "code", state)
     expect(callback).toMatchObject({ success: true, data: { kind: "authenticated" } })
   })
   const helpProcess = Bun.spawn(["bun", "src/outputs/cli.ts", "external-identities", "--help"], {

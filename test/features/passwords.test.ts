@@ -2,9 +2,9 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
-import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
-import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { passwordChange } from "../../src/features/passwords/actions/passwordChange.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
@@ -39,15 +39,15 @@ async function withDatabase<T>(
   }
 }
 
-async function createInstance(database: StorageDatabase, domain: string) {
-  const created = instanceCreate({
-    context: instanceSystemContextCreate("system"),
+async function createRealm(database: StorageDatabase, domain: string) {
+  const created = realmCreate({
+    context: realmSystemContextCreate("system"),
     database,
     input: { domain, name: domain },
   })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
-  return created.data.instance
+  return created.data.realm
 }
 
 function registrationInput(email = "ada@example.com", userName = "ada", password = "Correct Horse 12") {
@@ -61,14 +61,14 @@ function registrationInput(email = "ada@example.com", userName = "ada", password
 
 test("password registration, email verification, login, change, recovery, and lockout are complete", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "passwords.example.com")
-    const anonymous = instanceTenantContextCreate(instance.id, "anonymous")
+    const realm = await createRealm(database, "passwords.example.com")
+    const anonymous = realmTenantContextCreate(realm.id, "anonymous")
     let verificationToken = ""
     const registered = passwordRegister({
       context: anonymous,
       database,
       input: registrationInput(),
-      instanceId: instance.id,
+      realmId: realm.id,
       onVerificationToken: ({ token }) => {
         verificationToken = token
       },
@@ -83,7 +83,7 @@ test("password registration, email verification, login, change, recovery, and lo
       context: anonymous,
       database,
       input: { identifier: "ada", password: "Correct Horse 12" },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(beforeVerification).toEqual({
       errorMessage: "The credentials are invalid.",
@@ -95,14 +95,14 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { identifier: "unknown", password: "Correct Horse 12" },
-        instanceId: instance.id,
+        realmId: realm.id,
       }),
     ).toEqual(beforeVerification)
     const verified = passwordEmailVerify({
       context: anonymous,
       database,
       input: { token: verificationToken },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(verified.success).toBe(true)
     if (!verified.success) return
@@ -112,7 +112,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { token: verificationToken },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
 
@@ -120,7 +120,7 @@ test("password registration, email verification, login, change, recovery, and lo
       context: anonymous,
       database,
       input: { identifier: " ADA ", password: "Correct Horse 12" },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(loggedIn.success).toBe(true)
     if (!loggedIn.success) return
@@ -130,7 +130,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { identifier: "ada", password: "wrong password" },
-        instanceId: instance.id,
+        realmId: realm.id,
       })
       expect(failed.success).toBe(false)
     }
@@ -139,7 +139,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { identifier: "ada", password: "Correct Horse 12" },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     testkit.advance(15 * 60 * 1_000)
@@ -148,7 +148,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { identifier: "ada", password: "Correct Horse 12" },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(true)
 
@@ -156,7 +156,7 @@ test("password registration, email verification, login, change, recovery, and lo
       context: anonymous,
       database,
       input: { currentPassword: "Correct Horse 12", newPassword: "New Correct Horse 12" },
-      instanceId: instance.id,
+      realmId: realm.id,
       userId,
     })
     expect(changed).toEqual({ data: { changed: true }, success: true })
@@ -165,7 +165,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { identifier: "ada", password: "Correct Horse 12" },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
 
@@ -174,7 +174,7 @@ test("password registration, email verification, login, change, recovery, and lo
       context: anonymous,
       database,
       input: { email: "ADA@example.com" },
-      instanceId: instance.id,
+      realmId: realm.id,
       onRecoveryToken: ({ token }) => {
         recoveryToken = token
       },
@@ -185,7 +185,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { email: "unknown@example.com" },
-        instanceId: instance.id,
+        realmId: realm.id,
       }),
     ).toEqual({ data: { accepted: true }, success: true })
     expect(recoveryToken).toHaveLength(43)
@@ -194,7 +194,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { newPassword: "Recovered Horse 12", token: recoveryToken },
-        instanceId: instance.id,
+        realmId: realm.id,
       }),
     ).toEqual({ data: { changed: true }, success: true })
     expect(
@@ -202,7 +202,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { newPassword: "Recovered Horse 12", token: recoveryToken },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     expect(
@@ -210,7 +210,7 @@ test("password registration, email verification, login, change, recovery, and lo
         context: anonymous,
         database,
         input: { identifier: "ada", password: "Recovered Horse 12" },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(true)
     const passwordEvents = database.db
@@ -226,17 +226,17 @@ test("password registration, email verification, login, change, recovery, and lo
 
 test("password identifiers and tokens stay tenant scoped and registration resists enumeration", async () => {
   await withDatabase(async (database) => {
-    const alpha = await createInstance(database, "passwords-alpha.example.com")
-    const beta = await createInstance(database, "passwords-beta.example.com")
-    const alphaContext = instanceTenantContextCreate(alpha.id, "anonymous")
-    const betaContext = instanceTenantContextCreate(beta.id, "anonymous")
+    const alpha = await createRealm(database, "passwords-alpha.example.com")
+    const beta = await createRealm(database, "passwords-beta.example.com")
+    const alphaContext = realmTenantContextCreate(alpha.id, "anonymous")
+    const betaContext = realmTenantContextCreate(beta.id, "anonymous")
     let token = ""
     expect(
       passwordRegister({
         context: alphaContext,
         database,
         input: registrationInput(),
-        instanceId: alpha.id,
+        realmId: alpha.id,
         onVerificationToken: (delivery) => {
           token = delivery.token
         },
@@ -246,10 +246,10 @@ test("password identifiers and tokens stay tenant scoped and registration resist
       context: alphaContext,
       database,
       input: registrationInput(),
-      instanceId: alpha.id,
+      realmId: alpha.id,
     })
     expect(duplicate).toEqual({ data: { accepted: true, verificationRequired: true }, success: true })
-    expect(passwordEmailVerify({ context: betaContext, database, input: { token }, instanceId: beta.id }).success).toBe(
+    expect(passwordEmailVerify({ context: betaContext, database, input: { token }, realmId: beta.id }).success).toBe(
       false,
     )
     expect(
@@ -257,7 +257,7 @@ test("password identifiers and tokens stay tenant scoped and registration resist
         context: betaContext,
         database,
         input: { identifier: "ada@example.com", password: "Correct Horse 12" },
-        instanceId: beta.id,
+        realmId: beta.id,
       }).success,
     ).toBe(false)
     expect(
@@ -265,7 +265,7 @@ test("password identifiers and tokens stay tenant scoped and registration resist
         context: alphaContext,
         database,
         input: { email: "missing@example.com" },
-        instanceId: alpha.id,
+        realmId: alpha.id,
       }),
     ).toEqual({ data: { accepted: true }, success: true })
     expect(
@@ -273,7 +273,7 @@ test("password identifiers and tokens stay tenant scoped and registration resist
         context: betaContext,
         database,
         input: { email: "ada@example.com" },
-        instanceId: beta.id,
+        realmId: beta.id,
       }),
     ).toEqual({ data: { accepted: true }, success: true })
   })
@@ -281,14 +281,14 @@ test("password identifiers and tokens stay tenant scoped and registration resist
 
 test("password registration treats normalized duplicate identifiers as accepted without delivery", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "passwords-duplicates.example.com")
-    const context = instanceTenantContextCreate(instance.id, "anonymous")
+    const realm = await createRealm(database, "passwords-duplicates.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
     let deliveries = 0
     const registered = passwordRegister({
       context,
       database,
       input: registrationInput(),
-      instanceId: instance.id,
+      realmId: realm.id,
       onVerificationToken: () => {
         deliveries += 1
       },
@@ -300,7 +300,7 @@ test("password registration treats normalized duplicate identifiers as accepted 
         context,
         database,
         input: registrationInput(" ADA@example.com ", "different-user"),
-        instanceId: instance.id,
+        realmId: realm.id,
         onVerificationToken: () => {
           deliveries += 1
         },
@@ -311,7 +311,7 @@ test("password registration treats normalized duplicate identifiers as accepted 
         context,
         database,
         input: registrationInput("different@example.com", " ADA "),
-        instanceId: instance.id,
+        realmId: realm.id,
         onVerificationToken: () => {
           deliveries += 1
         },
@@ -324,8 +324,8 @@ test("password registration treats normalized duplicate identifiers as accepted 
 
 test("password policy enforces each required character class at the exact length boundary", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "passwords-complexity.example.com")
-    const system = instanceSystemContextCreate("system")
+    const realm = await createRealm(database, "passwords-complexity.example.com")
+    const system = realmSystemContextCreate("system")
     expect(
       passwordPolicySet({
         context: system,
@@ -339,7 +339,7 @@ test("password policy enforces each required character class at the exact length
           requireSymbol: true,
           requireUppercase: true,
         },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(true)
 
@@ -350,7 +350,7 @@ test("password policy enforces each required character class at the exact length
           context: system,
           database,
           input: registrationInput(`invalid-${index}@example.com`, `invalid-${index}`, password),
-          instanceId: instance.id,
+          realmId: realm.id,
         }).success,
       ).toBe(false)
     }
@@ -359,7 +359,7 @@ test("password policy enforces each required character class at the exact length
         context: system,
         database,
         input: registrationInput("boundary@example.com", "boundary", "Lowercase12!"),
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(true)
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()).toEqual({ count: 1 })
@@ -368,22 +368,22 @@ test("password policy enforces each required character class at the exact length
 
 test("password recovery invalidates the previous token and remains one-time", async () => {
   await withDatabase(async (database, testkit) => {
-    const instance = await createInstance(database, "passwords-recovery.example.com")
-    const context = instanceTenantContextCreate(instance.id, "anonymous")
+    const realm = await createRealm(database, "passwords-recovery.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
     let verificationToken = ""
     expect(
       passwordRegister({
         context,
         database,
         input: registrationInput(),
-        instanceId: instance.id,
+        realmId: realm.id,
         onVerificationToken: ({ token }) => {
           verificationToken = token
         },
       }).success,
     ).toBe(true)
     expect(
-      passwordEmailVerify({ context, database, input: { token: verificationToken }, instanceId: instance.id }).success,
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
     ).toBe(true)
 
     let firstToken = ""
@@ -393,7 +393,7 @@ test("password recovery invalidates the previous token and remains one-time", as
         context,
         database,
         input: { email: "ada@example.com" },
-        instanceId: instance.id,
+        realmId: realm.id,
         onRecoveryToken: ({ token }) => {
           firstToken = token
         },
@@ -405,7 +405,7 @@ test("password recovery invalidates the previous token and remains one-time", as
         context,
         database,
         input: { email: "ada@example.com" },
-        instanceId: instance.id,
+        realmId: realm.id,
         onRecoveryToken: ({ token }) => {
           secondToken = token
         },
@@ -417,7 +417,7 @@ test("password recovery invalidates the previous token and remains one-time", as
         context,
         database,
         input: { newPassword: "First Recovery 12", token: firstToken },
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     expect(
@@ -425,7 +425,7 @@ test("password recovery invalidates the previous token and remains one-time", as
         context,
         database,
         input: { newPassword: "Second Recovery 12", token: secondToken },
-        instanceId: instance.id,
+        realmId: realm.id,
       }),
     ).toEqual({ data: { changed: true }, success: true })
   })
@@ -433,8 +433,8 @@ test("password recovery invalidates the previous token and remains one-time", as
 
 test("password changes and policy events are atomic and audit safe", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "passwords-events.example.com")
-    const system = instanceSystemContextCreate("system")
+    const realm = await createRealm(database, "passwords-events.example.com")
+    const system = realmSystemContextCreate("system")
     const policy = passwordPolicySet({
       context: system,
       database,
@@ -447,7 +447,7 @@ test("password changes and policy events are atomic and audit safe", async () =>
         requireSymbol: false,
         requireUppercase: true,
       },
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(policy.success).toBe(true)
     expect(
@@ -455,7 +455,7 @@ test("password changes and policy events are atomic and audit safe", async () =>
         context: system,
         database,
         input: registrationInput("safe@example.com", "safe", "TooShort12"),
-        instanceId: instance.id,
+        realmId: realm.id,
       }).success,
     ).toBe(false)
     database.sqlite.run(
@@ -466,7 +466,7 @@ test("password changes and policy events are atomic and audit safe", async () =>
       context: system,
       database,
       input: registrationInput("rollback@example.com", "rollback", "Valid Password 12"),
-      instanceId: instance.id,
+      realmId: realm.id,
     })
     expect(rejected.success).toBe(false)
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()).toEqual(before)
@@ -481,17 +481,17 @@ test("password changes and policy events are atomic and audit safe", async () =>
 
 test("password server and client expose generic public contracts", async () => {
   await withDatabase(async (database) => {
-    const instance = await createInstance(database, "passwords-api.example.com")
+    const realm = await createRealm(database, "passwords-api.example.com")
     const app = passwordServerAppCreate({ database, systemSecret: "system-secret" })
     const client = passwordApiClientCreate({
       baseUrl: "https://passwords-api.example.com",
       fetch: async (input, init) => app.request(input.toString(), init),
     })
-    const registered = await client.passwordRegister(instance.id, registrationInput())
+    const registered = await client.passwordRegister(realm.id, registrationInput())
     expect(registered).toEqual({ data: { accepted: true, verificationRequired: true }, success: true })
-    const invalid = await client.passwordLogin(instance.id, { identifier: "ada", password: "wrong" })
+    const invalid = await client.passwordLogin(realm.id, { identifier: "ada", password: "wrong" })
     expect(invalid.success).toBe(false)
-    const policy = await client.passwordPolicyGet(instance.id)
+    const policy = await client.passwordPolicyGet(realm.id)
     expect(policy).toEqual({
       data: {
         policy: {
@@ -512,7 +512,7 @@ test("password server and client expose generic public contracts", async () => {
       fetch: async (input, init) => app.request(input.toString(), init),
       token: "bad",
     }).passwordPolicySet(
-      instance.id,
+      realm.id,
       policy.data?.policy ?? {
         lockoutDurationMs: 900000,
         maximumAttempts: 5,
