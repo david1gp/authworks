@@ -29,6 +29,20 @@ bun run format   # biome
 bun run release  # git-cliff changelog + tag
 ```
 
+## CLI scope defaults
+
+Realm- and organization-scoped commands can use `ZITADEL_V2_REALM_ID` and `ZITADEL_V2_ORGANIZATION_ID` as default
+scope IDs:
+
+```bash
+export ZITADEL_V2_REALM_ID=realm-uuid
+export ZITADEL_V2_ORGANIZATION_ID=organization-uuid
+zitadel-v2 organizations get
+```
+
+Explicit `--realm-id` and `--organization-id` flags take precedence over their corresponding environment values. If a
+required ID is missing from both, the CLI exits with a validation error before making the request.
+
 ## Layout
 
 ```txt
