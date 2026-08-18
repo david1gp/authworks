@@ -90,6 +90,7 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
       },
       onSecurityNotification: (value) => {
         notifications.push(value.kind)
+        if (value.kind === "verified") throw new Error("notification must not roll back committed state")
       },
       runtime: testkit.runtime,
     })
@@ -149,7 +150,7 @@ test("email OTP authenticates once, applies cooldown, and calls ports after comm
       }).success,
     ).toBe(false)
 
-    testkit.advance(60_001)
+    testkit.advance(60_000)
     let replacement: { challengeId: string; code: string } | undefined
     const resent = emailOtpStart({
       context,
@@ -248,6 +249,13 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
   await withDatabase(async (database, testkit) => {
     const alpha = await createVerifiedUser(database, "email-otp-alpha.example.com")
     const beta = await createVerifiedUser(database, "email-otp-beta.example.com")
+    const failedNotifications: Array<{
+      attempts?: number
+      challengeId: string
+      instanceId: string
+      kind: "failed" | "requested" | "verified"
+      userId: string
+    }> = []
     let knownCode = ""
     const known = emailOtpStart({
       context: alpha.context,
@@ -290,10 +298,22 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
           database,
           input: { challengeId: known.data.challengeId, code: "999999" },
           instanceId: alpha.instance.id,
+          onSecurityNotification: (value) => {
+            failedNotifications.push(value)
+          },
           runtime: testkit.runtime,
         }).success,
       ).toBe(false)
     }
+    expect(failedNotifications).toEqual(
+      Array.from({ length: 5 }, (_, index) => ({
+        attempts: index + 1,
+        challengeId: known.data.challengeId,
+        instanceId: alpha.instance.id,
+        kind: "failed",
+        userId: alpha.userId,
+      })),
+    )
     expect(
       emailOtpVerify({
         context: alpha.context,
@@ -327,9 +347,74 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
         database,
         input: { challengeId: expiredChallenge, code: "000000" },
         instanceId: alpha.instance.id,
+        onSecurityNotification: (value) => {
+          failedNotifications.push(value)
+        },
         runtime: testkit.runtime,
       }).success,
     ).toBe(false)
+    expect(failedNotifications.at(-1)).toEqual({
+      attempts: 0,
+      challengeId: expiredChallenge,
+      instanceId: alpha.instance.id,
+      kind: "failed",
+      userId: alpha.userId,
+    })
+  })
+})
+
+test("email OTP invalidates an unconsumed challenge before issuing a replacement", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { context, instance } = await createVerifiedUser(database, "email-otp-replay.example.com")
+    let first: { challengeId: string; code: string } | undefined
+    const firstStarted = emailOtpStart({
+      context,
+      database,
+      input: { email: "otp@example.com" },
+      instanceId: instance.id,
+      onDelivery: (value) => {
+        first = value
+      },
+      runtime: testkit.runtime,
+    })
+    expect(firstStarted.success).toBe(true)
+    expect(first).toBeDefined()
+    if (!firstStarted.success || first === undefined) return
+
+    testkit.advance(60_000)
+    let replacement: { challengeId: string; code: string } | undefined
+    const replacementStarted = emailOtpStart({
+      context,
+      database,
+      input: { email: "otp@example.com" },
+      instanceId: instance.id,
+      onDelivery: (value) => {
+        replacement = value
+      },
+      runtime: testkit.runtime,
+    })
+    expect(replacementStarted.success).toBe(true)
+    expect(replacement).toBeDefined()
+    if (!replacementStarted.success || replacement === undefined) return
+
+    expect(
+      emailOtpVerify({
+        context,
+        database,
+        input: { challengeId: first.challengeId, code: first.code },
+        instanceId: instance.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(false)
+    expect(
+      emailOtpVerify({
+        context,
+        database,
+        input: { challengeId: replacement.challengeId, code: replacement.code },
+        instanceId: instance.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
   })
 })
 

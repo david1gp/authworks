@@ -229,6 +229,203 @@ test("organizations, roles, memberships, lifecycle, and switching stay inside an
   })
 })
 
+test("organization names and lifecycle transitions enforce their preconditions", async () => {
+  await withDatabase(async (database) => {
+    const alpha = await createInstance(database, "lifecycle-alpha.example.com")
+    const beta = await createInstance(database, "lifecycle-beta.example.com")
+    const system = instanceSystemContextCreate("system")
+
+    expect(
+      organizationCreate({
+        context: system,
+        database,
+        input: { name: "   " },
+        instanceId: alpha.id,
+      }).success,
+    ).toBe(false)
+
+    const created = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Lifecycle Org" },
+      instanceId: alpha.id,
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+
+    expect(
+      organizationCreate({
+        context: system,
+        database,
+        input: { name: " Lifecycle Org " },
+        instanceId: alpha.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationCreate({
+        context: system,
+        database,
+        input: { name: "Lifecycle Org" },
+        instanceId: beta.id,
+      }).success,
+    ).toBe(true)
+
+    expect(
+      organizationLifecycleSet({
+        context: system,
+        database,
+        input: { status: "active" },
+        instanceId: alpha.id,
+        organizationId: created.data.organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationLifecycleSet({
+        context: system,
+        database,
+        input: { status: "inactive" },
+        instanceId: alpha.id,
+        organizationId: created.data.organization.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationLifecycleSet({
+        context: system,
+        database,
+        input: { status: "inactive" },
+        instanceId: alpha.id,
+        organizationId: created.data.organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationLifecycleSet({
+        context: system,
+        database,
+        input: { status: "active" },
+        instanceId: alpha.id,
+        organizationId: created.data.organization.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationLifecycleSet({
+        context: system,
+        database,
+        input: { status: "removed" },
+        instanceId: alpha.id,
+        organizationId: created.data.organization.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationLifecycleSet({
+        context: system,
+        database,
+        input: { status: "active" },
+        instanceId: alpha.id,
+        organizationId: created.data.organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationLifecycleSet({
+        context: system,
+        database,
+        input: { status: "active" },
+        instanceId: beta.id,
+        organizationId: created.data.organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationLifecycleSet({
+        context: system,
+        database,
+        input: { status: "inactive" },
+        instanceId: alpha.id,
+        organizationId: "missing-organization",
+      }).success,
+    ).toBe(false)
+  })
+})
+
+test("membership role validation and membership identity stay tenant scoped", async () => {
+  await withDatabase(async (database) => {
+    const alpha = await createInstance(database, "membership-alpha.example.com")
+    const beta = await createInstance(database, "membership-beta.example.com")
+    const system = instanceSystemContextCreate("system")
+    const alphaOrganization = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Alpha Memberships", ownerUserId: "alpha-owner" },
+      instanceId: alpha.id,
+    })
+    const betaOrganization = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Beta Memberships" },
+      instanceId: beta.id,
+    })
+    expect(alphaOrganization.success).toBe(true)
+    expect(betaOrganization.success).toBe(true)
+    if (!alphaOrganization.success || !betaOrganization.success) return
+
+    const owner = instanceTenantContextCreate(alpha.id, "alpha-owner")
+    expect(
+      organizationMembershipCreate({
+        context: owner,
+        database,
+        input: { roles: [], userId: "member" },
+        instanceId: alpha.id,
+        organizationId: alphaOrganization.data.organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationMembershipCreate({
+        context: owner,
+        database,
+        input: { roles: ["member", "member"], userId: "member" },
+        instanceId: alpha.id,
+        organizationId: alphaOrganization.data.organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationMembershipCreate({
+        context: owner,
+        database,
+        input: { roles: ["invalid-role" as never], userId: "member" },
+        instanceId: alpha.id,
+        organizationId: alphaOrganization.data.organization.id,
+      }).success,
+    ).toBe(false)
+
+    const added = organizationMembershipCreate({
+      context: owner,
+      database,
+      input: { roles: ["member"], userId: "member" },
+      instanceId: alpha.id,
+      organizationId: alphaOrganization.data.organization.id,
+    })
+    expect(added.success).toBe(true)
+    if (!added.success) return
+    expect(
+      organizationMembershipUpdate({
+        context: owner,
+        database,
+        input: { roles: ["admin"] },
+        instanceId: alpha.id,
+        membershipId: added.data.membership.id,
+        organizationId: betaOrganization.data.organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationMembershipRemove({
+        context: owner,
+        database,
+        instanceId: alpha.id,
+        membershipId: added.data.membership.id,
+        organizationId: betaOrganization.data.organization.id,
+      }).success,
+    ).toBe(false)
+  })
+})
+
 test("invitations are hashed, one-time, atomic, and instance-scoped", async () => {
   await withDatabase(async (database, testkit) => {
     const alpha = await createInstance(database, "invite.example.com")
@@ -317,6 +514,79 @@ test("invitations are hashed, one-time, atomic, and instance-scoped", async () =
     expect(JSON.stringify(database.db.select().from(storageEventTable).all())).toContain(
       organizationEventTypes.invitationExpired,
     )
+  })
+})
+
+test("invitation replacement and acceptance remain organization-scoped", async () => {
+  await withDatabase(async (database) => {
+    const instance = await createInstance(database, "invitation-scope.example.com")
+    const system = instanceSystemContextCreate("system")
+    const alpha = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Alpha Invitations", ownerUserId: "existing-user" },
+      instanceId: instance.id,
+    })
+    const beta = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Beta Invitations" },
+      instanceId: instance.id,
+    })
+    expect(alpha.success).toBe(true)
+    expect(beta.success).toBe(true)
+    if (!alpha.success || !beta.success) return
+
+    const original = organizationInvitationCreate({
+      context: system,
+      database,
+      input: { email: "Person@Example.com", roles: ["member"] },
+      instanceId: instance.id,
+      organizationId: alpha.data.organization.id,
+    })
+    expect(original.success).toBe(true)
+    if (!original.success) return
+
+    const replacement = organizationInvitationCreate({
+      context: system,
+      database,
+      input: { email: " person@example.com ", roles: ["guest"] },
+      instanceId: instance.id,
+      organizationId: alpha.data.organization.id,
+    })
+    expect(replacement.success).toBe(true)
+    if (!replacement.success) return
+    expect(replacement.data.invitation.email).toBe("person@example.com")
+    expect(
+      organizationInvitationAccept({
+        database,
+        input: { token: original.data.token, userId: "replay-user" },
+      }).success,
+    ).toBe(false)
+
+    const accepted = organizationInvitationAccept({
+      database,
+      input: { token: replacement.data.token, userId: "replacement-user" },
+    })
+    expect(accepted.success).toBe(true)
+    if (!accepted.success) return
+    expect(accepted.data.membership.roles).toEqual(["guest"])
+
+    const otherOrganizationInvitation = organizationInvitationCreate({
+      context: system,
+      database,
+      input: { email: "person@example.com", roles: ["member"] },
+      instanceId: instance.id,
+      organizationId: beta.data.organization.id,
+    })
+    expect(otherOrganizationInvitation.success).toBe(true)
+    if (!otherOrganizationInvitation.success) return
+    expect(
+      organizationInvitationAccept({
+        database,
+        input: { token: otherOrganizationInvitation.data.token, userId: "other-user" },
+      }).success,
+    ).toBe(true)
   })
 })
 

@@ -4,18 +4,18 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { instanceBootstrapAdminAuthenticate } from "../../src/features/instances/actions/instanceBootstrapAdminAuthenticate.js"
 import { instanceBootstrapAdminCreate } from "../../src/features/instances/actions/instanceBootstrapAdminCreate.js"
-import { instanceApiClientCreate } from "../../src/features/instances/client/instanceApiClientCreate.js"
 import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
 import { instanceGet } from "../../src/features/instances/actions/instanceGet.js"
 import { instanceTenantContextResolve } from "../../src/features/instances/actions/instanceTenantContextResolve.js"
 import { instanceUpdate } from "../../src/features/instances/actions/instanceUpdate.js"
+import { instanceApiClientCreate } from "../../src/features/instances/client/instanceApiClientCreate.js"
 import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
 import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
 import { instanceEventTypes } from "../../src/features/instances/events/instanceEventTypes.js"
 import { instanceServerAppCreate } from "../../src/features/instances/server/instanceServerAppCreate.js"
+import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
-import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
 
 async function withDatabase<T>(operation: (database: StorageDatabase) => Promise<T>) {
@@ -46,7 +46,7 @@ test("instances are created with canonical IDs, defaults, safe events, and one-t
     })
     expect(created.success).toBe(true)
     if (!created.success) return
-    expect(created.data.instance.id).toMatch(/^[0-9a-f-]+$/)
+    expect(created.data.instance.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
     expect(created.data.instance.status).toBe("active")
     expect(created.data.instance.name).toBe("Alpha")
     expect(created.data.instance.domains).toEqual(["alpha.example.com"])
@@ -124,6 +124,30 @@ test("bootstrap credentials authenticate only their resolved tenant", async () =
       secret: bootstrap.data.bootstrapAdmin.secret.valueGet(),
     })
     expect(authenticated.success).toBe(true)
+    if (!authenticated.success) return
+    expect(authenticated.data).toMatchObject({
+      actor: {
+        actorId: bootstrap.data.bootstrapAdmin.adminId,
+        assurance: "authenticated",
+        authenticationMethod: "bootstrap_admin",
+        instanceId: alpha.data.instance.id,
+        kind: "bootstrap_admin",
+      },
+      actorId: bootstrap.data.bootstrapAdmin.adminId,
+      instanceId: alpha.data.instance.id,
+      kind: "tenant",
+    })
+    expect(
+      instanceBootstrapAdminAuthenticate({
+        context: tenant,
+        database,
+        secret: `${bootstrap.data.bootstrapAdmin.secret.valueGet()}-wrong`,
+      }),
+    ).toEqual({
+      errorMessage: "The bootstrap administrator credentials are invalid.",
+      op: "instanceBootstrapAdminAuthenticate",
+      success: false,
+    })
     expect(
       instanceBootstrapAdminAuthenticate({
         context: instanceTenantContextCreate(beta.data.instance.id, "anonymous"),
@@ -131,6 +155,48 @@ test("bootstrap credentials authenticate only their resolved tenant", async () =
         secret: bootstrap.data.bootstrapAdmin.secret.valueGet(),
       }).success,
     ).toBe(false)
+  })
+})
+
+test("instance domain updates preserve and replace secondary domains without partial state", async () => {
+  await withDatabase(async (database) => {
+    const context = instanceSystemContextCreate()
+    const created = instanceCreate({
+      context,
+      database,
+      input: {
+        domain: " Alpha.Example.com. ",
+        domains: [" API.Example.com. "],
+        name: "Alpha",
+      },
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+    expect(created.data.instance.domains).toEqual(["alpha.example.com", "api.example.com"])
+
+    const changedPrimary = instanceUpdate({
+      context,
+      database,
+      input: { domain: "New.Example.com.", status: "disabled" },
+      instanceId: created.data.instance.id,
+    })
+    expect(changedPrimary.success).toBe(true)
+    if (!changedPrimary.success) return
+    expect(changedPrimary.data.instance.domain).toBe("new.example.com")
+    expect(changedPrimary.data.instance.domains).toEqual(["new.example.com", "api.example.com"])
+    expect(changedPrimary.data.instance.status).toBe("disabled")
+
+    const clearedSecondary = instanceUpdate({
+      context,
+      database,
+      input: { domains: [], status: "active" },
+      instanceId: created.data.instance.id,
+    })
+    expect(clearedSecondary.success).toBe(true)
+    if (!clearedSecondary.success) return
+    expect(clearedSecondary.data.instance.domains).toEqual(["new.example.com"])
+    expect(clearedSecondary.data.instance.status).toBe("active")
+    expect(database.db.select().from(storageEventTable).all()).toHaveLength(3)
   })
 })
 
@@ -246,6 +312,21 @@ test("instance validation and authorization failures do not write state or event
     expect(
       instanceCreate({ context: system, database, input: { domain: "SAME.example.com", name: "Duplicate" } }).success,
     ).toBe(false)
+    expect(
+      instanceCreate({
+        context: system,
+        database,
+        input: {
+          domain: "another.example.com",
+          domains: ["EXTRA.example.com", "extra.example.com"],
+          name: "Duplicate",
+        },
+      }),
+    ).toEqual({
+      errorMessage: "Instance domains must be unique.",
+      op: "instanceCreate",
+      success: false,
+    })
     expect(database.db.select().from(storageEventTable).all()).toHaveLength(1)
   })
 })

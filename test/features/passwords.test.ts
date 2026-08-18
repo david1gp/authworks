@@ -90,6 +90,14 @@ test("password registration, email verification, login, change, recovery, and lo
       op: "passwordLogin",
       success: false,
     })
+    expect(
+      passwordLogin({
+        context: anonymous,
+        database,
+        input: { identifier: "unknown", password: "Correct Horse 12" },
+        instanceId: instance.id,
+      }),
+    ).toEqual(beforeVerification)
     const verified = passwordEmailVerify({
       context: anonymous,
       database,
@@ -268,6 +276,158 @@ test("password identifiers and tokens stay tenant scoped and registration resist
         instanceId: beta.id,
       }),
     ).toEqual({ data: { accepted: true }, success: true })
+  })
+})
+
+test("password registration treats normalized duplicate identifiers as accepted without delivery", async () => {
+  await withDatabase(async (database) => {
+    const instance = await createInstance(database, "passwords-duplicates.example.com")
+    const context = instanceTenantContextCreate(instance.id, "anonymous")
+    let deliveries = 0
+    const registered = passwordRegister({
+      context,
+      database,
+      input: registrationInput(),
+      instanceId: instance.id,
+      onVerificationToken: () => {
+        deliveries += 1
+      },
+    })
+    expect(registered.success).toBe(true)
+
+    expect(
+      passwordRegister({
+        context,
+        database,
+        input: registrationInput(" ADA@example.com ", "different-user"),
+        instanceId: instance.id,
+        onVerificationToken: () => {
+          deliveries += 1
+        },
+      }),
+    ).toEqual({ data: { accepted: true, verificationRequired: true }, success: true })
+    expect(
+      passwordRegister({
+        context,
+        database,
+        input: registrationInput("different@example.com", " ADA "),
+        instanceId: instance.id,
+        onVerificationToken: () => {
+          deliveries += 1
+        },
+      }),
+    ).toEqual({ data: { accepted: true, verificationRequired: true }, success: true })
+    expect(deliveries).toBe(1)
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()).toEqual({ count: 1 })
+  })
+})
+
+test("password policy enforces each required character class at the exact length boundary", async () => {
+  await withDatabase(async (database) => {
+    const instance = await createInstance(database, "passwords-complexity.example.com")
+    const system = instanceSystemContextCreate("system")
+    expect(
+      passwordPolicySet({
+        context: system,
+        database,
+        input: {
+          lockoutDurationMs: 60_000,
+          maximumAttempts: 5,
+          minimumLength: 12,
+          requireLowercase: true,
+          requireNumber: true,
+          requireSymbol: true,
+          requireUppercase: true,
+        },
+        instanceId: instance.id,
+      }).success,
+    ).toBe(true)
+
+    const invalidPasswords = ["UPPERCASE12!", "lowercase12!", "Lowercase!!?", "Lowercase12A"]
+    for (const [index, password] of invalidPasswords.entries()) {
+      expect(
+        passwordRegister({
+          context: system,
+          database,
+          input: registrationInput(`invalid-${index}@example.com`, `invalid-${index}`, password),
+          instanceId: instance.id,
+        }).success,
+      ).toBe(false)
+    }
+    expect(
+      passwordRegister({
+        context: system,
+        database,
+        input: registrationInput("boundary@example.com", "boundary", "Lowercase12!"),
+        instanceId: instance.id,
+      }).success,
+    ).toBe(true)
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()).toEqual({ count: 1 })
+  })
+})
+
+test("password recovery invalidates the previous token and remains one-time", async () => {
+  await withDatabase(async (database, testkit) => {
+    const instance = await createInstance(database, "passwords-recovery.example.com")
+    const context = instanceTenantContextCreate(instance.id, "anonymous")
+    let verificationToken = ""
+    expect(
+      passwordRegister({
+        context,
+        database,
+        input: registrationInput(),
+        instanceId: instance.id,
+        onVerificationToken: ({ token }) => {
+          verificationToken = token
+        },
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, instanceId: instance.id }).success,
+    ).toBe(true)
+
+    let firstToken = ""
+    let secondToken = ""
+    expect(
+      passwordRecoveryRequest({
+        context,
+        database,
+        input: { email: "ada@example.com" },
+        instanceId: instance.id,
+        onRecoveryToken: ({ token }) => {
+          firstToken = token
+        },
+      }).success,
+    ).toBe(true)
+    testkit.advance(1)
+    expect(
+      passwordRecoveryRequest({
+        context,
+        database,
+        input: { email: "ada@example.com" },
+        instanceId: instance.id,
+        onRecoveryToken: ({ token }) => {
+          secondToken = token
+        },
+      }).success,
+    ).toBe(true)
+    expect(firstToken).not.toBe(secondToken)
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "First Recovery 12", token: firstToken },
+        instanceId: instance.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "Second Recovery 12", token: secondToken },
+        instanceId: instance.id,
+      }),
+    ).toEqual({ data: { changed: true }, success: true })
   })
 })
 

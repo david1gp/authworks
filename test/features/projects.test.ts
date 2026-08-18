@@ -9,14 +9,21 @@ import { authorizationUserActorContextCreate } from "../../src/features/authoriz
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
 import { projectApplicationCreate } from "../../src/features/projects/actions/projectApplicationCreate.js"
+import { projectApplicationGet } from "../../src/features/projects/actions/projectApplicationGet.js"
 import { projectApplicationLifecycleSet } from "../../src/features/projects/actions/projectApplicationLifecycleSet.js"
 import { projectApplicationList } from "../../src/features/projects/actions/projectApplicationList.js"
+import { projectApplicationUpdate } from "../../src/features/projects/actions/projectApplicationUpdate.js"
 import { projectCreate } from "../../src/features/projects/actions/projectCreate.js"
+import { projectDelete } from "../../src/features/projects/actions/projectDelete.js"
 import { projectGet } from "../../src/features/projects/actions/projectGet.js"
 import { projectGrantCreate } from "../../src/features/projects/actions/projectGrantCreate.js"
 import { projectGrantLifecycleSet } from "../../src/features/projects/actions/projectGrantLifecycleSet.js"
+import { projectGrantUpdate } from "../../src/features/projects/actions/projectGrantUpdate.js"
 import { projectRoleCreate } from "../../src/features/projects/actions/projectRoleCreate.js"
 import { projectRoleList } from "../../src/features/projects/actions/projectRoleList.js"
+import { projectRoleUpdate } from "../../src/features/projects/actions/projectRoleUpdate.js"
+import { projectLifecycleSet } from "../../src/features/projects/actions/projectLifecycleSet.js"
+import { projectUpdate } from "../../src/features/projects/actions/projectUpdate.js"
 import { projectServerAppCreate } from "../../src/features/projects/server/projectServerAppCreate.js"
 import { projectApiClientCreate } from "../../src/features/projects/client/projectApiClientCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -117,6 +124,16 @@ test("projects, applications, roles, and lifecycles are tenant-isolated", async 
         projectId: created.data.project.id,
       }).success,
     ).toBe(true)
+    expect(
+      projectApplicationLifecycleSet({
+        applicationId: application.data.application.id,
+        context: alphaContext,
+        database,
+        input: { status: "inactive" },
+        instanceId: alpha.id,
+        projectId: created.data.project.id,
+      }).success,
+    ).toBe(false)
     const listedApplications = projectApplicationList({
       context: alphaContext,
       database,
@@ -125,6 +142,239 @@ test("projects, applications, roles, and lifecycles are tenant-isolated", async 
     })
     expect(listedApplications.success).toBe(true)
     if (listedApplications.success) expect(listedApplications.data.applications).toHaveLength(0)
+  })
+})
+
+test("project lifecycle guards and updates preserve active-resource rules", async () => {
+  await withDatabase(async (database) => {
+    const instance = await createInstance(database, "project-rules.example.com")
+    const ownerOrganization = await createOrganization(database, instance.id, "Owner", "owner-user")
+    const otherOrganization = await createOrganization(database, instance.id, "Other", "other-user")
+    const ownerContext = actorTenantContext(
+      authorizationUserActorContextCreate(instance.id, "owner-user", ownerOrganization.id),
+    )
+    const project = projectCreate({
+      context: ownerContext,
+      database,
+      input: {
+        authorizationRequired: false,
+        name: "Project",
+        organizationId: ownerOrganization.id,
+        projectAccessRequired: false,
+      },
+      instanceId: instance.id,
+    })
+    expect(project.success).toBe(true)
+    if (!project.success) return
+
+    expect(
+      projectLifecycleSet({
+        context: ownerContext,
+        database,
+        input: { status: "active" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
+
+    const renamed = projectUpdate({
+      context: ownerContext,
+      database,
+      input: { authorizationRequired: true, name: "Renamed" },
+      instanceId: instance.id,
+      projectId: project.data.project.id,
+    })
+    expect(renamed).toMatchObject({
+      success: true,
+      data: { project: { authorizationRequired: true, name: "Renamed", projectAccessRequired: false } },
+    })
+
+    const duplicateProject = projectCreate({
+      context: ownerContext,
+      database,
+      input: {
+        authorizationRequired: false,
+        name: "Another project",
+        organizationId: ownerOrganization.id,
+        projectAccessRequired: false,
+      },
+      instanceId: instance.id,
+    })
+    expect(duplicateProject.success).toBe(true)
+    if (!duplicateProject.success) return
+    expect(
+      projectUpdate({
+        context: ownerContext,
+        database,
+        input: { name: "Renamed" },
+        instanceId: instance.id,
+        projectId: duplicateProject.data.project.id,
+      }).success,
+    ).toBe(false)
+
+    const sameNameInOtherOrganization = projectCreate({
+      context: actorTenantContext(authorizationUserActorContextCreate(instance.id, "other-user", otherOrganization.id)),
+      database,
+      input: {
+        authorizationRequired: false,
+        name: "Renamed",
+        organizationId: otherOrganization.id,
+        projectAccessRequired: false,
+      },
+      instanceId: instance.id,
+    })
+    expect(sameNameInOtherOrganization.success).toBe(true)
+
+    expect(
+      projectLifecycleSet({
+        context: ownerContext,
+        database,
+        input: { status: "inactive" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      projectLifecycleSet({
+        context: ownerContext,
+        database,
+        input: { status: "inactive" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      projectUpdate({
+        context: ownerContext,
+        database,
+        input: { name: "Inactive update" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
+  })
+})
+
+test("application, role, and grant state guards reject stale or cross-scope changes", async () => {
+  await withDatabase(async (database) => {
+    const instance = await createInstance(database, "project-children.example.com")
+    const ownerOrganization = await createOrganization(database, instance.id, "Owner", "owner-user")
+    const grantedOrganization = await createOrganization(database, instance.id, "Granted", "granted-user")
+    const ownerContext = actorTenantContext(
+      authorizationUserActorContextCreate(instance.id, "owner-user", ownerOrganization.id),
+    )
+    const project = projectCreate({
+      context: ownerContext,
+      database,
+      input: {
+        authorizationRequired: false,
+        name: "Project",
+        organizationId: ownerOrganization.id,
+        projectAccessRequired: false,
+      },
+      instanceId: instance.id,
+    })
+    expect(project.success).toBe(true)
+    if (!project.success) return
+
+    const role = projectRoleCreate({
+      context: ownerContext,
+      database,
+      input: { displayName: "Reader", key: "reader" },
+      instanceId: instance.id,
+      projectId: project.data.project.id,
+    })
+    expect(role.success).toBe(true)
+    if (!role.success) return
+    expect(
+      projectRoleUpdate({
+        context: ownerContext,
+        database,
+        input: {},
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+        roleId: role.data.role.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      projectRoleUpdate({
+        context: ownerContext,
+        database,
+        input: { displayName: "Updated reader" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+        roleId: role.data.role.id,
+      }).success,
+    ).toBe(true)
+
+    const application = projectApplicationCreate({
+      context: ownerContext,
+      database,
+      input: { applicationType: "api", name: "API" },
+      instanceId: instance.id,
+      projectId: project.data.project.id,
+    })
+    expect(application.success).toBe(true)
+    if (!application.success) return
+    expect(
+      projectApplicationUpdate({
+        applicationId: application.data.application.id,
+        context: ownerContext,
+        database,
+        input: { name: "Updated API" },
+        instanceId: instance.id,
+        projectId: "wrong-project",
+      }).success,
+    ).toBe(false)
+    expect(
+      projectApplicationLifecycleSet({
+        applicationId: application.data.application.id,
+        context: ownerContext,
+        database,
+        input: { status: "active" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
+
+    const grant = projectGrantCreate({
+      context: ownerContext,
+      database,
+      input: { grantedOrganizationId: grantedOrganization.id, roleKeys: ["reader"] },
+      instanceId: instance.id,
+      projectId: project.data.project.id,
+    })
+    expect(grant.success).toBe(true)
+    if (!grant.success) return
+    expect(
+      projectGrantCreate({
+        context: ownerContext,
+        database,
+        input: { grantedOrganizationId: grantedOrganization.id, roleKeys: ["reader"] },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      projectGrantUpdate({
+        context: ownerContext,
+        database,
+        grantId: grant.data.grant.id,
+        input: { grantedOrganizationId: ownerOrganization.id, roleKeys: ["reader"] },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      projectGrantLifecycleSet({
+        context: ownerContext,
+        database,
+        grantId: grant.data.grant.id,
+        input: { status: "active" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
   })
 })
 
@@ -200,6 +450,24 @@ test("project roles and cross-organization grants enforce access and revocation"
       projectGet({ context: otherContext, database, instanceId: instance.id, projectId: project.data.project.id })
         .success,
     ).toBe(false)
+    expect(
+      projectUpdate({
+        context: grantedContext,
+        database,
+        input: { name: "Granted update" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      projectRoleCreate({
+        context: grantedContext,
+        database,
+        input: { displayName: "Granted writer", key: "granted-writer" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
     const inactive = projectGrantLifecycleSet({
       context: ownerContext,
       database,
@@ -209,6 +477,16 @@ test("project roles and cross-organization grants enforce access and revocation"
       projectId: project.data.project.id,
     })
     expect(inactive.success).toBe(true)
+    expect(
+      projectGrantLifecycleSet({
+        context: ownerContext,
+        database,
+        grantId: grant.data.grant.id,
+        input: { status: "inactive" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
     expect(
       projectGet({ context: grantedContext, database, instanceId: instance.id, projectId: project.data.project.id })
         .success,
@@ -231,6 +509,62 @@ test("project roles and cross-organization grants enforce access and revocation"
     })
     expect(roles.success).toBe(true)
     expect(role.data.role.key).toBe("admin")
+  })
+})
+
+test("project deletion is idempotent and leaves no readable parent", async () => {
+  await withDatabase(async (database) => {
+    const instance = await createInstance(database, "project-delete.example.com")
+    const organization = await createOrganization(database, instance.id, "Owner", "owner-user")
+    const ownerContext = actorTenantContext(
+      authorizationUserActorContextCreate(instance.id, "owner-user", organization.id),
+    )
+    const project = projectCreate({
+      context: ownerContext,
+      database,
+      input: {
+        authorizationRequired: false,
+        name: "To delete",
+        organizationId: organization.id,
+        projectAccessRequired: false,
+      },
+      instanceId: instance.id,
+    })
+    expect(project.success).toBe(true)
+    if (!project.success) return
+
+    const eventCount = database.db.select().from(storageEventTable).all().length
+    expect(
+      projectDelete({
+        context: ownerContext,
+        database,
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }),
+    ).toEqual({ data: { deleted: true, projectId: project.data.project.id }, success: true })
+    expect(database.db.select().from(storageEventTable).all()).toHaveLength(eventCount + 1)
+    expect(
+      projectDelete({
+        context: ownerContext,
+        database,
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }),
+    ).toEqual({ data: { deleted: true, projectId: project.data.project.id }, success: true })
+    expect(database.db.select().from(storageEventTable).all()).toHaveLength(eventCount + 1)
+    expect(
+      projectGet({ context: ownerContext, database, instanceId: instance.id, projectId: project.data.project.id })
+        .success,
+    ).toBe(false)
+    expect(
+      projectRoleCreate({
+        context: ownerContext,
+        database,
+        input: { displayName: "Unreachable", key: "unreachable" },
+        instanceId: instance.id,
+        projectId: project.data.project.id,
+      }).success,
+    ).toBe(false)
   })
 })
 

@@ -11,6 +11,7 @@ import { authorizationPolicyEvaluate } from "../../src/features/authorization/ac
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
 import { impersonationApiClientCreate } from "../../src/features/impersonation/client/impersonationApiClientCreate.js"
+import { impersonationEnd } from "../../src/features/impersonation/actions/impersonationEnd.js"
 import { impersonationStart } from "../../src/features/impersonation/actions/impersonationStart.js"
 import { impersonationServerAppCreate } from "../../src/features/impersonation/server/impersonationServerAppCreate.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
@@ -324,5 +325,305 @@ test("impersonation state and audit event roll back together", async () => {
     expect(failed.success).toBe(false)
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM sessions").get()).toEqual(before)
     expect(notifications).toHaveLength(0)
+  })
+})
+
+test("impersonation authorization is explicit and marked sessions cannot widen their permissions", async () => {
+  await withDatabase(async (database, testkit) => {
+    const instance = await createInstance(database, "impersonation-permissions.example.com")
+    const admin = createActiveUser(database, instance.id, "permission-admin")
+    const target = createActiveUser(database, instance.id, "permission-target")
+    const organization = organizationCreate({
+      context: instanceSystemContextCreate("system"),
+      database,
+      input: { name: "Permissions", ownerUserId: target.id },
+      instanceId: instance.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+    expect(
+      organizationMembershipCreate({
+        context: instanceSystemContextCreate("system"),
+        database,
+        input: { roles: ["member"], userId: admin.id },
+        instanceId: instance.id,
+        organizationId: organization.data.organization.id,
+      }).success,
+    ).toBe(true)
+    const actor = authorizationActorContextCreate({
+      actorId: admin.id,
+      assurance: "multi_factor",
+      authenticationMethod: "trusted",
+      instanceId: instance.id,
+      kind: "user",
+      scopes: ["user.read"],
+    })
+
+    const unrelatedPermission = impersonationStart({
+      actor,
+      database,
+      durationMs: 1_000,
+      instanceId: instance.id,
+      organizationId: organization.data.organization.id,
+      reason: "Permission test",
+      targetUserId: target.id,
+    })
+    expect(unrelatedPermission.success).toBe(false)
+
+    const allowedActor = { ...actor, scopes: ["user.impersonate"] }
+    const started = impersonationStart({
+      actor: allowedActor,
+      database,
+      durationMs: 15 * 60 * 1_000,
+      instanceId: instance.id,
+      organizationId: organization.data.organization.id,
+      reason: "Permission test",
+      runtime: testkit.runtime,
+      targetUserId: target.id,
+    })
+    if (!started.success) throw new Error(started.errorMessage)
+    expect(started.success).toBe(true)
+
+    const authenticated = sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token })
+    expect(authenticated.success).toBe(true)
+    if (!authenticated.success) return
+    expect(
+      authorizationPolicyEvaluate({
+        actor: authenticated.data.actor,
+        instanceId: instance.id,
+        organizationId: organization.data.organization.id,
+        permission: "organization.manage",
+        roles: ["owner"],
+      }),
+    ).toMatchObject({ data: { allowed: false, reason: "impersonation_limit" }, success: true })
+    expect(
+      authorizationPolicyEvaluate({
+        actor: authenticated.data.actor,
+        instanceId: instance.id,
+        organizationId: organization.data.organization.id,
+        permission: "user.impersonate",
+        roles: ["owner"],
+      }),
+    ).toMatchObject({ data: { allowed: false, reason: "impersonation_limit" }, success: true })
+
+    expect(
+      authorizationPolicyEvaluate({
+        actor: { ...authenticated.data.actor, impersonationSessionId: undefined },
+        instanceId: instance.id,
+        organizationId: organization.data.organization.id,
+        permission: "organization.manage",
+        roles: ["owner"],
+      }).success,
+    ).toBe(false)
+
+    const overLimit = impersonationStart({
+      actor: allowedActor,
+      database,
+      durationMs: 15 * 60 * 1_000 + 1,
+      instanceId: instance.id,
+      organizationId: organization.data.organization.id,
+      reason: "Permission test",
+      targetUserId: target.id,
+    })
+    expect(overLimit.success).toBe(false)
+  })
+})
+
+test("impersonation end is isolated by tenant and subject authorization", async () => {
+  await withDatabase(async (database, testkit) => {
+    const instance = await createInstance(database, "impersonation-end.example.com")
+    const otherInstance = await createInstance(database, "impersonation-end-other.example.com")
+    const admin = createActiveUser(database, instance.id, "end-admin")
+    const target = createActiveUser(database, instance.id, "end-target")
+    const otherSubject = createActiveUser(database, otherInstance.id, "end-other-subject")
+    const organization = organizationCreate({
+      context: instanceSystemContextCreate("system"),
+      database,
+      input: { name: "End", ownerUserId: admin.id },
+      instanceId: instance.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+    expect(
+      organizationMembershipCreate({
+        context: instanceTenantContextCreate(instance.id, admin.id),
+        database,
+        input: { roles: ["member"], userId: target.id },
+        instanceId: instance.id,
+        organizationId: organization.data.organization.id,
+      }).success,
+    ).toBe(true)
+    const actor = authorizationActorContextCreate({
+      actorId: admin.id,
+      assurance: "multi_factor",
+      authenticationMethod: "trusted",
+      instanceId: instance.id,
+      kind: "user",
+      scopes: ["user.impersonate"],
+    })
+    const started = impersonationStart({
+      actor,
+      database,
+      durationMs: 5_000,
+      instanceId: instance.id,
+      organizationId: organization.data.organization.id,
+      reason: "Tenant end test",
+      runtime: testkit.runtime,
+      targetUserId: target.id,
+    })
+    expect(started.success).toBe(true)
+    if (!started.success) return
+
+    expect(
+      impersonationEnd({
+        actor,
+        database,
+        instanceId: otherInstance.id,
+        runtime: testkit.runtime,
+        sessionId: started.data.session.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      impersonationEnd({
+        actor: authorizationActorContextCreate({
+          actorId: otherSubject.id,
+          assurance: "authenticated",
+          authenticationMethod: "trusted",
+          instanceId: otherInstance.id,
+          kind: "user",
+        }),
+        database,
+        instanceId: instance.id,
+        runtime: testkit.runtime,
+        sessionId: started.data.session.id,
+      }).success,
+    ).toBe(false)
+    expect(sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token }).success).toBe(true)
+  })
+})
+
+test("impersonation audit events distinguish the ending subject and commit atomically", async () => {
+  await withDatabase(async (database, testkit) => {
+    const instance = await createInstance(database, "impersonation-audit.example.com")
+    const admin = createActiveUser(database, instance.id, "audit-admin")
+    const target = createActiveUser(database, instance.id, "audit-target")
+    const organization = organizationCreate({
+      context: instanceSystemContextCreate("system"),
+      database,
+      input: { name: "Audit", ownerUserId: admin.id },
+      instanceId: instance.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+    expect(
+      organizationMembershipCreate({
+        context: instanceTenantContextCreate(instance.id, admin.id),
+        database,
+        input: { roles: ["member"], userId: target.id },
+        instanceId: instance.id,
+        organizationId: organization.data.organization.id,
+      }).success,
+    ).toBe(true)
+    const actor = authorizationActorContextCreate({
+      actorId: admin.id,
+      assurance: "multi_factor",
+      authenticationMethod: "trusted",
+      instanceId: instance.id,
+      kind: "user",
+      scopes: ["user.impersonate"],
+    })
+    const notifications: unknown[] = []
+    const started = impersonationStart({
+      actor,
+      database,
+      durationMs: 5_000,
+      instanceId: instance.id,
+      organizationId: organization.data.organization.id,
+      onSecurityNotification: (notification) => {
+        notifications.push(notification)
+      },
+      reason: "  Audit reason  ",
+      runtime: testkit.runtime,
+      targetUserId: target.id,
+    })
+    expect(started.success).toBe(true)
+    if (!started.success) return
+    const startedEvent = database.db
+      .select()
+      .from(storageEventTable)
+      .all()
+      .find((event) => event.aggregateType === "impersonation" && event.eventType === "impersonation.started")
+    expect(startedEvent?.payload).toMatchObject({
+      actorId: admin.id,
+      expiresAt: started.data.session.expiresAt,
+      instanceId: instance.id,
+      reason: "Audit reason",
+      sessionId: started.data.session.id,
+      subjectId: target.id,
+    })
+    expect(notifications).toHaveLength(1)
+
+    const authenticated = sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token })
+    expect(authenticated.success).toBe(true)
+    if (!authenticated.success) return
+    database.sqlite.run(
+      "CREATE TRIGGER reject_impersonation_end BEFORE INSERT ON events WHEN NEW.event_type = 'impersonation.ended' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
+    )
+    const failedEnd = impersonationEnd({
+      actor: authenticated.data.actor,
+      database,
+      instanceId: instance.id,
+      onSecurityNotification: (notification) => {
+        notifications.push(notification)
+      },
+      runtime: testkit.runtime,
+      sessionId: started.data.session.id,
+    })
+    expect(failedEnd.success).toBe(false)
+    expect(sessionAuthenticate({ database, instanceId: instance.id, token: started.data.token }).success).toBe(true)
+    expect(notifications).toHaveLength(1)
+    database.sqlite.run("DROP TRIGGER reject_impersonation_end")
+
+    const ended = impersonationEnd({
+      actor: authenticated.data.actor,
+      database,
+      instanceId: instance.id,
+      onSecurityNotification: (notification) => {
+        notifications.push(notification)
+      },
+      runtime: testkit.runtime,
+      sessionId: started.data.session.id,
+    })
+    expect(ended).toEqual({ data: { ended: true, sessionId: started.data.session.id }, success: true })
+    const impersonationEvents = database.db
+      .select()
+      .from(storageEventTable)
+      .all()
+      .filter((event) => event.aggregateType === "impersonation")
+    expect(impersonationEvents).toHaveLength(2)
+    expect(impersonationEvents[1]?.payload).toMatchObject({
+      actorId: admin.id,
+      endedById: target.id,
+      instanceId: instance.id,
+      sessionId: started.data.session.id,
+      subjectId: target.id,
+    })
+    expect(notifications).toHaveLength(2)
+
+    const repeatedEnd = impersonationEnd({
+      actor: authenticated.data.actor,
+      database,
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+      sessionId: started.data.session.id,
+    })
+    expect(repeatedEnd).toEqual({ data: { ended: false, sessionId: started.data.session.id }, success: true })
+    expect(
+      database.db
+        .select()
+        .from(storageEventTable)
+        .all()
+        .filter((event) => event.aggregateType === "impersonation"),
+    ).toHaveLength(2)
   })
 })

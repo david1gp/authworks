@@ -14,6 +14,7 @@ import { authorizationPolicyEvaluate } from "../../src/features/authorization/ac
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { sessionApiClientCreate } from "../../src/features/sessions/client/sessionApiClientCreate.js"
 import { sessionRevoke } from "../../src/features/sessions/actions/sessionRevoke.js"
+import { sessionRevokeAll } from "../../src/features/sessions/actions/sessionRevokeAll.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionList } from "../../src/features/sessions/actions/sessionList.js"
 import { sessionRecentList } from "../../src/features/sessions/actions/sessionRecentList.js"
@@ -51,6 +52,7 @@ async function createVerifiedUser(database: StorageDatabase, domain: string) {
   if (!instance.success) throw new Error(instance.errorMessage)
   const context = instanceTenantContextCreate(instance.data.instance.id, "anonymous")
   let token = ""
+  let userId = ""
   const registered = passwordRegister({
     context,
     database,
@@ -63,13 +65,32 @@ async function createVerifiedUser(database: StorageDatabase, domain: string) {
     instanceId: instance.data.instance.id,
     onVerificationToken: (delivery) => {
       token = delivery.token
+      userId = delivery.userId
     },
   })
   expect(registered.success).toBe(true)
   expect(
     passwordEmailVerify({ context, database, input: { token }, instanceId: instance.data.instance.id }).success,
   ).toBe(true)
-  return { context, instance: instance.data.instance }
+  return { context, instance: instance.data.instance, userId }
+}
+
+function issueTestSession(
+  database: StorageDatabase,
+  runtime: ReturnType<typeof platformTestkitCreate>["runtime"],
+  instanceId: string,
+  userId: string,
+) {
+  const issued = sessionIssue({
+    assurance: "authenticated",
+    authenticationMethod: "password",
+    database,
+    instanceId,
+    runtime,
+    userId,
+  })
+  if (!issued.success) throw new Error(issued.errorMessage)
+  return issued.data
 }
 
 test("password success issues an opaque session and rotation rejects replay", async () => {
@@ -142,6 +163,293 @@ test("password success issues an opaque session and rotation rejects replay", as
     if (!recentSessions.success) return
     expect(recentSessions.data.total).toBe(2)
     expect(recentSessions.data.sessions[0]).toMatchObject({ id: second.data.session.id })
+
+    const expiring = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      expiresAt: testkit.runtime.now() + 1,
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+      userId: loggedIn.data.authentication.userId,
+    })
+    expect(expiring.success).toBe(true)
+    if (!expiring.success) return
+    testkit.advance(2)
+    expect(sessionRotate({ database, instanceId: instance.id, token: expiring.data.token }).success).toBe(false)
+  })
+})
+
+test("session lists enforce ownership, limits, recent ordering, and current markers", async () => {
+  await withDatabase(async (database, testkit) => {
+    const alpha = await createVerifiedUser(database, "sessions-list-alpha.example.com")
+    const beta = await createVerifiedUser(database, "sessions-list-beta.example.com")
+    const sessions = []
+    for (let index = 0; index < 6; index += 1) {
+      sessions.push(issueTestSession(database, testkit.runtime, alpha.instance.id, alpha.userId))
+      testkit.advance(1)
+    }
+    const otherInstance = issueTestSession(database, testkit.runtime, beta.instance.id, beta.userId)
+
+    const limited = sessionList({
+      currentSessionId: sessions[5]!.session.id,
+      database,
+      instanceId: alpha.instance.id,
+      limit: 1,
+      userId: alpha.userId,
+    })
+    expect(limited.success).toBe(true)
+    if (!limited.success) return
+    expect(limited.data).toMatchObject({ total: 1 })
+    expect(limited.data.sessions[0]).toMatchObject({ current: true, id: sessions[5]!.session.id })
+
+    const all = sessionList({
+      currentSessionId: "unknown-session",
+      database,
+      instanceId: alpha.instance.id,
+      userId: alpha.userId,
+    })
+    expect(all.success).toBe(true)
+    if (!all.success) return
+    expect(all.data.sessions.map((session) => session.id)).toEqual(
+      sessions.toReversed().map(({ session }) => session.id),
+    )
+    expect(all.data.sessions.every((session) => session.current === false)).toBe(true)
+
+    const recent = sessionRecentList({
+      currentSessionId: sessions[5]!.session.id,
+      database,
+      instanceId: alpha.instance.id,
+      userId: alpha.userId,
+    })
+    expect(recent.success).toBe(true)
+    if (!recent.success) return
+    expect(recent.data.sessions.map((session) => session.id)).toEqual(
+      sessions
+        .toReversed()
+        .slice(0, 5)
+        .map(({ session }) => session.id),
+    )
+    expect(recent.data.total).toBe(5)
+    expect(recent.data.sessions.filter((session) => session.current).map((session) => session.id)).toEqual([
+      sessions[5]!.session.id,
+    ])
+
+    const differentUser = sessionList({
+      database,
+      instanceId: alpha.instance.id,
+      userId: beta.userId,
+    })
+    expect(differentUser).toMatchObject({ success: true, data: { total: 0, sessions: [] } })
+
+    const differentInstance = sessionList({
+      database,
+      instanceId: beta.instance.id,
+      userId: beta.userId,
+    })
+    expect(differentInstance).toMatchObject({ success: true, data: { total: 1 } })
+    if (differentInstance.success) expect(differentInstance.data.sessions[0]!.id).toBe(otherInstance.session.id)
+
+    expect(sessionList({ database, instanceId: beta.instance.id, userId: alpha.userId })).toMatchObject({
+      success: true,
+      data: { sessions: [], total: 0 },
+    })
+
+    for (const limit of [0, -1, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
+      expect(sessionList({ database, instanceId: alpha.instance.id, limit, userId: alpha.userId }).success).toBe(false)
+    }
+    expect(sessionList({ database, instanceId: "", userId: alpha.userId }).success).toBe(false)
+    expect(sessionList({ database, instanceId: alpha.instance.id, userId: "" }).success).toBe(false)
+  })
+})
+
+test("multi-factor sessions carry assurance and satisfy protected-session requirements", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { context, instance } = await createVerifiedUser(database, "sessions-assurance.example.com")
+    const loggedIn = passwordLogin({
+      context,
+      database,
+      input: { identifier: "session-user", password: "Correct Horse 12" },
+      instanceId: instance.id,
+      sessionCreate: sessionPasswordCreate(),
+    })
+    expect(loggedIn.success).toBe(true)
+    if (!loggedIn.success) return
+    if (loggedIn.data.session === undefined) return
+
+    const elevated = sessionIssue({
+      assurance: "multi_factor",
+      authenticationMethod: "password",
+      database,
+      deviceMetadata: { description: "Authenticator" },
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+      userId: loggedIn.data.authentication.userId,
+    })
+    expect(elevated.success).toBe(true)
+    if (!elevated.success) return
+    expect(elevated.data.session).toMatchObject({ assurance: "multi_factor" })
+
+    const protectedApp = new Hono()
+    protectedApp.get(
+      "/instances/:instanceId/strong",
+      sessionProtectedMiddlewareCreate({ database, minimumAssurance: "multi_factor" }),
+      (request) => request.json({ ok: true }),
+    )
+    const response = await protectedApp.request(`http://server.test/instances/${instance.id}/strong`, {
+      headers: { authorization: `Bearer ${elevated.data.token}` },
+    })
+    expect(response.status).toBe(200)
+    const weakerResponse = await protectedApp.request(`http://server.test/instances/${instance.id}/strong`, {
+      headers: { authorization: `Bearer ${loggedIn.data.session.token}` },
+    })
+    expect(weakerResponse.status).toBe(403)
+
+    const invalidMetadata = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      deviceMetadata: { userAgent: "x".repeat(513) },
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+      userId: loggedIn.data.authentication.userId,
+    })
+    expect(invalidMetadata.success).toBe(false)
+  })
+})
+
+test("session revocation is idempotent, isolated, and audit-safe", async () => {
+  await withDatabase(async (database, testkit) => {
+    const alpha = await createVerifiedUser(database, "sessions-revoke-alpha.example.com")
+    const beta = await createVerifiedUser(database, "sessions-revoke-beta.example.com")
+    const issued = issueTestSession(database, testkit.runtime, alpha.instance.id, alpha.userId)
+
+    const revoked = sessionRevoke({
+      database,
+      instanceId: alpha.instance.id,
+      reason: "security review",
+      sessionId: issued.session.id,
+      userId: alpha.userId,
+    })
+    expect(revoked).toEqual({ data: { revoked: true }, success: true })
+
+    const events = database.sqlite
+      .query("SELECT event_type, payload, metadata FROM events WHERE aggregate_type = 'session' AND aggregate_id = ?")
+      .all(issued.session.id) as Array<{ event_type: string; metadata: string; payload: string }>
+    expect(events).toHaveLength(2)
+    const revocationEvent = events.find((event) => event.event_type === "session.revoked")
+    expect(revocationEvent).toBeDefined()
+    if (revocationEvent === undefined) return
+    expect(JSON.parse(revocationEvent.metadata)).toMatchObject({ auditSafe: true })
+    expect(JSON.parse(revocationEvent.payload)).toMatchObject({ reason: "security review" })
+
+    const repeated = sessionRevoke({
+      database,
+      instanceId: alpha.instance.id,
+      sessionId: issued.session.id,
+      userId: alpha.userId,
+    })
+    expect(repeated).toEqual({ data: { revoked: false }, success: true })
+    expect(
+      database.sqlite
+        .query(
+          "SELECT COUNT(*) AS count FROM events WHERE aggregate_type = 'session' AND aggregate_id = ? AND event_type = 'session.revoked'",
+        )
+        .get(issued.session.id),
+    ).toEqual({ count: 1 })
+
+    expect(
+      sessionRevoke({
+        database,
+        instanceId: alpha.instance.id,
+        sessionId: issued.session.id,
+        userId: "different-user",
+      }).success,
+    ).toBe(false)
+    expect(
+      sessionRevoke({
+        database,
+        instanceId: beta.instance.id,
+        sessionId: issued.session.id,
+        userId: alpha.userId,
+      }).success,
+    ).toBe(false)
+  })
+})
+
+test("revoke-all preserves the requested session and rolls back on event failure", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { instance, userId } = await createVerifiedUser(database, "sessions-revoke-all.example.com")
+    const sessions = [issueTestSession(database, testkit.runtime, instance.id, userId)]
+    testkit.advance(1)
+    sessions.push(issueTestSession(database, testkit.runtime, instance.id, userId))
+    testkit.advance(1)
+    sessions.push(issueTestSession(database, testkit.runtime, instance.id, userId))
+    testkit.advance(1)
+    sessions.push(issueTestSession(database, testkit.runtime, instance.id, userId))
+    testkit.advance(1)
+    expect(
+      sessionRevoke({
+        database,
+        instanceId: instance.id,
+        sessionId: sessions[0]!.session.id,
+        userId,
+      }).success,
+    ).toBe(true)
+
+    const allRevoked = sessionRevokeAll({
+      database,
+      exceptSessionId: sessions[1]!.session.id,
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+      userId,
+    })
+    expect(allRevoked).toEqual({ data: { revoked: true }, success: true })
+    const listed = sessionList({ database, instanceId: instance.id, userId })
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(listed.data.sessions.find(({ id }) => id === sessions[0]!.session.id)?.revokedAt).not.toBeNull()
+    expect(listed.data.sessions.find(({ id }) => id === sessions[1]!.session.id)?.revokedAt).toBeNull()
+    expect(listed.data.sessions.find(({ id }) => id === sessions[2]!.session.id)?.revokedAt).not.toBeNull()
+    expect(listed.data.sessions.find(({ id }) => id === sessions[3]!.session.id)?.revokedAt).not.toBeNull()
+
+    const revokeAllEvents = database.sqlite
+      .query(
+        "SELECT aggregate_id, occurred_at, command_index FROM events WHERE event_type = 'session.revoked_all' ORDER BY command_index",
+      )
+      .all() as Array<{ aggregate_id: string; occurred_at: number; command_index: number }>
+    expect(revokeAllEvents).toHaveLength(2)
+    expect(revokeAllEvents.map(({ aggregate_id }) => aggregate_id)).toEqual([
+      sessions[3]!.session.id,
+      sessions[2]!.session.id,
+    ])
+    expect(revokeAllEvents.map(({ command_index }) => command_index)).toEqual([0, 1])
+    expect(new Set(revokeAllEvents.map(({ occurred_at }) => occurred_at)).size).toBe(1)
+
+    const rollbackSessions = [issueTestSession(database, testkit.runtime, instance.id, userId)]
+    testkit.advance(1)
+    rollbackSessions.push(issueTestSession(database, testkit.runtime, instance.id, userId))
+    database.sqlite.run(
+      "CREATE TRIGGER reject_session_revoke_all_events BEFORE INSERT ON events WHEN NEW.event_type = 'session.revoked_all' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
+    )
+    const failed = sessionRevokeAll({
+      database,
+      instanceId: instance.id,
+      runtime: testkit.runtime,
+      userId,
+    })
+    expect(failed.success).toBe(false)
+    database.sqlite.run("DROP TRIGGER reject_session_revoke_all_events")
+
+    const afterRollback = sessionList({ database, instanceId: instance.id, userId })
+    expect(afterRollback.success).toBe(true)
+    if (!afterRollback.success) return
+    for (const issued of rollbackSessions) {
+      expect(afterRollback.data.sessions.find(({ id }) => id === issued.session.id)?.revokedAt).toBeNull()
+    }
+    expect(
+      database.sqlite.query("SELECT COUNT(*) AS count FROM events WHERE event_type = 'session.revoked_all'").get(),
+    ).toEqual({ count: 2 })
   })
 })
 

@@ -1,28 +1,29 @@
 import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
-import { join } from "node:path"
 import { tmpdir } from "node:os"
-import { resultCreate } from "../../src/platform/errors/resultCreate.js"
+import { join } from "node:path"
+import { emailOtpStart } from "../../src/features/emailOtp/actions/emailOtpStart.js"
+import { externalIdentityProviderCreate } from "../../src/features/externalIdentities/actions/externalIdentityProviderCreate.js"
+import { externalIdentityStart } from "../../src/features/externalIdentities/actions/externalIdentityStart.js"
+import type { ExternalIdentityProviderPorts } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
 import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
 import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
 import { organizationBrandingGet } from "../../src/features/organizations/actions/organizationBrandingGet.js"
 import { organizationBrandingSet } from "../../src/features/organizations/actions/organizationBrandingSet.js"
+import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationDomainClaim } from "../../src/features/organizations/actions/organizationDomainClaim.js"
 import { organizationDomainDiscover } from "../../src/features/organizations/actions/organizationDomainDiscover.js"
+import { organizationDomainRemove } from "../../src/features/organizations/actions/organizationDomainRemove.js"
 import { organizationDomainVerify } from "../../src/features/organizations/actions/organizationDomainVerify.js"
-import { organizationLoginPolicyEnforce } from "../../src/features/organizations/public/organizationLoginPolicyEnforce.js"
 import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
-import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
-import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
-import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
-import { emailOtpStart } from "../../src/features/emailOtp/actions/emailOtpStart.js"
-import { passkeyAuthenticationStart } from "../../src/features/passkeys/actions/passkeyAuthenticationStart.js"
-import { externalIdentityProviderCreate } from "../../src/features/externalIdentities/actions/externalIdentityProviderCreate.js"
-import { externalIdentityStart } from "../../src/features/externalIdentities/actions/externalIdentityStart.js"
-import type { ExternalIdentityProviderPorts } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
 import type { OrganizationDomainDnsVerificationPort } from "../../src/features/organizations/domain/organizationDomainDnsVerificationPort.js"
+import { organizationLoginPolicyEnforce } from "../../src/features/organizations/public/organizationLoginPolicyEnforce.js"
+import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
+import { passkeyAuthenticationStart } from "../../src/features/passkeys/actions/passkeyAuthenticationStart.js"
+import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
+import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -142,6 +143,136 @@ test("branding and verified domain discovery are tenant-safe and DNS-port based"
   })
 })
 
+test("branding validation rejects insecure assets without changing the default", async () => {
+  await withDatabase(async (database) => {
+    const { instance, organization } = await createOrganization(database)
+    const invalid = organizationBrandingSet({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { ...branding, fontUrl: "http://assets.example.com/font.woff2" },
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    expect(invalid.success).toBe(false)
+    expect(
+      organizationBrandingGet({ database, instanceId: instance.id, organizationId: organization.id }),
+    ).toMatchObject({
+      data: { branding: { disableWatermark: false }, version: 1 },
+      success: true,
+    })
+  })
+})
+
+test("organization domains reject instance conflicts, preserve primary invariants, and require the DNS proof", async () => {
+  await withDatabase(async (database) => {
+    const { instance, organization } = await createOrganization(database)
+    expect(
+      organizationDomainClaim({
+        context: instanceSystemContextCreate(),
+        database,
+        input: { domain: instance.domain },
+        instanceId: instance.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(false)
+
+    const primary = organizationDomainClaim({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { domain: "primary.example.com" },
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    const secondary = organizationDomainClaim({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { domain: "secondary.example.com", isPrimary: false },
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    expect(primary.success && secondary.success).toBe(true)
+    expect(
+      organizationDomainRemove({
+        context: instanceSystemContextCreate(),
+        database,
+        domain: "primary.example.com",
+        instanceId: instance.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationDomainRemove({
+        context: instanceSystemContextCreate(),
+        database,
+        domain: "secondary.example.com",
+        instanceId: instance.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationDomainRemove({
+        context: instanceSystemContextCreate(),
+        database,
+        domain: "primary.example.com",
+        instanceId: instance.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(true)
+
+    const claimed = organizationDomainClaim({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { domain: "verified.example.com" },
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    expect(claimed.success).toBe(true)
+    if (!claimed.success) return
+    const token = claimed.data.domain.verification?.recordValue ?? ""
+    const wrongProof = await organizationDomainVerify({
+      context: instanceSystemContextCreate(),
+      database,
+      dnsPort: { txtRecordsGet: async () => resultCreate(["wrong-proof"]) },
+      domain: "verified.example.com",
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    expect(wrongProof.success).toBe(false)
+    expect(organizationDomainDiscover({ database, domain: "verified.example.com" })).toEqual({
+      data: { found: false },
+      success: true,
+    })
+    let calls = 0
+    const verified = await organizationDomainVerify({
+      context: instanceSystemContextCreate(),
+      database,
+      dnsPort: {
+        txtRecordsGet: async () => {
+          calls += 1
+          return resultCreate([token])
+        },
+      },
+      domain: "verified.example.com",
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    expect(verified.success).toBe(true)
+    expect(
+      (
+        await organizationDomainVerify({
+          context: instanceSystemContextCreate(),
+          database,
+          dnsPort: { txtRecordsGet: async () => resultCreate(["unused"]) },
+          domain: "verified.example.com",
+          instanceId: instance.id,
+          organizationId: organization.id,
+        })
+      ).success,
+    ).toBe(true)
+    expect(calls).toBe(1)
+  })
+})
+
 test("organization login policy inherits, overrides, filters providers, and blocks existing login methods", async () => {
   await withDatabase(async (database) => {
     const { instance, organization } = await createOrganization(database)
@@ -184,6 +315,26 @@ test("organization login policy inherits, overrides, filters providers, and bloc
         organizationId: organization.id,
       }).success,
     ).toBe(true)
+    const partial = organizationLoginPolicySet({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { allowEmailOtp: false },
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    expect(partial).toMatchObject({
+      data: { policy: { allowEmailOtp: false, allowPassword: true, providerIds: [provider.data.provider.id] } },
+      success: true,
+    })
+    expect(
+      organizationLoginPolicySet({
+        context: instanceSystemContextCreate(),
+        database,
+        input: {},
+        instanceId: instance.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(false)
     expect(
       organizationLoginPolicyEnforce({
         database,
@@ -201,6 +352,15 @@ test("organization login policy inherits, overrides, filters providers, and bloc
         providerId: "other-provider",
       }).success,
     ).toBe(false)
+    const cleared = organizationLoginPolicySet({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { providerIds: null },
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    expect(cleared).toMatchObject({ data: { policy: { providerIds: ["other-provider"] } }, success: true })
+    if (cleared.success) expect(cleared.data.overrides.providerIds).toBeUndefined()
     expect(
       passwordLogin({
         context: instanceTenantContextCreate(instance.id, "anonymous"),
@@ -259,6 +419,96 @@ test("organization login policy inherits, overrides, filters providers, and bloc
         providerPorts: ports,
       }).success,
     ).toBe(false)
+  })
+})
+
+test("organization discovery honors its domain policy and provider allowlist", async () => {
+  await withDatabase(async (database) => {
+    const { instance, organization } = await createOrganization(database)
+    const globalProvider = externalIdentityProviderCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "global-client",
+        clientSecret: "global-secret",
+        displayName: "Google",
+        redirectUri: "https://app.example.com/google",
+        type: "google",
+      },
+      instanceId: instance.id,
+    })
+    const organizationProvider = externalIdentityProviderCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "organization-client",
+        clientSecret: "organization-secret",
+        displayName: "GitHub",
+        organizationId: organization.id,
+        redirectUri: "https://app.example.com/github",
+        type: "github",
+      },
+      instanceId: instance.id,
+    })
+    expect(globalProvider.success && organizationProvider.success).toBe(true)
+    if (!globalProvider.success || !organizationProvider.success) return
+
+    const claimed = organizationDomainClaim({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { domain: "discover.example.com" },
+      instanceId: instance.id,
+      organizationId: organization.id,
+    })
+    expect(claimed.success).toBe(true)
+    if (!claimed.success) return
+    const token = claimed.data.domain.verification?.recordValue ?? ""
+    expect(
+      (
+        await organizationDomainVerify({
+          context: instanceSystemContextCreate(),
+          database,
+          dnsPort: { txtRecordsGet: async () => resultCreate([token]) },
+          domain: "discover.example.com",
+          instanceId: instance.id,
+          organizationId: organization.id,
+        })
+      ).success,
+    ).toBe(true)
+
+    expect(
+      organizationLoginPolicySet({
+        context: instanceSystemContextCreate(),
+        database,
+        input: { allowDomainDiscovery: false, providerIds: [organizationProvider.data.provider.id] },
+        instanceId: instance.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(true)
+    expect(organizationDomainDiscover({ database, domain: "discover.example.com" })).toEqual({
+      data: { found: false },
+      success: true,
+    })
+
+    expect(
+      organizationLoginPolicySet({
+        context: instanceSystemContextCreate(),
+        database,
+        input: { allowDomainDiscovery: true, providerIds: [organizationProvider.data.provider.id] },
+        instanceId: instance.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(true)
+    const discovered = organizationDomainDiscover({ database, domain: "discover.example.com" })
+    expect(discovered).toMatchObject({ success: true, data: { found: true } })
+    if (discovered.success && discovered.data.found) {
+      expect(discovered.data.providers).toEqual([
+        expect.objectContaining({ id: organizationProvider.data.provider.id, type: "github" }),
+      ])
+      expect(discovered.data.providers.some((provider) => provider.id === globalProvider.data.provider.id)).toBe(false)
+    }
   })
 })
 

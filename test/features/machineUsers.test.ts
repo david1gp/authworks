@@ -20,6 +20,7 @@ import { machineUserList } from "../../src/features/machineUsers/actions/machine
 import { machineUserApiClientCreate } from "../../src/features/machineUsers/client/machineUserApiClientCreate.js"
 import { machineCredentialTable } from "../../src/features/machineUsers/persistence/machineCredentialTable.js"
 import { machineUserTable } from "../../src/features/machineUsers/persistence/machineUserTable.js"
+import { machineClientCredentialsRevoke } from "../../src/features/machineUsers/public/machineClientCredentialsRevoke.js"
 import { machineUserCreateResponseSchema } from "../../src/features/machineUsers/public/machineUserCreateResponseSchema.js"
 import { machineUserServerAppCreate } from "../../src/features/machineUsers/server/machineUserServerAppCreate.js"
 import { oidcDiscoverySchema } from "../../src/features/oidc/public/oidcDiscoverySchema.js"
@@ -125,6 +126,74 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
       machineClientCredentialsIssue({
         database,
         input: { clientId: "worker", clientSecret: "wrong", scope: ["api.read"] },
+        instanceId: instance.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      machineClientCredentialsIssue({
+        database,
+        input: { clientId: "", clientSecret: created.data.clientSecret },
+        instanceId: instance.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      machineClientCredentialsIssue({
+        database,
+        input: { clientId: "unknown", clientSecret: created.data.clientSecret },
+        instanceId: instance.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      machineClientCredentialsIssue({
+        database,
+        input: { clientId: "worker", clientSecret: created.data.clientSecret, scope: ["api.admin"] },
+        instanceId: instance.id,
+      }).success,
+    ).toBe(false)
+
+    expect(
+      machineClientCredentialsRevoke({
+        clientId: "worker",
+        clientSecret: created.data.clientSecret,
+        database,
+        instanceId: instance.id,
+        token: token.data.accessToken,
+      }).success,
+    ).toBe(true)
+    expect(
+      machineCredentialAuthenticate({ database, instanceId: instance.id, token: token.data.accessToken }).success,
+    ).toBe(false)
+
+    const secretless = machineUserCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: { displayName: "Secretless", scopes: ["api.read"], userName: "secretless" },
+      instanceId: instance.id,
+    })
+    expect(secretless.success).toBe(true)
+    if (!secretless.success) return
+    const secretlessCredential = database.db
+      .select()
+      .from(machineCredentialTable)
+      .all()
+      .find(
+        (credential) =>
+          credential.kind === "client_secret" && credential.machineUserId === secretless.data.machineUser.id,
+      )
+    expect(secretlessCredential).toBeDefined()
+    if (secretlessCredential === undefined) return
+    expect(
+      machineCredentialRevoke({
+        context: instanceSystemContextCreate(),
+        credentialId: secretlessCredential.id,
+        database,
+        instanceId: instance.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      machineClientCredentialsIssue({
+        database,
+        input: { clientId: "secretless", clientSecret: secretless.data.clientSecret },
         instanceId: instance.id,
       }).success,
     ).toBe(false)

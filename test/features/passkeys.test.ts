@@ -85,7 +85,7 @@ function publicKeyCoordinates(publicKey: ReturnType<typeof createPublicKey>) {
 }
 
 function registrationResponse(
-  options: { readonly challenge: string; readonly userId: string },
+  options: { readonly challenge: string; readonly origin?: string; readonly userId: string },
   credentialId: Buffer,
   privateKey: ReturnType<typeof createPrivateKey>,
 ): PasskeyRegistrationResponse {
@@ -109,7 +109,7 @@ function registrationResponse(
     Buffer.from(coseKey),
   ])
   const clientDataJSON = Buffer.from(
-    JSON.stringify({ challenge: options.challenge, origin, type: "webauthn.create" }),
+    JSON.stringify({ challenge: options.challenge, origin: options.origin ?? origin, type: "webauthn.create" }),
     "utf8",
   ).toString("base64url")
   return {
@@ -314,6 +314,40 @@ test("passkeys perform real registration, discoverable authentication, protocol 
         })
       ).success,
     ).toBe(false)
+
+    const mismatchedChallengeStart = await passkeyAuthenticationStart({
+      database,
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      purpose: "passwordless",
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+    })
+    if (!mismatchedChallengeStart.success) return
+    expect(
+      (
+        await passkeyAuthenticationComplete({
+          database,
+          input: {
+            response: authenticationResponseCreate(
+              "not-the-ceremony-challenge",
+              fixture.userId,
+              credentialId,
+              keys.privateKey,
+              2,
+            ),
+            token: mismatchedChallengeStart.data.token,
+          },
+          instanceId: fixture.instance.id,
+          origins: [origin],
+          rpId,
+          rpName: "Test RP",
+          runtime: testkit.runtime,
+        })
+      ).success,
+    ).toBe(false)
+
     const noPresenceStart = await passkeyAuthenticationStart({
       database,
       instanceId: fixture.instance.id,
@@ -380,6 +414,53 @@ test("passkeys perform real registration, discoverable authentication, protocol 
         })
       ).success,
     ).toBe(false)
+
+    const expiredStart = await passkeyAuthenticationStart({
+      database,
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      purpose: "passwordless",
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+    })
+    if (!expiredStart.success) return
+    testkit.advance(5 * 60 * 1_000 + 1)
+    expect(
+      (
+        await passkeyAuthenticationComplete({
+          database,
+          input: {
+            response: authenticationResponseCreate(
+              expiredStart.data.options.challenge,
+              fixture.userId,
+              credentialId,
+              keys.privateKey,
+              2,
+            ),
+            token: expiredStart.data.token,
+          },
+          instanceId: fixture.instance.id,
+          origins: [origin],
+          rpId,
+          rpName: "Test RP",
+          runtime: testkit.runtime,
+        })
+      ).success,
+    ).toBe(false)
+
+    const mfaWithoutSession = await passkeyAuthenticationStart({
+      database,
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      purpose: "mfa",
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(mfaWithoutSession.success).toBe(false)
+
     const invalidSignatureStart = await passkeyAuthenticationStart({
       database,
       instanceId: fixture.instance.id,
@@ -532,6 +613,136 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     expect(JSON.stringify(database.sqlite.query("SELECT payload FROM events").all())).not.toContain(
       credentialId.toString("base64url"),
     )
+
+    const revokedAuthenticationStart = await passkeyAuthenticationStart({
+      database,
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      purpose: "passwordless",
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+    })
+    expect(revokedAuthenticationStart.success).toBe(true)
+    if (!revokedAuthenticationStart.success) return
+    expect(
+      (
+        await passkeyAuthenticationComplete({
+          database,
+          input: {
+            response: authenticationResponseCreate(
+              revokedAuthenticationStart.data.options.challenge,
+              fixture.userId,
+              credentialId,
+              keys.privateKey,
+              3,
+            ),
+            token: revokedAuthenticationStart.data.token,
+          },
+          instanceId: fixture.instance.id,
+          origins: [origin],
+          rpId,
+          rpName: "Test RP",
+          runtime: testkit.runtime,
+        })
+      ).success,
+    ).toBe(false)
+  })
+})
+
+test("passkey registration binds origin and challenge before consuming its ceremony", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "passkey-registration.example.com")
+    const keys = generateKeyPairSync("ec", { namedCurve: "prime256v1" })
+    const credentialId = Buffer.from(testkit.runtime.randomBytes(32))
+    const started = await passkeyRegistrationStart({
+      actorId: fixture.userId,
+      database,
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(started.success).toBe(true)
+    if (!started.success) return
+
+    const mismatchedChallenge = await passkeyRegistrationComplete({
+      actorId: fixture.userId,
+      database,
+      input: {
+        response: registrationResponse(
+          { challenge: "not-the-ceremony-challenge", userId: fixture.userId },
+          credentialId,
+          keys.privateKey,
+        ),
+        token: started.data.token,
+      },
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(mismatchedChallenge.success).toBe(false)
+
+    const registered = await passkeyRegistrationComplete({
+      actorId: fixture.userId,
+      database,
+      input: {
+        response: registrationResponse(
+          { challenge: started.data.options.challenge, userId: fixture.userId },
+          credentialId,
+          keys.privateKey,
+        ),
+        token: started.data.token,
+      },
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(registered.success).toBe(true)
+
+    const invalidOriginStart = await passkeyRegistrationStart({
+      actorId: fixture.userId,
+      database,
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(invalidOriginStart.success).toBe(true)
+    if (!invalidOriginStart.success) return
+    const invalidOrigin = await passkeyRegistrationComplete({
+      actorId: fixture.userId,
+      database,
+      input: {
+        response: registrationResponse(
+          {
+            challenge: invalidOriginStart.data.options.challenge,
+            origin: "https://evil.example.com",
+            userId: fixture.userId,
+          },
+          Buffer.from(testkit.runtime.randomBytes(32)),
+          keys.privateKey,
+        ),
+        token: invalidOriginStart.data.token,
+      },
+      instanceId: fixture.instance.id,
+      origins: [origin],
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(invalidOrigin.success).toBe(false)
   })
 })
 

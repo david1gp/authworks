@@ -13,7 +13,10 @@ import { oidcAuthorizationRequestAuthorize } from "../../src/features/oidc/actio
 import { oidcAuthorizationRequestConsent } from "../../src/features/oidc/actions/oidcAuthorizationRequestConsent.js"
 import { oidcClientCreate } from "../../src/features/oidc/actions/oidcClientCreate.js"
 import { oidcClientGet } from "../../src/features/oidc/actions/oidcClientGet.js"
+import { oidcClientLifecycleSet } from "../../src/features/oidc/actions/oidcClientLifecycleSet.js"
 import { oidcClientList } from "../../src/features/oidc/actions/oidcClientList.js"
+import { oidcClientSecretRotate } from "../../src/features/oidc/actions/oidcClientSecretRotate.js"
+import { oidcClientUpdate } from "../../src/features/oidc/actions/oidcClientUpdate.js"
 import { oidcDiscoveryGet } from "../../src/features/oidc/actions/oidcDiscoveryGet.js"
 import { oidcJwksGet } from "../../src/features/oidc/actions/oidcJwksGet.js"
 import { oidcSigningKeyCreate } from "../../src/features/oidc/actions/oidcSigningKeyCreate.js"
@@ -25,6 +28,7 @@ import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClien
 import { oidcClientSecretMatches } from "../../src/features/oidc/domain/oidcClientSecretMatches.js"
 import { oidcJwtSign } from "../../src/features/oidc/domain/oidcJwtSign.js"
 import { oidcJwtVerify } from "../../src/features/oidc/domain/oidcJwtVerify.js"
+import { oidcPkceVerify } from "../../src/features/oidc/domain/oidcPkceVerify.js"
 import { oidcRedirectUriMatches } from "../../src/features/oidc/domain/oidcRedirectUriMatches.js"
 import { oidcRedirectUriValidate } from "../../src/features/oidc/domain/oidcRedirectUriValidate.js"
 import { oidcValueDecrypt } from "../../src/features/oidc/domain/oidcValueEncrypt.js"
@@ -196,6 +200,19 @@ test("redirect URI matching is exact and rejects unsafe registrations", () => {
   expect(oidcRedirectUriValidate("https://user:password@client.example/callback").success).toBe(false)
 })
 
+test("PKCE accepts only a valid S256 verifier and challenge pair", () => {
+  const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+  const challenge = pkceChallengeCreate(verifier)
+
+  expect(oidcPkceVerify(verifier, challenge, "S256")).toEqual({ data: true, success: true })
+  expect(oidcPkceVerify(verifier, pkceChallengeCreate(`${verifier}x`), "S256").success).toBe(false)
+  expect(oidcPkceVerify(verifier, challenge, "plain").success).toBe(false)
+  expect(oidcPkceVerify(verifier.slice(0, 42), challenge, "S256").success).toBe(false)
+  expect(oidcPkceVerify(`${verifier}x`.repeat(3), challenge, "S256").success).toBe(false)
+  expect(oidcPkceVerify(verifier, challenge.slice(0, 42), "S256").success).toBe(false)
+  expect(oidcPkceVerify(verifier, `${challenge}x`, "S256").success).toBe(false)
+})
+
 test("OIDC clients are tenant-isolated, return secrets once, and write safe events", async () => {
   await withDatabase(async (database) => {
     const alpha = await createInstance(database, "oidc-alpha.example.com")
@@ -249,6 +266,91 @@ test("OIDC clients are tenant-isolated, return secrets once, and write safe even
     const events = database.db.select().from(storageEventTable).all()
     expect(JSON.stringify(events)).not.toContain(created.data.clientSecret)
     expect(JSON.stringify(events)).not.toContain("secretHash")
+  })
+})
+
+test("client updates keep exact redirects and secret rotation invalidates old credentials", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "client-management.example.com")
+    const updated = oidcClientUpdate({
+      clientId: fixture.client.id,
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        name: "Updated client",
+        redirectUris: ["https://client.example/callback?channel=two"],
+      },
+      instanceId: fixture.authenticated.instance.id,
+    })
+    expect(updated.success).toBe(true)
+    if (!updated.success) return
+    expect(updated.data.client.redirectUris).toEqual(["https://client.example/callback?channel=two"])
+    expect(
+      oidcRedirectUriMatches("https://client.example/callback?channel=one", updated.data.client.redirectUris).success,
+    ).toBe(false)
+
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    expect(
+      oidcAuthorizationRequestAuthorize({
+        database,
+        input: {
+          client_id: fixture.client.id,
+          code_challenge: pkceChallengeCreate(verifier),
+          code_challenge_method: "S256",
+          redirect_uri: "https://client.example/callback?channel=one",
+          response_type: "code",
+          scope: "openid",
+          state: "old-redirect",
+        },
+        instanceId: fixture.authenticated.instance.id,
+        sessionToken: fixture.authenticated.token,
+      }).success,
+    ).toBe(false)
+    expect(
+      oidcAuthorizationRequestAuthorize({
+        database,
+        input: {
+          client_id: fixture.client.id,
+          code_challenge: pkceChallengeCreate(verifier),
+          code_challenge_method: "S256",
+          redirect_uri: "https://client.example/callback?channel=two",
+          response_type: "code",
+          scope: "openid",
+          state: "new-redirect",
+        },
+        instanceId: fixture.authenticated.instance.id,
+        sessionToken: fixture.authenticated.token,
+      }).success,
+    ).toBe(true)
+
+    const rotated = oidcClientSecretRotate({
+      clientId: fixture.client.id,
+      context: instanceSystemContextCreate(),
+      database,
+      instanceId: fixture.authenticated.instance.id,
+    })
+    expect(rotated.success).toBe(true)
+    if (!rotated.success || rotated.data.clientSecret === undefined) return
+    expect(rotated.data.clientSecret).not.toBe(fixture.clientSecret)
+
+    const oldSecret = await oidcTokenRequest(fixture.app, "client-management.example.com", {
+      client_id: fixture.client.id,
+      client_secret: fixture.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: fixture.token.refresh_token,
+    })
+    expect(oldSecret.status).toBe(401)
+    expect(await oldSecret.json()).toMatchObject({ error: "invalid_client" })
+    const newSecret = await oidcTokenRequest(fixture.app, "client-management.example.com", {
+      client_id: fixture.client.id,
+      client_secret: rotated.data.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: fixture.token.refresh_token,
+    })
+    expect(newSecret.status).toBe(200)
+    const events = JSON.stringify(database.sqlite.query("SELECT payload, metadata FROM events").all())
+    expect(events).not.toContain(fixture.clientSecret)
+    expect(events).not.toContain(rotated.data.clientSecret)
   })
 })
 
@@ -445,7 +547,7 @@ test("authenticated authorization issues a bound short-lived code and preserves 
   })
 })
 
-test("authorization rejects redirect, state, PKCE, expiry, and tenant mismatches", async () => {
+test("authorization rejects invalid redirects, scopes, PKCE, code bindings, expiry, and tenant mismatches", async () => {
   await withDatabase(async (database, testkit) => {
     const authenticated = await createAuthenticatedSession(database, "authorize-negative.example.com")
     const other = await createAuthenticatedSession(database, "authorize-other.example.com")
@@ -462,6 +564,19 @@ test("authorization rejects redirect, state, PKCE, expiry, and tenant mismatches
     })
     expect(client.success).toBe(true)
     if (!client.success) return
+    const otherClient = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        clientType: "public",
+        name: "Other authorization client",
+        redirectUris: ["https://client.example/callback"],
+        trusted: true,
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(otherClient.success).toBe(true)
+    if (!otherClient.success) return
     const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
     const input = {
       client_id: client.data.client.id,
@@ -488,6 +603,22 @@ test("authorization rejects redirect, state, PKCE, expiry, and tenant mismatches
         sessionToken: authenticated.token,
       }).success,
     ).toBe(false)
+    expect(
+      oidcAuthorizationRequestAuthorize({
+        database,
+        input: { ...input, scope: "openid openid" },
+        instanceId: authenticated.instance.id,
+        sessionToken: authenticated.token,
+      }).success,
+    ).toBe(false)
+    expect(
+      oidcAuthorizationRequestAuthorize({
+        database,
+        input: { ...input, scope: "openid profile" },
+        instanceId: authenticated.instance.id,
+        sessionToken: authenticated.token,
+      }).success,
+    ).toBe(false)
     const issued = oidcAuthorizationRequestAuthorize({
       database,
       input,
@@ -497,6 +628,30 @@ test("authorization rejects redirect, state, PKCE, expiry, and tenant mismatches
     })
     expect(issued.success).toBe(true)
     if (!issued.success) return
+    expect(
+      oidcAuthorizationCodeRedeem({
+        database,
+        input: {
+          client_id: otherClient.data.client.id,
+          code: issued.data.code,
+          code_verifier: verifier,
+          redirect_uri: issued.data.redirect_uri,
+        },
+        instanceId: authenticated.instance.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      oidcAuthorizationCodeRedeem({
+        database,
+        input: {
+          client_id: client.data.client.id,
+          code: issued.data.code,
+          code_verifier: verifier,
+          redirect_uri: "https://client.example/other",
+        },
+        instanceId: authenticated.instance.id,
+      }).success,
+    ).toBe(false)
     expect(
       oidcAuthorizationCodeRedeem({
         database,
@@ -534,6 +689,48 @@ test("authorization rejects redirect, state, PKCE, expiry, and tenant mismatches
         instanceId: authenticated.instance.id,
       }).success,
     ).toBe(false)
+  })
+})
+
+test("inactive clients cannot authorize or refresh existing grants", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "inactive-client.example.com")
+    const inactive = oidcClientLifecycleSet({
+      clientId: fixture.client.id,
+      context: instanceSystemContextCreate(),
+      database,
+      input: { status: "inactive" },
+      instanceId: fixture.authenticated.instance.id,
+    })
+    expect(inactive.success).toBe(true)
+    if (!inactive.success) return
+    expect(inactive.data.client.status).toBe("inactive")
+
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const authorization = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: fixture.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid",
+        state: "inactive-state",
+      },
+      instanceId: fixture.authenticated.instance.id,
+      sessionToken: fixture.authenticated.token,
+    })
+    expect(authorization.success).toBe(false)
+
+    const refreshed = await oidcTokenRequest(fixture.app, "inactive-client.example.com", {
+      client_id: fixture.client.id,
+      client_secret: fixture.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: fixture.token.refresh_token,
+    })
+    expect(refreshed.status).toBe(401)
+    expect(await refreshed.json()).toMatchObject({ error: "invalid_client" })
   })
 })
 
@@ -665,6 +862,74 @@ test("authorization routes use the authenticated session and the API client cont
       redirect_uri: started.data.redirect_uri,
     })
     expect(redeemed).toMatchObject({ success: true, data: { client_id: client.data.client.id, nonce: null } })
+  })
+})
+
+test("authorization redirects preserve registered query parameters and never redirect invalid requests", async () => {
+  await withDatabase(async (database) => {
+    const authenticated = await createAuthenticatedSession(database, "redirect-route.example.com")
+    const client = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        clientType: "public",
+        name: "Redirect route client",
+        redirectUris: ["https://client.example/callback?channel=one"],
+        trusted: true,
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(client.success).toBe(true)
+    if (!client.success) return
+    const app = oidcServerAppCreate({ database, systemSecret: "redirect-route-secret" })
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const valid = {
+      client_id: client.data.client.id,
+      code_challenge: pkceChallengeCreate(verifier),
+      code_challenge_method: "S256",
+      redirect_uri: "https://client.example/callback?channel=one",
+      response_type: "code",
+      scope: "openid",
+      state: "redirect-state",
+    }
+    const redirected = await app.fetch(
+      new Request(`https://redirect-route.example.com/oauth2/authorize?${new URLSearchParams(valid)}`, {
+        headers: { authorization: `Bearer ${authenticated.token}` },
+      }),
+    )
+    expect(redirected.status).toBe(302)
+    const location = redirected.headers.get("location")
+    expect(location).toStartWith("https://client.example/callback?channel=one&")
+    if (location === null) return
+    expect(new URL(location).searchParams.get("code")).toBeString()
+    expect(new URL(location).searchParams.get("state")).toBe("redirect-state")
+
+    const invalidRedirect = await app.fetch(
+      new Request(
+        `https://redirect-route.example.com/oauth2/authorize?${new URLSearchParams({
+          ...valid,
+          redirect_uri: "https://client.example/callback?channel=two",
+        })}`,
+        { headers: { authorization: `Bearer ${authenticated.token}` } },
+      ),
+    )
+    expect(invalidRedirect.status).toBeGreaterThanOrEqual(400)
+    expect(invalidRedirect.status).toBeLessThan(600)
+    expect(invalidRedirect.headers.get("location")).toBeNull()
+
+    const unknownClient = await app.fetch(
+      new Request(
+        `https://redirect-route.example.com/oauth2/authorize?${new URLSearchParams({
+          ...valid,
+          client_id: "018f0b7b-5c6e-7b7d-8e8f-901234567890",
+          redirect_uri: "https://attacker.example/callback",
+        })}`,
+        { headers: { authorization: `Bearer ${authenticated.token}` } },
+      ),
+    )
+    expect(unknownClient.status).toBeGreaterThanOrEqual(400)
+    expect(unknownClient.status).toBeLessThan(600)
+    expect(unknownClient.headers.get("location")).toBeNull()
   })
 })
 
@@ -1048,6 +1313,20 @@ test("UserInfo validates bearer tokens, isolates tenants, and filters claims by 
     )
     expect(openidResponse.status).toBe(200)
     expect(await openidResponse.json()).toEqual({ sub: openidOnly.authenticated.userId })
+    const openidJwks = await openidOnly.app.fetch(
+      new Request("https://userinfo-openid.example.com/.well-known/jwks.json"),
+    )
+    expect(openidJwks.status).toBe(200)
+    const openidKeys = v.parse(oidcJwksSchema, await openidJwks.json())
+    expect(openidKeys.keys.length).toBeGreaterThan(0)
+    const openidKey = openidKeys.keys[0]
+    if (openidKey === undefined) return
+    const openidIdToken = oidcJwtVerify(openidOnly.token.id_token, openidKey)
+    expect(openidIdToken.success).toBe(true)
+    if (!openidIdToken.success) return
+    expect(openidIdToken.data).not.toHaveProperty("email")
+    expect(openidIdToken.data).not.toHaveProperty("preferred_username")
+    expect(openidIdToken.data).not.toHaveProperty("name")
 
     await createInstance(database, "userinfo-beta.example.com")
     const foreign = await fixture.app.fetch(
@@ -1391,5 +1670,136 @@ test("RP-initiated logout validates exact redirects, revokes the session and OID
     expect(audit).not.toContain(fixture.token.access_token)
     expect(audit).not.toContain(fixture.token.refresh_token)
     expect(audit).not.toContain("logout-state")
+  })
+})
+
+test("consent denial is terminal, prompt none requires interaction, and trusted clients bypass consent", async () => {
+  await withDatabase(async (database) => {
+    const authenticated = await createAuthenticatedSession(database, "consent-corner-case.example.com")
+    const client = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        allowedScopes: ["openid"],
+        clientType: "public",
+        name: "Consent corner-case client",
+        redirectUris: ["https://client.example/callback"],
+        requireConsent: true,
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(client.success).toBe(true)
+    if (!client.success) return
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const input = {
+      client_id: client.data.client.id,
+      code_challenge: pkceChallengeCreate(verifier),
+      code_challenge_method: "S256" as const,
+      redirect_uri: "https://client.example/callback",
+      response_type: "code" as const,
+      scope: "openid",
+      state: "consent-corner-state",
+    }
+
+    const silent = oidcAuthorizationRequestAuthorize({
+      database,
+      input: { ...input, prompt: "none" },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(silent.success).toBe(false)
+    if (silent.success) return
+    expect(silent.op).toBe("oidcAuthorizationInteractionRequired")
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_authorization_requests").get()).toEqual({
+      count: 0,
+    })
+
+    const pending = oidcAuthorizationRequestAuthorize({
+      database,
+      input,
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(pending.success).toBe(false)
+    if (pending.success) return
+    const required = JSON.parse(pending.errorData ?? "{}") as { request_id?: string }
+    expect(required.request_id).toBeString()
+    const denied = oidcAuthorizationRequestConsent({
+      database,
+      input: { decision: "deny", request_id: required.request_id ?? "" },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(denied).toMatchObject({
+      data: {
+        approved: false,
+        error: "access_denied",
+        redirect_uri: "https://client.example/callback",
+        state: "consent-corner-state",
+      },
+      success: true,
+    })
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM oidc_authorization_codes").get()).toEqual({ count: 0 })
+
+    const trusted = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        allowedScopes: ["openid"],
+        clientType: "public",
+        name: "Trusted consent corner-case client",
+        redirectUris: ["https://client.example/callback"],
+        requireConsent: true,
+        trusted: true,
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(trusted.success).toBe(true)
+    if (!trusted.success) return
+    expect(
+      oidcAuthorizationRequestAuthorize({
+        database,
+        input: { ...input, client_id: trusted.data.client.id, state: "trusted-state" },
+        instanceId: authenticated.instance.id,
+        sessionToken: authenticated.token,
+      }).success,
+    ).toBe(true)
+  })
+})
+
+test("logout without an ID token hint requires and revokes only the authenticated session", async () => {
+  await withDatabase(async (database) => {
+    const authenticated = await createAuthenticatedSession(database, "logout-session.example.com")
+    const client = oidcClientCreate({
+      context: instanceSystemContextCreate(),
+      database,
+      input: {
+        clientType: "public",
+        name: "Session logout client",
+        redirectUris: ["https://client.example/callback"],
+      },
+      instanceId: authenticated.instance.id,
+    })
+    expect(client.success).toBe(true)
+    if (!client.success) return
+    const wrongSession = oidcLogout({
+      database,
+      input: { client_id: client.data.client.id },
+      instanceId: authenticated.instance.id,
+      sessionToken: "not-the-session-token",
+    })
+    expect(wrongSession.success).toBe(false)
+    expect(database.sqlite.query("SELECT revoked_at FROM sessions").get()).toEqual({ revoked_at: null })
+
+    const loggedOut = oidcLogout({
+      database,
+      input: { client_id: client.data.client.id },
+      instanceId: authenticated.instance.id,
+      sessionToken: authenticated.token,
+    })
+    expect(loggedOut).toEqual({ data: { revoked: true }, success: true })
+    expect(database.sqlite.query("SELECT revoked_at, revocation_reason FROM sessions").get()).toMatchObject({
+      revocation_reason: "rp_initiated_logout",
+    })
   })
 })

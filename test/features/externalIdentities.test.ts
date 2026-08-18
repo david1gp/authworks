@@ -14,6 +14,7 @@ import { externalIdentityList } from "../../src/features/externalIdentities/acti
 import { externalIdentityProviderCreate } from "../../src/features/externalIdentities/actions/externalIdentityProviderCreate.js"
 import { externalIdentityProviderPortCreate } from "../../src/features/externalIdentities/domain/externalIdentityProviderPortCreate.js"
 import type { ExternalIdentityProviderPort } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
+import { externalIdentityOAuthTransactionTable } from "../../src/features/externalIdentities/persistence/externalIdentityOAuthTransactionTable.js"
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { externalIdentityStart } from "../../src/features/externalIdentities/actions/externalIdentityStart.js"
 import { externalIdentityUnlink } from "../../src/features/externalIdentities/actions/externalIdentityUnlink.js"
@@ -75,6 +76,19 @@ function testPort(email = "new@example.com"): ExternalIdentityProviderPort {
       )
     },
   }
+}
+
+function providerJsonResponse(value: unknown, status = 200): Response {
+  return new Response(JSON.stringify(value), {
+    headers: { "content-type": "application/json" },
+    status,
+  })
+}
+
+function providerFetchCreate(
+  handler: (input: string | URL | Request, init?: RequestInit) => Promise<Response>,
+): typeof fetch {
+  return Object.assign(handler, { preconnect: fetch.preconnect })
 }
 
 async function createProvider(database: StorageDatabase, instanceId: string, allowAccountCreation = true) {
@@ -232,6 +246,13 @@ test("required MFA turns external identity authentication into a TOTP challenge"
     expect(linkStart.success).toBe(true)
     if (!linkStart.success) return
     const linkState = new URL(linkStart.data.authorizationUrl).searchParams.get("state") ?? ""
+    const linkTransaction = database.db.select().from(externalIdentityOAuthTransactionTable).get()
+    expect(linkTransaction).toMatchObject({
+      intent: "link",
+      providerId: provider.id,
+      stateHash: expect.not.stringContaining(linkState),
+      userId: login.data.authentication.userId,
+    })
     const pending = await externalIdentityCallback({
       code: "link-code",
       database,
@@ -414,6 +435,17 @@ test("external identities never auto-link by email and linking requires confirma
     })
     expect(linked.success).toBe(true)
     expect(
+      externalIdentityLinkComplete({
+        database,
+        input: { confirm: true, confirmationToken: pending.data.confirmationToken },
+        instanceId: instance.id,
+        providerId: provider.id,
+        session: login.data.session.session,
+        userId: login.data.authentication.userId,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(false)
+    expect(
       externalIdentityList({
         database,
         instanceId: instance.id,
@@ -518,6 +550,94 @@ test("provider adapters use fixed endpoints and reject invalid state isolation",
         })
       ).success,
     ).toBe(false)
+  })
+})
+
+test("provider adapters preserve OAuth security parameters for Google, GitHub, and Microsoft", () => {
+  const ports = externalIdentityProviderPortCreate()
+
+  for (const type of ["google", "github", "microsoft"] as const) {
+    const port = ports[type]
+    expect(port).toBeDefined()
+    if (port === undefined) continue
+    const authorization = port.authorizationUrlCreate(
+      {
+        clientId: "client-id",
+        clientSecret: "client-secret",
+        redirectUri: "https://app.test/callback",
+        scopes: ["openid", "profile"],
+        type,
+      },
+      { nonce: "nonce", pkceChallenge: "challenge", state: "state" },
+    )
+    expect(authorization.success).toBe(true)
+    if (!authorization.success) continue
+    const query = new URL(authorization.data).searchParams
+    expect(query.get("client_id")).toBe("client-id")
+    expect(query.get("redirect_uri")).toBe("https://app.test/callback")
+    expect(query.get("response_type")).toBe("code")
+    expect(query.get("scope")).toBe("openid profile")
+    expect(query.get("state")).toBe("state")
+    expect(query.get("code_challenge")).toBe("challenge")
+    expect(query.get("code_challenge_method")).toBe("S256")
+    expect(query.get("nonce")).toBe(type === "github" ? null : "nonce")
+  }
+})
+
+test("provider adapters reject incomplete token responses and safely handle GitHub email fallback", async () => {
+  const incompleteTokenFetcher = providerFetchCreate(async () => providerJsonResponse({ access_token: "access-token" }))
+  const incompletePorts = externalIdentityProviderPortCreate({ fetch: incompleteTokenFetcher })
+  for (const type of ["google", "microsoft"] as const) {
+    const port = incompletePorts[type]
+    expect(port).toBeDefined()
+    if (port === undefined) continue
+    const result = await port.callbackExchange(
+      {
+        clientId: "client-id",
+        clientSecret: "client-secret",
+        redirectUri: "https://app.test/callback",
+        scopes: ["openid"],
+        type,
+      },
+      { code: "code", nonce: "nonce", pkceVerifier: "verifier" },
+    )
+    expect(result.success).toBe(false)
+  }
+
+  const githubFetcher = providerFetchCreate(async (input) => {
+    const url = input.toString()
+    if (url === "https://github.com/login/oauth/access_token")
+      return providerJsonResponse({ access_token: "access-token" })
+    if (url === "https://api.github.com/user")
+      return providerJsonResponse({ id: 42, login: "octocat", name: "Octo", email: null })
+    if (url === "https://api.github.com/user/emails")
+      return providerJsonResponse([
+        { email: "primary@example.com", primary: true, verified: false },
+        { email: "secondary@example.com", primary: false, verified: true },
+      ])
+    return providerJsonResponse({}, 404)
+  })
+  const github = externalIdentityProviderPortCreate({ fetch: githubFetcher }).github
+  expect(github).toBeDefined()
+  if (github === undefined) return
+  const identity = await github.callbackExchange(
+    {
+      clientId: "client-id",
+      clientSecret: "client-secret",
+      redirectUri: "https://app.test/callback",
+      scopes: ["user:email"],
+      type: "github",
+    },
+    { code: "code", pkceVerifier: "verifier" },
+  )
+  expect(identity).toMatchObject({
+    data: {
+      email: "primary@example.com",
+      emailVerified: false,
+      externalSubject: "42",
+      providerType: "github",
+    },
+    success: true,
   })
 })
 

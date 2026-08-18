@@ -124,6 +124,105 @@ test("custom roles and fine-grained policy rules support resource scoping and de
   expect(otherResource).toMatchObject({ success: true, data: { allowed: false, reason: "resource_mismatch" } })
 })
 
+test("global policy permissions cover a resource while scoped denies stay local", () => {
+  const decision = authorizationPolicyEvaluate({
+    actor: authorizationUserActorContextCreate("instance-a", "user-a"),
+    instanceId: "instance-a",
+    permission: "project.read",
+    policies: [
+      { effect: "allow", permission: "project.read" },
+      { effect: "deny", permission: "project.read", resourceId: "project-b" },
+    ],
+    resourceId: "project-a",
+  })
+
+  expect(decision).toMatchObject({
+    success: true,
+    data: { allowed: true, reason: "policy", resourceId: "project-a" },
+  })
+})
+
+test("role resolution aggregates known roles, ignores unknown roles, and rejects fixed-role collisions", () => {
+  const resolved = authorizationRolePermissionsResolve({
+    customRoles: [
+      { name: "Reader", permissions: ["project.read"], roleId: "reader" },
+      { name: "Writer", permissions: ["project.write"], roleId: "writer" },
+    ],
+    roles: ["missing", "reader", "writer"],
+  })
+  expect(resolved).toEqual({
+    success: true,
+    data: [
+      { effect: "allow", permission: "project.read" },
+      { effect: "allow", permission: "project.write" },
+    ],
+  })
+
+  expect(
+    authorizationRolePermissionsResolve({
+      customRoles: [{ name: "Another owner", permissions: [], roleId: "owner" }],
+      roles: ["owner"],
+    }),
+  ).toMatchObject({ success: false, op: "authorizationRolePermissionsResolve" })
+})
+
+test("assurance requirements allow multi-factor actors and reject weaker actors", () => {
+  const policy = [{ effect: "allow" as const, minimumAssurance: "authenticated" as const, permission: "project.read" }]
+  const authenticated = authorizationPolicyEvaluate({
+    actor: authorizationUserActorContextCreate("instance-a", "user-a"),
+    instanceId: "instance-a",
+    minimumAssurance: "multi_factor",
+    permission: "project.read",
+    policies: policy,
+  })
+  const multiFactor = authorizationPolicyEvaluate({
+    actor: { ...authorizationUserActorContextCreate("instance-a", "user-a"), assurance: "multi_factor" as const },
+    instanceId: "instance-a",
+    minimumAssurance: "multi_factor",
+    permission: "project.read",
+    policies: policy,
+  })
+
+  expect(authenticated).toMatchObject({ success: true, data: { allowed: false, reason: "insufficient_assurance" } })
+  expect(multiFactor).toMatchObject({ success: true, data: { allowed: true, reason: "policy" } })
+})
+
+test("actor validation runs before bootstrap privileges and rejects incompatible context metadata", () => {
+  expect(
+    authorizationPolicyEvaluate({
+      actor: authorizationBootstrapAdminActorContextCreate("instance-a", "admin-a"),
+      instanceId: "instance-b",
+      permission: "anything.write",
+    }),
+  ).toMatchObject({ success: true, data: { allowed: false, reason: "tenant_mismatch" } })
+
+  expect(
+    authorizationPolicyEvaluate({
+      actor: { ...instanceTenantContextCreate("instance-a", "anonymous").actor },
+      instanceId: "instance-a",
+      permission: "project.read",
+      policies: [{ effect: "allow", permission: "project.read" }],
+      roles: ["owner"],
+    }),
+  ).toMatchObject({ success: true, data: { allowed: false, reason: "anonymous" } })
+
+  expect(
+    authorizationPolicyEvaluate({
+      actor: { ...authorizationSystemActorContextCreate(), instanceId: "instance-a" },
+      instanceId: "instance-a",
+      permission: "project.read",
+    }),
+  ).toMatchObject({ success: false, op: "authorizationPolicyEvaluate" })
+
+  expect(
+    authorizationPolicyEvaluate({
+      actor: { ...authorizationUserActorContextCreate("instance-a", "user-a"), impersonatorId: "admin-a" },
+      instanceId: "instance-a",
+      permission: "project.read",
+    }),
+  ).toMatchObject({ success: false, op: "authorizationPolicyEvaluate" })
+})
+
 test("actor scope isolation rejects forged tenant and organization contexts", () => {
   const actor = authorizationUserActorContextCreate("instance-a", "user-a", "organization-a")
   expect(
