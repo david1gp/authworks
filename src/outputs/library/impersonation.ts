@@ -1,5 +1,2 @@
 export { impersonationApiClientCreate } from "../../features/impersonation/client/impersonationApiClientCreate.js"
-export * from "../../features/impersonation/public/impersonationEndResponseSchema.js"
-export * from "../../features/impersonation/public/impersonationSecurityNotificationSchema.js"
-export * from "../../features/impersonation/public/impersonationStartRequestSchema.js"
-export * from "../../features/impersonation/public/impersonationStartResponseSchema.js"
+export * from "../../features/impersonation/public/index.js"

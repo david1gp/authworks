@@ -65,7 +65,44 @@ test("every API client publishes its complete method set", () => {
 
 test("package exports name every library feature boundary", async () => {
   const packageJson = (await Bun.file("package.json").json()) as { exports: Record<string, unknown> }
-  const exports = packageJson.exports
-  expect(exports["./features/*"]).toBeDefined()
-  expect(exports["./*"]).toBeDefined()
+  const exportKeys = Object.keys(packageJson.exports).sort()
+  const expectedKeys = [
+    ".",
+    "./authorization",
+    "./cli",
+    "./emailOtp",
+    "./externalIdentities",
+    "./impersonation",
+    "./library",
+    "./machineUsers",
+    "./mfa",
+    "./oidc",
+    "./organizations",
+    "./package.json",
+    "./passkeys",
+    "./passwords",
+    "./projects",
+    "./realms",
+    "./server",
+    "./sessions",
+    "./users",
+  ].sort()
+  expect(exportKeys).toEqual(expectedKeys)
+  expect(exportKeys.some((key) => key.includes("*"))).toBe(false)
+})
+
+test("the root library only publishes shared contracts", async () => {
+  const root = await import("../src/outputs/library.js")
+  expect(Object.keys(root).sort()).toEqual([
+    "httpErrorResponseCreate",
+    "httpErrorResponseSchema",
+    "httpErrorStatusGet",
+    "packageName",
+    "resultCreate",
+    "resultErrorCodedCreate",
+    "resultErrorCreate",
+    "resultIsOk",
+  ])
+  expect("userCreate" in root).toBe(false)
+  expect("realmList" in root).toBe(false)
 })

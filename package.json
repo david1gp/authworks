@@ -54,16 +54,18 @@
   },
   "scripts": {
     "dev": "bun run src/outputs/server.ts",
-    "test": "bun test",
-    "test:w": "bun test --watch",
+    "test": "bun test test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance",
+    "test:w": "bun test --watch test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance",
+    "test:build": "bun run build && bun test test/build",
+    "test:all": "bun run test && bun run test:build",
     "typecheck": "tsc -p ./tsconfig.json --noEmit",
     "tsc": "tsc -p ./tsconfig.json --noEmit",
     "build": "bun run clean && bun run typecheck && bun run build:library && bun run build:server && bun run build:cli",
     "build:library": "tsc -p ./tsconfig.lib.json",
     "build:server": "bun build ./src/outputs/server.ts --outfile ./dist/server/server.js --target bun --format esm",
     "build:cli": "bun build ./src/outputs/cli.ts --outfile ./dist/cli/cli.js --target bun --format esm && chmod +x ./dist/cli/cli.js",
-    "verify:outputs": "bun run build && ZITADEL_V2_REQUIRE_BUILT_OUTPUTS=1 bun test test/build/distributableOutputs.test.ts",
-    "check": "bun run format:check && bun run typecheck && bun test && bun run build",
+    "verify:outputs": "bun run test:build",
+    "check": "bun run format:check && bun run typecheck && bun run test && bun run build && bun test test/build",
     "release": "bash ./ops/release.sh",
     "deploy": "bash ./ops/deploy.sh",
     "format": "biome format --write src test ops package.json tsconfig.json tsconfig.lib.json biome.json bunfig.toml cliff.toml README.md",
@@ -95,20 +97,68 @@
       "types": "./dist/library/outputs/library.d.ts",
       "import": "./dist/library/outputs/library.js"
     },
-    "./server": {
-      "import": "./dist/server/server.js"
-    },
     "./library": {
       "types": "./dist/library/outputs/library.d.ts",
       "import": "./dist/library/outputs/library.js"
     },
-    "./features/*": {
-      "types": "./dist/library/outputs/library/*.d.ts",
-      "import": "./dist/library/outputs/library/*.js"
+    "./authorization": {
+      "types": "./dist/library/outputs/library/authorization.d.ts",
+      "import": "./dist/library/outputs/library/authorization.js"
     },
-    "./*": {
-      "types": "./dist/library/outputs/library/*.d.ts",
-      "import": "./dist/library/outputs/library/*.js"
+    "./emailOtp": {
+      "types": "./dist/library/outputs/library/emailOtp.d.ts",
+      "import": "./dist/library/outputs/library/emailOtp.js"
+    },
+    "./externalIdentities": {
+      "types": "./dist/library/outputs/library/externalIdentities.d.ts",
+      "import": "./dist/library/outputs/library/externalIdentities.js"
+    },
+    "./impersonation": {
+      "types": "./dist/library/outputs/library/impersonation.d.ts",
+      "import": "./dist/library/outputs/library/impersonation.js"
+    },
+    "./machineUsers": {
+      "types": "./dist/library/outputs/library/machineUsers.d.ts",
+      "import": "./dist/library/outputs/library/machineUsers.js"
+    },
+    "./mfa": {
+      "types": "./dist/library/outputs/library/mfa.d.ts",
+      "import": "./dist/library/outputs/library/mfa.js"
+    },
+    "./oidc": {
+      "types": "./dist/library/outputs/library/oidc.d.ts",
+      "import": "./dist/library/outputs/library/oidc.js"
+    },
+    "./organizations": {
+      "types": "./dist/library/outputs/library/organizations.d.ts",
+      "import": "./dist/library/outputs/library/organizations.js"
+    },
+    "./passkeys": {
+      "types": "./dist/library/outputs/library/passkeys.d.ts",
+      "import": "./dist/library/outputs/library/passkeys.js"
+    },
+    "./passwords": {
+      "types": "./dist/library/outputs/library/passwords.d.ts",
+      "import": "./dist/library/outputs/library/passwords.js"
+    },
+    "./projects": {
+      "types": "./dist/library/outputs/library/projects.d.ts",
+      "import": "./dist/library/outputs/library/projects.js"
+    },
+    "./realms": {
+      "types": "./dist/library/outputs/library/realms.d.ts",
+      "import": "./dist/library/outputs/library/realms.js"
+    },
+    "./sessions": {
+      "types": "./dist/library/outputs/library/sessions.d.ts",
+      "import": "./dist/library/outputs/library/sessions.js"
+    },
+    "./users": {
+      "types": "./dist/library/outputs/library/users.d.ts",
+      "import": "./dist/library/outputs/library/users.js"
+    },
+    "./server": {
+      "import": "./dist/server/server.js"
     },
     "./cli": {
       "import": "./dist/cli/cli.js"
