@@ -8,7 +8,7 @@ This is an alpha backend. Schema resets are allowed. Current-state SQLite tables
 
 - Users, passwords, sessions, recovery, and rate limits
 - Email OTP, social login, recent accounts
-- Instances, organizations, memberships, roles
+- Realms, organizations, memberships, roles
 - OIDC clients, PKCE, tokens, discovery, JWKS, logout
 - TOTP, recovery codes, passkeys, step-up
 - Machine users, PATs, client credentials, grants
