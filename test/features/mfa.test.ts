@@ -1,28 +1,29 @@
 import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
-import { join } from "node:path"
 import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { instanceCreate } from "../../src/features/instances/actions/instanceCreate.js"
 import { instanceSystemContextCreate } from "../../src/features/instances/domain/instanceSystemContextCreate.js"
 import { instanceTenantContextCreate } from "../../src/features/instances/domain/instanceTenantContextCreate.js"
+import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
+import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
+import { mfaRecoveryCodesGenerate } from "../../src/features/mfa/actions/mfaRecoveryCodesGenerate.js"
+import { mfaRecoveryCodeVerify } from "../../src/features/mfa/actions/mfaRecoveryCodeVerify.js"
+import { mfaStepUpComplete } from "../../src/features/mfa/actions/mfaStepUpComplete.js"
+import { mfaStepUpStart } from "../../src/features/mfa/actions/mfaStepUpStart.js"
+import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
+import { mfaTotpEnrollmentRemove } from "../../src/features/mfa/actions/mfaTotpEnrollmentRemove.js"
+import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
+import { mfaTotpVerify } from "../../src/features/mfa/actions/mfaTotpVerify.js"
+import { mfaApiClientCreate } from "../../src/features/mfa/client/mfaApiClientCreate.js"
+import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { mfaTotpCodeVerify } from "../../src/features/mfa/domain/mfaTotpCodeVerify.js"
+import { mfaServerAppCreate } from "../../src/features/mfa/server/mfaServerAppCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/public/sessionPasswordCreate.js"
-import { mfaApiClientCreate } from "../../src/features/mfa/client/mfaApiClientCreate.js"
-import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
-import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
-import { mfaRecoveryCodeVerify } from "../../src/features/mfa/actions/mfaRecoveryCodeVerify.js"
-import { mfaRecoveryCodesGenerate } from "../../src/features/mfa/actions/mfaRecoveryCodesGenerate.js"
-import { mfaStepUpComplete } from "../../src/features/mfa/actions/mfaStepUpComplete.js"
-import { mfaStepUpStart } from "../../src/features/mfa/actions/mfaStepUpStart.js"
-import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
-import { mfaTotpCodeVerify } from "../../src/features/mfa/domain/mfaTotpCodeVerify.js"
-import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
-import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
-import { mfaTotpVerify } from "../../src/features/mfa/actions/mfaTotpVerify.js"
-import { mfaServerAppCreate } from "../../src/features/mfa/server/mfaServerAppCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -113,6 +114,16 @@ test("TOTP follows RFC values, enforces a bounded time window, and rejects repla
   expect(mfaTotpCodeVerify("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", "287082", 60_000, 0).success).toBe(false)
   await withDatabase(async (database, testkit) => {
     const fixture = await createUser(database, "totp.example.com")
+    expect(
+      mfaTotpVerify({
+        code: "000000",
+        database,
+        encryptionSecret: "mfa-test-secret",
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(false)
     const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
     testkit.advance(30_000)
     const code = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
@@ -133,6 +144,161 @@ test("TOTP follows RFC values, enforces a bounded time window, and rejects repla
         database,
         encryptionSecret: "mfa-test-secret",
         code: code.data,
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(false)
+  })
+})
+
+test("TOTP applies the configured window and resets existing failed attempts after a valid code", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "totp-window.example.com")
+    const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    const policy = mfaPolicySet({
+      context: instanceSystemContextCreate("system"),
+      database,
+      input: { lockoutDurationMs: 1_000, maxAttempts: 5, mode: "optional", totpWindow: 0 },
+      instanceId: fixture.instance.id,
+      runtime: testkit.runtime,
+    })
+    expect(policy.success).toBe(true)
+
+    testkit.advance(60_000)
+    const currentStep = Math.floor(testkit.runtime.now() / 30_000)
+    const previousCode = mfaTotpCodeCreate(enrolled.secret, currentStep - 1)
+    const nextCode = mfaTotpCodeCreate(enrolled.secret, currentStep + 1)
+    const currentCode = mfaTotpCodeCreate(enrolled.secret, currentStep)
+    expect(previousCode.success && nextCode.success && currentCode.success).toBe(true)
+    if (!previousCode.success || !nextCode.success || !currentCode.success) return
+    database.sqlite.run(
+      "UPDATE mfa_lockouts SET failed_attempts = ?, locked_until = ?, updated_at = ?, version = ? WHERE instance_id = ? AND user_id = ?",
+      [2, null, testkit.runtime.now(), 2, fixture.instance.id, fixture.userId],
+    )
+
+    expect(
+      mfaTotpVerify({
+        code: previousCode.data,
+        database,
+        encryptionSecret: "mfa-test-secret",
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(false)
+    expect(
+      mfaTotpVerify({
+        code: nextCode.data,
+        database,
+        encryptionSecret: "mfa-test-secret",
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(false)
+    expect(
+      mfaTotpVerify({
+        code: currentCode.data,
+        database,
+        encryptionSecret: "mfa-test-secret",
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(true)
+    expect(
+      database.sqlite
+        .query("SELECT failed_attempts, locked_until FROM mfa_lockouts WHERE user_id = ?")
+        .get(fixture.userId),
+    ).toEqual({
+      failed_attempts: 0,
+      locked_until: null,
+    })
+  })
+})
+
+test("TOTP lockout blocks verification until expiry", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "totp-lockout.example.com")
+    const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    testkit.advance(30_000)
+    const currentStep = Math.floor(testkit.runtime.now() / 30_000)
+    const validCode = mfaTotpCodeCreate(enrolled.secret, currentStep)
+    expect(validCode.success).toBe(true)
+    if (!validCode.success) return
+    database.sqlite.run(
+      "UPDATE mfa_lockouts SET failed_attempts = ?, locked_until = ?, updated_at = ?, version = ? WHERE instance_id = ? AND user_id = ?",
+      [2, testkit.runtime.now() + 1_000, testkit.runtime.now(), 2, fixture.instance.id, fixture.userId],
+    )
+    expect(
+      mfaTotpVerify({
+        code: validCode.data,
+        database,
+        encryptionSecret: "mfa-test-secret",
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(false)
+
+    testkit.advance(1_001)
+    expect(
+      mfaTotpVerify({
+        code: validCode.data,
+        database,
+        encryptionSecret: "mfa-test-secret",
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(true)
+  })
+})
+
+test("TOTP failed attempts persist and create lockout at the configured threshold", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "totp-failed-attempts.example.com")
+    const enrolled = await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    const policy = mfaPolicySet({
+      context: instanceSystemContextCreate("system"),
+      database,
+      input: { lockoutDurationMs: 1_000, maxAttempts: 3, mode: "optional", totpWindow: 0 },
+      instanceId: fixture.instance.id,
+      runtime: testkit.runtime,
+    })
+    expect(policy.success).toBe(true)
+
+    const validCode = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(validCode.success).toBe(true)
+    if (!validCode.success) return
+    const invalidCode = validCode.data === "000000" ? "000001" : "000000"
+    const expectedAttempts = [1, 2, 3]
+    for (const attempts of expectedAttempts) {
+      expect(
+        mfaTotpVerify({
+          code: invalidCode,
+          database,
+          encryptionSecret: "mfa-test-secret",
+          instanceId: fixture.instance.id,
+          runtime: testkit.runtime,
+          userId: fixture.userId,
+        }).success,
+      ).toBe(false)
+      expect(
+        database.sqlite
+          .query("SELECT failed_attempts, locked_until FROM mfa_lockouts WHERE instance_id = ? AND user_id = ?")
+          .get(fixture.instance.id, fixture.userId),
+      ).toEqual({
+        failed_attempts: attempts,
+        locked_until: attempts === 3 ? testkit.runtime.now() + 1_000 : null,
+      })
+    }
+    expect(
+      mfaTotpVerify({
+        code: validCode.data,
+        database,
+        encryptionSecret: "mfa-test-secret",
         instanceId: fixture.instance.id,
         runtime: testkit.runtime,
         userId: fixture.userId,
@@ -224,6 +390,24 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
       runtime: testkit.runtime,
     })
     expect(policy.success).toBe(true)
+    expect(
+      mfaPolicySet({
+        context: fixture.context,
+        database,
+        input: { lockoutDurationMs: 900_000, maxAttempts: 3, mode: "required", totpWindow: 1 },
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(false)
+    expect(
+      mfaPolicySet({
+        context: instanceSystemContextCreate("system"),
+        database,
+        input: { lockoutDurationMs: 900_000, maxAttempts: 0, mode: "required", totpWindow: 1 },
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(false)
     testkit.advance(30_000)
     const challenged = passwordLogin({
       context: fixture.context,
@@ -246,6 +430,81 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
     })
     expect(completedLogin.success).toBe(true)
     if (completedLogin.success) expect(completedLogin.data.session?.session.assurance).toBe("multi_factor")
+    expect(
+      mfaStepUpComplete({
+        database,
+        encryptionSecret: "mfa-test-secret",
+        input: { code: nextCode.data, token: stepUp.data.token },
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        sessionToken: login.data.session.token,
+      }).success,
+    ).toBe(false)
+    expect(
+      mfaTotpEnrollmentRemove({
+        database,
+        enrollmentId: enrolled.enrollmentId,
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        sessionToken: login.data.session.token,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(false)
+    expect(
+      mfaTotpEnrollmentRemove({
+        database,
+        enrollmentId: enrolled.enrollmentId,
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        sessionToken: upgraded.data.session!.token,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(true)
+    expect(
+      mfaTotpVerify({
+        database,
+        encryptionSecret: "mfa-test-secret",
+        code: loginCode.data,
+        instanceId: fixture.instance.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(false)
+  })
+})
+
+test("recovery-code event failure does not consume the code", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "mfa-recovery-rollback.example.com")
+    await enrollTotp(database, testkit, fixture.instance.id, fixture.userId)
+    const generated = mfaRecoveryCodesGenerate({ database, instanceId: fixture.instance.id, userId: fixture.userId })
+    expect(generated.success).toBe(true)
+    if (!generated.success) return
+
+    expect(
+      mfaRecoveryCodeVerify({ code: "", database, instanceId: fixture.instance.id, userId: fixture.userId }).success,
+    ).toBe(false)
+    expect(
+      mfaRecoveryCodeVerify({ code: "short", database, instanceId: fixture.instance.id, userId: fixture.userId })
+        .success,
+    ).toBe(false)
+    database.sqlite.run(
+      "CREATE TRIGGER reject_mfa_recovery_events BEFORE INSERT ON events WHEN NEW.aggregate_type = 'mfa_recovery_code' BEGIN SELECT RAISE(ABORT, 'rejected'); END",
+    )
+    expect(
+      mfaRecoveryCodeVerify({
+        code: generated.data.codes[0]!,
+        database,
+        instanceId: fixture.instance.id,
+        userId: fixture.userId,
+      }).success,
+    ).toBe(false)
+    expect(
+      database.sqlite
+        .query("SELECT consumed_at FROM mfa_recovery_codes WHERE instance_id = ? AND user_id = ?")
+        .all(fixture.instance.id, fixture.userId)
+        .every((row) => (row as { consumed_at: number | null }).consumed_at === null),
+    ).toBe(true)
   })
 })
 

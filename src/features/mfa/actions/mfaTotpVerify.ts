@@ -27,13 +27,17 @@ type MfaTotpVerifyOptions = {
   readonly correlationId?: string
 }
 
+type MfaTotpVerifyTransactionResult =
+  | { readonly kind: "failed" }
+  | { readonly kind: "verified"; readonly response: MfaTotpVerifyResponse }
+
 export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVerifyResponse> {
   const op = "mfaTotpVerify"
   if (!/^\d{6}$/.test(options.code)) return resultErrorCreate(op, "The TOTP code is invalid.")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
-  return storageTransactionRun(options.database, (transaction) => {
+  const transactionResult = storageTransactionRun<MfaTotpVerifyTransactionResult>(options.database, (transaction) => {
     const repository = mfaRepositoryCreate(transaction)
     const enrollment = repository.mfaEnrollmentActiveGet(options.instanceId, options.userId)
     if (!enrollment.success) return enrollment
@@ -70,7 +74,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
         version: (lockout.data?.version ?? 0) + 1,
       })
       if (!saved.success) return saved
-      return resultErrorCreate(op, "The TOTP code is invalid.")
+      return resultCreate({ kind: "failed" })
     }
     const updated = repository.mfaEnrollmentUpdate(
       options.instanceId,
@@ -117,6 +121,9 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
       runtime,
     )
     if (!event.success) return event
-    return resultCreate({ method: "totp", verified: true })
+    return resultCreate({ kind: "verified", response: { method: "totp", verified: true } })
   })
+  if (!transactionResult.success) return transactionResult
+  if (transactionResult.data.kind === "failed") return resultErrorCreate(op, "The TOTP code is invalid.")
+  return resultCreate(transactionResult.data.response)
 }
