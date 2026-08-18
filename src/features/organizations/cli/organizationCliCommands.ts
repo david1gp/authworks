@@ -1,4 +1,5 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { organizationApiClientCreate } from "../client/organizationApiClientCreate.js"
 import type { OrganizationBrandingSetRequest } from "../public/organizationBrandingSetRequestSchema.js"
 import type { OrganizationLoginPolicySetRequest } from "../public/organizationLoginPolicySetRequestSchema.js"
@@ -9,18 +10,20 @@ type OrganizationCliFlags = {
 }
 
 type OrganizationIdCliFlags = OrganizationCliFlags & {
-  readonly realmId: string
-  readonly organizationId: string
+  readonly realmId?: string
+  readonly organizationId?: string
 }
 
 const organizationCreateCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: OrganizationCliFlags & { name: string; ownerUserId?: string; realmId: string },
+    flags: OrganizationCliFlags & { name: string; ownerUserId?: string; realmId?: string },
   ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationCreate(flags.realmId, {
+      await organizationCliClientCreate(this, flags).organizationCreate(realmId, {
         name: flags.name,
         ownerUserId: flags.ownerUserId,
       }),
@@ -38,8 +41,10 @@ const organizationCreateCommand = buildCommand({
 })
 
 const organizationListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationCliFlags & { realmId: string }) {
-    organizationCliResultWrite(this, await organizationCliClientCreate(this, flags).organizationList(flags.realmId))
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { realmId?: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    organizationCliResultWrite(this, await organizationCliClientCreate(this, flags).organizationList(realmId))
   },
   parameters: { flags: { ...organizationCommonFlags(), realmId: realmIdFlag() } },
   docs: { brief: "List organizations" },
@@ -47,9 +52,11 @@ const organizationListCommand = buildCommand({
 
 const organizationGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationGet(flags.realmId, flags.organizationId),
+      await organizationCliClientCreate(this, flags).organizationGet(ids.realmId, ids.organizationId),
     )
   },
   parameters: {
@@ -60,9 +67,11 @@ const organizationGetCommand = buildCommand({
 
 const organizationUpdateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { name: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationUpdate(flags.realmId, flags.organizationId, {
+      await organizationCliClientCreate(this, flags).organizationUpdate(ids.realmId, ids.organizationId, {
         name: flags.name,
       }),
     )
@@ -80,11 +89,13 @@ const organizationUpdateCommand = buildCommand({
 
 const organizationBrandingSetCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { branding: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationBrandingSet(
-        flags.realmId,
-        flags.organizationId,
+        ids.realmId,
+        ids.organizationId,
         organizationCliJsonParse(flags.branding) as OrganizationBrandingSetRequest,
       ),
     )
@@ -102,9 +113,11 @@ const organizationBrandingSetCommand = buildCommand({
 
 const organizationDomainClaimCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { domain: string; primary?: boolean }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationDomainClaim(flags.realmId, flags.organizationId, {
+      await organizationCliClientCreate(this, flags).organizationDomainClaim(ids.realmId, ids.organizationId, {
         domain: flags.domain,
         isPrimary: flags.primary,
       }),
@@ -124,9 +137,11 @@ const organizationDomainClaimCommand = buildCommand({
 
 const organizationDomainListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationDomainList(flags.realmId, flags.organizationId),
+      await organizationCliClientCreate(this, flags).organizationDomainList(ids.realmId, ids.organizationId),
     )
   },
   parameters: {
@@ -137,11 +152,13 @@ const organizationDomainListCommand = buildCommand({
 
 const organizationDomainVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { domain: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationDomainVerify(
-        flags.realmId,
-        flags.organizationId,
+        ids.realmId,
+        ids.organizationId,
         flags.domain,
       ),
     )
@@ -159,11 +176,13 @@ const organizationDomainVerifyCommand = buildCommand({
 
 const organizationLoginPolicySetCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { policy: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationLoginPolicySet(
-        flags.realmId,
-        flags.organizationId,
+        ids.realmId,
+        ids.organizationId,
         organizationCliJsonParse(flags.policy) as OrganizationLoginPolicySetRequest,
       ),
     )
@@ -181,9 +200,11 @@ const organizationLoginPolicySetCommand = buildCommand({
 
 const organizationLifecycleCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { status: "active" | "inactive" | "removed" }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationLifecycleSet(flags.realmId, flags.organizationId, {
+      await organizationCliClientCreate(this, flags).organizationLifecycleSet(ids.realmId, ids.organizationId, {
         status: flags.status,
       }),
     )
@@ -214,9 +235,11 @@ const organizationRolesCommand = buildCommand({
 
 const organizationMemberAddCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { userId: string; roles: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationMembershipCreate(flags.realmId, flags.organizationId, {
+      await organizationCliClientCreate(this, flags).organizationMembershipCreate(ids.realmId, ids.organizationId, {
         userId: flags.userId,
         roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[],
       }),
@@ -236,9 +259,11 @@ const organizationMemberAddCommand = buildCommand({
 
 const organizationMemberListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationMembershipList(flags.realmId, flags.organizationId),
+      await organizationCliClientCreate(this, flags).organizationMembershipList(ids.realmId, ids.organizationId),
     )
   },
   parameters: {
@@ -249,11 +274,13 @@ const organizationMemberListCommand = buildCommand({
 
 const organizationMemberUpdateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { membershipId: string; roles: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationMembershipUpdate(
-        flags.realmId,
-        flags.organizationId,
+        ids.realmId,
+        ids.organizationId,
         flags.membershipId,
         { roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[] },
       ),
@@ -273,11 +300,13 @@ const organizationMemberUpdateCommand = buildCommand({
 
 const organizationMemberRemoveCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { membershipId: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationMembershipRemove(
-        flags.realmId,
-        flags.organizationId,
+        ids.realmId,
+        ids.organizationId,
         flags.membershipId,
       ),
     )
@@ -298,9 +327,11 @@ const organizationInvitationCreateCommand = buildCommand({
     this: ApplicationContext,
     flags: OrganizationIdCliFlags & { email: string; roles: string; expiresAt?: number },
   ) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationInvitationCreate(flags.realmId, flags.organizationId, {
+      await organizationCliClientCreate(this, flags).organizationInvitationCreate(ids.realmId, ids.organizationId, {
         email: flags.email,
         roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[],
         expiresAt: flags.expiresAt,
@@ -338,9 +369,11 @@ const organizationInvitationDeclineCommand = buildCommand({
 
 const organizationInvitationListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationInvitationList(flags.realmId, flags.organizationId),
+      await organizationCliClientCreate(this, flags).organizationInvitationList(ids.realmId, ids.organizationId),
     )
   },
   parameters: {
@@ -351,11 +384,13 @@ const organizationInvitationListCommand = buildCommand({
 
 const organizationInvitationRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { invitationId: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(this, flags).organizationInvitationRevoke(
-        flags.realmId,
-        flags.organizationId,
+        ids.realmId,
+        ids.organizationId,
         flags.invitationId,
       ),
     )
@@ -388,11 +423,13 @@ const organizationInvitationAcceptCommand = buildCommand({
 })
 
 const organizationSwitchCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationCliFlags & { organizationId: string; realmId: string }) {
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { organizationId?: string; realmId?: string }) {
+    const ids = organizationScopeIdsResolve(this, flags)
+    if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationSwitch(flags.realmId, {
-        organizationId: flags.organizationId,
+      await organizationCliClientCreate(this, flags).organizationSwitch(ids.realmId, {
+        organizationId: ids.organizationId,
       }),
     )
   },
@@ -471,6 +508,7 @@ function realmIdFlag() {
   return {
     brief: "Realm UUID",
     kind: "parsed" as const,
+    optional: true as const,
     parse: (value: string) => value,
     placeholder: "REALM_ID",
   }
@@ -480,6 +518,7 @@ function organizationFlag() {
   return {
     brief: "Organization UUID",
     kind: "parsed" as const,
+    optional: true as const,
     parse: (value: string) => value,
     placeholder: "ORGANIZATION_ID",
   }
@@ -519,4 +558,14 @@ function organizationCliJsonParse(value: string): unknown {
   } catch (_error) {
     return null
   }
+}
+
+function organizationScopeIdsResolve(
+  context: ApplicationContext,
+  flags: { readonly organizationId?: string; readonly realmId?: string },
+): { readonly organizationId: string; readonly realmId: string } | undefined {
+  const realmId = scopeIdResolve(context, flags.realmId, "realm")
+  const organizationId = scopeIdResolve(context, flags.organizationId, "organization")
+  if (realmId === undefined || organizationId === undefined) return undefined
+  return { organizationId, realmId }
 }

@@ -1,11 +1,12 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { externalIdentityApiClientCreate } from "../client/externalIdentityApiClientCreate.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 
 type ExternalIdentityCliFlags = {
   readonly server?: string
   readonly token?: string
-  readonly realmId: string
+  readonly realmId?: string
 }
 
 const externalIdentityProviderCreateCommand = buildCommand({
@@ -22,12 +23,15 @@ const externalIdentityProviderCreateCommand = buildCommand({
       scopes?: string
     },
   ) {
-    const result = await externalIdentityCliClientCreate(this, flags).externalIdentityProviderCreate(flags.realmId, {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
+    if (realmId === undefined) return
+    const result = await externalIdentityCliClientCreate(this, flags).externalIdentityProviderCreate(realmId, {
       allowAccountCreation: flags.allowAccountCreation ?? false,
       clientId: flags.clientId,
       clientSecret: flags.clientSecret,
       displayName: flags.displayName,
-      organizationId: flags.organizationId,
+      organizationId,
       redirectUri: flags.redirectUri,
       scopes: flags.scopes?.split(" "),
       type: flags.type as ExternalIdentityProviderType,
@@ -52,12 +56,12 @@ const externalIdentityProviderCreateCommand = buildCommand({
 
 const externalIdentityProviderListCommand = buildCommand({
   async func(this: ApplicationContext, flags: ExternalIdentityCliFlags & { organizationId?: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
+    if (realmId === undefined) return
     externalIdentityCliResultWrite(
       this,
-      await externalIdentityCliClientCreate(this, flags).externalIdentityProviderList(
-        flags.realmId,
-        flags.organizationId,
-      ),
+      await externalIdentityCliClientCreate(this, flags).externalIdentityProviderList(realmId, organizationId),
     )
   },
   parameters: {
@@ -68,12 +72,11 @@ const externalIdentityProviderListCommand = buildCommand({
 
 const externalIdentityProviderDisableCommand = buildCommand({
   async func(this: ApplicationContext, flags: ExternalIdentityCliFlags & { providerId: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     externalIdentityCliResultWrite(
       this,
-      await externalIdentityCliClientCreate(this, flags).externalIdentityProviderDisable(
-        flags.realmId,
-        flags.providerId,
-      ),
+      await externalIdentityCliClientCreate(this, flags).externalIdentityProviderDisable(realmId, flags.providerId),
     )
   },
   parameters: { flags: { ...externalIdentityCommonFlags(), providerId: externalIdentityTextFlag("Provider UUID") } },
@@ -85,10 +88,13 @@ const externalIdentityStartCommand = buildCommand({
     this: ApplicationContext,
     flags: ExternalIdentityCliFlags & { providerId: string; organizationId?: string },
   ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
+    if (realmId === undefined) return
     externalIdentityCliResultWrite(
       this,
-      await externalIdentityCliClientCreate(this, flags).externalIdentityStart(flags.realmId, flags.providerId, {
-        organizationId: flags.organizationId,
+      await externalIdentityCliClientCreate(this, flags).externalIdentityStart(realmId, flags.providerId, {
+        organizationId,
       }),
     )
   },
@@ -136,7 +142,7 @@ function externalIdentityCliResultWrite(
 
 function externalIdentityCommonFlags() {
   return {
-    realmId: externalIdentityTextFlag("Realm UUID"),
+    realmId: { ...externalIdentityTextFlag("Realm UUID"), optional: true as const },
     server: {
       brief: "ZITADEL v2 server URL",
       kind: "parsed" as const,

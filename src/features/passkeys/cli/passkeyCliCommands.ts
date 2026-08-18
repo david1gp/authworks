@@ -1,11 +1,14 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { passkeyApiClientCreate } from "../client/passkeyApiClientCreate.js"
 
-type PasskeyCliFlags = { readonly server?: string; readonly token?: string; readonly realmId: string }
+type PasskeyCliFlags = { readonly server?: string; readonly token?: string; readonly realmId?: string }
 
 const passkeyListCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasskeyCliFlags) {
-    passkeyResultWrite(this, await passkeyClientCreate(this, flags).passkeyCredentialList(flags.realmId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    passkeyResultWrite(this, await passkeyClientCreate(this, flags).passkeyCredentialList(realmId))
   },
   parameters: { flags: { ...passkeyCommonFlags(), realmId: passkeyRealmIdFlag() } },
   docs: { brief: "List passkey credentials" },
@@ -13,9 +16,11 @@ const passkeyListCommand = buildCommand({
 
 const passkeyRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasskeyCliFlags & { credentialId: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     passkeyResultWrite(
       this,
-      await passkeyClientCreate(this, flags).passkeyCredentialRevoke(flags.realmId, {
+      await passkeyClientCreate(this, flags).passkeyCredentialRevoke(realmId, {
         credentialId: flags.credentialId,
       }),
     )
@@ -77,6 +82,7 @@ function passkeyRealmIdFlag() {
   return {
     brief: "Realm UUID",
     kind: "parsed" as const,
+    optional: true as const,
     parse: (value: string) => value,
     placeholder: "REALM_ID",
   }

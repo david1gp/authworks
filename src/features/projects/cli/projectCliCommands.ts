@@ -1,20 +1,24 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { projectApiClientCreate } from "../client/projectApiClientCreate.js"
 
 type ProjectCliFlags = { readonly server?: string; readonly token?: string }
-type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId: string; readonly realmId: string }
+type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId: string; readonly realmId?: string }
 
 const projectCreateCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: ProjectCliFlags & { name: string; organizationId: string; realmId: string },
+    flags: ProjectCliFlags & { name: string; organizationId?: string; realmId?: string },
   ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const organizationId = scopeIdResolve(this, flags.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectCreate(flags.realmId, {
+      await projectCliClientCreate(this, flags).projectCreate(realmId, {
         authorizationRequired: false,
         name: flags.name,
-        organizationId: flags.organizationId,
+        organizationId,
         projectAccessRequired: false,
       }),
     )
@@ -22,8 +26,8 @@ const projectCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      realmId: idFlag("Realm UUID"),
-      organizationId: idFlag("Organization UUID"),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      organizationId: projectScopeIdFlag("Organization UUID"),
       name: textFlag("Project name"),
     },
   },
@@ -31,34 +35,40 @@ const projectCreateCommand = buildCommand({
 })
 
 const projectListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectCliFlags & { realmId: string }) {
-    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectList(flags.realmId))
+  async func(this: ApplicationContext, flags: ProjectCliFlags & { realmId?: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectList(realmId))
   },
-  parameters: { flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID") } },
+  parameters: { flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID") } },
   docs: { brief: "List projects" },
 })
 
 const projectGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
-    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectGet(flags.realmId, flags.projectId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectGet(realmId, flags.projectId))
   },
   parameters: {
-    flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID"), projectId: idFlag("Project UUID") },
+    flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID"), projectId: idFlag("Project UUID") },
   },
   docs: { brief: "Get a project" },
 })
 
 const projectUpdateCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags & { name: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectUpdate(flags.realmId, flags.projectId, { name: flags.name }),
+      await projectCliClientCreate(this, flags).projectUpdate(realmId, flags.projectId, { name: flags.name }),
     )
   },
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      realmId: idFlag("Realm UUID"),
+      realmId: projectScopeIdFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       name: textFlag("Project name"),
     },
@@ -68,9 +78,11 @@ const projectUpdateCommand = buildCommand({
 
 const projectLifecycleCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags & { status: "active" | "inactive" | "removed" }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectLifecycleSet(flags.realmId, flags.projectId, {
+      await projectCliClientCreate(this, flags).projectLifecycleSet(realmId, flags.projectId, {
         status: flags.status,
       }),
     )
@@ -78,7 +90,7 @@ const projectLifecycleCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      realmId: idFlag("Realm UUID"),
+      realmId: projectScopeIdFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       status: statusFlag(),
     },
@@ -91,9 +103,11 @@ const projectApplicationCreateCommand = buildCommand({
     this: ApplicationContext,
     flags: ProjectIdCliFlags & { name: string; applicationType: "oidc" | "api" | "saml" },
   ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectApplicationCreate(flags.realmId, flags.projectId, {
+      await projectCliClientCreate(this, flags).projectApplicationCreate(realmId, flags.projectId, {
         applicationType: flags.applicationType,
         name: flags.name,
       }),
@@ -102,7 +116,7 @@ const projectApplicationCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      realmId: idFlag("Realm UUID"),
+      realmId: projectScopeIdFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       name: textFlag("Application name"),
       applicationType: applicationTypeFlag(),
@@ -113,22 +127,26 @@ const projectApplicationCreateCommand = buildCommand({
 
 const projectApplicationListCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectApplicationList(flags.realmId, flags.projectId),
+      await projectCliClientCreate(this, flags).projectApplicationList(realmId, flags.projectId),
     )
   },
   parameters: {
-    flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID"), projectId: idFlag("Project UUID") },
+    flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID"), projectId: idFlag("Project UUID") },
   },
   docs: { brief: "List applications" },
 })
 
 const projectRoleCreateCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags & { key: string; displayName: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectRoleCreate(flags.realmId, flags.projectId, {
+      await projectCliClientCreate(this, flags).projectRoleCreate(realmId, flags.projectId, {
         displayName: flags.displayName,
         key: flags.key,
       }),
@@ -137,7 +155,7 @@ const projectRoleCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      realmId: idFlag("Realm UUID"),
+      realmId: projectScopeIdFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
       key: textFlag("Role key"),
       displayName: textFlag("Role display name"),
@@ -148,23 +166,28 @@ const projectRoleCreateCommand = buildCommand({
 
 const projectRoleListCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
-    projectCliResultWrite(
-      this,
-      await projectCliClientCreate(this, flags).projectRoleList(flags.realmId, flags.projectId),
-    )
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectRoleList(realmId, flags.projectId))
   },
   parameters: {
-    flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID"), projectId: idFlag("Project UUID") },
+    flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID"), projectId: idFlag("Project UUID") },
   },
   docs: { brief: "List project roles" },
 })
 
 const projectGrantCreateCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectIdCliFlags & { grantedOrganizationId: string; roleKeys: string }) {
+  async func(
+    this: ApplicationContext,
+    flags: ProjectIdCliFlags & { grantedOrganizationId?: string; roleKeys: string },
+  ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const grantedOrganizationId = scopeIdResolve(this, flags.grantedOrganizationId, "organization")
+    if (realmId === undefined || grantedOrganizationId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(this, flags).projectGrantCreate(flags.realmId, flags.projectId, {
-        grantedOrganizationId: flags.grantedOrganizationId,
+      await projectCliClientCreate(this, flags).projectGrantCreate(realmId, flags.projectId, {
+        grantedOrganizationId,
         roleKeys: flags.roleKeys.length === 0 ? [] : flags.roleKeys.split(","),
       }),
     )
@@ -172,9 +195,9 @@ const projectGrantCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...projectCommonFlags(),
-      realmId: idFlag("Realm UUID"),
+      realmId: projectScopeIdFlag("Realm UUID"),
       projectId: idFlag("Project UUID"),
-      grantedOrganizationId: idFlag("Granted organization UUID"),
+      grantedOrganizationId: projectScopeIdFlag("Granted organization UUID"),
       roleKeys: textFlag("Comma-separated project role keys"),
     },
   },
@@ -183,13 +206,12 @@ const projectGrantCreateCommand = buildCommand({
 
 const projectGrantListCommand = buildCommand({
   async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
-    projectCliResultWrite(
-      this,
-      await projectCliClientCreate(this, flags).projectGrantList(flags.realmId, flags.projectId),
-    )
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectGrantList(realmId, flags.projectId))
   },
   parameters: {
-    flags: { ...projectCommonFlags(), realmId: idFlag("Realm UUID"), projectId: idFlag("Project UUID") },
+    flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID"), projectId: idFlag("Project UUID") },
   },
   docs: { brief: "List project grants" },
 })
@@ -251,6 +273,10 @@ function projectCommonFlags() {
 
 function idFlag(brief: string) {
   return { brief, kind: "parsed" as const, parse: (value: string) => value, placeholder: "UUID" }
+}
+
+function projectScopeIdFlag(brief: string) {
+  return { ...idFlag(brief), optional: true as const }
 }
 
 function textFlag(brief: string) {

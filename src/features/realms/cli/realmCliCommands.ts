@@ -1,6 +1,7 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { realmApiClientCreate } from "../client/realmApiClientCreate.js"
 import type { RealmCreateRequest } from "../public/realmCreateRequestSchema.js"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 
 type RealmCliFlags = {
   readonly server?: string
@@ -13,7 +14,7 @@ type RealmCreateCliFlags = RealmCliFlags & {
 }
 
 type RealmBootstrapCliFlags = RealmCliFlags & {
-  readonly realmId: string
+  readonly realmId?: string
 }
 
 const realmCreateCommand = buildCommand({
@@ -81,7 +82,9 @@ const realmListCommand = buildCommand({
 
 const realmBootstrapCommand = buildCommand({
   async func(this: ApplicationContext, flags: RealmBootstrapCliFlags) {
-    const result = await realmCliClientCreate(this, flags).realmBootstrapAdminCreate(flags.realmId)
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    const result = await realmCliClientCreate(this, flags).realmBootstrapAdminCreate(realmId)
     realmCliResultWrite(this, result)
   },
   parameters: {
@@ -89,6 +92,7 @@ const realmBootstrapCommand = buildCommand({
       realmId: {
         brief: "Realm UUID",
         kind: "parsed",
+        optional: true,
         parse: (value: string) => value,
         placeholder: "REALM_ID",
       },

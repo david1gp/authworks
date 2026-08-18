@@ -1,15 +1,18 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { sessionApiClientCreate } from "../client/sessionApiClientCreate.js"
 
 type SessionCliFlags = {
-  readonly realmId: string
+  readonly realmId?: string
   readonly server?: string
   readonly token?: string
 }
 
 const sessionCurrentCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionCurrent(flags.realmId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionCurrent(realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "Read the current session" },
@@ -17,7 +20,9 @@ const sessionCurrentCommand = buildCommand({
 
 const sessionListCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionList(flags.realmId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionList(realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "List sessions" },
@@ -25,7 +30,9 @@ const sessionListCommand = buildCommand({
 
 const sessionRecentCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRecentList(flags.realmId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRecentList(realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "List recent sessions" },
@@ -33,7 +40,9 @@ const sessionRecentCommand = buildCommand({
 
 const sessionRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRotate(flags.realmId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRotate(realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "Rotate the current session credential" },
@@ -41,7 +50,9 @@ const sessionRotateCommand = buildCommand({
 
 const sessionRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags & { sessionId: string }) {
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRevoke(flags.realmId, flags.sessionId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRevoke(realmId, flags.sessionId))
   },
   parameters: { flags: { ...sessionCommonFlags(), sessionId: sessionIdFlag() } },
   docs: { brief: "Revoke a session" },
@@ -49,9 +60,11 @@ const sessionRevokeCommand = buildCommand({
 
 const sessionRevokeAllCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags & { keepCurrent: boolean }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     sessionCliResultWrite(
       this,
-      await sessionCliClientCreate(this, flags).sessionRevokeAll(flags.realmId, { keepCurrent: flags.keepCurrent }),
+      await sessionCliClientCreate(this, flags).sessionRevokeAll(realmId, { keepCurrent: flags.keepCurrent }),
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), keepCurrent: booleanFlag() } },
@@ -113,6 +126,7 @@ function realmIdFlag() {
   return {
     brief: "Realm UUID",
     kind: "parsed" as const,
+    optional: true as const,
     parse: (value: string) => value,
     placeholder: "REALM_ID",
   }

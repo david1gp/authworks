@@ -1,8 +1,9 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { impersonationApiClientCreate } from "../client/impersonationApiClientCreate.js"
 
 type ImpersonationCliFlags = {
-  readonly realmId: string
+  readonly realmId?: string
   readonly server?: string
   readonly token?: string
 }
@@ -17,9 +18,12 @@ const impersonationStartCommand = buildCommand({
       targetUserId: string
     },
   ) {
-    const result = await impersonationCliClientCreate(this, flags).impersonationStart(flags.realmId, {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
+    if (realmId === undefined) return
+    const result = await impersonationCliClientCreate(this, flags).impersonationStart(realmId, {
       durationSeconds: flags.durationSeconds,
-      ...(flags.organizationId === undefined ? {} : { organizationId: flags.organizationId }),
+      ...(organizationId === undefined ? {} : { organizationId }),
       reason: flags.reason,
       targetUserId: flags.targetUserId,
     })
@@ -39,9 +43,11 @@ const impersonationStartCommand = buildCommand({
 
 const impersonationEndCommand = buildCommand({
   async func(this: ApplicationContext, flags: ImpersonationCliFlags & { sessionId: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     impersonationCliResultWrite(
       this,
-      await impersonationCliClientCreate(this, flags).impersonationEnd(flags.realmId, flags.sessionId),
+      await impersonationCliClientCreate(this, flags).impersonationEnd(realmId, flags.sessionId),
     )
   },
   parameters: { flags: { ...impersonationCommonFlags(), sessionId: textFlag("Impersonation session UUID") } },
@@ -74,7 +80,7 @@ function impersonationCliResultWrite(
 
 function impersonationCommonFlags() {
   return {
-    realmId: textFlag("Realm UUID"),
+    realmId: { ...textFlag("Realm UUID"), optional: true as const },
     server: optionalTextFlag("ZITADEL v2 server URL"),
     token: optionalTextFlag("Bearer token"),
   }

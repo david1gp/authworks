@@ -1,4 +1,5 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { userApiClientCreate } from "../client/userApiClientCreate.js"
 
 type UserCliFlags = {
@@ -7,18 +8,20 @@ type UserCliFlags = {
 }
 
 type UserIdCliFlags = UserCliFlags & {
-  readonly realmId: string
+  readonly realmId?: string
   readonly userId: string
 }
 
 const userCreateCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: UserCliFlags & { displayName?: string; email: string; realmId: string; userName: string },
+    flags: UserCliFlags & { displayName?: string; email: string; realmId?: string; userName: string },
   ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userCreate(flags.realmId, {
+      await userCliClientCreate(this, flags).userCreate(realmId, {
         email: flags.email,
         profile: { displayName: flags.displayName },
         userName: flags.userName,
@@ -38,8 +41,10 @@ const userCreateCommand = buildCommand({
 })
 
 const userListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: UserCliFlags & { realmId: string }) {
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userList(flags.realmId))
+  async func(this: ApplicationContext, flags: UserCliFlags & { realmId?: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(this, flags).userList(realmId))
   },
   parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag() } },
   docs: { brief: "List users" },
@@ -47,7 +52,9 @@ const userListCommand = buildCommand({
 
 const userGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags) {
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userGet(flags.realmId, flags.userId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(this, flags).userGet(realmId, flags.userId))
   },
   parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
   docs: { brief: "Get a user" },
@@ -55,9 +62,11 @@ const userGetCommand = buildCommand({
 
 const userProfileCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags & { displayName?: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userProfileUpdate(flags.realmId, flags.userId, {
+      await userCliClientCreate(this, flags).userProfileUpdate(realmId, flags.userId, {
         displayName: flags.displayName,
       }),
     )
@@ -78,9 +87,11 @@ const userLifecycleCommand = buildCommand({
     this: ApplicationContext,
     flags: UserIdCliFlags & { state: "active" | "inactive" | "initial" | "locked" | "suspended" },
   ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userLifecycleSet(flags.realmId, flags.userId, { state: flags.state }),
+      await userCliClientCreate(this, flags).userLifecycleSet(realmId, flags.userId, { state: flags.state }),
     )
   },
   parameters: {
@@ -96,9 +107,11 @@ const userLifecycleCommand = buildCommand({
 
 const userVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags & { state: "unverified" | "verified" }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userEmailVerificationSet(flags.realmId, flags.userId, {
+      await userCliClientCreate(this, flags).userEmailVerificationSet(realmId, flags.userId, {
         state: flags.state,
       }),
     )
@@ -116,7 +129,9 @@ const userVerifyCommand = buildCommand({
 
 const userDeleteCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags) {
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userDelete(flags.realmId, flags.userId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    userCliResultWrite(this, await userCliClientCreate(this, flags).userDelete(realmId, flags.userId))
   },
   parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
   docs: { brief: "Delete a user account" },
@@ -177,6 +192,7 @@ function userRealmIdFlag() {
   return {
     brief: "Realm UUID",
     kind: "parsed" as const,
+    optional: true as const,
     parse: (value: string) => value,
     placeholder: "REALM_ID",
   }

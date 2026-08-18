@@ -1,16 +1,19 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { emailOtpApiClientCreate } from "../client/emailOtpApiClientCreate.js"
 
 type EmailOtpCliFlags = {
   readonly server?: string
-  readonly realmId: string
+  readonly realmId?: string
 }
 
 const emailOtpStartCommand = buildCommand({
   async func(this: ApplicationContext, flags: EmailOtpCliFlags & { email: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     emailOtpCliResultWrite(
       this,
-      await emailOtpCliClientCreate(this, flags).emailOtpStart(flags.realmId, { email: flags.email }),
+      await emailOtpCliClientCreate(this, flags).emailOtpStart(realmId, { email: flags.email }),
     )
   },
   parameters: {
@@ -24,9 +27,11 @@ const emailOtpStartCommand = buildCommand({
 
 const emailOtpVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: EmailOtpCliFlags & { challengeId: string; code: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     emailOtpCliResultWrite(
       this,
-      await emailOtpCliClientCreate(this, flags).emailOtpVerify(flags.realmId, {
+      await emailOtpCliClientCreate(this, flags).emailOtpVerify(realmId, {
         challengeId: flags.challengeId,
         code: flags.code,
       }),
@@ -77,6 +82,7 @@ function emailOtpCommonFlags() {
     realmId: {
       brief: "Realm UUID",
       kind: "parsed" as const,
+      optional: true as const,
       parse: (value: string) => value,
       placeholder: "REALM_ID",
     },

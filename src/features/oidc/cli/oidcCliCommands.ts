@@ -1,8 +1,9 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 
 type OidcCliFlags = { readonly server?: string; readonly token?: string }
-type OidcRealmFlags = OidcCliFlags & { readonly realmId: string }
+type OidcRealmFlags = OidcCliFlags & { readonly realmId?: string }
 type OidcClientFlags = OidcRealmFlags & { readonly clientId: string }
 type OidcConsentFlags = OidcRealmFlags & { readonly userId: string }
 
@@ -19,9 +20,11 @@ const oidcClientCreateCommand = buildCommand({
       requireConsent?: boolean
     },
   ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcClientCreate(flags.realmId, {
+      await oidcCliClientCreate(this, flags).oidcClientCreate(realmId, {
         allowedScopes: splitValues(flags.allowedScopes, ["openid"]),
         clientType: flags.clientType,
         name: flags.name,
@@ -35,7 +38,7 @@ const oidcClientCreateCommand = buildCommand({
   parameters: {
     flags: {
       ...oidcCommonFlags(),
-      realmId: oidcIdFlag("Realm UUID"),
+      realmId: oidcRealmIdFlag(),
       name: oidcTextFlag("Client display name"),
       clientType: {
         brief: "Client type",
@@ -55,56 +58,65 @@ const oidcClientCreateCommand = buildCommand({
 
 const oidcClientListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcRealmFlags) {
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientList(flags.realmId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientList(realmId))
   },
-  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcIdFlag("Realm UUID") } },
+  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
   docs: { brief: "List OIDC clients" },
 })
 
 const oidcClientGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcClientFlags) {
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientGet(flags.realmId, flags.clientId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientGet(realmId, flags.clientId))
   },
   parameters: {
-    flags: { ...oidcCommonFlags(), realmId: oidcIdFlag("Realm UUID"), clientId: oidcIdFlag("Client UUID") },
+    flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), clientId: oidcIdFlag("Client UUID") },
   },
   docs: { brief: "Get an OIDC client" },
 })
 
 const oidcClientSecretRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcClientFlags) {
-    oidcCliResultWrite(
-      this,
-      await oidcCliClientCreate(this, flags).oidcClientSecretRotate(flags.realmId, flags.clientId),
-    )
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientSecretRotate(realmId, flags.clientId))
   },
   parameters: {
-    flags: { ...oidcCommonFlags(), realmId: oidcIdFlag("Realm UUID"), clientId: oidcIdFlag("Client UUID") },
+    flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), clientId: oidcIdFlag("Client UUID") },
   },
   docs: { brief: "Rotate an OIDC client secret" },
 })
 
 const oidcSigningKeyCreateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcRealmFlags) {
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcSigningKeyCreate(flags.realmId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcSigningKeyCreate(realmId))
   },
-  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcIdFlag("Realm UUID") } },
+  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
   docs: { brief: "Create and activate an OIDC signing key" },
 })
 
 const oidcSigningKeyListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcRealmFlags) {
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcSigningKeyList(flags.realmId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcSigningKeyList(realmId))
   },
-  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcIdFlag("Realm UUID") } },
+  parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
   docs: { brief: "List OIDC signing keys" },
 })
 
 const oidcSigningKeyRetireCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcRealmFlags & { signingKeyId: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcSigningKeyLifecycleSet(flags.realmId, flags.signingKeyId, {
+      await oidcCliClientCreate(this, flags).oidcSigningKeyLifecycleSet(realmId, flags.signingKeyId, {
         status: "retired",
       }),
     )
@@ -112,7 +124,7 @@ const oidcSigningKeyRetireCommand = buildCommand({
   parameters: {
     flags: {
       ...oidcCommonFlags(),
-      realmId: oidcIdFlag("Realm UUID"),
+      realmId: oidcRealmIdFlag(),
       signingKeyId: oidcIdFlag("Signing key UUID"),
     },
   },
@@ -121,19 +133,23 @@ const oidcSigningKeyRetireCommand = buildCommand({
 
 const oidcConsentListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcConsentFlags) {
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcConsentList(flags.realmId, flags.userId))
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcConsentList(realmId, flags.userId))
   },
   parameters: {
-    flags: { ...oidcCommonFlags(), realmId: oidcIdFlag("Realm UUID"), userId: oidcIdFlag("User UUID") },
+    flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), userId: oidcIdFlag("User UUID") },
   },
   docs: { brief: "List persisted OIDC consents" },
 })
 
 const oidcConsentRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcConsentFlags & { clientId: string }) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcConsentRevoke(flags.realmId, flags.userId, {
+      await oidcCliClientCreate(this, flags).oidcConsentRevoke(realmId, flags.userId, {
         client_id: flags.clientId,
       }),
     )
@@ -141,7 +157,7 @@ const oidcConsentRevokeCommand = buildCommand({
   parameters: {
     flags: {
       ...oidcCommonFlags(),
-      realmId: oidcIdFlag("Realm UUID"),
+      realmId: oidcRealmIdFlag(),
       userId: oidcIdFlag("User UUID"),
       clientId: oidcIdFlag("Client UUID"),
     },
@@ -237,6 +253,10 @@ function oidcCommonFlags() {
 
 function oidcIdFlag(brief: string) {
   return { brief, kind: "parsed" as const, parse: (value: string) => value, placeholder: "UUID" }
+}
+
+function oidcRealmIdFlag() {
+  return { ...oidcIdFlag("Realm UUID"), optional: true as const }
 }
 
 function oidcTextFlag(brief: string) {
