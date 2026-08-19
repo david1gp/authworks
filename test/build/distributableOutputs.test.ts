@@ -19,7 +19,7 @@ test("built library, server, and CLI outputs are executable", async () => {
   const packageImport = await processRun([
     "bun",
     "-e",
-    'const subpaths = ["authorization", "emailOtp", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/authworks/" + path))); const root = await import("@adaptive-ds/authworks"); if (typeof root.packageName !== "string" || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
+    'const subpaths = ["authorization", "emailOtp", "events", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/authworks/" + path))); const root = await import("@adaptive-ds/authworks"); if (typeof root.packageName !== "string" || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
   ])
   expect(packageImport).toEqual({ exitCode: 0, stderr: "", stdout: "" })
 
@@ -34,15 +34,16 @@ test("built library, server, and CLI outputs are executable", async () => {
     (filePath) => filePath.includes("/public/") && filePath.endsWith(".js"),
   )
   expect(publicFiles.length).toBeGreaterThan(0)
-  const forbiddenSegments = ["/domain/", "/actions/", "/persistence/", "/events/", "/server/", "/client/"]
+  const forbiddenLayers = ["domain", "actions", "persistence", "events", "server", "client"]
+  const forbiddenFeaturePathPattern = new RegExp(`/features/[^/]+/(?:${forbiddenLayers.join("|")})/`)
   const importPathPattern = /(?:from\s+|import\s*(?:\(\s*)?)["']([^"']+)["']/g
   const violations: string[] = []
   for (const filePath of publicFiles) {
-    if (forbiddenSegments.some((segment) => filePath.includes(segment))) violations.push(filePath)
+    if (forbiddenFeaturePathPattern.test(filePath)) violations.push(filePath)
     const source = await readFile(filePath, "utf8")
     for (const match of source.matchAll(importPathPattern)) {
       const importedPath = match[1]
-      if (importedPath !== undefined && forbiddenSegments.some((segment) => importedPath.includes(segment))) {
+      if (importedPath !== undefined && forbiddenFeaturePathPattern.test(importedPath)) {
         violations.push(`${filePath}: ${importedPath}`)
       }
     }

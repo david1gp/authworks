@@ -9,6 +9,7 @@ export const authorizationPermissionDefinitions = {
   organizationMembersManage: "organization.members.manage",
   organizationRead: "organization.read",
   organizationSwitch: "organization.switch",
+  eventRead: "event.read",
   projectAppDelete: "project.app.delete",
   projectAppRead: "project.app.read",
   projectAppWrite: "project.app.write",

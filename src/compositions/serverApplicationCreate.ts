@@ -1,21 +1,22 @@
 import { Hono } from "hono"
 import { type Result } from "#result"
 import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpServerAppCreate.js"
+import { eventServerAppCreate } from "../features/events/server/eventServerAppCreate.js"
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
-import { realmServerAppCreate } from "../features/realms/server/realmServerAppCreate.js"
-import { organizationServerAppCreate } from "../features/organizations/server/organizationServerAppCreate.js"
-import { passwordServerAppCreate } from "../features/passwords/server/passwordServerAppCreate.js"
-import { projectServerAppCreate } from "../features/projects/server/projectServerAppCreate.js"
-import { oidcServerAppCreate } from "../features/oidc/server/oidcServerAppCreate.js"
-import { mfaServerAppCreate } from "../features/mfa/server/mfaServerAppCreate.js"
 import { impersonationServerAppCreate } from "../features/impersonation/server/impersonationServerAppCreate.js"
 import { machineUserServerAppCreate } from "../features/machineUsers/server/machineUserServerAppCreate.js"
+import { mfaServerAppCreate } from "../features/mfa/server/mfaServerAppCreate.js"
+import { oidcServerAppCreate } from "../features/oidc/server/oidcServerAppCreate.js"
+import { organizationServerAppCreate } from "../features/organizations/server/organizationServerAppCreate.js"
 import { passkeyServerAppCreate } from "../features/passkeys/server/passkeyServerAppCreate.js"
+import { passwordServerAppCreate } from "../features/passwords/server/passwordServerAppCreate.js"
+import { projectServerAppCreate } from "../features/projects/server/projectServerAppCreate.js"
+import { realmServerAppCreate } from "../features/realms/server/realmServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/actions/sessionPasswordCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
 import { userServerAppCreate } from "../features/users/server/userServerAppCreate.js"
-import { storageDatabaseOpen } from "../platform/storage/storageDatabaseOpen.js"
 import { resultCreate } from "../platform/errors/resultCreate.js"
+import { storageDatabaseOpen } from "../platform/storage/storageDatabaseOpen.js"
 
 type ServerApplicationCreateOptions = {
   readonly databasePath: string
@@ -61,6 +62,7 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
     }),
   )
   application.route("/", userServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
+  application.route("/", eventServerAppCreate({ database: database.data, systemSecret: options.systemSecret }))
   application.route(
     "/",
     passwordServerAppCreate({

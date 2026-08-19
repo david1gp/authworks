@@ -1,10 +1,9 @@
 import { expect, test } from "bun:test"
-import type { HttpGetOptions, HttpGetResult } from "../src/outputs/library.js"
 import * as authorization from "../src/outputs/library/authorization.js"
 import * as emailOtp from "../src/outputs/library/emailOtp.js"
+import * as events from "../src/outputs/library/events.js"
 import * as externalIdentities from "../src/outputs/library/externalIdentities.js"
 import * as impersonation from "../src/outputs/library/impersonation.js"
-import * as realms from "../src/outputs/library/realms.js"
 import * as machineUsers from "../src/outputs/library/machineUsers.js"
 import * as mfa from "../src/outputs/library/mfa.js"
 import * as oidc from "../src/outputs/library/oidc.js"
@@ -12,8 +11,10 @@ import * as organizations from "../src/outputs/library/organizations.js"
 import * as passkeys from "../src/outputs/library/passkeys.js"
 import * as passwords from "../src/outputs/library/passwords.js"
 import * as projects from "../src/outputs/library/projects.js"
+import * as realms from "../src/outputs/library/realms.js"
 import * as sessions from "../src/outputs/library/sessions.js"
 import * as users from "../src/outputs/library/users.js"
+import type { HttpGetOptions, HttpGetResult } from "../src/outputs/library.js"
 
 test("root library publishes HTTP GET contracts", () => {
   const options: HttpGetOptions = { ifModifiedSince: new Date() }
@@ -31,6 +32,7 @@ test("root library publishes HTTP GET contracts", () => {
 test("every completed feature has a public library subpath and client", () => {
   expect(authorization.authorizationActorContextSchema).toBeDefined()
   expect(emailOtp.emailOtpApiClientCreate).toBeFunction()
+  expect(events.eventApiClientCreate).toBeFunction()
   expect(externalIdentities.externalIdentityApiClientCreate).toBeFunction()
   expect(impersonation.impersonationApiClientCreate).toBeFunction()
   expect(realms.realmApiClientCreate).toBeFunction()
@@ -85,6 +87,7 @@ test("package exports name every library feature boundary", async () => {
     "./authorization",
     "./cli",
     "./emailOtp",
+    "./events",
     "./externalIdentities",
     "./impersonation",
     "./library",
