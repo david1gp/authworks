@@ -109,12 +109,12 @@ Tests:
 
 ## Tasks
 
-- [ ] 1. Add platform HTTP-date helpers and conditional-GET evaluation (`If-Modified-Since` parse, `Last-Modified` format, second-precision compare, ignore-invalid). No feature wiring.
-- [ ] 2. After task 1, extend the server result-to-response path to emit `Last-Modified` / `Cache-Control` and `304` with no body. Keep current error mapping unchanged.
-- [ ] 3. After task 2, add `HttpGetOptions` / `HttpGetResult<T>` with `status: "current" | "unchanged"`. Send `If-Modified-Since` and map `200`/`304` before JSON parsing.
-- [ ] 4. After tasks 2–3, opt single durable-resource GETs with public `updatedAt` into the server helper and matching client method signature. Exclude lists, sessions, credentials, OIDC protocol/discovery/JWKS, and any GET whose public body has no `updatedAt`.
-- [ ] 5. After task 4, add optional `--if-modified-since` to participating CLI GET commands and handle `304` as success with empty stdout.
-- [ ] 6. After tasks 1–5, export the new HTTP GET types from the root library surface if they are part of the public client contract, and run `bun run check`.
+- [x] 1. Add platform HTTP-date helpers and conditional-GET evaluation (`If-Modified-Since` parse, `Last-Modified` format, second-precision compare, ignore-invalid). No feature wiring.
+- [x] 2. After task 1, extend the server result-to-response path to emit `Last-Modified` / `Cache-Control` and `304` with no body. Keep current error mapping unchanged.
+- [x] 3. After task 2, add `HttpGetOptions` / `HttpGetResult<T>` with `status: "current" | "unchanged"`. Send `If-Modified-Since` and map `200`/`304` before JSON parsing.
+- [x] 4. After tasks 2–3, opt single durable-resource GETs with public `updatedAt` into the server helper and matching client method signature. Exclude lists, sessions, credentials, OIDC protocol/discovery/JWKS, and any GET whose public body has no `updatedAt`.
+- [x] 5. After task 4, add optional `--if-modified-since` to participating CLI GET commands and handle `304` as success with empty stdout.
+- [x] 6. After tasks 1–5, export the new HTTP GET types from the root library surface if they are part of the public client contract, and run `bun run check`.
 
 ## Paths
 
