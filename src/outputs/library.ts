@@ -9,3 +9,5 @@ export { httpErrorResponseCreate } from "../platform/http/httpErrorResponseCreat
 export { httpErrorResponseSchema } from "../platform/http/httpErrorResponseSchema.js"
 export type { HttpErrorResponse } from "../platform/http/httpErrorResponseSchema.js"
 export { httpErrorStatusGet } from "../platform/http/httpErrorStatusGet.js"
+export type { HttpGetOptions } from "../platform/http/HttpGetOptions.js"
+export type { HttpGetResult } from "../platform/http/HttpGetResult.js"

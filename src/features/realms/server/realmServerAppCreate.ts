@@ -60,13 +60,16 @@ export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
   app.get("/system/realms/:realmId", (context) => {
     const authorization = systemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return realmErrorResponseCreate(context, authorization)
+    const result = realmGet({
+      context: realmSystemContextCreate(),
+      database: options.database,
+      realmId: context.req.param("realmId"),
+    })
     return realmResultResponseCreate(
       context,
-      realmGet({
-        context: realmSystemContextCreate(),
-        database: options.database,
-        realmId: context.req.param("realmId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.realm.updatedAt) : undefined,
     )
   })
 
@@ -117,9 +120,16 @@ export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
   app.get("/realms/:realmId", (context) => {
     const tenant = tenantContextResolve(options.database, context.req.header("host"), context.req.url)
     if (!tenant.success) return realmErrorResponseCreate(context, tenant)
+    const result = realmGet({
+      context: tenant.data,
+      database: options.database,
+      realmId: context.req.param("realmId"),
+    })
     return realmResultResponseCreate(
       context,
-      realmGet({ context: tenant.data, database: options.database, realmId: context.req.param("realmId") }),
+      result,
+      200,
+      result.success ? new Date(result.data.realm.updatedAt) : undefined,
     )
   })
 
@@ -182,13 +192,14 @@ function realmResultResponseCreate<T>(
   },
   result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
+  lastModified?: Date,
 ) {
   if (!result.success)
     return realmErrorResponseCreate(
       context,
       result as { errorMessage: string; op: string; code?: string; success: false },
     )
-  return httpResultResponseCreate(context, result as Result<T>, status)
+  return httpResultResponseCreate(context, result as Result<T>, status, lastModified)
 }
 
 async function requestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

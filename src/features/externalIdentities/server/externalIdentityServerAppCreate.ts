@@ -116,14 +116,17 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       options.systemSecret,
     )
     if (!authorization.success) return externalIdentityErrorResponseCreate(context, authorization)
+    const result = externalIdentityProviderGet({
+      database: options.database,
+      includeDisabled: true,
+      realmId: context.req.param("realmId"),
+      providerId: context.req.param("providerId"),
+    })
     return externalIdentityResultResponseCreate(
       context,
-      externalIdentityProviderGet({
-        database: options.database,
-        includeDisabled: true,
-        realmId: context.req.param("realmId"),
-        providerId: context.req.param("providerId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.provider.updatedAt) : undefined,
     )
   })
 
@@ -379,6 +382,7 @@ function externalIdentityResultResponseCreate<T>(
   context: ExternalIdentityRouteContext,
   result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
+  lastModified?: Date,
 ) {
   if (!result.success)
     return externalIdentityErrorResponseCreate(context, {
@@ -387,7 +391,7 @@ function externalIdentityResultResponseCreate<T>(
       op: result.op ?? "externalIdentity",
       success: false,
     })
-  return httpResultResponseCreate(context, result as Result<T>, status)
+  return httpResultResponseCreate(context, result as Result<T>, status, lastModified)
 }
 
 function externalIdentityListRoute(context: ExternalIdentityRouteContext, database: StorageDatabase) {

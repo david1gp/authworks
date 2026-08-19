@@ -1,5 +1,8 @@
 import * as v from "valibot"
 import { type Result } from "#result"
+import type { HttpGetOptions } from "../../../platform/http/HttpGetOptions.js"
+import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
+import { httpApiClientGetRequest } from "../../../platform/http/httpApiClientGetRequest.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
@@ -32,6 +35,21 @@ export function realmApiClientCreate(options: RealmApiClientCreateOptions) {
       schema,
       token: options.token,
     })
+  const getRequest = <T>(
+    path: string,
+    schema: v.GenericSchema<T>,
+    getOptions?: HttpGetOptions,
+  ): Promise<HttpGetResult<T>> =>
+    httpApiClientGetRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      ifModifiedSince: getOptions?.ifModifiedSince,
+      init: { method: "GET" },
+      op: "realmApiClientRequest",
+      path,
+      schema,
+      token: options.token,
+    })
 
   return {
     realmBootstrapAdminCreate(realmId: string): Promise<Result<RealmBootstrapAdminResponse>> {
@@ -44,8 +62,8 @@ export function realmApiClientCreate(options: RealmApiClientCreateOptions) {
     realmCreate(input: RealmCreateRequest): Promise<Result<RealmResponse>> {
       return request("/system/realms", { body: JSON.stringify(input), method: "POST" }, realmResponseSchema)
     },
-    realmGet(realmId: string): Promise<Result<RealmResponse>> {
-      return request(`/system/realms/${encodeURIComponent(realmId)}`, { method: "GET" }, realmResponseSchema)
+    realmGet(realmId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<RealmResponse>> {
+      return getRequest(`/system/realms/${encodeURIComponent(realmId)}`, realmResponseSchema, getOptions)
     },
     realmList(query?: ListQuery): Promise<Result<RealmListResponse>> {
       return request(`/system/realms${listQueryToSearchParams(query)}`, { method: "GET" }, realmListResponseSchema)

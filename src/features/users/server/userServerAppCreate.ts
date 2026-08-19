@@ -74,14 +74,17 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
   app.get("/system/realms/:realmId/users/:userId", (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
+    const result = userGet({
+      context: systemContext,
+      database: options.database,
+      realmId: context.req.param("realmId"),
+      userId: context.req.param("userId"),
+    })
     return userResultResponseCreate(
       context,
-      userGet({
-        context: systemContext,
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        userId: context.req.param("userId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.user.updatedAt) : undefined,
     )
   })
 
@@ -229,14 +232,17 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       context.req.header("authorization"),
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+    const result = userGet({
+      context: authenticated.data,
+      database: options.database,
+      realmId: context.req.param("realmId"),
+      userId: context.req.param("userId"),
+    })
     return userResultResponseCreate(
       context,
-      userGet({
-        context: authenticated.data,
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        userId: context.req.param("userId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.user.updatedAt) : undefined,
     )
   })
 
@@ -370,13 +376,14 @@ function userResultResponseCreate<T>(
   },
   result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
+  lastModified?: Date,
 ) {
   if (!result.success)
     return userErrorResponseCreate(
       context,
       result as { errorMessage: string; op: string; code?: string; success: false },
     )
-  return httpResultResponseCreate(context, result as Result<T>, status)
+  return httpResultResponseCreate(context, result as Result<T>, status, lastModified)
 }
 
 async function userRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

@@ -14,6 +14,7 @@ type OrganizationIdCliFlags = OrganizationCliFlags & {
   readonly realmId?: string
   readonly organizationId?: string
 }
+type OrganizationGetCliFlags = OrganizationIdCliFlags & { readonly ifModifiedSince?: string }
 
 type OrganizationListCliFlags = OrganizationCliFlags & {
   readonly realmId?: string
@@ -77,16 +78,25 @@ const organizationListCommand = buildCommand({
 })
 
 const organizationGetCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+  async func(this: ApplicationContext, flags: OrganizationGetCliFlags) {
     const ids = organizationScopeIdsResolve(this, flags)
     if (ids === undefined) return
     organizationCliResultWrite(
       this,
-      await organizationCliClientCreate(this, flags).organizationGet(ids.realmId, ids.organizationId),
+      await organizationCliClientCreate(this, flags).organizationGet(
+        ids.realmId,
+        ids.organizationId,
+        flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
+      ),
     )
   },
   parameters: {
-    flags: { ...organizationCommonFlags(), realmId: realmIdFlag(), organizationId: organizationFlag() },
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+      ifModifiedSince: ifModifiedSinceFlag(),
+    },
   },
   docs: { brief: "Get an organization" },
 })
@@ -538,6 +548,7 @@ function organizationCliResultWrite(
     readonly code?: string
     readonly op?: string
     readonly statusCode?: number
+    readonly status?: "current" | "unchanged"
     readonly success: boolean
   },
 ) {
@@ -555,6 +566,10 @@ function organizationCliResultWrite(
       })}\n`,
     )
     context.process.exitCode = 1
+    return
+  }
+  if (result.status === "unchanged") {
+    context.process.stderr.write("304 Not Modified\n")
     return
   }
   context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
@@ -611,6 +626,16 @@ function organizationFlag() {
     optional: true as const,
     parse: (value: string) => value,
     placeholder: "ORGANIZATION_ID",
+  }
+}
+
+function ifModifiedSinceFlag() {
+  return {
+    brief: "HTTP If-Modified-Since date",
+    kind: "parsed" as const,
+    optional: true as const,
+    parse: (value: string) => value,
+    placeholder: "HTTP-DATE",
   }
 }
 

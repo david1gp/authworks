@@ -1,6 +1,9 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { HttpGetOptions } from "../../../platform/http/HttpGetOptions.js"
+import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
+import { httpApiClientGetRequest } from "../../../platform/http/httpApiClientGetRequest.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
@@ -34,6 +37,21 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
       schema,
       token: options.token,
     })
+  const getRequest = <T>(
+    path: string,
+    schema: v.GenericSchema<T>,
+    getOptions?: HttpGetOptions,
+  ): Promise<HttpGetResult<T>> =>
+    httpApiClientGetRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      ifModifiedSince: getOptions?.ifModifiedSince,
+      init: { method: "GET" },
+      op: "userApiClientRequest",
+      path,
+      schema,
+      token: options.token,
+    })
 
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
@@ -51,11 +69,11 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         userResponseSchema,
       )
     },
-    userGet(realmId: string, userId: string): Promise<Result<UserResponse>> {
-      return request(
+    userGet(realmId: string, userId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<UserResponse>> {
+      return getRequest(
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}`,
-        { method: "GET" },
         userResponseSchema,
+        getOptions,
       )
     },
     userList(realmId: string, query?: ListQuery): Promise<Result<UserListResponse>> {

@@ -26,6 +26,7 @@ import { projectLifecycleSet } from "../../src/features/projects/actions/project
 import { projectUpdate } from "../../src/features/projects/actions/projectUpdate.js"
 import { projectServerAppCreate } from "../../src/features/projects/server/projectServerAppCreate.js"
 import { projectApiClientCreate } from "../../src/features/projects/client/projectApiClientCreate.js"
+import { httpDateFormat } from "../../src/platform/http/httpDateFormat.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -628,6 +629,33 @@ test("project routes, API client, and CLI expose public contracts", async () => 
     })
     expect(created.success).toBe(true)
     if (!created.success) return
+    const fetched = await client.projectGet(realm.id, created.data.project.id)
+    expect(fetched.success).toBe(true)
+    if (!fetched.success || fetched.status !== "current") return
+    expect(fetched.data.project).toBeDefined()
+    expect(fetched.lastModified).toEqual(new Date(Math.floor(fetched.data.project.updatedAt / 1000) * 1000))
+    if (fetched.lastModified === undefined) return
+
+    const conditional = await app.request(
+      `http://server.test/system/realms/${realm.id}/projects/${created.data.project.id}`,
+      {
+        headers: {
+          authorization: "Bearer project-secret",
+          "if-modified-since": httpDateFormat(fetched.lastModified),
+        },
+      },
+    )
+    expect(conditional.status).toBe(304)
+    expect(await conditional.text()).toBe("")
+    expect(conditional.headers.get("last-modified")).toBe(httpDateFormat(fetched.lastModified))
+    expect(conditional.headers.get("cache-control")).toBe("private, no-cache")
+
+    const unchanged = await client.projectGet(realm.id, created.data.project.id, {
+      ifModifiedSince: fetched.lastModified,
+    })
+    expect(unchanged.success).toBe(true)
+    if (!unchanged.success) return
+    expect(unchanged.status).toBe("unchanged")
     const listed = await client.projectList(realm.id)
     expect(listed.success).toBe(true)
     const unauthorized = await projectApiClientCreate({

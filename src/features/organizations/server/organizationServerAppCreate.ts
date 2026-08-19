@@ -138,14 +138,17 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
   app.get("/system/realms/:realmId/organizations/:organizationId", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const result = organizationGet({
+      context: systemContext,
+      database: options.database,
+      realmId: context.req.param("realmId"),
+      organizationId: context.req.param("organizationId"),
+    })
     return organizationResultResponseCreate(
       context,
-      organizationGet({
-        context: systemContext,
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        organizationId: context.req.param("organizationId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.organization.updatedAt) : undefined,
     )
   })
 
@@ -210,13 +213,16 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
   app.get("/system/realms/:realmId/organizations/:organizationId/branding", (context) => {
     const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    const result = organizationBrandingGet({
+      database: options.database,
+      realmId: context.req.param("realmId"),
+      organizationId: context.req.param("organizationId"),
+    })
     return organizationResultResponseCreate(
       context,
-      organizationBrandingGet({
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        organizationId: context.req.param("organizationId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.updatedAt) : undefined,
     )
   })
 
@@ -641,8 +647,9 @@ function organizationResultResponseCreate<T>(
   },
   result: Result<T>,
   status = 200,
+  lastModified?: Date,
 ) {
-  return httpResultResponseCreate(context, result, status)
+  return httpResultResponseCreate(context, result, status, lastModified)
 }
 
 async function organizationRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

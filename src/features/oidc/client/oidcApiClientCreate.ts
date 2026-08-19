@@ -1,6 +1,9 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { HttpGetOptions } from "../../../platform/http/HttpGetOptions.js"
+import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
+import { httpApiClientGetRequest } from "../../../platform/http/httpApiClientGetRequest.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
@@ -88,6 +91,32 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       baseUrl: options.baseUrl,
       fetch: options.fetch,
       init,
+      invalidResponseErrorGet: (body) => {
+        const consent = v.safeParse(oidcAuthorizationConsentRequiredSchema, body)
+        if (!consent.success) return undefined
+        const error = resultErrorCodedCreate(
+          "oidcAuthorizationConsentRequired",
+          "User consent is required.",
+          "oidc.authorization-consent-required",
+        )
+        error.errorData = JSON.stringify(consent.output)
+        return error
+      },
+      op: "oidcApiClientRequest",
+      path,
+      schema,
+      token: options.token,
+    })
+  const getRequest = <T>(
+    path: string,
+    schema: v.GenericSchema<T>,
+    getOptions?: HttpGetOptions,
+  ): Promise<HttpGetResult<T>> =>
+    httpApiClientGetRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      ifModifiedSince: getOptions?.ifModifiedSince,
+      init: { method: "GET" },
       invalidResponseErrorGet: (body) => {
         const consent = v.safeParse(oidcAuthorizationConsentRequiredSchema, body)
         if (!consent.success) return undefined
@@ -308,11 +337,15 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       )
     },
 
-    oidcClientGet(realmId: string, clientId: string): Promise<Result<OidcClientResponse>> {
-      return request(
+    oidcClientGet(
+      realmId: string,
+      clientId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<OidcClientResponse>> {
+      return getRequest(
         managementPath(realmId, `/clients/${encodeURIComponent(clientId)}`),
-        { method: "GET" },
         oidcClientResponseSchema,
+        getOptions,
       )
     },
 

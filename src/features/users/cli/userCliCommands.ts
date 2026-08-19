@@ -18,6 +18,7 @@ type UserIdCliFlags = UserCliFlags & {
   readonly realmId?: string
   readonly userId: string
 }
+type UserGetCliFlags = UserIdCliFlags & { readonly ifModifiedSince?: string }
 
 const userCreateCommand = buildCommand({
   async func(
@@ -58,12 +59,26 @@ const userListCommand = buildCommand({
 })
 
 const userGetCommand = buildCommand({
-  async func(this: ApplicationContext, flags: UserIdCliFlags) {
+  async func(this: ApplicationContext, flags: UserGetCliFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userGet(realmId, flags.userId))
+    userCliResultWrite(
+      this,
+      await userCliClientCreate(this, flags).userGet(
+        realmId,
+        flags.userId,
+        flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
+      ),
+    )
   },
-  parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
+  parameters: {
+    flags: {
+      ...userCommonFlags(),
+      realmId: userRealmIdFlag(),
+      userId: userIdFlag(),
+      ifModifiedSince: ifModifiedSinceFlag(),
+    },
+  },
   docs: { brief: "Get a user" },
 })
 
@@ -166,11 +181,15 @@ function userCliClientCreate(context: ApplicationContext, flags: UserCliFlags) {
 
 function userCliResultWrite(
   context: ApplicationContext,
-  result: { data?: unknown; errorMessage?: string; success: boolean },
+  result: { data?: unknown; errorMessage?: string; status?: "current" | "unchanged"; success: boolean },
 ) {
   if (!result.success) {
     context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
     context.process.exitCode = 1
+    return
+  }
+  if (result.status === "unchanged") {
+    context.process.stderr.write("304 Not Modified\n")
     return
   }
   context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
@@ -256,6 +275,16 @@ function userRealmIdFlag() {
 
 function userIdFlag() {
   return { brief: "User UUID", kind: "parsed" as const, parse: (value: string) => value, placeholder: "USER_ID" }
+}
+
+function ifModifiedSinceFlag() {
+  return {
+    brief: "HTTP If-Modified-Since date",
+    kind: "parsed" as const,
+    optional: true as const,
+    parse: (value: string) => value,
+    placeholder: "HTTP-DATE",
+  }
 }
 
 function textFlag(brief: string) {

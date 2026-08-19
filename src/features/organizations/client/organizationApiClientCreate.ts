@@ -1,6 +1,9 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { HttpGetOptions } from "../../../platform/http/HttpGetOptions.js"
+import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
+import { httpApiClientGetRequest } from "../../../platform/http/httpApiClientGetRequest.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { patchInputParse } from "../../../platform/http/patchInputParse.js"
@@ -127,6 +130,21 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
       schema,
       token: options.token,
     })
+  const getRequest = <T>(
+    path: string,
+    schema: v.GenericSchema<T>,
+    getOptions?: HttpGetOptions,
+  ): Promise<HttpGetResult<T>> =>
+    httpApiClientGetRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      ifModifiedSince: getOptions?.ifModifiedSince,
+      init: { method: "GET" },
+      op: "organizationApiClientRequest",
+      path,
+      schema,
+      token: options.token,
+    })
 
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
@@ -148,11 +166,15 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         organizationResponseSchema,
       )
     },
-    organizationGet(realmId: string, organizationId: string): Promise<Result<OrganizationResponse>> {
-      return request(
+    organizationGet(
+      realmId: string,
+      organizationId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<OrganizationResponse>> {
+      return getRequest(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}`,
-        { method: "GET" },
         organizationResponseSchema,
+        getOptions,
       )
     },
     organizationList(realmId: string, query?: ListQuery): Promise<Result<OrganizationListResponse>> {
@@ -181,11 +203,15 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         organizationResponseSchema,
       )
     },
-    organizationBrandingGet(realmId: string, organizationId: string): Promise<Result<OrganizationBrandingResponse>> {
-      return request(
+    organizationBrandingGet(
+      realmId: string,
+      organizationId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<OrganizationBrandingResponse>> {
+      return getRequest(
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/branding`,
-        { method: "GET" },
         organizationBrandingResponseSchema,
+        getOptions,
       )
     },
     organizationBrandingSet(

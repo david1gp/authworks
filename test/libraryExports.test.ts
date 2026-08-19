@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test"
+import type { HttpGetOptions, HttpGetResult } from "../src/outputs/library.js"
 import * as authorization from "../src/outputs/library/authorization.js"
 import * as emailOtp from "../src/outputs/library/emailOtp.js"
 import * as externalIdentities from "../src/outputs/library/externalIdentities.js"
@@ -13,6 +14,19 @@ import * as passwords from "../src/outputs/library/passwords.js"
 import * as projects from "../src/outputs/library/projects.js"
 import * as sessions from "../src/outputs/library/sessions.js"
 import * as users from "../src/outputs/library/users.js"
+
+test("root library publishes HTTP GET contracts", () => {
+  const options: HttpGetOptions = { ifModifiedSince: new Date() }
+  const result: HttpGetResult<{ id: string }> = {
+    success: true,
+    status: "current",
+    data: { id: "project-1" },
+  }
+
+  expect(options.ifModifiedSince).toBeInstanceOf(Date)
+  expect(result.success).toBe(true)
+  expect(result.status).toBe("current")
+})
 
 test("every completed feature has a public library subpath and client", () => {
   expect(authorization.authorizationActorContextSchema).toBeDefined()

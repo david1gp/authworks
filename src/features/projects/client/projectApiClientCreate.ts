@@ -1,6 +1,9 @@
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { HttpGetOptions } from "../../../platform/http/HttpGetOptions.js"
+import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
+import { httpApiClientGetRequest } from "../../../platform/http/httpApiClientGetRequest.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
@@ -90,6 +93,21 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       schema,
       token: options.token,
     })
+  const getRequest = <T>(
+    path: string,
+    schema: v.GenericSchema<T>,
+    getOptions?: HttpGetOptions,
+  ): Promise<HttpGetResult<T>> =>
+    httpApiClientGetRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      ifModifiedSince: getOptions?.ifModifiedSince,
+      init: { method: "GET" },
+      op: "projectApiClientRequest",
+      path,
+      schema,
+      token: options.token,
+    })
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
   const projectPath = (realmId: string, projectId?: string) =>
@@ -134,11 +152,12 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       realmId: string,
       projectId: string,
       applicationId: string,
-    ): Promise<Result<ProjectApplicationResponse>> {
-      return request(
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<ProjectApplicationResponse>> {
+      return getRequest(
         `${projectPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
-        { method: "GET" },
         projectApplicationResponseSchema,
+        getOptions,
       )
     },
     projectApplicationLifecycleSet(
@@ -205,8 +224,12 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
     projectDelete(realmId: string, projectId: string): Promise<Result<ProjectDeleteResponse>> {
       return request(projectPath(realmId, projectId), { method: "DELETE" }, projectDeleteResponseSchema)
     },
-    projectGet(realmId: string, projectId: string): Promise<Result<ProjectResponse>> {
-      return request(projectPath(realmId, projectId), { method: "GET" }, projectResponseSchema)
+    projectGet(
+      realmId: string,
+      projectId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<ProjectResponse>> {
+      return getRequest(projectPath(realmId, projectId), projectResponseSchema, getOptions)
     },
     projectGrantCreate(
       realmId: string,

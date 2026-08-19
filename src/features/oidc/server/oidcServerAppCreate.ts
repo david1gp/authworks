@@ -412,14 +412,17 @@ function oidcManagementRoutesRegister(
   app.get(`${prefix}/clients/:clientId`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    const result = oidcClientGet({
+      clientId: oidcParamGet(context, "clientId"),
+      context: authenticated.data,
+      database: options.database,
+      realmId: oidcParamGet(context, "realmId"),
+    })
     return oidcManagementResultResponseCreate(
       context,
-      oidcClientGet({
-        clientId: oidcParamGet(context, "clientId"),
-        context: authenticated.data,
-        database: options.database,
-        realmId: oidcParamGet(context, "realmId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.client.updatedAt) : undefined,
     )
   })
 
@@ -746,10 +749,11 @@ function oidcManagementResultResponseCreate<T>(
   },
   result: { data?: T; errorMessage?: string; op?: string; code?: string; success: boolean },
   status = 200,
+  lastModified?: Date,
 ) {
   if (!result.success)
     return oidcManagementErrorResponseCreate(context, result as { errorMessage: string; op: string; code?: string })
-  return httpResultResponseCreate(context, result as never, status)
+  return httpResultResponseCreate(context, result as never, status, lastModified)
 }
 
 async function oidcRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

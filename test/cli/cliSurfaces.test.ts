@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
+import { httpDateFormat } from "../../src/platform/http/httpDateFormat.js"
 
 type CliRun = {
   readonly exitCode: number
@@ -237,6 +238,108 @@ test("CLI reports transport errors and succeeds through the composed server", as
     expect(available.exitCode).toBe(0)
     expect(available.stderr).toBe("")
     expect(JSON.parse(available.stdout)).toMatchObject({ realm: { domains: ["cli.example.com"] } })
+  } finally {
+    server.stop(true)
+    await rm(directory, { force: true, recursive: true })
+  }
+})
+
+test("CLI conditional project GET reports 304 without a body", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "authworks-cli-conditional-get-"))
+  const created = serverApplicationCreate({
+    databasePath: join(directory, "authworks.sqlite"),
+    systemSecret: "cli-conditional-secret",
+  })
+  expect(created.success).toBe(true)
+  if (!created.success) {
+    await rm(directory, { force: true, recursive: true })
+    return
+  }
+  const server = Bun.serve({
+    fetch: created.data.fetch,
+    port: 0,
+  })
+
+  try {
+    const realmCreate = await cliRun(
+      "realms",
+      "create",
+      "--server",
+      server.url.toString(),
+      "--token",
+      "cli-conditional-secret",
+      "--domain",
+      "conditional.example.com",
+      "--name",
+      "Conditional realm",
+    )
+    expect(realmCreate.exitCode).toBe(0)
+    const realmId = (JSON.parse(realmCreate.stdout) as { realm: { id: string } }).realm.id
+
+    const organizationCreate = await cliRun(
+      "organizations",
+      "create",
+      "--server",
+      server.url.toString(),
+      "--token",
+      "cli-conditional-secret",
+      "--realm-id",
+      realmId,
+      "--name",
+      "Conditional organization",
+    )
+    expect(organizationCreate.exitCode).toBe(0)
+    const organizationId = (JSON.parse(organizationCreate.stdout) as { organization: { id: string } }).organization.id
+
+    const projectCreate = await cliRun(
+      "projects",
+      "create",
+      "--server",
+      server.url.toString(),
+      "--token",
+      "cli-conditional-secret",
+      "--realm-id",
+      realmId,
+      "--organization-id",
+      organizationId,
+      "--name",
+      "Conditional project",
+    )
+    expect(projectCreate.exitCode).toBe(0)
+    const projectId = (JSON.parse(projectCreate.stdout) as { project: { id: string } }).project.id
+
+    const projectGet = await cliRun(
+      "projects",
+      "get",
+      "--server",
+      server.url.toString(),
+      "--token",
+      "cli-conditional-secret",
+      "--realm-id",
+      realmId,
+      "--project-id",
+      projectId,
+    )
+    expect(projectGet.exitCode).toBe(0)
+    const updatedAt = (JSON.parse(projectGet.stdout) as { project: { updatedAt: number } }).project.updatedAt
+
+    const unchanged = await cliRun(
+      "projects",
+      "get",
+      "--server",
+      server.url.toString(),
+      "--token",
+      "cli-conditional-secret",
+      "--realm-id",
+      realmId,
+      "--project-id",
+      projectId,
+      "--if-modified-since",
+      httpDateFormat(new Date(updatedAt)),
+    )
+    expect(unchanged.exitCode).toBe(0)
+    expect(unchanged.stdout).toBe("")
+    expect(unchanged.stderr).toBe("304 Not Modified\n")
   } finally {
     server.stop(true)
     await rm(directory, { force: true, recursive: true })

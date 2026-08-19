@@ -16,6 +16,7 @@ type OidcListCliFlags = OidcCliFlags & {
 type OidcRealmFlags = OidcCliFlags & { readonly realmId?: string }
 type OidcListRealmFlags = OidcListCliFlags & { readonly realmId?: string }
 type OidcClientFlags = OidcRealmFlags & { readonly clientId: string }
+type OidcClientGetFlags = OidcClientFlags & { readonly ifModifiedSince?: string }
 type OidcConsentFlags = OidcRealmFlags & { readonly userId: string }
 type OidcConsentListFlags = OidcListRealmFlags & { readonly userId: string }
 
@@ -79,13 +80,25 @@ const oidcClientListCommand = buildCommand({
 })
 
 const oidcClientGetCommand = buildCommand({
-  async func(this: ApplicationContext, flags: OidcClientFlags) {
+  async func(this: ApplicationContext, flags: OidcClientGetFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientGet(realmId, flags.clientId))
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(this, flags).oidcClientGet(
+        realmId,
+        flags.clientId,
+        flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
+      ),
+    )
   },
   parameters: {
-    flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), clientId: oidcIdFlag("Client UUID") },
+    flags: {
+      ...oidcCommonFlags(),
+      realmId: oidcRealmIdFlag(),
+      clientId: oidcIdFlag("Client UUID"),
+      ifModifiedSince: ifModifiedSinceFlag(),
+    },
   },
   docs: { brief: "Get an OIDC client" },
 })
@@ -240,11 +253,15 @@ function oidcCliClientCreate(context: ApplicationContext, flags: OidcCliFlags) {
 
 function oidcCliResultWrite(
   context: ApplicationContext,
-  result: { data?: unknown; errorMessage?: string; success: boolean },
+  result: { data?: unknown; errorMessage?: string; status?: "current" | "unchanged"; success: boolean },
 ) {
   if (!result.success) {
     context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
     context.process.exitCode = 1
+    return
+  }
+  if (result.status === "unchanged") {
+    context.process.stderr.write("304 Not Modified\n")
     return
   }
   context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
@@ -304,6 +321,16 @@ function oidcIdFlag(brief: string) {
 
 function oidcRealmIdFlag() {
   return { ...oidcIdFlag("Realm UUID"), optional: true as const }
+}
+
+function ifModifiedSinceFlag() {
+  return {
+    brief: "HTTP If-Modified-Since date",
+    kind: "parsed" as const,
+    optional: true as const,
+    parse: (value: string) => value,
+    placeholder: "HTTP-DATE",
+  }
 }
 
 function oidcTextFlag(brief: string) {

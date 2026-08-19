@@ -117,14 +117,17 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
   app.get(`${prefix}/projects/:projectId`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const result = projectGet({
+      context: authenticated.data,
+      database: projectDatabaseGet(app),
+      realmId: projectParamGet(context, "realmId"),
+      projectId: projectParamGet(context, "projectId"),
+    })
     return projectResultResponseCreate(
       context,
-      projectGet({
-        context: authenticated.data,
-        database: projectDatabaseGet(app),
-        realmId: projectParamGet(context, "realmId"),
-        projectId: projectParamGet(context, "projectId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.project.updatedAt) : undefined,
     )
   })
 
@@ -236,15 +239,18 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
   app.get(`${prefix}/projects/:projectId/applications/:applicationId`, (context) => {
     const authenticated = authenticate(context)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const result = projectApplicationGet({
+      applicationId: projectParamGet(context, "applicationId"),
+      context: authenticated.data,
+      database: projectDatabaseGet(app),
+      realmId: projectParamGet(context, "realmId"),
+      projectId: projectParamGet(context, "projectId"),
+    })
     return projectResultResponseCreate(
       context,
-      projectApplicationGet({
-        applicationId: projectParamGet(context, "applicationId"),
-        context: authenticated.data,
-        database: projectDatabaseGet(app),
-        realmId: projectParamGet(context, "realmId"),
-        projectId: projectParamGet(context, "projectId"),
-      }),
+      result,
+      200,
+      result.success ? new Date(result.data.application.updatedAt) : undefined,
     )
   })
   app.patch(`${prefix}/projects/:projectId/applications/:applicationId`, async (context) => {
@@ -566,8 +572,9 @@ function projectResultResponseCreate<T>(
   },
   result: Result<T>,
   status = 200,
+  lastModified?: Date,
 ) {
-  return httpResultResponseCreate(context, result, status)
+  return httpResultResponseCreate(context, result, status, lastModified)
 }
 
 async function projectRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

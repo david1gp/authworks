@@ -14,6 +14,7 @@ type ProjectListCliFlags = ProjectCliFlags & {
   readonly sortDirection?: "asc" | "desc"
 }
 type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId: string; readonly realmId?: string }
+type ProjectGetCliFlags = ProjectIdCliFlags & { readonly ifModifiedSince?: string }
 
 const projectCreateCommand = buildCommand({
   async func(
@@ -58,13 +59,25 @@ const projectListCommand = buildCommand({
 })
 
 const projectGetCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectIdCliFlags) {
+  async func(this: ApplicationContext, flags: ProjectGetCliFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
-    projectCliResultWrite(this, await projectCliClientCreate(this, flags).projectGet(realmId, flags.projectId))
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(this, flags).projectGet(
+        realmId,
+        flags.projectId,
+        flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
+      ),
+    )
   },
   parameters: {
-    flags: { ...projectCommonFlags(), realmId: projectScopeIdFlag("Realm UUID"), projectId: idFlag("Project UUID") },
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: idFlag("Project UUID"),
+      ifModifiedSince: ifModifiedSinceFlag(),
+    },
   },
   docs: { brief: "Get a project" },
 })
@@ -288,11 +301,15 @@ function projectCliClientCreate(context: ApplicationContext, flags: ProjectCliFl
 
 function projectCliResultWrite(
   context: ApplicationContext,
-  result: { data?: unknown; errorMessage?: string; success: boolean },
+  result: { data?: unknown; errorMessage?: string; status?: "current" | "unchanged"; success: boolean },
 ) {
   if (!result.success) {
     context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
     context.process.exitCode = 1
+    return
+  }
+  if (result.status === "unchanged") {
+    context.process.stderr.write("304 Not Modified\n")
     return
   }
   context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
@@ -352,6 +369,16 @@ function idFlag(brief: string) {
 
 function projectScopeIdFlag(brief: string) {
   return { ...idFlag(brief), optional: true as const }
+}
+
+function ifModifiedSinceFlag() {
+  return {
+    brief: "HTTP If-Modified-Since date",
+    kind: "parsed" as const,
+    optional: true as const,
+    parse: (value: string) => value,
+    placeholder: "HTTP-DATE",
+  }
 }
 
 function textFlag(brief: string) {
