@@ -1,17 +1,19 @@
 import * as v from "valibot"
-import type { Result, ResultErr } from "#result"
-import { resultCreate } from "../errors/resultCreate.js"
+import type { ResultErr } from "#result"
 import { resultErrorCodedCreate } from "../errors/resultErrorCodedCreate.js"
 import { Secret } from "../secrets/Secret.js"
 import { httpApiClientErrorResultCreate } from "./httpApiClientErrorResultCreate.js"
+import type { HttpGetOptions } from "./HttpGetOptions.js"
+import type { HttpGetResult } from "./HttpGetResult.js"
+import { httpDateFormat } from "./httpDateFormat.js"
+import { httpDateParse } from "./httpDateParse.js"
+import { httpRequestIdGet } from "./httpRequestIdGet.js"
 import { httpUrlResolve } from "./httpUrlResolve.js"
 
-type HttpApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
-
-type HttpApiClientRequestOptions<T> = {
+type HttpApiClientGetRequestOptions<T> = HttpGetOptions & {
   readonly baseUrl: string
-  readonly fetch?: HttpApiFetch
-  readonly init: RequestInit
+  readonly fetch?: (input: string | URL | Request, init?: RequestInit) => Promise<Response>
+  readonly init?: RequestInit
   readonly invalidResponseErrorGet?: (body: unknown) => ResultErr | undefined
   readonly invalidResponseMessage?: string
   readonly op: string
@@ -21,22 +23,28 @@ type HttpApiClientRequestOptions<T> = {
   readonly token?: Secret | string
 }
 
-export async function httpApiClientRequest<T>(options: HttpApiClientRequestOptions<T>): Promise<Result<T>> {
-  const headers = new Headers(options.init.headers)
+export async function httpApiClientGetRequest<T>(
+  options: HttpApiClientGetRequestOptions<T>,
+): Promise<HttpGetResult<T>> {
+  const init = { ...options.init, method: options.init?.method ?? "GET" }
+  const headers = new Headers(init.headers)
   headers.set("accept", "application/json")
-  if (options.init.body !== undefined && !headers.has("content-type"))
+  if (init.body !== undefined && !headers.has("content-type"))
     headers.set(
       "content-type",
-      options.init.body instanceof URLSearchParams ? "application/x-www-form-urlencoded" : "application/json",
+      init.body instanceof URLSearchParams ? "application/x-www-form-urlencoded" : "application/json",
     )
   if (options.token !== undefined)
     headers.set("authorization", `Bearer ${options.token instanceof Secret ? options.token.valueGet() : options.token}`)
+  if (options.ifModifiedSince instanceof Date) headers.set("if-modified-since", httpDateFormat(options.ifModifiedSince))
+  if (typeof options.ifModifiedSince === "string" && options.ifModifiedSince.length > 0)
+    headers.set("if-modified-since", options.ifModifiedSince)
 
   let response: Response
   let body: unknown
   try {
     response = await (options.fetch ?? fetch)(httpUrlResolve(options.baseUrl, options.path), {
-      ...options.init,
+      ...init,
       headers,
     })
     if (response.status !== 101 && response.status !== 204 && response.status !== 205 && response.status !== 304)
@@ -45,6 +53,16 @@ export async function httpApiClientRequest<T>(options: HttpApiClientRequestOptio
     return resultErrorCodedCreate(options.op, "The server could not be reached.", "platform.unreachable")
   }
 
+  const lastModified = httpDateParse(response.headers.get("last-modified") ?? undefined)
+  const responseHeaderRequestId = response.headers.get("x-request-id")
+  const requestId =
+    responseHeaderRequestId === null ? undefined : httpRequestIdGet(responseHeaderRequestId, () => crypto.randomUUID())
+  const responseMetadata = {
+    ...(lastModified === undefined ? {} : { lastModified }),
+    ...(requestId === undefined ? {} : { requestId }),
+  }
+
+  if (response.status === 304) return { ...responseMetadata, status: "unchanged", success: true }
   if (!response.ok)
     return httpApiClientErrorResultCreate({
       body,
@@ -63,5 +81,5 @@ export async function httpApiClientRequest<T>(options: HttpApiClientRequestOptio
       "platform.invalid-response",
     )
   }
-  return resultCreate(parsed.output)
+  return { ...responseMetadata, data: parsed.output, status: "current", success: true }
 }

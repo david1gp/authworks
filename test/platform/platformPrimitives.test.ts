@@ -157,6 +157,25 @@ test("HTTP API clients share headers, transport errors, and response validation"
     success: false,
   })
 
+  let jsonCalls = 0
+  const notModifiedResponse = new Response(null, { status: 304 })
+  Object.defineProperty(notModifiedResponse, "json", {
+    value: async () => {
+      jsonCalls += 1
+      throw new Error("304 has no JSON body")
+    },
+  })
+  const notModified = await httpApiClientRequest({
+    baseUrl: "https://identity.example.test",
+    fetch: async () => notModifiedResponse,
+    init: { method: "GET" },
+    op: "testRequest",
+    path: "/resource",
+    schema,
+  })
+  expect(notModified).toMatchObject({ code: "platform.http", statusCode: 304, success: false })
+  expect(jsonCalls).toBe(0)
+
   const structured = await httpApiClientRequest({
     baseUrl: "https://identity.example.test/authworks",
     fetch: async () => Response.json({ error: { code: "platform.internal", message: "boom" } }, { status: 500 }),
