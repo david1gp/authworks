@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source "./**/*.{ts,tsx}";
+@source "../features/**/*.{ts,tsx}";
+@source "../../ui/interactive/button/**/*.{ts,tsx}";
+@source "../../ui/static/card/**/*.{ts,tsx}";
+@source "../../ui/input/input/**/*.{ts,tsx}";
+@source "../../ui/input/check/**/*.{ts,tsx}";
+@source "../../ui/input/label/**/*.{ts,tsx}";
+@source "../../ui/table/**/*.{ts,tsx}";
+@source "../../ui/interactive/dialog/**/*.{ts,tsx}";
+@source "../../ui/interactive/sidebar/**/*.{ts,tsx}";
+@source "../../ui/interactive/link/**/*.{ts,tsx}";
+@source "../../ui/interactive/theme/**/*.{ts,tsx}";
+@source "../../ui/static/icon/**/*.{ts,tsx}";
+@source "../../ui/static/badge/**/*.{ts,tsx}";
+@source "../../ui/static/code/**/*.{ts,tsx}";
+@source "../../ui/static/loaders/**/*.{ts,tsx}";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-line: var(--border);
+  --color-line-subtle: var(--border-subtle);
+  --color-line-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-contrast: var(--accent-contrast);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+}
+
+@layer base {
+  :root {
+    --background: #ffffff;
+    --foreground: #1a1a1a;
+    --muted: #f5f5f5;
+    --muted-foreground: #6b7280;
+    --surface: #ffffff;
+    --surface-hover: #eeeeee;
+    --border: #e0e0e0;
+    --border-subtle: #eeeeee;
+    --border-strong: #c7c7c7;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-contrast: #ffffff;
+    --danger: #a33a22;
+    --success: #2f7d3f;
+    color-scheme: light;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-synthesis: none;
+  }
+
+  :root.dark {
+    --background: #1a1a1a;
+    --foreground: #e8e8e8;
+    --muted: #242424;
+    --muted-foreground: #9ca3af;
+    --surface: #1a1a1a;
+    --surface-hover: #2e2e2e;
+    --border: #3a3a3a;
+    --border-subtle: #2e2e2e;
+    --border-strong: #555555;
+    --accent: #60a5fa;
+    --accent-hover: #93c5fd;
+    --accent-contrast: #171a13;
+    --danger: #d6a28b;
+    --success: #8fcf70;
+    color-scheme: dark;
+  }
+
+  html {
+    min-width: 320px;
+    background: var(--background);
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  button,
+  select {
+    font: inherit;
+  }
+}
