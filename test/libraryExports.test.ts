@@ -115,6 +115,7 @@ test("the root library only publishes shared contracts", async () => {
     "httpErrorResponseSchema",
     "httpErrorStatusGet",
     "packageName",
+    "packageVersion",
     "resultCreate",
     "resultErrorCodedCreate",
     "resultErrorCreate",

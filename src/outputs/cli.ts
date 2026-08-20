@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
+import { packageVersion } from "../packageVersion.js"
 import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommands.js"
 import { externalIdentityCliCommands } from "../features/externalIdentities/cli/externalIdentityCliCommands.js"
 import { realmCliCommands } from "../features/realms/cli/realmCliCommands.js"
@@ -66,7 +67,7 @@ const cliApplication = buildApplication(
     version: version({
       brief: "Print version information and exit",
       info: {
-        currentVersion: "0.1.0",
+        currentVersion: packageVersion,
       },
     }),
   },

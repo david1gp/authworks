@@ -1,4 +1,5 @@
 export const packageName = "@adaptive-ds/authworks"
+export { packageVersion } from "../packageVersion.js"
 
 export { resultCreate } from "../platform/errors/resultCreate.js"
 export { resultErrorCreate } from "../platform/errors/resultErrorCreate.js"
