@@ -1,0 +1,71 @@
+# Authworks production login and administration web UIs
+
+## Goal
+
+Turn the existing `/demo` SolidJS login and administration screens into secure, API-backed web applications for the capabilities Authworks already supports. Provide hosted login and consent flows, end-user account management, and a realm-aware administration console in the reduced Authworks scope rather than reproducing ZITADEL-only features.
+
+## Decisions
+
+- Keep `/demo/**` as fixture-driven development examples and add production routes at `/login/**`, `/consent`, `/account/**`, `/invitations/**`, and `/admin/**`; disable demo routes in production.
+- Serve the built Solid application and APIs from one HTTPS origin. API, OIDC, discovery, callback, and health routes take precedence over the SPA fallback.
+- Use secure, opaque `HttpOnly` session cookies for browser sessions, with rotation, CSRF and origin checks, validated return URLs, and no credentials or bootstrap/system secrets in browser storage. Preserve bearer authentication for API and CLI consumers.
+- Scope administration to the authenticated realm and existing actor permissions. Keep system bootstrap, realm creation, and system-secret operations operator/CLI-only.
+- Keep routes and layouts thin in `src/ui` and `src/features/{login,account,admin}/ui`; each feature owns its queries, forms, mutations, and UI state under `src/features/<feature>/ui`.
+- Build every page from a stateless presentational view plus production and demo adapters. Every production page must have a fixture-backed `/demo/**` variant that requires no authentication, backend, or network access and exposes meaningful success, empty, loading, and error scenarios where relevant.
+- Follow ZITADEL's proven login/account/console information architecture and wording for capabilities Authworks supports, while extending the visual language already established in `/demo/login` rather than copying ZITADEL styling.
+- Use the efficient message-catalog and locale-loading structure from `/home/david/adaptive/zitadel-login` for every UI string. Keep typed stable message keys, locale-aware formatting, an explicit fallback locale, persisted locale choice, and browser negotiation; port applicable ZITADEL translations instead of embedding text in components.
+- Reuse public Valibot schemas and feature clients. Add only safe list/read/mutation contracts required to expose already-implemented actions; never import persistence schemas into UI code or expose stored secrets.
+- Show newly created OIDC secrets, API keys, personal access tokens, client credentials, and recovery codes once. Existing secret values remain write-only and are only rotatable or revocable.
+- Include hosted registration/login, verification, recovery, password, email OTP, Google/GitHub/Microsoft identities, passkeys, TOTP/email/passkey MFA, recovery codes, OIDC interaction, consent, and logout.
+- Include self-service profile, email/password, account deletion, organizations/switching, sessions/devices, factors/passkeys, linked identities, and consents because those are existing human-facing capabilities.
+- Include administration for current realm settings; organizations, memberships, invitations, roles, domains, branding, and login/provider policy; users and credentials; authorization; projects, applications, roles, and grants; OIDC clients and keys; machine users and credentials; sessions; impersonation; and audit events.
+- Treat fixed roles/permissions and protocol discovery/JWKS documents as read-only. Exclude SMS OTP, U2F, arbitrary provider types, ZITADEL instance-only console features, and unsupported functionality.
+- Generate styled transactional HTML and text email through `/home/david/adaptive/email-generator`, integrated through the existing email delivery ports. Use `it@contentoren.de` and `auth@contentoren.de` from the local Mailcow configuration only as deployment/E2E environment credentials; never commit mailbox passwords or generated secret values.
+- Create deterministic E2E realm, organization, administrator, member, and machine-user fixtures through supported Authworks APIs and isolate or clean them per run. Exercise real email send/receive only in an explicitly enabled Mailcow integration project; keep the default E2E suite local and deterministic.
+
+## Approach
+
+1. Establish shared route, browser security, i18n, email, demo-fixture, and production-serving foundations before parallel feature work.
+2. Build each feature as shared stateless views with separate production and fixture-backed demo adapters; parallelize only across features whose contracts are already stable.
+3. Connect hosted login and OIDC interaction, then self-service account flows and administration domains.
+4. Test feature contracts and security with temporary SQLite resources, visually verify every demo state, and cover critical real integrations with Playwright.
+
+## Tasks
+
+- [x] 1. Define the production route and screen-to-contract matrix for `/login`, `/consent`, `/account`, `/invitations`, and `/admin`; add authenticated user, realm, organization, and administrator route guards while retaining development-only `/demo/**` routes.
+- [x] 2. Add secure browser-session support to the sessions feature: opaque cookie issue/rotation/clear, browser actor resolution, logout, CSRF tokens, origin/trusted-host validation, safe return URLs, expiry handling, and tests preserving existing bearer behavior. Browser issuance/non-disclosure covers password, email OTP, external identity, MFA, and passkey flows; bearer-first authentication, CSRF/origin enforcement, rotation, logout, and a 15-minute bootstrap-administrator exchange with explicit session subject types are complete.
+- [x] 3. Close browser API/client gaps for existing capabilities: realm-scoped administration instead of `/system/**`, subject-bound `/me` operations, organization switching/invitation acceptance, consent listing, tenant event listing, and safe list/read/update contracts needed by the planned screens. Enforce tenant isolation, actor/subject equality, permissions, assurance, pagination, and secret redaction. Subject-bound account contracts and browser administration now cover realm/users, organizations, policies/providers, events, projects/applications/roles/grants, OIDC clients/keys/consents, and machine users/credentials with permissions, isolation, CSRF/origin enforcement, pagination, one-time secrets, and redaction.
+- [x] 4. Complete browser OIDC interaction: make authorization, consent, external-provider callbacks, and logout use browser sessions; redirect interaction to `/login` or `/consent`; preserve server-validated request state; and resume or reject the request safely.
+- [~] 5. Add shared typed i18n foundations using the `zitadel-login` catalog/loading structure, browser and persisted locale resolution, locale-aware formatting, applicable ZITADEL wording/translations, and a no-literal-UI-text check for all production and demo views. Typed locales, runtime, persistence/negotiation, RTL, formatting, 14 translated catalogs, selector, fallback/placeholder/catalog tests, and shell integration are complete; remaining component literals and the literal-text gate remain.
+- [~] 6. Add shared stateless page/demo foundations: typed fixture scenarios, production-versus-demo adapters, a complete `/demo/login`, `/demo/account`, and `/demo/admin` directory, and reusable state selectors so every page is visually reachable without auth, backend, or network. Typed URL-selectable fixtures, directories, placeholders, responsive navigation, and initial E2E/browser verification are complete; each implemented feature page still needs its stateless adapter and full state coverage.
+- [x] 7. Add the production Solid application shell, API/session contexts, authenticated layouts, realm/organization context, loading/error/empty states, responsive navigation, and inaccessible-route handling without moving feature behavior into composition files.
+- [x] 8. Connect production login routes to real bootstrap and feature clients for discovery, registration, verification, password login, recovery/reset, email OTP, external providers, passkey ceremonies, MFA challenges, recovery codes, recent accounts, and logout; provide matching stateless demo scenarios for every page and state. A shared stateless login view plus a `LoginAdapter` boundary now backs both a cookie-mode production adapter with runtime realm discovery, CSRF, safe return paths and opaque interaction handles, and a fixture-backed demo adapter covering 28 `/demo/login/**` destinations with URL-selectable states.
+- [x] 9. Add account and consent pages for profile/email, password, deletion, organizations/switching, sessions/devices and revocation, passkeys, MFA/recovery codes, linked external identities, OIDC consents, and invitation acceptance, each with fixture-backed demo variants. Shared stateless views, production/demo adapters, typed i18n, and mocked browser coverage are complete; task 17 owns final composed-backend E2E after runtime realm discovery and HTTPS test serving are available.
+- [~] 10. Add core administration for administrator sign-in/session, current realm settings and lifecycle, user list/create/detail/profile/verification/lifecycle/deletion, user sessions and authentication methods, and paginated/filterable audit events with safe payload display, each with fixture-backed demo variants. Sign-in/session, realm settings/lifecycle, user administration, and redacted audit events have shared production/demo adapters and browser coverage; administrator views/actions for another user's sessions and methods still need browser contracts and pages.
+- [x] 11. Add organization administration for settings/lifecycle, memberships and fixed role assignment, invitations, domains/discovery, branding, organization login policy, and configured Google/GitHub/Microsoft providers with write-only secrets, each with fixture-backed demo variants.
+- [x] 12. Add authorization and project administration for effective roles/permissions, projects, applications, application lifecycle, project roles, organization and cross-organization grants, and access-policy evaluation views supported by current contracts, each with fixture-backed demo variants.
+- [x] 13. Add OIDC administration for clients, exact redirect URIs, trusted/consent settings, scopes, client-secret issue/rotation/revocation, and signing-key metadata/rotation while keeping discovery and JWKS read-only, each with fixture-backed demo variants.
+- [x] 14. Add machine-user administration for lifecycle, client credentials, personal access tokens, and API keys, including one-time secret display, copy confirmation, rotation, revocation, expiry, audit visibility, and fixture-backed demo variants.
+- [ ] 15. Add guarded impersonation controls to eligible user details plus a persistent impersonation banner and end action. Require existing permission and assurance checks, reason and duration, prohibit nesting, expose resulting audit events, and provide fixture-backed demo states.
+- [~] 16. Integrate styled transactional HTML/text email for verification, OTP, recovery, invitation, security notification, and impersonation events through `email-generator`; add preview/demo fixtures and tests, then configure optional Mailcow E2E send/receive using uncommitted `it@contentoren.de` and `auth@contentoren.de` environment credentials. The typed verification/OTP/recovery/organization-invitation renderer, fixtures, library surface, optional server composition, delivery port/fake, invitation delivery, integration tests, and stateless HTML/text preview pages are complete; security/impersonation templates, SMTP/IMAP, and optional Mailcow E2E remain.
+- [ ] 17. Add deterministic E2E account/realm/organization/project fixtures and colocated contract/UI tests plus real API-backed Playwright coverage for login, recovery, MFA/passkeys, external login callback, OIDC consent, account mutations, admin CRUD, credentials, tenant isolation, permission denial, impersonation, deep links, reloads, expiry, locale switching, email links, CSRF/origin rejection, and secret non-disclosure.
+- [~] 18. Build and serve the UI as a release artifact: add `build:ui` to `build` and `check`, emit `dist/ui`, serve assets and explicit SPA fallbacks from the composed Hono application, package the UI, and update repository-managed deployment/smoke configuration for a single HTTPS origin and persistent SQLite volume. UI build/artifact checks, version metadata, static asset serving, cache policy, explicit SPA fallback, production demo exclusion, and server tests are complete; repository-managed HTTPS/service deployment and public smoke configuration remain.
+- [ ] 19. Perform browser visual verification of every production and stateless demo page at desktop and mobile sizes; verify ZITADEL-like information architecture, consistency with the existing login design, translated layouts, accessibility basics, keyboard operation, destructive confirmations, live API behavior, email previews, production smoke tests, and the complete `bun run check` gate.
+
+## Paths
+
+- Plan: `docs/20260821_production_login_admin_webuis.md`
+- Existing UI plan: `docs/20260819_login_admin_ui.md`
+- Authoritative backend scope: `docs/20260817_authworks.md`
+- Application shell: `src/ui/`
+- Feature UIs: `src/features/*/ui/`
+- Browser security and HTTP composition: `src/features/sessions/`, `src/platform/http/`, `src/compositions/`
+- Server output: `src/outputs/server.ts`
+- UI build output: `dist/ui/`
+- Browser tests: `e2e/`
+- Translation reference: `/home/david/adaptive/zitadel-login`
+- Email templates: `/home/david/adaptive/email-generator`
+- Mail integration reference: `/home/david/leo/contentoren-server/mailcow`
+- Deployment: `ops/`
+- Administration reference: `/home/david/opensource/zitadel/console`
+- Login reference: `/home/david/opensource/zitadel/apps/login`
