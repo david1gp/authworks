@@ -1,0 +1,682 @@
+key,uk
+account.access.accepted,Invitation accepted
+account.access.active,Active organization
+account.access.consentDescription,Applications that can access information from your account.
+account.access.consentEmpty,No applications have access to this account.
+account.access.consentRevoked,Application access was revoked.
+account.access.created,Granted {date}
+account.access.declined,Invitation declined
+account.access.email,Email
+account.access.error,This account information could not be loaded.
+account.access.expired,This invitation has expired.
+account.access.invitationDescription,Review the organization and roles before you respond.
+account.access.invitationEmpty,There are no pending invitations for this account.
+account.access.invitationFor,Invitation for {email}
+account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationReplay,This invitation was already used or is no longer available.
+account.access.membership,Membership roles
+account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationEmpty,This account does not belong to an organization.
+account.access.permission,You do not have permission to perform this action.
+account.access.roles,Roles: {roles}
+account.access.scopes,Permissions: {scopes}
+account.access.switchOrganization,Switch organization
+account.access.switched,Organization context changed to {organization}.
+account.delete.confirmLabel,Enter {email} to confirm
+account.delete.dangerZone,Danger zone
+account.delete.deletedDetail,Your account and access have been permanently removed.
+account.delete.deletedTitle,Account deleted
+account.delete.emailMismatch,The email address does not match.
+account.delete.submit,Delete account permanently
+account.delete.title,Permanently delete this account
+account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.directory.title,Your account
+account.factors.addTotp,Add authenticator
+account.factors.codeCount,{count} recovery codes
+account.factors.confirm,Confirm
+account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
+account.factors.emailOtp,Email code
+account.factors.finishTotp,Finish authenticator setup
+account.factors.passkeyCount,{count} passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Recovery
+account.factors.removeTotp,Remove authenticator
+account.factors.totp,Authenticator app
+account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
+account.factors.verificationCode,Verification code
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.empty,No external identities are linked
+account.identities.unlink,Unlink
+account.passkeys.add,Add passkey
+account.passkeys.created,Created {date}
+account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
+account.passkeys.deviceBound,Device-bound passkey
+account.passkeys.empty,No passkeys registered
+account.passkeys.remove,Remove
+account.passkeys.synced,Synced passkey
+account.password.changed,Your password was changed.
+account.password.confirm,Confirm new password
+account.password.current,Current password
+account.password.description,Use a unique password that you do not use for other services.
+account.password.mismatch,The new passwords do not match.
+account.password.new,New password
+account.password.submit,Change password
+account.password.title,Change password
+account.password.tooShort,The new password must contain at least 8 characters.
+account.profile.displayName,Display name
+account.profile.displayNameRequired,Enter a display name.
+account.profile.email,Email address
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
+account.profile.emailTitle,Email address and verification
+account.profile.firstName,First name
+account.profile.lastName,Last name
+account.profile.nickName,Nickname
+account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
+account.profile.personalInformation,Personal information
+account.profile.preferredLanguage,Preferred language
+account.profile.save,Save changes
+account.profile.saved,Your profile was saved.
+account.profile.signInDescription,These details identify your account.
+account.profile.signInTitle,Sign-in details
+account.profile.userName,Username
+account.profile.verificationPending,Verification pending
+account.profile.verified,Verified
+account.recovery.generate,Generate new codes
+account.recovery.once,Copy or print these codes now. They cannot be displayed again.
+account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
+account.recovery.saveNow,Save your recovery codes now
+account.recovery.saved,I saved these codes
+account.recovery.summary,Recovery access
+account.security.label,Account security management
+account.sessionExpired,Your session has expired
+account.sessions.current,Current session
+account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
+account.sessions.empty,No active sessions
+account.sessions.lastUsed,Last used {date}
+account.sessions.revoke,Revoke session
+account.sessions.unknownDevice,Unknown device
+account.status.available,Available
+account.status.configured,Configured
+account.status.notConfigured,Not configured
+account.status.unavailable,Unavailable
+admin.common.next,Далі
+admin.common.pagination,Посторінкова навігація
+admin.common.permission,Ви не маєте дозволу переглядати ці адміністративні дані.
+admin.common.previous,Назад
+admin.events.actor,Суб'єкт
+admin.events.aggregate,Агрегат
+admin.events.count,Подій: {count}
+admin.events.description,"Незмінна активність безпеки поточного realm, починаючи з найновішої."
+admin.events.empty,Жодна подія не відповідає поточному фільтру.
+admin.events.hide,Приховати корисне навантаження
+admin.events.occurred,Сталося
+admin.events.payload,Корисне навантаження
+admin.events.redactionNotice,Секретні значення приховуються перед збереженням події.
+admin.events.search,Пошук подій
+admin.events.searchPlaceholder,"Фільтр за типом, агрегатом або суб'єктом"
+admin.events.show,Показати корисне навантаження
+admin.events.systemActor,Система
+admin.events.title,Події аудиту
+admin.events.type,Тип події
+admin.machine.assuranceRequired,"Керування машинними користувачами та їхніми обліковими даними потребує надійнішого й новішого входу. Увійдіть знову, щоб продовжити."
+admin.machine.assuranceRequiredTitle,Потрібен надійніший вхід
+admin.machine.created,Створено
+admin.machine.credentials.apiKeyCreated,Ключ API видано.
+admin.machine.credentials.description,"Облікові дані, які машинний користувач надає, щоб отримати токен доступу. Зберігаються лише їхні метадані, ніколи не значення."
+admin.machine.credentials.empty,Цей машинний користувач ще не має облікових даних.
+admin.machine.credentials.expires,Спливає
+admin.machine.credentials.expiresHint,"Залиште порожнім, щоб видати облікові дані без терміну дії."
+admin.machine.credentials.issue,Видати облікові дані
+admin.machine.credentials.issueDescription,Видайте персональний токен доступу або ключ API. Значення показується один раз і не може бути відновлене.
+admin.machine.credentials.kind,Тип облікових даних
+admin.machine.credentials.kindAccessToken,Токен доступу
+admin.machine.credentials.kindApiKey,Ключ API
+admin.machine.credentials.kindClientSecret,Секрет клієнта
+admin.machine.credentials.kindHint,Персональний токен доступу діє безпосередньо від імені машинного користувача. Ключ API призначений для однієї інтеграції.
+admin.machine.credentials.kindToken,Персональний токен доступу
+admin.machine.credentials.name,Назва
+admin.machine.credentials.neverExpires,Не спливає
+admin.machine.credentials.onceWarning,"Видане значення показується один раз. Збережіть його, перш ніж закрити це вікно; отримати його знову буде неможливо."
+admin.machine.credentials.revoke,Відкликати
+admin.machine.credentials.revoked,Облікові дані відкликано.
+admin.machine.credentials.scopes,Області
+admin.machine.credentials.scopesHint,"Розділяйте області пробілами або комами. Залиште порожнім, щоб успадкувати області машинного користувача."
+admin.machine.credentials.stateActive,Активні
+admin.machine.credentials.stateExpired,Прострочені
+admin.machine.credentials.stateRevoked,Відкликані
+admin.machine.credentials.subject,Машинний користувач
+admin.machine.credentials.title,Облікові дані та токени
+admin.machine.credentials.tokenCreated,Персональний токен доступу видано.
+admin.machine.credentials.unnamed,Облікові дані без назви
+admin.machine.crossTenant,Цей машинний користувач належить до іншого realm і тут недоступний.
+admin.machine.lifecycle.activate,Активувати
+admin.machine.lifecycle.deactivate,Деактивувати
+admin.machine.lifecycle.description,Деактивація позбавляє всі облікові дані можливості проходити автентифікацію. Видалення є остаточним і його не можна скасувати.
+admin.machine.lifecycle.remove,Видалити машинного користувача
+admin.machine.lifecycle.title,Життєвий цикл
+admin.machine.pageNext,Наступна сторінка
+admin.machine.pagePrevious,Попередня сторінка
+admin.machine.permissionDenied,Ви не маєте дозволу переглядати або змінювати машинних користувачів у цьому realm.
+admin.machine.permissionDeniedTitle,Доступ недоступний
+admin.machine.secret.acknowledge,Я зберіг секрет
+admin.machine.secret.apiKeyTitle,Новий ключ API
+admin.machine.secret.clientId,Ідентифікатор клієнта
+admin.machine.secret.clientTitle,Новий секрет клієнта
+admin.machine.secret.copied,Скопійовано в буфер обміну
+admin.machine.secret.copy,Копіювати секрет
+admin.machine.secret.copyFailed,Буфер обміну недоступний. Виділіть і скопіюйте значення вручну.
+admin.machine.secret.description,Секрет клієнта дозволяє цьому машинному користувачеві обміняти свої облікові дані клієнта на токен доступу. Він зберігається лише для запису і може бути тільки замінений.
+admin.machine.secret.once,"Це єдиний раз, коли показується значення для {name}. Збережіть його зараз; відновити його неможливо."
+admin.machine.secret.redacted,Збережено та приховано
+admin.machine.secret.rotate,Замінити секрет клієнта
+admin.machine.secret.rotated,Секрет клієнта замінено.
+admin.machine.secret.title,Секрет клієнта
+admin.machine.secret.tokenTitle,Новий персональний токен доступу
+admin.machine.secret.value,Значення секрету
+admin.machine.status,Статус
+admin.machine.updated,Останнє оновлення
+admin.machine.users.create,Створити машинного користувача
+admin.machine.users.createDescription,Створіть нелюдську ідентичність для служби або інтеграції. Її секрет клієнта показується один раз.
+admin.machine.users.createSecretHint,Ідентифікатор клієнта та секрет клієнта видаються негайно. Секрет показується один раз і не може бути відновлений.
+admin.machine.users.created,Машинного користувача створено.
+admin.machine.users.description,"Нелюдські ідентичності, які автентифікуються в цьому realm за допомогою облікових даних клієнта, токенів або ключів API."
+admin.machine.users.displayName,Відображуване ім'я
+admin.machine.users.empty,У цьому realm ще немає машинних користувачів.
+admin.machine.users.lifecycleChanged,Статус машинного користувача змінено.
+admin.machine.users.noScopes,Немає областей
+admin.machine.users.scopes,Області
+admin.machine.users.scopesHint,Розділяйте області пробілами або комами. Області зіставляються точно.
+admin.machine.users.search,Пошук машинних користувачів
+admin.machine.users.title,Машинні користувачі
+admin.machine.users.userName,Ім'я користувача
+admin.machine.users.userNameHint,Використовується як ідентифікатор клієнта під час обміну облікових даних клієнта.
+admin.oidc.assuranceRequired,"Керування налаштуваннями OpenID Connect потребує надійнішого та новішого входу. Увійдіть знову, щоб продовжити."
+admin.oidc.assuranceRequiredTitle,Потрібен надійніший вхід
+admin.oidc.clients.consent,Згода
+admin.oidc.clients.consentRequired,Потрібна
+admin.oidc.clients.consentSkipped,Не потрібна
+admin.oidc.clients.create,Зареєструвати клієнта
+admin.oidc.clients.createDescription,"Зареєструйте застосунок, який виконує вхід людей через OpenID Connect. Конфіденційний клієнт отримує секрет один раз."
+admin.oidc.clients.created,Клієнта зареєстровано.
+admin.oidc.clients.description,"Застосунки, які автентифікують людей через OpenID Connect у цій області."
+admin.oidc.clients.empty,У цій області ще не зареєстровано жодного клієнта OpenID Connect.
+admin.oidc.clients.exactMatchHint,"По одному URI в рядку. Кожне перенаправлення звіряється точно, тому символи підстановки та відмінності в закінченні відхиляються."
+admin.oidc.clients.lifecycleChanged,Стан клієнта змінено.
+admin.oidc.clients.name,Назва клієнта
+admin.oidc.clients.postLogoutUris,URI перенаправлення після виходу
+admin.oidc.clients.redirectUris,URI перенаправлення
+admin.oidc.clients.requireConsent,Просити людину підтвердити цей застосунок
+admin.oidc.clients.saved,Клієнта збережено.
+admin.oidc.clients.scopes,Дозволені області доступу
+admin.oidc.clients.search,Пошук клієнтів
+admin.oidc.clients.settingsDescription,"Керуйте назвою клієнта, точними URI перенаправлення, дозволеними областями доступу та обробкою згоди."
+admin.oidc.clients.settingsTitle,Налаштування клієнта
+admin.oidc.clients.title,Клієнти OpenID Connect
+admin.oidc.clients.trusted,Довірений
+admin.oidc.clients.trustedHint,Довірений клієнт повністю пропускає екран згоди. Позначайте довіреними лише власні застосунки.
+admin.oidc.clients.type,Тип клієнта
+admin.oidc.clients.typeConfidential,Конфіденційний
+admin.oidc.clients.typeHint,"Конфіденційний клієнт зберігає секрет на сервері. Публічний клієнт, як-от мобільний або односторінковий застосунок, цього не може."
+admin.oidc.clients.typePublic,Публічний
+admin.oidc.consents.client,Застосунок
+admin.oidc.consents.description,"Застосунки, які людина підтвердила. Відкликання згоди призведе до повторного запиту підтвердження застосунку."
+admin.oidc.consents.empty,Ця людина ще не підтвердила жодного застосунку.
+admin.oidc.consents.granted,Підтверджено
+admin.oidc.consents.revoked,Згоду відкликано.
+admin.oidc.consents.title,Згоди застосунків
+admin.oidc.consents.user,Людина
+admin.oidc.created,Створено
+admin.oidc.crossTenant,Цей ресурс належить до іншої області й тут недоступний.
+admin.oidc.documents.authorizationEndpoint,Кінцева точка авторизації
+admin.oidc.documents.copied,Скопійовано
+admin.oidc.documents.copy,Копіювати документ
+admin.oidc.documents.description,"Документи протоколу, які Authworks публікує для цієї області, саме в тому вигляді, у якому їх читає клієнтська бібліотека."
+admin.oidc.documents.discoveryDescription,"Метадані постачальника OpenID, що надаються з кінцевої точки well-known."
+admin.oidc.documents.discoveryTitle,Документ виявлення
+admin.oidc.documents.empty,Для цієї області ще не опубліковано документів протоколу.
+admin.oidc.documents.endSessionEndpoint,Кінцева точка завершення сеансу
+admin.oidc.documents.issuer,Видавець
+admin.oidc.documents.jwksDescription,"Відкриті ключі, які перевіряють токени, видані цією областю."
+admin.oidc.documents.jwksTitle,Набір вебключів JSON
+admin.oidc.documents.jwksUri,URI JWKS
+admin.oidc.documents.open,Відкрити кінцеву точку
+admin.oidc.documents.readOnly,Ці документи формуються з конфігурації області та ключів підпису. Їх не можна редагувати тут.
+admin.oidc.documents.showRaw,Показати вихідний документ
+admin.oidc.documents.title,Документи протоколу
+admin.oidc.documents.tokenEndpoint,Кінцева точка токена
+admin.oidc.documents.userinfoEndpoint,Кінцева точка userinfo
+admin.oidc.keys.algorithm,Алгоритм
+admin.oidc.keys.create,Додати ключ
+admin.oidc.keys.created,Опубліковано новий ключ підпису.
+admin.oidc.keys.description,"Ключі, якими підписуються токени цієї області. Ротація публікує новий ключ і виводить поточний з обігу."
+admin.oidc.keys.empty,Для цієї області ще немає ключів підпису.
+admin.oidc.keys.keyId,Ідентифікатор ключа
+admin.oidc.keys.privateNotice,Показуються лише метадані відкритого ключа. Закритий ключ ніколи не надсилається до браузера.
+admin.oidc.keys.retire,Вивести з обігу
+admin.oidc.keys.retired,Ключ підпису виведено з обігу.
+admin.oidc.keys.retiredAt,Виведено з обігу
+admin.oidc.keys.rotate,Ротувати ключ
+admin.oidc.keys.rotated,Ключ підпису ротовано.
+admin.oidc.keys.title,Ключі підпису
+admin.oidc.lifecycle.activate,Активувати
+admin.oidc.lifecycle.deactivate,Деактивувати
+admin.oidc.lifecycle.remove,Видалити клієнта
+admin.oidc.pageNext,Наступна сторінка
+admin.oidc.pagePrevious,Попередня сторінка
+admin.oidc.permissionDenied,У вас немає дозволу переглядати або змінювати налаштування OpenID Connect у цій області.
+admin.oidc.permissionDeniedTitle,Доступ недоступний
+admin.oidc.secret.acknowledge,Я зберіг секрет
+admin.oidc.secret.copied,Скопійовано до буфера обміну
+admin.oidc.secret.copy,Копіювати секрет
+admin.oidc.secret.copyFailed,Буфер обміну недоступний. Виділіть і скопіюйте значення вручну.
+admin.oidc.secret.createdTitle,Новий секрет клієнта
+admin.oidc.secret.description,"Збережений секрет клієнта більше ніколи не показується. Ротуйте його, щоб видати новий, або відкличте, щоб клієнт не міг пройти автентифікацію."
+admin.oidc.secret.once,"Це єдиний раз, коли показується секрет для {client}. Збережіть його зараз; відновити його неможливо."
+admin.oidc.secret.publicClient,"Публічний клієнт проходить автентифікацію без секрету, тому ротувати нічого."
+admin.oidc.secret.redacted,Збережено та приховано
+admin.oidc.secret.revoke,Відкликати секрет
+admin.oidc.secret.revoked,Секрет клієнта відкликано.
+admin.oidc.secret.rotate,Ротувати секрет
+admin.oidc.secret.rotated,Секрет клієнта ротовано.
+admin.oidc.secret.rotatedTitle,Ротований секрет клієнта
+admin.oidc.secret.title,Секрет клієнта
+admin.oidc.status,Стан
+admin.oidc.updated,Останнє оновлення
+admin.organizations.assuranceRequired,"Увійдіть знову за допомогою надійнішого методу автентифікації, щоб змінити це налаштування організації."
+admin.organizations.assuranceRequiredTitle,Потрібен надійніший вхід
+admin.organizations.branding.background,Колір тла
+admin.organizations.branding.dark,Темна тема
+admin.organizations.branding.description,"Кольори, логотипи та правові посилання, що відображаються на розміщених сторінках входу та облікового запису."
+admin.organizations.branding.font,Колір тексту
+admin.organizations.branding.iconUrl,URL піктограми
+admin.organizations.branding.light,Світла тема
+admin.organizations.branding.logoUrl,URL логотипа
+admin.organizations.branding.preview,Попередній перегляд
+admin.organizations.branding.primary,Основний колір
+admin.organizations.branding.privacyUrl,URL політики конфіденційності
+admin.organizations.branding.saved,Оформлення збережено.
+admin.organizations.branding.termsUrl,URL умов надання послуг
+admin.organizations.branding.themeMode,Тема за замовчуванням
+admin.organizations.branding.title,Оформлення
+admin.organizations.branding.warn,Колір попередження
+admin.organizations.branding.watermark,Приховати водяний знак Authworks
+admin.organizations.detail.created,Створено
+admin.organizations.detail.realm,Realm
+admin.organizations.detail.settingsDescription,Керуйте назвою організації та її статусом життєвого циклу.
+admin.organizations.detail.settingsTitle,Налаштування організації
+admin.organizations.detail.updated,Останнє оновлення
+admin.organizations.domains.claim,Заявити домен
+admin.organizations.domains.claimed,"{domain} заявлено, і він очікує на перевірку."
+admin.organizations.domains.description,Підтверджені домени дозволяють людям знаходити цю організацію за адресою електронної пошти.
+admin.organizations.domains.discovery,Попередній перегляд визначення
+admin.organizations.domains.discoveryDescription,"Перевірте, до якої організації наразі розв'язується домен під час входу."
+admin.organizations.domains.discoveryFound,{domain} розв'язується до {organization}.
+admin.organizations.domains.discoveryMissing,{domain} не розв'язується до жодної організації.
+admin.organizations.domains.domain,Домен
+admin.organizations.domains.empty,Ця організація ще не заявила жодного домену.
+admin.organizations.domains.primary,Основний домен
+admin.organizations.domains.remove,Видалити домен
+admin.organizations.domains.removed,Домен видалено.
+admin.organizations.domains.title,Домени та визначення
+admin.organizations.domains.unverified,Очікує на перевірку
+admin.organizations.domains.verificationRecord,"Додайте цей DNS TXT-запис, а потім виконайте перевірку."
+admin.organizations.domains.verified,Verified
+admin.organizations.domains.verify,Перевірити домен
+admin.organizations.domains.verifyDone,Домен підтверджено.
+admin.organizations.invitations.create,Запросити людину
+admin.organizations.invitations.description,"Запрошуйте людей електронною поштою та відстежуйте, які запрошення ще очікують."
+admin.organizations.invitations.email,Email address
+admin.organizations.invitations.empty,Для цієї організації не надіслано жодного запрошення.
+admin.organizations.invitations.expires,Спливає
+admin.organizations.invitations.revoke,Відкликати запрошення
+admin.organizations.invitations.revoked,Запрошення відкликано.
+admin.organizations.invitations.sent,Запрошення створено.
+admin.organizations.invitations.title,Запрошення
+admin.organizations.invitations.tokenDismiss,Я зберіг це посилання
+admin.organizations.invitations.tokenOnce,Це посилання запрошення показується один раз. Поділіться ним із запрошеною людиною.
+admin.organizations.invitations.tokenTitle,Посилання запрошення
+admin.organizations.lifecycle.activate,Повторно активувати організацію
+admin.organizations.lifecycle.changed,Статус життєвого циклу організації змінено.
+admin.organizations.lifecycle.deactivate,Деактивувати організацію
+admin.organizations.lifecycle.remove,Видалити організацію
+admin.organizations.list.create,Створити організацію
+admin.organizations.list.description,"Організації об'єднують людей, домени та оформлення цього realm."
+admin.organizations.list.empty,У цьому realm ще немає організацій.
+admin.organizations.list.name,Назва організації
+admin.organizations.list.search,Пошук організацій
+admin.organizations.list.title,Організації
+admin.organizations.memberships.add,Додати учасника
+admin.organizations.memberships.added,Учасника додано.
+admin.organizations.memberships.description,Люди в цій організації та призначені їм фіксовані ролі.
+admin.organizations.memberships.empty,У цій організації ще немає учасників.
+admin.organizations.memberships.remove,Видалити учасника
+admin.organizations.memberships.removed,Учасника видалено.
+admin.organizations.memberships.roles,Ролі
+admin.organizations.memberships.rolesFixed,Ролі зафіксовані Authworks і не можуть бути перейменовані.
+admin.organizations.memberships.title,Учасники та ролі
+admin.organizations.memberships.updated,Ролі учасника оновлено.
+admin.organizations.memberships.user,Користувач
+admin.organizations.memberships.userId,Ідентифікатор користувача
+admin.organizations.pageNext,Наступна сторінка
+admin.organizations.pagePrevious,Попередня сторінка
+admin.organizations.permissionDenied,Ви не маєте дозволу переглядати або змінювати цю організацію.
+admin.organizations.permissionDeniedTitle,Доступ недоступний
+admin.organizations.policy.description,"Оберіть, які способи входу можуть використовувати люди та які налаштовані провайдери відображаються."
+admin.organizations.policy.domainDiscovery,Визначати організацію за доменом електронної пошти
+admin.organizations.policy.emailOtp,Одноразовий код електронною поштою
+admin.organizations.policy.externalIdentity,Зовнішні провайдери ідентифікації
+admin.organizations.policy.inherited,Успадковано від realm
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,Пароль
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,Самостійна реєстрація
+admin.organizations.policy.saved,Політику входу збережено.
+admin.organizations.policy.title,Політика входу
+admin.organizations.providers.allowAccountCreation,Автоматично створювати облікові записи для нових людей
+admin.organizations.providers.clientId,Ідентифікатор клієнта
+admin.organizations.providers.clientSecret,Секрет клієнта
+admin.organizations.providers.create,Додати провайдера
+admin.organizations.providers.created,Провайдера налаштовано.
+admin.organizations.providers.description,"Налаштовані провайдери Google, GitHub і Microsoft для цієї організації."
+admin.organizations.providers.disable,Вимкнути провайдера
+admin.organizations.providers.disabled,Провайдера вимкнено.
+admin.organizations.providers.displayName,Display name
+admin.organizations.providers.empty,Зовнішнього провайдера ідентифікації ще не налаштовано.
+admin.organizations.providers.redirectUri,URI перенаправлення
+admin.organizations.providers.rotateSecret,Замінити секрет клієнта
+admin.organizations.providers.secretRotated,Секрет клієнта замінено.
+admin.organizations.providers.secretWriteOnly,"Збережений секрет клієнта ніколи не відображається. Введіть нове значення, щоб замінити його."
+admin.organizations.providers.title,Провайдери ідентифікації
+admin.organizations.providers.type,Провайдер
+admin.organizations.providers.updated,Провайдера оновлено.
+admin.organizations.renamed,Організацію перейменовано.
+admin.organizations.status,Стан
+admin.overview.description,"Ідентифікатор, домени та життєвий цикл області, якою ви керуєте."
+admin.overview.sessionTitle,Сеанс адміністратора
+admin.overview.title,Огляд області
+admin.projects.access.description,"Ролі, якими цей адміністратор фактично володіє в проєкті просто зараз."
+admin.projects.access.empty,У поточному контексті організації немає чинних ролей проєкту.
+admin.projects.access.grantedOrganization,Надано через організацію
+admin.projects.access.permissionDescription,Фіксовані ролі та їхні дозволи визначаються Authworks і не можуть бути змінені.
+admin.projects.access.permissionTitle,Фіксовані ролі та дозволи
+admin.projects.access.roleKeys,Чинні ролі проєкту
+admin.projects.access.title,Чинний доступ
+admin.projects.applications.create,Додати застосунок
+admin.projects.applications.description,"Застосунки, які автентифікуються в цьому проєкті."
+admin.projects.applications.empty,Цей проєкт ще не має застосунків.
+admin.projects.applications.name,Назва застосунку
+admin.projects.applications.title,Застосунки
+admin.projects.applications.type,Тип застосунку
+admin.projects.crossTenant,Цей ресурс належить до іншого realm і тут недоступний.
+admin.projects.detail.authorizationRequired,Потрібна авторизація
+admin.projects.detail.created,Створено
+admin.projects.detail.organization,Організація
+admin.projects.detail.projectAccessRequired,Потрібен доступ до проєкту
+admin.projects.detail.settingsDescription,"Керуйте назвою проєкту та тим, як застосовується доступ."
+admin.projects.detail.settingsTitle,Налаштування проєкту
+admin.projects.detail.updated,Останнє оновлення
+admin.projects.grants.create,Надати доступ організації
+admin.projects.grants.description,"Надайте іншій організації доступ до цього проєкту та оберіть, які ролі вона отримає."
+admin.projects.grants.empty,Жодній організації не надано доступ до цього проєкту.
+admin.projects.grants.grantedOrganization,Організація-одержувач
+admin.projects.grants.roleKeys,Надані ролі
+admin.projects.grants.title,Надання організації
+admin.projects.lifecycle.activate,Активувати
+admin.projects.lifecycle.deactivate,Деактивувати
+admin.projects.lifecycle.remove,Remove
+admin.projects.list.create,Створити проєкт
+admin.projects.list.description,"Проєкти об'єднують застосунки, ролі та надання організації."
+admin.projects.list.empty,У цьому realm ще немає проєктів.
+admin.projects.list.name,Назва проєкту
+admin.projects.list.search,Пошук проєктів
+admin.projects.list.title,Проєкти
+admin.projects.pageNext,Наступна сторінка
+admin.projects.pagePrevious,Попередня сторінка
+admin.projects.permissionDenied,Ви не маєте дозволу переглядати або змінювати ці відомості про проєкт.
+admin.projects.roles.create,Створити роль
+admin.projects.roles.description,"Ролі, які цей проєкт може призначати організаціям та їхнім учасникам."
+admin.projects.roles.displayName,Display name
+admin.projects.roles.empty,Цей проєкт ще не визначає ролей.
+admin.projects.roles.group,Група
+admin.projects.roles.key,Ключ ролі
+admin.projects.roles.title,Ролі проєкту
+admin.projects.saved,{name} збережено.
+admin.projects.status,Стан
+admin.realm.confirmLabel,Введіть {name} для підтвердження
+admin.realm.confirmMismatch,Назва області не збігається.
+admin.realm.created,Створено
+admin.realm.dangerZone,Небезпечна зона
+admin.realm.description,"Налаштування ідентифікації та входу для області, якою ви керуєте."
+admin.realm.disable,Вимкнути область
+admin.realm.disableConfirm,Вимкнення цієї області припинить вхід для всіх її застосунків. Продовжити?
+admin.realm.disableWarning,Вимкнення цієї області негайно припиняє вхід і видачу токенів для всіх її застосунків.
+admin.realm.disabled,Область вимкнено.
+admin.realm.domainRequired,Вкажіть щонайменше один домен області.
+admin.realm.domains,Домени
+admin.realm.domainsHint,Розділяйте домени комами. Перший домен є основним.
+admin.realm.enable,Увімкнути область
+admin.realm.enableDescription,"Цю область вимкнено. Увімкніть її, щоб відновити вхід і видачу токенів."
+admin.realm.enabled,Область увімкнено.
+admin.realm.identifier,Ідентифікатор області
+admin.realm.invalid,Вкажіть назву області та щонайменше один домен.
+admin.realm.lifecycleTitle,Життєвий цикл області
+admin.realm.name,Назва області
+admin.realm.nameRequired,Вкажіть назву області.
+admin.realm.permissionDenied,У вас немає дозволу змінювати цю область.
+admin.realm.primaryDomain,Основний домен
+admin.realm.save,Зберегти налаштування
+admin.realm.saved,Налаштування області збережено.
+admin.realm.settingsDescription,"Змініть назву області та домени, що вказують на неї."
+admin.realm.settingsTitle,Загальні налаштування
+admin.realm.status,Стан
+admin.realm.statusActive,Активна
+admin.realm.statusDisabled,Вимкнена
+admin.realm.title,Налаштування області
+admin.realm.updated,Останнє оновлення
+admin.session.expired,Термін вашого сеансу адміністратора минув
+admin.signIn.activeTitle,Сеанс адміністратора активний
+admin.signIn.credential,Початкові облікові дані адміністратора
+admin.signIn.credentialInvalid,Введіть повні початкові облікові дані адміністратора.
+admin.signIn.credentialNotStored,Облікові дані обмінюються на короткий сеанс браузера і ніколи не зберігаються в цьому браузері.
+admin.signIn.description,Обміняйте видані оператором початкові облікові дані на короткий сеанс адміністратора у браузері.
+admin.signIn.expiresAt,Термін дії сеансу спливає {date}.
+admin.signIn.signedOutDetail,Сеанс адміністратора завершено на цьому пристрої.
+admin.signIn.signedOutTitle,Ви вийшли
+admin.signIn.subject,Суб'єкт
+admin.signIn.subjectType,Тип суб'єкта
+admin.signIn.title,Вхід адміністратора
+admin.users.count,Користувачів: {count}
+admin.users.create,Створити користувача
+admin.users.createDescription,Додайте користувача-людину до поточного realm.
+admin.users.createSubmit,Створити
+admin.users.created,{userName} створено.
+admin.users.dangerZone,Небезпечна зона
+admin.users.delete,Видалити користувача
+admin.users.deleteConfirm,Остаточно видалити {userName}?
+admin.users.deleteWarning,Видалення цього користувача негайно відкликає його сеанси та доступ.
+admin.users.deleted,{userName} видалено.
+admin.users.description,Людські ідентичності в поточному realm.
+admin.users.detailTitle,Відомості про користувача
+admin.users.displayName,Display name
+admin.users.displayNameRequired,Enter a display name.
+admin.users.email,Email address
+admin.users.empty,Жоден користувач не відповідає поточному фільтру.
+admin.users.firstName,First name
+admin.users.invalid,Введіть дійсну адресу електронної пошти та ім'я користувача.
+admin.users.lastName,Last name
+admin.users.lifecycle.active,Активна
+admin.users.lifecycle.deleted,Видалено
+admin.users.lifecycle.inactive,Неактивний
+admin.users.lifecycle.initial,Початковий
+admin.users.lifecycle.locked,Заблоковано
+admin.users.lifecycle.suspended,Призупинено
+admin.users.lifecycleChanged,Статус користувача тепер {state}.
+admin.users.lifecycleConfirm,Установити для {userName} значення {state}?
+admin.users.lifecycleDescription,"Визначте, чи може цей користувач входити в систему."
+admin.users.lifecycleTitle,Життєвий цикл
+admin.users.markUnverified,Позначити як непідтверджений
+admin.users.markVerified,Позначити як підтверджений
+admin.users.missingId,Не вдалося визначити цього користувача за адресою.
+admin.users.nickName,Nickname
+admin.users.preferredLanguage,Preferred language
+admin.users.profileSave,Зберегти профіль
+admin.users.profileSaved,Профіль користувача збережено.
+admin.users.profileTitle,Профіль
+admin.users.search,Пошук користувачів
+admin.users.searchPlaceholder,"Фільтр за іменем користувача, електронною поштою або ідентифікатором"
+admin.users.state,Статус
+admin.users.title,Користувачі
+admin.users.unverified,Не підтверджено
+admin.users.updated,Останнє оновлення {date}
+admin.users.userName,Username
+admin.users.verification,Підтвердження
+admin.users.verificationChanged,Статус підтвердження тепер {state}.
+admin.users.verificationDescription,"Визначте, чи вважається адреса електронної пошти цього користувача підтвердженою."
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verified
+app.name,Authworks
+common.back,Назад
+common.cancel,Скасувати
+common.close,Закрити
+common.continue,Продовжити
+common.decline,Decline
+common.error,Щось пішло не так.
+common.language,Мова
+common.loading,Завантаження
+common.retry,Спробувати ще раз
+common.revoke,Revoke
+common.save,Зберегти
+common.signIn,Увійти
+common.signInWithProvider,Увійти за допомогою {provider}
+common.signOut,Вийти
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,Виберіть спосіб входу в {organization}
+login.chooser.emailOtpDetail,Отримати одноразовий код електронною поштою
+login.chooser.emailOtpLabel,Код із електронної пошти
+login.chooser.passkeyDetail,Використати блокування екрана пристрою або ключ безпеки
+login.chooser.passkeyLabel,Ключ доступу
+login.chooser.passwordDetail,Використати пароль облікового запису
+login.chooser.passwordLabel,Пароль
+login.chooser.providerDetail,Продовжити з підключеним обліковим записом
+login.chooser.providerLabel,Продовжити з {provider}
+login.chooser.register,Створити обліковий запис
+login.chooser.title,Вхід
+login.chooser.useRecent,Використати нещодавній обліковий запис
+login.common.back,Назад до варіантів входу
+login.common.legal,"Продовжуючи, ви погоджуєтеся з {terms} і {privacy}."
+login.common.privacy,Політика конфіденційності
+login.common.terms,Умови використання
+login.common.working,Виконується…
+login.emailOtp.codeDescription,"Введіть шестицифровий код, надісланий на адресу {email}."
+login.emailOtp.codeTitle,Введіть код із електронної пошти
+login.emailOtp.description,Ми надішлемо вам одноразовий код електронною поштою замість запиту пароля.
+login.emailOtp.resend,Надіслати новий код
+login.emailOtp.send,Надіслати код
+login.emailOtp.title,Увійти за допомогою коду з електронної пошти
+login.emailOtp.verify,Підтвердити код
+login.error.codeRequired,Введіть шестицифровий код підтвердження.
+login.error.credentialsRequired,Введіть ім’я користувача та пароль.
+login.error.emailRequired,Введіть дійсну адресу електронної пошти.
+login.error.enrollmentMissing,Почніть налаштування автентифікатора перед підтвердженням коду.
+login.error.nameRequired,"Введіть ім’я, яке буде показано у вашому обліковому записі."
+login.error.passwordMismatch,Паролі не збігаються.
+login.error.passwordTooShort,Пароль має містити щонайменше 8 символів.
+login.error.recoveryCodeRequired,Введіть один зі збережених кодів відновлення.
+login.error.tokenMissing,"Відкрийте повне посилання з електронного листа, щоб продовжити."
+login.logout.description,Ви можете завершити цей сеанс на цьому пристрої.
+login.logout.doneDescription,Ви вийшли з облікового запису {organization}.
+login.logout.doneTitle,Вихід виконано
+login.logout.submit,Вийти
+login.logout.title,Вийти з облікового запису {organization}
+login.mfa.description,"Виберіть спосіб підтвердити, що це ви."
+login.mfa.emailOtp,Код із електронної пошти
+login.mfa.emailOtpDescription,"Введіть шестицифровий код, надісланий на вашу адресу електронної пошти."
+login.mfa.passkey,Ключ доступу
+login.mfa.recoveryCode,Код відновлення
+login.mfa.recoveryCodeDescription,"Використайте один із одноразових кодів, збережених під час налаштування підтвердження."
+login.mfa.recoveryCodeLabel,Код відновлення
+login.mfa.title,Двоетапна перевірка
+login.mfa.totp,Застосунок-автентифікатор
+login.mfa.totpDescription,Введіть шестицифровий код із застосунку-автентифікатора.
+login.mfa.verificationCode,Код підтвердження
+login.mfa.verify,Підтвердити
+login.passkey.description,"Підтвердьте за допомогою блокування екрана пристрою, відбитка пальця або ключа безпеки."
+login.passkey.submit,Продовжити з ключем доступу
+login.passkey.title,Увійти за допомогою ключа доступу
+login.passkey.unsupported,Цей браузер або пристрій не підтримує ключі доступу. Виберіть інший спосіб входу.
+login.password.changeDescription,Виберіть новий пароль перед продовженням.
+login.password.changeTitle,Оновити пароль
+login.password.confirm,Підтвердьте пароль
+login.password.current,Поточний пароль
+login.password.description,Введіть дані облікового запису {organization}.
+login.password.forgot,Забули пароль?
+login.password.hide,Приховати пароль
+login.password.identifier,Ім’я користувача або електронна пошта
+login.password.label,Пароль
+login.password.new,Новий пароль
+login.password.show,Показати пароль
+login.password.submit,Увійти
+login.password.title,Введіть пароль
+login.provider.description,"Ви продовжите на сайті {provider}, а після завершення повернетеся сюди."
+login.provider.submit,Продовжити з {provider}
+login.provider.title,Продовжити з {provider}
+login.recent.description,"Продовжити з обліковим записом, який ви використовували на цьому пристрої."
+login.recent.other,Використати інший обліковий запис
+login.recent.title,Виберіть обліковий запис
+login.recovery.completeDescription,Увійдіть із новим паролем.
+login.recovery.completeTitle,Пароль оновлено
+login.recovery.description,"Введіть адресу електронної пошти, і ми надішлемо інструкції з відновлення, якщо обліковий запис існує."
+login.recovery.resetDescription,Виберіть новий пароль для свого облікового запису.
+login.recovery.resetSubmit,Оновити пароль
+login.recovery.resetTitle,Установити новий пароль
+login.recovery.sentDescription,"Якщо ця адреса відповідає обліковому запису, інструкції з відновлення вже надсилаються. Посилання невдовзі стане недійсним."
+login.recovery.sentTitle,Перевірте електронну пошту
+login.recovery.submit,Надіслати інструкції з відновлення
+login.recovery.title,Скинути пароль
+login.register.description,Створіть обліковий запис для {organization}.
+login.register.displayName,Повне ім’я
+login.register.doneDescription,"Підтвердьте адресу електронної пошти за допомогою посилання, надісланого на {email}."
+login.register.doneTitle,Підтвердьте адресу електронної пошти
+login.register.email,Адреса електронної пошти
+login.register.signIn,Уже маєте обліковий запис?
+login.register.submit,Створити обліковий запис
+login.register.title,Створіть свій обліковий запис
+login.register.userName,Ім’я користувача
+login.signedIn.description,Ви ввійшли в обліковий запис {organization}.
+login.signedIn.title,Вхід виконано
+login.status.loading,Підготовка до входу
+login.status.unavailableDescription,Не вдалося виконати цей запит на вхід. Поверніться до застосунку та спробуйте ще раз.
+login.status.unavailableTitle,Вхід недоступний
+login.totpEnroll.description,"Додайте цей ключ налаштування до застосунку-автентифікатора, а потім введіть згенерований ним код. Ключ буде показано лише зараз."
+login.totpEnroll.start,Показати ключ налаштування
+login.totpEnroll.submit,Завершити налаштування
+login.totpEnroll.title,Налаштувати застосунок-автентифікатор
+login.verify.description,Підтвердьте адресу електронної пошти свого облікового запису.
+login.verify.submit,Підтвердити адресу електронної пошти
+login.verify.title,Підтвердьте адресу електронної пошти
+login.verify.verifiedDescription,{email} підтверджено. Тепер можна ввійти.
+login.verify.verifiedTitle,Адресу електронної пошти підтверджено

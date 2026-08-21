@@ -1,14 +1,11 @@
-type BrandLogoProps = {
-  name: string
-}
-
-export function BrandLogo(props: BrandLogoProps) {
+export function BrandLogo(props: { readonly name: string }) {
   return (
     <div
-      class="flex size-14 items-center justify-center rounded-2xl bg-blue-600 text-2xl font-bold text-white"
+      class="flex size-14 items-center justify-center rounded-2xl bg-accent text-2xl font-bold text-accent-contrast"
+      role="img"
       aria-label={props.name}
     >
-      {props.name.slice(0, 1)}
+      <span aria-hidden="true">{props.name.slice(0, 1)}</span>
     </div>
   )
 }

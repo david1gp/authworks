@@ -17,4 +17,12 @@ export const demoAdminOrganizations: Organization[] = [
     status: "inactive",
     updatedAt: 1_755_696_000_000,
   },
+  {
+    createdAt: 1_754_054_400_000,
+    id: "01900000-0000-7000-8000-000000000013",
+    realmId: "01900000-0000-7000-8000-000000000001",
+    name: "Initech Partners",
+    status: "active",
+    updatedAt: 1_755_782_400_000,
+  },
 ] satisfies Organization[]

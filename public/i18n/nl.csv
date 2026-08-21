@@ -1,0 +1,682 @@
+key,nl
+account.access.accepted,Invitation accepted
+account.access.active,Active organization
+account.access.consentDescription,Applications that can access information from your account.
+account.access.consentEmpty,No applications have access to this account.
+account.access.consentRevoked,Application access was revoked.
+account.access.created,Granted {date}
+account.access.declined,Invitation declined
+account.access.email,Email
+account.access.error,This account information could not be loaded.
+account.access.expired,This invitation has expired.
+account.access.invitationDescription,Review the organization and roles before you respond.
+account.access.invitationEmpty,There are no pending invitations for this account.
+account.access.invitationFor,Invitation for {email}
+account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationReplay,This invitation was already used or is no longer available.
+account.access.membership,Membership roles
+account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationEmpty,This account does not belong to an organization.
+account.access.permission,You do not have permission to perform this action.
+account.access.roles,Roles: {roles}
+account.access.scopes,Permissions: {scopes}
+account.access.switchOrganization,Switch organization
+account.access.switched,Organization context changed to {organization}.
+account.delete.confirmLabel,Enter {email} to confirm
+account.delete.dangerZone,Danger zone
+account.delete.deletedDetail,Your account and access have been permanently removed.
+account.delete.deletedTitle,Account deleted
+account.delete.emailMismatch,The email address does not match.
+account.delete.submit,Delete account permanently
+account.delete.title,Permanently delete this account
+account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.directory.title,Your account
+account.factors.addTotp,Add authenticator
+account.factors.codeCount,{count} recovery codes
+account.factors.confirm,Confirm
+account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
+account.factors.emailOtp,Email code
+account.factors.finishTotp,Finish authenticator setup
+account.factors.passkeyCount,{count} passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Recovery
+account.factors.removeTotp,Remove authenticator
+account.factors.totp,Authenticator app
+account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
+account.factors.verificationCode,Verification code
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.empty,No external identities are linked
+account.identities.unlink,Unlink
+account.passkeys.add,Add passkey
+account.passkeys.created,Created {date}
+account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
+account.passkeys.deviceBound,Device-bound passkey
+account.passkeys.empty,No passkeys registered
+account.passkeys.remove,Remove
+account.passkeys.synced,Synced passkey
+account.password.changed,Your password was changed.
+account.password.confirm,Confirm new password
+account.password.current,Current password
+account.password.description,Use a unique password that you do not use for other services.
+account.password.mismatch,The new passwords do not match.
+account.password.new,New password
+account.password.submit,Change password
+account.password.title,Change password
+account.password.tooShort,The new password must contain at least 8 characters.
+account.profile.displayName,Display name
+account.profile.displayNameRequired,Enter a display name.
+account.profile.email,Email address
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
+account.profile.emailTitle,Email address and verification
+account.profile.firstName,First name
+account.profile.lastName,Last name
+account.profile.nickName,Nickname
+account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
+account.profile.personalInformation,Personal information
+account.profile.preferredLanguage,Preferred language
+account.profile.save,Save changes
+account.profile.saved,Your profile was saved.
+account.profile.signInDescription,These details identify your account.
+account.profile.signInTitle,Sign-in details
+account.profile.userName,Username
+account.profile.verificationPending,Verification pending
+account.profile.verified,Verified
+account.recovery.generate,Generate new codes
+account.recovery.once,Copy or print these codes now. They cannot be displayed again.
+account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
+account.recovery.saveNow,Save your recovery codes now
+account.recovery.saved,I saved these codes
+account.recovery.summary,Recovery access
+account.security.label,Account security management
+account.sessionExpired,Your session has expired
+account.sessions.current,Current session
+account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
+account.sessions.empty,No active sessions
+account.sessions.lastUsed,Last used {date}
+account.sessions.revoke,Revoke session
+account.sessions.unknownDevice,Unknown device
+account.status.available,Available
+account.status.configured,Configured
+account.status.notConfigured,Not configured
+account.status.unavailable,Unavailable
+admin.common.next,Volgende
+admin.common.pagination,Paginering
+admin.common.permission,U hebt geen toestemming om deze beheergegevens te bekijken.
+admin.common.previous,Vorige
+admin.events.actor,Actor
+admin.events.aggregate,Aggregaat
+admin.events.count,{count} gebeurtenissen
+admin.events.description,"Onveranderlijke beveiligingsactiviteit voor het huidige realm, nieuwste eerst."
+admin.events.empty,Geen gebeurtenissen komen overeen met het huidige filter.
+admin.events.hide,Payload verbergen
+admin.events.occurred,Voorgevallen
+admin.events.payload,Payload
+admin.events.redactionNotice,Geheime waarden worden geanonimiseerd voordat een gebeurtenis wordt opgeslagen.
+admin.events.search,Gebeurtenissen zoeken
+admin.events.searchPlaceholder,"Filter op type, aggregaat of actor"
+admin.events.show,Payload tonen
+admin.events.systemActor,Systeem
+admin.events.title,Auditgebeurtenissen
+admin.events.type,Gebeurtenistype
+admin.machine.assuranceRequired,"Het beheren van machinegebruikers en hun referenties vereist een sterkere, recentere aanmelding. Meld u opnieuw aan om door te gaan."
+admin.machine.assuranceRequiredTitle,Sterkere aanmelding vereist
+admin.machine.created,Aangemaakt
+admin.machine.credentials.apiKeyCreated,De API-sleutel is uitgegeven.
+admin.machine.credentials.description,"Referenties die een machinegebruiker toont om een toegangstoken te krijgen. Alleen de metagegevens worden opgeslagen, nooit de waarde."
+admin.machine.credentials.empty,Deze machinegebruiker heeft nog geen referenties.
+admin.machine.credentials.expires,Verloopt
+admin.machine.credentials.expiresHint,Laat dit leeg om een referentie zonder vervaldatum uit te geven.
+admin.machine.credentials.issue,Referentie uitgeven
+admin.machine.credentials.issueDescription,Geef een persoonlijk toegangstoken of een API-sleutel uit. De waarde wordt eenmalig getoond en kan niet worden hersteld.
+admin.machine.credentials.kind,Type referentie
+admin.machine.credentials.kindAccessToken,Toegangstoken
+admin.machine.credentials.kindApiKey,API-sleutel
+admin.machine.credentials.kindClientSecret,Clientgeheim
+admin.machine.credentials.kindHint,Een persoonlijk toegangstoken handelt rechtstreeks namens de machinegebruiker. Een API-sleutel is bedoeld voor één integratie.
+admin.machine.credentials.kindToken,Persoonlijk toegangstoken
+admin.machine.credentials.name,Naam
+admin.machine.credentials.neverExpires,Verloopt niet
+admin.machine.credentials.onceWarning,De uitgegeven waarde wordt eenmalig getoond. Bewaar deze voordat u dit venster sluit; ze kan niet opnieuw worden opgehaald.
+admin.machine.credentials.revoke,Intrekken
+admin.machine.credentials.revoked,De referentie is ingetrokken.
+admin.machine.credentials.scopes,Scopes
+admin.machine.credentials.scopesHint,Scheid scopes met spaties of komma's. Laat leeg om de scopes van de machinegebruiker over te nemen.
+admin.machine.credentials.stateActive,Actief
+admin.machine.credentials.stateExpired,Verlopen
+admin.machine.credentials.stateRevoked,Ingetrokken
+admin.machine.credentials.subject,Machinegebruiker
+admin.machine.credentials.title,Referenties en tokens
+admin.machine.credentials.tokenCreated,Het persoonlijke toegangstoken is uitgegeven.
+admin.machine.credentials.unnamed,Naamloze referentie
+admin.machine.crossTenant,Deze machinegebruiker hoort bij een ander realm en is hier niet beschikbaar.
+admin.machine.lifecycle.activate,Activeren
+admin.machine.lifecycle.deactivate,Deactiveren
+admin.machine.lifecycle.description,Deactiveren zorgt ervoor dat geen enkele referentie zich nog kan authenticeren. Verwijderen is definitief en kan niet ongedaan worden gemaakt.
+admin.machine.lifecycle.remove,Machinegebruiker verwijderen
+admin.machine.lifecycle.title,Levenscyclus
+admin.machine.pageNext,Volgende pagina
+admin.machine.pagePrevious,Vorige pagina
+admin.machine.permissionDenied,U hebt geen toestemming om machinegebruikers in dit realm te bekijken of te wijzigen.
+admin.machine.permissionDeniedTitle,Toegang niet beschikbaar
+admin.machine.secret.acknowledge,Ik heb het geheim opgeslagen
+admin.machine.secret.apiKeyTitle,Nieuwe API-sleutel
+admin.machine.secret.clientId,Client-ID
+admin.machine.secret.clientTitle,Nieuw clientgeheim
+admin.machine.secret.copied,Gekopieerd naar het klembord
+admin.machine.secret.copy,Geheim kopiëren
+admin.machine.secret.copyFailed,Het klembord is niet beschikbaar. Selecteer en kopieer de waarde handmatig.
+admin.machine.secret.description,Met het clientgeheim kan deze machinegebruiker zijn clientreferenties inwisselen voor een toegangstoken. Het wordt alleen-schrijven opgeslagen en kan uitsluitend worden geroteerd.
+admin.machine.secret.once,Dit is de enige keer dat de waarde voor {name} wordt getoond. Bewaar deze nu; ze kan niet worden hersteld.
+admin.machine.secret.redacted,Opgeslagen en verborgen
+admin.machine.secret.rotate,Clientgeheim roteren
+admin.machine.secret.rotated,Het clientgeheim is geroteerd.
+admin.machine.secret.title,Clientgeheim
+admin.machine.secret.tokenTitle,Nieuw persoonlijk toegangstoken
+admin.machine.secret.value,Waarde van het geheim
+admin.machine.status,Status
+admin.machine.updated,Laatst bijgewerkt
+admin.machine.users.create,Machinegebruiker aanmaken
+admin.machine.users.createDescription,Maak een niet-menselijke identiteit voor een dienst of integratie. Het clientgeheim wordt eenmalig getoond.
+admin.machine.users.createSecretHint,Een client-ID en clientgeheim worden meteen uitgegeven. Het geheim wordt eenmalig getoond en kan niet worden hersteld.
+admin.machine.users.created,De machinegebruiker is aangemaakt.
+admin.machine.users.description,"Niet-menselijke identiteiten die zich in dit realm authenticeren met clientreferenties, tokens of API-sleutels."
+admin.machine.users.displayName,Weergavenaam
+admin.machine.users.empty,Er bestaat nog geen machinegebruiker in dit realm.
+admin.machine.users.lifecycleChanged,De status van de machinegebruiker is gewijzigd.
+admin.machine.users.noScopes,Geen scopes
+admin.machine.users.scopes,Scopes
+admin.machine.users.scopesHint,Scheid scopes met spaties of komma's. Scopes worden exact vergeleken.
+admin.machine.users.search,Machinegebruikers zoeken
+admin.machine.users.title,Machinegebruikers
+admin.machine.users.userName,Gebruikersnaam
+admin.machine.users.userNameHint,Wordt gebruikt als client-ID bij het inwisselen van clientreferenties.
+admin.oidc.assuranceRequired,"Het beheren van OpenID Connect-instellingen vereist een sterkere, recentere aanmelding. Meld u opnieuw aan om door te gaan."
+admin.oidc.assuranceRequiredTitle,Sterkere aanmelding vereist
+admin.oidc.clients.consent,Toestemming
+admin.oidc.clients.consentRequired,Vereist
+admin.oidc.clients.consentSkipped,Niet vereist
+admin.oidc.clients.create,Client registreren
+admin.oidc.clients.createDescription,Registreer een toepassing die mensen aanmeldt met OpenID Connect. Een vertrouwelijke client krijgt eenmalig een secret.
+admin.oidc.clients.created,De client is geregistreerd.
+admin.oidc.clients.description,Toepassingen die mensen via OpenID Connect authenticeren in dit realm.
+admin.oidc.clients.empty,Er zijn nog geen OpenID Connect-clients geregistreerd in dit realm.
+admin.oidc.clients.exactMatchHint,"Eén URI per regel. Elke omleiding wordt exact vergeleken, dus jokertekens en afwijkende einden worden geweigerd."
+admin.oidc.clients.lifecycleChanged,De status van de client is gewijzigd.
+admin.oidc.clients.name,Clientnaam
+admin.oidc.clients.postLogoutUris,Omleidings-URI's na afmelden
+admin.oidc.clients.redirectUris,Omleidings-URI's
+admin.oidc.clients.requireConsent,Vraag de persoon om deze toepassing goed te keuren
+admin.oidc.clients.saved,De client is opgeslagen.
+admin.oidc.clients.scopes,Toegestane scopes
+admin.oidc.clients.search,Clients zoeken
+admin.oidc.clients.settingsDescription,"Beheer de clientnaam, de exacte omleidings-URI's, de toegestane scopes en hoe toestemming wordt afgehandeld."
+admin.oidc.clients.settingsTitle,Clientinstellingen
+admin.oidc.clients.title,OpenID Connect-clients
+admin.oidc.clients.trusted,Vertrouwd
+admin.oidc.clients.trustedHint,Een vertrouwde client slaat het toestemmingsscherm volledig over. Markeer alleen eigen toepassingen als vertrouwd.
+admin.oidc.clients.type,Clienttype
+admin.oidc.clients.typeConfidential,Vertrouwelijk
+admin.oidc.clients.typeHint,"Een vertrouwelijke client bewaart een secret op een server. Een openbare client, zoals een mobiele of single-page-app, kan dat niet."
+admin.oidc.clients.typePublic,Openbaar
+admin.oidc.consents.client,Toepassing
+admin.oidc.consents.description,Toepassingen die een persoon heeft goedgekeurd. Bij het intrekken van een toestemming wordt opnieuw om goedkeuring gevraagd.
+admin.oidc.consents.empty,Deze persoon heeft nog geen enkele toepassing goedgekeurd.
+admin.oidc.consents.granted,Goedgekeurd
+admin.oidc.consents.revoked,De toestemming is ingetrokken.
+admin.oidc.consents.title,Toepassingstoestemmingen
+admin.oidc.consents.user,Persoon
+admin.oidc.created,Aangemaakt
+admin.oidc.crossTenant,Deze bron hoort bij een ander realm en is hier niet beschikbaar.
+admin.oidc.documents.authorizationEndpoint,Autorisatie-eindpunt
+admin.oidc.documents.copied,Gekopieerd
+admin.oidc.documents.copy,Document kopiëren
+admin.oidc.documents.description,"De protocoldocumenten die Authworks voor dit realm publiceert, precies zoals een clientbibliotheek ze leest."
+admin.oidc.documents.discoveryDescription,De OpenID Provider-metagegevens die vanaf het well-known-eindpunt worden geleverd.
+admin.oidc.documents.discoveryTitle,Discovery-document
+admin.oidc.documents.empty,Er zijn nog geen protocoldocumenten gepubliceerd voor dit realm.
+admin.oidc.documents.endSessionEndpoint,Eindpunt voor sessiebeëindiging
+admin.oidc.documents.issuer,Uitgever
+admin.oidc.documents.jwksDescription,De openbare sleutels die tokens verifiëren die door dit realm zijn uitgegeven.
+admin.oidc.documents.jwksTitle,JSON Web Key Set
+admin.oidc.documents.jwksUri,JWKS-URI
+admin.oidc.documents.open,Eindpunt openen
+admin.oidc.documents.readOnly,Deze documenten worden gegenereerd uit de realmconfiguratie en de ondertekeningssleutels. Ze kunnen hier niet worden bewerkt.
+admin.oidc.documents.showRaw,Het ruwe document tonen
+admin.oidc.documents.title,Protocoldocumenten
+admin.oidc.documents.tokenEndpoint,Token-eindpunt
+admin.oidc.documents.userinfoEndpoint,Userinfo-eindpunt
+admin.oidc.keys.algorithm,Algoritme
+admin.oidc.keys.create,Sleutel toevoegen
+admin.oidc.keys.created,Er is een nieuwe ondertekeningssleutel gepubliceerd.
+admin.oidc.keys.description,De sleutels die tokens voor dit realm ondertekenen. Bij rotatie wordt een nieuwe sleutel gepubliceerd en de huidige buiten gebruik gesteld.
+admin.oidc.keys.empty,Er bestaan nog geen ondertekeningssleutels voor dit realm.
+admin.oidc.keys.keyId,Sleutel-ID
+admin.oidc.keys.privateNotice,Alleen metagegevens van de openbare sleutel worden getoond. Privésleutelmateriaal wordt nooit naar de browser gestuurd.
+admin.oidc.keys.retire,Buiten gebruik stellen
+admin.oidc.keys.retired,De ondertekeningssleutel is buiten gebruik gesteld.
+admin.oidc.keys.retiredAt,Buiten gebruik gesteld
+admin.oidc.keys.rotate,Sleutel roteren
+admin.oidc.keys.rotated,De ondertekeningssleutel is geroteerd.
+admin.oidc.keys.title,Ondertekeningssleutels
+admin.oidc.lifecycle.activate,Activeren
+admin.oidc.lifecycle.deactivate,Deactiveren
+admin.oidc.lifecycle.remove,Client verwijderen
+admin.oidc.pageNext,Volgende pagina
+admin.oidc.pagePrevious,Vorige pagina
+admin.oidc.permissionDenied,U hebt geen toestemming om de OpenID Connect-instellingen in dit realm te bekijken of te wijzigen.
+admin.oidc.permissionDeniedTitle,Toegang niet beschikbaar
+admin.oidc.secret.acknowledge,Ik heb het secret opgeslagen
+admin.oidc.secret.copied,Naar het klembord gekopieerd
+admin.oidc.secret.copy,Secret kopiëren
+admin.oidc.secret.copyFailed,Het klembord is niet beschikbaar. Selecteer en kopieer de waarde handmatig.
+admin.oidc.secret.createdTitle,Nieuw clientsecret
+admin.oidc.secret.description,"Het opgeslagen clientsecret wordt nooit meer getoond. Roteer het om een nieuw secret uit te geven, of trek het in zodat de client zich niet meer kan authenticeren."
+admin.oidc.secret.once,Dit is de enige keer dat het secret voor {client} wordt getoond. Sla het nu op; het kan niet worden hersteld.
+admin.oidc.secret.publicClient,"Een openbare client authenticeert zich zonder secret, dus er valt niets te roteren."
+admin.oidc.secret.redacted,Opgeslagen en verborgen
+admin.oidc.secret.revoke,Secret intrekken
+admin.oidc.secret.revoked,Het clientsecret is ingetrokken.
+admin.oidc.secret.rotate,Secret roteren
+admin.oidc.secret.rotated,Het clientsecret is geroteerd.
+admin.oidc.secret.rotatedTitle,Geroteerd clientsecret
+admin.oidc.secret.title,Clientsecret
+admin.oidc.status,Status
+admin.oidc.updated,Laatst bijgewerkt
+admin.organizations.assuranceRequired,Log opnieuw in met een sterkere authenticatiemethode om deze organisatie-instelling te wijzigen.
+admin.organizations.assuranceRequiredTitle,Sterkere aanmelding vereist
+admin.organizations.branding.background,Achtergrondkleur
+admin.organizations.branding.dark,Donker thema
+admin.organizations.branding.description,"Kleuren, logo's en juridische links die op de gehoste inlog- en accountschermen worden getoond."
+admin.organizations.branding.font,Tekstkleur
+admin.organizations.branding.iconUrl,Icoon-URL
+admin.organizations.branding.light,Licht thema
+admin.organizations.branding.logoUrl,Logo-URL
+admin.organizations.branding.preview,Voorbeeld
+admin.organizations.branding.primary,Primaire kleur
+admin.organizations.branding.privacyUrl,URL van het privacybeleid
+admin.organizations.branding.saved,De huisstijl is opgeslagen.
+admin.organizations.branding.termsUrl,URL van de servicevoorwaarden
+admin.organizations.branding.themeMode,Standaardthema
+admin.organizations.branding.title,Huisstijl
+admin.organizations.branding.warn,Waarschuwingskleur
+admin.organizations.branding.watermark,Het Authworks-watermerk verbergen
+admin.organizations.detail.created,Aangemaakt
+admin.organizations.detail.realm,Realm
+admin.organizations.detail.settingsDescription,Beheer de organisatienaam en de levenscyclusstatus.
+admin.organizations.detail.settingsTitle,Organisatie-instellingen
+admin.organizations.detail.updated,Laatst bijgewerkt
+admin.organizations.domains.claim,Domein claimen
+admin.organizations.domains.claimed,{domain} is geclaimd en wacht op verificatie.
+admin.organizations.domains.description,Geverifieerde domeinen laten mensen deze organisatie vinden via hun e-mailadres.
+admin.organizations.domains.discovery,Herkenningsvoorbeeld
+admin.organizations.domains.discoveryDescription,Controleer naar welke organisatie een domein tijdens het inloggen momenteel wordt herleid.
+admin.organizations.domains.discoveryFound,{domain} wordt herleid naar {organization}.
+admin.organizations.domains.discoveryMissing,{domain} wordt niet herleid naar een organisatie.
+admin.organizations.domains.domain,Domein
+admin.organizations.domains.empty,Deze organisatie heeft nog geen domein geclaimd.
+admin.organizations.domains.primary,Primair domein
+admin.organizations.domains.remove,Domein verwijderen
+admin.organizations.domains.removed,Het domein is verwijderd.
+admin.organizations.domains.title,Domeinen en herkenning
+admin.organizations.domains.unverified,In afwachting van verificatie
+admin.organizations.domains.verificationRecord,Voeg dit DNS-TXT-record toe en verifieer daarna.
+admin.organizations.domains.verified,Verified
+admin.organizations.domains.verify,Domein verifiëren
+admin.organizations.domains.verifyDone,Het domein is geverifieerd.
+admin.organizations.invitations.create,Persoon uitnodigen
+admin.organizations.invitations.description,Nodig mensen uit per e-mail en volg welke uitnodigingen nog openstaan.
+admin.organizations.invitations.email,Email address
+admin.organizations.invitations.empty,Er zijn geen uitnodigingen verstuurd voor deze organisatie.
+admin.organizations.invitations.expires,Verloopt
+admin.organizations.invitations.revoke,Uitnodiging intrekken
+admin.organizations.invitations.revoked,De uitnodiging is ingetrokken.
+admin.organizations.invitations.sent,De uitnodiging is aangemaakt.
+admin.organizations.invitations.title,Uitnodigingen
+admin.organizations.invitations.tokenDismiss,Ik heb deze link opgeslagen
+admin.organizations.invitations.tokenOnce,Deze uitnodigingslink wordt één keer getoond. Deel hem met de persoon die u hebt uitgenodigd.
+admin.organizations.invitations.tokenTitle,Uitnodigingslink
+admin.organizations.lifecycle.activate,Organisatie heractiveren
+admin.organizations.lifecycle.changed,De levenscyclusstatus van de organisatie is gewijzigd.
+admin.organizations.lifecycle.deactivate,Organisatie deactiveren
+admin.organizations.lifecycle.remove,Organisatie verwijderen
+admin.organizations.list.create,Organisatie aanmaken
+admin.organizations.list.description,"Organisaties groeperen de mensen, domeinen en huisstijl van dit realm."
+admin.organizations.list.empty,Er bestaan nog geen organisaties in dit realm.
+admin.organizations.list.name,Organisatienaam
+admin.organizations.list.search,Organisaties zoeken
+admin.organizations.list.title,Organisaties
+admin.organizations.memberships.add,Lid toevoegen
+admin.organizations.memberships.added,Het lid is toegevoegd.
+admin.organizations.memberships.description,De mensen in deze organisatie en de vaste rollen die aan hen zijn toegewezen.
+admin.organizations.memberships.empty,Deze organisatie heeft nog geen leden.
+admin.organizations.memberships.remove,Lid verwijderen
+admin.organizations.memberships.removed,Het lid is verwijderd.
+admin.organizations.memberships.roles,Rollen
+admin.organizations.memberships.rolesFixed,Rollen worden door Authworks vastgesteld en kunnen niet worden hernoemd.
+admin.organizations.memberships.title,Leden en rollen
+admin.organizations.memberships.updated,De rollen van het lid zijn bijgewerkt.
+admin.organizations.memberships.user,Gebruiker
+admin.organizations.memberships.userId,Gebruikers-ID
+admin.organizations.pageNext,Volgende pagina
+admin.organizations.pagePrevious,Vorige pagina
+admin.organizations.permissionDenied,U hebt geen toestemming om deze organisatie te bekijken of te wijzigen.
+admin.organizations.permissionDeniedTitle,Toegang niet beschikbaar
+admin.organizations.policy.description,Kies welke inlogmethoden mensen mogen gebruiken en welke geconfigureerde providers verschijnen.
+admin.organizations.policy.domainDiscovery,De organisatie herkennen aan een e-maildomein
+admin.organizations.policy.emailOtp,Eenmalige code per e-mail
+admin.organizations.policy.externalIdentity,Externe identiteitsproviders
+admin.organizations.policy.inherited,Overgenomen van het realm
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,Wachtwoord
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,Zelfregistratie
+admin.organizations.policy.saved,Het inlogbeleid is opgeslagen.
+admin.organizations.policy.title,Inlogbeleid
+admin.organizations.providers.allowAccountCreation,Automatisch accounts aanmaken voor nieuwe personen
+admin.organizations.providers.clientId,Client-ID
+admin.organizations.providers.clientSecret,Clientgeheim
+admin.organizations.providers.create,Provider toevoegen
+admin.organizations.providers.created,De provider is geconfigureerd.
+admin.organizations.providers.description,"Geconfigureerde Google-, GitHub- en Microsoft-providers voor deze organisatie."
+admin.organizations.providers.disable,Provider uitschakelen
+admin.organizations.providers.disabled,De provider is uitgeschakeld.
+admin.organizations.providers.displayName,Display name
+admin.organizations.providers.empty,Er is nog geen externe identiteitsprovider geconfigureerd.
+admin.organizations.providers.redirectUri,Redirect-URI
+admin.organizations.providers.rotateSecret,Clientgeheim vervangen
+admin.organizations.providers.secretRotated,Het clientgeheim is vervangen.
+admin.organizations.providers.secretWriteOnly,Het opgeslagen clientgeheim wordt nooit getoond. Voer een nieuwe waarde in om het te vervangen.
+admin.organizations.providers.title,Identiteitsproviders
+admin.organizations.providers.type,Provider
+admin.organizations.providers.updated,De provider is bijgewerkt.
+admin.organizations.renamed,De organisatie is hernoemd.
+admin.organizations.status,Status
+admin.overview.description,"Identiteit, domeinen en levenscyclus van het realm dat u beheert."
+admin.overview.sessionTitle,Beheerderssessie
+admin.overview.title,Realm-overzicht
+admin.projects.access.description,De rollen die deze beheerder op dit moment effectief in het project heeft.
+admin.projects.access.empty,Er zijn geen projectrollen effectief in de huidige organisatiecontext.
+admin.projects.access.grantedOrganization,Toegekend via organisatie
+admin.projects.access.permissionDescription,Vaste rollen en hun rechten worden door Authworks bepaald en kunnen niet worden bewerkt.
+admin.projects.access.permissionTitle,Vaste rollen en rechten
+admin.projects.access.roleKeys,Effectieve projectrollen
+admin.projects.access.title,Effectieve toegang
+admin.projects.applications.create,Applicatie toevoegen
+admin.projects.applications.description,Applicaties die zich authenticeren bij dit project.
+admin.projects.applications.empty,Dit project heeft nog geen applicaties.
+admin.projects.applications.name,Applicatienaam
+admin.projects.applications.title,Applicaties
+admin.projects.applications.type,Applicatietype
+admin.projects.crossTenant,Deze resource hoort bij een ander realm en is hier niet beschikbaar.
+admin.projects.detail.authorizationRequired,Autorisatie vereist
+admin.projects.detail.created,Aangemaakt
+admin.projects.detail.organization,Organisatie
+admin.projects.detail.projectAccessRequired,Projecttoegang vereist
+admin.projects.detail.settingsDescription,Beheer de projectnaam en hoe toegang wordt afgedwongen.
+admin.projects.detail.settingsTitle,Projectinstellingen
+admin.projects.detail.updated,Laatst bijgewerkt
+admin.projects.grants.create,Organisatietoegang verlenen
+admin.projects.grants.description,Geef een andere organisatie toegang tot dit project en kies welke rollen zij krijgt.
+admin.projects.grants.empty,Geen enkele organisatie heeft toegang gekregen tot dit project.
+admin.projects.grants.grantedOrganization,Begunstigde organisatie
+admin.projects.grants.roleKeys,Toegekende rollen
+admin.projects.grants.title,Organisatietoekenningen
+admin.projects.lifecycle.activate,Activeren
+admin.projects.lifecycle.deactivate,Deactiveren
+admin.projects.lifecycle.remove,Remove
+admin.projects.list.create,Project aanmaken
+admin.projects.list.description,"Projecten groeperen de applicaties, rollen en toekenningen van een organisatie."
+admin.projects.list.empty,Er bestaan nog geen projecten in dit realm.
+admin.projects.list.name,Projectnaam
+admin.projects.list.search,Projecten zoeken
+admin.projects.list.title,Projecten
+admin.projects.pageNext,Volgende pagina
+admin.projects.pagePrevious,Vorige pagina
+admin.projects.permissionDenied,U hebt geen toestemming om deze projectinformatie te bekijken of te wijzigen.
+admin.projects.roles.create,Rol aanmaken
+admin.projects.roles.description,De rollen die dit project aan organisaties en hun leden kan toewijzen.
+admin.projects.roles.displayName,Display name
+admin.projects.roles.empty,Dit project definieert nog geen rollen.
+admin.projects.roles.group,Groep
+admin.projects.roles.key,Rolsleutel
+admin.projects.roles.title,Projectrollen
+admin.projects.saved,{name} is opgeslagen.
+admin.projects.status,Status
+admin.realm.confirmLabel,Voer {name} in ter bevestiging
+admin.realm.confirmMismatch,De realm-naam komt niet overeen.
+admin.realm.created,Aangemaakt
+admin.realm.dangerZone,Gevarenzone
+admin.realm.description,Identiteits- en aanmeldconfiguratie van het realm dat u beheert.
+admin.realm.disable,Realm uitschakelen
+admin.realm.disableConfirm,Het uitschakelen van dit realm stopt aanmelden voor al zijn toepassingen. Doorgaan?
+admin.realm.disableWarning,Het uitschakelen van dit realm stopt direct het aanmelden en het uitgeven van tokens voor alle toepassingen erin.
+admin.realm.disabled,Het realm is uitgeschakeld.
+admin.realm.domainRequired,Voer ten minste één realm-domein in.
+admin.realm.domains,Domeinen
+admin.realm.domainsHint,Scheid domeinen met komma's. Het eerste domein is het primaire domein.
+admin.realm.enable,Realm inschakelen
+admin.realm.enableDescription,Dit realm is uitgeschakeld. Schakel het in om aanmelden en tokenuitgifte te herstellen.
+admin.realm.enabled,Het realm is ingeschakeld.
+admin.realm.identifier,Realm-identificatie
+admin.realm.invalid,Voer een realm-naam en ten minste één domein in.
+admin.realm.lifecycleTitle,Realm-levenscyclus
+admin.realm.name,Realm-naam
+admin.realm.nameRequired,Voer een realm-naam in.
+admin.realm.permissionDenied,U hebt geen toestemming om dit realm te wijzigen.
+admin.realm.primaryDomain,Primair domein
+admin.realm.save,Instellingen opslaan
+admin.realm.saved,De realm-instellingen zijn opgeslagen.
+admin.realm.settingsDescription,Wijzig de realm-naam en de domeinen die naar dit realm verwijzen.
+admin.realm.settingsTitle,Algemene instellingen
+admin.realm.status,Status
+admin.realm.statusActive,Actief
+admin.realm.statusDisabled,Uitgeschakeld
+admin.realm.title,Realm-instellingen
+admin.realm.updated,Laatst bijgewerkt
+admin.session.expired,Uw beheerderssessie is verlopen
+admin.signIn.activeTitle,Beheerderssessie actief
+admin.signIn.credential,Bootstrap-beheerdersreferentie
+admin.signIn.credentialInvalid,Voer de volledige bootstrap-beheerdersreferentie in.
+admin.signIn.credentialNotStored,De referentie wordt ingewisseld voor een korte browsersessie en wordt nooit in deze browser opgeslagen.
+admin.signIn.description,Wissel de door de operator uitgegeven bootstrap-referentie in voor een korte beheerderssessie in de browser.
+admin.signIn.expiresAt,Deze sessie verloopt op {date}.
+admin.signIn.signedOutDetail,De beheerderssessie is op dit apparaat beëindigd.
+admin.signIn.signedOutTitle,Afgemeld
+admin.signIn.subject,Onderwerp
+admin.signIn.subjectType,Onderwerptype
+admin.signIn.title,Beheerdersaanmelding
+admin.users.count,{count} gebruikers
+admin.users.create,Gebruiker aanmaken
+admin.users.createDescription,Voeg een menselijke gebruiker toe aan het huidige realm.
+admin.users.createSubmit,Aanmaken
+admin.users.created,{userName} is aangemaakt.
+admin.users.dangerZone,Gevarenzone
+admin.users.delete,Gebruiker verwijderen
+admin.users.deleteConfirm,{userName} definitief verwijderen?
+admin.users.deleteWarning,Het verwijderen van deze gebruiker trekt onmiddellijk hun sessies en toegang in.
+admin.users.deleted,{userName} is verwijderd.
+admin.users.description,Menselijke identiteiten in het huidige realm.
+admin.users.detailTitle,Gebruikersdetail
+admin.users.displayName,Display name
+admin.users.displayNameRequired,Enter a display name.
+admin.users.email,Email address
+admin.users.empty,Geen gebruikers komen overeen met het huidige filter.
+admin.users.firstName,First name
+admin.users.invalid,Voer een geldig e-mailadres en gebruikersnaam in.
+admin.users.lastName,Last name
+admin.users.lifecycle.active,Actief
+admin.users.lifecycle.deleted,Verwijderd
+admin.users.lifecycle.inactive,Inactief
+admin.users.lifecycle.initial,Initieel
+admin.users.lifecycle.locked,Vergrendeld
+admin.users.lifecycle.suspended,Opgeschort
+admin.users.lifecycleChanged,De gebruikersstatus is nu {state}.
+admin.users.lifecycleConfirm,{userName} op {state} zetten?
+admin.users.lifecycleDescription,Bepaal of deze gebruiker kan inloggen.
+admin.users.lifecycleTitle,Levenscyclus
+admin.users.markUnverified,Markeren als niet geverifieerd
+admin.users.markVerified,Markeren als geverifieerd
+admin.users.missingId,Deze gebruiker kon niet uit het adres worden herleid.
+admin.users.nickName,Nickname
+admin.users.preferredLanguage,Preferred language
+admin.users.profileSave,Profiel opslaan
+admin.users.profileSaved,Het gebruikersprofiel is opgeslagen.
+admin.users.profileTitle,Profiel
+admin.users.search,Gebruikers zoeken
+admin.users.searchPlaceholder,"Filter op gebruikersnaam, e-mail of identificatie"
+admin.users.state,Status
+admin.users.title,Gebruikers
+admin.users.unverified,Niet geverifieerd
+admin.users.updated,Laatst bijgewerkt {date}
+admin.users.userName,Username
+admin.users.verification,Verificatie
+admin.users.verificationChanged,De verificatiestatus is nu {state}.
+admin.users.verificationDescription,Bepaal of het e-mailadres van deze gebruiker als geverifieerd geldt.
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verified
+app.name,Authworks
+common.back,Terug
+common.cancel,Annuleren
+common.close,Sluiten
+common.continue,Doorgaan
+common.decline,Decline
+common.error,Er is iets misgegaan.
+common.language,Taal
+common.loading,Laden
+common.retry,Opnieuw proberen
+common.revoke,Revoke
+common.save,Opslaan
+common.signIn,Inloggen
+common.signInWithProvider,Inloggen met {provider}
+common.signOut,Uitloggen
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,Kies cómo inloggen en {organization}.
+login.chooser.emailOtpDetail,Reciba un code de un solo uso por e-mail electrónico
+login.chooser.emailOtpLabel,Code por e-mail
+login.chooser.passkeyDetail,Use el bloqueo de pantalla de uw dispositivo o una llave de seguridad
+login.chooser.passkeyLabel,Clave de acceso
+login.chooser.passwordDetail,Use la contraseña de uw account
+login.chooser.passwordLabel,Wachtwoord
+login.chooser.providerDetail,Continuar con una account conectada
+login.chooser.providerLabel,Continuar con {provider}
+login.chooser.register,Account maken una account
+login.chooser.title,Inloggen
+login.chooser.useRecent,Usar una account reciente
+login.common.back,Volver a las opciones de inicio de sesión
+login.common.legal,"Al continuar, reconoce los {terms} y la {privacy}."
+login.common.privacy,Política de privacidad
+login.common.terms,Términos del servicio
+login.common.working,Procesando…
+login.emailOtp.codeDescription,Voer in el code de seis dígitos que enviamos a {email}.
+login.emailOtp.codeTitle,Voer in uw code de e-mail
+login.emailOtp.description,Le enviaremos un code de un solo uso por e-mail en lugar de pedirle una contraseña.
+login.emailOtp.resend,Enviar un code nuevo
+login.emailOtp.send,Enviar code
+login.emailOtp.title,Inloggen con un code de e-mail
+login.emailOtp.verify,Verificar code
+login.error.codeRequired,Voer in el code de verificatie de seis dígitos.
+login.error.credentialsRequired,Voer in uw nombre de usuario y contraseña.
+login.error.emailRequired,Voer in una adres de e-mail válida.
+login.error.enrollmentMissing,Inicie la configuración de la aplicación de autenticación antes de confirmar un code.
+login.error.nameRequired,Voer in el nombre que se mostrará en uw account.
+login.error.passwordMismatch,Las contraseñas no coinciden.
+login.error.passwordTooShort,La contraseña debe contener al menos 8 caracteres.
+login.error.recoveryCodeRequired,Voer in uno de sus codes de recuperación guardados.
+login.error.tokenMissing,Abra el enlace completo de uw e-mail para continuar.
+login.logout.description,Puede finalizar esta sesión en este dispositivo.
+login.logout.doneDescription,Ha cerrado sesión en {organization}.
+login.logout.doneTitle,Sesión cerrada
+login.logout.submit,Uitloggen
+login.logout.title,Uitloggen en {organization}
+login.mfa.description,Kies cómo confirmar que es usted.
+login.mfa.emailOtp,Code por e-mail
+login.mfa.emailOtpDescription,Voer in el code de seis dígitos que enviamos a uw adres de e-mail.
+login.mfa.passkey,Clave de acceso
+login.mfa.recoveryCode,Code de recuperación
+login.mfa.recoveryCodeDescription,Use uno de los codes de un solo uso que guardó al configurar la verificatie.
+login.mfa.recoveryCodeLabel,Code de recuperación
+login.mfa.title,Verificatie en dos pasos
+login.mfa.totp,Aplicación de autenticación
+login.mfa.totpDescription,Voer in el code de seis dígitos de uw aplicación de autenticación.
+login.mfa.verificationCode,Code de verificatie
+login.mfa.verify,Verificar
+login.passkey.description,"Confirme con el bloqueo de pantalla, uw huella digital o una llave de seguridad."
+login.passkey.submit,Continuar con la clave de acceso
+login.passkey.title,Inloggen con una clave de acceso
+login.passkey.unsupported,Este navegador o dispositivo no puede usar claves de acceso. Kies otro método de inicio de sesión.
+login.password.changeDescription,Kies una contraseña nueva antes de continuar.
+login.password.changeTitle,Actualizar uw contraseña
+login.password.confirm,Confirmar contraseña
+login.password.current,Wachtwoord actual
+login.password.description,Voer in las credenciales de uw account de {organization}.
+login.password.forgot,¿Olvidó uw contraseña?
+login.password.hide,Ocultar contraseña
+login.password.identifier,Nombre de usuario o e-mail electrónico
+login.password.label,Wachtwoord
+login.password.new,Wachtwoord nueva
+login.password.show,Mostrar contraseña
+login.password.submit,Inloggen
+login.password.title,Voer in uw contraseña
+login.provider.description,Continuará en {provider} y volverá aquí cuando termine.
+login.provider.submit,Continuar con {provider}
+login.provider.title,Continuar con {provider}
+login.recent.description,Continuar con una account que usó en este dispositivo.
+login.recent.other,Usar otra account
+login.recent.title,Elegir una account
+login.recovery.completeDescription,Inloggen con uw nueva contraseña
+login.recovery.completeTitle,Wachtwoord actualizada
+login.recovery.description,Voer in uw e-mail electrónico y le enviaremos instrucciones de recuperación si existe una account.
+login.recovery.resetDescription,Kies una contraseña nueva para uw account.
+login.recovery.resetSubmit,Actualizar contraseña
+login.recovery.resetTitle,Establecer una contraseña nueva
+login.recovery.sentDescription,"Si existe una account asociada a esa adres, recibirá las instrucciones de recuperación. El enlace caduca pronto."
+login.recovery.sentTitle,Revise uw e-mail
+login.recovery.submit,Enviar instrucciones de recuperación
+login.recovery.title,Restablecer uw contraseña
+login.register.description,Maak una account para {organization}.
+login.register.displayName,Nombre completo
+login.register.doneDescription,Confirme uw adres de e-mail mediante el enlace enviado a {email}.
+login.register.doneTitle,Confirmar uw adres de e-mail
+login.register.email,Adres de e-mail
+login.register.signIn,¿Ya tiene una account?
+login.register.submit,Account maken account
+login.register.title,Account maken uw account
+login.register.userName,Nombre de usuario
+login.signedIn.description,Ha iniciado sesión en {organization}.
+login.signedIn.title,Sesión iniciada
+login.status.loading,Preparando el inicio de sesión
+login.status.unavailableDescription,No se puede completar esta solicitud de inicio de sesión. Vuelva a la aplicación e inténtelo de nuevo.
+login.status.unavailableTitle,Inicio de sesión no disponible
+login.totpEnroll.description,Añada esta clave de configuración a uw aplicación de autenticación y luego introduzca el code que genera. La clave solo se muestra ahora.
+login.totpEnroll.start,Mostrar clave de configuración
+login.totpEnroll.submit,Finalizar configuración
+login.totpEnroll.title,Configurar una aplicación de autenticación
+login.verify.description,Confirme la adres de e-mail de uw account.
+login.verify.submit,Confirmar adres de e-mail
+login.verify.title,Verificar uw adres de e-mail
+login.verify.verifiedDescription,{email} está confirmada. Ya puede inloggen.
+login.verify.verifiedTitle,Adres de e-mail confirmada

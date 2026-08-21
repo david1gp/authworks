@@ -1,0 +1,316 @@
+import type { DemoFixtureScenarioGroup } from "./demoFixtureScenarioGroupSchema.js"
+
+const pageStates = ["success", "loading", "error"] as const
+const collectionStates = ["success", "empty", "loading", "error"] as const
+const authorizationStates = ["success", "empty", "loading", "error", "permission-denied", "cross-tenant"] as const
+const authorizationPageStates = ["success", "loading", "error", "permission-denied", "cross-tenant"] as const
+// OIDC destinations additionally expose the one-time secret and redacted secret states.
+const oidcCollectionStates = [...authorizationStates, "expired", "one-time", "redacted"] as const
+const oidcPageStates = [...authorizationPageStates, "expired", "one-time", "redacted"] as const
+// Machine-user destinations additionally expose the one-time and redacted credential states.
+const machineCollectionStates = [...authorizationStates, "expired", "one-time", "redacted"] as const
+const machinePageStates = [...authorizationPageStates, "expired", "one-time", "redacted"] as const
+// Guarded impersonation exposes each eligibility, lifecycle, and refusal outcome.
+const impersonationStates = [
+  "success",
+  "loading",
+  "error",
+  "permission-denied",
+  "assurance-required",
+  "active",
+  "expiring",
+  "nested-rejected",
+  "ended",
+] as const
+
+export const demoAdminScenarioGroups: DemoFixtureScenarioGroup[] = [
+  {
+    key: "realm",
+    title: "Realm",
+    description: "Realm-wide identity, lifecycle, and sign-in configuration.",
+    scenarios: [
+      {
+        key: "admin-sign-in",
+        title: "Administrator sign-in",
+        description: "Exchange a bootstrap credential for a short administrator browser session.",
+        path: "/demo/admin/sign-in",
+        availability: "available",
+        states: ["success", "loading", "error", "expired"],
+      },
+      {
+        key: "realm-overview",
+        title: "Realm overview",
+        description: "Review realm identity, domains, lifecycle status, and the current session.",
+        path: "/demo/admin/overview",
+        availability: "available",
+        states: ["success", "loading", "error", "expired"],
+      },
+      {
+        key: "realm-settings",
+        title: "General settings",
+        description: "Manage the current realm name, domains, status, and lifecycle.",
+        path: "/demo/admin/realm",
+        availability: "available",
+        states: ["success", "loading", "error", "permission-denied", "expired"],
+      },
+      {
+        key: "branding",
+        title: "Branding",
+        description: "Configure organization-aware colors, logos, and legal links.",
+        path: "/demo/admin/branding",
+        availability: "available",
+        states: [...pageStates, "permission-denied"],
+      },
+      {
+        key: "login-policy",
+        title: "Login and identity providers",
+        description: "Set login policy and configure Google, GitHub, or Microsoft.",
+        path: "/demo/admin/login-policy",
+        availability: "available",
+        states: [...collectionStates, "permission-denied"],
+      },
+    ],
+  },
+  {
+    key: "organizations",
+    title: "Organizations",
+    description: "Organization settings, people, invitations, and verified domains.",
+    scenarios: [
+      {
+        key: "organizations",
+        title: "Organization directory",
+        description: "Browse, search, and create organizations in the current realm.",
+        path: "/demo/admin/organizations",
+        availability: "available",
+        states: [...collectionStates, "permission-denied"],
+      },
+      {
+        key: "organization-detail",
+        title: "Organization detail",
+        description: "Review organization settings, lifecycle, and current memberships.",
+        path: "/demo/admin/organizations/01900000-0000-7000-8000-000000000011",
+        availability: "available",
+        states: [...pageStates, "permission-denied"],
+      },
+      {
+        key: "memberships",
+        title: "Memberships and roles",
+        description: "Assign fixed organization roles to members.",
+        path: "/demo/admin/memberships",
+        availability: "available",
+        states: [...collectionStates, "permission-denied"],
+      },
+      {
+        key: "invitations",
+        title: "Invitations",
+        description: "Invite people and track pending or expired invitations.",
+        path: "/demo/admin/invitations",
+        availability: "available",
+        states: [...collectionStates, "permission-denied", "one-time"],
+      },
+      {
+        key: "domains",
+        title: "Domains and discovery",
+        description: "Verify domains and control organization discovery.",
+        path: "/demo/admin/domains",
+        availability: "available",
+        states: [...collectionStates, "permission-denied"],
+      },
+    ],
+  },
+  {
+    key: "users",
+    title: "Users",
+    description: "Human identities, credentials, sessions, and guarded support actions.",
+    scenarios: [
+      {
+        key: "users",
+        title: "User directory",
+        description: "Browse and search human users in the current realm.",
+        path: "/demo/admin/users",
+        availability: "available",
+        states: [...collectionStates, "permission-denied", "expired"],
+      },
+      {
+        key: "user-detail",
+        title: "User detail",
+        description: "Review profile, verification, lifecycle, and memberships.",
+        path: "/demo/admin/users/01900000-0000-7000-8000-000000000021",
+        availability: "available",
+        states: [...pageStates, "permission-denied", "expired"],
+      },
+      {
+        key: "user-authentication",
+        title: "Authentication methods",
+        description: "Manage passwords, factors, passkeys, and linked identities.",
+        path: "/demo/admin/user-authentication",
+        availability: "planned",
+        states: [...collectionStates],
+      },
+      {
+        key: "user-sessions",
+        title: "User sessions",
+        description: "Inspect and revoke a user's active browser sessions.",
+        path: "/demo/admin/user-sessions",
+        availability: "planned",
+        states: [...collectionStates],
+      },
+      {
+        key: "impersonation",
+        title: "Impersonation",
+        description: "Start a reasoned, time-limited support session when permitted.",
+        path: "/demo/admin/impersonation",
+        availability: "available",
+        states: [...impersonationStates],
+      },
+    ],
+  },
+  {
+    key: "authorization",
+    title: "Projects and authorization",
+    description: "Applications, project roles, grants, and evaluated access.",
+    scenarios: [
+      {
+        key: "projects",
+        title: "Project directory",
+        description: "Browse, search, and create projects in the current realm.",
+        path: "/demo/admin/projects",
+        availability: "available",
+        states: [...authorizationStates],
+      },
+      {
+        key: "project-detail",
+        title: "Project settings",
+        description: "Review and edit a project's settings and lifecycle.",
+        path: "/demo/admin/projects/01900000-0000-7000-8000-000000000031",
+        availability: "available",
+        states: [...authorizationPageStates],
+      },
+      {
+        key: "applications",
+        title: "Applications",
+        description: "Manage project applications and their lifecycle.",
+        path: "/demo/admin/projects/01900000-0000-7000-8000-000000000031/applications",
+        availability: "available",
+        states: [...authorizationStates],
+      },
+      {
+        key: "roles-grants",
+        title: "Roles and grants",
+        description: "Configure project roles and organization access grants.",
+        path: "/demo/admin/projects/01900000-0000-7000-8000-000000000031/roles-grants",
+        availability: "available",
+        states: [...authorizationStates],
+      },
+      {
+        key: "effective-access",
+        title: "Effective access",
+        description: "Inspect read-only effective roles, permissions, and access checks.",
+        path: "/demo/admin/projects/01900000-0000-7000-8000-000000000031/effective-access",
+        availability: "available",
+        states: [...authorizationStates],
+      },
+    ],
+  },
+  {
+    key: "oidc",
+    title: "OpenID Connect",
+    description: "Clients, exact redirect settings, consent, scopes, and signing keys.",
+    scenarios: [
+      {
+        key: "oidc-clients",
+        title: "OIDC clients",
+        description: "Manage clients, redirects, scopes, trust, and one-time secrets.",
+        path: "/demo/admin/oidc-clients",
+        availability: "available",
+        states: [...oidcCollectionStates],
+      },
+      {
+        key: "oidc-client-detail",
+        title: "OIDC client settings",
+        description: "Edit exact redirects and scopes, and rotate or revoke the client secret.",
+        path: "/demo/admin/oidc-clients/01900000-0000-7000-8000-000000000041",
+        availability: "available",
+        states: [...oidcPageStates],
+      },
+      {
+        key: "signing-keys",
+        title: "Signing keys",
+        description: "Review key metadata and perform guarded rotation.",
+        path: "/demo/admin/signing-keys",
+        availability: "available",
+        states: [...oidcCollectionStates],
+      },
+      {
+        key: "oidc-consents",
+        title: "Application consents",
+        description: "Review and revoke the applications a person has approved.",
+        path: "/demo/admin/oidc-consents",
+        availability: "available",
+        states: [...authorizationStates, "expired"],
+      },
+      {
+        key: "protocol-documents",
+        title: "Protocol documents",
+        description: "Inspect read-only discovery and JWKS endpoints.",
+        path: "/demo/admin/protocol-documents",
+        availability: "available",
+        states: [...authorizationPageStates, "expired"],
+      },
+    ],
+  },
+  {
+    key: "machine-users",
+    title: "Machine users",
+    description: "Non-human identities and their write-only credentials.",
+    scenarios: [
+      {
+        key: "machine-users",
+        title: "Machine user directory",
+        description: "Create and manage service identities and lifecycle.",
+        path: "/demo/admin/machine-users",
+        availability: "available",
+        states: [...machineCollectionStates],
+      },
+      {
+        key: "machine-user-detail",
+        title: "Machine user detail",
+        description: "Review scopes and lifecycle, rotate the client secret, and manage credentials.",
+        path: "/demo/admin/machine-users/01900000-0000-7000-8000-000000000071",
+        availability: "available",
+        states: [...machinePageStates],
+      },
+      {
+        key: "machine-credentials",
+        title: "Credentials and tokens",
+        description: "Issue, rotate, and revoke client credentials, PATs, and API keys.",
+        path: "/demo/admin/machine-credentials",
+        availability: "available",
+        states: [...machineCollectionStates],
+      },
+    ],
+  },
+  {
+    key: "operations",
+    title: "Operations",
+    description: "Realm sessions and immutable security activity.",
+    scenarios: [
+      {
+        key: "sessions",
+        title: "Sessions",
+        description: "Review realm sessions with subject and device context.",
+        path: "/demo/admin/sessions",
+        availability: "planned",
+        states: [...collectionStates],
+      },
+      {
+        key: "audit-events",
+        title: "Audit events",
+        description: "Browse the current fixture-backed security event stream.",
+        path: "/demo/admin/events",
+        availability: "available",
+        states: [...collectionStates, "permission-denied", "expired"],
+      },
+    ],
+  },
+]

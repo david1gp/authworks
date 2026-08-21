@@ -1,5 +1,5 @@
-import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
 import { LinkButtonExternal } from "#ui/interactive/link/LinkButton.jsx"
+import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
 
 type DemoCardProps = {
   title: string

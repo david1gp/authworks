@@ -1,6 +1,6 @@
-import type { OrganizationDiscoveryResponse } from "../../organizations/public/organizationDiscoveryResponseSchema.js"
+import type { LoginDiscovery } from "./loginAdapter.js"
 
-export function loginFrameStateCreate(bootstrap: () => Extract<OrganizationDiscoveryResponse, { found: true }>) {
+export function loginFrameStateCreate(bootstrap: () => LoginDiscovery) {
   return {
     bootstrap,
     legal: () => bootstrap().branding.legal ?? bootstrap().branding.legalUrls,

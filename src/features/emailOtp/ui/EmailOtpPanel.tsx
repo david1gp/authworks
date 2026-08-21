@@ -1,74 +1,77 @@
-import { Button } from "#ui/interactive/button/Button.jsx"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
+import { Button } from "#ui/interactive/button/Button.jsx"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
+import { LoginMessages } from "../../login/ui/LoginMessages.js"
+import { LoginPanelHeader } from "../../login/ui/LoginPanelHeader.js"
+import { LoginSubmitButton } from "../../login/ui/LoginSubmitButton.js"
 
 type EmailOtpPanelProps = {
-  code: string
-  email: string
-  error?: string
-  remainingSeconds: number
-  step: "email" | "code"
-  onBack: () => void
-  onCode: (value: string) => void
-  onEmail: (value: string) => void
-  onResend: () => void
-  onSubmit: (event: SubmitEvent) => void
+  readonly code: string
+  readonly email: string
+  readonly errorMessage?: string
+  readonly onBack: () => void
+  readonly onCode: (value: string) => void
+  readonly onEmail: (value: string) => void
+  readonly onResend: () => void
+  readonly onSubmit: (event: SubmitEvent) => void
+  readonly pending: boolean
+  readonly step: "code" | "email"
+  readonly validationMessage?: string
 }
 
 export function EmailOtpPanel(props: EmailOtpPanelProps) {
   return (
     <section>
-      <h1 class="text-2xl font-semibold">Sign in with email code</h1>
-      {props.step === "email" ? (
-        <form class="mt-6 grid gap-4" onSubmit={props.onSubmit}>
-          <p class="text-muted-foreground">We’ll email you a one-time code.</p>
+      <LoginPanelHeader
+        description={
+          props.step === "email"
+            ? messageTranslate("login.emailOtp.description")
+            : props.email.length === 0
+              ? // The code step was reached directly, so name no address rather than an empty one.
+                messageTranslate("login.mfa.emailOtpDescription")
+              : messageTranslate("login.emailOtp.codeDescription", { email: props.email })
+        }
+        title={messageTranslate(props.step === "email" ? "login.emailOtp.title" : "login.emailOtp.codeTitle")}
+      />
+      <form class="mt-6 grid gap-4" novalidate onSubmit={props.onSubmit}>
+        {props.step === "email" ? (
           <div class="grid gap-2">
-            <Label for="otp-email">Email</Label>
+            <Label for="email-otp-address">{messageTranslate("login.register.email")}</Label>
             <Input
-              id="otp-email"
+              autocomplete="email"
+              id="email-otp-address"
+              onInput={(event) => props.onEmail(event.currentTarget.value)}
               type="email"
               value={props.email}
-              onInput={(event) => props.onEmail(event.currentTarget.value)}
             />
           </div>
-          {props.error && (
-            <p class="text-sm text-danger" role="alert">
-              {props.error}
-            </p>
-          )}
-          <Button variant="filledBlue" type="submit">
-            Send code
-          </Button>
-        </form>
-      ) : (
-        <form class="mt-6 grid gap-4" onSubmit={props.onSubmit}>
-          <p class="text-muted-foreground">Enter the six-digit code sent to {props.email}.</p>
+        ) : (
           <div class="grid gap-2">
-            <Label for="otp-code">Verification code</Label>
+            <Label for="email-otp-code">{messageTranslate("login.mfa.verificationCode")}</Label>
             <Input
-              id="otp-code"
+              autocomplete="one-time-code"
+              id="email-otp-code"
               inputmode="numeric"
               maxlength="6"
-              value={props.code}
               onInput={(event) => props.onCode(event.currentTarget.value)}
+              value={props.code}
             />
           </div>
-          {props.error && (
-            <p class="text-sm text-danger" role="alert">
-              {props.error}
-            </p>
-          )}
-          <Button variant="filledBlue" type="submit">
-            Verify code
-          </Button>
-          <Button variant="link" type="button" disabled={props.remainingSeconds > 0} onClick={props.onResend}>
-            {props.remainingSeconds > 0 ? `Resend in ${props.remainingSeconds}s` : "Resend code"}
-          </Button>
-        </form>
-      )}
-      <Button class="mt-3" variant="link" onClick={props.onBack}>
-        Back to methods
-      </Button>
+        )}
+        <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
+        <LoginSubmitButton
+          label={messageTranslate(props.step === "email" ? "login.emailOtp.send" : "login.emailOtp.verify")}
+          pending={props.pending}
+        />
+      </form>
+      {props.step === "code" ? (
+        <Button class="mt-4 w-full" disabled={props.pending} onClick={props.onResend} type="button" variant="link">
+          {messageTranslate("login.emailOtp.resend")}
+        </Button>
+      ) : null}
+      <LoginBackLink onBack={props.onBack} />
     </section>
   )
 }

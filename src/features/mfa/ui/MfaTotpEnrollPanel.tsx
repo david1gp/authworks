@@ -1,47 +1,66 @@
-import { Button } from "#ui/interactive/button/Button.jsx"
-import { CodeBlock } from "#ui/static/code/CodeBlock.jsx"
+import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
+import { CodeBlock } from "#ui/static/code/CodeBlock.jsx"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
+import { LoginMessages } from "../../login/ui/LoginMessages.js"
+import { LoginPanelHeader } from "../../login/ui/LoginPanelHeader.js"
+import { LoginSubmitButton } from "../../login/ui/LoginSubmitButton.js"
 
 type MfaTotpEnrollPanelProps = {
-  code: string
-  error?: string
-  onBack: () => void
-  onCode: (value: string) => void
-  onSubmit: (event: SubmitEvent) => void
+  readonly code: string
+  readonly errorMessage?: string
+  readonly onBack: () => void
+  readonly onCode: (value: string) => void
+  readonly onStart: () => void
+  readonly onSubmit: (event: SubmitEvent) => void
+  readonly pending: boolean
+  readonly secret?: string
+  readonly validationMessage?: string
 }
 
 export function MfaTotpEnrollPanel(props: MfaTotpEnrollPanelProps) {
   return (
     <section>
-      <h1 class="text-2xl font-semibold">Set up an authenticator</h1>
-      <p class="mt-2 text-muted-foreground">
-        Add this secret to your authenticator app, then enter the generated code.
-      </p>
-      <CodeBlock class="mt-5" data="JBSWY3DPEHPK3PXP" />
-      <form class="mt-5 grid gap-4" onSubmit={props.onSubmit}>
-        <div class="grid gap-2">
-          <Label for="mfa-enroll-code">Verification code</Label>
-          <Input
-            id="mfa-enroll-code"
-            inputmode="numeric"
-            maxlength="6"
-            value={props.code}
-            onInput={(event) => props.onCode(event.currentTarget.value)}
-          />
-        </div>
-        {props.error && (
-          <p class="text-sm text-danger" role="alert">
-            {props.error}
-          </p>
+      <LoginPanelHeader
+        description={messageTranslate("login.totpEnroll.description")}
+        title={messageTranslate("login.totpEnroll.title")}
+      />
+      <Show
+        when={props.secret}
+        fallback={
+          <div class="mt-6 grid gap-4">
+            <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
+            <LoginSubmitButton
+              label={messageTranslate("login.totpEnroll.start")}
+              onClick={props.onStart}
+              pending={props.pending}
+              type="button"
+            />
+          </div>
+        }
+      >
+        {(secret) => (
+          <form class="mt-6 grid gap-4" novalidate onSubmit={props.onSubmit}>
+            <CodeBlock data={secret()} />
+            <div class="grid gap-2">
+              <Label for="totp-enroll-code">{messageTranslate("login.mfa.verificationCode")}</Label>
+              <Input
+                autocomplete="one-time-code"
+                id="totp-enroll-code"
+                inputmode="numeric"
+                maxlength="6"
+                onInput={(event) => props.onCode(event.currentTarget.value)}
+                value={props.code}
+              />
+            </div>
+            <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
+            <LoginSubmitButton label={messageTranslate("login.totpEnroll.submit")} pending={props.pending} />
+          </form>
         )}
-        <Button variant="filledBlue" type="submit">
-          Finish setup
-        </Button>
-      </form>
-      <Button class="mt-3" variant="link" onClick={props.onBack}>
-        Back to verification methods
-      </Button>
+      </Show>
+      <LoginBackLink onBack={props.onBack} />
     </section>
   )
 }

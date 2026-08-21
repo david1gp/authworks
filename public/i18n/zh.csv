@@ -1,0 +1,682 @@
+key,zh
+account.access.accepted,Invitation accepted
+account.access.active,Active organization
+account.access.consentDescription,Applications that can access information from your account.
+account.access.consentEmpty,No applications have access to this account.
+account.access.consentRevoked,Application access was revoked.
+account.access.created,Granted {date}
+account.access.declined,Invitation declined
+account.access.email,Email
+account.access.error,This account information could not be loaded.
+account.access.expired,This invitation has expired.
+account.access.invitationDescription,Review the organization and roles before you respond.
+account.access.invitationEmpty,There are no pending invitations for this account.
+account.access.invitationFor,Invitation for {email}
+account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationReplay,This invitation was already used or is no longer available.
+account.access.membership,Membership roles
+account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationEmpty,This account does not belong to an organization.
+account.access.permission,You do not have permission to perform this action.
+account.access.roles,Roles: {roles}
+account.access.scopes,Permissions: {scopes}
+account.access.switchOrganization,Switch organization
+account.access.switched,Organization context changed to {organization}.
+account.delete.confirmLabel,Enter {email} to confirm
+account.delete.dangerZone,Danger zone
+account.delete.deletedDetail,Your account and access have been permanently removed.
+account.delete.deletedTitle,Account deleted
+account.delete.emailMismatch,The email address does not match.
+account.delete.submit,Delete account permanently
+account.delete.title,Permanently delete this account
+account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.directory.title,Your account
+account.factors.addTotp,Add authenticator
+account.factors.codeCount,{count} recovery codes
+account.factors.confirm,Confirm
+account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
+account.factors.emailOtp,Email code
+account.factors.finishTotp,Finish authenticator setup
+account.factors.passkeyCount,{count} passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Recovery
+account.factors.removeTotp,Remove authenticator
+account.factors.totp,Authenticator app
+account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
+account.factors.verificationCode,Verification code
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.empty,No external identities are linked
+account.identities.unlink,Unlink
+account.passkeys.add,Add passkey
+account.passkeys.created,Created {date}
+account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
+account.passkeys.deviceBound,Device-bound passkey
+account.passkeys.empty,No passkeys registered
+account.passkeys.remove,Remove
+account.passkeys.synced,Synced passkey
+account.password.changed,Your password was changed.
+account.password.confirm,Confirm new password
+account.password.current,Current password
+account.password.description,Use a unique password that you do not use for other services.
+account.password.mismatch,The new passwords do not match.
+account.password.new,New password
+account.password.submit,Change password
+account.password.title,Change password
+account.password.tooShort,The new password must contain at least 8 characters.
+account.profile.displayName,Display name
+account.profile.displayNameRequired,Enter a display name.
+account.profile.email,Email address
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
+account.profile.emailTitle,Email address and verification
+account.profile.firstName,First name
+account.profile.lastName,Last name
+account.profile.nickName,Nickname
+account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
+account.profile.personalInformation,Personal information
+account.profile.preferredLanguage,Preferred language
+account.profile.save,Save changes
+account.profile.saved,Your profile was saved.
+account.profile.signInDescription,These details identify your account.
+account.profile.signInTitle,Sign-in details
+account.profile.userName,Username
+account.profile.verificationPending,Verification pending
+account.profile.verified,Verified
+account.recovery.generate,Generate new codes
+account.recovery.once,Copy or print these codes now. They cannot be displayed again.
+account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
+account.recovery.saveNow,Save your recovery codes now
+account.recovery.saved,I saved these codes
+account.recovery.summary,Recovery access
+account.security.label,Account security management
+account.sessionExpired,Your session has expired
+account.sessions.current,Current session
+account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
+account.sessions.empty,No active sessions
+account.sessions.lastUsed,Last used {date}
+account.sessions.revoke,Revoke session
+account.sessions.unknownDevice,Unknown device
+account.status.available,Available
+account.status.configured,Configured
+account.status.notConfigured,Not configured
+account.status.unavailable,Unavailable
+admin.common.next,下一页
+admin.common.pagination,分页
+admin.common.permission,您没有权限查看这些管理数据。
+admin.common.previous,上一页
+admin.events.actor,操作者
+admin.events.aggregate,聚合
+admin.events.count,{count} 个事件
+admin.events.description,当前领域不可变的安全活动，最新的在前。
+admin.events.empty,没有事件符合当前筛选条件。
+admin.events.hide,隐藏载荷
+admin.events.occurred,发生时间
+admin.events.payload,载荷
+admin.events.redactionNotice,事件存储前会对机密值进行脱敏处理。
+admin.events.search,搜索事件
+admin.events.searchPlaceholder,按类型、聚合或操作者筛选
+admin.events.show,显示载荷
+admin.events.systemActor,系统
+admin.events.title,审计事件
+admin.events.type,事件类型
+admin.machine.assuranceRequired,管理机器用户及其凭据需要更强、更近期的登录。请重新登录以继续。
+admin.machine.assuranceRequiredTitle,需要更强的登录
+admin.machine.created,创建时间
+admin.machine.credentials.apiKeyCreated,API 密钥已签发。
+admin.machine.credentials.description,机器用户为获取访问令牌而出示的凭据。系统仅存储其元数据，绝不存储凭据值。
+admin.machine.credentials.empty,此机器用户尚无凭据。
+admin.machine.credentials.expires,过期时间
+admin.machine.credentials.expiresHint,留空可签发不会过期的凭据。
+admin.machine.credentials.issue,签发凭据
+admin.machine.credentials.issueDescription,签发个人访问令牌或 API 密钥。凭据值仅显示一次且无法恢复。
+admin.machine.credentials.kind,凭据类型
+admin.machine.credentials.kindAccessToken,访问令牌
+admin.machine.credentials.kindApiKey,API 密钥
+admin.machine.credentials.kindClientSecret,客户端密钥
+admin.machine.credentials.kindHint,个人访问令牌直接代表机器用户执行操作。API 密钥用于单个集成。
+admin.machine.credentials.kindToken,个人访问令牌
+admin.machine.credentials.name,名称
+admin.machine.credentials.neverExpires,不会过期
+admin.machine.credentials.onceWarning,签发的凭据值仅显示一次。请在关闭此对话框前妥善保存；之后无法再次获取。
+admin.machine.credentials.revoke,吊销
+admin.machine.credentials.revoked,该凭据已被吊销。
+admin.machine.credentials.scopes,作用域
+admin.machine.credentials.scopesHint,使用空格或逗号分隔作用域。留空则继承机器用户的作用域。
+admin.machine.credentials.stateActive,有效
+admin.machine.credentials.stateExpired,已过期
+admin.machine.credentials.stateRevoked,已吊销
+admin.machine.credentials.subject,机器用户
+admin.machine.credentials.title,凭据与令牌
+admin.machine.credentials.tokenCreated,个人访问令牌已签发。
+admin.machine.credentials.unnamed,未命名凭据
+admin.machine.crossTenant,此机器用户属于其他 realm，在此不可用。
+admin.machine.lifecycle.activate,启用
+admin.machine.lifecycle.deactivate,停用
+admin.machine.lifecycle.description,停用后所有凭据都无法再进行身份验证。删除是永久性的且无法撤销。
+admin.machine.lifecycle.remove,删除机器用户
+admin.machine.lifecycle.title,生命周期
+admin.machine.pageNext,下一页
+admin.machine.pagePrevious,上一页
+admin.machine.permissionDenied,您没有权限查看或更改此 realm 中的机器用户。
+admin.machine.permissionDeniedTitle,无法访问
+admin.machine.secret.acknowledge,我已保存该密钥
+admin.machine.secret.apiKeyTitle,新的 API 密钥
+admin.machine.secret.clientId,客户端 ID
+admin.machine.secret.clientTitle,新的客户端密钥
+admin.machine.secret.copied,已复制到剪贴板
+admin.machine.secret.copy,复制密钥
+admin.machine.secret.copyFailed,剪贴板不可用。请手动选择并复制该值。
+admin.machine.secret.description,客户端密钥使该机器用户能够用其客户端凭据换取访问令牌。它以只写方式存储，只能轮换。
+admin.machine.secret.once,这是 {name} 的值唯一一次显示。请立即保存；之后无法恢复。
+admin.machine.secret.redacted,已存储并隐藏
+admin.machine.secret.rotate,轮换客户端密钥
+admin.machine.secret.rotated,客户端密钥已轮换。
+admin.machine.secret.title,客户端密钥
+admin.machine.secret.tokenTitle,新的个人访问令牌
+admin.machine.secret.value,密钥值
+admin.machine.status,状态
+admin.machine.updated,最后更新
+admin.machine.users.create,创建机器用户
+admin.machine.users.createDescription,为服务或集成创建非人类身份。其客户端密钥仅显示一次。
+admin.machine.users.createSecretHint,系统会立即签发客户端 ID 和客户端密钥。该密钥仅显示一次且无法恢复。
+admin.machine.users.created,机器用户已创建。
+admin.machine.users.description,在此 realm 中使用客户端凭据、令牌或 API 密钥进行身份验证的非人类身份。
+admin.machine.users.displayName,显示名称
+admin.machine.users.empty,此 realm 中尚不存在机器用户。
+admin.machine.users.lifecycleChanged,机器用户的状态已更改。
+admin.machine.users.noScopes,无作用域
+admin.machine.users.scopes,作用域
+admin.machine.users.scopesHint,使用空格或逗号分隔作用域。作用域按完全匹配进行比较。
+admin.machine.users.search,搜索机器用户
+admin.machine.users.title,机器用户
+admin.machine.users.userName,用户名
+admin.machine.users.userNameHint,在交换客户端凭据时用作客户端 ID。
+admin.oidc.assuranceRequired,管理 OpenID Connect 设置需要更强、更近期的登录。请重新登录以继续。
+admin.oidc.assuranceRequiredTitle,需要更强的登录方式
+admin.oidc.clients.consent,授权
+admin.oidc.clients.consentRequired,必需
+admin.oidc.clients.consentSkipped,不必需
+admin.oidc.clients.create,注册客户端
+admin.oidc.clients.createDescription,注册一个通过 OpenID Connect 让用户登录的应用。机密客户端只会获得一次密钥。
+admin.oidc.clients.created,客户端已注册。
+admin.oidc.clients.description,在此域中通过 OpenID Connect 验证用户身份的应用。
+admin.oidc.clients.empty,此域中尚未注册任何 OpenID Connect 客户端。
+admin.oidc.clients.exactMatchHint,每行一个 URI。每个重定向都按完全匹配进行校验，因此通配符和结尾差异都会被拒绝。
+admin.oidc.clients.lifecycleChanged,客户端状态已更改。
+admin.oidc.clients.name,客户端名称
+admin.oidc.clients.postLogoutUris,登出后重定向 URI
+admin.oidc.clients.redirectUris,重定向 URI
+admin.oidc.clients.requireConsent,要求用户批准此应用
+admin.oidc.clients.saved,客户端已保存。
+admin.oidc.clients.scopes,允许的范围
+admin.oidc.clients.search,搜索客户端
+admin.oidc.clients.settingsDescription,控制客户端名称、完全匹配的重定向 URI、允许的范围以及授权的处理方式。
+admin.oidc.clients.settingsTitle,客户端设置
+admin.oidc.clients.title,OpenID Connect 客户端
+admin.oidc.clients.trusted,受信任
+admin.oidc.clients.trustedHint,受信任的客户端会完全跳过授权界面。请仅将自有应用标记为受信任。
+admin.oidc.clients.type,客户端类型
+admin.oidc.clients.typeConfidential,机密
+admin.oidc.clients.typeHint,机密客户端在服务器上保存密钥。公共客户端（例如移动应用或单页应用）无法做到这一点。
+admin.oidc.clients.typePublic,公共
+admin.oidc.consents.client,应用
+admin.oidc.consents.description,用户已批准的应用。撤销授权后，系统会再次要求其批准该应用。
+admin.oidc.consents.empty,此用户尚未批准任何应用。
+admin.oidc.consents.granted,批准时间
+admin.oidc.consents.revoked,授权已撤销。
+admin.oidc.consents.title,应用授权
+admin.oidc.consents.user,用户
+admin.oidc.created,创建时间
+admin.oidc.crossTenant,此资源属于其他域，在此处不可用。
+admin.oidc.documents.authorizationEndpoint,授权端点
+admin.oidc.documents.copied,已复制
+admin.oidc.documents.copy,复制文档
+admin.oidc.documents.description,Authworks 为此域发布的协议文档，与客户端库读取到的内容完全一致。
+admin.oidc.documents.discoveryDescription,从 well-known 端点提供的 OpenID 提供方元数据。
+admin.oidc.documents.discoveryTitle,发现文档
+admin.oidc.documents.empty,此域尚未发布协议文档。
+admin.oidc.documents.endSessionEndpoint,结束会话端点
+admin.oidc.documents.issuer,颁发者
+admin.oidc.documents.jwksDescription,用于验证此域所颁发令牌的公钥。
+admin.oidc.documents.jwksTitle,JSON Web 密钥集
+admin.oidc.documents.jwksUri,JWKS URI
+admin.oidc.documents.open,打开端点
+admin.oidc.documents.readOnly,这些文档由域配置和签名密钥生成，无法在此处编辑。
+admin.oidc.documents.showRaw,显示原始文档
+admin.oidc.documents.title,协议文档
+admin.oidc.documents.tokenEndpoint,令牌端点
+admin.oidc.documents.userinfoEndpoint,userinfo 端点
+admin.oidc.keys.algorithm,算法
+admin.oidc.keys.create,添加密钥
+admin.oidc.keys.created,已发布新的签名密钥。
+admin.oidc.keys.description,为此域的令牌签名的密钥。轮换会发布新密钥并停用当前密钥。
+admin.oidc.keys.empty,此域尚不存在签名密钥。
+admin.oidc.keys.keyId,密钥 ID
+admin.oidc.keys.privateNotice,仅显示公钥元数据。私钥内容绝不会发送到浏览器。
+admin.oidc.keys.retire,停用
+admin.oidc.keys.retired,签名密钥已停用。
+admin.oidc.keys.retiredAt,停用时间
+admin.oidc.keys.rotate,轮换密钥
+admin.oidc.keys.rotated,签名密钥已轮换。
+admin.oidc.keys.title,签名密钥
+admin.oidc.lifecycle.activate,启用
+admin.oidc.lifecycle.deactivate,停用
+admin.oidc.lifecycle.remove,移除客户端
+admin.oidc.pageNext,下一页
+admin.oidc.pagePrevious,上一页
+admin.oidc.permissionDenied,您没有权限查看或更改此域的 OpenID Connect 设置。
+admin.oidc.permissionDeniedTitle,无法访问
+admin.oidc.secret.acknowledge,我已保存该密钥
+admin.oidc.secret.copied,已复制到剪贴板
+admin.oidc.secret.copy,复制密钥
+admin.oidc.secret.copyFailed,剪贴板不可用。请手动选择并复制该值。
+admin.oidc.secret.createdTitle,新的客户端密钥
+admin.oidc.secret.description,已保存的客户端密钥不会再次显示。轮换以颁发新密钥，或撤销以阻止该客户端进行身份验证。
+admin.oidc.secret.once,{client} 的密钥仅在此刻显示这一次。请立即保存；该密钥无法恢复。
+admin.oidc.secret.publicClient,公共客户端无需密钥即可完成身份验证，因此没有可轮换的内容。
+admin.oidc.secret.redacted,已保存并隐藏
+admin.oidc.secret.revoke,撤销密钥
+admin.oidc.secret.revoked,客户端密钥已撤销。
+admin.oidc.secret.rotate,轮换密钥
+admin.oidc.secret.rotated,客户端密钥已轮换。
+admin.oidc.secret.rotatedTitle,已轮换的客户端密钥
+admin.oidc.secret.title,客户端密钥
+admin.oidc.status,状态
+admin.oidc.updated,最近更新
+admin.organizations.assuranceRequired,请使用更强的身份验证方式重新登录，才能更改此组织设置。
+admin.organizations.assuranceRequiredTitle,需要更强的登录方式
+admin.organizations.branding.background,背景色
+admin.organizations.branding.dark,深色主题
+admin.organizations.branding.description,在托管的登录和账户页面上显示的颜色、徽标和法律链接。
+admin.organizations.branding.font,文本颜色
+admin.organizations.branding.iconUrl,图标 URL
+admin.organizations.branding.light,浅色主题
+admin.organizations.branding.logoUrl,徽标 URL
+admin.organizations.branding.preview,预览
+admin.organizations.branding.primary,主色
+admin.organizations.branding.privacyUrl,隐私政策 URL
+admin.organizations.branding.saved,品牌外观已保存。
+admin.organizations.branding.termsUrl,服务条款 URL
+admin.organizations.branding.themeMode,默认主题
+admin.organizations.branding.title,品牌外观
+admin.organizations.branding.warn,警告色
+admin.organizations.branding.watermark,隐藏 Authworks 水印
+admin.organizations.detail.created,创建时间
+admin.organizations.detail.realm,领域
+admin.organizations.detail.settingsDescription,管理组织名称及其生命周期状态。
+admin.organizations.detail.settingsTitle,组织设置
+admin.organizations.detail.updated,最近更新
+admin.organizations.domains.claim,认领域名
+admin.organizations.domains.claimed,{domain} 已认领，正在等待验证。
+admin.organizations.domains.description,已验证的域名可让用户通过其电子邮件地址找到此组织。
+admin.organizations.domains.discovery,识别预览
+admin.organizations.domains.discoveryDescription,查看某个域名在登录时当前解析到哪个组织。
+admin.organizations.domains.discoveryFound,{domain} 解析到 {organization}。
+admin.organizations.domains.discoveryMissing,{domain} 未解析到任何组织。
+admin.organizations.domains.domain,域名
+admin.organizations.domains.empty,此组织尚未认领任何域名。
+admin.organizations.domains.primary,主域名
+admin.organizations.domains.remove,移除域名
+admin.organizations.domains.removed,域名已移除。
+admin.organizations.domains.title,域名与识别
+admin.organizations.domains.unverified,等待验证
+admin.organizations.domains.verificationRecord,添加此 DNS TXT 记录，然后进行验证。
+admin.organizations.domains.verified,Verified
+admin.organizations.domains.verify,验证域名
+admin.organizations.domains.verifyDone,域名已验证。
+admin.organizations.invitations.create,邀请他人
+admin.organizations.invitations.description,通过电子邮件邀请他人，并跟踪哪些邀请仍待处理。
+admin.organizations.invitations.email,Email address
+admin.organizations.invitations.empty,尚未为此组织发送任何邀请。
+admin.organizations.invitations.expires,过期时间
+admin.organizations.invitations.revoke,撤销邀请
+admin.organizations.invitations.revoked,邀请已撤销。
+admin.organizations.invitations.sent,邀请已创建。
+admin.organizations.invitations.title,邀请
+admin.organizations.invitations.tokenDismiss,我已保存此链接
+admin.organizations.invitations.tokenOnce,此邀请链接仅显示一次。请与您邀请的人分享。
+admin.organizations.invitations.tokenTitle,邀请链接
+admin.organizations.lifecycle.activate,重新激活组织
+admin.organizations.lifecycle.changed,组织的生命周期状态已更改。
+admin.organizations.lifecycle.deactivate,停用组织
+admin.organizations.lifecycle.remove,移除组织
+admin.organizations.list.create,创建组织
+admin.organizations.list.description,组织将此领域的人员、域名和品牌外观归为一组。
+admin.organizations.list.empty,此领域中尚不存在任何组织。
+admin.organizations.list.name,组织名称
+admin.organizations.list.search,搜索组织
+admin.organizations.list.title,组织
+admin.organizations.memberships.add,添加成员
+admin.organizations.memberships.added,成员已添加。
+admin.organizations.memberships.description,此组织中的人员及分配给他们的固定角色。
+admin.organizations.memberships.empty,此组织尚无成员。
+admin.organizations.memberships.remove,移除成员
+admin.organizations.memberships.removed,成员已移除。
+admin.organizations.memberships.roles,角色
+admin.organizations.memberships.rolesFixed,角色由 Authworks 固定，无法重命名。
+admin.organizations.memberships.title,成员与角色
+admin.organizations.memberships.updated,成员角色已更新。
+admin.organizations.memberships.user,用户
+admin.organizations.memberships.userId,用户 ID
+admin.organizations.pageNext,下一页
+admin.organizations.pagePrevious,上一页
+admin.organizations.permissionDenied,您没有权限查看或更改此组织。
+admin.organizations.permissionDeniedTitle,无法访问
+admin.organizations.policy.description,选择用户可以使用哪些登录方式，以及显示哪些已配置的提供方。
+admin.organizations.policy.domainDiscovery,通过电子邮件域名识别组织
+admin.organizations.policy.emailOtp,电子邮件一次性验证码
+admin.organizations.policy.externalIdentity,外部身份提供方
+admin.organizations.policy.inherited,继承自领域
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,密码
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,自助注册
+admin.organizations.policy.saved,登录策略已保存。
+admin.organizations.policy.title,登录策略
+admin.organizations.providers.allowAccountCreation,自动为新用户创建账户
+admin.organizations.providers.clientId,客户端 ID
+admin.organizations.providers.clientSecret,客户端密钥
+admin.organizations.providers.create,添加提供方
+admin.organizations.providers.created,提供方已配置。
+admin.organizations.providers.description,为此组织配置的 Google、GitHub 和 Microsoft 提供方。
+admin.organizations.providers.disable,禁用提供方
+admin.organizations.providers.disabled,提供方已禁用。
+admin.organizations.providers.displayName,Display name
+admin.organizations.providers.empty,尚未配置任何外部身份提供方。
+admin.organizations.providers.redirectUri,重定向 URI
+admin.organizations.providers.rotateSecret,替换客户端密钥
+admin.organizations.providers.secretRotated,客户端密钥已替换。
+admin.organizations.providers.secretWriteOnly,已保存的客户端密钥永不显示。输入新值以替换它。
+admin.organizations.providers.title,身份提供方
+admin.organizations.providers.type,提供方
+admin.organizations.providers.updated,提供方已更新。
+admin.organizations.renamed,组织已重命名。
+admin.organizations.status,状态
+admin.overview.description,您正在管理的领域的标识、域名和生命周期。
+admin.overview.sessionTitle,管理员会话
+admin.overview.title,领域概览
+admin.projects.access.description,该管理员当前在此项目上实际拥有的角色。
+admin.projects.access.empty,在当前组织上下文中没有生效的项目角色。
+admin.projects.access.grantedOrganization,通过组织授予
+admin.projects.access.permissionDescription,固定角色及其权限由 Authworks 定义，无法编辑。
+admin.projects.access.permissionTitle,固定角色与权限
+admin.projects.access.roleKeys,有效的项目角色
+admin.projects.access.title,有效访问权限
+admin.projects.applications.create,添加应用
+admin.projects.applications.description,针对此项目进行身份验证的应用。
+admin.projects.applications.empty,此项目尚无任何应用。
+admin.projects.applications.name,应用名称
+admin.projects.applications.title,应用
+admin.projects.applications.type,应用类型
+admin.projects.crossTenant,此资源属于其他领域，在此不可用。
+admin.projects.detail.authorizationRequired,需要授权
+admin.projects.detail.created,创建时间
+admin.projects.detail.organization,组织
+admin.projects.detail.projectAccessRequired,需要项目访问权限
+admin.projects.detail.settingsDescription,管理项目名称以及访问的强制方式。
+admin.projects.detail.settingsTitle,项目设置
+admin.projects.detail.updated,最近更新
+admin.projects.grants.create,授予组织访问权限
+admin.projects.grants.description,授予另一个组织访问此项目的权限，并选择其获得的角色。
+admin.projects.grants.empty,尚未向任何组织授予此项目的访问权限。
+admin.projects.grants.grantedOrganization,获授权组织
+admin.projects.grants.roleKeys,已授予的角色
+admin.projects.grants.title,组织授权
+admin.projects.lifecycle.activate,启用
+admin.projects.lifecycle.deactivate,停用
+admin.projects.lifecycle.remove,Remove
+admin.projects.list.create,创建项目
+admin.projects.list.description,项目将一个组织的应用、角色和授权归为一组。
+admin.projects.list.empty,此领域中尚不存在任何项目。
+admin.projects.list.name,项目名称
+admin.projects.list.search,搜索项目
+admin.projects.list.title,项目
+admin.projects.pageNext,下一页
+admin.projects.pagePrevious,上一页
+admin.projects.permissionDenied,您没有权限查看或更改此项目信息。
+admin.projects.roles.create,创建角色
+admin.projects.roles.description,此项目可分配给组织及其成员的角色。
+admin.projects.roles.displayName,Display name
+admin.projects.roles.empty,此项目尚未定义任何角色。
+admin.projects.roles.group,分组
+admin.projects.roles.key,角色键
+admin.projects.roles.title,项目角色
+admin.projects.saved,{name} 已保存。
+admin.projects.status,状态
+admin.realm.confirmLabel,输入 {name} 以确认
+admin.realm.confirmMismatch,领域名称不匹配。
+admin.realm.created,创建时间
+admin.realm.dangerZone,危险区域
+admin.realm.description,您正在管理的领域的身份与登录配置。
+admin.realm.disable,停用领域
+admin.realm.disableConfirm,停用此领域会停止其所有应用的登录。是否继续？
+admin.realm.disableWarning,停用此领域会立即停止其中所有应用的登录和令牌颁发。
+admin.realm.disabled,该领域已停用。
+admin.realm.domainRequired,请至少输入一个领域域名。
+admin.realm.domains,域名
+admin.realm.domainsHint,使用逗号分隔域名。第一个域名为主域名。
+admin.realm.enable,启用领域
+admin.realm.enableDescription,此领域已停用。启用后可恢复登录和令牌颁发。
+admin.realm.enabled,该领域已启用。
+admin.realm.identifier,领域标识符
+admin.realm.invalid,请输入领域名称和至少一个域名。
+admin.realm.lifecycleTitle,领域生命周期
+admin.realm.name,领域名称
+admin.realm.nameRequired,请输入领域名称。
+admin.realm.permissionDenied,您没有更改此领域的权限。
+admin.realm.primaryDomain,主域名
+admin.realm.save,保存设置
+admin.realm.saved,领域设置已保存。
+admin.realm.settingsDescription,更改领域名称以及解析到此领域的域名。
+admin.realm.settingsTitle,常规设置
+admin.realm.status,状态
+admin.realm.statusActive,启用中
+admin.realm.statusDisabled,已停用
+admin.realm.title,领域设置
+admin.realm.updated,最近更新
+admin.session.expired,您的管理员会话已过期
+admin.signIn.activeTitle,管理员会话已激活
+admin.signIn.credential,引导管理员凭据
+admin.signIn.credentialInvalid,请输入完整的引导管理员凭据。
+admin.signIn.credentialNotStored,该凭据将被换取为一个短期浏览器会话，并且不会存储在此浏览器中。
+admin.signIn.description,使用运维方签发的引导凭据换取一个短期的管理员浏览器会话。
+admin.signIn.expiresAt,此会话将于 {date} 过期。
+admin.signIn.signedOutDetail,已在此设备上结束管理员会话。
+admin.signIn.signedOutTitle,已退出登录
+admin.signIn.subject,主体
+admin.signIn.subjectType,主体类型
+admin.signIn.title,管理员登录
+admin.users.count,{count} 个用户
+admin.users.create,创建用户
+admin.users.createDescription,向当前领域添加一个真人用户。
+admin.users.createSubmit,创建
+admin.users.created,{userName} 已创建。
+admin.users.dangerZone,危险区域
+admin.users.delete,删除用户
+admin.users.deleteConfirm,永久删除 {userName}？
+admin.users.deleteWarning,删除该用户会立即撤销其会话和访问权限。
+admin.users.deleted,{userName} 已删除。
+admin.users.description,当前领域中的真人身份。
+admin.users.detailTitle,用户详情
+admin.users.displayName,Display name
+admin.users.displayNameRequired,Enter a display name.
+admin.users.email,Email address
+admin.users.empty,没有用户符合当前筛选条件。
+admin.users.firstName,First name
+admin.users.invalid,请输入有效的电子邮件地址和用户名。
+admin.users.lastName,Last name
+admin.users.lifecycle.active,启用中
+admin.users.lifecycle.deleted,已删除
+admin.users.lifecycle.inactive,未激活
+admin.users.lifecycle.initial,初始
+admin.users.lifecycle.locked,已锁定
+admin.users.lifecycle.suspended,已暂停
+admin.users.lifecycleChanged,用户状态现在为 {state}。
+admin.users.lifecycleConfirm,将 {userName} 设置为 {state}？
+admin.users.lifecycleDescription,设置该用户是否可以登录。
+admin.users.lifecycleTitle,生命周期
+admin.users.markUnverified,标记为未验证
+admin.users.markVerified,标记为已验证
+admin.users.missingId,无法根据该地址解析此用户。
+admin.users.nickName,Nickname
+admin.users.preferredLanguage,Preferred language
+admin.users.profileSave,保存个人资料
+admin.users.profileSaved,用户资料已保存。
+admin.users.profileTitle,个人资料
+admin.users.search,搜索用户
+admin.users.searchPlaceholder,按用户名、电子邮件或标识符筛选
+admin.users.state,状态
+admin.users.title,用户
+admin.users.unverified,未验证
+admin.users.updated,最后更新于 {date}
+admin.users.userName,Username
+admin.users.verification,验证
+admin.users.verificationChanged,验证状态现在为 {state}。
+admin.users.verificationDescription,控制该用户的电子邮件地址是否算作已验证。
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verified
+app.name,Authworks
+common.back,返回
+common.cancel,取消
+common.close,关闭
+common.continue,继续
+common.decline,Decline
+common.error,出错了。
+common.language,语言
+common.loading,加载中
+common.retry,重试
+common.revoke,Revoke
+common.save,保存
+common.signIn,登录
+common.signInWithProvider,使用 {provider} 登录
+common.signOut,退出登录
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,选择登录 {organization} 的方式
+login.chooser.emailOtpDetail,通过电子邮件接收一次性代码
+login.chooser.emailOtpLabel,电子邮件代码
+login.chooser.passkeyDetail,使用设备屏幕锁或安全密钥
+login.chooser.passkeyLabel,通行密钥
+login.chooser.passwordDetail,使用帐户密码
+login.chooser.passwordLabel,密码
+login.chooser.providerDetail,使用已关联的帐户继续
+login.chooser.providerLabel,使用 {provider} 继续
+login.chooser.register,创建帐户
+login.chooser.title,登录
+login.chooser.useRecent,使用最近的帐户
+login.common.back,返回登录选项
+login.common.legal,继续即表示您确认接受 {terms} 和 {privacy}。
+login.common.privacy,隐私政策
+login.common.terms,服务条款
+login.common.working,处理中…
+login.emailOtp.codeDescription,输入我们发送到 {email} 的六位数代码。
+login.emailOtp.codeTitle,输入电子邮件代码
+login.emailOtp.description,我们会通过电子邮件发送一次性代码，无需输入密码。
+login.emailOtp.resend,发送新代码
+login.emailOtp.send,发送代码
+login.emailOtp.title,使用电子邮件代码登录
+login.emailOtp.verify,验证代码
+login.error.codeRequired,请输入六位数验证码。
+login.error.credentialsRequired,请输入用户名和密码。
+login.error.emailRequired,请输入有效的电子邮件地址。
+login.error.enrollmentMissing,请先开始设置验证器，再确认代码。
+login.error.nameRequired,请输入要在帐户中显示的姓名。
+login.error.passwordMismatch,两次密码不一致。
+login.error.passwordTooShort,密码必须至少包含8个字符。
+login.error.recoveryCodeRequired,请输入您保存的恢复代码之一。
+login.error.tokenMissing,请打开电子邮件中的完整链接以继续。
+login.logout.description,您可以在此设备上结束此会话。
+login.logout.doneDescription,您已退出 {organization}。
+login.logout.doneTitle,已退出登录
+login.logout.submit,退出登录
+login.logout.title,退出 {organization}
+login.mfa.description,选择确认身份的方式。
+login.mfa.emailOtp,电子邮件代码
+login.mfa.emailOtpDescription,输入我们发送到您电子邮件地址的六位数代码。
+login.mfa.passkey,通行密钥
+login.mfa.recoveryCode,恢复代码
+login.mfa.recoveryCodeDescription,使用您设置验证时保存的一次性代码之一。
+login.mfa.recoveryCodeLabel,恢复代码
+login.mfa.title,两步验证
+login.mfa.totp,验证器应用
+login.mfa.totpDescription,输入验证器应用中的六位数代码。
+login.mfa.verificationCode,验证码
+login.mfa.verify,验证
+login.passkey.description,使用设备屏幕锁、指纹或安全密钥确认身份。
+login.passkey.submit,使用通行密钥继续
+login.passkey.title,使用通行密钥登录
+login.passkey.unsupported,此浏览器或设备无法使用通行密钥。请选择其他登录方式。
+login.password.changeDescription,继续前请选择新密码。
+login.password.changeTitle,更新密码
+login.password.confirm,确认密码
+login.password.current,当前密码
+login.password.description,请输入 {organization} 帐户的凭据。
+login.password.forgot,忘记密码？
+login.password.hide,隐藏密码
+login.password.identifier,用户名或电子邮件
+login.password.label,密码
+login.password.new,新密码
+login.password.show,显示密码
+login.password.submit,登录
+login.password.title,输入密码
+login.provider.description,您将前往 {provider}，完成后返回此处。
+login.provider.submit,使用 {provider} 继续
+login.provider.title,使用 {provider} 继续
+login.recent.description,使用您在此设备上使用过的帐户继续。
+login.recent.other,使用其他帐户
+login.recent.title,选择帐户
+login.recovery.completeDescription,使用新密码登录。
+login.recovery.completeTitle,密码已更新
+login.recovery.description,请输入您的电子邮件地址；如果帐户存在，我们会发送恢复说明。
+login.recovery.resetDescription,为您的帐户选择新密码。
+login.recovery.resetSubmit,更新密码
+login.recovery.resetTitle,设置新密码
+login.recovery.sentDescription,如果该地址匹配某个帐户，恢复说明正在发送中。链接很快会过期。
+login.recovery.sentTitle,检查电子邮件
+login.recovery.submit,发送恢复说明
+login.recovery.title,重置密码
+login.register.description,为 {organization} 创建帐户
+login.register.displayName,姓名
+login.register.doneDescription,使用我们发送到 {email} 的链接确认您的电子邮件地址。
+login.register.doneTitle,确认电子邮件地址
+login.register.email,电子邮件地址
+login.register.signIn,已有帐户？
+login.register.submit,创建帐户
+login.register.title,创建您的帐户
+login.register.userName,用户名
+login.signedIn.description,您已登录 {organization}。
+login.signedIn.title,已登录
+login.status.loading,正在准备登录
+login.status.unavailableDescription,无法完成此登录请求。请返回应用并重试。
+login.status.unavailableTitle,登录不可用
+login.totpEnroll.description,将此设置密钥添加到验证器应用，然后输入其生成的代码。该密钥仅显示这一次。
+login.totpEnroll.start,显示设置密钥
+login.totpEnroll.submit,完成设置
+login.totpEnroll.title,设置验证器应用
+login.verify.description,确认您帐户的电子邮件地址。
+login.verify.submit,确认电子邮件地址
+login.verify.title,验证电子邮件地址
+login.verify.verifiedDescription,{email} 已确认。您现在可以登录。
+login.verify.verifiedTitle,电子邮件地址已确认

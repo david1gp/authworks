@@ -1,43 +1,43 @@
-import { Button } from "#ui/interactive/button/Button.jsx"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
+import { LoginMessages } from "../../login/ui/LoginMessages.js"
+import { LoginPanelHeader } from "../../login/ui/LoginPanelHeader.js"
+import { LoginSubmitButton } from "../../login/ui/LoginSubmitButton.js"
 
 type PasswordRecoveryRequestPanelProps = {
-  email: string
-  error?: string
-  onBack: () => void
-  onEmail: (value: string) => void
-  onSubmit: (event: SubmitEvent) => void
+  readonly email: string
+  readonly errorMessage?: string
+  readonly onBack: () => void
+  readonly onEmail: (value: string) => void
+  readonly onSubmit: (event: SubmitEvent) => void
+  readonly pending: boolean
+  readonly validationMessage?: string
 }
 
 export function PasswordRecoveryRequestPanel(props: PasswordRecoveryRequestPanelProps) {
   return (
     <section>
-      <h1 class="text-2xl font-semibold">Reset your password</h1>
-      <p class="mt-2 text-muted-foreground">Enter your email and we’ll send next steps if an account matches.</p>
-      <form class="mt-6 grid gap-4" onSubmit={props.onSubmit}>
+      <LoginPanelHeader
+        description={messageTranslate("login.recovery.description")}
+        title={messageTranslate("login.recovery.title")}
+      />
+      <form class="mt-6 grid gap-4" novalidate onSubmit={props.onSubmit}>
         <div class="grid gap-2">
-          <Label for="recovery-email">Email</Label>
+          <Label for="login-recovery-email">{messageTranslate("login.register.email")}</Label>
           <Input
-            id="recovery-email"
+            autocomplete="email"
+            id="login-recovery-email"
+            onInput={(event) => props.onEmail(event.currentTarget.value)}
             type="email"
             value={props.email}
-            autocomplete="email"
-            onInput={(event) => props.onEmail(event.currentTarget.value)}
           />
         </div>
-        {props.error && (
-          <p class="text-sm text-danger" role="alert">
-            {props.error}
-          </p>
-        )}
-        <Button variant="filledBlue" type="submit">
-          Send recovery email
-        </Button>
+        <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
+        <LoginSubmitButton label={messageTranslate("login.recovery.submit")} pending={props.pending} />
       </form>
-      <Button class="mt-3" variant="link" onClick={props.onBack}>
-        Back to password
-      </Button>
+      <LoginBackLink onBack={props.onBack} />
     </section>
   )
 }

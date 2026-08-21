@@ -1,0 +1,682 @@
+key,fr
+account.access.accepted,Invitation accepted
+account.access.active,Active organization
+account.access.consentDescription,Applications that can access information from your account.
+account.access.consentEmpty,No applications have access to this account.
+account.access.consentRevoked,Application access was revoked.
+account.access.created,Granted {date}
+account.access.declined,Invitation declined
+account.access.email,Email
+account.access.error,This account information could not be loaded.
+account.access.expired,This invitation has expired.
+account.access.invitationDescription,Review the organization and roles before you respond.
+account.access.invitationEmpty,There are no pending invitations for this account.
+account.access.invitationFor,Invitation for {email}
+account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationReplay,This invitation was already used or is no longer available.
+account.access.membership,Membership roles
+account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationEmpty,This account does not belong to an organization.
+account.access.permission,You do not have permission to perform this action.
+account.access.roles,Roles: {roles}
+account.access.scopes,Permissions: {scopes}
+account.access.switchOrganization,Switch organization
+account.access.switched,Organization context changed to {organization}.
+account.delete.confirmLabel,Enter {email} to confirm
+account.delete.dangerZone,Danger zone
+account.delete.deletedDetail,Your account and access have been permanently removed.
+account.delete.deletedTitle,Account deleted
+account.delete.emailMismatch,The email address does not match.
+account.delete.submit,Delete account permanently
+account.delete.title,Permanently delete this account
+account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.directory.title,Your account
+account.factors.addTotp,Add authenticator
+account.factors.codeCount,{count} recovery codes
+account.factors.confirm,Confirm
+account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
+account.factors.emailOtp,Email code
+account.factors.finishTotp,Finish authenticator setup
+account.factors.passkeyCount,{count} passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Recovery
+account.factors.removeTotp,Remove authenticator
+account.factors.totp,Authenticator app
+account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
+account.factors.verificationCode,Verification code
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.empty,No external identities are linked
+account.identities.unlink,Unlink
+account.passkeys.add,Add passkey
+account.passkeys.created,Created {date}
+account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
+account.passkeys.deviceBound,Device-bound passkey
+account.passkeys.empty,No passkeys registered
+account.passkeys.remove,Remove
+account.passkeys.synced,Synced passkey
+account.password.changed,Your password was changed.
+account.password.confirm,Confirm new password
+account.password.current,Current password
+account.password.description,Use a unique password that you do not use for other services.
+account.password.mismatch,The new passwords do not match.
+account.password.new,New password
+account.password.submit,Change password
+account.password.title,Change password
+account.password.tooShort,The new password must contain at least 8 characters.
+account.profile.displayName,Display name
+account.profile.displayNameRequired,Enter a display name.
+account.profile.email,Email address
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
+account.profile.emailTitle,Email address and verification
+account.profile.firstName,First name
+account.profile.lastName,Last name
+account.profile.nickName,Nickname
+account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
+account.profile.personalInformation,Personal information
+account.profile.preferredLanguage,Preferred language
+account.profile.save,Save changes
+account.profile.saved,Your profile was saved.
+account.profile.signInDescription,These details identify your account.
+account.profile.signInTitle,Sign-in details
+account.profile.userName,Username
+account.profile.verificationPending,Verification pending
+account.profile.verified,Verified
+account.recovery.generate,Generate new codes
+account.recovery.once,Copy or print these codes now. They cannot be displayed again.
+account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
+account.recovery.saveNow,Save your recovery codes now
+account.recovery.saved,I saved these codes
+account.recovery.summary,Recovery access
+account.security.label,Account security management
+account.sessionExpired,Your session has expired
+account.sessions.current,Current session
+account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
+account.sessions.empty,No active sessions
+account.sessions.lastUsed,Last used {date}
+account.sessions.revoke,Revoke session
+account.sessions.unknownDevice,Unknown device
+account.status.available,Available
+account.status.configured,Configured
+account.status.notConfigured,Not configured
+account.status.unavailable,Unavailable
+admin.common.next,Suivant
+admin.common.pagination,Pagination
+admin.common.permission,Vous n'avez pas la permission de voir ces données d'administration.
+admin.common.previous,Précédent
+admin.events.actor,Acteur
+admin.events.aggregate,Agrégat
+admin.events.count,{count} événements
+admin.events.description,"Activité de sécurité immuable du realm actuel, la plus récente en premier."
+admin.events.empty,Aucun événement ne correspond au filtre actuel.
+admin.events.hide,Masquer la charge utile
+admin.events.occurred,Survenu
+admin.events.payload,Charge utile
+admin.events.redactionNotice,Les valeurs secrètes sont masquées avant l'enregistrement d'un événement.
+admin.events.search,Rechercher des événements
+admin.events.searchPlaceholder,"Filtrer par type, agrégat ou acteur"
+admin.events.show,Afficher la charge utile
+admin.events.systemActor,Système
+admin.events.title,Événements d'audit
+admin.events.type,Type d'événement
+admin.machine.assuranceRequired,La gestion des utilisateurs machine et de leurs identifiants nécessite une connexion plus forte et plus récente. Reconnectez-vous pour continuer.
+admin.machine.assuranceRequiredTitle,Connexion plus forte requise
+admin.machine.created,Créé
+admin.machine.credentials.apiKeyCreated,La clé d'API a été émise.
+admin.machine.credentials.description,"Identifiants qu'un utilisateur machine présente pour obtenir un jeton d'accès. Seules leurs métadonnées sont stockées, jamais la valeur."
+admin.machine.credentials.empty,Cet utilisateur machine n'a encore aucun identifiant.
+admin.machine.credentials.expires,Expire le
+admin.machine.credentials.expiresHint,Laissez ce champ vide pour émettre un identifiant sans expiration.
+admin.machine.credentials.issue,Émettre un identifiant
+admin.machine.credentials.issueDescription,Émettez un jeton d'accès personnel ou une clé d'API. La valeur est affichée une seule fois et ne peut pas être récupérée.
+admin.machine.credentials.kind,Type d'identifiant
+admin.machine.credentials.kindAccessToken,Jeton d'accès
+admin.machine.credentials.kindApiKey,Clé d'API
+admin.machine.credentials.kindClientSecret,Secret client
+admin.machine.credentials.kindHint,Un jeton d'accès personnel agit directement pour l'utilisateur machine. Une clé d'API est destinée à une seule intégration.
+admin.machine.credentials.kindToken,Jeton d'accès personnel
+admin.machine.credentials.name,Nom
+admin.machine.credentials.neverExpires,N'expire pas
+admin.machine.credentials.onceWarning,La valeur émise est affichée une seule fois. Enregistrez-la avant de fermer cette boîte de dialogue ; elle ne pourra plus être récupérée.
+admin.machine.credentials.revoke,Révoquer
+admin.machine.credentials.revoked,L'identifiant a été révoqué.
+admin.machine.credentials.scopes,Portées
+admin.machine.credentials.scopesHint,Séparez les portées par des espaces ou des virgules. Laissez vide pour hériter des portées de l'utilisateur machine.
+admin.machine.credentials.stateActive,Actif
+admin.machine.credentials.stateExpired,Expiré
+admin.machine.credentials.stateRevoked,Révoqué
+admin.machine.credentials.subject,Utilisateur machine
+admin.machine.credentials.title,Identifiants et jetons
+admin.machine.credentials.tokenCreated,Le jeton d'accès personnel a été émis.
+admin.machine.credentials.unnamed,Identifiant sans nom
+admin.machine.crossTenant,Cet utilisateur machine appartient à un autre realm et n'est pas disponible ici.
+admin.machine.lifecycle.activate,Activer
+admin.machine.lifecycle.deactivate,Désactiver
+admin.machine.lifecycle.description,La désactivation empêche tout identifiant de s'authentifier. La suppression est définitive et irréversible.
+admin.machine.lifecycle.remove,Supprimer l'utilisateur machine
+admin.machine.lifecycle.title,Cycle de vie
+admin.machine.pageNext,Page suivante
+admin.machine.pagePrevious,Page précédente
+admin.machine.permissionDenied,Vous n'avez pas l'autorisation de consulter ou de modifier les utilisateurs machine de ce realm.
+admin.machine.permissionDeniedTitle,Accès indisponible
+admin.machine.secret.acknowledge,J'ai enregistré le secret
+admin.machine.secret.apiKeyTitle,Nouvelle clé d'API
+admin.machine.secret.clientId,Identifiant client
+admin.machine.secret.clientTitle,Nouveau secret client
+admin.machine.secret.copied,Copié dans le presse-papiers
+admin.machine.secret.copy,Copier le secret
+admin.machine.secret.copyFailed,Le presse-papiers est indisponible. Sélectionnez et copiez la valeur manuellement.
+admin.machine.secret.description,Le secret client permet à cet utilisateur machine d'échanger ses identifiants client contre un jeton d'accès. Il est stocké en écriture seule et ne peut être que renouvelé.
+admin.machine.secret.once,C'est la seule fois que la valeur de {name} est affichée. Enregistrez-la maintenant ; elle ne pourra pas être récupérée.
+admin.machine.secret.redacted,Stocké et masqué
+admin.machine.secret.rotate,Renouveler le secret client
+admin.machine.secret.rotated,Le secret client a été renouvelé.
+admin.machine.secret.title,Secret client
+admin.machine.secret.tokenTitle,Nouveau jeton d'accès personnel
+admin.machine.secret.value,Valeur du secret
+admin.machine.status,Statut
+admin.machine.updated,Dernière mise à jour
+admin.machine.users.create,Créer un utilisateur machine
+admin.machine.users.createDescription,Créez une identité non humaine pour un service ou une intégration. Son secret client est affiché une seule fois.
+admin.machine.users.createSecretHint,Un identifiant client et un secret client sont émis immédiatement. Le secret est affiché une seule fois et ne peut pas être récupéré.
+admin.machine.users.created,L'utilisateur machine a été créé.
+admin.machine.users.description,"Identités non humaines qui s'authentifient avec des identifiants client, des jetons ou des clés d'API dans ce realm."
+admin.machine.users.displayName,Nom affiché
+admin.machine.users.empty,Aucun utilisateur machine n'existe encore dans ce realm.
+admin.machine.users.lifecycleChanged,Le statut de l'utilisateur machine a été modifié.
+admin.machine.users.noScopes,Aucune portée
+admin.machine.users.scopes,Portées
+admin.machine.users.scopesHint,Séparez les portées par des espaces ou des virgules. Les portées sont comparées exactement.
+admin.machine.users.search,Rechercher des utilisateurs machine
+admin.machine.users.title,Utilisateurs machine
+admin.machine.users.userName,Nom d'utilisateur
+admin.machine.users.userNameHint,Utilisé comme identifiant client lors de l'échange d'identifiants client.
+admin.oidc.assuranceRequired,La gestion des paramètres OpenID Connect nécessite une connexion plus forte et plus récente. Reconnectez-vous pour continuer.
+admin.oidc.assuranceRequiredTitle,Connexion plus forte requise
+admin.oidc.clients.consent,Consentement
+admin.oidc.clients.consentRequired,Requis
+admin.oidc.clients.consentSkipped,Non requis
+admin.oidc.clients.create,Enregistrer un client
+admin.oidc.clients.createDescription,Enregistrez une application qui connecte les personnes avec OpenID Connect. Un client confidentiel reçoit un secret une seule fois.
+admin.oidc.clients.created,Le client a été enregistré.
+admin.oidc.clients.description,Applications qui authentifient les personnes via OpenID Connect dans ce domaine.
+admin.oidc.clients.empty,Aucun client OpenID Connect n'est encore enregistré dans ce domaine.
+admin.oidc.clients.exactMatchHint,Une URI par ligne. Chaque redirection est comparée à l'identique : les caractères génériques et les différences finales sont refusés.
+admin.oidc.clients.lifecycleChanged,Le statut du client a été modifié.
+admin.oidc.clients.name,Nom du client
+admin.oidc.clients.postLogoutUris,URI de redirection après déconnexion
+admin.oidc.clients.redirectUris,URI de redirection
+admin.oidc.clients.requireConsent,Demander à la personne d'approuver cette application
+admin.oidc.clients.saved,Le client a été enregistré.
+admin.oidc.clients.scopes,Portées autorisées
+admin.oidc.clients.search,Rechercher des clients
+admin.oidc.clients.settingsDescription,"Contrôlez le nom du client, les URI de redirection exactes, les portées autorisées et la gestion du consentement."
+admin.oidc.clients.settingsTitle,Paramètres du client
+admin.oidc.clients.title,Clients OpenID Connect
+admin.oidc.clients.trusted,De confiance
+admin.oidc.clients.trustedHint,Un client de confiance ignore entièrement l'écran de consentement. Ne marquez comme tel que vos propres applications.
+admin.oidc.clients.type,Type de client
+admin.oidc.clients.typeConfidential,Confidentiel
+admin.oidc.clients.typeHint,"Un client confidentiel conserve un secret sur un serveur. Un client public, comme une application mobile ou monopage, ne le peut pas."
+admin.oidc.clients.typePublic,Public
+admin.oidc.consents.client,Application
+admin.oidc.consents.description,Applications qu'une personne a approuvées. Révoquer un consentement lui demande d'approuver l'application à nouveau.
+admin.oidc.consents.empty,Cette personne n'a encore approuvé aucune application.
+admin.oidc.consents.granted,Approuvée
+admin.oidc.consents.revoked,Le consentement a été révoqué.
+admin.oidc.consents.title,Consentements d'applications
+admin.oidc.consents.user,Personne
+admin.oidc.created,Créé
+admin.oidc.crossTenant,Cette ressource appartient à un autre domaine et n'est pas disponible ici.
+admin.oidc.documents.authorizationEndpoint,Point de terminaison d'autorisation
+admin.oidc.documents.copied,Copié
+admin.oidc.documents.copy,Copier le document
+admin.oidc.documents.description,"Les documents de protocole publiés par Authworks pour ce domaine, tels qu'une bibliothèque cliente les lit."
+admin.oidc.documents.discoveryDescription,Les métadonnées du fournisseur OpenID servies depuis le point de terminaison well-known.
+admin.oidc.documents.discoveryTitle,Document de découverte
+admin.oidc.documents.empty,Aucun document de protocole n'est encore publié pour ce domaine.
+admin.oidc.documents.endSessionEndpoint,Point de terminaison de fin de session
+admin.oidc.documents.issuer,Émetteur
+admin.oidc.documents.jwksDescription,Les clés publiques qui vérifient les jetons émis par ce domaine.
+admin.oidc.documents.jwksTitle,Jeu de clés web JSON
+admin.oidc.documents.jwksUri,URI JWKS
+admin.oidc.documents.open,Ouvrir le point de terminaison
+admin.oidc.documents.readOnly,Ces documents sont générés à partir de la configuration du domaine et des clés de signature. Ils ne peuvent pas être modifiés ici.
+admin.oidc.documents.showRaw,Afficher le document brut
+admin.oidc.documents.title,Documents de protocole
+admin.oidc.documents.tokenEndpoint,Point de terminaison de jeton
+admin.oidc.documents.userinfoEndpoint,Point de terminaison userinfo
+admin.oidc.keys.algorithm,Algorithme
+admin.oidc.keys.create,Ajouter une clé
+admin.oidc.keys.created,Une nouvelle clé de signature a été publiée.
+admin.oidc.keys.description,Les clés qui signent les jetons de ce domaine. La rotation publie une nouvelle clé et retire l'actuelle.
+admin.oidc.keys.empty,Aucune clé de signature n'existe encore pour ce domaine.
+admin.oidc.keys.keyId,Identifiant de clé
+admin.oidc.keys.privateNotice,Seules les métadonnées de la clé publique sont affichées. Le matériel de clé privée n'est jamais envoyé au navigateur.
+admin.oidc.keys.retire,Retirer
+admin.oidc.keys.retired,La clé de signature a été retirée.
+admin.oidc.keys.retiredAt,Retirée
+admin.oidc.keys.rotate,Effectuer la rotation
+admin.oidc.keys.rotated,La clé de signature a été renouvelée.
+admin.oidc.keys.title,Clés de signature
+admin.oidc.lifecycle.activate,Activer
+admin.oidc.lifecycle.deactivate,Désactiver
+admin.oidc.lifecycle.remove,Supprimer le client
+admin.oidc.pageNext,Page suivante
+admin.oidc.pagePrevious,Page précédente
+admin.oidc.permissionDenied,Vous n'avez pas l'autorisation de consulter ou de modifier les paramètres OpenID Connect de ce domaine.
+admin.oidc.permissionDeniedTitle,Accès indisponible
+admin.oidc.secret.acknowledge,J'ai enregistré le secret
+admin.oidc.secret.copied,Copié dans le presse-papiers
+admin.oidc.secret.copy,Copier le secret
+admin.oidc.secret.copyFailed,Le presse-papiers est indisponible. Sélectionnez et copiez la valeur manuellement.
+admin.oidc.secret.createdTitle,Nouveau secret client
+admin.oidc.secret.description,"Le secret client enregistré n'est plus jamais affiché. Effectuez sa rotation pour en émettre un nouveau, ou révoquez-le pour empêcher le client de s'authentifier."
+admin.oidc.secret.once,C'est la seule fois où le secret de {client} est affiché. Enregistrez-le maintenant ; il ne peut pas être récupéré.
+admin.oidc.secret.publicClient,Un client public s'authentifie sans secret ; il n'y a donc rien à renouveler.
+admin.oidc.secret.redacted,Enregistré et masqué
+admin.oidc.secret.revoke,Révoquer le secret
+admin.oidc.secret.revoked,Le secret client a été révoqué.
+admin.oidc.secret.rotate,Renouveler le secret
+admin.oidc.secret.rotated,Le secret client a été renouvelé.
+admin.oidc.secret.rotatedTitle,Secret client renouvelé
+admin.oidc.secret.title,Secret client
+admin.oidc.status,Statut
+admin.oidc.updated,Dernière mise à jour
+admin.organizations.assuranceRequired,Reconnectez-vous avec une méthode d'authentification plus forte pour modifier ce paramètre d'organisation.
+admin.organizations.assuranceRequiredTitle,Connexion plus forte requise
+admin.organizations.branding.background,Couleur d'arrière-plan
+admin.organizations.branding.dark,Thème sombre
+admin.organizations.branding.description,"Couleurs, logos et liens légaux affichés sur les écrans de connexion et de compte hébergés."
+admin.organizations.branding.font,Couleur du texte
+admin.organizations.branding.iconUrl,URL de l'icône
+admin.organizations.branding.light,Thème clair
+admin.organizations.branding.logoUrl,URL du logo
+admin.organizations.branding.preview,Aperçu
+admin.organizations.branding.primary,Couleur principale
+admin.organizations.branding.privacyUrl,URL de la politique de confidentialité
+admin.organizations.branding.saved,La personnalisation a été enregistrée.
+admin.organizations.branding.termsUrl,URL des conditions d'utilisation
+admin.organizations.branding.themeMode,Thème par défaut
+admin.organizations.branding.title,Personnalisation
+admin.organizations.branding.warn,Couleur d'avertissement
+admin.organizations.branding.watermark,Masquer le filigrane Authworks
+admin.organizations.detail.created,Créé
+admin.organizations.detail.realm,Realm
+admin.organizations.detail.settingsDescription,Contrôlez le nom de l'organisation et son statut de cycle de vie.
+admin.organizations.detail.settingsTitle,Paramètres de l'organisation
+admin.organizations.detail.updated,Dernière mise à jour
+admin.organizations.domains.claim,Revendiquer le domaine
+admin.organizations.domains.claimed,{domain} a été revendiqué et attend une vérification.
+admin.organizations.domains.description,Les domaines vérifiés permettent aux personnes de trouver cette organisation à partir de leur adresse e-mail.
+admin.organizations.domains.discovery,Aperçu de la détection
+admin.organizations.domains.discoveryDescription,Vérifiez vers quelle organisation un domaine est actuellement résolu lors de la connexion.
+admin.organizations.domains.discoveryFound,{domain} correspond à {organization}.
+admin.organizations.domains.discoveryMissing,{domain} ne correspond à aucune organisation.
+admin.organizations.domains.domain,Domaine
+admin.organizations.domains.empty,Cette organisation n'a pas encore revendiqué de domaine.
+admin.organizations.domains.primary,Domaine principal
+admin.organizations.domains.remove,Supprimer le domaine
+admin.organizations.domains.removed,Le domaine a été supprimé.
+admin.organizations.domains.title,Domaines et détection
+admin.organizations.domains.unverified,En attente de vérification
+admin.organizations.domains.verificationRecord,"Ajoutez cet enregistrement DNS TXT, puis vérifiez."
+admin.organizations.domains.verified,Verified
+admin.organizations.domains.verify,Vérifier le domaine
+admin.organizations.domains.verifyDone,Le domaine a été vérifié.
+admin.organizations.invitations.create,Inviter une personne
+admin.organizations.invitations.description,Invitez des personnes par e-mail et suivez les invitations encore en attente.
+admin.organizations.invitations.email,Email address
+admin.organizations.invitations.empty,Aucune invitation n'a été envoyée pour cette organisation.
+admin.organizations.invitations.expires,Expire
+admin.organizations.invitations.revoke,Révoquer l'invitation
+admin.organizations.invitations.revoked,L'invitation a été révoquée.
+admin.organizations.invitations.sent,L'invitation a été créée.
+admin.organizations.invitations.title,Invitations
+admin.organizations.invitations.tokenDismiss,J'ai enregistré ce lien
+admin.organizations.invitations.tokenOnce,Ce lien d'invitation n'est affiché qu'une seule fois. Partagez-le avec la personne invitée.
+admin.organizations.invitations.tokenTitle,Lien d'invitation
+admin.organizations.lifecycle.activate,Réactiver l'organisation
+admin.organizations.lifecycle.changed,Le statut de cycle de vie de l'organisation a été modifié.
+admin.organizations.lifecycle.deactivate,Désactiver l'organisation
+admin.organizations.lifecycle.remove,Supprimer l'organisation
+admin.organizations.list.create,Créer une organisation
+admin.organizations.list.description,"Les organisations regroupent les personnes, les domaines et la personnalisation de ce realm."
+admin.organizations.list.empty,Aucune organisation n'existe encore dans ce realm.
+admin.organizations.list.name,Nom de l'organisation
+admin.organizations.list.search,Rechercher des organisations
+admin.organizations.list.title,Organisations
+admin.organizations.memberships.add,Ajouter un membre
+admin.organizations.memberships.added,Le membre a été ajouté.
+admin.organizations.memberships.description,Les personnes de cette organisation et les rôles fixes qui leur ont été attribués.
+admin.organizations.memberships.empty,Cette organisation n'a pas encore de membres.
+admin.organizations.memberships.remove,Supprimer le membre
+admin.organizations.memberships.removed,Le membre a été supprimé.
+admin.organizations.memberships.roles,Rôles
+admin.organizations.memberships.rolesFixed,Les rôles sont fixés par Authworks et ne peuvent pas être renommés.
+admin.organizations.memberships.title,Membres et rôles
+admin.organizations.memberships.updated,Les rôles du membre ont été mis à jour.
+admin.organizations.memberships.user,Utilisateur
+admin.organizations.memberships.userId,ID utilisateur
+admin.organizations.pageNext,Page suivante
+admin.organizations.pagePrevious,Page précédente
+admin.organizations.permissionDenied,Vous n'avez pas la permission de voir ou de modifier cette organisation.
+admin.organizations.permissionDeniedTitle,Accès indisponible
+admin.organizations.policy.description,Choisissez les méthodes de connexion autorisées et les fournisseurs configurés qui apparaissent.
+admin.organizations.policy.domainDiscovery,Détecter l'organisation à partir d'un domaine de messagerie
+admin.organizations.policy.emailOtp,Code à usage unique par e-mail
+admin.organizations.policy.externalIdentity,Fournisseurs d'identité externes
+admin.organizations.policy.inherited,Hérité du realm
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,Mot de passe
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,Inscription en libre-service
+admin.organizations.policy.saved,La politique de connexion a été enregistrée.
+admin.organizations.policy.title,Politique de connexion
+admin.organizations.providers.allowAccountCreation,Créer automatiquement des comptes pour les nouvelles personnes
+admin.organizations.providers.clientId,ID client
+admin.organizations.providers.clientSecret,Secret client
+admin.organizations.providers.create,Ajouter un fournisseur
+admin.organizations.providers.created,Le fournisseur a été configuré.
+admin.organizations.providers.description,"Fournisseurs Google, GitHub et Microsoft configurés pour cette organisation."
+admin.organizations.providers.disable,Désactiver le fournisseur
+admin.organizations.providers.disabled,Le fournisseur a été désactivé.
+admin.organizations.providers.displayName,Display name
+admin.organizations.providers.empty,Aucun fournisseur d'identité externe n'est encore configuré.
+admin.organizations.providers.redirectUri,URI de redirection
+admin.organizations.providers.rotateSecret,Remplacer le secret client
+admin.organizations.providers.secretRotated,Le secret client a été remplacé.
+admin.organizations.providers.secretWriteOnly,Le secret client stocké n'est jamais affiché. Saisissez une nouvelle valeur pour le remplacer.
+admin.organizations.providers.title,Fournisseurs d'identité
+admin.organizations.providers.type,Fournisseur
+admin.organizations.providers.updated,Le fournisseur a été mis à jour.
+admin.organizations.renamed,L'organisation a été renommée.
+admin.organizations.status,Statut
+admin.overview.description,"Identité, domaines et cycle de vie du domaine de sécurité que vous administrez."
+admin.overview.sessionTitle,Session administrateur
+admin.overview.title,Aperçu du domaine de sécurité
+admin.projects.access.description,Les rôles que cet administrateur détient effectivement sur le projet en ce moment.
+admin.projects.access.empty,Aucun rôle de projet n'est effectif dans le contexte organisationnel actuel.
+admin.projects.access.grantedOrganization,Accordé via l'organisation
+admin.projects.access.permissionDescription,Les rôles fixes et leurs permissions sont définis par Authworks et ne peuvent pas être modifiés.
+admin.projects.access.permissionTitle,Rôles et permissions fixes
+admin.projects.access.roleKeys,Rôles de projet effectifs
+admin.projects.access.title,Accès effectif
+admin.projects.applications.create,Ajouter une application
+admin.projects.applications.description,Applications qui s'authentifient auprès de ce projet.
+admin.projects.applications.empty,Ce projet n'a pas encore d'applications.
+admin.projects.applications.name,Nom de l'application
+admin.projects.applications.title,Applications
+admin.projects.applications.type,Type d'application
+admin.projects.crossTenant,Cette ressource appartient à un autre realm et n'est pas disponible ici.
+admin.projects.detail.authorizationRequired,Autorisation requise
+admin.projects.detail.created,Créé
+admin.projects.detail.organization,Organisation
+admin.projects.detail.projectAccessRequired,Accès au projet requis
+admin.projects.detail.settingsDescription,Contrôlez le nom du projet et la manière dont l'accès est appliqué.
+admin.projects.detail.settingsTitle,Paramètres du projet
+admin.projects.detail.updated,Dernière mise à jour
+admin.projects.grants.create,Accorder l'accès à une organisation
+admin.projects.grants.description,Accordez à une autre organisation l'accès à ce projet et choisissez les rôles qu'elle reçoit.
+admin.projects.grants.empty,Aucune organisation n'a reçu l'accès à ce projet.
+admin.projects.grants.grantedOrganization,Organisation bénéficiaire
+admin.projects.grants.roleKeys,Rôles accordés
+admin.projects.grants.title,Attributions d'organisation
+admin.projects.lifecycle.activate,Activer
+admin.projects.lifecycle.deactivate,Désactiver
+admin.projects.lifecycle.remove,Remove
+admin.projects.list.create,Créer un projet
+admin.projects.list.description,"Les projets regroupent les applications, les rôles et les attributions d'une organisation."
+admin.projects.list.empty,Aucun projet n'existe encore dans ce realm.
+admin.projects.list.name,Nom du projet
+admin.projects.list.search,Rechercher des projets
+admin.projects.list.title,Projets
+admin.projects.pageNext,Page suivante
+admin.projects.pagePrevious,Page précédente
+admin.projects.permissionDenied,Vous n'avez pas la permission de voir ou de modifier ces informations de projet.
+admin.projects.roles.create,Créer un rôle
+admin.projects.roles.description,Les rôles que ce projet peut attribuer aux organisations et à leurs membres.
+admin.projects.roles.displayName,Display name
+admin.projects.roles.empty,Ce projet ne définit pas encore de rôles.
+admin.projects.roles.group,Groupe
+admin.projects.roles.key,Clé du rôle
+admin.projects.roles.title,Rôles du projet
+admin.projects.saved,{name} a été enregistré.
+admin.projects.status,Statut
+admin.realm.confirmLabel,Saisissez {name} pour confirmer
+admin.realm.confirmMismatch,Le nom du domaine de sécurité ne correspond pas.
+admin.realm.created,Créé
+admin.realm.dangerZone,Zone sensible
+admin.realm.description,Configuration d'identité et de connexion du domaine de sécurité que vous administrez.
+admin.realm.disable,Désactiver le domaine de sécurité
+admin.realm.disableConfirm,Désactiver ce domaine de sécurité arrête la connexion pour toutes ses applications. Continuer ?
+admin.realm.disableWarning,Désactiver ce domaine de sécurité arrête immédiatement la connexion et la délivrance de jetons pour toutes ses applications.
+admin.realm.disabled,Le domaine de sécurité a été désactivé.
+admin.realm.domainRequired,Saisissez au moins un domaine.
+admin.realm.domains,Domaines
+admin.realm.domainsHint,Séparez les domaines par des virgules. Le premier domaine est le domaine principal.
+admin.realm.enable,Activer le domaine de sécurité
+admin.realm.enableDescription,Ce domaine de sécurité est désactivé. Activez-le pour rétablir la connexion et la délivrance de jetons.
+admin.realm.enabled,Le domaine de sécurité a été activé.
+admin.realm.identifier,Identifiant du domaine de sécurité
+admin.realm.invalid,Saisissez un nom et au moins un domaine.
+admin.realm.lifecycleTitle,Cycle de vie du domaine de sécurité
+admin.realm.name,Nom du domaine de sécurité
+admin.realm.nameRequired,Saisissez un nom de domaine de sécurité.
+admin.realm.permissionDenied,Vous n'avez pas l'autorisation de modifier ce domaine de sécurité.
+admin.realm.primaryDomain,Domaine principal
+admin.realm.save,Enregistrer les paramètres
+admin.realm.saved,Les paramètres ont été enregistrés.
+admin.realm.settingsDescription,Modifiez le nom et les domaines qui pointent vers ce domaine de sécurité.
+admin.realm.settingsTitle,Paramètres généraux
+admin.realm.status,Statut
+admin.realm.statusActive,Actif
+admin.realm.statusDisabled,Désactivé
+admin.realm.title,Paramètres du domaine de sécurité
+admin.realm.updated,Dernière mise à jour
+admin.session.expired,Votre session administrateur a expiré
+admin.signIn.activeTitle,Session administrateur active
+admin.signIn.credential,Identifiant administrateur d'amorçage
+admin.signIn.credentialInvalid,Saisissez l'identifiant administrateur d'amorçage complet.
+admin.signIn.credentialNotStored,L'identifiant est échangé contre une courte session de navigateur et n'est jamais stocké dans ce navigateur.
+admin.signIn.description,Échangez l'identifiant d'amorçage fourni par l'opérateur contre une courte session administrateur.
+admin.signIn.expiresAt,Cette session expire le {date}.
+admin.signIn.signedOutDetail,La session administrateur a été terminée sur cet appareil.
+admin.signIn.signedOutTitle,Déconnecté
+admin.signIn.subject,Sujet
+admin.signIn.subjectType,Type de sujet
+admin.signIn.title,Connexion administrateur
+admin.users.count,{count} utilisateurs
+admin.users.create,Créer un utilisateur
+admin.users.createDescription,Ajoutez un utilisateur humain au realm actuel.
+admin.users.createSubmit,Créer
+admin.users.created,{userName} a été créé.
+admin.users.dangerZone,Zone sensible
+admin.users.delete,Supprimer l'utilisateur
+admin.users.deleteConfirm,Supprimer définitivement {userName} ?
+admin.users.deleteWarning,La suppression de cet utilisateur révoque immédiatement ses sessions et ses accès.
+admin.users.deleted,{userName} a été supprimé.
+admin.users.description,Identités humaines dans le realm actuel.
+admin.users.detailTitle,Détail de l'utilisateur
+admin.users.displayName,Display name
+admin.users.displayNameRequired,Enter a display name.
+admin.users.email,Email address
+admin.users.empty,Aucun utilisateur ne correspond au filtre actuel.
+admin.users.firstName,First name
+admin.users.invalid,Saisissez une adresse e-mail et un nom d'utilisateur valides.
+admin.users.lastName,Last name
+admin.users.lifecycle.active,Actif
+admin.users.lifecycle.deleted,Supprimé
+admin.users.lifecycle.inactive,Inactif
+admin.users.lifecycle.initial,Initial
+admin.users.lifecycle.locked,Verrouillé
+admin.users.lifecycle.suspended,Suspendu
+admin.users.lifecycleChanged,Le statut de l'utilisateur est maintenant {state}.
+admin.users.lifecycleConfirm,Définir {userName} sur {state} ?
+admin.users.lifecycleDescription,Définissez si cet utilisateur peut se connecter.
+admin.users.lifecycleTitle,Cycle de vie
+admin.users.markUnverified,Marquer comme non vérifié
+admin.users.markVerified,Marquer comme vérifié
+admin.users.missingId,Cet utilisateur n'a pas pu être résolu à partir de l'adresse.
+admin.users.nickName,Nickname
+admin.users.preferredLanguage,Preferred language
+admin.users.profileSave,Enregistrer le profil
+admin.users.profileSaved,Le profil de l'utilisateur a été enregistré.
+admin.users.profileTitle,Profil
+admin.users.search,Rechercher des utilisateurs
+admin.users.searchPlaceholder,"Filtrer par nom d'utilisateur, e-mail ou identifiant"
+admin.users.state,Statut
+admin.users.title,Utilisateurs
+admin.users.unverified,Non vérifié
+admin.users.updated,Dernière mise à jour {date}
+admin.users.userName,Username
+admin.users.verification,Vérification
+admin.users.verificationChanged,Le statut de vérification est maintenant {state}.
+admin.users.verificationDescription,Contrôlez si l'adresse e-mail de cet utilisateur est considérée comme vérifiée.
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verified
+app.name,Authworks
+common.back,Retour
+common.cancel,Annuler
+common.close,Fermer
+common.continue,Continuer
+common.decline,Decline
+common.error,Une erreur s’est produite.
+common.language,Langue
+common.loading,Chargement
+common.retry,Réessayer
+common.revoke,Revoke
+common.save,Enregistrer
+common.signIn,Se connecter
+common.signInWithProvider,Se connecter avec {provider}
+common.signOut,Se déconnecter
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,Choisissez comment vous connecter à {organization}.
+login.chooser.emailOtpDetail,Recevoir un code à usage unique par e-mail
+login.chooser.emailOtpLabel,Code e-mail
+login.chooser.passkeyDetail,Utiliser le verrouillage de l’écran de votre appareil ou une clé de sécurité
+login.chooser.passkeyLabel,Clé d’accès
+login.chooser.passwordDetail,Utiliser le mot de passe de votre compte
+login.chooser.passwordLabel,Mot de passe
+login.chooser.providerDetail,Continuer avec un compte connecté
+login.chooser.providerLabel,Continuer avec {provider}
+login.chooser.register,Créer un compte
+login.chooser.title,Se connecter
+login.chooser.useRecent,Utiliser un compte récent
+login.common.back,Retour aux options de connexion
+login.common.legal,"En continuant, vous reconnaissez les {terms} et la {privacy}."
+login.common.privacy,Politique de confidentialité
+login.common.terms,Conditions d’utilisation
+login.common.working,Traitement en cours…
+login.emailOtp.codeDescription,Saisissez le code à six chiffres envoyé à {email}.
+login.emailOtp.codeTitle,Saisissez votre code e-mail
+login.emailOtp.description,Nous vous enverrons un code à usage unique par e-mail au lieu de vous demander un mot de passe.
+login.emailOtp.resend,Envoyer un nouveau code
+login.emailOtp.send,Envoyer le code
+login.emailOtp.title,Se connecter avec un code e-mail
+login.emailOtp.verify,Vérifier le code
+login.error.codeRequired,Saisissez le code de vérification à six chiffres.
+login.error.credentialsRequired,Saisissez votre nom d’utilisateur et votre mot de passe.
+login.error.emailRequired,Saisissez une adresse e-mail valide.
+login.error.enrollmentMissing,Commencez la configuration de l’application d’authentification avant de confirmer un code.
+login.error.nameRequired,Saisissez le nom à afficher sur votre compte.
+login.error.passwordMismatch,Les mots de passe ne correspondent pas.
+login.error.passwordTooShort,Le mot de passe doit comporter au moins 8 caractères.
+login.error.recoveryCodeRequired,Saisissez l’un de vos codes de récupération enregistrés.
+login.error.tokenMissing,Ouvrez le lien complet reçu par e-mail pour continuer.
+login.logout.description,Vous pouvez mettre fin à cette session sur cet appareil.
+login.logout.doneDescription,Vous êtes déconnecté de {organization}.
+login.logout.doneTitle,Déconnexion effectuée
+login.logout.submit,Se déconnecter
+login.logout.title,Se déconnecter de {organization}
+login.mfa.description,Choisissez comment confirmer votre identité.
+login.mfa.emailOtp,Code e-mail
+login.mfa.emailOtpDescription,Saisissez le code à six chiffres envoyé à votre adresse e-mail.
+login.mfa.passkey,Clé d’accès
+login.mfa.recoveryCode,Code de récupération
+login.mfa.recoveryCodeDescription,Utilisez l’un des codes à usage unique enregistrés lors de la configuration de la vérification.
+login.mfa.recoveryCodeLabel,Code de récupération
+login.mfa.title,Validation en deux étapes
+login.mfa.totp,Application d’authentification
+login.mfa.totpDescription,Saisissez le code à six chiffres de votre application d’authentification.
+login.mfa.verificationCode,Code de vérification
+login.mfa.verify,Vérifier
+login.passkey.description,"Confirmez avec le verrouillage de l’écran, votre empreinte digitale ou une clé de sécurité."
+login.passkey.submit,Continuer avec la clé d’accès
+login.passkey.title,Se connecter avec une clé d’accès
+login.passkey.unsupported,Ce navigateur ou cet appareil ne peut pas utiliser les clés d’accès. Choisissez une autre méthode de connexion.
+login.password.changeDescription,Choisissez un nouveau mot de passe avant de continuer.
+login.password.changeTitle,Mettre à jour votre mot de passe
+login.password.confirm,Confirmer le mot de passe
+login.password.current,Mot de passe actuel
+login.password.description,Saisissez les identifiants de votre compte {organization}.
+login.password.forgot,Mot de passe oublié ?
+login.password.hide,Masquer le mot de passe
+login.password.identifier,Nom d’utilisateur ou adresse e-mail
+login.password.label,Mot de passe
+login.password.new,Nouveau mot de passe
+login.password.show,Afficher le mot de passe
+login.password.submit,Se connecter
+login.password.title,Saisissez votre mot de passe
+login.provider.description,"Vous allez continuer sur {provider}, puis revenir ici une fois terminé."
+login.provider.submit,Continuer avec {provider}
+login.provider.title,Continuer avec {provider}
+login.recent.description,Continuer avec un compte utilisé sur cet appareil.
+login.recent.other,Utiliser un autre compte
+login.recent.title,Choisir un compte
+login.recovery.completeDescription,Se connecter avec votre nouveau mot de passe
+login.recovery.completeTitle,Mot de passe mis à jour
+login.recovery.description,Saisissez votre adresse e-mail et nous vous enverrons les instructions de récupération si un compte existe.
+login.recovery.resetDescription,Choisissez un nouveau mot de passe pour votre compte.
+login.recovery.resetSubmit,Mettre à jour le mot de passe
+login.recovery.resetTitle,Définir un nouveau mot de passe
+login.recovery.sentDescription,"Si un compte correspond à cette adresse, les instructions de récupération vont vous parvenir. Le lien expire bientôt."
+login.recovery.sentTitle,Consultez votre messagerie
+login.recovery.submit,Envoyer les instructions de récupération
+login.recovery.title,Réinitialiser votre mot de passe
+login.register.description,Créez un compte pour {organization}.
+login.register.displayName,Nom complet
+login.register.doneDescription,Confirmez votre adresse e-mail avec le lien envoyé à {email}.
+login.register.doneTitle,Confirmer votre adresse e-mail
+login.register.email,Adresse e-mail
+login.register.signIn,Vous avez déjà un compte ?
+login.register.submit,Créer un compte
+login.register.title,Créer votre compte
+login.register.userName,Nom d’utilisateur
+login.signedIn.description,Vous êtes connecté à {organization}.
+login.signedIn.title,Connecté
+login.status.loading,Préparation de la connexion
+login.status.unavailableDescription,Cette demande de connexion ne peut pas être effectuée. Revenez à l’application et réessayez.
+login.status.unavailableTitle,Connexion indisponible
+login.totpEnroll.description,"Ajoutez cette clé de configuration à votre application d’authentification, puis saisissez le code généré. La clé ne sera affichée que maintenant."
+login.totpEnroll.start,Afficher la clé de configuration
+login.totpEnroll.submit,Terminer la configuration
+login.totpEnroll.title,Configurer une application d’authentification
+login.verify.description,Confirmez l’adresse e-mail de votre compte.
+login.verify.submit,Confirmer l’adresse e-mail
+login.verify.title,Vérifier votre adresse e-mail
+login.verify.verifiedDescription,{email} est confirmée. Vous pouvez maintenant vous connecter.
+login.verify.verifiedTitle,Adresse e-mail confirmée

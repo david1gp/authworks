@@ -1,7 +1,13 @@
+import { Show } from "solid-js"
+import { DemoLoginDirectory } from "../../demo/ui/DemoLoginDirectory.js"
+import { LoginDemoAdapter } from "./LoginDemoAdapter.js"
 import { loginDemoAppStateCreate } from "./loginDemoAppStateCreate.js"
-import { LoginDemoScreen } from "./LoginDemoScreen.js"
 
 export function LoginDemoApp() {
   const state = loginDemoAppStateCreate()
-  return <LoginDemoScreen state={state} />
+  return (
+    <Show when={!state.isDirectory()} fallback={<DemoLoginDirectory />}>
+      <LoginDemoAdapter state={state.demo} />
+    </Show>
+  )
 }

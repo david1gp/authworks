@@ -1,0 +1,682 @@
+key,ru
+account.access.accepted,Invitation accepted
+account.access.active,Active organization
+account.access.consentDescription,Applications that can access information from your account.
+account.access.consentEmpty,No applications have access to this account.
+account.access.consentRevoked,Application access was revoked.
+account.access.created,Granted {date}
+account.access.declined,Invitation declined
+account.access.email,Email
+account.access.error,This account information could not be loaded.
+account.access.expired,This invitation has expired.
+account.access.invitationDescription,Review the organization and roles before you respond.
+account.access.invitationEmpty,There are no pending invitations for this account.
+account.access.invitationFor,Invitation for {email}
+account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationReplay,This invitation was already used or is no longer available.
+account.access.membership,Membership roles
+account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationEmpty,This account does not belong to an organization.
+account.access.permission,You do not have permission to perform this action.
+account.access.roles,Roles: {roles}
+account.access.scopes,Permissions: {scopes}
+account.access.switchOrganization,Switch organization
+account.access.switched,Organization context changed to {organization}.
+account.delete.confirmLabel,Enter {email} to confirm
+account.delete.dangerZone,Danger zone
+account.delete.deletedDetail,Your account and access have been permanently removed.
+account.delete.deletedTitle,Account deleted
+account.delete.emailMismatch,The email address does not match.
+account.delete.submit,Delete account permanently
+account.delete.title,Permanently delete this account
+account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.directory.title,Your account
+account.factors.addTotp,Add authenticator
+account.factors.codeCount,{count} recovery codes
+account.factors.confirm,Confirm
+account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
+account.factors.emailOtp,Email code
+account.factors.finishTotp,Finish authenticator setup
+account.factors.passkeyCount,{count} passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Recovery
+account.factors.removeTotp,Remove authenticator
+account.factors.totp,Authenticator app
+account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
+account.factors.verificationCode,Verification code
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.empty,No external identities are linked
+account.identities.unlink,Unlink
+account.passkeys.add,Add passkey
+account.passkeys.created,Created {date}
+account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
+account.passkeys.deviceBound,Device-bound passkey
+account.passkeys.empty,No passkeys registered
+account.passkeys.remove,Remove
+account.passkeys.synced,Synced passkey
+account.password.changed,Your password was changed.
+account.password.confirm,Confirm new password
+account.password.current,Current password
+account.password.description,Use a unique password that you do not use for other services.
+account.password.mismatch,The new passwords do not match.
+account.password.new,New password
+account.password.submit,Change password
+account.password.title,Change password
+account.password.tooShort,The new password must contain at least 8 characters.
+account.profile.displayName,Display name
+account.profile.displayNameRequired,Enter a display name.
+account.profile.email,Email address
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
+account.profile.emailTitle,Email address and verification
+account.profile.firstName,First name
+account.profile.lastName,Last name
+account.profile.nickName,Nickname
+account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
+account.profile.personalInformation,Personal information
+account.profile.preferredLanguage,Preferred language
+account.profile.save,Save changes
+account.profile.saved,Your profile was saved.
+account.profile.signInDescription,These details identify your account.
+account.profile.signInTitle,Sign-in details
+account.profile.userName,Username
+account.profile.verificationPending,Verification pending
+account.profile.verified,Verified
+account.recovery.generate,Generate new codes
+account.recovery.once,Copy or print these codes now. They cannot be displayed again.
+account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
+account.recovery.saveNow,Save your recovery codes now
+account.recovery.saved,I saved these codes
+account.recovery.summary,Recovery access
+account.security.label,Account security management
+account.sessionExpired,Your session has expired
+account.sessions.current,Current session
+account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
+account.sessions.empty,No active sessions
+account.sessions.lastUsed,Last used {date}
+account.sessions.revoke,Revoke session
+account.sessions.unknownDevice,Unknown device
+account.status.available,Available
+account.status.configured,Configured
+account.status.notConfigured,Not configured
+account.status.unavailable,Unavailable
+admin.common.next,Далее
+admin.common.pagination,Постраничная навигация
+admin.common.permission,У вас нет разрешения просматривать эти административные данные.
+admin.common.previous,Назад
+admin.events.actor,Субъект
+admin.events.aggregate,Агрегат
+admin.events.count,Событий: {count}
+admin.events.description,"Неизменяемая активность безопасности текущего realm, начиная с самой новой."
+admin.events.empty,Ни одно событие не соответствует текущему фильтру.
+admin.events.hide,Скрыть полезную нагрузку
+admin.events.occurred,Произошло
+admin.events.payload,Полезная нагрузка
+admin.events.redactionNotice,Секретные значения скрываются до сохранения события.
+admin.events.search,Поиск событий
+admin.events.searchPlaceholder,"Фильтр по типу, агрегату или субъекту"
+admin.events.show,Показать полезную нагрузку
+admin.events.systemActor,Система
+admin.events.title,События аудита
+admin.events.type,Тип события
+admin.machine.assuranceRequired,"Управление машинными пользователями и их учётными данными требует более надёжного и недавнего входа. Войдите снова, чтобы продолжить."
+admin.machine.assuranceRequiredTitle,Требуется более надёжный вход
+admin.machine.created,Создано
+admin.machine.credentials.apiKeyCreated,Ключ API выпущен.
+admin.machine.credentials.description,"Учётные данные, которые машинный пользователь предъявляет для получения токена доступа. Хранятся только их метаданные, но никогда само значение."
+admin.machine.credentials.empty,У этого машинного пользователя пока нет учётных данных.
+admin.machine.credentials.expires,Истекает
+admin.machine.credentials.expiresHint,"Оставьте поле пустым, чтобы выпустить учётные данные без срока действия."
+admin.machine.credentials.issue,Выпустить учётные данные
+admin.machine.credentials.issueDescription,Выпустите персональный токен доступа или ключ API. Значение показывается один раз и не может быть восстановлено.
+admin.machine.credentials.kind,Тип учётных данных
+admin.machine.credentials.kindAccessToken,Токен доступа
+admin.machine.credentials.kindApiKey,Ключ API
+admin.machine.credentials.kindClientSecret,Секрет клиента
+admin.machine.credentials.kindHint,Персональный токен доступа действует непосредственно от имени машинного пользователя. Ключ API предназначен для одной интеграции.
+admin.machine.credentials.kindToken,Персональный токен доступа
+admin.machine.credentials.name,Имя
+admin.machine.credentials.neverExpires,Не истекает
+admin.machine.credentials.onceWarning,Выпущенное значение показывается один раз. Сохраните его перед закрытием этого окна; получить его снова будет невозможно.
+admin.machine.credentials.revoke,Отозвать
+admin.machine.credentials.revoked,Учётные данные отозваны.
+admin.machine.credentials.scopes,Области
+admin.machine.credentials.scopesHint,"Разделяйте области пробелами или запятыми. Оставьте пустым, чтобы унаследовать области машинного пользователя."
+admin.machine.credentials.stateActive,Активны
+admin.machine.credentials.stateExpired,Истекли
+admin.machine.credentials.stateRevoked,Отозваны
+admin.machine.credentials.subject,Машинный пользователь
+admin.machine.credentials.title,Учётные данные и токены
+admin.machine.credentials.tokenCreated,Персональный токен доступа выпущен.
+admin.machine.credentials.unnamed,Учётные данные без имени
+admin.machine.crossTenant,Этот машинный пользователь принадлежит другому realm и здесь недоступен.
+admin.machine.lifecycle.activate,Активировать
+admin.machine.lifecycle.deactivate,Деактивировать
+admin.machine.lifecycle.description,Деактивация лишает все учётные данные возможности проходить аутентификацию. Удаление необратимо и не может быть отменено.
+admin.machine.lifecycle.remove,Удалить машинного пользователя
+admin.machine.lifecycle.title,Жизненный цикл
+admin.machine.pageNext,Следующая страница
+admin.machine.pagePrevious,Предыдущая страница
+admin.machine.permissionDenied,У вас нет разрешения просматривать или изменять машинных пользователей в этом realm.
+admin.machine.permissionDeniedTitle,Доступ недоступен
+admin.machine.secret.acknowledge,Я сохранил секрет
+admin.machine.secret.apiKeyTitle,Новый ключ API
+admin.machine.secret.clientId,Идентификатор клиента
+admin.machine.secret.clientTitle,Новый секрет клиента
+admin.machine.secret.copied,Скопировано в буфер обмена
+admin.machine.secret.copy,Копировать секрет
+admin.machine.secret.copyFailed,Буфер обмена недоступен. Выделите и скопируйте значение вручную.
+admin.machine.secret.description,Секрет клиента позволяет этому машинному пользователю обменивать учётные данные клиента на токен доступа. Он хранится только для записи и может быть лишь заменён.
+admin.machine.secret.once,"Это единственный раз, когда показывается значение для {name}. Сохраните его сейчас; восстановить его невозможно."
+admin.machine.secret.redacted,Сохранён и скрыт
+admin.machine.secret.rotate,Заменить секрет клиента
+admin.machine.secret.rotated,Секрет клиента заменён.
+admin.machine.secret.title,Секрет клиента
+admin.machine.secret.tokenTitle,Новый персональный токен доступа
+admin.machine.secret.value,Значение секрета
+admin.machine.status,Статус
+admin.machine.updated,Последнее обновление
+admin.machine.users.create,Создать машинного пользователя
+admin.machine.users.createDescription,Создайте нечеловеческую личность для службы или интеграции. Её секрет клиента показывается один раз.
+admin.machine.users.createSecretHint,Идентификатор клиента и секрет клиента выпускаются немедленно. Секрет показывается один раз и не может быть восстановлен.
+admin.machine.users.created,Машинный пользователь создан.
+admin.machine.users.description,"Нечеловеческие личности, которые проходят аутентификацию в этом realm с помощью учётных данных клиента, токенов или ключей API."
+admin.machine.users.displayName,Отображаемое имя
+admin.machine.users.empty,В этом realm пока нет машинных пользователей.
+admin.machine.users.lifecycleChanged,Статус машинного пользователя изменён.
+admin.machine.users.noScopes,Нет областей
+admin.machine.users.scopes,Области
+admin.machine.users.scopesHint,Разделяйте области пробелами или запятыми. Области сопоставляются точно.
+admin.machine.users.search,Поиск машинных пользователей
+admin.machine.users.title,Машинные пользователи
+admin.machine.users.userName,Имя пользователя
+admin.machine.users.userNameHint,Используется как идентификатор клиента при обмене учётных данных клиента.
+admin.oidc.assuranceRequired,"Для управления настройками OpenID Connect требуется более надёжный и недавний вход. Войдите снова, чтобы продолжить."
+admin.oidc.assuranceRequiredTitle,Требуется более надёжный вход
+admin.oidc.clients.consent,Согласие
+admin.oidc.clients.consentRequired,Требуется
+admin.oidc.clients.consentSkipped,Не требуется
+admin.oidc.clients.create,Зарегистрировать клиента
+admin.oidc.clients.createDescription,"Зарегистрируйте приложение, которое выполняет вход пользователей через OpenID Connect. Конфиденциальный клиент получает секрет один раз."
+admin.oidc.clients.created,Клиент зарегистрирован.
+admin.oidc.clients.description,"Приложения, которые аутентифицируют пользователей через OpenID Connect в этой области."
+admin.oidc.clients.empty,В этой области ещё не зарегистрировано ни одного клиента OpenID Connect.
+admin.oidc.clients.exactMatchHint,"По одному URI в строке. Каждое перенаправление сверяется точно, поэтому подстановочные знаки и различия в окончании отклоняются."
+admin.oidc.clients.lifecycleChanged,Состояние клиента изменено.
+admin.oidc.clients.name,Имя клиента
+admin.oidc.clients.postLogoutUris,URI перенаправления после выхода
+admin.oidc.clients.redirectUris,URI перенаправления
+admin.oidc.clients.requireConsent,Просить пользователя подтвердить это приложение
+admin.oidc.clients.saved,Клиент сохранён.
+admin.oidc.clients.scopes,Разрешённые области доступа
+admin.oidc.clients.search,Поиск клиентов
+admin.oidc.clients.settingsDescription,"Управляйте именем клиента, точными URI перенаправления, разрешёнными областями доступа и обработкой согласия."
+admin.oidc.clients.settingsTitle,Настройки клиента
+admin.oidc.clients.title,Клиенты OpenID Connect
+admin.oidc.clients.trusted,Доверенный
+admin.oidc.clients.trustedHint,Доверенный клиент полностью пропускает экран согласия. Отмечайте как доверенные только собственные приложения.
+admin.oidc.clients.type,Тип клиента
+admin.oidc.clients.typeConfidential,Конфиденциальный
+admin.oidc.clients.typeHint,"Конфиденциальный клиент хранит секрет на сервере. Публичный клиент, например мобильное или одностраничное приложение, этого не может."
+admin.oidc.clients.typePublic,Публичный
+admin.oidc.consents.client,Приложение
+admin.oidc.consents.description,"Приложения, которые пользователь подтвердил. Отзыв согласия приведёт к повторному запросу подтверждения приложения."
+admin.oidc.consents.empty,Этот пользователь пока не подтвердил ни одного приложения.
+admin.oidc.consents.granted,Подтверждено
+admin.oidc.consents.revoked,Согласие отозвано.
+admin.oidc.consents.title,Согласия приложений
+admin.oidc.consents.user,Пользователь
+admin.oidc.created,Создано
+admin.oidc.crossTenant,Этот ресурс принадлежит другой области и здесь недоступен.
+admin.oidc.documents.authorizationEndpoint,Конечная точка авторизации
+admin.oidc.documents.copied,Скопировано
+admin.oidc.documents.copy,Копировать документ
+admin.oidc.documents.description,"Документы протокола, которые Authworks публикует для этой области, ровно в том виде, в каком их читает клиентская библиотека."
+admin.oidc.documents.discoveryDescription,"Метаданные поставщика OpenID, отдаваемые с конечной точки well-known."
+admin.oidc.documents.discoveryTitle,Документ обнаружения
+admin.oidc.documents.empty,Для этой области ещё не опубликованы документы протокола.
+admin.oidc.documents.endSessionEndpoint,Конечная точка завершения сеанса
+admin.oidc.documents.issuer,Издатель
+admin.oidc.documents.jwksDescription,"Открытые ключи, которые проверяют токены, выданные этой областью."
+admin.oidc.documents.jwksTitle,Набор веб-ключей JSON
+admin.oidc.documents.jwksUri,URI JWKS
+admin.oidc.documents.open,Открыть конечную точку
+admin.oidc.documents.readOnly,Эти документы формируются из конфигурации области и ключей подписи. Их нельзя изменить здесь.
+admin.oidc.documents.showRaw,Показать исходный документ
+admin.oidc.documents.title,Документы протокола
+admin.oidc.documents.tokenEndpoint,Конечная точка токена
+admin.oidc.documents.userinfoEndpoint,Конечная точка userinfo
+admin.oidc.keys.algorithm,Алгоритм
+admin.oidc.keys.create,Добавить ключ
+admin.oidc.keys.created,Опубликован новый ключ подписи.
+admin.oidc.keys.description,"Ключи, которыми подписываются токены этой области. Ротация публикует новый ключ и выводит текущий из обращения."
+admin.oidc.keys.empty,Для этой области ещё нет ключей подписи.
+admin.oidc.keys.keyId,Идентификатор ключа
+admin.oidc.keys.privateNotice,Отображаются только метаданные открытого ключа. Закрытый ключ никогда не передаётся в браузер.
+admin.oidc.keys.retire,Вывести из обращения
+admin.oidc.keys.retired,Ключ подписи выведен из обращения.
+admin.oidc.keys.retiredAt,Выведен из обращения
+admin.oidc.keys.rotate,Ротировать ключ
+admin.oidc.keys.rotated,Ключ подписи ротирован.
+admin.oidc.keys.title,Ключи подписи
+admin.oidc.lifecycle.activate,Активировать
+admin.oidc.lifecycle.deactivate,Деактивировать
+admin.oidc.lifecycle.remove,Удалить клиента
+admin.oidc.pageNext,Следующая страница
+admin.oidc.pagePrevious,Предыдущая страница
+admin.oidc.permissionDenied,У вас нет разрешения просматривать или изменять настройки OpenID Connect в этой области.
+admin.oidc.permissionDeniedTitle,Доступ недоступен
+admin.oidc.secret.acknowledge,Я сохранил секрет
+admin.oidc.secret.copied,Скопировано в буфер обмена
+admin.oidc.secret.copy,Копировать секрет
+admin.oidc.secret.copyFailed,Буфер обмена недоступен. Выделите и скопируйте значение вручную.
+admin.oidc.secret.createdTitle,Новый секрет клиента
+admin.oidc.secret.description,"Сохранённый секрет клиента больше никогда не показывается. Ротируйте его, чтобы выдать новый, или отзовите, чтобы клиент не мог пройти аутентификацию."
+admin.oidc.secret.once,"Это единственный раз, когда показывается секрет для {client}. Сохраните его сейчас; восстановить его невозможно."
+admin.oidc.secret.publicClient,"Публичный клиент проходит аутентификацию без секрета, поэтому ротировать нечего."
+admin.oidc.secret.redacted,Сохранён и скрыт
+admin.oidc.secret.revoke,Отозвать секрет
+admin.oidc.secret.revoked,Секрет клиента отозван.
+admin.oidc.secret.rotate,Ротировать секрет
+admin.oidc.secret.rotated,Секрет клиента ротирован.
+admin.oidc.secret.rotatedTitle,Ротированный секрет клиента
+admin.oidc.secret.title,Секрет клиента
+admin.oidc.status,Состояние
+admin.oidc.updated,Последнее обновление
+admin.organizations.assuranceRequired,"Войдите снова с более надёжным способом аутентификации, чтобы изменить эту настройку организации."
+admin.organizations.assuranceRequiredTitle,Требуется более надёжный вход
+admin.organizations.branding.background,Цвет фона
+admin.organizations.branding.dark,Тёмная тема
+admin.organizations.branding.description,"Цвета, логотипы и правовые ссылки, отображаемые на размещённых страницах входа и учётной записи."
+admin.organizations.branding.font,Цвет текста
+admin.organizations.branding.iconUrl,URL значка
+admin.organizations.branding.light,Светлая тема
+admin.organizations.branding.logoUrl,URL логотипа
+admin.organizations.branding.preview,Предпросмотр
+admin.organizations.branding.primary,Основной цвет
+admin.organizations.branding.privacyUrl,URL политики конфиденциальности
+admin.organizations.branding.saved,Оформление сохранено.
+admin.organizations.branding.termsUrl,URL условий обслуживания
+admin.organizations.branding.themeMode,Тема по умолчанию
+admin.organizations.branding.title,Оформление
+admin.organizations.branding.warn,Цвет предупреждения
+admin.organizations.branding.watermark,Скрыть водяной знак Authworks
+admin.organizations.detail.created,Создано
+admin.organizations.detail.realm,Realm
+admin.organizations.detail.settingsDescription,Управляйте названием организации и её статусом жизненного цикла.
+admin.organizations.detail.settingsTitle,Настройки организации
+admin.organizations.detail.updated,Последнее обновление
+admin.organizations.domains.claim,Заявить домен
+admin.organizations.domains.claimed,{domain} заявлен и ожидает проверки.
+admin.organizations.domains.description,Подтверждённые домены позволяют людям находить эту организацию по адресу электронной почты.
+admin.organizations.domains.discovery,Предпросмотр определения
+admin.organizations.domains.discoveryDescription,"Проверьте, к какой организации в данный момент разрешается домен при входе."
+admin.organizations.domains.discoveryFound,{domain} разрешается в {organization}.
+admin.organizations.domains.discoveryMissing,{domain} не разрешается ни в одну организацию.
+admin.organizations.domains.domain,Домен
+admin.organizations.domains.empty,Эта организация ещё не заявила ни одного домена.
+admin.organizations.domains.primary,Основной домен
+admin.organizations.domains.remove,Удалить домен
+admin.organizations.domains.removed,Домен удалён.
+admin.organizations.domains.title,Домены и определение
+admin.organizations.domains.unverified,Ожидает проверки
+admin.organizations.domains.verificationRecord,"Добавьте эту DNS TXT-запись, затем выполните проверку."
+admin.organizations.domains.verified,Verified
+admin.organizations.domains.verify,Проверить домен
+admin.organizations.domains.verifyDone,Домен подтверждён.
+admin.organizations.invitations.create,Пригласить человека
+admin.organizations.invitations.description,"Приглашайте людей по электронной почте и отслеживайте, какие приглашения ещё не приняты."
+admin.organizations.invitations.email,Email address
+admin.organizations.invitations.empty,Для этой организации не отправлено ни одного приглашения.
+admin.organizations.invitations.expires,Истекает
+admin.organizations.invitations.revoke,Отозвать приглашение
+admin.organizations.invitations.revoked,Приглашение отозвано.
+admin.organizations.invitations.sent,Приглашение создано.
+admin.organizations.invitations.title,Приглашения
+admin.organizations.invitations.tokenDismiss,Я сохранил эту ссылку
+admin.organizations.invitations.tokenOnce,Эта ссылка приглашения показывается один раз. Поделитесь ею с приглашённым человеком.
+admin.organizations.invitations.tokenTitle,Ссылка приглашения
+admin.organizations.lifecycle.activate,Повторно активировать организацию
+admin.organizations.lifecycle.changed,Статус жизненного цикла организации изменён.
+admin.organizations.lifecycle.deactivate,Деактивировать организацию
+admin.organizations.lifecycle.remove,Удалить организацию
+admin.organizations.list.create,Создать организацию
+admin.organizations.list.description,"Организации объединяют людей, домены и оформление этого realm."
+admin.organizations.list.empty,В этом realm ещё нет организаций.
+admin.organizations.list.name,Название организации
+admin.organizations.list.search,Поиск организаций
+admin.organizations.list.title,Организации
+admin.organizations.memberships.add,Добавить участника
+admin.organizations.memberships.added,Участник добавлен.
+admin.organizations.memberships.description,Люди в этой организации и назначенные им фиксированные роли.
+admin.organizations.memberships.empty,В этой организации пока нет участников.
+admin.organizations.memberships.remove,Удалить участника
+admin.organizations.memberships.removed,Участник удалён.
+admin.organizations.memberships.roles,Роли
+admin.organizations.memberships.rolesFixed,Роли зафиксированы Authworks и не могут быть переименованы.
+admin.organizations.memberships.title,Участники и роли
+admin.organizations.memberships.updated,Роли участника обновлены.
+admin.organizations.memberships.user,Пользователь
+admin.organizations.memberships.userId,Идентификатор пользователя
+admin.organizations.pageNext,Следующая страница
+admin.organizations.pagePrevious,Предыдущая страница
+admin.organizations.permissionDenied,У вас нет разрешения просматривать или изменять эту организацию.
+admin.organizations.permissionDeniedTitle,Доступ недоступен
+admin.organizations.policy.description,"Выберите, какие способы входа доступны людям и какие настроенные провайдеры отображаются."
+admin.organizations.policy.domainDiscovery,Определять организацию по домену электронной почты
+admin.organizations.policy.emailOtp,Одноразовый код по электронной почте
+admin.organizations.policy.externalIdentity,Внешние провайдеры идентификации
+admin.organizations.policy.inherited,Унаследовано от realm
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,Пароль
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,Самостоятельная регистрация
+admin.organizations.policy.saved,Политика входа сохранена.
+admin.organizations.policy.title,Политика входа
+admin.organizations.providers.allowAccountCreation,Автоматически создавать учётные записи для новых людей
+admin.organizations.providers.clientId,Идентификатор клиента
+admin.organizations.providers.clientSecret,Секрет клиента
+admin.organizations.providers.create,Добавить провайдера
+admin.organizations.providers.created,Провайдер настроен.
+admin.organizations.providers.description,"Настроенные провайдеры Google, GitHub и Microsoft для этой организации."
+admin.organizations.providers.disable,Отключить провайдера
+admin.organizations.providers.disabled,Провайдер отключён.
+admin.organizations.providers.displayName,Display name
+admin.organizations.providers.empty,Внешний провайдер идентификации ещё не настроен.
+admin.organizations.providers.redirectUri,URI перенаправления
+admin.organizations.providers.rotateSecret,Заменить секрет клиента
+admin.organizations.providers.secretRotated,Секрет клиента заменён.
+admin.organizations.providers.secretWriteOnly,"Сохранённый секрет клиента никогда не отображается. Введите новое значение, чтобы заменить его."
+admin.organizations.providers.title,Провайдеры идентификации
+admin.organizations.providers.type,Провайдер
+admin.organizations.providers.updated,Провайдер обновлён.
+admin.organizations.renamed,Организация переименована.
+admin.organizations.status,Состояние
+admin.overview.description,"Идентификатор, домены и жизненный цикл области, которой вы управляете."
+admin.overview.sessionTitle,Сеанс администратора
+admin.overview.title,Обзор области
+admin.projects.access.description,"Роли, которыми этот администратор фактически обладает в проекте прямо сейчас."
+admin.projects.access.empty,В текущем контексте организации нет действующих ролей проекта.
+admin.projects.access.grantedOrganization,Предоставлено через организацию
+admin.projects.access.permissionDescription,Фиксированные роли и их разрешения определяются Authworks и не могут быть изменены.
+admin.projects.access.permissionTitle,Фиксированные роли и разрешения
+admin.projects.access.roleKeys,Действующие роли проекта
+admin.projects.access.title,Действующий доступ
+admin.projects.applications.create,Добавить приложение
+admin.projects.applications.description,"Приложения, которые аутентифицируются в этом проекте."
+admin.projects.applications.empty,В этом проекте пока нет приложений.
+admin.projects.applications.name,Название приложения
+admin.projects.applications.title,Приложения
+admin.projects.applications.type,Тип приложения
+admin.projects.crossTenant,Этот ресурс принадлежит другому realm и здесь недоступен.
+admin.projects.detail.authorizationRequired,Требуется авторизация
+admin.projects.detail.created,Создано
+admin.projects.detail.organization,Организация
+admin.projects.detail.projectAccessRequired,Требуется доступ к проекту
+admin.projects.detail.settingsDescription,"Управляйте названием проекта и тем, как применяется доступ."
+admin.projects.detail.settingsTitle,Настройки проекта
+admin.projects.detail.updated,Последнее обновление
+admin.projects.grants.create,Предоставить доступ организации
+admin.projects.grants.description,"Предоставьте другой организации доступ к этому проекту и выберите, какие роли она получит."
+admin.projects.grants.empty,Ни одной организации не предоставлен доступ к этому проекту.
+admin.projects.grants.grantedOrganization,Организация-получатель
+admin.projects.grants.roleKeys,Предоставленные роли
+admin.projects.grants.title,Предоставления организации
+admin.projects.lifecycle.activate,Активировать
+admin.projects.lifecycle.deactivate,Деактивировать
+admin.projects.lifecycle.remove,Remove
+admin.projects.list.create,Создать проект
+admin.projects.list.description,"Проекты объединяют приложения, роли и предоставления организации."
+admin.projects.list.empty,В этом realm ещё нет проектов.
+admin.projects.list.name,Название проекта
+admin.projects.list.search,Поиск проектов
+admin.projects.list.title,Проекты
+admin.projects.pageNext,Следующая страница
+admin.projects.pagePrevious,Предыдущая страница
+admin.projects.permissionDenied,У вас нет разрешения просматривать или изменять эти сведения о проекте.
+admin.projects.roles.create,Создать роль
+admin.projects.roles.description,"Роли, которые этот проект может назначать организациям и их участникам."
+admin.projects.roles.displayName,Display name
+admin.projects.roles.empty,В этом проекте пока не определены роли.
+admin.projects.roles.group,Группа
+admin.projects.roles.key,Ключ роли
+admin.projects.roles.title,Роли проекта
+admin.projects.saved,{name} сохранён.
+admin.projects.status,Состояние
+admin.realm.confirmLabel,Введите {name} для подтверждения
+admin.realm.confirmMismatch,Имя области не совпадает.
+admin.realm.created,Создано
+admin.realm.dangerZone,Опасная зона
+admin.realm.description,"Настройки идентификации и входа для области, которой вы управляете."
+admin.realm.disable,Отключить область
+admin.realm.disableConfirm,Отключение этой области остановит вход для всех её приложений. Продолжить?
+admin.realm.disableWarning,Отключение этой области немедленно останавливает вход и выдачу токенов для всех её приложений.
+admin.realm.disabled,Область отключена.
+admin.realm.domainRequired,Укажите хотя бы один домен области.
+admin.realm.domains,Домены
+admin.realm.domainsHint,Разделяйте домены запятыми. Первый домен является основным.
+admin.realm.enable,Включить область
+admin.realm.enableDescription,"Эта область отключена. Включите её, чтобы восстановить вход и выдачу токенов."
+admin.realm.enabled,Область включена.
+admin.realm.identifier,Идентификатор области
+admin.realm.invalid,Укажите имя области и хотя бы один домен.
+admin.realm.lifecycleTitle,Жизненный цикл области
+admin.realm.name,Имя области
+admin.realm.nameRequired,Укажите имя области.
+admin.realm.permissionDenied,У вас нет разрешения изменять эту область.
+admin.realm.primaryDomain,Основной домен
+admin.realm.save,Сохранить настройки
+admin.realm.saved,Настройки области сохранены.
+admin.realm.settingsDescription,"Измените имя области и домены, которые указывают на неё."
+admin.realm.settingsTitle,Общие настройки
+admin.realm.status,Состояние
+admin.realm.statusActive,Активна
+admin.realm.statusDisabled,Отключена
+admin.realm.title,Настройки области
+admin.realm.updated,Последнее обновление
+admin.session.expired,Срок вашего сеанса администратора истёк
+admin.signIn.activeTitle,Сеанс администратора активен
+admin.signIn.credential,Начальные учётные данные администратора
+admin.signIn.credentialInvalid,Введите полные начальные учётные данные администратора.
+admin.signIn.credentialNotStored,Учётные данные обмениваются на короткий сеанс браузера и никогда не сохраняются в этом браузере.
+admin.signIn.description,Обменяйте выданные оператором начальные учётные данные на короткий сеанс администратора в браузере.
+admin.signIn.expiresAt,Срок действия сеанса истекает {date}.
+admin.signIn.signedOutDetail,Сеанс администратора завершён на этом устройстве.
+admin.signIn.signedOutTitle,Выполнен выход
+admin.signIn.subject,Субъект
+admin.signIn.subjectType,Тип субъекта
+admin.signIn.title,Вход администратора
+admin.users.count,Пользователей: {count}
+admin.users.create,Создать пользователя
+admin.users.createDescription,Добавьте человека-пользователя в текущий realm.
+admin.users.createSubmit,Создать
+admin.users.created,{userName} создан.
+admin.users.dangerZone,Опасная зона
+admin.users.delete,Удалить пользователя
+admin.users.deleteConfirm,Безвозвратно удалить {userName}?
+admin.users.deleteWarning,Удаление этого пользователя немедленно отзывает его сеансы и доступ.
+admin.users.deleted,{userName} удалён.
+admin.users.description,Человеческие идентичности в текущем realm.
+admin.users.detailTitle,Сведения о пользователе
+admin.users.displayName,Display name
+admin.users.displayNameRequired,Enter a display name.
+admin.users.email,Email address
+admin.users.empty,Ни один пользователь не соответствует текущему фильтру.
+admin.users.firstName,First name
+admin.users.invalid,Введите действительный адрес электронной почты и имя пользователя.
+admin.users.lastName,Last name
+admin.users.lifecycle.active,Активна
+admin.users.lifecycle.deleted,Удалён
+admin.users.lifecycle.inactive,Неактивен
+admin.users.lifecycle.initial,Начальный
+admin.users.lifecycle.locked,Заблокирован
+admin.users.lifecycle.suspended,Приостановлен
+admin.users.lifecycleChanged,Статус пользователя теперь {state}.
+admin.users.lifecycleConfirm,Установить для {userName} значение {state}?
+admin.users.lifecycleDescription,"Определите, может ли этот пользователь входить в систему."
+admin.users.lifecycleTitle,Жизненный цикл
+admin.users.markUnverified,Отметить как неподтверждённый
+admin.users.markVerified,Отметить как подтверждённый
+admin.users.missingId,Не удалось определить этого пользователя по адресу.
+admin.users.nickName,Nickname
+admin.users.preferredLanguage,Preferred language
+admin.users.profileSave,Сохранить профиль
+admin.users.profileSaved,Профиль пользователя сохранён.
+admin.users.profileTitle,Профиль
+admin.users.search,Поиск пользователей
+admin.users.searchPlaceholder,"Фильтр по имени пользователя, электронной почте или идентификатору"
+admin.users.state,Статус
+admin.users.title,Пользователи
+admin.users.unverified,Не подтверждён
+admin.users.updated,Последнее обновление {date}
+admin.users.userName,Username
+admin.users.verification,Подтверждение
+admin.users.verificationChanged,Статус подтверждения теперь {state}.
+admin.users.verificationDescription,"Определите, считается ли адрес электронной почты этого пользователя подтверждённым."
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verified
+app.name,Authworks
+common.back,Назад
+common.cancel,Отмена
+common.close,Закрыть
+common.continue,Продолжить
+common.decline,Decline
+common.error,Что-то пошло не так.
+common.language,Язык
+common.loading,Загрузка
+common.retry,Повторить
+common.revoke,Revoke
+common.save,Сохранить
+common.signIn,Войти
+common.signInWithProvider,Войти с помощью {provider}
+common.signOut,Выйти
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,"Выберите, как вы хотите войти в {organization}."
+login.chooser.emailOtpDetail,Получите одноразовый код на электронную почту
+login.chooser.emailOtpLabel,Код электронной почты
+login.chooser.passkeyDetail,Используйте блокировку экрана вашего устройства или ключ безопасности.
+login.chooser.passkeyLabel,Ключ доступа
+login.chooser.passwordDetail,Используйте пароль своей учетной записи
+login.chooser.passwordLabel,Пароль
+login.chooser.providerDetail,Продолжить с подключенной учетной записью
+login.chooser.providerLabel,Продолжить с {provider}
+login.chooser.register,Завести аккаунт
+login.chooser.title,Войти
+login.chooser.useRecent,Использовать недавнюю учетную запись
+login.common.back,Вернуться к параметрам входа
+login.common.legal,"Продолжая, вы подтверждаете {terms} и {privacy}."
+login.common.privacy,политика конфиденциальности
+login.common.terms,Условия использования
+login.common.working,Работающий…
+login.emailOtp.codeDescription,"Введите шестизначный код, который мы отправили на {email}."
+login.emailOtp.codeTitle,Введите свой адрес электронной почты
+login.emailOtp.description,Мы отправим вам по электронной почте одноразовый код вместо запроса пароля.
+login.emailOtp.resend,Отправить новый код
+login.emailOtp.send,Отправить код
+login.emailOtp.title,Войдите с помощью кода электронной почты
+login.emailOtp.verify,Подтвердите код
+login.error.codeRequired,Введите шестизначный код подтверждения.
+login.error.credentialsRequired,Введите свое имя пользователя и пароль.
+login.error.emailRequired,Введите действительный адрес электронной почты.
+login.error.enrollmentMissing,Запустите настройку аутентификатора перед подтверждением кода.
+login.error.nameRequired,"Введите имя, которое будет отображаться в вашей учетной записи."
+login.error.passwordMismatch,Пароли не совпадают.
+login.error.passwordTooShort,Пароль должен содержать не менее 8 символов.
+login.error.recoveryCodeRequired,Введите один из сохраненных кодов восстановления.
+login.error.tokenMissing,"Откройте полную ссылку из письма, чтобы продолжить."
+login.logout.description,Вы можете завершить этот сеанс на этом устройстве.
+login.logout.doneDescription,Вы вышли из {organization}.
+login.logout.doneTitle,Вышел из системы
+login.logout.submit,выход
+login.logout.title,Выйдите из {organization}
+login.mfa.description,"Выберите, как подтвердить, что это вы."
+login.mfa.emailOtp,Код электронной почты
+login.mfa.emailOtpDescription,"Введите шестизначный код, который мы отправили на ваш адрес электронной почты."
+login.mfa.passkey,Ключ доступа
+login.mfa.recoveryCode,Код восстановления
+login.mfa.recoveryCodeDescription,"Используйте один из одноразовых кодов, которые вы сохранили при настройке проверки."
+login.mfa.recoveryCodeLabel,Код восстановления
+login.mfa.title,двухэтапная проверка
+login.mfa.totp,Приложение для аутентификации
+login.mfa.totpDescription,Введите шестизначный код из приложения для аутентификации.
+login.mfa.verificationCode,Проверочный код
+login.mfa.verify,Проверять
+login.passkey.description,"Подтвердите с помощью блокировки экрана устройства, отпечатка пальца или ключа безопасности."
+login.passkey.submit,Продолжить с ключом доступа
+login.passkey.title,Войти с помощью пароля
+login.passkey.unsupported,Этот браузер или устройство не может использовать ключи доступа. Выберите другой способ входа.
+login.password.changeDescription,"Прежде чем продолжить, выберите новый пароль."
+login.password.changeTitle,Обновите свой пароль
+login.password.confirm,Подтвердите пароль
+login.password.current,Текущий пароль
+login.password.description,Введите учетные данные для своей учетной записи {organization}.
+login.password.forgot,Забыли пароль?
+login.password.hide,Скрыть пароль
+login.password.identifier,Имя пользователя или адрес электронной почты
+login.password.label,Пароль
+login.password.new,Новый пароль
+login.password.show,Показать пароль
+login.password.submit,Войти
+login.password.title,Введите свой пароль
+login.provider.description,"Вы продолжите работу с {provider} и вернетесь сюда, когда закончите."
+login.provider.submit,Продолжить с {provider}
+login.provider.title,Продолжить с {provider}
+login.recent.description,"Продолжайте использовать учетную запись, которую вы использовали на этом устройстве."
+login.recent.other,Использовать другую учетную запись
+login.recent.title,Выберите учетную запись
+login.recovery.completeDescription,"Войдите в систему, используя новый пароль."
+login.recovery.completeTitle,Пароль обновлен
+login.recovery.description,"Введите свой адрес электронной почты, и мы вышлем инструкции по восстановлению, если учетная запись существует."
+login.recovery.resetDescription,Выберите новый пароль для своей учетной записи.
+login.recovery.resetSubmit,Обновить пароль
+login.recovery.resetTitle,Установить новый пароль
+login.recovery.sentDescription,"Если учетная запись соответствует этому адресу, инструкции по восстановлению уже в пути. Срок действия ссылки истекает в ближайшее время."
+login.recovery.sentTitle,Проверьте свою электронную почту
+login.recovery.submit,Отправить инструкции по восстановлению
+login.recovery.title,Сбросить пароль
+login.register.description,Создайте учетную запись для {organization}.
+login.register.displayName,Полное имя
+login.register.doneDescription,"Подтвердите свой адрес электронной почты, используя ссылку, которую мы отправили на {email}."
+login.register.doneTitle,Подтвердите свой адрес электронной почты
+login.register.email,Адрес электронной почты
+login.register.signIn,У вас уже есть аккаунт?
+login.register.submit,Зарегистрироваться
+login.register.title,Создайте свою учетную запись
+login.register.userName,Имя пользователя
+login.signedIn.description,Вы вошли в систему {organization}.
+login.signedIn.title,Вошёл в систему
+login.status.loading,Подготовка входа в систему
+login.status.unavailableDescription,Этот запрос на вход не может быть выполнен. Вернитесь в приложение и повторите попытку.
+login.status.unavailableTitle,Вход недоступен
+login.totpEnroll.description,"Добавьте этот ключ настройки в свое приложение для аутентификации, а затем введите сгенерированный им код. Ключ отображается только сейчас."
+login.totpEnroll.start,Показать ключ настройки
+login.totpEnroll.submit,Завершить настройку
+login.totpEnroll.title,Настройте приложение для аутентификации
+login.verify.description,Подтвердите адрес электронной почты для вашей учетной записи.
+login.verify.submit,Подтвердите адрес электронной почты
+login.verify.title,Подтвердите свой адрес электронной почты
+login.verify.verifiedDescription,{email} подтвержден. Вы можете войти в систему сейчас.
+login.verify.verifiedTitle,Адрес электронной почты подтвержден

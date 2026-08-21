@@ -1,0 +1,682 @@
+key,de
+account.access.accepted,Einladung angenommen
+account.access.active,Aktive Organisation
+account.access.consentDescription,Anwendungen mit Zugriff auf Informationen aus Ihrem Konto.
+account.access.consentEmpty,Keine Anwendung hat Zugriff auf dieses Konto.
+account.access.consentRevoked,Der Anwendungszugriff wurde widerrufen.
+account.access.created,Erteilt am {date}
+account.access.declined,Einladung abgelehnt
+account.access.email,E-Mail
+account.access.error,Die Kontoinformationen konnten nicht geladen werden.
+account.access.expired,Diese Einladung ist abgelaufen.
+account.access.invitationDescription,Prüfen Sie Organisation und Rollen vor Ihrer Antwort.
+account.access.invitationEmpty,Für dieses Konto liegen keine Einladungen vor.
+account.access.invitationFor,Einladung für {email}
+account.access.invitationMissing,Öffnen Sie den vollständigen Einladungslink.
+account.access.invitationReplay,Diese Einladung wurde bereits verwendet oder ist nicht mehr verfügbar.
+account.access.membership,Mitgliedsrollen
+account.access.organizationDescription,Wählen Sie die Organisation aus in der Sie arbeiten.
+account.access.organizationEmpty,Dieses Konto gehört keiner Organisation an.
+account.access.permission,Sie haben keine Berechtigung für diese Aktion.
+account.access.roles,Rollen: {roles}
+account.access.scopes,Berechtigungen: {scopes}
+account.access.switchOrganization,Organisation wechseln
+account.access.switched,Organisationskontext zu {organization} geändert.
+account.delete.confirmLabel,Geben Sie zur Bestätigung {email} ein
+account.delete.dangerZone,Gefahrenbereich
+account.delete.deletedDetail,Ihr Konto und Ihre Zugriffe wurden dauerhaft entfernt.
+account.delete.deletedTitle,Konto gelöscht
+account.delete.emailMismatch,Die E-Mail-Adresse stimmt nicht überein.
+account.delete.submit,Konto dauerhaft löschen
+account.delete.title,Dieses Konto dauerhaft löschen
+account.delete.warning,Diese Aktion kann nicht rückgängig gemacht werden. Ihre Sitzungen und Zugriffe werden beendet.
+account.directory.title,Ihr Konto
+account.factors.addTotp,Authenticator hinzufügen
+account.factors.codeCount,{count} Wiederherstellungscodes
+account.factors.confirm,Bestätigen
+account.factors.description,Prüfen Sie die für Ihr Konto verfügbaren Authentifizierungsmethoden und verwalten Sie Ihre Authenticator-App.
+account.factors.emailOtp,E-Mail-Code
+account.factors.finishTotp,Authenticator-Einrichtung abschließen
+account.factors.passkeyCount,{count} Passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Wiederherstellung
+account.factors.removeTotp,Authenticator entfernen
+account.factors.totp,Authenticator-App
+account.factors.totpSecretOnce,Fügen Sie dieses Geheimnis Ihrem Authenticator hinzu und geben Sie den sechsstelligen Code ein. Dieses Einrichtungsgeheimnis wird nur jetzt angezeigt.
+account.factors.verificationCode,Bestätigungscode
+account.identities.description,"Externe Konten, die mit Ihrer Authworks-Identität verknüpft sind. Trennen Sie Konten, die Sie nicht mehr nutzen."
+account.identities.empty,Es sind keine externen Identitäten verknüpft
+account.identities.unlink,Trennen
+account.passkeys.add,Passkey hinzufügen
+account.passkeys.created,Erstellt am {date}
+account.passkeys.description,Passkeys nutzen die Bildschirmsperre Ihres Geräts oder einen Sicherheitsschlüssel für die sichere Anmeldung.
+account.passkeys.deviceBound,Gerätegebundener Passkey
+account.passkeys.empty,Keine Passkeys registriert
+account.passkeys.remove,Entfernen
+account.passkeys.synced,Synchronisierter Passkey
+account.password.changed,Ihr Passwort wurde geändert.
+account.password.confirm,Neues Passwort bestätigen
+account.password.current,Aktuelles Passwort
+account.password.description,"Verwenden Sie ein eindeutiges Passwort, das Sie für keinen anderen Dienst nutzen."
+account.password.mismatch,Die neuen Passwörter stimmen nicht überein.
+account.password.new,Neues Passwort
+account.password.submit,Passwort ändern
+account.password.title,Passwort ändern
+account.password.tooShort,Das neue Passwort muss mindestens 8 Zeichen enthalten.
+account.profile.displayName,Anzeigename
+account.profile.displayNameRequired,Geben Sie einen Anzeigenamen ein.
+account.profile.email,E-Mail-Adresse
+account.profile.emailDescription,Prüfen Sie die verifizierte Adresse für Anmeldung und Kontokommunikation.
+account.profile.emailTitle,E-Mail-Adresse und Verifizierung
+account.profile.firstName,Vorname
+account.profile.lastName,Nachname
+account.profile.nickName,Spitzname
+account.profile.personalDescription,"Halten Sie das Profil aktuell, das Anwendungen und Administratoren angezeigt wird."
+account.profile.personalInformation,Persönliche Angaben
+account.profile.preferredLanguage,Bevorzugte Sprache
+account.profile.save,Änderungen speichern
+account.profile.saved,Ihr Profil wurde gespeichert.
+account.profile.signInDescription,Diese Angaben identifizieren Ihr Konto.
+account.profile.signInTitle,Anmeldedaten
+account.profile.userName,Benutzername
+account.profile.verificationPending,Verifizierung ausstehend
+account.profile.verified,Verifiziert
+account.recovery.generate,Neue Codes erzeugen
+account.recovery.once,Kopieren oder drucken Sie diese Codes jetzt. Sie können nicht erneut angezeigt werden.
+account.recovery.remaining,{count} unbenutzte Codes verbleiben. Das Erzeugen neuer Codes macht die bisherigen ungültig.
+account.recovery.saveNow,Speichern Sie jetzt Ihre Wiederherstellungscodes
+account.recovery.saved,Ich habe diese Codes gespeichert
+account.recovery.summary,Wiederherstellungszugriff
+account.security.label,Verwaltung der Kontosicherheit
+account.sessionExpired,Ihre Sitzung ist abgelaufen
+account.sessions.current,Aktuelle Sitzung
+account.sessions.description,"Prüfen Sie Geräte, auf denen Ihr Konto angemeldet ist, und widerrufen Sie jede Sitzung, die Sie nicht kennen."
+account.sessions.empty,Keine aktiven Sitzungen
+account.sessions.lastUsed,Zuletzt verwendet {date}
+account.sessions.revoke,Sitzung widerrufen
+account.sessions.unknownDevice,Unbekanntes Gerät
+account.status.available,Verfügbar
+account.status.configured,Konfiguriert
+account.status.notConfigured,Nicht konfiguriert
+account.status.unavailable,Nicht verfügbar
+admin.common.next,Weiter
+admin.common.pagination,Seitennavigation
+admin.common.permission,"Sie haben keine Berechtigung, diese Administrationsdaten anzuzeigen."
+admin.common.previous,Zurück
+admin.events.actor,Akteur
+admin.events.aggregate,Aggregat
+admin.events.count,{count} Ereignisse
+admin.events.description,"Unveränderliche Sicherheitsaktivität für den aktuellen Realm, neueste zuerst."
+admin.events.empty,Keine Ereignisse entsprechen dem aktuellen Filter.
+admin.events.hide,Nutzdaten ausblenden
+admin.events.occurred,Aufgetreten
+admin.events.payload,Nutzdaten
+admin.events.redactionNotice,Geheime Werte werden vor dem Speichern eines Ereignisses geschwärzt.
+admin.events.search,Ereignisse durchsuchen
+admin.events.searchPlaceholder,"Nach Typ, Aggregat oder Akteur filtern"
+admin.events.show,Nutzdaten anzeigen
+admin.events.systemActor,System
+admin.events.title,Audit-Ereignisse
+admin.events.type,Ereignistyp
+admin.machine.assuranceRequired,"Für die Verwaltung von Maschinenbenutzern und deren Anmeldedaten ist eine stärkere, aktuellere Anmeldung erforderlich. Melden Sie sich erneut an, um fortzufahren."
+admin.machine.assuranceRequiredTitle,Stärkere Anmeldung erforderlich
+admin.machine.created,Erstellt
+admin.machine.credentials.apiKeyCreated,Der API-Schlüssel wurde ausgestellt.
+admin.machine.credentials.description,"Anmeldedaten, die ein Maschinenbenutzer vorlegt, um ein Access-Token zu erhalten. Es werden nur deren Metadaten gespeichert, niemals der Wert."
+admin.machine.credentials.empty,Dieser Maschinenbenutzer hat noch keine Anmeldedaten.
+admin.machine.credentials.expires,Läuft ab
+admin.machine.credentials.expiresHint,"Lassen Sie dies leer, um Anmeldedaten ohne Ablauf auszustellen."
+admin.machine.credentials.issue,Anmeldedaten ausstellen
+admin.machine.credentials.issueDescription,Stellen Sie ein persönliches Zugriffstoken oder einen API-Schlüssel aus. Der Wert wird einmalig angezeigt und kann nicht wiederhergestellt werden.
+admin.machine.credentials.kind,Art der Anmeldedaten
+admin.machine.credentials.kindAccessToken,Access-Token
+admin.machine.credentials.kindApiKey,API-Schlüssel
+admin.machine.credentials.kindClientSecret,Client-Secret
+admin.machine.credentials.kindHint,Ein persönliches Zugriffstoken handelt direkt für den Maschinenbenutzer. Ein API-Schlüssel ist für eine einzelne Integration gedacht.
+admin.machine.credentials.kindToken,Persönliches Zugriffstoken
+admin.machine.credentials.name,Name
+admin.machine.credentials.neverExpires,Läuft nicht ab
+admin.machine.credentials.onceWarning,"Der ausgestellte Wert wird einmalig angezeigt. Speichern Sie ihn, bevor Sie diesen Dialog schließen; er kann nicht erneut abgerufen werden."
+admin.machine.credentials.revoke,Widerrufen
+admin.machine.credentials.revoked,Die Anmeldedaten wurden widerrufen.
+admin.machine.credentials.scopes,Scopes
+admin.machine.credentials.scopesHint,"Trennen Sie Scopes durch Leerzeichen oder Kommas. Lassen Sie das Feld leer, um die Scopes des Maschinenbenutzers zu übernehmen."
+admin.machine.credentials.stateActive,Aktiv
+admin.machine.credentials.stateExpired,Abgelaufen
+admin.machine.credentials.stateRevoked,Widerrufen
+admin.machine.credentials.subject,Maschinenbenutzer
+admin.machine.credentials.title,Anmeldedaten und Token
+admin.machine.credentials.tokenCreated,Das persönliche Zugriffstoken wurde ausgestellt.
+admin.machine.credentials.unnamed,Unbenannte Anmeldedaten
+admin.machine.crossTenant,Dieser Maschinenbenutzer gehört zu einem anderen Realm und ist hier nicht verfügbar.
+admin.machine.lifecycle.activate,Aktivieren
+admin.machine.lifecycle.deactivate,Deaktivieren
+admin.machine.lifecycle.description,Durch die Deaktivierung können sich keine Anmeldedaten mehr authentifizieren. Das Entfernen ist endgültig und kann nicht rückgängig gemacht werden.
+admin.machine.lifecycle.remove,Maschinenbenutzer entfernen
+admin.machine.lifecycle.title,Lebenszyklus
+admin.machine.pageNext,Nächste Seite
+admin.machine.pagePrevious,Vorherige Seite
+admin.machine.permissionDenied,"Sie haben keine Berechtigung, Maschinenbenutzer in diesem Realm anzusehen oder zu ändern."
+admin.machine.permissionDeniedTitle,Zugriff nicht verfügbar
+admin.machine.secret.acknowledge,Ich habe das Secret gespeichert
+admin.machine.secret.apiKeyTitle,Neuer API-Schlüssel
+admin.machine.secret.clientId,Client-ID
+admin.machine.secret.clientTitle,Neues Client-Secret
+admin.machine.secret.copied,In die Zwischenablage kopiert
+admin.machine.secret.copy,Secret kopieren
+admin.machine.secret.copyFailed,Die Zwischenablage ist nicht verfügbar. Markieren und kopieren Sie den Wert manuell.
+admin.machine.secret.description,Mit dem Client-Secret kann dieser Maschinenbenutzer seine Client-Anmeldedaten gegen ein Access-Token eintauschen. Es wird nur schreibend gespeichert und kann ausschließlich rotiert werden.
+admin.machine.secret.once,Nur dieses eine Mal wird der Wert für {name} angezeigt. Speichern Sie ihn jetzt; er kann nicht wiederhergestellt werden.
+admin.machine.secret.redacted,Gespeichert und verborgen
+admin.machine.secret.rotate,Client-Secret rotieren
+admin.machine.secret.rotated,Das Client-Secret wurde rotiert.
+admin.machine.secret.title,Client-Secret
+admin.machine.secret.tokenTitle,Neues persönliches Zugriffstoken
+admin.machine.secret.value,Secret-Wert
+admin.machine.status,Status
+admin.machine.updated,Zuletzt aktualisiert
+admin.machine.users.create,Maschinenbenutzer erstellen
+admin.machine.users.createDescription,Erstellen Sie eine nicht-menschliche Identität für einen Dienst oder eine Integration. Ihr Client-Secret wird einmalig angezeigt.
+admin.machine.users.createSecretHint,Eine Client-ID und ein Client-Secret werden sofort ausgestellt. Das Secret wird einmalig angezeigt und kann nicht wiederhergestellt werden.
+admin.machine.users.created,Der Maschinenbenutzer wurde erstellt.
+admin.machine.users.description,"Nicht-menschliche Identitäten, die sich in diesem Realm mit Client-Anmeldedaten, Token oder API-Schlüsseln authentifizieren."
+admin.machine.users.displayName,Anzeigename
+admin.machine.users.empty,In diesem Realm existiert noch kein Maschinenbenutzer.
+admin.machine.users.lifecycleChanged,Der Status des Maschinenbenutzers wurde geändert.
+admin.machine.users.noScopes,Keine Scopes
+admin.machine.users.scopes,Scopes
+admin.machine.users.scopesHint,Trennen Sie Scopes durch Leerzeichen oder Kommas. Scopes werden exakt abgeglichen.
+admin.machine.users.search,Maschinenbenutzer suchen
+admin.machine.users.title,Maschinenbenutzer
+admin.machine.users.userName,Benutzername
+admin.machine.users.userNameHint,Wird beim Austausch von Client-Anmeldedaten als Client-ID verwendet.
+admin.oidc.assuranceRequired,"Für die Verwaltung der OpenID-Connect-Einstellungen ist eine stärkere, aktuellere Anmeldung erforderlich. Melden Sie sich erneut an, um fortzufahren."
+admin.oidc.assuranceRequiredTitle,Stärkere Anmeldung erforderlich
+admin.oidc.clients.consent,Zustimmung
+admin.oidc.clients.consentRequired,Erforderlich
+admin.oidc.clients.consentSkipped,Nicht erforderlich
+admin.oidc.clients.create,Client registrieren
+admin.oidc.clients.createDescription,"Registrieren Sie eine Anwendung, die Personen über OpenID Connect anmeldet. Ein vertraulicher Client erhält einmalig ein Secret."
+admin.oidc.clients.created,Der Client wurde registriert.
+admin.oidc.clients.description,"Anwendungen, die Personen in diesem Realm über OpenID Connect authentifizieren."
+admin.oidc.clients.empty,In diesem Realm ist noch kein OpenID-Connect-Client registriert.
+admin.oidc.clients.exactMatchHint,"Eine URI pro Zeile. Jede Weiterleitung wird exakt abgeglichen, daher werden Platzhalter und abweichende Endungen abgelehnt."
+admin.oidc.clients.lifecycleChanged,Der Status des Clients wurde geändert.
+admin.oidc.clients.name,Client-Name
+admin.oidc.clients.postLogoutUris,Weiterleitungs-URIs nach der Abmeldung
+admin.oidc.clients.redirectUris,Weiterleitungs-URIs
+admin.oidc.clients.requireConsent,Die Person um Zustimmung zu dieser Anwendung bitten
+admin.oidc.clients.saved,Der Client wurde gespeichert.
+admin.oidc.clients.scopes,Erlaubte Scopes
+admin.oidc.clients.search,Clients suchen
+admin.oidc.clients.settingsDescription,"Steuern Sie den Client-Namen, die exakten Weiterleitungs-URIs, die erlaubten Scopes und den Umgang mit der Zustimmung."
+admin.oidc.clients.settingsTitle,Client-Einstellungen
+admin.oidc.clients.title,OpenID-Connect-Clients
+admin.oidc.clients.trusted,Vertrauenswürdig
+admin.oidc.clients.trustedHint,Ein vertrauenswürdiger Client überspringt den Zustimmungsdialog vollständig. Markieren Sie nur eigene Anwendungen als vertrauenswürdig.
+admin.oidc.clients.type,Client-Typ
+admin.oidc.clients.typeConfidential,Vertraulich
+admin.oidc.clients.typeHint,"Ein vertraulicher Client bewahrt ein Secret auf einem Server auf. Ein öffentlicher Client, etwa eine Mobil- oder Single-Page-App, kann das nicht."
+admin.oidc.clients.typePublic,Öffentlich
+admin.oidc.consents.client,Anwendung
+admin.oidc.consents.description,"Anwendungen, denen eine Person zugestimmt hat. Ein Widerruf führt dazu, dass die Anwendung erneut bestätigt werden muss."
+admin.oidc.consents.empty,Diese Person hat noch keiner Anwendung zugestimmt.
+admin.oidc.consents.granted,Zugestimmt
+admin.oidc.consents.revoked,Die Zustimmung wurde widerrufen.
+admin.oidc.consents.title,Anwendungszustimmungen
+admin.oidc.consents.user,Person
+admin.oidc.created,Erstellt
+admin.oidc.crossTenant,Diese Ressource gehört zu einem anderen Realm und ist hier nicht verfügbar.
+admin.oidc.documents.authorizationEndpoint,Autorisierungs-Endpunkt
+admin.oidc.documents.copied,Kopiert
+admin.oidc.documents.copy,Dokument kopieren
+admin.oidc.documents.description,"Die Protokolldokumente, die Authworks für diesen Realm veröffentlicht, genau so, wie eine Client-Bibliothek sie liest."
+admin.oidc.documents.discoveryDescription,"Die OpenID-Provider-Metadaten, die über den Well-Known-Endpunkt ausgeliefert werden."
+admin.oidc.documents.discoveryTitle,Discovery-Dokument
+admin.oidc.documents.empty,Für diesen Realm sind noch keine Protokolldokumente veröffentlicht.
+admin.oidc.documents.endSessionEndpoint,Endpunkt zum Beenden der Sitzung
+admin.oidc.documents.issuer,Aussteller
+admin.oidc.documents.jwksDescription,"Die öffentlichen Schlüssel, mit denen von diesem Realm ausgestellte Token geprüft werden."
+admin.oidc.documents.jwksTitle,JSON Web Key Set
+admin.oidc.documents.jwksUri,JWKS-URI
+admin.oidc.documents.open,Endpunkt öffnen
+admin.oidc.documents.readOnly,Diese Dokumente werden aus der Realm-Konfiguration und den Signaturschlüsseln erzeugt. Sie können hier nicht bearbeitet werden.
+admin.oidc.documents.showRaw,Rohdokument anzeigen
+admin.oidc.documents.title,Protokolldokumente
+admin.oidc.documents.tokenEndpoint,Token-Endpunkt
+admin.oidc.documents.userinfoEndpoint,Userinfo-Endpunkt
+admin.oidc.keys.algorithm,Algorithmus
+admin.oidc.keys.create,Schlüssel hinzufügen
+admin.oidc.keys.created,Ein neuer Signaturschlüssel wurde veröffentlicht.
+admin.oidc.keys.description,"Die Schlüssel, die Token für diesen Realm signieren. Bei der Rotation wird ein neuer Schlüssel veröffentlicht und der aktuelle außer Dienst gestellt."
+admin.oidc.keys.empty,Für diesen Realm existiert noch kein Signaturschlüssel.
+admin.oidc.keys.keyId,Schlüssel-ID
+admin.oidc.keys.privateNotice,Es werden nur öffentliche Schlüsselmetadaten angezeigt. Privates Schlüsselmaterial wird nie an den Browser gesendet.
+admin.oidc.keys.retire,Außer Dienst stellen
+admin.oidc.keys.retired,Der Signaturschlüssel wurde außer Dienst gestellt.
+admin.oidc.keys.retiredAt,Außer Dienst gestellt
+admin.oidc.keys.rotate,Schlüssel rotieren
+admin.oidc.keys.rotated,Der Signaturschlüssel wurde rotiert.
+admin.oidc.keys.title,Signaturschlüssel
+admin.oidc.lifecycle.activate,Aktivieren
+admin.oidc.lifecycle.deactivate,Deaktivieren
+admin.oidc.lifecycle.remove,Client entfernen
+admin.oidc.pageNext,Nächste Seite
+admin.oidc.pagePrevious,Vorherige Seite
+admin.oidc.permissionDenied,"Sie haben keine Berechtigung, die OpenID-Connect-Einstellungen in diesem Realm anzusehen oder zu ändern."
+admin.oidc.permissionDeniedTitle,Zugriff nicht verfügbar
+admin.oidc.secret.acknowledge,Ich habe das Secret gespeichert
+admin.oidc.secret.copied,In die Zwischenablage kopiert
+admin.oidc.secret.copy,Secret kopieren
+admin.oidc.secret.copyFailed,Die Zwischenablage ist nicht verfügbar. Markieren und kopieren Sie den Wert manuell.
+admin.oidc.secret.createdTitle,Neues Client-Secret
+admin.oidc.secret.description,"Das gespeicherte Client-Secret wird nie wieder angezeigt. Rotieren Sie es, um ein neues auszustellen, oder widerrufen Sie es, damit sich der Client nicht mehr authentifizieren kann."
+admin.oidc.secret.once,Nur dieses eine Mal wird das Secret für {client} angezeigt. Speichern Sie es jetzt; es kann nicht wiederhergestellt werden.
+admin.oidc.secret.publicClient,"Ein öffentlicher Client authentifiziert sich ohne Secret, daher gibt es nichts zu rotieren."
+admin.oidc.secret.redacted,Gespeichert und verborgen
+admin.oidc.secret.revoke,Secret widerrufen
+admin.oidc.secret.revoked,Das Client-Secret wurde widerrufen.
+admin.oidc.secret.rotate,Secret rotieren
+admin.oidc.secret.rotated,Das Client-Secret wurde rotiert.
+admin.oidc.secret.rotatedTitle,Rotiertes Client-Secret
+admin.oidc.secret.title,Client-Secret
+admin.oidc.status,Status
+admin.oidc.updated,Zuletzt aktualisiert
+admin.organizations.assuranceRequired,"Melden Sie sich erneut mit einer stärkeren Authentifizierungsmethode an, um diese Organisationseinstellung zu ändern."
+admin.organizations.assuranceRequiredTitle,Stärkere Anmeldung erforderlich
+admin.organizations.branding.background,Hintergrundfarbe
+admin.organizations.branding.dark,Dunkles Design
+admin.organizations.branding.description,"Farben, Logos und rechtliche Links, die auf den Anmelde- und Kontoseiten angezeigt werden."
+admin.organizations.branding.font,Textfarbe
+admin.organizations.branding.iconUrl,Icon-URL
+admin.organizations.branding.light,Helles Design
+admin.organizations.branding.logoUrl,Logo-URL
+admin.organizations.branding.preview,Vorschau
+admin.organizations.branding.primary,Primärfarbe
+admin.organizations.branding.privacyUrl,URL der Datenschutzerklärung
+admin.organizations.branding.saved,Das Branding wurde gespeichert.
+admin.organizations.branding.termsUrl,URL der Nutzungsbedingungen
+admin.organizations.branding.themeMode,Standarddesign
+admin.organizations.branding.title,Branding
+admin.organizations.branding.warn,Warnfarbe
+admin.organizations.branding.watermark,Authworks-Wasserzeichen ausblenden
+admin.organizations.detail.created,Erstellt
+admin.organizations.detail.realm,Realm
+admin.organizations.detail.settingsDescription,Steuern Sie den Organisationsnamen und ihren Lebenszyklusstatus.
+admin.organizations.detail.settingsTitle,Organisationseinstellungen
+admin.organizations.detail.updated,Zuletzt aktualisiert
+admin.organizations.domains.claim,Domain beanspruchen
+admin.organizations.domains.claimed,{domain} wurde beansprucht und wartet auf Verifizierung.
+admin.organizations.domains.description,"Verifizierte Domains ermöglichen es Personen, diese Organisation anhand ihrer E-Mail-Adresse zu finden."
+admin.organizations.domains.discovery,Erkennungsvorschau
+admin.organizations.domains.discoveryDescription,"Prüfen Sie, zu welcher Organisation eine Domain bei der Anmeldung derzeit aufgelöst wird."
+admin.organizations.domains.discoveryFound,{domain} wird zu {organization} aufgelöst.
+admin.organizations.domains.discoveryMissing,{domain} wird zu keiner Organisation aufgelöst.
+admin.organizations.domains.domain,Domain
+admin.organizations.domains.empty,Diese Organisation hat noch keine Domain beansprucht.
+admin.organizations.domains.primary,Primäre Domain
+admin.organizations.domains.remove,Domain entfernen
+admin.organizations.domains.removed,Die Domain wurde entfernt.
+admin.organizations.domains.title,Domains und Erkennung
+admin.organizations.domains.unverified,Verifizierung ausstehend
+admin.organizations.domains.verificationRecord,Fügen Sie diesen DNS-TXT-Eintrag hinzu und verifizieren Sie dann.
+admin.organizations.domains.verified,Verifiziert
+admin.organizations.domains.verify,Domain verifizieren
+admin.organizations.domains.verifyDone,Die Domain wurde verifiziert.
+admin.organizations.invitations.create,Person einladen
+admin.organizations.invitations.description,"Laden Sie Personen per E-Mail ein und verfolgen Sie, welche Einladungen noch ausstehen."
+admin.organizations.invitations.email,E-Mail-Adresse
+admin.organizations.invitations.empty,Für diese Organisation wurden keine Einladungen versendet.
+admin.organizations.invitations.expires,Läuft ab
+admin.organizations.invitations.revoke,Einladung widerrufen
+admin.organizations.invitations.revoked,Die Einladung wurde widerrufen.
+admin.organizations.invitations.sent,Die Einladung wurde erstellt.
+admin.organizations.invitations.title,Einladungen
+admin.organizations.invitations.tokenDismiss,Ich habe diesen Link gespeichert
+admin.organizations.invitations.tokenOnce,Dieser Einladungslink wird nur einmal angezeigt. Teilen Sie ihn mit der eingeladenen Person.
+admin.organizations.invitations.tokenTitle,Einladungslink
+admin.organizations.lifecycle.activate,Organisation reaktivieren
+admin.organizations.lifecycle.changed,Der Lebenszyklusstatus der Organisation wurde geändert.
+admin.organizations.lifecycle.deactivate,Organisation deaktivieren
+admin.organizations.lifecycle.remove,Organisation entfernen
+admin.organizations.list.create,Organisation erstellen
+admin.organizations.list.description,"Organisationen bündeln die Personen, Domains und das Branding dieses Realms."
+admin.organizations.list.empty,In diesem Realm existieren noch keine Organisationen.
+admin.organizations.list.name,Organisationsname
+admin.organizations.list.search,Organisationen durchsuchen
+admin.organizations.list.title,Organisationen
+admin.organizations.memberships.add,Mitglied hinzufügen
+admin.organizations.memberships.added,Das Mitglied wurde hinzugefügt.
+admin.organizations.memberships.description,"Personen in dieser Organisation und die festen Rollen, die ihnen zugewiesen wurden."
+admin.organizations.memberships.empty,Diese Organisation hat noch keine Mitglieder.
+admin.organizations.memberships.remove,Mitglied entfernen
+admin.organizations.memberships.removed,Das Mitglied wurde entfernt.
+admin.organizations.memberships.roles,Rollen
+admin.organizations.memberships.rolesFixed,Rollen sind von Authworks festgelegt und können nicht umbenannt werden.
+admin.organizations.memberships.title,Mitglieder und Rollen
+admin.organizations.memberships.updated,Die Mitgliedsrollen wurden aktualisiert.
+admin.organizations.memberships.user,Benutzer
+admin.organizations.memberships.userId,Benutzer-ID
+admin.organizations.pageNext,Nächste Seite
+admin.organizations.pagePrevious,Vorherige Seite
+admin.organizations.permissionDenied,"Sie haben keine Berechtigung, diese Organisation anzuzeigen oder zu ändern."
+admin.organizations.permissionDeniedTitle,Zugriff nicht verfügbar
+admin.organizations.policy.description,"Wählen Sie, welche Anmeldemethoden verwendet werden dürfen und welche konfigurierten Anbieter erscheinen."
+admin.organizations.policy.domainDiscovery,Organisation über eine E-Mail-Domain erkennen
+admin.organizations.policy.emailOtp,Einmalcode per E-Mail
+admin.organizations.policy.externalIdentity,Externe Identitätsanbieter
+admin.organizations.policy.inherited,Vom Realm geerbt
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,Passwort
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,Selbstregistrierung
+admin.organizations.policy.saved,Die Anmelderichtlinie wurde gespeichert.
+admin.organizations.policy.title,Anmelderichtlinie
+admin.organizations.providers.allowAccountCreation,Konten für neue Personen automatisch anlegen
+admin.organizations.providers.clientId,Client-ID
+admin.organizations.providers.clientSecret,Client-Secret
+admin.organizations.providers.create,Anbieter hinzufügen
+admin.organizations.providers.created,Der Anbieter wurde konfiguriert.
+admin.organizations.providers.description,"Konfigurierte Google-, GitHub- und Microsoft-Anbieter für diese Organisation."
+admin.organizations.providers.disable,Anbieter deaktivieren
+admin.organizations.providers.disabled,Der Anbieter wurde deaktiviert.
+admin.organizations.providers.displayName,Anzeigename
+admin.organizations.providers.empty,Es ist noch kein externer Identitätsanbieter konfiguriert.
+admin.organizations.providers.redirectUri,Weiterleitungs-URI
+admin.organizations.providers.rotateSecret,Client-Secret ersetzen
+admin.organizations.providers.secretRotated,Das Client-Secret wurde ersetzt.
+admin.organizations.providers.secretWriteOnly,"Das gespeicherte Client-Secret wird nie angezeigt. Geben Sie einen neuen Wert ein, um es zu ersetzen."
+admin.organizations.providers.title,Identitätsanbieter
+admin.organizations.providers.type,Anbieter
+admin.organizations.providers.updated,Der Anbieter wurde aktualisiert.
+admin.organizations.renamed,Die Organisation wurde umbenannt.
+admin.organizations.status,Status
+admin.overview.description,"Identität, Domains und Lebenszyklus des Bereichs, den Sie verwalten."
+admin.overview.sessionTitle,Administratorsitzung
+admin.overview.title,Bereichsübersicht
+admin.projects.access.description,"Rollen, die dieser Administrator derzeit effektiv im Projekt besitzt."
+admin.projects.access.empty,Im aktuellen Organisationskontext sind keine Projektrollen wirksam.
+admin.projects.access.grantedOrganization,Gewährt über Organisation
+admin.projects.access.permissionDescription,Feste Rollen und ihre Berechtigungen werden von Authworks definiert und können nicht bearbeitet werden.
+admin.projects.access.permissionTitle,Feste Rollen und Berechtigungen
+admin.projects.access.roleKeys,Effektive Projektrollen
+admin.projects.access.title,Effektiver Zugriff
+admin.projects.applications.create,Anwendung hinzufügen
+admin.projects.applications.description,"Anwendungen, die sich gegenüber diesem Projekt authentifizieren."
+admin.projects.applications.empty,Dieses Projekt hat noch keine Anwendungen.
+admin.projects.applications.name,Anwendungsname
+admin.projects.applications.title,Anwendungen
+admin.projects.applications.type,Anwendungstyp
+admin.projects.crossTenant,Diese Ressource gehört zu einem anderen Realm und ist hier nicht verfügbar.
+admin.projects.detail.authorizationRequired,Autorisierung erforderlich
+admin.projects.detail.created,Erstellt
+admin.projects.detail.organization,Organisation
+admin.projects.detail.projectAccessRequired,Projektzugriff erforderlich
+admin.projects.detail.settingsDescription,Steuern Sie den Projektnamen und wie der Zugriff durchgesetzt wird.
+admin.projects.detail.settingsTitle,Projekteinstellungen
+admin.projects.detail.updated,Zuletzt aktualisiert
+admin.projects.grants.create,Organisationszugriff gewähren
+admin.projects.grants.description,"Gewähren Sie einer anderen Organisation Zugriff auf dieses Projekt und wählen Sie, welche Rollen sie erhält."
+admin.projects.grants.empty,Keiner Organisation wurde Zugriff auf dieses Projekt gewährt.
+admin.projects.grants.grantedOrganization,Berechtigte Organisation
+admin.projects.grants.roleKeys,Gewährte Rollen
+admin.projects.grants.title,Organisationszuweisungen
+admin.projects.lifecycle.activate,Aktivieren
+admin.projects.lifecycle.deactivate,Deaktivieren
+admin.projects.lifecycle.remove,Entfernen
+admin.projects.list.create,Projekt erstellen
+admin.projects.list.description,"Projekte bündeln die Anwendungen, Rollen und Zuweisungen einer Organisation."
+admin.projects.list.empty,In diesem Realm existieren noch keine Projekte.
+admin.projects.list.name,Projektname
+admin.projects.list.search,Projekte durchsuchen
+admin.projects.list.title,Projekte
+admin.projects.pageNext,Nächste Seite
+admin.projects.pagePrevious,Vorherige Seite
+admin.projects.permissionDenied,"Sie haben keine Berechtigung, diese Projektinformationen anzuzeigen oder zu ändern."
+admin.projects.roles.create,Rolle erstellen
+admin.projects.roles.description,"Rollen, die dieses Projekt Organisationen und ihren Mitgliedern zuweisen kann."
+admin.projects.roles.displayName,Anzeigename
+admin.projects.roles.empty,Dieses Projekt definiert noch keine Rollen.
+admin.projects.roles.group,Gruppe
+admin.projects.roles.key,Rollenschlüssel
+admin.projects.roles.title,Projektrollen
+admin.projects.saved,{name} wurde gespeichert.
+admin.projects.status,Status
+admin.realm.confirmLabel,Geben Sie {name} zur Bestätigung ein
+admin.realm.confirmMismatch,Der Bereichsname stimmt nicht überein.
+admin.realm.created,Erstellt
+admin.realm.dangerZone,Gefahrenbereich
+admin.realm.description,"Identitäts- und Anmeldekonfiguration für den Bereich, den Sie verwalten."
+admin.realm.disable,Bereich deaktivieren
+admin.realm.disableConfirm,Durch das Deaktivieren dieses Bereichs wird die Anmeldung für alle Anwendungen darin gestoppt. Fortfahren?
+admin.realm.disableWarning,Durch das Deaktivieren dieses Bereichs werden Anmeldung und Tokenausgabe für alle Anwendungen darin sofort gestoppt.
+admin.realm.disabled,Der Bereich wurde deaktiviert.
+admin.realm.domainRequired,Geben Sie mindestens eine Bereichsdomain ein.
+admin.realm.domains,Domains
+admin.realm.domainsHint,Trennen Sie Domains durch Kommas. Die erste Domain ist die primäre Domain.
+admin.realm.enable,Bereich aktivieren
+admin.realm.enableDescription,"Dieser Bereich ist deaktiviert. Aktivieren Sie ihn, um Anmeldung und Tokenausgabe wiederherzustellen."
+admin.realm.enabled,Der Bereich wurde aktiviert.
+admin.realm.identifier,Bereichskennung
+admin.realm.invalid,Geben Sie einen Bereichsnamen und mindestens eine Domain ein.
+admin.realm.lifecycleTitle,Bereichslebenszyklus
+admin.realm.name,Bereichsname
+admin.realm.nameRequired,Geben Sie einen Bereichsnamen ein.
+admin.realm.permissionDenied,"Sie haben keine Berechtigung, diesen Bereich zu ändern."
+admin.realm.primaryDomain,Primäre Domain
+admin.realm.save,Einstellungen speichern
+admin.realm.saved,Die Bereichseinstellungen wurden gespeichert.
+admin.realm.settingsDescription,"Ändern Sie den Bereichsnamen und die Domains, die auf diesen Bereich verweisen."
+admin.realm.settingsTitle,Allgemeine Einstellungen
+admin.realm.status,Status
+admin.realm.statusActive,Aktiv
+admin.realm.statusDisabled,Deaktiviert
+admin.realm.title,Bereichseinstellungen
+admin.realm.updated,Zuletzt aktualisiert
+admin.session.expired,Ihre Administratorsitzung ist abgelaufen
+admin.signIn.activeTitle,Administratorsitzung aktiv
+admin.signIn.credential,Bootstrap-Administratoranmeldedaten
+admin.signIn.credentialInvalid,Geben Sie die vollständigen Bootstrap-Administratoranmeldedaten ein.
+admin.signIn.credentialNotStored,Die Anmeldedaten werden gegen eine kurze Browsersitzung eingetauscht und niemals in diesem Browser gespeichert.
+admin.signIn.description,Tauschen Sie die vom Betreiber ausgestellten Bootstrap-Anmeldedaten gegen eine kurze Administrator-Browsersitzung.
+admin.signIn.expiresAt,Diese Sitzung läuft am {date} ab.
+admin.signIn.signedOutDetail,Die Administratorsitzung wurde auf diesem Gerät beendet.
+admin.signIn.signedOutTitle,Abgemeldet
+admin.signIn.subject,Subjekt
+admin.signIn.subjectType,Subjekttyp
+admin.signIn.title,Administratoranmeldung
+admin.users.count,{count} Benutzer
+admin.users.create,Benutzer erstellen
+admin.users.createDescription,Fügen Sie dem aktuellen Realm einen menschlichen Benutzer hinzu.
+admin.users.createSubmit,Erstellen
+admin.users.created,{userName} wurde erstellt.
+admin.users.dangerZone,Gefahrenbereich
+admin.users.delete,Benutzer löschen
+admin.users.deleteConfirm,{userName} endgültig löschen?
+admin.users.deleteWarning,Das Löschen dieses Benutzers widerruft sofort seine Sitzungen und Zugriffe.
+admin.users.deleted,{userName} wurde gelöscht.
+admin.users.description,Menschliche Identitäten im aktuellen Realm.
+admin.users.detailTitle,Benutzerdetails
+admin.users.displayName,Anzeigename
+admin.users.displayNameRequired,Geben Sie einen Anzeigenamen ein.
+admin.users.email,E-Mail-Adresse
+admin.users.empty,Keine Benutzer entsprechen dem aktuellen Filter.
+admin.users.firstName,Vorname
+admin.users.invalid,Geben Sie eine gültige E-Mail-Adresse und einen Benutzernamen ein.
+admin.users.lastName,Nachname
+admin.users.lifecycle.active,Aktiv
+admin.users.lifecycle.deleted,Gelöscht
+admin.users.lifecycle.inactive,Inaktiv
+admin.users.lifecycle.initial,Initial
+admin.users.lifecycle.locked,Gesperrt
+admin.users.lifecycle.suspended,Ausgesetzt
+admin.users.lifecycleChanged,Der Benutzerstatus ist jetzt {state}.
+admin.users.lifecycleConfirm,{userName} auf {state} setzen?
+admin.users.lifecycleDescription,"Legen Sie fest, ob sich dieser Benutzer anmelden kann."
+admin.users.lifecycleTitle,Lebenszyklus
+admin.users.markUnverified,Als nicht verifiziert markieren
+admin.users.markVerified,Als verifiziert markieren
+admin.users.missingId,Dieser Benutzer konnte aus der Adresse nicht aufgelöst werden.
+admin.users.nickName,Spitzname
+admin.users.preferredLanguage,Bevorzugte Sprache
+admin.users.profileSave,Profil speichern
+admin.users.profileSaved,Das Benutzerprofil wurde gespeichert.
+admin.users.profileTitle,Profil
+admin.users.search,Benutzer durchsuchen
+admin.users.searchPlaceholder,"Nach Benutzername, E-Mail oder Kennung filtern"
+admin.users.state,Status
+admin.users.title,Benutzer
+admin.users.unverified,Nicht verifiziert
+admin.users.updated,Zuletzt aktualisiert {date}
+admin.users.userName,Benutzername
+admin.users.verification,Verifizierung
+admin.users.verificationChanged,Der Verifizierungsstatus ist jetzt {state}.
+admin.users.verificationDescription,"Legen Sie fest, ob die E-Mail-Adresse dieses Benutzers als verifiziert gilt."
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verifiziert
+app.name,Authworks
+common.back,Zurück
+common.cancel,Abbrechen
+common.close,Schließen
+common.continue,Fortfahren
+common.decline,Ablehnen
+common.error,Etwas ist schiefgelaufen.
+common.language,Sprache
+common.loading,Wird geladen
+common.retry,Erneut versuchen
+common.revoke,Widerrufen
+common.save,Speichern
+common.signIn,Anmelden
+common.signInWithProvider,Mit {provider} anmelden
+common.signOut,Abmelden
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,"Wählen Sie aus, wie Sie sich bei {organization} anmelden möchten."
+login.chooser.emailOtpDetail,Erhalten Sie einen Einmalcode per E-Mail
+login.chooser.emailOtpLabel,E-Mail-Code
+login.chooser.passkeyDetail,Verwenden Sie die Bildschirmsperre Ihres Geräts oder einen Sicherheitsschlüssel
+login.chooser.passkeyLabel,Passkey
+login.chooser.passwordDetail,Verwenden Sie das Passwort Ihres Kontos
+login.chooser.passwordLabel,Passwort
+login.chooser.providerDetail,Mit einem verbundenen Konto fortfahren
+login.chooser.providerLabel,Mit {provider} fortfahren
+login.chooser.register,Konto erstellen
+login.chooser.title,Anmelden
+login.chooser.useRecent,Zuletzt verwendetes Konto verwenden
+login.common.back,Zurück zu den Anmeldeoptionen
+login.common.legal,"Wenn Sie fortfahren, bestätigen Sie die {terms} und die {privacy}."
+login.common.privacy,Datenschutzerklärung
+login.common.terms,Nutzungsbedingungen
+login.common.working,Wird verarbeitet…
+login.emailOtp.codeDescription,"Geben Sie den sechsstelligen Code ein, den wir an {email} gesendet haben."
+login.emailOtp.codeTitle,Geben Sie Ihren E-Mail-Code ein
+login.emailOtp.description,"Wir senden Ihnen einen Einmalcode per E-Mail, anstatt nach einem Passwort zu fragen."
+login.emailOtp.resend,Neuen Code senden
+login.emailOtp.send,Code senden
+login.emailOtp.title,Mit einem E-Mail-Code anmelden
+login.emailOtp.verify,Code bestätigen
+login.error.codeRequired,Geben Sie den sechsstelligen Bestätigungscode ein.
+login.error.credentialsRequired,Geben Sie Ihren Benutzernamen und Ihr Passwort ein.
+login.error.emailRequired,Geben Sie eine gültige E-Mail-Adresse ein.
+login.error.enrollmentMissing,"Starten Sie die Einrichtung der Authenticator-App, bevor Sie einen Code bestätigen."
+login.error.nameRequired,"Geben Sie den Namen ein, der in Ihrem Konto angezeigt werden soll."
+login.error.passwordMismatch,Die Passwörter stimmen nicht überein.
+login.error.passwordTooShort,Das Passwort muss mindestens 8 Zeichen enthalten.
+login.error.recoveryCodeRequired,Geben Sie einen Ihrer gespeicherten Wiederherstellungscodes ein.
+login.error.tokenMissing,"Öffnen Sie den vollständigen Link aus Ihrer E-Mail, um fortzufahren."
+login.logout.description,Sie können diese Sitzung auf diesem Gerät beenden.
+login.logout.doneDescription,Sie wurden von {organization} abgemeldet.
+login.logout.doneTitle,Abgemeldet
+login.logout.submit,Abmelden
+login.logout.title,Von {organization} abmelden
+login.mfa.description,"Wählen Sie aus, wie Sie bestätigen möchten, dass Sie es sind."
+login.mfa.emailOtp,E-Mail-Code
+login.mfa.emailOtpDescription,"Geben Sie den sechsstelligen Code ein, den wir an Ihre E-Mail-Adresse gesendet haben."
+login.mfa.passkey,Passkey
+login.mfa.recoveryCode,Wiederherstellungscode
+login.mfa.recoveryCodeDescription,"Verwenden Sie einen der Einmalcodes, die Sie bei der Einrichtung der Bestätigung gespeichert haben."
+login.mfa.recoveryCodeLabel,Wiederherstellungscode
+login.mfa.title,Bestätigung in zwei Schritten
+login.mfa.totp,Authenticator-App
+login.mfa.totpDescription,Geben Sie den sechsstelligen Code aus Ihrer Authenticator-App ein.
+login.mfa.verificationCode,Bestätigungscode
+login.mfa.verify,Bestätigen
+login.passkey.description,"Bestätigen Sie dies mit der Bildschirmsperre Ihres Geräts, Ihrem Fingerabdruck oder einem Sicherheitsschlüssel."
+login.passkey.submit,Mit Passkey fortfahren
+login.passkey.title,Mit einem Passkey anmelden
+login.passkey.unsupported,Dieser Browser oder dieses Gerät kann keine Passkeys verwenden. Wählen Sie eine andere Anmeldemethode.
+login.password.changeDescription,"Wählen Sie ein neues Passwort, bevor Sie fortfahren."
+login.password.changeTitle,Passwort aktualisieren
+login.password.confirm,Passwort bestätigen
+login.password.current,Aktuelles Passwort
+login.password.description,Geben Sie die Zugangsdaten für Ihr {organization}-Konto ein.
+login.password.forgot,Passwort vergessen?
+login.password.hide,Passwort ausblenden
+login.password.identifier,Benutzername oder E-Mail-Adresse
+login.password.label,Passwort
+login.password.new,Neues Passwort
+login.password.show,Passwort anzeigen
+login.password.submit,Anmelden
+login.password.title,Geben Sie Ihr Passwort ein
+login.provider.description,Sie werden bei {provider} fortfahren und kehren anschließend hierher zurück.
+login.provider.submit,Mit {provider} fortfahren
+login.provider.title,Mit {provider} fortfahren
+login.recent.description,"Mit einem Konto fortfahren, das Sie auf diesem Gerät verwendet haben."
+login.recent.other,Anderes Konto verwenden
+login.recent.title,Konto auswählen
+login.recovery.completeDescription,Mit Ihrem neuen Passwort anmelden
+login.recovery.completeTitle,Passwort aktualisiert
+login.recovery.description,"Geben Sie Ihre E-Mail-Adresse ein. Wenn ein Konto vorhanden ist, senden wir Ihnen Anweisungen zur Wiederherstellung."
+login.recovery.resetDescription,Wählen Sie ein neues Passwort für Ihr Konto.
+login.recovery.resetSubmit,Passwort aktualisieren
+login.recovery.resetTitle,Neues Passwort festlegen
+login.recovery.sentDescription,"Wenn ein Konto zu dieser Adresse passt, sind die Wiederherstellungsanweisungen unterwegs. Der Link läuft bald ab."
+login.recovery.sentTitle,E-Mails prüfen
+login.recovery.submit,Wiederherstellungsanweisungen senden
+login.recovery.title,Passwort zurücksetzen
+login.register.description,Erstellen Sie ein Konto für {organization}.
+login.register.displayName,Vollständiger Name
+login.register.doneDescription,"Bestätigen Sie Ihre E-Mail-Adresse über den Link, den wir an {email} gesendet haben."
+login.register.doneTitle,E-Mail-Adresse bestätigen
+login.register.email,E-Mail-Adresse
+login.register.signIn,Haben Sie bereits ein Konto?
+login.register.submit,Konto erstellen
+login.register.title,Konto erstellen
+login.register.userName,Benutzername
+login.signedIn.description,Sie sind bei {organization} angemeldet.
+login.signedIn.title,Angemeldet
+login.status.loading,Anmeldung wird vorbereitet
+login.status.unavailableDescription,Diese Anmeldeanfrage kann nicht abgeschlossen werden. Kehren Sie zur Anwendung zurück und versuchen Sie es erneut.
+login.status.unavailableTitle,Anmeldung nicht verfügbar
+login.totpEnroll.description,Fügen Sie diesen Einrichtungsschlüssel zu Ihrer Authenticator-App hinzu und geben Sie anschließend den erzeugten Code ein. Der Schlüssel wird nur jetzt angezeigt.
+login.totpEnroll.start,Einrichtungsschlüssel anzeigen
+login.totpEnroll.submit,Einrichtung abschließen
+login.totpEnroll.title,Authenticator-App einrichten
+login.verify.description,Bestätigen Sie die E-Mail-Adresse Ihres Kontos.
+login.verify.submit,E-Mail-Adresse bestätigen
+login.verify.title,E-Mail-Adresse bestätigen
+login.verify.verifiedDescription,{email} ist bestätigt. Sie können sich jetzt anmelden.
+login.verify.verifiedTitle,E-Mail-Adresse bestätigt

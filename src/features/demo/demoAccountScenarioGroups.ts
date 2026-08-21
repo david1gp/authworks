@@ -1,0 +1,139 @@
+import type { DemoFixtureScenarioGroup } from "./demoFixtureScenarioGroupSchema.js"
+
+const pageStates = ["success", "loading", "error"] as const
+const collectionStates = ["success", "empty", "loading", "error"] as const
+
+export const demoAccountScenarioGroups: DemoFixtureScenarioGroup[] = [
+  {
+    key: "identity",
+    title: "Personal information",
+    description: "The profile and sign-in details people manage for themselves.",
+    scenarios: [
+      {
+        key: "profile",
+        title: "Profile",
+        description: "Review and update names, username, and preferred language.",
+        path: "/demo/account/profile",
+        availability: "available",
+        states: [...pageStates],
+      },
+      {
+        key: "email",
+        title: "Email address",
+        description: "Review the verified address used for sign-in and account communication.",
+        path: "/demo/account/email",
+        availability: "available",
+        states: [...pageStates],
+      },
+      {
+        key: "password",
+        title: "Password",
+        description: "Change the current password and review its security status.",
+        path: "/demo/account/password",
+        availability: "available",
+        states: [...pageStates],
+      },
+      {
+        key: "delete",
+        title: "Delete account",
+        description: "Review impact and confirm permanent account deletion.",
+        path: "/demo/account/delete",
+        availability: "available",
+        states: [...pageStates],
+      },
+    ],
+  },
+  {
+    key: "organizations",
+    title: "Organizations",
+    description: "Membership, organization context, and invitations.",
+    scenarios: [
+      {
+        key: "organizations",
+        title: "My organizations",
+        description: "See memberships and switch the active organization.",
+        path: "/demo/account/organizations",
+        availability: "available",
+        states: [...collectionStates, "permission-denied"],
+      },
+      {
+        key: "invitations",
+        title: "My invitations",
+        description: "Review invitations addressed to the signed-in account.",
+        path: "/demo/account/invitations",
+        availability: "available",
+        states: [...collectionStates, "permission-denied"],
+      },
+      {
+        key: "invitation",
+        title: "Accept invitation",
+        description: "Inspect an invitation before joining an organization.",
+        path: "/demo/account/invitations/accept",
+        availability: "available",
+        states: ["success", "loading", "error", "expired", "replayed", "accepted", "declined"],
+      },
+    ],
+  },
+  {
+    key: "security",
+    title: "Security",
+    description: "Sessions, authentication factors, and connected identities.",
+    scenarios: [
+      {
+        key: "sessions",
+        title: "Sessions and devices",
+        description: "Review active sessions and revoke devices no longer in use.",
+        path: "/demo/account/sessions",
+        availability: "available",
+        states: [...collectionStates],
+      },
+      {
+        key: "passkeys",
+        title: "Passkeys",
+        description: "Register, name, and remove passwordless credentials.",
+        path: "/demo/account/passkeys",
+        availability: "available",
+        states: [...collectionStates],
+      },
+      {
+        key: "factors",
+        title: "Multi-factor authentication",
+        description: "Manage authenticator, email, and passkey factors.",
+        path: "/demo/account/factors",
+        availability: "available",
+        states: [...collectionStates],
+      },
+      {
+        key: "recovery-codes",
+        title: "Recovery codes",
+        description: "Generate replacement codes and display them once.",
+        path: "/demo/account/recovery-codes",
+        availability: "available",
+        states: ["success", "loading", "error", "one-time"],
+      },
+      {
+        key: "identities",
+        title: "Linked identities",
+        description: "Review and unlink Google, GitHub, and Microsoft accounts.",
+        path: "/demo/account/identities",
+        availability: "available",
+        states: [...collectionStates],
+      },
+    ],
+  },
+  {
+    key: "access",
+    title: "Access",
+    description: "Applications and permissions granted by this account.",
+    scenarios: [
+      {
+        key: "consents",
+        title: "Application consents",
+        description: "Review and revoke permissions previously granted to applications.",
+        path: "/demo/account/consents",
+        availability: "available",
+        states: [...collectionStates, "permission-denied"],
+      },
+    ],
+  },
+]

@@ -1,0 +1,682 @@
+key,ja
+account.access.accepted,Invitation accepted
+account.access.active,Active organization
+account.access.consentDescription,Applications that can access information from your account.
+account.access.consentEmpty,No applications have access to this account.
+account.access.consentRevoked,Application access was revoked.
+account.access.created,Granted {date}
+account.access.declined,Invitation declined
+account.access.email,Email
+account.access.error,This account information could not be loaded.
+account.access.expired,This invitation has expired.
+account.access.invitationDescription,Review the organization and roles before you respond.
+account.access.invitationEmpty,There are no pending invitations for this account.
+account.access.invitationFor,Invitation for {email}
+account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationReplay,This invitation was already used or is no longer available.
+account.access.membership,Membership roles
+account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationEmpty,This account does not belong to an organization.
+account.access.permission,You do not have permission to perform this action.
+account.access.roles,Roles: {roles}
+account.access.scopes,Permissions: {scopes}
+account.access.switchOrganization,Switch organization
+account.access.switched,Organization context changed to {organization}.
+account.delete.confirmLabel,Enter {email} to confirm
+account.delete.dangerZone,Danger zone
+account.delete.deletedDetail,Your account and access have been permanently removed.
+account.delete.deletedTitle,Account deleted
+account.delete.emailMismatch,The email address does not match.
+account.delete.submit,Delete account permanently
+account.delete.title,Permanently delete this account
+account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.directory.title,Your account
+account.factors.addTotp,Add authenticator
+account.factors.codeCount,{count} recovery codes
+account.factors.confirm,Confirm
+account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
+account.factors.emailOtp,Email code
+account.factors.finishTotp,Finish authenticator setup
+account.factors.passkeyCount,{count} passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Recovery
+account.factors.removeTotp,Remove authenticator
+account.factors.totp,Authenticator app
+account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
+account.factors.verificationCode,Verification code
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.empty,No external identities are linked
+account.identities.unlink,Unlink
+account.passkeys.add,Add passkey
+account.passkeys.created,Created {date}
+account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
+account.passkeys.deviceBound,Device-bound passkey
+account.passkeys.empty,No passkeys registered
+account.passkeys.remove,Remove
+account.passkeys.synced,Synced passkey
+account.password.changed,Your password was changed.
+account.password.confirm,Confirm new password
+account.password.current,Current password
+account.password.description,Use a unique password that you do not use for other services.
+account.password.mismatch,The new passwords do not match.
+account.password.new,New password
+account.password.submit,Change password
+account.password.title,Change password
+account.password.tooShort,The new password must contain at least 8 characters.
+account.profile.displayName,Display name
+account.profile.displayNameRequired,Enter a display name.
+account.profile.email,Email address
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
+account.profile.emailTitle,Email address and verification
+account.profile.firstName,First name
+account.profile.lastName,Last name
+account.profile.nickName,Nickname
+account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
+account.profile.personalInformation,Personal information
+account.profile.preferredLanguage,Preferred language
+account.profile.save,Save changes
+account.profile.saved,Your profile was saved.
+account.profile.signInDescription,These details identify your account.
+account.profile.signInTitle,Sign-in details
+account.profile.userName,Username
+account.profile.verificationPending,Verification pending
+account.profile.verified,Verified
+account.recovery.generate,Generate new codes
+account.recovery.once,Copy or print these codes now. They cannot be displayed again.
+account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
+account.recovery.saveNow,Save your recovery codes now
+account.recovery.saved,I saved these codes
+account.recovery.summary,Recovery access
+account.security.label,Account security management
+account.sessionExpired,Your session has expired
+account.sessions.current,Current session
+account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
+account.sessions.empty,No active sessions
+account.sessions.lastUsed,Last used {date}
+account.sessions.revoke,Revoke session
+account.sessions.unknownDevice,Unknown device
+account.status.available,Available
+account.status.configured,Configured
+account.status.notConfigured,Not configured
+account.status.unavailable,Unavailable
+admin.common.next,次へ
+admin.common.pagination,ページ送り
+admin.common.permission,この管理データを表示する権限がありません。
+admin.common.previous,戻る
+admin.events.actor,アクター
+admin.events.aggregate,集約
+admin.events.count,{count} 件のイベント
+admin.events.description,現在のレルムの変更不可能なセキュリティ活動を新しい順に表示します。
+admin.events.empty,現在のフィルターに一致するイベントはありません。
+admin.events.hide,ペイロードを非表示
+admin.events.occurred,発生日時
+admin.events.payload,ペイロード
+admin.events.redactionNotice,秘密の値はイベントの保存前に伏せられます。
+admin.events.search,イベントを検索
+admin.events.searchPlaceholder,種類、集約、アクターで絞り込む
+admin.events.show,ペイロードを表示
+admin.events.systemActor,システム
+admin.events.title,監査イベント
+admin.events.type,イベントの種類
+admin.machine.assuranceRequired,マシンユーザーとその資格情報を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
+admin.machine.assuranceRequiredTitle,より強力なサインインが必要です
+admin.machine.created,作成日時
+admin.machine.credentials.apiKeyCreated,API キーが発行されました。
+admin.machine.credentials.description,マシンユーザーがアクセストークンを取得するために提示する資格情報です。保存されるのはメタデータのみで、値が保存されることはありません。
+admin.machine.credentials.empty,このマシンユーザーにはまだ資格情報がありません。
+admin.machine.credentials.expires,有効期限
+admin.machine.credentials.expiresHint,有効期限のない資格情報を発行するには、ここを空のままにします。
+admin.machine.credentials.issue,資格情報を発行
+admin.machine.credentials.issueDescription,個人アクセストークンまたは API キーを発行します。値は一度だけ表示され、復元できません。
+admin.machine.credentials.kind,資格情報の種類
+admin.machine.credentials.kindAccessToken,アクセストークン
+admin.machine.credentials.kindApiKey,API キー
+admin.machine.credentials.kindClientSecret,クライアントシークレット
+admin.machine.credentials.kindHint,個人アクセストークンはマシンユーザーとして直接動作します。API キーは単一の連携向けです。
+admin.machine.credentials.kindToken,個人アクセストークン
+admin.machine.credentials.name,名前
+admin.machine.credentials.neverExpires,有効期限なし
+admin.machine.credentials.onceWarning,発行された値は一度だけ表示されます。このダイアログを閉じる前に保存してください。再取得はできません。
+admin.machine.credentials.revoke,取り消す
+admin.machine.credentials.revoked,資格情報を取り消しました。
+admin.machine.credentials.scopes,スコープ
+admin.machine.credentials.scopesHint,スコープはスペースまたはカンマで区切ります。マシンユーザーのスコープを継承するには空のままにします。
+admin.machine.credentials.stateActive,有効
+admin.machine.credentials.stateExpired,期限切れ
+admin.machine.credentials.stateRevoked,取り消し済み
+admin.machine.credentials.subject,マシンユーザー
+admin.machine.credentials.title,資格情報とトークン
+admin.machine.credentials.tokenCreated,個人アクセストークンが発行されました。
+admin.machine.credentials.unnamed,名前のない資格情報
+admin.machine.crossTenant,このマシンユーザーは別のレルムに属しており、ここでは利用できません。
+admin.machine.lifecycle.activate,有効化
+admin.machine.lifecycle.deactivate,無効化
+admin.machine.lifecycle.description,無効化すると、すべての資格情報が認証できなくなります。削除は恒久的で、取り消すことはできません。
+admin.machine.lifecycle.remove,マシンユーザーを削除
+admin.machine.lifecycle.title,ライフサイクル
+admin.machine.pageNext,次のページ
+admin.machine.pagePrevious,前のページ
+admin.machine.permissionDenied,このレルムのマシンユーザーを表示または変更する権限がありません。
+admin.machine.permissionDeniedTitle,アクセスできません
+admin.machine.secret.acknowledge,シークレットを保存しました
+admin.machine.secret.apiKeyTitle,新しい API キー
+admin.machine.secret.clientId,クライアント ID
+admin.machine.secret.clientTitle,新しいクライアントシークレット
+admin.machine.secret.copied,クリップボードにコピーしました
+admin.machine.secret.copy,シークレットをコピー
+admin.machine.secret.copyFailed,クリップボードを利用できません。値を手動で選択してコピーしてください。
+admin.machine.secret.description,クライアントシークレットにより、このマシンユーザーはクライアント資格情報をアクセストークンと交換できます。書き込み専用で保存され、ローテーションのみ可能です。
+admin.machine.secret.once,{name} の値が表示されるのはこの一度だけです。今すぐ保存してください。復元はできません。
+admin.machine.secret.redacted,保存済みで非表示
+admin.machine.secret.rotate,クライアントシークレットをローテーション
+admin.machine.secret.rotated,クライアントシークレットをローテーションしました。
+admin.machine.secret.title,クライアントシークレット
+admin.machine.secret.tokenTitle,新しい個人アクセストークン
+admin.machine.secret.value,シークレットの値
+admin.machine.status,ステータス
+admin.machine.updated,最終更新
+admin.machine.users.create,マシンユーザーを作成
+admin.machine.users.createDescription,サービスまたは連携のための非人間 ID を作成します。そのクライアントシークレットは一度だけ表示されます。
+admin.machine.users.createSecretHint,クライアント ID とクライアントシークレットがただちに発行されます。シークレットは一度だけ表示され、復元できません。
+admin.machine.users.created,マシンユーザーを作成しました。
+admin.machine.users.description,このレルムでクライアント資格情報、トークン、または API キーを使って認証する非人間 ID です。
+admin.machine.users.displayName,表示名
+admin.machine.users.empty,このレルムにはまだマシンユーザーが存在しません。
+admin.machine.users.lifecycleChanged,マシンユーザーのステータスを変更しました。
+admin.machine.users.noScopes,スコープなし
+admin.machine.users.scopes,スコープ
+admin.machine.users.scopesHint,スコープはスペースまたはカンマで区切ります。スコープは完全一致で照合されます。
+admin.machine.users.search,マシンユーザーを検索
+admin.machine.users.title,マシンユーザー
+admin.machine.users.userName,ユーザー名
+admin.machine.users.userNameHint,クライアント資格情報を交換するときのクライアント ID として使用されます。
+admin.oidc.assuranceRequired,OpenID Connect の設定を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
+admin.oidc.assuranceRequiredTitle,より強力なサインインが必要です
+admin.oidc.clients.consent,同意
+admin.oidc.clients.consentRequired,必要
+admin.oidc.clients.consentSkipped,不要
+admin.oidc.clients.create,クライアントを登録
+admin.oidc.clients.createDescription,OpenID Connect でサインインさせるアプリケーションを登録します。機密クライアントにはシークレットが一度だけ発行されます。
+admin.oidc.clients.created,クライアントを登録しました。
+admin.oidc.clients.description,このレルムで OpenID Connect を通じて人を認証するアプリケーション。
+admin.oidc.clients.empty,このレルムにはまだ OpenID Connect クライアントが登録されていません。
+admin.oidc.clients.exactMatchHint,1 行につき 1 つの URI。すべてのリダイレクトは完全一致で照合されるため、ワイルドカードや末尾の差異は拒否されます。
+admin.oidc.clients.lifecycleChanged,クライアントの状態を変更しました。
+admin.oidc.clients.name,クライアント名
+admin.oidc.clients.postLogoutUris,サインアウト後のリダイレクト URI
+admin.oidc.clients.redirectUris,リダイレクト URI
+admin.oidc.clients.requireConsent,このアプリケーションの承認を本人に求める
+admin.oidc.clients.saved,クライアントを保存しました。
+admin.oidc.clients.scopes,許可されたスコープ
+admin.oidc.clients.search,クライアントを検索
+admin.oidc.clients.settingsDescription,クライアント名、完全一致のリダイレクト URI、許可されたスコープ、同意の扱いを設定します。
+admin.oidc.clients.settingsTitle,クライアント設定
+admin.oidc.clients.title,OpenID Connect クライアント
+admin.oidc.clients.trusted,信頼済み
+admin.oidc.clients.trustedHint,信頼済みクライアントは同意画面を完全にスキップします。自社のアプリケーションのみを信頼済みにしてください。
+admin.oidc.clients.type,クライアントの種類
+admin.oidc.clients.typeConfidential,機密
+admin.oidc.clients.typeHint,機密クライアントはサーバー上にシークレットを保持します。モバイルアプリやシングルページアプリなどのパブリッククライアントはそれができません。
+admin.oidc.clients.typePublic,パブリック
+admin.oidc.consents.client,アプリケーション
+admin.oidc.consents.description,本人が承認したアプリケーション。同意を取り消すと、再度アプリケーションの承認を求められます。
+admin.oidc.consents.empty,この人はまだどのアプリケーションも承認していません。
+admin.oidc.consents.granted,承認日時
+admin.oidc.consents.revoked,同意を取り消しました。
+admin.oidc.consents.title,アプリケーションの同意
+admin.oidc.consents.user,対象者
+admin.oidc.created,作成日時
+admin.oidc.crossTenant,このリソースは別のレルムに属しているため、ここでは利用できません。
+admin.oidc.documents.authorizationEndpoint,認可エンドポイント
+admin.oidc.documents.copied,コピーしました
+admin.oidc.documents.copy,ドキュメントをコピー
+admin.oidc.documents.description,Authworks がこのレルム向けに公開しているプロトコルドキュメントを、クライアントライブラリが読み取るとおりに表示します。
+admin.oidc.documents.discoveryDescription,well-known エンドポイントから提供される OpenID プロバイダーのメタデータ。
+admin.oidc.documents.discoveryTitle,ディスカバリードキュメント
+admin.oidc.documents.empty,このレルムにはまだプロトコルドキュメントが公開されていません。
+admin.oidc.documents.endSessionEndpoint,セッション終了エンドポイント
+admin.oidc.documents.issuer,発行者
+admin.oidc.documents.jwksDescription,このレルムが発行したトークンを検証する公開鍵。
+admin.oidc.documents.jwksTitle,JSON Web キーセット
+admin.oidc.documents.jwksUri,JWKS URI
+admin.oidc.documents.open,エンドポイントを開く
+admin.oidc.documents.readOnly,これらのドキュメントはレルム設定と署名鍵から生成されます。ここでは編集できません。
+admin.oidc.documents.showRaw,生のドキュメントを表示
+admin.oidc.documents.title,プロトコルドキュメント
+admin.oidc.documents.tokenEndpoint,トークンエンドポイント
+admin.oidc.documents.userinfoEndpoint,userinfo エンドポイント
+admin.oidc.keys.algorithm,アルゴリズム
+admin.oidc.keys.create,鍵を追加
+admin.oidc.keys.created,新しい署名鍵を公開しました。
+admin.oidc.keys.description,このレルムのトークンに署名する鍵。ローテーションでは新しい鍵を公開し、現在の鍵を退役させます。
+admin.oidc.keys.empty,このレルムにはまだ署名鍵がありません。
+admin.oidc.keys.keyId,鍵 ID
+admin.oidc.keys.privateNotice,表示されるのは公開鍵のメタデータのみです。秘密鍵がブラウザーに送信されることはありません。
+admin.oidc.keys.retire,退役させる
+admin.oidc.keys.retired,署名鍵を退役させました。
+admin.oidc.keys.retiredAt,退役日時
+admin.oidc.keys.rotate,鍵をローテーション
+admin.oidc.keys.rotated,署名鍵をローテーションしました。
+admin.oidc.keys.title,署名鍵
+admin.oidc.lifecycle.activate,有効化
+admin.oidc.lifecycle.deactivate,無効化
+admin.oidc.lifecycle.remove,クライアントを削除
+admin.oidc.pageNext,次のページ
+admin.oidc.pagePrevious,前のページ
+admin.oidc.permissionDenied,このレルムの OpenID Connect 設定を表示または変更する権限がありません。
+admin.oidc.permissionDeniedTitle,アクセスできません
+admin.oidc.secret.acknowledge,シークレットを保存しました
+admin.oidc.secret.copied,クリップボードにコピーしました
+admin.oidc.secret.copy,シークレットをコピー
+admin.oidc.secret.copyFailed,クリップボードを利用できません。値を選択して手動でコピーしてください。
+admin.oidc.secret.createdTitle,新しいクライアントシークレット
+admin.oidc.secret.description,保存されたクライアントシークレットは二度と表示されません。新しいものを発行するにはローテーションし、クライアントの認証を停止するには取り消してください。
+admin.oidc.secret.once,{client} のシークレットが表示されるのはこの一度だけです。今すぐ保存してください。復元はできません。
+admin.oidc.secret.publicClient,パブリッククライアントはシークレットなしで認証するため、ローテーションするものはありません。
+admin.oidc.secret.redacted,保存済みで非表示
+admin.oidc.secret.revoke,シークレットを取り消す
+admin.oidc.secret.revoked,クライアントシークレットを取り消しました。
+admin.oidc.secret.rotate,シークレットをローテーション
+admin.oidc.secret.rotated,クライアントシークレットをローテーションしました。
+admin.oidc.secret.rotatedTitle,ローテーション済みクライアントシークレット
+admin.oidc.secret.title,クライアントシークレット
+admin.oidc.status,状態
+admin.oidc.updated,最終更新
+admin.organizations.assuranceRequired,この組織設定を変更するには、より強力な認証方法で再度サインインしてください。
+admin.organizations.assuranceRequiredTitle,より強力なサインインが必要です
+admin.organizations.branding.background,背景色
+admin.organizations.branding.dark,ダークテーマ
+admin.organizations.branding.description,ホストされたサインインおよびアカウント画面に表示される色、ロゴ、法的リンク。
+admin.organizations.branding.font,文字色
+admin.organizations.branding.iconUrl,アイコン URL
+admin.organizations.branding.light,ライトテーマ
+admin.organizations.branding.logoUrl,ロゴ URL
+admin.organizations.branding.preview,プレビュー
+admin.organizations.branding.primary,プライマリカラー
+admin.organizations.branding.privacyUrl,プライバシーポリシー URL
+admin.organizations.branding.saved,ブランディングを保存しました。
+admin.organizations.branding.termsUrl,利用規約 URL
+admin.organizations.branding.themeMode,既定のテーマ
+admin.organizations.branding.title,ブランディング
+admin.organizations.branding.warn,警告色
+admin.organizations.branding.watermark,Authworks の透かしを非表示にする
+admin.organizations.detail.created,作成日時
+admin.organizations.detail.realm,レルム
+admin.organizations.detail.settingsDescription,組織名とそのライフサイクル状態を管理します。
+admin.organizations.detail.settingsTitle,組織設定
+admin.organizations.detail.updated,最終更新
+admin.organizations.domains.claim,ドメインを申請
+admin.organizations.domains.claimed,{domain} は申請され、検証待ちです。
+admin.organizations.domains.description,検証済みドメインにより、メールアドレスからこの組織を見つけられるようになります。
+admin.organizations.domains.discovery,判別プレビュー
+admin.organizations.domains.discoveryDescription,サインイン時にドメインが現在どの組織に解決されるかを確認します。
+admin.organizations.domains.discoveryFound,{domain} は {organization} に解決されます。
+admin.organizations.domains.discoveryMissing,{domain} はどの組織にも解決されません。
+admin.organizations.domains.domain,ドメイン
+admin.organizations.domains.empty,この組織はまだドメインを申請していません。
+admin.organizations.domains.primary,主ドメイン
+admin.organizations.domains.remove,ドメインを削除
+admin.organizations.domains.removed,ドメインを削除しました。
+admin.organizations.domains.title,ドメインと判別
+admin.organizations.domains.unverified,検証待ち
+admin.organizations.domains.verificationRecord,この DNS TXT レコードを追加してから検証してください。
+admin.organizations.domains.verified,Verified
+admin.organizations.domains.verify,ドメインを検証
+admin.organizations.domains.verifyDone,ドメインを検証しました。
+admin.organizations.invitations.create,ユーザーを招待
+admin.organizations.invitations.description,メールで招待し、まだ保留中の招待を追跡します。
+admin.organizations.invitations.email,Email address
+admin.organizations.invitations.empty,この組織に対して招待は送信されていません。
+admin.organizations.invitations.expires,有効期限
+admin.organizations.invitations.revoke,招待を取り消す
+admin.organizations.invitations.revoked,招待を取り消しました。
+admin.organizations.invitations.sent,招待を作成しました。
+admin.organizations.invitations.title,招待
+admin.organizations.invitations.tokenDismiss,このリンクを保存しました
+admin.organizations.invitations.tokenOnce,この招待リンクは一度だけ表示されます。招待した相手と共有してください。
+admin.organizations.invitations.tokenTitle,招待リンク
+admin.organizations.lifecycle.activate,組織を再有効化
+admin.organizations.lifecycle.changed,組織のライフサイクル状態を変更しました。
+admin.organizations.lifecycle.deactivate,組織を無効化
+admin.organizations.lifecycle.remove,組織を削除
+admin.organizations.list.create,組織を作成
+admin.organizations.list.description,組織は、このレルムの人、ドメイン、ブランディングをまとめます。
+admin.organizations.list.empty,このレルムにはまだ組織がありません。
+admin.organizations.list.name,組織名
+admin.organizations.list.search,組織を検索
+admin.organizations.list.title,組織
+admin.organizations.memberships.add,メンバーを追加
+admin.organizations.memberships.added,メンバーを追加しました。
+admin.organizations.memberships.description,この組織の人と、割り当てられた固定ロール。
+admin.organizations.memberships.empty,この組織にはまだメンバーがいません。
+admin.organizations.memberships.remove,メンバーを削除
+admin.organizations.memberships.removed,メンバーを削除しました。
+admin.organizations.memberships.roles,ロール
+admin.organizations.memberships.rolesFixed,ロールは Authworks によって固定されており、名前を変更できません。
+admin.organizations.memberships.title,メンバーとロール
+admin.organizations.memberships.updated,メンバーのロールを更新しました。
+admin.organizations.memberships.user,ユーザー
+admin.organizations.memberships.userId,ユーザー ID
+admin.organizations.pageNext,次のページ
+admin.organizations.pagePrevious,前のページ
+admin.organizations.permissionDenied,この組織を表示または変更する権限がありません。
+admin.organizations.permissionDeniedTitle,アクセスできません
+admin.organizations.policy.description,利用できるサインイン方法と、表示する構成済みプロバイダーを選択します。
+admin.organizations.policy.domainDiscovery,メールドメインから組織を判別する
+admin.organizations.policy.emailOtp,メールワンタイムコード
+admin.organizations.policy.externalIdentity,外部 ID プロバイダー
+admin.organizations.policy.inherited,レルムから継承
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,パスワード
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,セルフサービス登録
+admin.organizations.policy.saved,サインインポリシーを保存しました。
+admin.organizations.policy.title,サインインポリシー
+admin.organizations.providers.allowAccountCreation,新しい人のアカウントを自動的に作成する
+admin.organizations.providers.clientId,クライアント ID
+admin.organizations.providers.clientSecret,クライアントシークレット
+admin.organizations.providers.create,プロバイダーを追加
+admin.organizations.providers.created,プロバイダーを構成しました。
+admin.organizations.providers.description,この組織に構成された Google、GitHub、Microsoft のプロバイダー。
+admin.organizations.providers.disable,プロバイダーを無効化
+admin.organizations.providers.disabled,プロバイダーを無効化しました。
+admin.organizations.providers.displayName,Display name
+admin.organizations.providers.empty,外部 ID プロバイダーはまだ構成されていません。
+admin.organizations.providers.redirectUri,リダイレクト URI
+admin.organizations.providers.rotateSecret,クライアントシークレットを置き換える
+admin.organizations.providers.secretRotated,クライアントシークレットを置き換えました。
+admin.organizations.providers.secretWriteOnly,保存されたクライアントシークレットは表示されません。置き換えるには新しい値を入力してください。
+admin.organizations.providers.title,ID プロバイダー
+admin.organizations.providers.type,プロバイダー
+admin.organizations.providers.updated,プロバイダーを更新しました。
+admin.organizations.renamed,組織の名前を変更しました。
+admin.organizations.status,状態
+admin.overview.description,管理しているレルムの識別情報、ドメイン、ライフサイクルです。
+admin.overview.sessionTitle,管理者セッション
+admin.overview.title,レルムの概要
+admin.projects.access.description,この管理者が現在このプロジェクトで実効的に保持しているロール。
+admin.projects.access.empty,現在の組織コンテキストで有効なプロジェクトロールはありません。
+admin.projects.access.grantedOrganization,組織を通じて付与
+admin.projects.access.permissionDescription,固定ロールとその権限は Authworks によって定義されており、編集できません。
+admin.projects.access.permissionTitle,固定ロールと権限
+admin.projects.access.roleKeys,実効プロジェクトロール
+admin.projects.access.title,実効アクセス権
+admin.projects.applications.create,アプリケーションを追加
+admin.projects.applications.description,このプロジェクトに対して認証するアプリケーション。
+admin.projects.applications.empty,このプロジェクトにはまだアプリケーションがありません。
+admin.projects.applications.name,アプリケーション名
+admin.projects.applications.title,アプリケーション
+admin.projects.applications.type,アプリケーションの種類
+admin.projects.crossTenant,このリソースは別のレルムに属しており、ここでは利用できません。
+admin.projects.detail.authorizationRequired,認可が必要です
+admin.projects.detail.created,作成日時
+admin.projects.detail.organization,組織
+admin.projects.detail.projectAccessRequired,プロジェクトへのアクセスが必要です
+admin.projects.detail.settingsDescription,プロジェクト名とアクセスの適用方法を管理します。
+admin.projects.detail.settingsTitle,プロジェクト設定
+admin.projects.detail.updated,最終更新
+admin.projects.grants.create,組織にアクセス権を付与
+admin.projects.grants.description,このプロジェクトへのアクセス権を別の組織に付与し、受け取るロールを選択します。
+admin.projects.grants.empty,このプロジェクトへのアクセス権を付与された組織はありません。
+admin.projects.grants.grantedOrganization,付与先の組織
+admin.projects.grants.roleKeys,付与されたロール
+admin.projects.grants.title,組織への付与
+admin.projects.lifecycle.activate,有効化
+admin.projects.lifecycle.deactivate,無効化
+admin.projects.lifecycle.remove,Remove
+admin.projects.list.create,プロジェクトを作成
+admin.projects.list.description,プロジェクトは、組織のアプリケーション、ロール、付与をまとめます。
+admin.projects.list.empty,このレルムにはまだプロジェクトがありません。
+admin.projects.list.name,プロジェクト名
+admin.projects.list.search,プロジェクトを検索
+admin.projects.list.title,プロジェクト
+admin.projects.pageNext,次のページ
+admin.projects.pagePrevious,前のページ
+admin.projects.permissionDenied,このプロジェクト情報を表示または変更する権限がありません。
+admin.projects.roles.create,ロールを作成
+admin.projects.roles.description,このプロジェクトが組織とそのメンバーに割り当てられるロール。
+admin.projects.roles.displayName,Display name
+admin.projects.roles.empty,このプロジェクトにはまだロールが定義されていません。
+admin.projects.roles.group,グループ
+admin.projects.roles.key,ロールキー
+admin.projects.roles.title,プロジェクトロール
+admin.projects.saved,{name} を保存しました。
+admin.projects.status,状態
+admin.realm.confirmLabel,確認のため {name} と入力してください
+admin.realm.confirmMismatch,レルム名が一致しません。
+admin.realm.created,作成日時
+admin.realm.dangerZone,危険な操作
+admin.realm.description,管理しているレルムの識別情報とサインインの設定です。
+admin.realm.disable,レルムを無効化
+admin.realm.disableConfirm,このレルムを無効化すると、すべてのアプリケーションのサインインが停止します。続行しますか？
+admin.realm.disableWarning,このレルムを無効化すると、レルム内のすべてのアプリケーションのサインインとトークン発行が直ちに停止します。
+admin.realm.disabled,レルムを無効化しました。
+admin.realm.domainRequired,レルムのドメインを1つ以上入力してください。
+admin.realm.domains,ドメイン
+admin.realm.domainsHint,ドメインはカンマで区切ってください。最初のドメインが主ドメインです。
+admin.realm.enable,レルムを有効化
+admin.realm.enableDescription,このレルムは無効です。有効化するとサインインとトークン発行が再開されます。
+admin.realm.enabled,レルムを有効化しました。
+admin.realm.identifier,レルム識別子
+admin.realm.invalid,レルム名とドメインを1つ以上入力してください。
+admin.realm.lifecycleTitle,レルムのライフサイクル
+admin.realm.name,レルム名
+admin.realm.nameRequired,レルム名を入力してください。
+admin.realm.permissionDenied,このレルムを変更する権限がありません。
+admin.realm.primaryDomain,主ドメイン
+admin.realm.save,設定を保存
+admin.realm.saved,レルム設定を保存しました。
+admin.realm.settingsDescription,レルム名と、このレルムに解決されるドメインを変更します。
+admin.realm.settingsTitle,一般設定
+admin.realm.status,状態
+admin.realm.statusActive,有効
+admin.realm.statusDisabled,無効
+admin.realm.title,レルム設定
+admin.realm.updated,最終更新
+admin.session.expired,管理者セッションの有効期限が切れました
+admin.signIn.activeTitle,管理者セッションが有効です
+admin.signIn.credential,ブートストラップ管理者の資格情報
+admin.signIn.credentialInvalid,ブートストラップ管理者の資格情報を完全な形で入力してください。
+admin.signIn.credentialNotStored,資格情報は短時間のブラウザーセッションと交換され、このブラウザーには保存されません。
+admin.signIn.description,運用担当者が発行したブートストラップ資格情報を、短時間の管理者ブラウザーセッションと交換します。
+admin.signIn.expiresAt,このセッションは {date} に期限切れになります。
+admin.signIn.signedOutDetail,このデバイスの管理者セッションを終了しました。
+admin.signIn.signedOutTitle,サインアウトしました
+admin.signIn.subject,サブジェクト
+admin.signIn.subjectType,サブジェクトの種類
+admin.signIn.title,管理者サインイン
+admin.users.count,{count} 人のユーザー
+admin.users.create,ユーザーを作成
+admin.users.createDescription,現在のレルムに人間のユーザーを追加します。
+admin.users.createSubmit,作成
+admin.users.created,{userName} を作成しました。
+admin.users.dangerZone,危険な操作
+admin.users.delete,ユーザーを削除
+admin.users.deleteConfirm,{userName} を完全に削除しますか？
+admin.users.deleteWarning,このユーザーを削除すると、セッションとアクセス権が直ちに取り消されます。
+admin.users.deleted,{userName} を削除しました。
+admin.users.description,現在のレルム内の人間の ID。
+admin.users.detailTitle,ユーザー詳細
+admin.users.displayName,Display name
+admin.users.displayNameRequired,Enter a display name.
+admin.users.email,Email address
+admin.users.empty,現在のフィルターに一致するユーザーはいません。
+admin.users.firstName,First name
+admin.users.invalid,有効なメールアドレスとユーザー名を入力してください。
+admin.users.lastName,Last name
+admin.users.lifecycle.active,有効
+admin.users.lifecycle.deleted,削除済み
+admin.users.lifecycle.inactive,非アクティブ
+admin.users.lifecycle.initial,初期
+admin.users.lifecycle.locked,ロック済み
+admin.users.lifecycle.suspended,停止中
+admin.users.lifecycleChanged,ユーザーの状態は現在 {state} です。
+admin.users.lifecycleConfirm,{userName} を {state} に設定しますか？
+admin.users.lifecycleDescription,このユーザーがサインインできるかどうかを変更します。
+admin.users.lifecycleTitle,ライフサイクル
+admin.users.markUnverified,未検証としてマーク
+admin.users.markVerified,検証済みとしてマーク
+admin.users.missingId,アドレスからこのユーザーを解決できませんでした。
+admin.users.nickName,Nickname
+admin.users.preferredLanguage,Preferred language
+admin.users.profileSave,プロフィールを保存
+admin.users.profileSaved,ユーザープロフィールを保存しました。
+admin.users.profileTitle,プロフィール
+admin.users.search,ユーザーを検索
+admin.users.searchPlaceholder,ユーザー名、メール、識別子で絞り込む
+admin.users.state,状態
+admin.users.title,ユーザー
+admin.users.unverified,未検証
+admin.users.updated,最終更新 {date}
+admin.users.userName,Username
+admin.users.verification,検証
+admin.users.verificationChanged,検証状態は現在 {state} です。
+admin.users.verificationDescription,このユーザーのメールアドレスを検証済みとして扱うかどうかを制御します。
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verified
+app.name,Authworks
+common.back,戻る
+common.cancel,キャンセル
+common.close,閉じる
+common.continue,続行
+common.decline,Decline
+common.error,問題が発生しました。
+common.language,言語
+common.loading,読み込み中
+common.retry,もう一度お試しください
+common.revoke,Revoke
+common.save,保存
+common.signIn,サインイン
+common.signInWithProvider,{provider}でサインイン
+common.signOut,サインアウト
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,{organization} へのログイン方法を選択してください
+login.chooser.emailOtpDetail,メールでワンタイムコードを受け取る
+login.chooser.emailOtpLabel,メールコード
+login.chooser.passkeyDetail,デバイスの画面ロックまたはセキュリティキーを使用
+login.chooser.passkeyLabel,パスキー
+login.chooser.passwordDetail,アカウントのパスワードを使用
+login.chooser.passwordLabel,パスワード
+login.chooser.providerDetail,連携済みのアカウントで続行
+login.chooser.providerLabel,{provider} で続行
+login.chooser.register,アカウントを作成
+login.chooser.title,ログイン
+login.chooser.useRecent,最近使用したアカウントを使う
+login.common.back,ログイン方法の選択に戻る
+login.common.legal,続行すると、{terms} と {privacy} に同意したものとみなされます。
+login.common.privacy,プライバシーポリシー
+login.common.terms,利用規約
+login.common.working,処理中…
+login.emailOtp.codeDescription,{email} に送信した6桁のコードを入力してください。
+login.emailOtp.codeTitle,メールコードを入力
+login.emailOtp.description,パスワードの代わりに、1回限り使用できるコードをメールで送信します。
+login.emailOtp.resend,新しいコードを送信
+login.emailOtp.send,コードを送信
+login.emailOtp.title,メールコードでログイン
+login.emailOtp.verify,コードを確認
+login.error.codeRequired,6桁の確認コードを入力してください。
+login.error.credentialsRequired,ユーザー名とパスワードを入力してください。
+login.error.emailRequired,有効なメールアドレスを入力してください。
+login.error.enrollmentMissing,コードを確認する前に認証アプリの設定を開始してください。
+login.error.nameRequired,アカウントに表示する名前を入力してください。
+login.error.passwordMismatch,パスワードが一致しません。
+login.error.passwordTooShort,パスワードは8文字以上で入力してください。
+login.error.recoveryCodeRequired,保存した復旧コードのいずれかを入力してください。
+login.error.tokenMissing,続行するには、メールに記載された完全なリンクを開いてください。
+login.logout.description,このデバイスでセッションを終了できます。
+login.logout.doneDescription,{organization} からログアウトしました。
+login.logout.doneTitle,ログアウトしました
+login.logout.submit,ログアウト
+login.logout.title,{organization} からログアウト
+login.mfa.description,本人確認の方法を選択してください。
+login.mfa.emailOtp,メールコード
+login.mfa.emailOtpDescription,メールアドレスに送信した6桁のコードを入力してください。
+login.mfa.passkey,パスキー
+login.mfa.recoveryCode,復旧コード
+login.mfa.recoveryCodeDescription,確認の設定時に保存した1回限り使用できるコードのいずれかを使用してください。
+login.mfa.recoveryCodeLabel,復旧コード
+login.mfa.title,2段階認証
+login.mfa.totp,認証アプリ
+login.mfa.totpDescription,認証アプリに表示された6桁のコードを入力してください。
+login.mfa.verificationCode,確認コード
+login.mfa.verify,確認
+login.passkey.description,デバイスの画面ロック、指紋、またはセキュリティキーで確認してください。
+login.passkey.submit,パスキーで続行
+login.passkey.title,パスキーでログイン
+login.passkey.unsupported,このブラウザまたはデバイスはパスキーに対応していません。別のログイン方法を選択してください。
+login.password.changeDescription,続行する前に新しいパスワードを選択してください。
+login.password.changeTitle,パスワードを更新
+login.password.confirm,パスワード（確認）
+login.password.current,現在のパスワード
+login.password.description,{organization} アカウントの認証情報を入力してください。
+login.password.forgot,パスワードをお忘れですか？
+login.password.hide,パスワードを隠す
+login.password.identifier,ユーザー名またはメールアドレス
+login.password.label,パスワード
+login.password.new,新しいパスワード
+login.password.show,パスワードを表示
+login.password.submit,ログイン
+login.password.title,パスワードを入力
+login.provider.description,{provider} で続行し、完了するとここに戻ります。
+login.provider.submit,{provider} で続行
+login.provider.title,{provider} で続行
+login.recent.description,このデバイスで使用したアカウントで続行
+login.recent.other,別のアカウントを使う
+login.recent.title,アカウントを選択
+login.recovery.completeDescription,新しいパスワードでログインしてください。
+login.recovery.completeTitle,パスワードを更新しました
+login.recovery.description,メールアドレスを入力してください。アカウントが存在する場合は、復旧手順を送信します。
+login.recovery.resetDescription,アカウントの新しいパスワードを選択してください。
+login.recovery.resetSubmit,パスワードを更新
+login.recovery.resetTitle,新しいパスワードを設定
+login.recovery.sentDescription,そのアドレスに一致するアカウントがある場合は、復旧手順を送信しました。リンクはまもなく期限切れになります。
+login.recovery.sentTitle,メールを確認
+login.recovery.submit,復旧手順を送信
+login.recovery.title,パスワードをリセット
+login.register.description,{organization} のアカウントを作成
+login.register.displayName,氏名
+login.register.doneDescription,{email} に送信したリンクでメールアドレスを確認してください。
+login.register.doneTitle,メールアドレスを確認
+login.register.email,メールアドレス
+login.register.signIn,すでにアカウントをお持ちですか？
+login.register.submit,アカウントを作成
+login.register.title,アカウントを作成
+login.register.userName,ユーザー名
+login.signedIn.description,{organization} にログインしています。
+login.signedIn.title,ログイン済み
+login.status.loading,ログインを準備中
+login.status.unavailableDescription,このログイン要求を完了できません。アプリに戻って、もう一度お試しください。
+login.status.unavailableTitle,ログインできません
+login.totpEnroll.description,この設定キーを認証アプリに追加し、生成されたコードを入力してください。キーは今回のみ表示されます。
+login.totpEnroll.start,設定キーを表示
+login.totpEnroll.submit,設定を完了
+login.totpEnroll.title,認証アプリを設定
+login.verify.description,アカウントのメールアドレスを確認してください。
+login.verify.submit,メールアドレスを確認
+login.verify.title,メールアドレスを確認
+login.verify.verifiedDescription,{email} を確認しました。これでログインできます。
+login.verify.verifiedTitle,メールアドレスを確認しました

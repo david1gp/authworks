@@ -1,0 +1,682 @@
+key,ar
+account.access.accepted,Invitation accepted
+account.access.active,Active organization
+account.access.consentDescription,Applications that can access information from your account.
+account.access.consentEmpty,No applications have access to this account.
+account.access.consentRevoked,Application access was revoked.
+account.access.created,Granted {date}
+account.access.declined,Invitation declined
+account.access.email,Email
+account.access.error,This account information could not be loaded.
+account.access.expired,This invitation has expired.
+account.access.invitationDescription,Review the organization and roles before you respond.
+account.access.invitationEmpty,There are no pending invitations for this account.
+account.access.invitationFor,Invitation for {email}
+account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationReplay,This invitation was already used or is no longer available.
+account.access.membership,Membership roles
+account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationEmpty,This account does not belong to an organization.
+account.access.permission,You do not have permission to perform this action.
+account.access.roles,Roles: {roles}
+account.access.scopes,Permissions: {scopes}
+account.access.switchOrganization,Switch organization
+account.access.switched,Organization context changed to {organization}.
+account.delete.confirmLabel,Enter {email} to confirm
+account.delete.dangerZone,Danger zone
+account.delete.deletedDetail,Your account and access have been permanently removed.
+account.delete.deletedTitle,Account deleted
+account.delete.emailMismatch,The email address does not match.
+account.delete.submit,Delete account permanently
+account.delete.title,Permanently delete this account
+account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.directory.title,Your account
+account.factors.addTotp,Add authenticator
+account.factors.codeCount,{count} recovery codes
+account.factors.confirm,Confirm
+account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
+account.factors.emailOtp,Email code
+account.factors.finishTotp,Finish authenticator setup
+account.factors.passkeyCount,{count} passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Recovery
+account.factors.removeTotp,Remove authenticator
+account.factors.totp,Authenticator app
+account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
+account.factors.verificationCode,Verification code
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.empty,No external identities are linked
+account.identities.unlink,Unlink
+account.passkeys.add,Add passkey
+account.passkeys.created,Created {date}
+account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
+account.passkeys.deviceBound,Device-bound passkey
+account.passkeys.empty,No passkeys registered
+account.passkeys.remove,Remove
+account.passkeys.synced,Synced passkey
+account.password.changed,Your password was changed.
+account.password.confirm,Confirm new password
+account.password.current,Current password
+account.password.description,Use a unique password that you do not use for other services.
+account.password.mismatch,The new passwords do not match.
+account.password.new,New password
+account.password.submit,Change password
+account.password.title,Change password
+account.password.tooShort,The new password must contain at least 8 characters.
+account.profile.displayName,Display name
+account.profile.displayNameRequired,Enter a display name.
+account.profile.email,Email address
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
+account.profile.emailTitle,Email address and verification
+account.profile.firstName,First name
+account.profile.lastName,Last name
+account.profile.nickName,Nickname
+account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
+account.profile.personalInformation,Personal information
+account.profile.preferredLanguage,Preferred language
+account.profile.save,Save changes
+account.profile.saved,Your profile was saved.
+account.profile.signInDescription,These details identify your account.
+account.profile.signInTitle,Sign-in details
+account.profile.userName,Username
+account.profile.verificationPending,Verification pending
+account.profile.verified,Verified
+account.recovery.generate,Generate new codes
+account.recovery.once,Copy or print these codes now. They cannot be displayed again.
+account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
+account.recovery.saveNow,Save your recovery codes now
+account.recovery.saved,I saved these codes
+account.recovery.summary,Recovery access
+account.security.label,Account security management
+account.sessionExpired,Your session has expired
+account.sessions.current,Current session
+account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
+account.sessions.empty,No active sessions
+account.sessions.lastUsed,Last used {date}
+account.sessions.revoke,Revoke session
+account.sessions.unknownDevice,Unknown device
+account.status.available,Available
+account.status.configured,Configured
+account.status.notConfigured,Not configured
+account.status.unavailable,Unavailable
+admin.common.next,التالي
+admin.common.pagination,ترقيم الصفحات
+admin.common.permission,ليس لديك إذن لعرض بيانات الإدارة هذه.
+admin.common.previous,السابق
+admin.events.actor,الفاعل
+admin.events.aggregate,التجميع
+admin.events.count,{count} حدثاً
+admin.events.description,نشاط أمني غير قابل للتغيير للنطاق الحالي، الأحدث أولاً.
+admin.events.empty,لا توجد أحداث تطابق عامل التصفية الحالي.
+admin.events.hide,إخفاء الحمولة
+admin.events.occurred,وقع في
+admin.events.payload,الحمولة
+admin.events.redactionNotice,تُخفى القيم السرية قبل تخزين الحدث.
+admin.events.search,البحث في الأحداث
+admin.events.searchPlaceholder,تصفية حسب النوع أو التجميع أو الفاعل
+admin.events.show,إظهار الحمولة
+admin.events.systemActor,النظام
+admin.events.title,أحداث التدقيق
+admin.events.type,نوع الحدث
+admin.machine.assuranceRequired,تتطلب إدارة مستخدمي الأجهزة وبيانات اعتمادهم تسجيل دخول أقوى وأحدث. سجّل الدخول مرة أخرى للمتابعة.
+admin.machine.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
+admin.machine.created,تاريخ الإنشاء
+admin.machine.credentials.apiKeyCreated,تم إصدار مفتاح واجهة البرمجة.
+admin.machine.credentials.description,بيانات اعتماد يقدّمها مستخدم الجهاز للحصول على رمز وصول. لا يُخزَّن سوى بياناتها الوصفية، ولا تُخزَّن القيمة أبدًا.
+admin.machine.credentials.empty,لا توجد بعد بيانات اعتماد لمستخدم الجهاز هذا.
+admin.machine.credentials.expires,تنتهي الصلاحية
+admin.machine.credentials.expiresHint,اترك هذا الحقل فارغًا لإصدار بيانات اعتماد لا تنتهي صلاحيتها.
+admin.machine.credentials.issue,إصدار بيانات اعتماد
+admin.machine.credentials.issueDescription,أصدر رمز وصول شخصيًا أو مفتاح واجهة برمجة. تظهر القيمة مرة واحدة فقط ولا يمكن استرجاعها.
+admin.machine.credentials.kind,نوع بيانات الاعتماد
+admin.machine.credentials.kindAccessToken,رمز الوصول
+admin.machine.credentials.kindApiKey,مفتاح واجهة البرمجة
+admin.machine.credentials.kindClientSecret,سر العميل
+admin.machine.credentials.kindHint,يتصرف رمز الوصول الشخصي نيابةً عن مستخدم الجهاز مباشرةً. أما مفتاح واجهة البرمجة فمخصّص لتكامل واحد.
+admin.machine.credentials.kindToken,رمز وصول شخصي
+admin.machine.credentials.name,الاسم
+admin.machine.credentials.neverExpires,لا تنتهي صلاحيته
+admin.machine.credentials.onceWarning,تظهر القيمة الصادرة مرة واحدة فقط. احفظها قبل إغلاق هذه النافذة؛ لا يمكن استرجاعها مرة أخرى.
+admin.machine.credentials.revoke,إبطال
+admin.machine.credentials.revoked,تم إبطال بيانات الاعتماد.
+admin.machine.credentials.scopes,النطاقات
+admin.machine.credentials.scopesHint,افصل بين النطاقات بمسافات أو فواصل. اتركه فارغًا لوراثة نطاقات مستخدم الجهاز.
+admin.machine.credentials.stateActive,نشطة
+admin.machine.credentials.stateExpired,منتهية الصلاحية
+admin.machine.credentials.stateRevoked,مُبطَلة
+admin.machine.credentials.subject,مستخدم الجهاز
+admin.machine.credentials.title,بيانات الاعتماد والرموز
+admin.machine.credentials.tokenCreated,تم إصدار رمز الوصول الشخصي.
+admin.machine.credentials.unnamed,بيانات اعتماد بلا اسم
+admin.machine.crossTenant,ينتمي مستخدم الجهاز هذا إلى نطاق آخر وهو غير متاح هنا.
+admin.machine.lifecycle.activate,تفعيل
+admin.machine.lifecycle.deactivate,تعطيل
+admin.machine.lifecycle.description,يمنع التعطيل جميع بيانات الاعتماد من المصادقة. الإزالة دائمة ولا يمكن التراجع عنها.
+admin.machine.lifecycle.remove,إزالة مستخدم الجهاز
+admin.machine.lifecycle.title,دورة الحياة
+admin.machine.pageNext,الصفحة التالية
+admin.machine.pagePrevious,الصفحة السابقة
+admin.machine.permissionDenied,ليس لديك إذن لعرض مستخدمي الأجهزة في هذا النطاق أو تغييرهم.
+admin.machine.permissionDeniedTitle,الوصول غير متاح
+admin.machine.secret.acknowledge,لقد حفظت السر
+admin.machine.secret.apiKeyTitle,مفتاح واجهة برمجة جديد
+admin.machine.secret.clientId,معرّف العميل
+admin.machine.secret.clientTitle,سر عميل جديد
+admin.machine.secret.copied,تم النسخ إلى الحافظة
+admin.machine.secret.copy,نسخ السر
+admin.machine.secret.copyFailed,الحافظة غير متاحة. حدّد القيمة وانسخها يدويًا.
+admin.machine.secret.description,يتيح سر العميل لمستخدم الجهاز هذا استبدال بيانات اعتماد العميل برمز وصول. يُخزَّن للكتابة فقط ولا يمكن إلا تدويره.
+admin.machine.secret.once,هذه هي المرة الوحيدة التي تظهر فيها قيمة {name}. احفظها الآن؛ لا يمكن استرجاعها.
+admin.machine.secret.redacted,مخزَّن ومخفي
+admin.machine.secret.rotate,تدوير سر العميل
+admin.machine.secret.rotated,تم تدوير سر العميل.
+admin.machine.secret.title,سر العميل
+admin.machine.secret.tokenTitle,رمز وصول شخصي جديد
+admin.machine.secret.value,قيمة السر
+admin.machine.status,الحالة
+admin.machine.updated,آخر تحديث
+admin.machine.users.create,إنشاء مستخدم جهاز
+admin.machine.users.createDescription,أنشئ هوية غير بشرية لخدمة أو تكامل. يظهر سر العميل الخاص بها مرة واحدة فقط.
+admin.machine.users.createSecretHint,يُصدَر معرّف عميل وسر عميل على الفور. يظهر السر مرة واحدة فقط ولا يمكن استرجاعه.
+admin.machine.users.created,تم إنشاء مستخدم الجهاز.
+admin.machine.users.description,هويات غير بشرية تُصادق في هذا النطاق باستخدام بيانات اعتماد العميل أو الرموز أو مفاتيح واجهة البرمجة.
+admin.machine.users.displayName,الاسم المعروض
+admin.machine.users.empty,لا يوجد بعد أي مستخدم جهاز في هذا النطاق.
+admin.machine.users.lifecycleChanged,تم تغيير حالة مستخدم الجهاز.
+admin.machine.users.noScopes,لا توجد نطاقات
+admin.machine.users.scopes,النطاقات
+admin.machine.users.scopesHint,افصل بين النطاقات بمسافات أو فواصل. تُطابَق النطاقات مطابقةً تامة.
+admin.machine.users.search,البحث عن مستخدمي الأجهزة
+admin.machine.users.title,مستخدمو الأجهزة
+admin.machine.users.userName,اسم المستخدم
+admin.machine.users.userNameHint,يُستخدم كمعرّف عميل عند استبدال بيانات اعتماد العميل.
+admin.oidc.assuranceRequired,تتطلب إدارة إعدادات OpenID Connect تسجيل دخول أقوى وأحدث. سجّل الدخول مرة أخرى للمتابعة.
+admin.oidc.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
+admin.oidc.clients.consent,الموافقة
+admin.oidc.clients.consentRequired,مطلوبة
+admin.oidc.clients.consentSkipped,غير مطلوبة
+admin.oidc.clients.create,تسجيل عميل
+admin.oidc.clients.createDescription,سجّل تطبيقًا يسجّل دخول الأشخاص عبر OpenID Connect. يحصل العميل السري على سر لمرة واحدة فقط.
+admin.oidc.clients.created,تم تسجيل العميل.
+admin.oidc.clients.description,التطبيقات التي تصادق الأشخاص عبر OpenID Connect في هذا النطاق.
+admin.oidc.clients.empty,لا يوجد بعد أي عميل OpenID Connect مسجّل في هذا النطاق.
+admin.oidc.clients.exactMatchHint,معرّف URI واحد في كل سطر. تتم مطابقة كل إعادة توجيه بشكل تام، لذا تُرفض أحرف البدل والاختلافات في النهاية.
+admin.oidc.clients.lifecycleChanged,تم تغيير حالة العميل.
+admin.oidc.clients.name,اسم العميل
+admin.oidc.clients.postLogoutUris,معرّفات URI لإعادة التوجيه بعد تسجيل الخروج
+admin.oidc.clients.redirectUris,معرّفات URI لإعادة التوجيه
+admin.oidc.clients.requireConsent,اطلب من الشخص الموافقة على هذا التطبيق
+admin.oidc.clients.saved,تم حفظ العميل.
+admin.oidc.clients.scopes,النطاقات المسموح بها
+admin.oidc.clients.search,البحث عن العملاء
+admin.oidc.clients.settingsDescription,تحكّم في اسم العميل ومعرّفات URI الدقيقة لإعادة التوجيه والنطاقات المسموح بها وطريقة التعامل مع الموافقة.
+admin.oidc.clients.settingsTitle,إعدادات العميل
+admin.oidc.clients.title,عملاء OpenID Connect
+admin.oidc.clients.trusted,موثوق
+admin.oidc.clients.trustedHint,يتخطى العميل الموثوق شاشة الموافقة بالكامل. ضع علامة موثوق على تطبيقاتك الخاصة فقط.
+admin.oidc.clients.type,نوع العميل
+admin.oidc.clients.typeConfidential,سري
+admin.oidc.clients.typeHint,يحتفظ العميل السري بسر على خادم. أما العميل العام، مثل تطبيق الجوال أو تطبيق الصفحة الواحدة، فلا يستطيع ذلك.
+admin.oidc.clients.typePublic,عام
+admin.oidc.consents.client,التطبيق
+admin.oidc.consents.description,التطبيقات التي وافق عليها الشخص. يؤدي إلغاء الموافقة إلى مطالبته بالموافقة على التطبيق مرة أخرى.
+admin.oidc.consents.empty,لم يوافق هذا الشخص على أي تطبيق بعد.
+admin.oidc.consents.granted,تمت الموافقة
+admin.oidc.consents.revoked,تم إلغاء الموافقة.
+admin.oidc.consents.title,موافقات التطبيقات
+admin.oidc.consents.user,الشخص
+admin.oidc.created,تاريخ الإنشاء
+admin.oidc.crossTenant,ينتمي هذا المورد إلى نطاق آخر وغير متاح هنا.
+admin.oidc.documents.authorizationEndpoint,نقطة نهاية التفويض
+admin.oidc.documents.copied,تم النسخ
+admin.oidc.documents.copy,نسخ المستند
+admin.oidc.documents.description,مستندات البروتوكول التي ينشرها Authworks لهذا النطاق، تمامًا كما تقرأها مكتبة العميل.
+admin.oidc.documents.discoveryDescription,بيانات تعريف موفّر OpenID المقدَّمة من نقطة نهاية well-known.
+admin.oidc.documents.discoveryTitle,مستند الاكتشاف
+admin.oidc.documents.empty,لم تُنشر بعد أي مستندات بروتوكول لهذا النطاق.
+admin.oidc.documents.endSessionEndpoint,نقطة نهاية إنهاء الجلسة
+admin.oidc.documents.issuer,المُصدِر
+admin.oidc.documents.jwksDescription,المفاتيح العامة التي تتحقق من الرموز الصادرة عن هذا النطاق.
+admin.oidc.documents.jwksTitle,مجموعة مفاتيح الويب JSON
+admin.oidc.documents.jwksUri,معرّف URI لـ JWKS
+admin.oidc.documents.open,فتح نقطة النهاية
+admin.oidc.documents.readOnly,تُنشأ هذه المستندات من إعدادات النطاق ومفاتيح التوقيع. ولا يمكن تحريرها هنا.
+admin.oidc.documents.showRaw,عرض المستند الخام
+admin.oidc.documents.title,مستندات البروتوكول
+admin.oidc.documents.tokenEndpoint,نقطة نهاية الرمز
+admin.oidc.documents.userinfoEndpoint,نقطة نهاية userinfo
+admin.oidc.keys.algorithm,الخوارزمية
+admin.oidc.keys.create,إضافة مفتاح
+admin.oidc.keys.created,تم نشر مفتاح توقيع جديد.
+admin.oidc.keys.description,المفاتيح التي توقّع رموز هذا النطاق. يؤدي التدوير إلى نشر مفتاح جديد وإحالة المفتاح الحالي إلى التقاعد.
+admin.oidc.keys.empty,لا توجد بعد مفاتيح توقيع لهذا النطاق.
+admin.oidc.keys.keyId,معرّف المفتاح
+admin.oidc.keys.privateNotice,تُعرض بيانات تعريف المفتاح العام فقط. ولا تُرسل مادة المفتاح الخاص إلى المتصفح أبدًا.
+admin.oidc.keys.retire,إحالة إلى التقاعد
+admin.oidc.keys.retired,تمت إحالة مفتاح التوقيع إلى التقاعد.
+admin.oidc.keys.retiredAt,تاريخ التقاعد
+admin.oidc.keys.rotate,تدوير المفتاح
+admin.oidc.keys.rotated,تم تدوير مفتاح التوقيع.
+admin.oidc.keys.title,مفاتيح التوقيع
+admin.oidc.lifecycle.activate,تفعيل
+admin.oidc.lifecycle.deactivate,إلغاء التفعيل
+admin.oidc.lifecycle.remove,إزالة العميل
+admin.oidc.pageNext,الصفحة التالية
+admin.oidc.pagePrevious,الصفحة السابقة
+admin.oidc.permissionDenied,ليس لديك إذن لعرض إعدادات OpenID Connect في هذا النطاق أو تغييرها.
+admin.oidc.permissionDeniedTitle,الوصول غير متاح
+admin.oidc.secret.acknowledge,لقد حفظت السر
+admin.oidc.secret.copied,تم النسخ إلى الحافظة
+admin.oidc.secret.copy,نسخ السر
+admin.oidc.secret.copyFailed,الحافظة غير متاحة. حدّد القيمة وانسخها يدويًا.
+admin.oidc.secret.createdTitle,سر عميل جديد
+admin.oidc.secret.description,لا يُعرض سر العميل المحفوظ مرة أخرى أبدًا. دوّره لإصدار بديل، أو ألغِه لمنع العميل من المصادقة.
+admin.oidc.secret.once,هذه هي المرة الوحيدة التي يُعرض فيها سر {client}. احفظه الآن؛ لا يمكن استرجاعه.
+admin.oidc.secret.publicClient,يصادق العميل العام دون سر، لذا لا يوجد ما يمكن تدويره.
+admin.oidc.secret.redacted,محفوظ ومخفي
+admin.oidc.secret.revoke,إلغاء السر
+admin.oidc.secret.revoked,تم إلغاء سر العميل.
+admin.oidc.secret.rotate,تدوير السر
+admin.oidc.secret.rotated,تم تدوير سر العميل.
+admin.oidc.secret.rotatedTitle,سر العميل بعد التدوير
+admin.oidc.secret.title,سر العميل
+admin.oidc.status,الحالة
+admin.oidc.updated,آخر تحديث
+admin.organizations.assuranceRequired,سجّل الدخول مرة أخرى بطريقة مصادقة أقوى لتغيير إعداد المؤسسة هذا.
+admin.organizations.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
+admin.organizations.branding.background,لون الخلفية
+admin.organizations.branding.dark,سمة داكنة
+admin.organizations.branding.description,الألوان والشعارات والروابط القانونية المعروضة في شاشات تسجيل الدخول والحساب المستضافة.
+admin.organizations.branding.font,لون النص
+admin.organizations.branding.iconUrl,عنوان URL للأيقونة
+admin.organizations.branding.light,سمة فاتحة
+admin.organizations.branding.logoUrl,عنوان URL للشعار
+admin.organizations.branding.preview,معاينة
+admin.organizations.branding.primary,اللون الأساسي
+admin.organizations.branding.privacyUrl,عنوان URL لسياسة الخصوصية
+admin.organizations.branding.saved,تم حفظ الهوية البصرية.
+admin.organizations.branding.termsUrl,عنوان URL لشروط الخدمة
+admin.organizations.branding.themeMode,السمة الافتراضية
+admin.organizations.branding.title,الهوية البصرية
+admin.organizations.branding.warn,لون التحذير
+admin.organizations.branding.watermark,إخفاء العلامة المائية لـ Authworks
+admin.organizations.detail.created,تاريخ الإنشاء
+admin.organizations.detail.realm,النطاق
+admin.organizations.detail.settingsDescription,تحكّم في اسم المؤسسة وحالة دورة حياتها.
+admin.organizations.detail.settingsTitle,إعدادات المؤسسة
+admin.organizations.detail.updated,آخر تحديث
+admin.organizations.domains.claim,المطالبة بالنطاق
+admin.organizations.domains.claimed,تمت المطالبة بـ {domain} وهو في انتظار التحقق.
+admin.organizations.domains.description,تتيح النطاقات الموثّقة للأشخاص العثور على هذه المؤسسة من عنوان بريدهم الإلكتروني.
+admin.organizations.domains.discovery,معاينة الاكتشاف
+admin.organizations.domains.discoveryDescription,تحقّق من المؤسسة التي يُحل إليها النطاق حالياً أثناء تسجيل الدخول.
+admin.organizations.domains.discoveryFound,يُحل {domain} إلى {organization}.
+admin.organizations.domains.discoveryMissing,لا يُحل {domain} إلى أي مؤسسة.
+admin.organizations.domains.domain,النطاق
+admin.organizations.domains.empty,لم تطالب هذه المؤسسة بأي نطاق بعد.
+admin.organizations.domains.primary,المجال الأساسي
+admin.organizations.domains.remove,إزالة النطاق
+admin.organizations.domains.removed,تمت إزالة النطاق.
+admin.organizations.domains.title,النطاقات والاكتشاف
+admin.organizations.domains.unverified,في انتظار التحقق
+admin.organizations.domains.verificationRecord,أضف سجل DNS TXT هذا، ثم تحقّق.
+admin.organizations.domains.verified,Verified
+admin.organizations.domains.verify,التحقق من النطاق
+admin.organizations.domains.verifyDone,تم التحقق من النطاق.
+admin.organizations.invitations.create,دعوة شخص
+admin.organizations.invitations.description,ادعُ الأشخاص عبر البريد الإلكتروني وتتبّع الدعوات التي ما زالت معلّقة.
+admin.organizations.invitations.email,Email address
+admin.organizations.invitations.empty,لم تُرسل أي دعوة لهذه المؤسسة.
+admin.organizations.invitations.expires,ينتهي في
+admin.organizations.invitations.revoke,إبطال الدعوة
+admin.organizations.invitations.revoked,تم إبطال الدعوة.
+admin.organizations.invitations.sent,تم إنشاء الدعوة.
+admin.organizations.invitations.title,الدعوات
+admin.organizations.invitations.tokenDismiss,لقد حفظت هذا الرابط
+admin.organizations.invitations.tokenOnce,يُعرض رابط الدعوة هذا مرة واحدة. شاركه مع الشخص الذي دعوته.
+admin.organizations.invitations.tokenTitle,رابط الدعوة
+admin.organizations.lifecycle.activate,إعادة تفعيل المؤسسة
+admin.organizations.lifecycle.changed,تم تغيير حالة دورة حياة المؤسسة.
+admin.organizations.lifecycle.deactivate,إلغاء تفعيل المؤسسة
+admin.organizations.lifecycle.remove,إزالة المؤسسة
+admin.organizations.list.create,إنشاء مؤسسة
+admin.organizations.list.description,تجمع المؤسسات الأشخاص والنطاقات والهوية البصرية لهذا النطاق.
+admin.organizations.list.empty,لا توجد مؤسسات في هذا النطاق بعد.
+admin.organizations.list.name,اسم المؤسسة
+admin.organizations.list.search,البحث في المؤسسات
+admin.organizations.list.title,المؤسسات
+admin.organizations.memberships.add,إضافة عضو
+admin.organizations.memberships.added,تمت إضافة العضو.
+admin.organizations.memberships.description,الأشخاص في هذه المؤسسة والأدوار الثابتة المسندة إليهم.
+admin.organizations.memberships.empty,لا يوجد أعضاء في هذه المؤسسة بعد.
+admin.organizations.memberships.remove,إزالة العضو
+admin.organizations.memberships.removed,تمت إزالة العضو.
+admin.organizations.memberships.roles,الأدوار
+admin.organizations.memberships.rolesFixed,الأدوار ثابتة بواسطة Authworks ولا يمكن إعادة تسميتها.
+admin.organizations.memberships.title,الأعضاء والأدوار
+admin.organizations.memberships.updated,تم تحديث أدوار العضو.
+admin.organizations.memberships.user,المستخدم
+admin.organizations.memberships.userId,معرّف المستخدم
+admin.organizations.pageNext,الصفحة التالية
+admin.organizations.pagePrevious,الصفحة السابقة
+admin.organizations.permissionDenied,ليس لديك إذن لعرض هذه المؤسسة أو تغييرها.
+admin.organizations.permissionDeniedTitle,الوصول غير متاح
+admin.organizations.policy.description,اختر طرق تسجيل الدخول المتاحة للأشخاص والمزوّدين المهيّئين الذين يظهرون.
+admin.organizations.policy.domainDiscovery,اكتشاف المؤسسة من نطاق البريد الإلكتروني
+admin.organizations.policy.emailOtp,رمز لمرة واحدة عبر البريد الإلكتروني
+admin.organizations.policy.externalIdentity,مزوّدو الهوية الخارجيون
+admin.organizations.policy.inherited,موروث من النطاق
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,كلمة المرور
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,التسجيل الذاتي
+admin.organizations.policy.saved,تم حفظ سياسة تسجيل الدخول.
+admin.organizations.policy.title,سياسة تسجيل الدخول
+admin.organizations.providers.allowAccountCreation,إنشاء حسابات للأشخاص الجدد تلقائياً
+admin.organizations.providers.clientId,معرّف العميل
+admin.organizations.providers.clientSecret,سر العميل
+admin.organizations.providers.create,إضافة مزوّد
+admin.organizations.providers.created,تمت تهيئة المزوّد.
+admin.organizations.providers.description,مزوّدو Google وGitHub وMicrosoft المهيّئون لهذه المؤسسة.
+admin.organizations.providers.disable,تعطيل المزوّد
+admin.organizations.providers.disabled,تم تعطيل المزوّد.
+admin.organizations.providers.displayName,Display name
+admin.organizations.providers.empty,لم يتم تهيئة أي مزوّد هوية خارجي بعد.
+admin.organizations.providers.redirectUri,عنوان URI لإعادة التوجيه
+admin.organizations.providers.rotateSecret,استبدال سر العميل
+admin.organizations.providers.secretRotated,تم استبدال سر العميل.
+admin.organizations.providers.secretWriteOnly,لا يُعرض سر العميل المخزّن أبداً. أدخل قيمة جديدة لاستبداله.
+admin.organizations.providers.title,مزوّدو الهوية
+admin.organizations.providers.type,المزوّد
+admin.organizations.providers.updated,تم تحديث المزوّد.
+admin.organizations.renamed,تمت إعادة تسمية المؤسسة.
+admin.organizations.status,الحالة
+admin.overview.description,هوية النطاق الذي تديره ومجالاته ودورة حياته.
+admin.overview.sessionTitle,جلسة المسؤول
+admin.overview.title,نظرة عامة على النطاق
+admin.projects.access.description,الأدوار التي يمتلكها هذا المسؤول فعلياً في المشروع الآن.
+admin.projects.access.empty,لا توجد أدوار مشروع فعّالة في سياق المؤسسة الحالي.
+admin.projects.access.grantedOrganization,مُمنَح عبر المؤسسة
+admin.projects.access.permissionDescription,تُحدَّد الأدوار الثابتة وأذوناتها بواسطة Authworks ولا يمكن تعديلها.
+admin.projects.access.permissionTitle,الأدوار والأذونات الثابتة
+admin.projects.access.roleKeys,أدوار المشروع الفعلية
+admin.projects.access.title,الوصول الفعلي
+admin.projects.applications.create,إضافة تطبيق
+admin.projects.applications.description,التطبيقات التي تصادق على هذا المشروع.
+admin.projects.applications.empty,لا توجد تطبيقات في هذا المشروع بعد.
+admin.projects.applications.name,اسم التطبيق
+admin.projects.applications.title,التطبيقات
+admin.projects.applications.type,نوع التطبيق
+admin.projects.crossTenant,ينتمي هذا المورد إلى نطاق آخر وغير متاح هنا.
+admin.projects.detail.authorizationRequired,التفويض مطلوب
+admin.projects.detail.created,تاريخ الإنشاء
+admin.projects.detail.organization,المؤسسة
+admin.projects.detail.projectAccessRequired,الوصول إلى المشروع مطلوب
+admin.projects.detail.settingsDescription,تحكّم في اسم المشروع وكيفية فرض الوصول.
+admin.projects.detail.settingsTitle,إعدادات المشروع
+admin.projects.detail.updated,آخر تحديث
+admin.projects.grants.create,منح وصول المؤسسة
+admin.projects.grants.description,امنح مؤسسة أخرى حق الوصول إلى هذا المشروع واختر الأدوار التي تحصل عليها.
+admin.projects.grants.empty,لم يُمنح أي مؤسسة حق الوصول إلى هذا المشروع.
+admin.projects.grants.grantedOrganization,المؤسسة الممنوحة
+admin.projects.grants.roleKeys,الأدوار الممنوحة
+admin.projects.grants.title,منح المؤسسة
+admin.projects.lifecycle.activate,تفعيل
+admin.projects.lifecycle.deactivate,إلغاء التفعيل
+admin.projects.lifecycle.remove,Remove
+admin.projects.list.create,إنشاء مشروع
+admin.projects.list.description,تجمع المشاريع تطبيقات المؤسسة وأدوارها ومنحها.
+admin.projects.list.empty,لا توجد مشاريع في هذا النطاق بعد.
+admin.projects.list.name,اسم المشروع
+admin.projects.list.search,البحث في المشاريع
+admin.projects.list.title,المشاريع
+admin.projects.pageNext,الصفحة التالية
+admin.projects.pagePrevious,الصفحة السابقة
+admin.projects.permissionDenied,ليس لديك إذن لعرض معلومات هذا المشروع أو تغييرها.
+admin.projects.roles.create,إنشاء دور
+admin.projects.roles.description,الأدوار التي يمكن لهذا المشروع إسنادها إلى المؤسسات وأعضائها.
+admin.projects.roles.displayName,Display name
+admin.projects.roles.empty,لا يحدّد هذا المشروع أي أدوار بعد.
+admin.projects.roles.group,المجموعة
+admin.projects.roles.key,مفتاح الدور
+admin.projects.roles.title,أدوار المشروع
+admin.projects.saved,تم حفظ {name}.
+admin.projects.status,الحالة
+admin.realm.confirmLabel,اكتب {name} للتأكيد
+admin.realm.confirmMismatch,اسم النطاق غير مطابق.
+admin.realm.created,تاريخ الإنشاء
+admin.realm.dangerZone,منطقة الخطر
+admin.realm.description,إعدادات الهوية وتسجيل الدخول للنطاق الذي تديره.
+admin.realm.disable,تعطيل النطاق
+admin.realm.disableConfirm,تعطيل هذا النطاق يوقف تسجيل الدخول لجميع تطبيقاته. هل تريد المتابعة؟
+admin.realm.disableWarning,يؤدي تعطيل هذا النطاق إلى إيقاف تسجيل الدخول وإصدار الرموز فورًا لجميع تطبيقاته.
+admin.realm.disabled,تم تعطيل النطاق.
+admin.realm.domainRequired,أدخل مجالًا واحدًا على الأقل للنطاق.
+admin.realm.domains,المجالات
+admin.realm.domainsHint,افصل بين المجالات بفواصل. المجال الأول هو المجال الأساسي.
+admin.realm.enable,تفعيل النطاق
+admin.realm.enableDescription,هذا النطاق معطل. فعّله لاستعادة تسجيل الدخول وإصدار الرموز.
+admin.realm.enabled,تم تفعيل النطاق.
+admin.realm.identifier,معرّف النطاق
+admin.realm.invalid,أدخل اسم النطاق ومجالًا واحدًا على الأقل.
+admin.realm.lifecycleTitle,دورة حياة النطاق
+admin.realm.name,اسم النطاق
+admin.realm.nameRequired,أدخل اسمًا للنطاق.
+admin.realm.permissionDenied,ليس لديك إذن لتغيير هذا النطاق.
+admin.realm.primaryDomain,المجال الأساسي
+admin.realm.save,حفظ الإعدادات
+admin.realm.saved,تم حفظ إعدادات النطاق.
+admin.realm.settingsDescription,غيّر اسم النطاق والمجالات التي تشير إليه.
+admin.realm.settingsTitle,الإعدادات العامة
+admin.realm.status,الحالة
+admin.realm.statusActive,نشط
+admin.realm.statusDisabled,معطل
+admin.realm.title,إعدادات النطاق
+admin.realm.updated,آخر تحديث
+admin.session.expired,انتهت صلاحية جلسة المسؤول
+admin.signIn.activeTitle,جلسة المسؤول نشطة
+admin.signIn.credential,بيانات اعتماد المسؤول الأولي
+admin.signIn.credentialInvalid,أدخل بيانات اعتماد المسؤول الأولي كاملة.
+admin.signIn.credentialNotStored,يتم استبدال بيانات الاعتماد بجلسة متصفح قصيرة ولا يتم تخزينها أبدًا في هذا المتصفح.
+admin.signIn.description,استبدل بيانات الاعتماد الأولية الصادرة عن المشغّل بجلسة مسؤول قصيرة في المتصفح.
+admin.signIn.expiresAt,تنتهي هذه الجلسة في {date}.
+admin.signIn.signedOutDetail,تم إنهاء جلسة المسؤول على هذا الجهاز.
+admin.signIn.signedOutTitle,تم تسجيل الخروج
+admin.signIn.subject,الموضوع
+admin.signIn.subjectType,نوع الموضوع
+admin.signIn.title,تسجيل دخول المسؤول
+admin.users.count,{count} مستخدماً
+admin.users.create,إنشاء مستخدم
+admin.users.createDescription,أضف مستخدماً بشرياً إلى النطاق الحالي.
+admin.users.createSubmit,إنشاء
+admin.users.created,تم إنشاء {userName}.
+admin.users.dangerZone,منطقة الخطر
+admin.users.delete,حذف المستخدم
+admin.users.deleteConfirm,حذف {userName} نهائياً؟
+admin.users.deleteWarning,يؤدي حذف هذا المستخدم إلى إبطال جلساته ووصوله فوراً.
+admin.users.deleted,تم حذف {userName}.
+admin.users.description,الهويات البشرية في النطاق الحالي.
+admin.users.detailTitle,تفاصيل المستخدم
+admin.users.displayName,Display name
+admin.users.displayNameRequired,Enter a display name.
+admin.users.email,Email address
+admin.users.empty,لا يوجد مستخدمون يطابقون عامل التصفية الحالي.
+admin.users.firstName,First name
+admin.users.invalid,أدخل عنوان بريد إلكتروني واسم مستخدم صالحين.
+admin.users.lastName,Last name
+admin.users.lifecycle.active,نشط
+admin.users.lifecycle.deleted,محذوف
+admin.users.lifecycle.inactive,غير نشط
+admin.users.lifecycle.initial,مبدئي
+admin.users.lifecycle.locked,مقفل
+admin.users.lifecycle.suspended,موقوف
+admin.users.lifecycleChanged,حالة المستخدم الآن {state}.
+admin.users.lifecycleConfirm,تعيين {userName} إلى {state}؟
+admin.users.lifecycleDescription,حدّد ما إذا كان بإمكان هذا المستخدم تسجيل الدخول.
+admin.users.lifecycleTitle,دورة الحياة
+admin.users.markUnverified,وضع علامة غير موثّق
+admin.users.markVerified,وضع علامة موثّق
+admin.users.missingId,تعذّر تحديد هذا المستخدم من العنوان.
+admin.users.nickName,Nickname
+admin.users.preferredLanguage,Preferred language
+admin.users.profileSave,حفظ الملف الشخصي
+admin.users.profileSaved,تم حفظ الملف الشخصي للمستخدم.
+admin.users.profileTitle,الملف الشخصي
+admin.users.search,البحث في المستخدمين
+admin.users.searchPlaceholder,تصفية حسب اسم المستخدم أو البريد الإلكتروني أو المعرّف
+admin.users.state,الحالة
+admin.users.title,المستخدمون
+admin.users.unverified,غير موثّق
+admin.users.updated,آخر تحديث {date}
+admin.users.userName,Username
+admin.users.verification,التحقق
+admin.users.verificationChanged,حالة التحقق الآن {state}.
+admin.users.verificationDescription,تحكّم في ما إذا كان عنوان البريد الإلكتروني لهذا المستخدم يُعد موثّقاً.
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verified
+app.name,Authworks
+common.back,رجوع
+common.cancel,إلغاء
+common.close,إغلاق
+common.continue,متابعة
+common.decline,Decline
+common.error,حدث خطأ ما.
+common.language,اللغة
+common.loading,جارٍ التحميل
+common.retry,إعادة المحاولة
+common.revoke,Revoke
+common.save,حفظ
+common.signIn,تسجيل الدخول
+common.signInWithProvider,تسجيل الدخول باستخدام {provider}
+common.signOut,تسجيل الخروج
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,اختر طريقة تسجيل الدخول إلى {organization}
+login.chooser.emailOtpDetail,استلام رمز لمرة واحدة عبر البريد الإلكتروني
+login.chooser.emailOtpLabel,رمز البريد الإلكتروني
+login.chooser.passkeyDetail,استخدام قفل شاشة جهازك أو مفتاح أمان
+login.chooser.passkeyLabel,مفتاح مرور
+login.chooser.passwordDetail,استخدام كلمة مرور حسابك
+login.chooser.passwordLabel,كلمة المرور
+login.chooser.providerDetail,المتابعة باستخدام حساب مرتبط
+login.chooser.providerLabel,المتابعة باستخدام {provider}
+login.chooser.register,إنشاء حساب
+login.chooser.title,تسجيل الدخول
+login.chooser.useRecent,استخدام حساب حديث
+login.common.back,العودة إلى خيارات تسجيل الدخول
+login.common.legal,بمتابعة الاستخدام، فإنك تقرّ بـ {terms} و{privacy}.
+login.common.privacy,سياسة الخصوصية
+login.common.terms,شروط الخدمة
+login.common.working,جارٍ التنفيذ…
+login.emailOtp.codeDescription,أدخل الرمز المكوّن من ستة أرقام الذي أرسلناه إلى {email}.
+login.emailOtp.codeTitle,أدخل رمز البريد الإلكتروني
+login.emailOtp.description,سنرسل إليك رمزًا للاستخدام مرة واحدة عبر البريد الإلكتروني بدلًا من طلب كلمة مرور.
+login.emailOtp.resend,إرسال رمز جديد
+login.emailOtp.send,إرسال الرمز
+login.emailOtp.title,تسجيل الدخول باستخدام رمز البريد الإلكتروني
+login.emailOtp.verify,التحقق من الرمز
+login.error.codeRequired,أدخل رمز التحقق المكوّن من ستة أرقام.
+login.error.credentialsRequired,أدخل اسم المستخدم وكلمة المرور.
+login.error.emailRequired,أدخل عنوان بريد إلكتروني صالحًا.
+login.error.enrollmentMissing,ابدأ إعداد تطبيق المصادقة قبل تأكيد الرمز.
+login.error.nameRequired,أدخل الاسم الذي سيظهر في حسابك.
+login.error.passwordMismatch,كلمتا المرور غير متطابقتين.
+login.error.passwordTooShort,يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.
+login.error.recoveryCodeRequired,أدخل أحد رموز الاسترداد المحفوظة.
+login.error.tokenMissing,افتح الرابط الكامل من بريدك الإلكتروني للمتابعة.
+login.logout.description,يمكنك إنهاء هذه الجلسة على هذا الجهاز.
+login.logout.doneDescription,تم تسجيل خروجك من {organization}.
+login.logout.doneTitle,تم تسجيل الخروج
+login.logout.submit,تسجيل الخروج
+login.logout.title,تسجيل الخروج من {organization}
+login.mfa.description,اختر طريقة لتأكيد هويتك.
+login.mfa.emailOtp,رمز البريد الإلكتروني
+login.mfa.emailOtpDescription,أدخل الرمز المكوّن من ستة أرقام الذي أرسلناه إلى عنوان بريدك الإلكتروني.
+login.mfa.passkey,مفتاح مرور
+login.mfa.recoveryCode,رمز استرداد
+login.mfa.recoveryCodeDescription,استخدم أحد الرموز أحادية الاستخدام التي حفظتها عند إعداد التحقق.
+login.mfa.recoveryCodeLabel,رمز الاسترداد
+login.mfa.title,التحقق بخطوتين
+login.mfa.totp,تطبيق المصادقة
+login.mfa.totpDescription,أدخل الرمز المكوّن من ستة أرقام من تطبيق المصادقة.
+login.mfa.verificationCode,رمز التحقق
+login.mfa.verify,تحقق
+login.passkey.description,أكد هويتك باستخدام قفل شاشة جهازك أو بصمة إصبعك أو مفتاح أمان.
+login.passkey.submit,المتابعة باستخدام مفتاح المرور
+login.passkey.title,تسجيل الدخول باستخدام مفتاح المرور
+login.passkey.unsupported,لا يمكن لهذا المتصفح أو الجهاز استخدام مفاتيح المرور. اختر طريقة تسجيل دخول أخرى.
+login.password.changeDescription,اختر كلمة مرور جديدة قبل المتابعة.
+login.password.changeTitle,تحديث كلمة المرور
+login.password.confirm,تأكيد كلمة المرور
+login.password.current,كلمة المرور الحالية
+login.password.description,أدخل بيانات اعتماد حساب {organization}.
+login.password.forgot,هل نسيت كلمة المرور؟
+login.password.hide,إخفاء كلمة المرور
+login.password.identifier,اسم المستخدم أو البريد الإلكتروني
+login.password.label,كلمة المرور
+login.password.new,كلمة المرور الجديدة
+login.password.show,إظهار كلمة المرور
+login.password.submit,تسجيل الدخول
+login.password.title,أدخل كلمة المرور
+login.provider.description,ستتابع على {provider} وتعود إلى هنا عند الانتهاء.
+login.provider.submit,المتابعة باستخدام {provider}
+login.provider.title,المتابعة باستخدام {provider}
+login.recent.description,المتابعة باستخدام حساب استخدمته على هذا الجهاز.
+login.recent.other,استخدام حساب آخر
+login.recent.title,اختر حسابًا
+login.recovery.completeDescription,سجّل الدخول باستخدام كلمة المرور الجديدة.
+login.recovery.completeTitle,تم تحديث كلمة المرور
+login.recovery.description,أدخل عنوان بريدك الإلكتروني وسنرسل تعليمات الاسترداد إذا كان هناك حساب.
+login.recovery.resetDescription,اختر كلمة مرور جديدة لحسابك.
+login.recovery.resetSubmit,تحديث كلمة المرور
+login.recovery.resetTitle,تعيين كلمة مرور جديدة
+login.recovery.sentDescription,إذا تطابق هذا العنوان مع حساب، فستصل تعليمات الاسترداد قريبًا. تنتهي صلاحية الرابط بعد قليل.
+login.recovery.sentTitle,تحقق من بريدك الإلكتروني
+login.recovery.submit,إرسال تعليمات الاسترداد
+login.recovery.title,إعادة تعيين كلمة المرور
+login.register.description,إنشاء حساب لـ {organization}
+login.register.displayName,الاسم الكامل
+login.register.doneDescription,أكد عنوان بريدك الإلكتروني باستخدام الرابط الذي أرسلناه إلى {email}.
+login.register.doneTitle,تأكيد عنوان البريد الإلكتروني
+login.register.email,عنوان البريد الإلكتروني
+login.register.signIn,هل لديك حساب بالفعل؟
+login.register.submit,إنشاء حساب
+login.register.title,إنشاء حسابك
+login.register.userName,اسم المستخدم
+login.signedIn.description,لقد سجلت الدخول إلى {organization}.
+login.signedIn.title,تم تسجيل الدخول
+login.status.loading,جارٍ إعداد تسجيل الدخول
+login.status.unavailableDescription,يتعذر إكمال طلب تسجيل الدخول هذا. ارجع إلى التطبيق وحاول مرة أخرى.
+login.status.unavailableTitle,تسجيل الدخول غير متاح
+login.totpEnroll.description,أضف مفتاح الإعداد هذا إلى تطبيق المصادقة، ثم أدخل الرمز الذي ينشئه. سيظهر المفتاح الآن فقط.
+login.totpEnroll.start,إظهار مفتاح الإعداد
+login.totpEnroll.submit,إنهاء الإعداد
+login.totpEnroll.title,إعداد تطبيق المصادقة
+login.verify.description,أكد عنوان البريد الإلكتروني لحسابك.
+login.verify.submit,تأكيد عنوان البريد الإلكتروني
+login.verify.title,التحقق من عنوان البريد الإلكتروني
+login.verify.verifiedDescription,تم تأكيد {email}. يمكنك تسجيل الدخول الآن.
+login.verify.verifiedTitle,تم تأكيد عنوان البريد الإلكتروني

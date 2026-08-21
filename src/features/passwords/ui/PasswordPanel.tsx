@@ -1,74 +1,75 @@
-import { Button } from "#ui/interactive/button/Button.jsx"
-import { Checkbox } from "#ui/input/check/Checkbox.jsx"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
+import { Button } from "#ui/interactive/button/Button.jsx"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
+import { LoginMessages } from "../../login/ui/LoginMessages.js"
+import { LoginPanelHeader } from "../../login/ui/LoginPanelHeader.js"
+import { LoginSubmitButton } from "../../login/ui/LoginSubmitButton.js"
 
 type PasswordPanelProps = {
-  error?: string
-  identifier: string
-  password: string
-  rememberIdentifier: boolean
-  revealPassword: boolean
-  onBack: () => void
-  onIdentifier: (value: string) => void
-  onPassword: (value: string) => void
-  onRememberIdentifier: (checked: boolean) => void
-  onRevealPassword: () => void
-  onSubmit: (event: SubmitEvent) => void
-  onForgot: () => void
+  readonly errorMessage?: string
+  readonly identifier: string
+  readonly onBack: () => void
+  readonly onForgot?: () => void
+  readonly onIdentifier: (value: string) => void
+  readonly onPassword: (value: string) => void
+  readonly onRevealPassword: () => void
+  readonly onSubmit: (event: SubmitEvent) => void
+  readonly organizationName: string
+  readonly password: string
+  readonly pending: boolean
+  readonly revealPassword: boolean
+  readonly validationMessage?: string
 }
 
 export function PasswordPanel(props: PasswordPanelProps) {
   return (
     <section>
-      <h1 class="text-2xl font-semibold">Sign in with password</h1>
-      <p class="mt-2 text-muted-foreground">Enter your Acme account details.</p>
-      <form class="mt-6 grid gap-4" onSubmit={props.onSubmit} novalidate>
+      <LoginPanelHeader
+        description={messageTranslate("login.password.description", { organization: props.organizationName })}
+        title={messageTranslate("login.password.title")}
+      />
+      <form class="mt-6 grid gap-4" novalidate onSubmit={props.onSubmit}>
         <div class="grid gap-2">
-          <Label for="identifier">Email or username</Label>
+          <Label for="login-identifier">{messageTranslate("login.password.identifier")}</Label>
           <Input
-            id="identifier"
-            value={props.identifier}
             autocomplete="username"
+            id="login-identifier"
             onInput={(event) => props.onIdentifier(event.currentTarget.value)}
+            value={props.identifier}
           />
         </div>
         <div class="grid gap-2">
-          <Label for="password">Password</Label>
+          <Label for="login-password">{messageTranslate("login.password.label")}</Label>
           <div class="flex gap-2">
             <Input
-              id="password"
+              autocomplete="current-password"
               class="min-w-0 flex-1"
+              id="login-password"
+              onInput={(event) => props.onPassword(event.currentTarget.value)}
               type={props.revealPassword ? "text" : "password"}
               value={props.password}
-              autocomplete="current-password"
-              onInput={(event) => props.onPassword(event.currentTarget.value)}
             />
-            <Button variant="ghost" type="button" onClick={props.onRevealPassword}>
-              {props.revealPassword ? "Hide" : "Show"}
+            <Button
+              aria-label={messageTranslate(props.revealPassword ? "login.password.hide" : "login.password.show")}
+              onClick={props.onRevealPassword}
+              type="button"
+              variant="ghost"
+            >
+              {messageTranslate(props.revealPassword ? "login.password.hide" : "login.password.show")}
             </Button>
           </div>
         </div>
-        <Checkbox id="remember-identifier" checked={props.rememberIdentifier} onChange={props.onRememberIdentifier}>
-          Remember identifier
-        </Checkbox>
-        {props.error && (
-          <p class="text-sm text-danger" role="alert">
-            {props.error}
-          </p>
-        )}
-        <Button type="submit" variant="filledBlue" class="w-full">
-          Sign in
-        </Button>
+        <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
+        <LoginSubmitButton label={messageTranslate("login.password.submit")} pending={props.pending} />
       </form>
-      <div class="mt-4 flex justify-between gap-3">
-        <Button variant="link" onClick={props.onForgot}>
-          Forgot password?
+      {props.onForgot === undefined ? null : (
+        <Button class="mt-4 w-full" onClick={props.onForgot} type="button" variant="link">
+          {messageTranslate("login.password.forgot")}
         </Button>
-        <Button variant="link" onClick={props.onBack}>
-          Back to methods
-        </Button>
-      </div>
+      )}
+      <LoginBackLink onBack={props.onBack} />
     </section>
   )
 }

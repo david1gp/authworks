@@ -1,0 +1,682 @@
+key,it
+account.access.accepted,Invitation accepted
+account.access.active,Active organization
+account.access.consentDescription,Applications that can access information from your account.
+account.access.consentEmpty,No applications have access to this account.
+account.access.consentRevoked,Application access was revoked.
+account.access.created,Granted {date}
+account.access.declined,Invitation declined
+account.access.email,Email
+account.access.error,This account information could not be loaded.
+account.access.expired,This invitation has expired.
+account.access.invitationDescription,Review the organization and roles before you respond.
+account.access.invitationEmpty,There are no pending invitations for this account.
+account.access.invitationFor,Invitation for {email}
+account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationReplay,This invitation was already used or is no longer available.
+account.access.membership,Membership roles
+account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationEmpty,This account does not belong to an organization.
+account.access.permission,You do not have permission to perform this action.
+account.access.roles,Roles: {roles}
+account.access.scopes,Permissions: {scopes}
+account.access.switchOrganization,Switch organization
+account.access.switched,Organization context changed to {organization}.
+account.delete.confirmLabel,Enter {email} to confirm
+account.delete.dangerZone,Danger zone
+account.delete.deletedDetail,Your account and access have been permanently removed.
+account.delete.deletedTitle,Account deleted
+account.delete.emailMismatch,The email address does not match.
+account.delete.submit,Delete account permanently
+account.delete.title,Permanently delete this account
+account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
+account.directory.title,Your account
+account.factors.addTotp,Add authenticator
+account.factors.codeCount,{count} recovery codes
+account.factors.confirm,Confirm
+account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
+account.factors.emailOtp,Email code
+account.factors.finishTotp,Finish authenticator setup
+account.factors.passkeyCount,{count} passkeys
+account.factors.passkeys,Passkeys
+account.factors.recovery,Recovery
+account.factors.removeTotp,Remove authenticator
+account.factors.totp,Authenticator app
+account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
+account.factors.verificationCode,Verification code
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.empty,No external identities are linked
+account.identities.unlink,Unlink
+account.passkeys.add,Add passkey
+account.passkeys.created,Created {date}
+account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
+account.passkeys.deviceBound,Device-bound passkey
+account.passkeys.empty,No passkeys registered
+account.passkeys.remove,Remove
+account.passkeys.synced,Synced passkey
+account.password.changed,Your password was changed.
+account.password.confirm,Confirm new password
+account.password.current,Current password
+account.password.description,Use a unique password that you do not use for other services.
+account.password.mismatch,The new passwords do not match.
+account.password.new,New password
+account.password.submit,Change password
+account.password.title,Change password
+account.password.tooShort,The new password must contain at least 8 characters.
+account.profile.displayName,Display name
+account.profile.displayNameRequired,Enter a display name.
+account.profile.email,Email address
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
+account.profile.emailTitle,Email address and verification
+account.profile.firstName,First name
+account.profile.lastName,Last name
+account.profile.nickName,Nickname
+account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
+account.profile.personalInformation,Personal information
+account.profile.preferredLanguage,Preferred language
+account.profile.save,Save changes
+account.profile.saved,Your profile was saved.
+account.profile.signInDescription,These details identify your account.
+account.profile.signInTitle,Sign-in details
+account.profile.userName,Username
+account.profile.verificationPending,Verification pending
+account.profile.verified,Verified
+account.recovery.generate,Generate new codes
+account.recovery.once,Copy or print these codes now. They cannot be displayed again.
+account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
+account.recovery.saveNow,Save your recovery codes now
+account.recovery.saved,I saved these codes
+account.recovery.summary,Recovery access
+account.security.label,Account security management
+account.sessionExpired,Your session has expired
+account.sessions.current,Current session
+account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
+account.sessions.empty,No active sessions
+account.sessions.lastUsed,Last used {date}
+account.sessions.revoke,Revoke session
+account.sessions.unknownDevice,Unknown device
+account.status.available,Available
+account.status.configured,Configured
+account.status.notConfigured,Not configured
+account.status.unavailable,Unavailable
+admin.common.next,Avanti
+admin.common.pagination,Paginazione
+admin.common.permission,Non hai il permesso di visualizzare questi dati di amministrazione.
+admin.common.previous,Indietro
+admin.events.actor,Attore
+admin.events.aggregate,Aggregato
+admin.events.count,{count} eventi
+admin.events.description,"Attività di sicurezza immutabile per il realm corrente, dalla più recente."
+admin.events.empty,Nessun evento corrisponde al filtro corrente.
+admin.events.hide,Nascondi payload
+admin.events.occurred,Avvenuto
+admin.events.payload,Payload
+admin.events.redactionNotice,I valori segreti vengono oscurati prima che un evento sia memorizzato.
+admin.events.search,Cerca eventi
+admin.events.searchPlaceholder,"Filtra per tipo, aggregato o attore"
+admin.events.show,Mostra payload
+admin.events.systemActor,Sistema
+admin.events.title,Eventi di audit
+admin.events.type,Tipo di evento
+admin.machine.assuranceRequired,La gestione degli utenti macchina e delle loro credenziali richiede un accesso più forte e più recente. Accedi di nuovo per continuare.
+admin.machine.assuranceRequiredTitle,È richiesto un accesso più forte
+admin.machine.created,Creato
+admin.machine.credentials.apiKeyCreated,La chiave API è stata emessa.
+admin.machine.credentials.description,"Credenziali che un utente macchina presenta per ottenere un token di accesso. Vengono memorizzati solo i metadati, mai il valore."
+admin.machine.credentials.empty,Questo utente macchina non ha ancora credenziali.
+admin.machine.credentials.expires,Scade
+admin.machine.credentials.expiresHint,Lascia vuoto per emettere una credenziale senza scadenza.
+admin.machine.credentials.issue,Emetti credenziale
+admin.machine.credentials.issueDescription,Emetti un token di accesso personale o una chiave API. Il valore viene mostrato una sola volta e non può essere recuperato.
+admin.machine.credentials.kind,Tipo di credenziale
+admin.machine.credentials.kindAccessToken,Token di accesso
+admin.machine.credentials.kindApiKey,Chiave API
+admin.machine.credentials.kindClientSecret,Secret del client
+admin.machine.credentials.kindHint,Un token di accesso personale agisce direttamente per l'utente macchina. Una chiave API è pensata per una singola integrazione.
+admin.machine.credentials.kindToken,Token di accesso personale
+admin.machine.credentials.name,Nome
+admin.machine.credentials.neverExpires,Non scade
+admin.machine.credentials.onceWarning,Il valore emesso viene mostrato una sola volta. Salvalo prima di chiudere questa finestra; non potrà essere recuperato di nuovo.
+admin.machine.credentials.revoke,Revoca
+admin.machine.credentials.revoked,La credenziale è stata revocata.
+admin.machine.credentials.scopes,Ambiti
+admin.machine.credentials.scopesHint,Separa gli ambiti con spazi o virgole. Lascia vuoto per ereditare gli ambiti dell'utente macchina.
+admin.machine.credentials.stateActive,Attiva
+admin.machine.credentials.stateExpired,Scaduta
+admin.machine.credentials.stateRevoked,Revocata
+admin.machine.credentials.subject,Utente macchina
+admin.machine.credentials.title,Credenziali e token
+admin.machine.credentials.tokenCreated,Il token di accesso personale è stato emesso.
+admin.machine.credentials.unnamed,Credenziale senza nome
+admin.machine.crossTenant,Questo utente macchina appartiene a un altro realm e non è disponibile qui.
+admin.machine.lifecycle.activate,Attiva
+admin.machine.lifecycle.deactivate,Disattiva
+admin.machine.lifecycle.description,La disattivazione impedisce a ogni credenziale di autenticarsi. La rimozione è definitiva e non può essere annullata.
+admin.machine.lifecycle.remove,Rimuovi utente macchina
+admin.machine.lifecycle.title,Ciclo di vita
+admin.machine.pageNext,Pagina successiva
+admin.machine.pagePrevious,Pagina precedente
+admin.machine.permissionDenied,Non hai il permesso di visualizzare o modificare gli utenti macchina in questo realm.
+admin.machine.permissionDeniedTitle,Accesso non disponibile
+admin.machine.secret.acknowledge,Ho salvato il secret
+admin.machine.secret.apiKeyTitle,Nuova chiave API
+admin.machine.secret.clientId,ID client
+admin.machine.secret.clientTitle,Nuovo secret del client
+admin.machine.secret.copied,Copiato negli appunti
+admin.machine.secret.copy,Copia il secret
+admin.machine.secret.copyFailed,Gli appunti non sono disponibili. Seleziona e copia il valore manualmente.
+admin.machine.secret.description,Il secret del client consente a questo utente macchina di scambiare le proprie credenziali client con un token di accesso. È memorizzato in sola scrittura e può soltanto essere ruotato.
+admin.machine.secret.once,Questa è l'unica volta in cui il valore per {name} viene mostrato. Salvalo ora; non potrà essere recuperato.
+admin.machine.secret.redacted,Memorizzato e nascosto
+admin.machine.secret.rotate,Ruota il secret del client
+admin.machine.secret.rotated,Il secret del client è stato ruotato.
+admin.machine.secret.title,Secret del client
+admin.machine.secret.tokenTitle,Nuovo token di accesso personale
+admin.machine.secret.value,Valore del secret
+admin.machine.status,Stato
+admin.machine.updated,Ultimo aggiornamento
+admin.machine.users.create,Crea utente macchina
+admin.machine.users.createDescription,Crea un'identità non umana per un servizio o un'integrazione. Il suo secret del client viene mostrato una sola volta.
+admin.machine.users.createSecretHint,Un ID client e un secret del client vengono emessi immediatamente. Il secret viene mostrato una sola volta e non può essere recuperato.
+admin.machine.users.created,L'utente macchina è stato creato.
+admin.machine.users.description,"Identità non umane che si autenticano con credenziali client, token o chiavi API in questo realm."
+admin.machine.users.displayName,Nome visualizzato
+admin.machine.users.empty,In questo realm non esiste ancora alcun utente macchina.
+admin.machine.users.lifecycleChanged,Lo stato dell'utente macchina è stato modificato.
+admin.machine.users.noScopes,Nessun ambito
+admin.machine.users.scopes,Ambiti
+admin.machine.users.scopesHint,Separa gli ambiti con spazi o virgole. Gli ambiti vengono confrontati esattamente.
+admin.machine.users.search,Cerca utenti macchina
+admin.machine.users.title,Utenti macchina
+admin.machine.users.userName,Nome utente
+admin.machine.users.userNameHint,Usato come ID client durante lo scambio delle credenziali client.
+admin.oidc.assuranceRequired,La gestione delle impostazioni OpenID Connect richiede un accesso più forte e più recente. Accedi di nuovo per continuare.
+admin.oidc.assuranceRequiredTitle,Accesso più forte richiesto
+admin.oidc.clients.consent,Consenso
+admin.oidc.clients.consentRequired,Obbligatorio
+admin.oidc.clients.consentSkipped,Non obbligatorio
+admin.oidc.clients.create,Registra client
+admin.oidc.clients.createDescription,Registra un'applicazione che autentica le persone con OpenID Connect. Un client riservato riceve un secret una sola volta.
+admin.oidc.clients.created,Il client è stato registrato.
+admin.oidc.clients.description,Applicazioni che autenticano le persone tramite OpenID Connect in questo realm.
+admin.oidc.clients.empty,In questo realm non è ancora registrato alcun client OpenID Connect.
+admin.oidc.clients.exactMatchHint,"Un URI per riga. Ogni reindirizzamento viene confrontato in modo esatto, quindi i caratteri jolly e le differenze finali vengono rifiutati."
+admin.oidc.clients.lifecycleChanged,Lo stato del client è stato modificato.
+admin.oidc.clients.name,Nome del client
+admin.oidc.clients.postLogoutUris,URI di reindirizzamento dopo la disconnessione
+admin.oidc.clients.redirectUris,URI di reindirizzamento
+admin.oidc.clients.requireConsent,Chiedi alla persona di approvare questa applicazione
+admin.oidc.clients.saved,Il client è stato salvato.
+admin.oidc.clients.scopes,Ambiti consentiti
+admin.oidc.clients.search,Cerca client
+admin.oidc.clients.settingsDescription,"Controlla il nome del client, gli URI di reindirizzamento esatti, gli ambiti consentiti e la gestione del consenso."
+admin.oidc.clients.settingsTitle,Impostazioni del client
+admin.oidc.clients.title,Client OpenID Connect
+admin.oidc.clients.trusted,Attendibile
+admin.oidc.clients.trustedHint,Un client attendibile salta completamente la schermata di consenso. Contrassegna come attendibili solo le applicazioni proprie.
+admin.oidc.clients.type,Tipo di client
+admin.oidc.clients.typeConfidential,Riservato
+admin.oidc.clients.typeHint,"Un client riservato conserva un secret su un server. Un client pubblico, come un'app mobile o a pagina singola, non può farlo."
+admin.oidc.clients.typePublic,Pubblico
+admin.oidc.consents.client,Applicazione
+admin.oidc.consents.description,Applicazioni che una persona ha approvato. Revocare un consenso le chiede di approvare nuovamente l'applicazione.
+admin.oidc.consents.empty,Questa persona non ha ancora approvato alcuna applicazione.
+admin.oidc.consents.granted,Approvata
+admin.oidc.consents.revoked,Il consenso è stato revocato.
+admin.oidc.consents.title,Consensi delle applicazioni
+admin.oidc.consents.user,Persona
+admin.oidc.created,Creato
+admin.oidc.crossTenant,Questa risorsa appartiene a un altro realm e non è disponibile qui.
+admin.oidc.documents.authorizationEndpoint,Endpoint di autorizzazione
+admin.oidc.documents.copied,Copiato
+admin.oidc.documents.copy,Copia documento
+admin.oidc.documents.description,"I documenti di protocollo che Authworks pubblica per questo realm, esattamente come li legge una libreria client."
+admin.oidc.documents.discoveryDescription,I metadati del provider OpenID serviti dall'endpoint well-known.
+admin.oidc.documents.discoveryTitle,Documento di discovery
+admin.oidc.documents.empty,Per questo realm non è ancora pubblicato alcun documento di protocollo.
+admin.oidc.documents.endSessionEndpoint,Endpoint di fine sessione
+admin.oidc.documents.issuer,Emittente
+admin.oidc.documents.jwksDescription,Le chiavi pubbliche che verificano i token emessi da questo realm.
+admin.oidc.documents.jwksTitle,Set di chiavi web JSON
+admin.oidc.documents.jwksUri,URI JWKS
+admin.oidc.documents.open,Apri endpoint
+admin.oidc.documents.readOnly,Questi documenti sono generati dalla configurazione del realm e dalle chiavi di firma. Non possono essere modificati qui.
+admin.oidc.documents.showRaw,Mostra il documento grezzo
+admin.oidc.documents.title,Documenti di protocollo
+admin.oidc.documents.tokenEndpoint,Endpoint del token
+admin.oidc.documents.userinfoEndpoint,Endpoint userinfo
+admin.oidc.keys.algorithm,Algoritmo
+admin.oidc.keys.create,Aggiungi chiave
+admin.oidc.keys.created,È stata pubblicata una nuova chiave di firma.
+admin.oidc.keys.description,Le chiavi che firmano i token di questo realm. La rotazione pubblica una nuova chiave e ritira quella corrente.
+admin.oidc.keys.empty,Per questo realm non esiste ancora alcuna chiave di firma.
+admin.oidc.keys.keyId,ID chiave
+admin.oidc.keys.privateNotice,Vengono mostrati solo i metadati della chiave pubblica. Il materiale della chiave privata non viene mai inviato al browser.
+admin.oidc.keys.retire,Ritira
+admin.oidc.keys.retired,La chiave di firma è stata ritirata.
+admin.oidc.keys.retiredAt,Ritirata
+admin.oidc.keys.rotate,Ruota chiave
+admin.oidc.keys.rotated,La chiave di firma è stata ruotata.
+admin.oidc.keys.title,Chiavi di firma
+admin.oidc.lifecycle.activate,Attiva
+admin.oidc.lifecycle.deactivate,Disattiva
+admin.oidc.lifecycle.remove,Rimuovi client
+admin.oidc.pageNext,Pagina successiva
+admin.oidc.pagePrevious,Pagina precedente
+admin.oidc.permissionDenied,Non hai l'autorizzazione per visualizzare o modificare le impostazioni OpenID Connect in questo realm.
+admin.oidc.permissionDeniedTitle,Accesso non disponibile
+admin.oidc.secret.acknowledge,Ho salvato il secret
+admin.oidc.secret.copied,Copiato negli appunti
+admin.oidc.secret.copy,Copia il secret
+admin.oidc.secret.copyFailed,Gli appunti non sono disponibili. Seleziona e copia il valore manualmente.
+admin.oidc.secret.createdTitle,Nuovo secret del client
+admin.oidc.secret.description,Il secret del client memorizzato non viene mai più mostrato. Ruotalo per emetterne uno nuovo oppure revocalo per impedire al client di autenticarsi.
+admin.oidc.secret.once,Questa è l'unica volta in cui il secret di {client} viene mostrato. Salvalo ora; non può essere recuperato.
+admin.oidc.secret.publicClient,"Un client pubblico si autentica senza secret, quindi non c'è nulla da ruotare."
+admin.oidc.secret.redacted,Memorizzato e nascosto
+admin.oidc.secret.revoke,Revoca il secret
+admin.oidc.secret.revoked,Il secret del client è stato revocato.
+admin.oidc.secret.rotate,Ruota il secret
+admin.oidc.secret.rotated,Il secret del client è stato ruotato.
+admin.oidc.secret.rotatedTitle,Secret del client ruotato
+admin.oidc.secret.title,Secret del client
+admin.oidc.status,Stato
+admin.oidc.updated,Ultimo aggiornamento
+admin.organizations.assuranceRequired,Accedi di nuovo con un metodo di autenticazione più forte per modificare questa impostazione dell'organizzazione.
+admin.organizations.assuranceRequiredTitle,Accesso più forte richiesto
+admin.organizations.branding.background,Colore di sfondo
+admin.organizations.branding.dark,Tema scuro
+admin.organizations.branding.description,"Colori, loghi e link legali mostrati nelle schermate di accesso e account ospitate."
+admin.organizations.branding.font,Colore del testo
+admin.organizations.branding.iconUrl,URL dell'icona
+admin.organizations.branding.light,Tema chiaro
+admin.organizations.branding.logoUrl,URL del logo
+admin.organizations.branding.preview,Anteprima
+admin.organizations.branding.primary,Colore primario
+admin.organizations.branding.privacyUrl,URL dell'informativa sulla privacy
+admin.organizations.branding.saved,La personalizzazione è stata salvata.
+admin.organizations.branding.termsUrl,URL dei termini di servizio
+admin.organizations.branding.themeMode,Tema predefinito
+admin.organizations.branding.title,Personalizzazione
+admin.organizations.branding.warn,Colore di avviso
+admin.organizations.branding.watermark,Nascondi la filigrana Authworks
+admin.organizations.detail.created,Creato
+admin.organizations.detail.realm,Realm
+admin.organizations.detail.settingsDescription,Controlla il nome dell'organizzazione e il suo stato del ciclo di vita.
+admin.organizations.detail.settingsTitle,Impostazioni dell'organizzazione
+admin.organizations.detail.updated,Ultimo aggiornamento
+admin.organizations.domains.claim,Rivendica dominio
+admin.organizations.domains.claimed,{domain} è stato rivendicato ed è in attesa di verifica.
+admin.organizations.domains.description,I domini verificati permettono alle persone di trovare questa organizzazione dal loro indirizzo email.
+admin.organizations.domains.discovery,Anteprima di rilevamento
+admin.organizations.domains.discoveryDescription,Verifica a quale organizzazione un dominio viene attualmente risolto durante l'accesso.
+admin.organizations.domains.discoveryFound,{domain} viene risolto in {organization}.
+admin.organizations.domains.discoveryMissing,{domain} non viene risolto in un'organizzazione.
+admin.organizations.domains.domain,Dominio
+admin.organizations.domains.empty,Questa organizzazione non ha ancora rivendicato un dominio.
+admin.organizations.domains.primary,Dominio principale
+admin.organizations.domains.remove,Rimuovi dominio
+admin.organizations.domains.removed,Il dominio è stato rimosso.
+admin.organizations.domains.title,Domini e rilevamento
+admin.organizations.domains.unverified,In attesa di verifica
+admin.organizations.domains.verificationRecord,"Aggiungi questo record DNS TXT, quindi verifica."
+admin.organizations.domains.verified,Verified
+admin.organizations.domains.verify,Verifica dominio
+admin.organizations.domains.verifyDone,Il dominio è stato verificato.
+admin.organizations.invitations.create,Invita persona
+admin.organizations.invitations.description,Invita le persone via email e monitora quali inviti sono ancora in sospeso.
+admin.organizations.invitations.email,Email address
+admin.organizations.invitations.empty,Non è stato inviato alcun invito per questa organizzazione.
+admin.organizations.invitations.expires,Scade
+admin.organizations.invitations.revoke,Revoca invito
+admin.organizations.invitations.revoked,L'invito è stato revocato.
+admin.organizations.invitations.sent,L'invito è stato creato.
+admin.organizations.invitations.title,Inviti
+admin.organizations.invitations.tokenDismiss,Ho salvato questo link
+admin.organizations.invitations.tokenOnce,Questo link di invito viene mostrato una sola volta. Condividilo con la persona che hai invitato.
+admin.organizations.invitations.tokenTitle,Link di invito
+admin.organizations.lifecycle.activate,Riattiva organizzazione
+admin.organizations.lifecycle.changed,Lo stato del ciclo di vita dell'organizzazione è stato modificato.
+admin.organizations.lifecycle.deactivate,Disattiva organizzazione
+admin.organizations.lifecycle.remove,Rimuovi organizzazione
+admin.organizations.list.create,Crea organizzazione
+admin.organizations.list.description,"Le organizzazioni raggruppano le persone, i domini e la personalizzazione di questo realm."
+admin.organizations.list.empty,In questo realm non esiste ancora alcuna organizzazione.
+admin.organizations.list.name,Nome dell'organizzazione
+admin.organizations.list.search,Cerca organizzazioni
+admin.organizations.list.title,Organizzazioni
+admin.organizations.memberships.add,Aggiungi membro
+admin.organizations.memberships.added,Il membro è stato aggiunto.
+admin.organizations.memberships.description,Le persone in questa organizzazione e i ruoli fissi loro assegnati.
+admin.organizations.memberships.empty,Questa organizzazione non ha ancora membri.
+admin.organizations.memberships.remove,Rimuovi membro
+admin.organizations.memberships.removed,Il membro è stato rimosso.
+admin.organizations.memberships.roles,Ruoli
+admin.organizations.memberships.rolesFixed,I ruoli sono fissati da Authworks e non possono essere rinominati.
+admin.organizations.memberships.title,Membri e ruoli
+admin.organizations.memberships.updated,I ruoli del membro sono stati aggiornati.
+admin.organizations.memberships.user,Utente
+admin.organizations.memberships.userId,ID utente
+admin.organizations.pageNext,Pagina successiva
+admin.organizations.pagePrevious,Pagina precedente
+admin.organizations.permissionDenied,Non hai il permesso di visualizzare o modificare questa organizzazione.
+admin.organizations.permissionDeniedTitle,Accesso non disponibile
+admin.organizations.policy.description,Scegli quali metodi di accesso le persone possono usare e quali provider configurati appaiono.
+admin.organizations.policy.domainDiscovery,Individua l'organizzazione da un dominio email
+admin.organizations.policy.emailOtp,Codice monouso via email
+admin.organizations.policy.externalIdentity,Provider di identità esterni
+admin.organizations.policy.inherited,Ereditato dal realm
+admin.organizations.policy.passkey,Passkeys
+admin.organizations.policy.password,Password
+admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.registration,Registrazione self-service
+admin.organizations.policy.saved,Il criterio di accesso è stato salvato.
+admin.organizations.policy.title,Criterio di accesso
+admin.organizations.providers.allowAccountCreation,Crea automaticamente account per le nuove persone
+admin.organizations.providers.clientId,ID client
+admin.organizations.providers.clientSecret,Segreto client
+admin.organizations.providers.create,Aggiungi provider
+admin.organizations.providers.created,Il provider è stato configurato.
+admin.organizations.providers.description,"Provider Google, GitHub e Microsoft configurati per questa organizzazione."
+admin.organizations.providers.disable,Disabilita provider
+admin.organizations.providers.disabled,Il provider è stato disabilitato.
+admin.organizations.providers.displayName,Display name
+admin.organizations.providers.empty,Nessun provider di identità esterno è ancora configurato.
+admin.organizations.providers.redirectUri,URI di reindirizzamento
+admin.organizations.providers.rotateSecret,Sostituisci segreto client
+admin.organizations.providers.secretRotated,Il segreto client è stato sostituito.
+admin.organizations.providers.secretWriteOnly,Il segreto client memorizzato non viene mai mostrato. Inserisci un nuovo valore per sostituirlo.
+admin.organizations.providers.title,Provider di identità
+admin.organizations.providers.type,Provider
+admin.organizations.providers.updated,Il provider è stato aggiornato.
+admin.organizations.renamed,L'organizzazione è stata rinominata.
+admin.organizations.status,Stato
+admin.overview.description,"Identità, domini e ciclo di vita del reame che stai amministrando."
+admin.overview.sessionTitle,Sessione amministratore
+admin.overview.title,Panoramica del reame
+admin.projects.access.description,I ruoli che questo amministratore detiene effettivamente sul progetto in questo momento.
+admin.projects.access.empty,Nessun ruolo di progetto è effettivo nel contesto organizzativo corrente.
+admin.projects.access.grantedOrganization,Concesso tramite organizzazione
+admin.projects.access.permissionDescription,I ruoli fissi e i loro permessi sono definiti da Authworks e non possono essere modificati.
+admin.projects.access.permissionTitle,Ruoli e permessi fissi
+admin.projects.access.roleKeys,Ruoli di progetto effettivi
+admin.projects.access.title,Accesso effettivo
+admin.projects.applications.create,Aggiungi applicazione
+admin.projects.applications.description,Applicazioni che si autenticano con questo progetto.
+admin.projects.applications.empty,Questo progetto non ha ancora applicazioni.
+admin.projects.applications.name,Nome dell'applicazione
+admin.projects.applications.title,Applicazioni
+admin.projects.applications.type,Tipo di applicazione
+admin.projects.crossTenant,Questa risorsa appartiene a un altro realm e non è disponibile qui.
+admin.projects.detail.authorizationRequired,Autorizzazione richiesta
+admin.projects.detail.created,Creato
+admin.projects.detail.organization,Organizzazione
+admin.projects.detail.projectAccessRequired,Accesso al progetto richiesto
+admin.projects.detail.settingsDescription,Controlla il nome del progetto e come viene applicato l'accesso.
+admin.projects.detail.settingsTitle,Impostazioni del progetto
+admin.projects.detail.updated,Ultimo aggiornamento
+admin.projects.grants.create,Concedi accesso all'organizzazione
+admin.projects.grants.description,Concedi a un'altra organizzazione l'accesso a questo progetto e scegli quali ruoli riceve.
+admin.projects.grants.empty,A nessuna organizzazione è stato concesso l'accesso a questo progetto.
+admin.projects.grants.grantedOrganization,Organizzazione beneficiaria
+admin.projects.grants.roleKeys,Ruoli concessi
+admin.projects.grants.title,Concessioni all'organizzazione
+admin.projects.lifecycle.activate,Attiva
+admin.projects.lifecycle.deactivate,Disattiva
+admin.projects.lifecycle.remove,Remove
+admin.projects.list.create,Crea progetto
+admin.projects.list.description,"I progetti raggruppano le applicazioni, i ruoli e le concessioni di un'organizzazione."
+admin.projects.list.empty,In questo realm non esiste ancora alcun progetto.
+admin.projects.list.name,Nome del progetto
+admin.projects.list.search,Cerca progetti
+admin.projects.list.title,Progetti
+admin.projects.pageNext,Pagina successiva
+admin.projects.pagePrevious,Pagina precedente
+admin.projects.permissionDenied,Non hai il permesso di visualizzare o modificare queste informazioni del progetto.
+admin.projects.roles.create,Crea ruolo
+admin.projects.roles.description,I ruoli che questo progetto può assegnare alle organizzazioni e ai loro membri.
+admin.projects.roles.displayName,Display name
+admin.projects.roles.empty,Questo progetto non definisce ancora ruoli.
+admin.projects.roles.group,Gruppo
+admin.projects.roles.key,Chiave del ruolo
+admin.projects.roles.title,Ruoli del progetto
+admin.projects.saved,{name} è stato salvato.
+admin.projects.status,Stato
+admin.realm.confirmLabel,Digita {name} per confermare
+admin.realm.confirmMismatch,Il nome del reame non corrisponde.
+admin.realm.created,Creato
+admin.realm.dangerZone,Zona a rischio
+admin.realm.description,Configurazione di identità e accesso del reame che stai amministrando.
+admin.realm.disable,Disattiva reame
+admin.realm.disableConfirm,Disattivare questo reame interrompe l'accesso per tutte le sue applicazioni. Continuare?
+admin.realm.disableWarning,Disattivare questo reame interrompe subito l'accesso e l'emissione di token per tutte le sue applicazioni.
+admin.realm.disabled,Il reame è stato disattivato.
+admin.realm.domainRequired,Inserisci almeno un dominio del reame.
+admin.realm.domains,Domini
+admin.realm.domainsHint,Separa i domini con virgole. Il primo dominio è quello principale.
+admin.realm.enable,Attiva reame
+admin.realm.enableDescription,Questo reame è disattivato. Attivalo per ripristinare accesso ed emissione di token.
+admin.realm.enabled,Il reame è stato attivato.
+admin.realm.identifier,Identificatore del reame
+admin.realm.invalid,Inserisci un nome per il reame e almeno un dominio.
+admin.realm.lifecycleTitle,Ciclo di vita del reame
+admin.realm.name,Nome del reame
+admin.realm.nameRequired,Inserisci un nome per il reame.
+admin.realm.permissionDenied,Non hai il permesso di modificare questo reame.
+admin.realm.primaryDomain,Dominio principale
+admin.realm.save,Salva impostazioni
+admin.realm.saved,Le impostazioni del reame sono state salvate.
+admin.realm.settingsDescription,Modifica il nome del reame e i domini che puntano a questo reame.
+admin.realm.settingsTitle,Impostazioni generali
+admin.realm.status,Stato
+admin.realm.statusActive,Attivo
+admin.realm.statusDisabled,Disattivato
+admin.realm.title,Impostazioni del reame
+admin.realm.updated,Ultimo aggiornamento
+admin.session.expired,La tua sessione amministratore è scaduta
+admin.signIn.activeTitle,Sessione amministratore attiva
+admin.signIn.credential,Credenziale amministratore iniziale
+admin.signIn.credentialInvalid,Inserisci la credenziale amministratore iniziale completa.
+admin.signIn.credentialNotStored,La credenziale viene scambiata con una breve sessione del browser e non viene mai memorizzata in questo browser.
+admin.signIn.description,Scambia la credenziale iniziale emessa dall'operatore con una breve sessione amministratore nel browser.
+admin.signIn.expiresAt,Questa sessione scade il {date}.
+admin.signIn.signedOutDetail,La sessione amministratore è stata terminata su questo dispositivo.
+admin.signIn.signedOutTitle,Disconnesso
+admin.signIn.subject,Soggetto
+admin.signIn.subjectType,Tipo di soggetto
+admin.signIn.title,Accesso amministratore
+admin.users.count,{count} utenti
+admin.users.create,Crea utente
+admin.users.createDescription,Aggiungi un utente umano al realm corrente.
+admin.users.createSubmit,Crea
+admin.users.created,{userName} è stato creato.
+admin.users.dangerZone,Zona a rischio
+admin.users.delete,Elimina utente
+admin.users.deleteConfirm,Eliminare definitivamente {userName}?
+admin.users.deleteWarning,L'eliminazione di questo utente revoca immediatamente le sue sessioni e i suoi accessi.
+admin.users.deleted,{userName} è stato eliminato.
+admin.users.description,Identità umane nel realm corrente.
+admin.users.detailTitle,Dettagli utente
+admin.users.displayName,Display name
+admin.users.displayNameRequired,Enter a display name.
+admin.users.email,Email address
+admin.users.empty,Nessun utente corrisponde al filtro corrente.
+admin.users.firstName,First name
+admin.users.invalid,Inserisci un indirizzo email e un nome utente validi.
+admin.users.lastName,Last name
+admin.users.lifecycle.active,Attivo
+admin.users.lifecycle.deleted,Eliminato
+admin.users.lifecycle.inactive,Inattivo
+admin.users.lifecycle.initial,Iniziale
+admin.users.lifecycle.locked,Bloccato
+admin.users.lifecycle.suspended,Sospeso
+admin.users.lifecycleChanged,Lo stato dell'utente è ora {state}.
+admin.users.lifecycleConfirm,Impostare {userName} su {state}?
+admin.users.lifecycleDescription,Modifica se questo utente può accedere.
+admin.users.lifecycleTitle,Ciclo di vita
+admin.users.markUnverified,Segna come non verificato
+admin.users.markVerified,Segna come verificato
+admin.users.missingId,Non è stato possibile risolvere questo utente dall'indirizzo.
+admin.users.nickName,Nickname
+admin.users.preferredLanguage,Preferred language
+admin.users.profileSave,Salva profilo
+admin.users.profileSaved,Il profilo utente è stato salvato.
+admin.users.profileTitle,Profilo
+admin.users.search,Cerca utenti
+admin.users.searchPlaceholder,"Filtra per nome utente, email o identificatore"
+admin.users.state,Stato
+admin.users.title,Utenti
+admin.users.unverified,Non verificato
+admin.users.updated,Ultimo aggiornamento {date}
+admin.users.userName,Username
+admin.users.verification,Verifica
+admin.users.verificationChanged,Lo stato di verifica è ora {state}.
+admin.users.verificationDescription,Controlla se l'indirizzo email di questo utente è considerato verificato.
+admin.users.verificationTitle,Email verification
+admin.users.verified,Verified
+app.name,Authworks
+common.back,Indietro
+common.cancel,Annulla
+common.close,Chiudi
+common.continue,Continua
+common.decline,Decline
+common.error,Qualcosa è andato storto.
+common.language,Lingua
+common.loading,Caricamento
+common.retry,Riprova
+common.revoke,Revoke
+common.save,Salva
+common.signIn,Accedi
+common.signInWithProvider,Accedi con {provider}
+common.signOut,Esci
+demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.nav.account,Account
+demo.nav.admin,Admin
+demo.nav.compact,Compact
+demo.nav.emails,Emails
+demo.nav.hub,Hub
+demo.nav.label,Demo
+demo.nav.login,Login
+email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
+email.directory.eyebrow,Transactional messages
+email.directory.open,Open preview
+email.directory.title,Email previews
+email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
+email.hub.open,Open email previews
+email.preview.back,All email previews
+email.preview.html,HTML preview
+email.preview.invitation,Organization invitation
+email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
+email.preview.notFound,Email preview not found
+email.preview.otp,One-time password
+email.preview.recipient,Fixture recipient
+email.preview.recovery,Password recovery
+email.preview.subject,Subject
+email.preview.text,Text alternative
+email.preview.verification,Email verification
+login.chooser.description,Scelga cómo accedere en {organization}.
+login.chooser.emailOtpDetail,Reciba un codice de un solo uso por e-mail electrónico
+login.chooser.emailOtpLabel,Codice por e-mail
+login.chooser.passkeyDetail,Use el bloqueo de pantalla de il suo dispositivo o una llave de seguridad
+login.chooser.passkeyLabel,Clave de acceso
+login.chooser.passwordDetail,Use la contraseña de il suo account
+login.chooser.passwordLabel,Password
+login.chooser.providerDetail,Continuar con una account conectada
+login.chooser.providerLabel,Continuar con {provider}
+login.chooser.register,Crea una account
+login.chooser.title,Accedi
+login.chooser.useRecent,Usar una account reciente
+login.common.back,Volver a las opciones de inicio de sesión
+login.common.legal,"Al continuar, reconoce los {terms} y la {privacy}."
+login.common.privacy,Política de privacidad
+login.common.terms,Términos del servicio
+login.common.working,Procesando…
+login.emailOtp.codeDescription,Inserisca el codice de seis dígitos que enviamos a {email}.
+login.emailOtp.codeTitle,Inserisca il suo codice de e-mail
+login.emailOtp.description,Le enviaremos un codice de un solo uso por e-mail en lugar de pedirle una contraseña.
+login.emailOtp.resend,Enviar un codice nuevo
+login.emailOtp.send,Enviar codice
+login.emailOtp.title,Accedi con un codice de e-mail
+login.emailOtp.verify,Verificar codice
+login.error.codeRequired,Inserisca el codice de verifica de seis dígitos.
+login.error.credentialsRequired,Inserisca il suo nombre de usuario y contraseña.
+login.error.emailRequired,Inserisca una indirizzo de e-mail válida.
+login.error.enrollmentMissing,Inicie la configuración de la aplicación de autenticación antes de confirmar un codice.
+login.error.nameRequired,Inserisca el nombre que se mostrará en il suo account.
+login.error.passwordMismatch,Las contraseñas no coinciden.
+login.error.passwordTooShort,La contraseña debe contener al menos 8 caracteres.
+login.error.recoveryCodeRequired,Inserisca uno de sus codices de recuperación guardados.
+login.error.tokenMissing,Abra el enlace completo de il suo e-mail para continuar.
+login.logout.description,Puede finalizar esta sesión en este dispositivo.
+login.logout.doneDescription,Ha cerrado sesión en {organization}.
+login.logout.doneTitle,Sesión cerrada
+login.logout.submit,Disconnetti
+login.logout.title,Disconnetti en {organization}
+login.mfa.description,Scelga cómo confirmar que es usted.
+login.mfa.emailOtp,Codice por e-mail
+login.mfa.emailOtpDescription,Inserisca el codice de seis dígitos que enviamos a il suo indirizzo de e-mail.
+login.mfa.passkey,Clave de acceso
+login.mfa.recoveryCode,Codice de recuperación
+login.mfa.recoveryCodeDescription,Use uno de los codices de un solo uso que guardó al configurar la verifica.
+login.mfa.recoveryCodeLabel,Codice de recuperación
+login.mfa.title,Verifica en dos pasos
+login.mfa.totp,Aplicación de autenticación
+login.mfa.totpDescription,Inserisca el codice de seis dígitos de il suo aplicación de autenticación.
+login.mfa.verificationCode,Codice de verifica
+login.mfa.verify,Verificar
+login.passkey.description,"Confirme con el bloqueo de pantalla, il suo huella digital o una llave de seguridad."
+login.passkey.submit,Continuar con la clave de acceso
+login.passkey.title,Accedi con una clave de acceso
+login.passkey.unsupported,Este navegador o dispositivo no puede usar claves de acceso. Scelga otro método de inicio de sesión.
+login.password.changeDescription,Scelga una contraseña nueva antes de continuar.
+login.password.changeTitle,Actualizar il suo contraseña
+login.password.confirm,Confirmar contraseña
+login.password.current,Password actual
+login.password.description,Inserisca las credenciales de il suo account de {organization}.
+login.password.forgot,¿Olvidó il suo contraseña?
+login.password.hide,Ocultar contraseña
+login.password.identifier,Nombre de usuario o e-mail electrónico
+login.password.label,Password
+login.password.new,Password nueva
+login.password.show,Mostrar contraseña
+login.password.submit,Accedi
+login.password.title,Inserisca il suo contraseña
+login.provider.description,Continuará en {provider} y volverá aquí cuando termine.
+login.provider.submit,Continuar con {provider}
+login.provider.title,Continuar con {provider}
+login.recent.description,Continuar con una account que usó en este dispositivo.
+login.recent.other,Usar otra account
+login.recent.title,Elegir una account
+login.recovery.completeDescription,Accedi con il suo nueva contraseña
+login.recovery.completeTitle,Password actualizada
+login.recovery.description,Inserisca il suo e-mail electrónico y le enviaremos instrucciones de recuperación si existe una account.
+login.recovery.resetDescription,Scelga una contraseña nueva para il suo account.
+login.recovery.resetSubmit,Actualizar contraseña
+login.recovery.resetTitle,Establecer una contraseña nueva
+login.recovery.sentDescription,"Si existe una account asociada a esa indirizzo, recibirá las instrucciones de recuperación. El enlace caduca pronto."
+login.recovery.sentTitle,Revise il suo e-mail
+login.recovery.submit,Enviar instrucciones de recuperación
+login.recovery.title,Restablecer il suo contraseña
+login.register.description,Crei una account para {organization}.
+login.register.displayName,Nombre completo
+login.register.doneDescription,Confirme il suo indirizzo de e-mail mediante el enlace enviado a {email}.
+login.register.doneTitle,Confirmar il suo indirizzo de e-mail
+login.register.email,Indirizzo de e-mail
+login.register.signIn,¿Ya tiene una account?
+login.register.submit,Crea account
+login.register.title,Crea il suo account
+login.register.userName,Nombre de usuario
+login.signedIn.description,Ha iniciado sesión en {organization}.
+login.signedIn.title,Sesión iniciada
+login.status.loading,Preparando el inicio de sesión
+login.status.unavailableDescription,No se puede completar esta solicitud de inicio de sesión. Vuelva a la aplicación e inténtelo de nuevo.
+login.status.unavailableTitle,Inicio de sesión no disponible
+login.totpEnroll.description,Añada esta clave de configuración a il suo aplicación de autenticación y luego introduzca el codice que genera. La clave solo se muestra ahora.
+login.totpEnroll.start,Mostrar clave de configuración
+login.totpEnroll.submit,Finalizar configuración
+login.totpEnroll.title,Configurar una aplicación de autenticación
+login.verify.description,Confirme la indirizzo de e-mail de il suo account.
+login.verify.submit,Confirmar indirizzo de e-mail
+login.verify.title,Verificar il suo indirizzo de e-mail
+login.verify.verifiedDescription,{email} está confirmada. Ya puede accedere.
+login.verify.verifiedTitle,Indirizzo de e-mail confirmada
