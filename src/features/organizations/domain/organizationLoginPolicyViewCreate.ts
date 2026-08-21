@@ -1,5 +1,5 @@
-import type { RealmLoginPolicyRow } from "../persistence/realmLoginPolicyTable.js"
 import type { OrganizationLoginPolicyRow } from "../persistence/organizationLoginPolicyTable.js"
+import type { RealmLoginPolicyRow } from "../persistence/realmLoginPolicyTable.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import { organizationLoginPolicyDefaults } from "./organizationLoginPolicyDefaults.js"
 import { organizationLoginPolicyProviderIdsParse } from "./organizationLoginPolicyProviderIdsParse.js"

@@ -1,5 +1,5 @@
-import type { MfaPolicy } from "../public/mfaPolicySchema.js"
 import type { MfaPolicyRow } from "../persistence/mfaPolicyTable.js"
+import type { MfaPolicy } from "../public/mfaPolicySchema.js"
 
 export function mfaPolicyViewCreate(row: MfaPolicyRow): MfaPolicy {
   return {

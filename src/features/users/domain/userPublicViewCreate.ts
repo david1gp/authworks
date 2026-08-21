@@ -1,5 +1,5 @@
-import type { User } from "../public/userSchema.js"
 import type { UserRecord } from "../persistence/userRepositoryCreate.js"
+import type { User } from "../public/userSchema.js"
 
 export function userPublicViewCreate(row: UserRecord): User {
   const profile = {

@@ -1,16 +1,16 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
-import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { projectContextAuthorize } from "./projectContextAuthorize.js"
 import { projectPublicViewCreate } from "../domain/projectPublicViewCreate.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import type { Project } from "../public/projectSchema.js"
+import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectListOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

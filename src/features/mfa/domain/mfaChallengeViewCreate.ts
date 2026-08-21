@@ -1,5 +1,5 @@
-import type { MfaChallenge } from "../public/mfaChallengeSchema.js"
 import type { MfaChallengeRow } from "../persistence/mfaChallengeTable.js"
+import type { MfaChallenge } from "../public/mfaChallengeSchema.js"
 
 export function mfaChallengeViewCreate(row: MfaChallengeRow): MfaChallenge {
   return {

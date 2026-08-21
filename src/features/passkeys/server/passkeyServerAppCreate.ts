@@ -5,6 +5,8 @@ import { httpResultResponseCreate } from "../../../platform/http/httpResultRespo
 import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { sessionBrowserCookieTokenGet } from "../../sessions/domain/sessionBrowserCookieTokenGet.js"
+import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { passkeyAuthenticationComplete } from "../actions/passkeyAuthenticationComplete.js"
 import { passkeyAuthenticationStart } from "../actions/passkeyAuthenticationStart.js"
@@ -13,14 +15,16 @@ import { passkeyCredentialRevoke } from "../actions/passkeyCredentialRevoke.js"
 import { passkeyRegistrationComplete } from "../actions/passkeyRegistrationComplete.js"
 import { passkeyRegistrationStart } from "../actions/passkeyRegistrationStart.js"
 import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
+import { passkeyAuthenticationStartRequestSchema } from "../public/passkeyAuthenticationStartRequestSchema.js"
 import { passkeyCredentialRevokeRequestSchema } from "../public/passkeyCredentialRevokeRequestSchema.js"
 import { passkeyRegistrationCompleteRequestSchema } from "../public/passkeyRegistrationCompleteRequestSchema.js"
 import { passkeyRegistrationStartRequestSchema } from "../public/passkeyRegistrationStartRequestSchema.js"
-import { passkeyAuthenticationStartRequestSchema } from "../public/passkeyAuthenticationStartRequestSchema.js"
 
 type PasskeyServerAppCreateOptions = {
+  readonly browserMode?: boolean
   readonly database: StorageDatabase
   readonly origins: readonly string[]
+  readonly publicOrigin?: string
   readonly rpId: string
   readonly rpName: string
 }
@@ -28,6 +32,7 @@ type PasskeyServerAppCreateOptions = {
 type PasskeyServerEnv = {
   Variables: {
     authorizationActor: { actorId: string }
+    cookieAuthenticated: boolean
     session: { id: string }
   }
 }
@@ -35,8 +40,10 @@ type PasskeyServerEnv = {
 type PasskeyRouteContext = {
   readonly get: {
     (key: "authorizationActor"): { actorId: string }
+    (key: "cookieAuthenticated"): boolean
     (key: "session"): { id: string }
   }
+  readonly header: (name: string, value: string) => void
   readonly json: (body: unknown, status?: number) => Response
   readonly req: {
     readonly header: (name: string) => string | undefined
@@ -48,10 +55,14 @@ type PasskeyRouteContext = {
 
 export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
   const app = new Hono<PasskeyServerEnv>()
-  const protectedMiddleware = sessionProtectedMiddlewareCreate({ database: options.database })
+  const protectedMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    publicOrigin: options.publicOrigin,
+  })
   const strongMiddleware = sessionProtectedMiddlewareCreate({
     database: options.database,
     minimumAssurance: "multi_factor",
+    publicOrigin: options.publicOrigin,
   })
 
   app.post("/realms/:realmId/passkeys/registration/start", protectedMiddleware, async (context) => {
@@ -138,16 +149,17 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     const input = v.safeParse(passkeyAuthenticationCompleteRequestSchema, body.data)
     if (!input.success)
       return passkeyErrorResponseCreate(context, "The passkey authentication response is invalid.", "passkeys.invalid")
+    const completed = await passkeyAuthenticationComplete({
+      database: options.database,
+      input: input.output,
+      realmId: context.req.param("realmId"),
+      origins: options.origins,
+      rpId: options.rpId,
+      rpName: options.rpName,
+    })
     return passkeyResultResponseCreate(
       context,
-      await passkeyAuthenticationComplete({
-        database: options.database,
-        input: input.output,
-        realmId: context.req.param("realmId"),
-        origins: options.origins,
-        rpId: options.rpId,
-        rpName: options.rpName,
-      }),
+      options.browserMode ? sessionBrowserCredentialResponseCreate(context, completed) : completed,
     )
   })
 
@@ -249,19 +261,20 @@ async function passkeyAuthenticationCompleteRoute(
   const input = v.safeParse(passkeyAuthenticationCompleteRequestSchema, body.data)
   if (!input.success)
     return passkeyErrorResponseCreate(context, "The passkey authentication response is invalid.", "passkeys.invalid")
+  const completed = await passkeyAuthenticationComplete({
+    actorId: context.get("authorizationActor").actorId,
+    database: options.database,
+    input: input.output,
+    realmId: context.req.param("realmId"),
+    origins: options.origins,
+    rpId: options.rpId,
+    rpName: options.rpName,
+    expectedPurpose: purpose,
+    sessionToken: passkeySessionTokenGet(context, options.browserMode === true),
+  })
   return passkeyResultResponseCreate(
     context,
-    await passkeyAuthenticationComplete({
-      actorId: context.get("authorizationActor").actorId,
-      database: options.database,
-      input: input.output,
-      realmId: context.req.param("realmId"),
-      origins: options.origins,
-      rpId: options.rpId,
-      rpName: options.rpName,
-      expectedPurpose: purpose,
-      sessionToken: passkeyBearerTokenGet(context.req.header("authorization")),
-    }),
+    options.browserMode ? sessionBrowserCredentialResponseCreate(context, completed) : completed,
   )
 }
 
@@ -276,6 +289,12 @@ async function passkeyJsonRead(context: { req: { json: <T>() => Promise<T> } }) 
 function passkeyBearerTokenGet(authorization: string | undefined): string {
   if (authorization === undefined) return ""
   return /^Bearer (.+)$/.exec(authorization)?.[1] ?? ""
+}
+
+function passkeySessionTokenGet(context: PasskeyRouteContext, browserMode: boolean): string {
+  const bearer = passkeyBearerTokenGet(context.req.header("authorization"))
+  if (bearer.length > 0 || !browserMode || !context.get("cookieAuthenticated")) return bearer
+  return sessionBrowserCookieTokenGet(context.req.header("cookie"))
 }
 
 function passkeyErrorResponseCreate(context: PasskeyRouteContext, message: string, code = "passkeys.invalid") {

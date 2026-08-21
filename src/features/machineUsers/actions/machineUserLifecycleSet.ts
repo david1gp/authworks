@@ -9,18 +9,18 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { machineScopesParse } from "../domain/machineScopesParse.js"
+import { machineUserPublicViewCreate } from "../domain/machineUserPublicViewCreate.js"
 import { machineCredentialRevokedEventPayloadSchema } from "../events/machineCredentialRevokedEventPayloadSchema.js"
 import { machineEventTypes } from "../events/machineEventTypes.js"
 import { machineUserStatusChangedEventPayloadSchema } from "../events/machineUserStatusChangedEventPayloadSchema.js"
-import { machineScopesParse } from "../domain/machineScopesParse.js"
-import { machineUserPublicViewCreate } from "../domain/machineUserPublicViewCreate.js"
 import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
-import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 import {
-  machineUserLifecycleRequestSchema,
   type MachineUserLifecycleRequest,
+  machineUserLifecycleRequestSchema,
 } from "../public/machineUserLifecycleRequestSchema.js"
 import type { MachineUserResponse } from "../public/machineUserResponseSchema.js"
+import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 
 type MachineUserLifecycleSetOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

@@ -1,5 +1,5 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
@@ -14,8 +14,8 @@ import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectGrantStatusChangedEventPayloadSchema } from "../events/projectGrantStatusChangedEventPayloadSchema.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import {
-  projectGrantLifecycleRequestSchema,
   type ProjectGrantLifecycleRequest,
+  projectGrantLifecycleRequestSchema,
 } from "../public/projectGrantLifecycleRequestSchema.js"
 import type { ProjectGrant } from "../public/projectGrantSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"

@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { organizationRolesSchema } from "./organizationRolesSchema.js"
 import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
+import { organizationRolesSchema } from "./organizationRolesSchema.js"
 
 export const organizationMembershipSchema = v.strictObject({
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),

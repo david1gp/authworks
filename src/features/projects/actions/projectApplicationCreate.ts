@@ -1,5 +1,5 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
@@ -11,12 +11,12 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectApplicationNameNormalize } from "../domain/projectApplicationNameNormalize.js"
 import { projectApplicationPublicViewCreate } from "../domain/projectApplicationPublicViewCreate.js"
-import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectApplicationCreatedEventPayloadSchema } from "../events/projectApplicationCreatedEventPayloadSchema.js"
+import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import {
-  projectApplicationCreateRequestSchema,
   type ProjectApplicationCreateRequest,
+  projectApplicationCreateRequestSchema,
 } from "../public/projectApplicationCreateRequestSchema.js"
 import type { ProjectApplication } from "../public/projectApplicationSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"

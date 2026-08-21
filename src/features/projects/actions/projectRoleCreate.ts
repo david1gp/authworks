@@ -1,5 +1,5 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
@@ -14,8 +14,8 @@ import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectRoleCreatedEventPayloadSchema } from "../events/projectRoleCreatedEventPayloadSchema.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import {
-  projectRoleCreateRequestSchema,
   type ProjectRoleCreateRequest,
+  projectRoleCreateRequestSchema,
 } from "../public/projectRoleCreateRequestSchema.js"
 import type { ProjectRole } from "../public/projectRoleSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"

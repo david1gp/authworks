@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { projectStatusSchema } from "./projectStatusSchema.js"
 import { projectResourceIdSchema } from "./projectResourceIdSchema.js"
+import { projectStatusSchema } from "./projectStatusSchema.js"
 
 export const projectSchema = v.strictObject({
   authorizationRequired: v.boolean(),

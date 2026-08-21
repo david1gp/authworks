@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { mfaChallengeResponseSchema } from "./mfaChallengeResponseSchema.js"
 import { sessionCredentialResponseSchema } from "../../sessions/public/sessionCredentialResponseSchema.js"
+import { mfaChallengeResponseSchema } from "./mfaChallengeResponseSchema.js"
 
 export const mfaLoginResponseSchema = v.strictObject({
   authentication: v.strictObject({

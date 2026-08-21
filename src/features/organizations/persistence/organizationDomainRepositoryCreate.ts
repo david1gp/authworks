@@ -3,7 +3,7 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import { organizationDomainTable, type OrganizationDomainRow } from "./organizationDomainTable.js"
+import { type OrganizationDomainRow, organizationDomainTable } from "./organizationDomainTable.js"
 
 export function organizationDomainRepositoryCreate(database: StorageExecutor) {
   return {

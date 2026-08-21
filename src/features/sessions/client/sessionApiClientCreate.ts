@@ -2,19 +2,24 @@ import * as v from "valibot"
 import { type Result } from "#result"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
-import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
+import type { SessionBootstrapAdminSignInRequest } from "../public/sessionBootstrapAdminSignInRequestSchema.js"
+import type { SessionBootstrapAdminSignInResponse } from "../public/sessionBootstrapAdminSignInResponseSchema.js"
+import { sessionBootstrapAdminSignInResponseSchema } from "../public/sessionBootstrapAdminSignInResponseSchema.js"
 import type { SessionCredentialResponse } from "../public/sessionCredentialResponseSchema.js"
 import { sessionCredentialResponseSchema } from "../public/sessionCredentialResponseSchema.js"
 import type { SessionListResponse } from "../public/sessionListResponseSchema.js"
 import { sessionListResponseSchema } from "../public/sessionListResponseSchema.js"
-import type { SessionRevokeAllRequest } from "../public/sessionRevokeAllRequestSchema.js"
-import { sessionRevokeAllRequestSchema } from "../public/sessionRevokeAllRequestSchema.js"
+import type { SessionMeListResponse } from "../public/sessionMeListResponseSchema.js"
+import { sessionMeListResponseSchema } from "../public/sessionMeListResponseSchema.js"
 import type { SessionResponse } from "../public/sessionResponseSchema.js"
 import { sessionResponseSchema } from "../public/sessionResponseSchema.js"
 import type { SessionRevocationResponse } from "../public/sessionRevocationResponseSchema.js"
 import { sessionRevocationResponseSchema } from "../public/sessionRevocationResponseSchema.js"
+import type { SessionRevokeAllRequest } from "../public/sessionRevokeAllRequestSchema.js"
+import { sessionRevokeAllRequestSchema } from "../public/sessionRevokeAllRequestSchema.js"
 
 type SessionApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -37,6 +42,16 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
     })
 
   return {
+    sessionBootstrapAdminSignIn(
+      realmId: string,
+      input: SessionBootstrapAdminSignInRequest,
+    ): Promise<Result<SessionBootstrapAdminSignInResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/admin/sign-in`,
+        { body: JSON.stringify(input), method: "POST" },
+        sessionBootstrapAdminSignInResponseSchema,
+      )
+    },
     sessionCurrent(realmId: string): Promise<Result<SessionResponse>> {
       return request(
         `/realms/${encodeURIComponent(realmId)}/sessions/current`,
@@ -49,6 +64,13 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
         `/realms/${encodeURIComponent(realmId)}/sessions${listQueryToSearchParams(query)}`,
         { method: "GET" },
         sessionListResponseSchema,
+      )
+    },
+    sessionMeList(realmId: string, query?: ListQuery): Promise<Result<SessionMeListResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/me/sessions${listQueryToSearchParams(query)}`,
+        { method: "GET" },
+        sessionMeListResponseSchema,
       )
     },
     sessionRecentList(realmId: string, query?: ListQuery): Promise<Result<SessionListResponse>> {
@@ -72,6 +94,13 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
         sessionRevocationResponseSchema,
       )
     },
+    sessionMeRevoke(realmId: string, sessionId: string): Promise<Result<SessionRevocationResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/me/sessions/${encodeURIComponent(sessionId)}`,
+        { method: "DELETE" },
+        sessionRevocationResponseSchema,
+      )
+    },
     sessionRevokeAll(realmId: string, input: SessionRevokeAllRequest = {}): Promise<Result<SessionRevocationResponse>> {
       const parsed = v.safeParse(sessionRevokeAllRequestSchema, input)
       if (!parsed.success)
@@ -81,6 +110,13 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
       return request(
         `/realms/${encodeURIComponent(realmId)}/sessions`,
         { body: JSON.stringify(parsed.output), method: "DELETE" },
+        sessionRevocationResponseSchema,
+      )
+    },
+    sessionMeRevokeAll(realmId: string): Promise<Result<SessionRevocationResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/me/sessions`,
+        { method: "DELETE" },
         sessionRevocationResponseSchema,
       )
     },

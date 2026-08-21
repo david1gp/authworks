@@ -1,10 +1,10 @@
-import { asc, and, eq, isNull, sql } from "drizzle-orm"
+import { and, asc, eq, isNull, sql } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import { machineCredentialTable, type MachineCredentialRow } from "./machineCredentialTable.js"
-import { machineUserTable, type MachineUserRow } from "./machineUserTable.js"
+import { type MachineCredentialRow, machineCredentialTable } from "./machineCredentialTable.js"
+import { type MachineUserRow, machineUserTable } from "./machineUserTable.js"
 
 type MachineUserInsert = typeof machineUserTable.$inferInsert
 type MachineUserUpdate = Partial<MachineUserInsert>

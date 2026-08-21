@@ -1,5 +1,5 @@
-import type { Session } from "../public/sessionSchema.js"
 import type { SessionRow } from "../persistence/sessionTable.js"
+import type { Session } from "../public/sessionSchema.js"
 
 export function sessionPublicViewCreate(row: SessionRow, current = false): Session {
   return {
@@ -29,6 +29,8 @@ export function sessionPublicViewCreate(row: SessionRow, current = false): Sessi
         }),
     ...(row.mfaMethod === null ? {} : { mfaMethod: row.mfaMethod as Session["mfaMethod"] }),
     revokedAt: row.revokedAt,
-    userId: row.userId,
+    subjectId: row.subjectId,
+    subjectType: row.subjectType as Session["subjectType"],
+    ...(row.userId === null ? {} : { userId: row.userId }),
   }
 }

@@ -1,5 +1,5 @@
-import type { PasswordPolicy } from "../public/passwordPolicySchema.js"
 import type { PasswordPolicyRow } from "../persistence/passwordPolicyTable.js"
+import type { PasswordPolicy } from "../public/passwordPolicySchema.js"
 
 export function passwordPolicyViewCreate(row: PasswordPolicyRow): PasswordPolicy {
   return {

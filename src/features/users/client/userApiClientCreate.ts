@@ -8,6 +8,11 @@ import { httpApiClientRequest } from "../../../platform/http/httpApiClientReques
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
+import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserRequest.js"
+import {
+  type UserAuthenticationMethods,
+  userAuthenticationMethodsSchema,
+} from "../public/userAuthenticationMethodsSchema.js"
 import { type UserCreateRequest, userCreateRequestSchema } from "../public/userCreateRequestSchema.js"
 import { type UserLifecycleRequest, userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
 import { type UserListResponse, userListResponseSchema } from "../public/userListResponseSchema.js"
@@ -55,6 +60,19 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
 
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
+  const tenantPath = (realmId: string, suffix = "") => `/realms/${encodeURIComponent(realmId)}/users${suffix}`
+  const tenantUserPath = (realmId: string, userId: string, suffix = "") =>
+    tenantPath(realmId, `/${encodeURIComponent(userId)}${suffix}`)
+  const tenantRead = <T>(path: string, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    request(path, { credentials: "include", method: "GET" }, schema)
+  const tenantMutate = <T>(
+    realmId: string,
+    op: string,
+    path: string,
+    init: RequestInit,
+    schema: v.GenericSchema<T>,
+  ): Promise<Result<T>> =>
+    sessionBrowserRequest({ baseUrl: options.baseUrl, fetch: options.fetch, init, op, path, realmId, schema })
 
   return {
     userCreate(realmId: string, input: UserCreateRequest): Promise<Result<UserResponse>> {
@@ -82,6 +100,37 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         { method: "GET" },
         userListResponseSchema,
       )
+    },
+    userMeGet(realmId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<UserResponse>> {
+      return getRequest(`/realms/${encodeURIComponent(realmId)}/me`, userResponseSchema, getOptions)
+    },
+    userMeAuthenticationMethodsGet(
+      realmId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<UserAuthenticationMethods>> {
+      return getRequest(
+        `/realms/${encodeURIComponent(realmId)}/me/authentication-methods`,
+        userAuthenticationMethodsSchema,
+        getOptions,
+      )
+    },
+    userMeProfileUpdate(realmId: string, input: UserProfileUpdateRequest): Promise<Result<UserResponse>> {
+      const parsed = v.safeParse(userProfileUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("userApiClientProfileUpdate", "The user profile update is invalid.", "users.invalid"),
+        )
+      if (options.token !== undefined)
+        return request(`/realms/${encodeURIComponent(realmId)}/me`, patchRequest(parsed.output), userResponseSchema)
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: patchRequest(parsed.output),
+        op: "userMeProfileUpdate",
+        path: `/realms/${encodeURIComponent(realmId)}/me`,
+        realmId,
+        schema: userResponseSchema,
+      })
     },
     userProfileUpdate(realmId: string, userId: string, input: UserProfileUpdateRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userProfileUpdateRequestSchema, input)
@@ -133,6 +182,110 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         { method: "DELETE" },
         userResponseSchema,
       )
+    },
+    userTenantList(realmId: string, query?: ListQuery): Promise<Result<UserListResponse>> {
+      return tenantRead(tenantPath(realmId, listQueryToSearchParams(query)), userListResponseSchema)
+    },
+    userTenantGet(realmId: string, userId: string): Promise<Result<UserResponse>> {
+      return tenantRead(tenantUserPath(realmId, userId), userResponseSchema)
+    },
+    userTenantCreate(realmId: string, input: UserCreateRequest): Promise<Result<UserResponse>> {
+      const parsed = v.safeParse(userCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("userApiClientTenantCreate", "The user request is invalid.", "users.invalid"),
+        )
+      return tenantMutate(
+        realmId,
+        "userTenantCreate",
+        tenantPath(realmId),
+        jsonRequest(parsed.output),
+        userResponseSchema,
+      )
+    },
+    userTenantProfileUpdate(
+      realmId: string,
+      userId: string,
+      input: UserProfileUpdateRequest,
+    ): Promise<Result<UserResponse>> {
+      const parsed = v.safeParse(userProfileUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate("userApiClientTenantProfileUpdate", "The user profile update is invalid.", "users.invalid"),
+        )
+      return tenantMutate(
+        realmId,
+        "userTenantProfileUpdate",
+        tenantUserPath(realmId, userId, "/profile"),
+        patchRequest(parsed.output),
+        userResponseSchema,
+      )
+    },
+    userTenantLifecycleSet(
+      realmId: string,
+      userId: string,
+      input: UserLifecycleRequest,
+    ): Promise<Result<UserResponse>> {
+      const parsed = v.safeParse(userLifecycleRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "userApiClientTenantLifecycleSet",
+            "The user lifecycle request is invalid.",
+            "users.invalid",
+          ),
+        )
+      return tenantMutate(
+        realmId,
+        "userTenantLifecycleSet",
+        tenantUserPath(realmId, userId, "/lifecycle"),
+        jsonRequest(parsed.output),
+        userResponseSchema,
+      )
+    },
+    userTenantVerificationSet(
+      realmId: string,
+      userId: string,
+      input: UserVerificationRequest,
+    ): Promise<Result<UserResponse>> {
+      const parsed = v.safeParse(userVerificationRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "userApiClientTenantVerificationSet",
+            "The user verification request is invalid.",
+            "users.invalid",
+          ),
+        )
+      return tenantMutate(
+        realmId,
+        "userTenantVerificationSet",
+        tenantUserPath(realmId, userId, "/verification"),
+        jsonRequest(parsed.output),
+        userResponseSchema,
+      )
+    },
+    userTenantDelete(realmId: string, userId: string): Promise<Result<UserResponse>> {
+      return tenantMutate(
+        realmId,
+        "userTenantDelete",
+        tenantUserPath(realmId, userId),
+        { method: "DELETE" },
+        userResponseSchema,
+      )
+    },
+    userMeDelete(realmId: string): Promise<Result<UserResponse>> {
+      if (options.token !== undefined)
+        return request(`/realms/${encodeURIComponent(realmId)}/me`, { method: "DELETE" }, userResponseSchema)
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "DELETE" },
+        op: "userMeDelete",
+        path: `/realms/${encodeURIComponent(realmId)}/me`,
+        realmId,
+        schema: userResponseSchema,
+      })
     },
   }
 }

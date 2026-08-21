@@ -1,3 +1,4 @@
+import type { Next } from "hono"
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
@@ -7,9 +8,16 @@ import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromS
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
+import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
+import { userAuthenticationMethodsGet } from "../actions/userAuthenticationMethodsGet.js"
 import { userCreate } from "../actions/userCreate.js"
 import { userDelete } from "../actions/userDelete.js"
 import { userEmailVerificationSet } from "../actions/userEmailVerificationSet.js"
@@ -24,12 +32,40 @@ import { userVerificationRequestSchema } from "../public/userVerificationRequest
 
 type UserServerAppCreateOptions = {
   readonly database: StorageDatabase
+  readonly publicOrigin?: string
   readonly systemSecret?: Secret | string
 }
 
+type UserServerEnv = {
+  Variables: {
+    authorizationActor: AuthorizationActorContext
+    cookieAuthenticated: boolean
+    session: Session
+  }
+}
+
 export function userServerAppCreate(options: UserServerAppCreateOptions) {
-  const app = new Hono()
+  const app = new Hono<UserServerEnv>()
   const systemContext = realmSystemContextCreate("system")
+  const protectedMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    publicOrigin: options.publicOrigin,
+  })
+  const authenticatedMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    minimumAssurance: "authenticated",
+    publicOrigin: options.publicOrigin,
+  })
+  const userReadMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    fallback: (context, next) => userBootstrapFallback(options.database, context, next),
+    publicOrigin: options.publicOrigin,
+  })
+  const userManageMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    fallback: (context, next) => userBootstrapFallback(options.database, context, next),
+    publicOrigin: options.publicOrigin,
+  })
 
   app.get("/system/realms/:realmId/users", (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
@@ -174,12 +210,81 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.get("/realms/:realmId/users", (context) => {
-    const authenticated = userTenantAuthenticate(
+  app.get("/realms/:realmId/me", protectedMiddleware, (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const result = userGet({
+      context: subject.data,
+      database: options.database,
+      realmId: context.req.param("realmId"),
+      userId: subject.data.actorId,
+    })
+    return userResultResponseCreate(
+      context,
+      result,
+      200,
+      result.success ? new Date(result.data.user.updatedAt) : undefined,
+    )
+  })
+
+  app.get("/realms/:realmId/me/authentication-methods", authenticatedMiddleware, (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    return userResultResponseCreate(
+      context,
+      userAuthenticationMethodsGet({
+        context: subject.data,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.patch("/realms/:realmId/me", protectedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userProfileUpdateRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The user profile update is invalid.",
+        op: "userProfileUpdate",
+      })
+    return userResultResponseCreate(
+      context,
+      userProfileUpdate({
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/me", protectedMiddleware, (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    return userResultResponseCreate(
+      context,
+      userDelete({
+        context: subject.data,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.get("/realms/:realmId/users", userReadMiddleware, (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
       options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userRead,
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
@@ -195,12 +300,12 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.post("/realms/:realmId/users", async (context) => {
-    const authenticated = userTenantAuthenticate(
+  app.post("/realms/:realmId/users", userManageMiddleware, async (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
       options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userManage,
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const body = await userRequestJsonRead(context)
@@ -224,12 +329,12 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.get("/realms/:realmId/users/:userId", (context) => {
-    const authenticated = userTenantAuthenticate(
+  app.get("/realms/:realmId/users/:userId", userReadMiddleware, (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
       options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userRead,
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const result = userGet({
@@ -246,12 +351,12 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.patch("/realms/:realmId/users/:userId/profile", async (context) => {
-    const authenticated = userTenantAuthenticate(
+  app.patch("/realms/:realmId/users/:userId/profile", userManageMiddleware, async (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
       options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userManage,
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const body = await userRequestJsonRead(context)
@@ -275,12 +380,12 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.post("/realms/:realmId/users/:userId/lifecycle", async (context) => {
-    const authenticated = userTenantAuthenticate(
+  app.post("/realms/:realmId/users/:userId/lifecycle", userManageMiddleware, async (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
       options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userManage,
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const body = await userRequestJsonRead(context)
@@ -304,12 +409,12 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.post("/realms/:realmId/users/:userId/verification", async (context) => {
-    const authenticated = userTenantAuthenticate(
+  app.post("/realms/:realmId/users/:userId/verification", userManageMiddleware, async (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
       options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userManage,
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const body = await userRequestJsonRead(context)
@@ -333,12 +438,12 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.delete("/realms/:realmId/users/:userId", (context) => {
-    const authenticated = userTenantAuthenticate(
+  app.delete("/realms/:realmId/users/:userId", userManageMiddleware, (context) => {
+    const authenticated = userAdministratorAuthorize(
+      context,
       options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
+      context.req.param("realmId"),
+      authorizationPermissionDefinitions.userManage,
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     return userResultResponseCreate(
@@ -438,4 +543,73 @@ function userBearerTokenGet(authorization: string | undefined): string | null {
   if (authorization === undefined) return null
   const match = /^Bearer (.+)$/.exec(authorization)
   return match?.[1] ?? null
+}
+
+function userBootstrapFallback(
+  database: StorageDatabase,
+  context: {
+    readonly json: (body: unknown, status?: ContentfulStatusCode) => Response
+    readonly req: {
+      readonly header: (name: string) => string | undefined
+      readonly url: string
+    }
+    readonly set: (
+      key: "authorizationActor" | "cookieAuthenticated",
+      value: AuthorizationActorContext | boolean,
+    ) => void
+  },
+  next: Next,
+) {
+  const tenant = realmTenantContextResolve({
+    database,
+    host: userRequestHostGet(context.req.header("host"), context.req.url),
+  })
+  if (!tenant.success) return userErrorResponseCreate(context, tenant)
+  const authenticated = realmBootstrapAdminAuthenticate({
+    context: tenant.data,
+    database,
+    secret: userBearerTokenGet(context.req.header("authorization")) ?? "",
+  })
+  if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
+  context.set("authorizationActor", authenticated.data.actor)
+  context.set("cookieAuthenticated", false)
+  return next()
+}
+
+function userRequestHostGet(headerHost: string | undefined, requestUrl: string): string {
+  const host = headerHost ?? new URL(requestUrl).hostname
+  return host.startsWith("[") ? host.slice(1, host.indexOf("]")) : (host.split(":")[0] ?? "")
+}
+
+function userAdministratorAuthorize(
+  context: { readonly get: (key: "authorizationActor") => AuthorizationActorContext },
+  database: StorageDatabase,
+  realmId: string,
+  permission: "user.read" | "user.manage",
+): Result<RealmTenantContext> {
+  return realmAdministratorContextAuthorize({
+    actor: context.get("authorizationActor"),
+    database,
+    permission,
+    realmId,
+  })
+}
+
+function userSubjectContextResolve(
+  context: { readonly get: (key: "authorizationActor") => AuthorizationActorContext },
+  realmId: string,
+): Result<RealmTenantContext> {
+  const op = "userSubjectContextResolve"
+  const actor = context.get("authorizationActor")
+  if (actor.kind !== "user" || actor.realmId !== realmId)
+    return {
+      code: "users.forbidden",
+      errorMessage: "The authenticated user is not available in this realm.",
+      op,
+      success: false,
+    }
+  return {
+    data: { actor, actorId: actor.actorId, kind: "tenant", realmId },
+    success: true,
+  }
 }

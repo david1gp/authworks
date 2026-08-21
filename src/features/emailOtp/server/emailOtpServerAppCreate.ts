@@ -7,6 +7,7 @@ import { httpResultResponseCreate } from "../../../platform/http/httpResultRespo
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
+import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
 import { emailOtpStart } from "../actions/emailOtpStart.js"
 import { emailOtpVerify } from "../actions/emailOtpVerify.js"
 import type { EmailOtpDelivery } from "../public/emailOtpDeliverySchema.js"
@@ -15,6 +16,7 @@ import { emailOtpStartRequestSchema } from "../public/emailOtpStartRequestSchema
 import { emailOtpVerifyRequestSchema } from "../public/emailOtpVerifyRequestSchema.js"
 
 type EmailOtpServerAppCreateOptions = {
+  readonly browserMode?: boolean
   readonly database: StorageDatabase
   readonly onDelivery?: (delivery: EmailOtpDelivery) => void | Promise<void>
   readonly onSecurityNotification?: (notification: EmailOtpSecurityNotification) => void | Promise<void>
@@ -76,16 +78,17 @@ export function emailOtpServerAppCreate(options: EmailOtpServerAppCreateOptions)
         context,
         resultErrorCodedCreate("emailOtpVerify", "The email OTP code is invalid.", "email-otp.invalid"),
       )
+    const verified = emailOtpVerify({
+      context: tenant.data,
+      database: options.database,
+      deviceMetadata: emailOtpDeviceMetadataGet(context),
+      input: input.output,
+      realmId: context.req.param("realmId"),
+      onSecurityNotification: options.onSecurityNotification,
+    })
     return emailOtpResultResponseCreate(
       context,
-      emailOtpVerify({
-        context: tenant.data,
-        database: options.database,
-        deviceMetadata: emailOtpDeviceMetadataGet(context),
-        input: input.output,
-        realmId: context.req.param("realmId"),
-        onSecurityNotification: options.onSecurityNotification,
-      }),
+      options.browserMode ? sessionBrowserCredentialResponseCreate(context, verified) : verified,
     )
   })
 

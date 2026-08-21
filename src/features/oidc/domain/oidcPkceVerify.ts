@@ -1,5 +1,4 @@
-import { timingSafeEqual } from "node:crypto"
-import { createHash } from "node:crypto"
+import { createHash, timingSafeEqual } from "node:crypto"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"

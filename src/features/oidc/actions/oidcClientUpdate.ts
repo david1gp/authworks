@@ -1,5 +1,5 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { patchInputParse } from "../../../platform/http/patchInputParse.js"
@@ -16,8 +16,8 @@ import { oidcRedirectUriValidate } from "../domain/oidcRedirectUriValidate.js"
 import { oidcClientUpdatedEventPayloadSchema } from "../events/oidcClientUpdatedEventPayloadSchema.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
-import { type OidcClientUpdateRequest, oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
 import type { OidcClientResponse } from "../public/oidcClientResponseSchema.js"
+import { type OidcClientUpdateRequest, oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
 
 type OidcClientUpdateOptions = {
   readonly clientId: string

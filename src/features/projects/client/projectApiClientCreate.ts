@@ -17,13 +17,13 @@ import {
   projectApplicationDeleteResponseSchema,
 } from "../public/projectApplicationDeleteResponseSchema.js"
 import {
-  type ProjectApplicationListResponse,
-  projectApplicationListResponseSchema,
-} from "../public/projectApplicationListResponseSchema.js"
-import {
   type ProjectApplicationLifecycleRequest,
   projectApplicationLifecycleRequestSchema,
 } from "../public/projectApplicationLifecycleRequestSchema.js"
+import {
+  type ProjectApplicationListResponse,
+  projectApplicationListResponseSchema,
+} from "../public/projectApplicationListResponseSchema.js"
 import {
   type ProjectApplicationResponse,
   projectApplicationResponseSchema,
@@ -43,13 +43,13 @@ import {
   projectGrantDeleteResponseSchema,
 } from "../public/projectGrantDeleteResponseSchema.js"
 import {
-  type ProjectGrantListResponse,
-  projectGrantListResponseSchema,
-} from "../public/projectGrantListResponseSchema.js"
-import {
   type ProjectGrantLifecycleRequest,
   projectGrantLifecycleRequestSchema,
 } from "../public/projectGrantLifecycleRequestSchema.js"
+import {
+  type ProjectGrantListResponse,
+  projectGrantListResponseSchema,
+} from "../public/projectGrantListResponseSchema.js"
 import { type ProjectGrantResponse, projectGrantResponseSchema } from "../public/projectGrantResponseSchema.js"
 import {
   type ProjectGrantUpdateRequest,
@@ -78,6 +78,7 @@ type ProjectApiFetch = (input: string | URL | Request, init?: RequestInit) => Pr
 
 type ProjectApiClientCreateOptions = {
   readonly baseUrl: string
+  readonly csrfToken?: string
   readonly fetch?: ProjectApiFetch
   readonly token?: Secret | string
 }
@@ -110,10 +111,347 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
     })
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
+  const browserRequestInit = (init: RequestInit): RequestInit => {
+    const headers = new Headers(init.headers)
+    if (options.csrfToken !== undefined) headers.set("x-csrf-token", options.csrfToken)
+    return { ...init, credentials: "same-origin", headers }
+  }
+  const browserRequest = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init: browserRequestInit(init),
+      op: "projectApiClientTenantRequest",
+      path,
+      schema,
+    })
+  const browserGetRequest = <T>(
+    path: string,
+    schema: v.GenericSchema<T>,
+    getOptions?: HttpGetOptions,
+  ): Promise<HttpGetResult<T>> =>
+    httpApiClientGetRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      ifModifiedSince: getOptions?.ifModifiedSince,
+      init: browserRequestInit({ method: "GET" }),
+      op: "projectApiClientTenantRequest",
+      path,
+      schema,
+    })
   const projectPath = (realmId: string, projectId?: string) =>
     `/system/realms/${encodeURIComponent(realmId)}/projects${projectId === undefined ? "" : `/${encodeURIComponent(projectId)}`}`
+  const projectTenantPath = (realmId: string, projectId?: string) =>
+    `/realms/${encodeURIComponent(realmId)}/projects${projectId === undefined ? "" : `/${encodeURIComponent(projectId)}`}`
 
   return {
+    projectTenantAccessCheck(realmId: string, projectId: string): Promise<Result<ProjectAccessResponse>> {
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/access`,
+        { method: "GET" },
+        projectAccessResponseSchema,
+      )
+    },
+    projectTenantApplicationCreate(
+      realmId: string,
+      projectId: string,
+      input: ProjectApplicationCreateRequest,
+    ): Promise<Result<ProjectApplicationResponse>> {
+      const parsed = v.safeParse(projectApplicationCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantApplicationCreate",
+            "The application request is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/applications`,
+        jsonRequest(parsed.output),
+        projectApplicationResponseSchema,
+      )
+    },
+    projectTenantApplicationDelete(
+      realmId: string,
+      projectId: string,
+      applicationId: string,
+    ): Promise<Result<ProjectApplicationDeleteResponse>> {
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
+        { method: "DELETE" },
+        projectApplicationDeleteResponseSchema,
+      )
+    },
+    projectTenantApplicationGet(
+      realmId: string,
+      projectId: string,
+      applicationId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<ProjectApplicationResponse>> {
+      return browserGetRequest(
+        `${projectTenantPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
+        projectApplicationResponseSchema,
+        getOptions,
+      )
+    },
+    projectTenantApplicationLifecycleSet(
+      realmId: string,
+      projectId: string,
+      applicationId: string,
+      input: ProjectApplicationLifecycleRequest,
+    ): Promise<Result<ProjectApplicationResponse>> {
+      const parsed = v.safeParse(projectApplicationLifecycleRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantApplicationLifecycleSet",
+            "The application lifecycle request is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}/lifecycle`,
+        jsonRequest(parsed.output),
+        projectApplicationResponseSchema,
+      )
+    },
+    projectTenantApplicationList(
+      realmId: string,
+      projectId: string,
+      query?: ListQuery,
+    ): Promise<Result<ProjectApplicationListResponse>> {
+      return browserRequest(
+        projectListPath(`${projectTenantPath(realmId, projectId)}/applications`, query),
+        { method: "GET" },
+        projectApplicationListResponseSchema,
+      )
+    },
+    projectTenantApplicationUpdate(
+      realmId: string,
+      projectId: string,
+      applicationId: string,
+      input: ProjectApplicationUpdateRequest,
+    ): Promise<Result<ProjectApplicationResponse>> {
+      const parsed = v.safeParse(projectApplicationUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantApplicationUpdate",
+            "The application update is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/applications/${encodeURIComponent(applicationId)}`,
+        patchRequest(parsed.output),
+        projectApplicationResponseSchema,
+      )
+    },
+    projectTenantCreate(realmId: string, input: ProjectCreateRequest): Promise<Result<ProjectResponse>> {
+      const parsed = v.safeParse(projectCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate("projectApiClientTenantCreate", "The project request is invalid.", "projects.invalid"),
+        )
+      return browserRequest(projectTenantPath(realmId), jsonRequest(parsed.output), projectResponseSchema)
+    },
+    projectTenantDelete(realmId: string, projectId: string): Promise<Result<ProjectDeleteResponse>> {
+      return browserRequest(projectTenantPath(realmId, projectId), { method: "DELETE" }, projectDeleteResponseSchema)
+    },
+    projectTenantGet(
+      realmId: string,
+      projectId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<ProjectResponse>> {
+      return browserGetRequest(projectTenantPath(realmId, projectId), projectResponseSchema, getOptions)
+    },
+    projectTenantGrantCreate(
+      realmId: string,
+      projectId: string,
+      input: ProjectGrantCreateRequest,
+    ): Promise<Result<ProjectGrantResponse>> {
+      const parsed = v.safeParse(projectGrantCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantGrantCreate",
+            "The project grant request is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/grants`,
+        jsonRequest(parsed.output),
+        projectGrantResponseSchema,
+      )
+    },
+    projectTenantGrantDelete(
+      realmId: string,
+      projectId: string,
+      grantId: string,
+    ): Promise<Result<ProjectGrantDeleteResponse>> {
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/grants/${encodeURIComponent(grantId)}`,
+        { method: "DELETE" },
+        projectGrantDeleteResponseSchema,
+      )
+    },
+    projectTenantGrantLifecycleSet(
+      realmId: string,
+      projectId: string,
+      grantId: string,
+      input: ProjectGrantLifecycleRequest,
+    ): Promise<Result<ProjectGrantResponse>> {
+      const parsed = v.safeParse(projectGrantLifecycleRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantGrantLifecycleSet",
+            "The project grant lifecycle request is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/grants/${encodeURIComponent(grantId)}/lifecycle`,
+        jsonRequest(parsed.output),
+        projectGrantResponseSchema,
+      )
+    },
+    projectTenantGrantList(
+      realmId: string,
+      projectId: string,
+      query?: ListQuery,
+    ): Promise<Result<ProjectGrantListResponse>> {
+      return browserRequest(
+        projectListPath(`${projectTenantPath(realmId, projectId)}/grants`, query),
+        { method: "GET" },
+        projectGrantListResponseSchema,
+      )
+    },
+    projectTenantGrantUpdate(
+      realmId: string,
+      projectId: string,
+      grantId: string,
+      input: ProjectGrantUpdateRequest,
+    ): Promise<Result<ProjectGrantResponse>> {
+      const parsed = v.safeParse(projectGrantUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantGrantUpdate",
+            "The project grant update is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/grants/${encodeURIComponent(grantId)}`,
+        patchRequest(parsed.output),
+        projectGrantResponseSchema,
+      )
+    },
+    projectTenantLifecycleSet(
+      realmId: string,
+      projectId: string,
+      input: ProjectLifecycleRequest,
+    ): Promise<Result<ProjectResponse>> {
+      const parsed = v.safeParse(projectLifecycleRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantLifecycleSet",
+            "The project lifecycle request is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/lifecycle`,
+        jsonRequest(parsed.output),
+        projectResponseSchema,
+      )
+    },
+    projectTenantList(realmId: string, query?: ListQuery): Promise<Result<ProjectListResponse>> {
+      return browserRequest(
+        projectListPath(projectTenantPath(realmId), query),
+        { method: "GET" },
+        projectListResponseSchema,
+      )
+    },
+    projectTenantRoleCreate(
+      realmId: string,
+      projectId: string,
+      input: ProjectRoleCreateRequest,
+    ): Promise<Result<ProjectRoleResponse>> {
+      const parsed = v.safeParse(projectRoleCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantRoleCreate",
+            "The project role request is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/roles`,
+        jsonRequest(parsed.output),
+        projectRoleResponseSchema,
+      )
+    },
+    projectTenantRoleDelete(
+      realmId: string,
+      projectId: string,
+      roleId: string,
+    ): Promise<Result<ProjectRoleDeleteResponse>> {
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/roles/${encodeURIComponent(roleId)}`,
+        { method: "DELETE" },
+        projectRoleDeleteResponseSchema,
+      )
+    },
+    projectTenantRoleList(
+      realmId: string,
+      projectId: string,
+      query?: ListQuery,
+    ): Promise<Result<ProjectRoleListResponse>> {
+      return browserRequest(
+        projectListPath(`${projectTenantPath(realmId, projectId)}/roles`, query),
+        { method: "GET" },
+        projectRoleListResponseSchema,
+      )
+    },
+    projectTenantRoleUpdate(
+      realmId: string,
+      projectId: string,
+      roleId: string,
+      input: ProjectRoleUpdateRequest,
+    ): Promise<Result<ProjectRoleResponse>> {
+      const parsed = v.safeParse(projectRoleUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantRoleUpdate",
+            "The project role update is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/roles/${encodeURIComponent(roleId)}`,
+        patchRequest(parsed.output),
+        projectRoleResponseSchema,
+      )
+    },
+    projectTenantUpdate(
+      realmId: string,
+      projectId: string,
+      input: ProjectUpdateRequest,
+    ): Promise<Result<ProjectResponse>> {
+      const parsed = v.safeParse(projectUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate("projectApiClientTenantUpdate", "The project update is invalid.", "projects.invalid"),
+        )
+      return browserRequest(projectTenantPath(realmId, projectId), patchRequest(parsed.output), projectResponseSchema)
+    },
     projectAccessCheck(realmId: string, projectId: string): Promise<Result<ProjectAccessResponse>> {
       return request(`${projectPath(realmId, projectId)}/access`, { method: "GET" }, projectAccessResponseSchema)
     },

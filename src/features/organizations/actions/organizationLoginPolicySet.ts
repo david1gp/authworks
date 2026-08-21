@@ -7,12 +7,14 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { organizationLoginPolicyOverrideViewCreate } from "../domain/organizationLoginPolicyOverrideViewCreate.js"
+import { organizationLoginPolicyViewCreate } from "../domain/organizationLoginPolicyViewCreate.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationLoginPolicyChangedEventPayloadSchema } from "../events/organizationLoginPolicyChangedEventPayloadSchema.js"
-import { organizationLoginPolicyDefaults } from "../domain/organizationLoginPolicyDefaults.js"
-import { organizationLoginPolicyViewCreate } from "../domain/organizationLoginPolicyViewCreate.js"
 import { organizationLoginPolicyRepositoryCreate } from "../persistence/organizationLoginPolicyRepositoryCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { OrganizationLoginPolicyResponse } from "../public/organizationLoginPolicyResponseSchema.js"
@@ -20,7 +22,6 @@ import {
   type OrganizationLoginPolicySetRequest,
   organizationLoginPolicySetRequestSchema,
 } from "../public/organizationLoginPolicySetRequestSchema.js"
-import { organizationLoginPolicyOverrideViewCreate } from "../domain/organizationLoginPolicyOverrideViewCreate.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationLoginPolicySetOptions = {
@@ -52,12 +53,22 @@ function organizationLoginPolicySetRun(
   const parsed = v.safeParse(organizationLoginPolicySetRequestSchema, options.input)
   if (!parsed.success || Object.keys(parsed.output).length === 0)
     return resultErrorCodedCreate(op, "The login policy update is invalid.", "organizations.invalid")
-  if (options.context.kind !== "system")
-    return resultErrorCodedCreate(
-      op,
-      "Only the system context can configure login policy.",
-      "organizations.system-required",
-    )
+  if (options.context.kind !== "system") {
+    if (options.context.realmId !== options.realmId)
+      return resultErrorCodedCreate(
+        op,
+        "The login policy is not available in this tenant context.",
+        "organizations.tenant-mismatch",
+      )
+    if (options.scope === "realm") {
+      const authorized = authorizationEnforce({
+        actor: options.context.actor,
+        realmId: options.realmId,
+        permission: authorizationPermissionDefinitions.organizationManage,
+      })
+      if (!authorized.success) return authorized
+    }
+  }
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)

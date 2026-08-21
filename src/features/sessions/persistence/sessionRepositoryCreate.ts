@@ -2,9 +2,9 @@ import { and, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
-import { sessionTable, type SessionRow } from "./sessionTable.js"
+import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { type SessionRow, sessionTable } from "./sessionTable.js"
 
 export function sessionRepositoryCreate(database: StorageExecutor) {
   return {
@@ -43,12 +43,14 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    sessionList(realmId: string, userId: string, limit?: number): Result<SessionRow[]> {
+    sessionList(realmId: string, subjectId: string, limit?: number, subjectType?: string): Result<SessionRow[]> {
       try {
+        const ownership = [eq(sessionTable.realmId, realmId), eq(sessionTable.subjectId, subjectId)]
+        if (subjectType !== undefined) ownership.push(eq(sessionTable.subjectType, subjectType))
         const query = database
           .select()
           .from(sessionTable)
-          .where(and(eq(sessionTable.realmId, realmId), eq(sessionTable.userId, userId)))
+          .where(and(...ownership))
           .orderBy(desc(sessionTable.lastUsedAt), desc(sessionTable.createdAt))
         if (limit === undefined) return resultCreate(query.all())
         return resultCreate(query.limit(limit).all())

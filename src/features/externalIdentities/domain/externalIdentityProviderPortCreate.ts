@@ -1,14 +1,14 @@
 import { createPublicKey, verify } from "node:crypto"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
+import type { ExternalIdentityProviderIdentity } from "./externalIdentityProviderIdentity.js"
 import type {
   ExternalIdentityProviderPort,
   ExternalIdentityProviderPortCallbackInput,
   ExternalIdentityProviderPortConfiguration,
   ExternalIdentityProviderPorts,
 } from "./externalIdentityProviderPort.js"
-import type { ExternalIdentityProviderIdentity } from "./externalIdentityProviderIdentity.js"
-import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 
 type ExternalIdentityProviderPortCreateOptions = {
   readonly fetch?: typeof fetch

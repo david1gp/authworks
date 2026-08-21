@@ -16,7 +16,7 @@ type EventApiClientCreateOptions = {
 }
 
 export function eventApiClientCreate(options: EventApiClientCreateOptions) {
-  const eventList = (realmId: string, query?: ListQuery): Promise<Result<EventListResponse>> =>
+  const eventSystemList = (realmId: string, query?: ListQuery): Promise<Result<EventListResponse>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
       fetch: options.fetch,
@@ -26,13 +26,31 @@ export function eventApiClientCreate(options: EventApiClientCreateOptions) {
       schema: eventListResponseSchema,
       token: options.token,
     })
+  const eventTenantList = (realmId: string, query?: ListQuery): Promise<Result<EventListResponse>> =>
+    httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init: { credentials: "same-origin", method: "GET" },
+      op: "eventApiClientTenantList",
+      path: `/realms/${encodeURIComponent(realmId)}/events${listQueryToSearchParams(query)}`,
+      schema: eventListResponseSchema,
+      token: options.token,
+    })
 
   return {
     eventList(realmId: string, query?: ListQuery): Promise<Result<EventListResponse>> {
       const parsedRealmId = v.safeParse(v.pipe(v.string(), v.minLength(1)), realmId)
       if (!parsedRealmId.success)
         return Promise.resolve(resultErrorCreate("eventApiClientList", "The realm ID is invalid.", "events.invalid"))
-      return eventList(parsedRealmId.output, query)
+      return eventSystemList(parsedRealmId.output, query)
+    },
+    eventTenantList(realmId: string, query?: ListQuery): Promise<Result<EventListResponse>> {
+      const parsedRealmId = v.safeParse(v.pipe(v.string(), v.minLength(1)), realmId)
+      if (!parsedRealmId.success)
+        return Promise.resolve(
+          resultErrorCreate("eventApiClientTenantList", "The realm ID is invalid.", "events.invalid"),
+        )
+      return eventTenantList(parsedRealmId.output, query)
     },
   }
 }

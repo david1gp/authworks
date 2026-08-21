@@ -1,5 +1,5 @@
-import type { MachineUser } from "../public/machineUserSchema.js"
 import type { MachineUserRow } from "../persistence/machineUserTable.js"
+import type { MachineUser } from "../public/machineUserSchema.js"
 
 export function machineUserPublicViewCreate(row: MachineUserRow, scopes: readonly string[]): MachineUser {
   return {

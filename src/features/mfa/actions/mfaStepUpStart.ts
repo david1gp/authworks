@@ -1,8 +1,8 @@
 import type { Result } from "#result"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { SessionAuthenticationMethod } from "../../sessions/public/sessionAuthenticationMethodSchema.js"
-import { mfaLoginChallengeStart } from "./mfaLoginChallengeStart.js"
 import type { MfaChallengeResponse } from "../public/mfaChallengeResponseSchema.js"
+import { mfaLoginChallengeStart } from "./mfaLoginChallengeStart.js"
 
 type MfaStepUpStartOptions = {
   readonly actorId?: string | null

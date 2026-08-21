@@ -1,8 +1,8 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
-import { realmApiClientCreate } from "../client/realmApiClientCreate.js"
-import type { RealmCreateRequest } from "../public/realmCreateRequestSchema.js"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { realmApiClientCreate } from "../client/realmApiClientCreate.js"
+import type { RealmCreateRequest } from "../public/realmCreateRequestSchema.js"
 
 type RealmCliFlags = {
   readonly server?: string

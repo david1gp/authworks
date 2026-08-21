@@ -1,7 +1,12 @@
 import type { OrganizationLoginPolicy } from "../../organizations/public/organizationLoginPolicySchema.js"
 
-export function loginPrimaryMethodsGet(policy: OrganizationLoginPolicy, providerCount: number) {
-  const methods: Array<"password" | "email-otp" | "passkey" | "external-identity"> = []
+export type LoginPrimaryMethod = "email-otp" | "external-identity" | "passkey" | "password"
+
+export function loginPrimaryMethodsGet(
+  policy: OrganizationLoginPolicy,
+  providerCount: number,
+): readonly LoginPrimaryMethod[] {
+  const methods: LoginPrimaryMethod[] = []
   if (policy.allowPassword) methods.push("password")
   if (policy.allowEmailOtp) methods.push("email-otp")
   if (policy.allowPasskey) methods.push("passkey")

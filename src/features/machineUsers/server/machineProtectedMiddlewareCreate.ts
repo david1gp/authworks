@@ -1,11 +1,11 @@
 import type { MiddlewareHandler } from "hono"
 import { httpErrorResponseCreate } from "../../../platform/http/httpErrorResponseCreate.js"
 import { httpErrorStatusGet } from "../../../platform/http/httpErrorStatusGet.js"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
-import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
-import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { machineCredentialAuthenticate } from "../actions/machineCredentialAuthenticate.js"
 import type { MachineCredentialAuthentication } from "../domain/machineCredentialAuthentication.js"
 

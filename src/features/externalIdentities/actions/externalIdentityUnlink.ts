@@ -1,5 +1,5 @@
+import { and, count, eq } from "drizzle-orm"
 import * as v from "valibot"
-import { and, eq, count } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -8,8 +8,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { Session } from "../../sessions/public/sessionSchema.js"
 import { passwordCredentialTable } from "../../passwords/persistence/passwordCredentialTable.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
 import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
@@ -29,7 +29,11 @@ type ExternalIdentityUnlinkOptions = {
 
 export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): Result<ExternalIdentityUnlinkResponse> {
   const op = "externalIdentityUnlink"
-  if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
+  if (
+    options.session.realmId !== options.realmId ||
+    options.session.subjectType !== "user" ||
+    options.session.subjectId !== options.userId
+  )
     return resultErrorCreate(op, "The session does not belong to this user.", "external-identities.forbidden")
   if (options.session.assurance === "none")
     return resultErrorCreate(op, "Session authorization is required.", "external-identities.unauthorized")

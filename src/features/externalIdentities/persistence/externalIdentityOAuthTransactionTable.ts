@@ -15,6 +15,7 @@ export const externalIdentityOAuthTransactionTable = sqliteTable(
     externalUsername: text("external_username"),
     expiresAt: integer("expires_at").notNull(),
     id: text("id").primaryKey(),
+    interactionHandle: text("interaction_handle"),
     realmId: text("realm_id").notNull(),
     intent: text("intent").notNull(),
     nonceHash: text("nonce_hash"),

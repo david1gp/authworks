@@ -2,8 +2,8 @@ import { createPrivateKey, createSign } from "node:crypto"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
-import { oidcBase64UrlEncode } from "./oidcBase64UrlEncode.js"
 import { oidcBase64UrlDecode } from "./oidcBase64UrlDecode.js"
+import { oidcBase64UrlEncode } from "./oidcBase64UrlEncode.js"
 
 export function oidcJwtSign(
   header: Record<string, unknown>,

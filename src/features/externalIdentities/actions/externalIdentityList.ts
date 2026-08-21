@@ -2,13 +2,13 @@ import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { externalIdentityViewCreate } from "../domain/externalIdentityViewCreate.js"
-import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
 import { externalIdentityProviderTable } from "../persistence/externalIdentityProviderTable.js"
+import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
 import type { ExternalIdentityListResponse } from "../public/externalIdentityListResponseSchema.js"
 
 type ExternalIdentityListOptions = {
@@ -24,7 +24,11 @@ export function externalIdentityList(options: ExternalIdentityListOptions): Resu
     options.realmId,
     options.userId,
   )
-  if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
+  if (
+    options.session.realmId !== options.realmId ||
+    options.session.subjectType !== "user" ||
+    options.session.subjectId !== options.userId
+  )
     return resultErrorCreate(
       "externalIdentityList",
       "The session does not belong to this user.",

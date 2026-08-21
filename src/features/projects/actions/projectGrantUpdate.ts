@@ -1,5 +1,5 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { patchInputParse } from "../../../platform/http/patchInputParse.js"
@@ -16,11 +16,11 @@ import { projectRoleKeysEncode } from "../domain/projectRoleKeysEncode.js"
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectGrantUpdatedEventPayloadSchema } from "../events/projectGrantUpdatedEventPayloadSchema.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
-import {
-  projectGrantUpdateRequestSchema,
-  type ProjectGrantUpdateRequest,
-} from "../public/projectGrantUpdateRequestSchema.js"
 import type { ProjectGrant } from "../public/projectGrantSchema.js"
+import {
+  type ProjectGrantUpdateRequest,
+  projectGrantUpdateRequestSchema,
+} from "../public/projectGrantUpdateRequestSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectGrantUpdateOptions = {

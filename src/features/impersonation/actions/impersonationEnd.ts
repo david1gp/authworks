@@ -5,18 +5,18 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
+import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { sessionEventTypes } from "../../sessions/events/sessionEventTypes.js"
 import { sessionRevokedEventPayloadSchema } from "../../sessions/events/sessionRevokedEventPayloadSchema.js"
 import { sessionRepositoryCreate } from "../../sessions/persistence/sessionRepositoryCreate.js"
 import { impersonationEndedEventPayloadSchema } from "../events/impersonationEndedEventPayloadSchema.js"
 import { impersonationEventTypes } from "../events/impersonationEventTypes.js"
-import type { ImpersonationSecurityNotification } from "../public/impersonationSecurityNotificationSchema.js"
 import type { ImpersonationEndResponse } from "../public/impersonationEndResponseSchema.js"
-import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import type { ImpersonationSecurityNotification } from "../public/impersonationSecurityNotificationSchema.js"
 
 type ImpersonationEndOptions = {
   readonly actor: AuthorizationActorContext
@@ -50,7 +50,8 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
     const isImpersonator =
       options.actor.actorId === current.data.impersonatorId && options.actor.impersonatorId === undefined
     const isSubject =
-      options.actor.actorId === current.data.userId &&
+      current.data.subjectType === "user" &&
+      options.actor.actorId === current.data.subjectId &&
       options.actor.impersonationSessionId === options.sessionId &&
       options.actor.impersonatorId === current.data.impersonatorId
     if (!isImpersonator && !isSubject)
@@ -111,7 +112,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
         ? {}
         : { organizationId: current.data.impersonationOrganizationId }),
       sessionId: options.sessionId,
-      subjectId: current.data.userId,
+      subjectId: current.data.subjectId,
     })
     if (!endedPayload.success)
       return resultErrorCreate(op, "The impersonation event payload is invalid.", "impersonation.event-invalid")
@@ -143,7 +144,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
           ? {}
           : { organizationId: current.data.impersonationOrganizationId }),
         sessionId: options.sessionId,
-        subjectId: current.data.userId,
+        subjectId: current.data.subjectId,
       },
       response: { ended: true, sessionId: options.sessionId },
     })

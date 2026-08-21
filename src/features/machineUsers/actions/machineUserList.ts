@@ -1,15 +1,15 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { machineScopesParse } from "../domain/machineScopesParse.js"
 import { machineUserPublicViewCreate } from "../domain/machineUserPublicViewCreate.js"
 import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
-import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 import type { MachineUserListResponse } from "../public/machineUserListResponseSchema.js"
+import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 
 type MachineUserListOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

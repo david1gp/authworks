@@ -11,12 +11,14 @@ import { sessionEventTypes } from "../events/sessionEventTypes.js"
 import { sessionRevokedEventPayloadSchema } from "../events/sessionRevokedEventPayloadSchema.js"
 import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
 import type { SessionRevocationResponse } from "../public/sessionRevocationResponseSchema.js"
+import type { SessionSubjectType } from "../public/sessionSubjectTypeSchema.js"
 
 type SessionRevokeAllOptions = {
   readonly database: StorageDatabase
   readonly exceptSessionId?: string
   readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
+  readonly subjectType?: SessionSubjectType
   readonly userId: string
 }
 
@@ -29,7 +31,7 @@ export function sessionRevokeAll(options: SessionRevokeAllOptions): Result<Sessi
   const correlationId = uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = sessionRepositoryCreate(transaction)
-    const sessions = repository.sessionList(options.realmId, options.userId)
+    const sessions = repository.sessionList(options.realmId, options.userId, undefined, options.subjectType)
     if (!sessions.success) return sessions
     let revoked = false
     let commandIndex = 0

@@ -2,10 +2,10 @@ import { and, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
-import { passkeyCeremonyTable, type PasskeyCeremonyRow } from "./passkeyCeremonyTable.js"
-import { passkeyCredentialTable, type PasskeyCredentialRow } from "./passkeyCredentialTable.js"
+import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { type PasskeyCeremonyRow, passkeyCeremonyTable } from "./passkeyCeremonyTable.js"
+import { type PasskeyCredentialRow, passkeyCredentialTable } from "./passkeyCredentialTable.js"
 
 export function passkeyRepositoryCreate(database: StorageExecutor) {
   return {

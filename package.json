@@ -56,17 +56,18 @@
     "dev": "bun run --parallel dev:api dev:ui",
     "dev:api": "bun run --watch src/outputs/server.ts",
     "dev:ui": "vite",
-    "test": "bun test test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance",
+    "test": "bun test test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance test/ui",
     "test:e2e": "playwright test",
-    "test:w": "bun test --watch test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance",
+    "test:w": "bun test --watch test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance test/ui",
     "test:build": "bun run build && bun test test/build",
     "test:all": "bun run test && bun run test:build",
     "typecheck": "tsc -p ./tsconfig.json --noEmit",
     "tsc": "tsc -p ./tsconfig.json --noEmit",
-    "build": "bun run clean && bun run typecheck && bun run build:library && bun run build:server && bun run build:cli",
-    "build:library": "tsc -p ./tsconfig.lib.json",
+    "build": "bun run clean && bun run typecheck && bun run build:library && bun run build:server && bun run build:cli && bun run build:ui",
+    "build:library": "tsc -p ./tsconfig.lib.json && cp ./package.json ./dist/package.json",
     "build:server": "bun build ./src/outputs/server.ts --outfile ./dist/server/server.js --target bun --format esm",
     "build:cli": "bun build ./src/outputs/cli.ts --outfile ./dist/cli/cli.js --target bun --format esm && chmod +x ./dist/cli/cli.js",
+    "build:ui": "vite build",
     "verify:outputs": "bun run test:build",
     "check": "bun run format:check && bun run typecheck && bun run test && bun run build && bun test test/build",
     "release": "bash ./ops/release.sh",
@@ -106,6 +107,10 @@
     "./authorization": {
       "types": "./dist/library/outputs/library/authorization.d.ts",
       "import": "./dist/library/outputs/library/authorization.js"
+    },
+    "./email": {
+      "types": "./dist/library/outputs/library/email.d.ts",
+      "import": "./dist/library/outputs/library/email.js"
     },
     "./emailOtp": {
       "types": "./dist/library/outputs/library/emailOtp.d.ts",

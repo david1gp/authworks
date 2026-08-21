@@ -3,6 +3,7 @@ import { sessionAssuranceSchema } from "../public/sessionAssuranceSchema.js"
 import { sessionAuthenticationMethodSchema } from "../public/sessionAuthenticationMethodSchema.js"
 import { sessionDeviceMetadataSchema } from "../public/sessionDeviceMetadataSchema.js"
 import { sessionMfaMethodSchema } from "../public/sessionMfaMethodSchema.js"
+import { sessionSubjectTypeSchema } from "../public/sessionSubjectTypeSchema.js"
 
 export const sessionCreatedEventPayloadSchema = v.strictObject({
   assurance: sessionAssuranceSchema,
@@ -14,7 +15,9 @@ export const sessionCreatedEventPayloadSchema = v.strictObject({
   impersonatorId: v.optional(v.pipe(v.string(), v.minLength(1))),
   mfaMethod: v.optional(sessionMfaMethodSchema),
   sessionId: v.pipe(v.string(), v.minLength(1)),
-  userId: v.pipe(v.string(), v.minLength(1)),
+  subjectId: v.pipe(v.string(), v.minLength(1)),
+  subjectType: sessionSubjectTypeSchema,
+  userId: v.optional(v.pipe(v.string(), v.minLength(1))),
 })
 
 export type SessionCreatedEventPayload = v.InferOutput<typeof sessionCreatedEventPayloadSchema>

@@ -4,10 +4,10 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import type { SessionAuthenticationMethod } from "../../sessions/public/sessionAuthenticationMethodSchema.js"
-import { mfaLoginChallengeStart } from "./mfaLoginChallengeStart.js"
 import { mfaPolicyDefaults } from "../domain/mfaPolicyDefaults.js"
 import { mfaRepositoryCreate } from "../persistence/mfaRepositoryCreate.js"
 import type { MfaChallengeResponse } from "../public/mfaChallengeResponseSchema.js"
+import { mfaLoginChallengeStart } from "./mfaLoginChallengeStart.js"
 
 type MfaPrimaryAuthenticationCompleteOptions<TSession> = {
   readonly actorId?: string | null

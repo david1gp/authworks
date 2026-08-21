@@ -7,6 +7,7 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -19,7 +20,6 @@ import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreat
 import { type PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliverySchema.js"
 import { type PasswordRecoveryRequest, passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
 import type { PasswordRecoveryResponse } from "../public/passwordRecoveryResponseSchema.js"
-import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 
 type PasswordRecoveryRequestOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
@@ -105,7 +105,12 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   })
   if (!created.success) return created
   try {
-    options.onRecoveryToken?.({ realmId: options.realmId, token: token.valueGet(), userId: userRow.id })
+    options.onRecoveryToken?.({
+      email: userRow.email,
+      realmId: options.realmId,
+      token: token.valueGet(),
+      userId: userRow.id,
+    })
   } catch (_error) {}
   return resultCreate({ accepted: true })
 }

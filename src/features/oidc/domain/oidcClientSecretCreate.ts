@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
+import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcBase64UrlEncode } from "./oidcBase64UrlEncode.js"
 
 type OidcClientSecretRuntime = Pick<ReturnType<typeof runtimeCreate>, "randomBytes">

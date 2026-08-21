@@ -1,5 +1,5 @@
-import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
+import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -10,13 +10,13 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
-import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
-import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
 import { externalIdentityPkceChallengeCreate } from "../domain/externalIdentityPkceChallengeCreate.js"
 import { externalIdentityProviderDefaults } from "../domain/externalIdentityProviderDefaults.js"
 import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityProviderPort.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
+import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
+import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
 import type { ExternalIdentityStartRequest } from "../public/externalIdentityStartRequestSchema.js"
 import { externalIdentityStartRequestSchema } from "../public/externalIdentityStartRequestSchema.js"
@@ -44,7 +44,11 @@ export function externalIdentityLinkStart(
   const parsed = v.safeParse(externalIdentityStartRequestSchema, options.input)
   if (!parsed.success)
     return resultErrorCreate(op, "The external identity link request is invalid.", "external-identities.invalid")
-  if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
+  if (
+    options.session.realmId !== options.realmId ||
+    options.session.subjectType !== "user" ||
+    options.session.subjectId !== options.userId
+  )
     return resultErrorCreate(op, "The session does not belong to this user.", "external-identities.forbidden")
   if (options.session.assurance === "none")
     return resultErrorCreate(
@@ -122,6 +126,7 @@ export function externalIdentityLinkStart(
       externalUsername: null,
       expiresAt,
       id: transactionId,
+      interactionHandle: null,
       realmId: options.realmId,
       intent: "link",
       nonce,

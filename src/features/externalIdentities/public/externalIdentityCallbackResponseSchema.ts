@@ -1,7 +1,7 @@
 import * as v from "valibot"
+import { mfaChallengeResponseSchema } from "../../mfa/public/mfaChallengeResponseSchema.js"
 import { sessionCredentialResponseSchema } from "../../sessions/public/sessionCredentialResponseSchema.js"
 import { externalIdentitySchema } from "./externalIdentitySchema.js"
-import { mfaChallengeResponseSchema } from "../../mfa/public/mfaChallengeResponseSchema.js"
 
 export const externalIdentityCallbackResponseSchema = v.variant("kind", [
   v.strictObject({

@@ -9,15 +9,15 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { machineCredentialRotatedEventPayloadSchema } from "../events/machineCredentialRotatedEventPayloadSchema.js"
-import { machineEventTypes } from "../events/machineEventTypes.js"
+import { machineScopesParse } from "../domain/machineScopesParse.js"
 import { machineSecretCreate } from "../domain/machineSecretCreate.js"
 import { machineSecretHashCreate } from "../domain/machineSecretHashCreate.js"
-import { machineScopesParse } from "../domain/machineScopesParse.js"
 import { machineUserPublicViewCreate } from "../domain/machineUserPublicViewCreate.js"
+import { machineCredentialRotatedEventPayloadSchema } from "../events/machineCredentialRotatedEventPayloadSchema.js"
+import { machineEventTypes } from "../events/machineEventTypes.js"
 import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
-import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 import type { MachineUserSecretRotateResponse } from "../public/machineUserSecretRotateResponseSchema.js"
+import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 
 type MachineUserClientSecretRotateOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

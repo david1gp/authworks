@@ -19,6 +19,11 @@ import {
 type OrganizationInvitationDeclineOptions = {
   readonly database: StorageDatabase
   readonly input: OrganizationInvitationAcceptRequest
+  readonly subject?: {
+    readonly email: string
+    readonly realmId: string
+    readonly userId: string
+  }
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -41,7 +46,15 @@ export function organizationInvitationDecline(
       organizationInvitationTokenHashCreate(parsed.output.token),
     )
     if (!invitation.success) return invitation
-    if (invitation.data === null || invitation.data.status !== "pending")
+    if (
+      invitation.data === null ||
+      (options.subject !== undefined &&
+        (parsed.output.userId !== options.subject.userId ||
+          invitation.data.realmId !== options.subject.realmId ||
+          invitation.data.email !== options.subject.email))
+    )
+      return resultErrorCodedCreate(op, "The organization invitation is invalid.", "organizations.not-found")
+    if (invitation.data.status !== "pending")
       return resultErrorCodedCreate(op, "The organization invitation is no longer pending.", "organizations.pending")
     if (declinedAt >= invitation.data.expiresAt)
       return resultErrorCodedCreate(op, "The organization invitation has expired.", "organizations.expired")

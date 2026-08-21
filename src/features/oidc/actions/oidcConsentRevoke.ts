@@ -8,10 +8,10 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
-import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
-import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcConsentRevokedEventPayloadSchema } from "../events/oidcConsentRevokedEventPayloadSchema.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
@@ -19,6 +19,7 @@ import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import type { OidcConsentRevokeResponse } from "../public/oidcConsentRevokeResponseSchema.js"
 
 type OidcConsentRevokeOptions = {
+  readonly administrator?: boolean
   readonly context?: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly realmId: string
@@ -54,6 +55,13 @@ export function oidcConsentRevoke(options: OidcConsentRevokeOptions): Result<Oid
   if (options.context !== undefined) {
     const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
     if (!authorized.success) return authorized
+    if (
+      !options.administrator &&
+      options.context.kind === "tenant" &&
+      options.context.actor.kind === "user" &&
+      (options.context.actor.actorId !== userId || options.context.actor.realmId !== options.realmId)
+    )
+      return resultErrorCodedCreate(op, "The authenticated user is not available for this consent.", "oidc.forbidden")
     const realm = realmGet({
       context: realmSystemContextCreate(),
       database: options.database,

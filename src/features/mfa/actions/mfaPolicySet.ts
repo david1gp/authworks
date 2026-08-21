@@ -14,7 +14,7 @@ import { mfaEventPayloadSchema } from "../events/mfaEventPayloadSchema.js"
 import { mfaEventTypes } from "../events/mfaEventTypes.js"
 import { mfaRepositoryCreate } from "../persistence/mfaRepositoryCreate.js"
 import type { MfaPolicy } from "../public/mfaPolicySchema.js"
-import { mfaPolicySetRequestSchema, type MfaPolicySetRequest } from "../public/mfaPolicySetRequestSchema.js"
+import { type MfaPolicySetRequest, mfaPolicySetRequestSchema } from "../public/mfaPolicySetRequestSchema.js"
 
 type MfaPolicySetOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

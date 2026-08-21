@@ -9,17 +9,17 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { machineCredentialRevokedEventPayloadSchema } from "../events/machineCredentialRevokedEventPayloadSchema.js"
-import { machineEventTypes } from "../events/machineEventTypes.js"
 import { machineCredentialPublicViewCreate } from "../domain/machineCredentialPublicViewCreate.js"
 import { machineScopesParse } from "../domain/machineScopesParse.js"
+import { machineCredentialRevokedEventPayloadSchema } from "../events/machineCredentialRevokedEventPayloadSchema.js"
+import { machineEventTypes } from "../events/machineEventTypes.js"
 import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
-import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 import {
-  machineCredentialRevokeRequestSchema,
   type MachineCredentialRevokeRequest,
+  machineCredentialRevokeRequestSchema,
 } from "../public/machineCredentialRevokeRequestSchema.js"
 import type { MachineCredentialRevokeResponse } from "../public/machineCredentialRevokeResponseSchema.js"
+import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 
 type MachineCredentialRevokeOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

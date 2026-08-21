@@ -1,10 +1,11 @@
-import type { AuthorizationRoleDefinition } from "../public/authorizationRoleDefinitionSchema.js"
 import { authorizationPermissionDefinitions } from "../public/authorizationPermissionDefinitions.js"
+import type { AuthorizationRoleDefinition } from "../public/authorizationRoleDefinitionSchema.js"
 
 export const authorizationFixedRoleDefinitions: readonly AuthorizationRoleDefinition[] = [
   {
     name: "Organization owner",
     permissions: [
+      authorizationPermissionDefinitions.eventRead,
       authorizationPermissionDefinitions.organizationManage,
       authorizationPermissionDefinitions.organizationMembersManage,
       authorizationPermissionDefinitions.organizationRead,
@@ -29,6 +30,7 @@ export const authorizationFixedRoleDefinitions: readonly AuthorizationRoleDefini
   {
     name: "Organization administrator",
     permissions: [
+      authorizationPermissionDefinitions.eventRead,
       authorizationPermissionDefinitions.organizationManage,
       authorizationPermissionDefinitions.organizationMembersManage,
       authorizationPermissionDefinitions.organizationRead,
@@ -69,15 +71,33 @@ export const authorizationFixedRoleDefinitions: readonly AuthorizationRoleDefini
   {
     name: "Realm administrator",
     permissions: [
+      authorizationPermissionDefinitions.eventRead,
+      authorizationPermissionDefinitions.machineCredentialManage,
+      authorizationPermissionDefinitions.machineUserManage,
       authorizationPermissionDefinitions.realmRead,
       authorizationPermissionDefinitions.realmWrite,
       authorizationPermissionDefinitions.organizationManage,
       authorizationPermissionDefinitions.organizationMembersManage,
       authorizationPermissionDefinitions.organizationRead,
       authorizationPermissionDefinitions.organizationSwitch,
+      authorizationPermissionDefinitions.oidcRead,
+      authorizationPermissionDefinitions.oidcWrite,
       authorizationPermissionDefinitions.userManage,
       authorizationPermissionDefinitions.userRead,
       authorizationPermissionDefinitions.userImpersonate,
+      authorizationPermissionDefinitions.projectAppDelete,
+      authorizationPermissionDefinitions.projectAppRead,
+      authorizationPermissionDefinitions.projectAppWrite,
+      authorizationPermissionDefinitions.projectCreate,
+      authorizationPermissionDefinitions.projectDelete,
+      authorizationPermissionDefinitions.projectGrantCreate,
+      authorizationPermissionDefinitions.projectGrantDelete,
+      authorizationPermissionDefinitions.projectGrantRead,
+      authorizationPermissionDefinitions.projectGrantWrite,
+      authorizationPermissionDefinitions.projectRead,
+      authorizationPermissionDefinitions.projectRoleRead,
+      authorizationPermissionDefinitions.projectRoleWrite,
+      authorizationPermissionDefinitions.projectWrite,
     ],
     roleId: "realm_admin",
   },

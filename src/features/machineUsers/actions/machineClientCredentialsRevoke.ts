@@ -7,9 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { machineSecretHashVerify } from "../domain/machineSecretHashVerify.js"
 import { machineCredentialRevokedEventPayloadSchema } from "../events/machineCredentialRevokedEventPayloadSchema.js"
 import { machineEventTypes } from "../events/machineEventTypes.js"
-import { machineSecretHashVerify } from "../domain/machineSecretHashVerify.js"
 import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
 
 type MachineClientCredentialsRevokeOptions = {

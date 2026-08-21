@@ -1,12 +1,12 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import { authorizationPolicyEvaluate } from "./authorizationPolicyEvaluate.js"
+import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSchema.js"
 import type { AuthorizationActorContext } from "../public/authorizationActorContextSchema.js"
 import type { AuthorizationPermission } from "../public/authorizationPermissionSchema.js"
 import type { AuthorizationPolicyRule } from "../public/authorizationPolicyRuleSchema.js"
 import type { AuthorizationRoleDefinition } from "../public/authorizationRoleDefinitionSchema.js"
-import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSchema.js"
+import { authorizationPolicyEvaluate } from "./authorizationPolicyEvaluate.js"
 
 type AuthorizationEnforceOptions = {
   readonly actor: AuthorizationActorContext

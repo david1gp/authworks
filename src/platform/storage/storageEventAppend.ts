@@ -3,8 +3,8 @@ import { resultCreate } from "../errors/resultCreate.js"
 import { resultErrorCreate } from "../errors/resultErrorCreate.js"
 import { uuidv7Create } from "../ids/uuidv7Create.js"
 import { runtimeCreate } from "../runtime/runtimeCreate.js"
+import { type StorageEvent, storageEventTable } from "./storageEventTable.js"
 import { storageJsonEncode } from "./storageJsonEncode.js"
-import { storageEventTable, type StorageEvent } from "./storageEventTable.js"
 import type { StorageExecutor } from "./storageSchema.js"
 
 export type StorageEventInput = {

@@ -1,5 +1,4 @@
-import { createHash } from "node:crypto"
-import { scryptSync } from "node:crypto"
+import { createHash, scryptSync } from "node:crypto"
 
 export function emailOtpCodeHashCreate(challengeId: string, code: string): string {
   const salt = createHash("sha256").update(challengeId, "utf8").digest()

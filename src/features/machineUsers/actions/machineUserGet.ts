@@ -7,8 +7,8 @@ import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.
 import { machineScopesParse } from "../domain/machineScopesParse.js"
 import { machineUserPublicViewCreate } from "../domain/machineUserPublicViewCreate.js"
 import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
-import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 import type { MachineUserResponse } from "../public/machineUserResponseSchema.js"
+import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 
 type MachineUserGetOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

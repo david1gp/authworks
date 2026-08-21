@@ -2,9 +2,9 @@ import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
-import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
@@ -16,6 +16,7 @@ import { oidcConsentSchema } from "../public/oidcConsentSchema.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 
 type OidcConsentListOptions = {
+  readonly administrator?: boolean
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly realmId: string
@@ -27,6 +28,13 @@ export function oidcConsentList(options: OidcConsentListOptions): Result<OidcCon
   const op = "oidcConsentList"
   const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
+  if (
+    !options.administrator &&
+    options.context.kind === "tenant" &&
+    options.context.actor.kind === "user" &&
+    (options.context.actor.actorId !== options.userId || options.context.actor.realmId !== options.realmId)
+  )
+    return resultErrorCodedCreate(op, "The authenticated user is not available for this consent.", "oidc.forbidden")
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
   const rows = oidcRepositoryCreate(options.database.db).consentList(options.realmId, options.userId)
@@ -37,7 +45,14 @@ export function oidcConsentList(options: OidcConsentListOptions): Result<OidcCon
   for (const row of rows.data) {
     const scope = oidcConsentScopeParse(row.scope)
     if (!scope.success) return scope
-    const parsed = v.safeParse(oidcConsentSchema, { ...row, scope: scope.data })
+    const parsed = v.safeParse(oidcConsentSchema, {
+      clientId: row.clientId,
+      createdAt: row.createdAt,
+      realmId: row.realmId,
+      scope: scope.data,
+      updatedAt: row.updatedAt,
+      userId: row.userId,
+    })
     if (!parsed.success) return resultErrorCodedCreate(op, "The OIDC consent is invalid.", "oidc.consent-invalid")
     consents.push(parsed.output)
   }

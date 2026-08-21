@@ -1,7 +1,7 @@
 import * as v from "valibot"
-import type { ExternalIdentity } from "../public/externalIdentitySchema.js"
-import { externalIdentityProviderTypeSchema } from "../public/externalIdentityProviderTypeSchema.js"
 import type { ExternalIdentityRow } from "../persistence/externalIdentityTable.js"
+import { externalIdentityProviderTypeSchema } from "../public/externalIdentityProviderTypeSchema.js"
+import type { ExternalIdentity } from "../public/externalIdentitySchema.js"
 
 export function externalIdentityViewCreate(row: ExternalIdentityRow, providerType: string): ExternalIdentity {
   const parsedType = v.safeParse(externalIdentityProviderTypeSchema, providerType)

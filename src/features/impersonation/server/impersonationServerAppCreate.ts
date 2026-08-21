@@ -8,12 +8,13 @@ import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { impersonationEnd } from "../actions/impersonationEnd.js"
 import { impersonationStart } from "../actions/impersonationStart.js"
-import { impersonationStartRequestSchema } from "../public/impersonationStartRequestSchema.js"
 import type { ImpersonationSecurityNotification } from "../public/impersonationSecurityNotificationSchema.js"
+import { impersonationStartRequestSchema } from "../public/impersonationStartRequestSchema.js"
 
 type ImpersonationServerEnv = {
   Variables: {
     authorizationActor: AuthorizationActorContext
+    cookieAuthenticated: boolean
     session: Session
   }
 }
@@ -21,11 +22,15 @@ type ImpersonationServerEnv = {
 type ImpersonationServerAppCreateOptions = {
   readonly database: StorageDatabase
   readonly onSecurityNotification?: (notification: ImpersonationSecurityNotification) => void | Promise<void>
+  readonly publicOrigin?: string
 }
 
 export function impersonationServerAppCreate(options: ImpersonationServerAppCreateOptions) {
   const app = new Hono<ImpersonationServerEnv>()
-  const protectedMiddleware = sessionProtectedMiddlewareCreate({ database: options.database })
+  const protectedMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    publicOrigin: options.publicOrigin,
+  })
 
   app.post("/realms/:realmId/impersonations", protectedMiddleware, async (context) => {
     const body = await impersonationRequestBodyRead(context)

@@ -4,8 +4,8 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { projectContextAuthorize } from "./projectContextAuthorize.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
+import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectAccessCheckOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

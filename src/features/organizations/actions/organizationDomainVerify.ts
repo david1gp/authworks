@@ -10,18 +10,19 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { realmDomainNormalize } from "../../realms/domain/realmDomainNormalize.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
-import { organizationDomainVerifiedEventPayloadSchema } from "../events/organizationDomainVerifiedEventPayloadSchema.js"
-import { organizationEventTypes } from "../events/organizationEventTypes.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import type { OrganizationDomainDnsVerificationPort } from "../domain/organizationDomainDnsVerificationPort.js"
 import { organizationDomainPublicViewCreate } from "../domain/organizationDomainPublicViewCreate.js"
 import { organizationDomainVerificationRecordNameCreate } from "../domain/organizationDomainVerificationRecordNameCreate.js"
-import type { OrganizationDomainDnsVerificationPort } from "../domain/organizationDomainDnsVerificationPort.js"
+import { organizationDomainVerifiedEventPayloadSchema } from "../events/organizationDomainVerifiedEventPayloadSchema.js"
+import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationDomainRepositoryCreate } from "../persistence/organizationDomainRepositoryCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { OrganizationDomainResponse } from "../public/organizationDomainResponseSchema.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationDomainVerifyOptions = {
-  readonly context: RealmSystemContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly dnsPort: OrganizationDomainDnsVerificationPort
   readonly domain: string

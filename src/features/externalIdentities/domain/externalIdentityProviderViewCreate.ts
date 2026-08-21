@@ -1,7 +1,7 @@
 import * as v from "valibot"
+import type { ExternalIdentityProviderRow } from "../persistence/externalIdentityProviderTable.js"
 import type { ExternalIdentityProvider } from "../public/externalIdentityProviderSchema.js"
 import { externalIdentityProviderTypeSchema } from "../public/externalIdentityProviderTypeSchema.js"
-import type { ExternalIdentityProviderRow } from "../persistence/externalIdentityProviderTable.js"
 
 export function externalIdentityProviderViewCreate(row: ExternalIdentityProviderRow): ExternalIdentityProvider {
   let scopes: unknown

@@ -304,6 +304,31 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    organizationInvitationListByRealmEmail(realmId: string, email: string): Result<OrganizationInvitationRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(organizationInvitationTable)
+            .where(
+              and(
+                eq(organizationInvitationTable.realmId, realmId),
+                eq(organizationInvitationTable.email, email),
+                eq(organizationInvitationTable.status, "pending"),
+              ),
+            )
+            .orderBy(asc(organizationInvitationTable.createdAt), asc(organizationInvitationTable.id))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "organizationInvitationListByRealmEmail",
+          "The organization invitations could not be read.",
+          "organizations.read-failed",
+        )
+      }
+    },
+
     organizationInvitationPendingByEmail(
       organizationId: string,
       email: string,

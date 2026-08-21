@@ -1,3 +1,4 @@
+import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
@@ -7,22 +8,21 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationTable } from "../../organizations/persistence/organizationTable.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmTenantContextCreate } from "../../realms/domain/realmTenantContextCreate.js"
-import { and, eq } from "drizzle-orm"
-import { organizationTable } from "../../organizations/persistence/organizationTable.js"
-import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
-import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
 import { externalIdentityPkceChallengeCreate } from "../domain/externalIdentityPkceChallengeCreate.js"
 import { externalIdentityProviderDefaults } from "../domain/externalIdentityProviderDefaults.js"
-import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityProviderPort.js"
+import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
+import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
+import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
 import type { ExternalIdentityStartRequest } from "../public/externalIdentityStartRequestSchema.js"
 import { externalIdentityStartRequestSchema } from "../public/externalIdentityStartRequestSchema.js"
 import type { ExternalIdentityStartResponse } from "../public/externalIdentityStartResponseSchema.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 const externalIdentityStateLifetimeMs = 10 * 60 * 1_000
 
@@ -129,6 +129,7 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
       externalUsername: null,
       expiresAt,
       id: transactionId,
+      interactionHandle: parsed.output.interaction ?? null,
       realmId: options.realmId,
       intent: "sign_in",
       nonce,

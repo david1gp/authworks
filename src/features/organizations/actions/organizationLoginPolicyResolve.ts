@@ -4,8 +4,8 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { organizationLoginPolicyViewCreate } from "../domain/organizationLoginPolicyViewCreate.js"
-import { organizationTable } from "../persistence/organizationTable.js"
 import { organizationLoginPolicyRepositoryCreate } from "../persistence/organizationLoginPolicyRepositoryCreate.js"
+import { organizationTable } from "../persistence/organizationTable.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 
 type OrganizationLoginPolicyResolveOptions = {

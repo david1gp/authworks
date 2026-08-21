@@ -1,3 +1,4 @@
+import { and, desc, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
@@ -8,13 +9,13 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { impersonationEndedEventPayloadSchema } from "../../impersonation/events/impersonationEndedEventPayloadSchema.js"
+import { impersonationEventTypes } from "../../impersonation/events/impersonationEventTypes.js"
 import { sessionEventTypes } from "../events/sessionEventTypes.js"
 import { sessionRevokedEventPayloadSchema } from "../events/sessionRevokedEventPayloadSchema.js"
 import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
 import type { SessionRevocationResponse } from "../public/sessionRevocationResponseSchema.js"
-import { impersonationEndedEventPayloadSchema } from "../../impersonation/events/impersonationEndedEventPayloadSchema.js"
-import { impersonationEventTypes } from "../../impersonation/events/impersonationEventTypes.js"
-import { and, desc, eq } from "drizzle-orm"
+import type { SessionSubjectType } from "../public/sessionSubjectTypeSchema.js"
 
 type SessionRevokeOptions = {
   readonly database: StorageDatabase
@@ -22,6 +23,7 @@ type SessionRevokeOptions = {
   readonly reason?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionId: string
+  readonly subjectType?: SessionSubjectType
   readonly userId: string
 }
 
@@ -39,7 +41,11 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
     const repository = sessionRepositoryCreate(transaction)
     const current = repository.sessionGet(options.realmId, options.sessionId)
     if (!current.success) return current
-    if (current.data === null || current.data.userId !== options.userId)
+    if (
+      current.data === null ||
+      current.data.subjectId !== options.userId ||
+      (options.subjectType !== undefined && current.data.subjectType !== options.subjectType)
+    )
       return resultErrorCreate(op, "The session was not found.", "sessions.not-found")
     if (current.data.revokedAt !== null) return resultCreate<SessionRevocationResponse>({ revoked: false })
     const revoked = repository.sessionVersionUpdate(options.realmId, options.sessionId, current.data.version, {
@@ -99,7 +105,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
           ? {}
           : { organizationId: current.data.impersonationOrganizationId }),
         sessionId: options.sessionId,
-        subjectId: current.data.userId,
+        subjectId: current.data.subjectId,
       })
       if (!endedPayload.success)
         return resultErrorCreate(op, "The impersonation event payload is invalid.", "sessions.event-invalid")

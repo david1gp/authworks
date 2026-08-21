@@ -3,6 +3,7 @@ import { sessionAssuranceSchema } from "./sessionAssuranceSchema.js"
 import { sessionAuthenticationMethodSchema } from "./sessionAuthenticationMethodSchema.js"
 import { sessionDeviceMetadataSchema } from "./sessionDeviceMetadataSchema.js"
 import { sessionMfaMethodSchema } from "./sessionMfaMethodSchema.js"
+import { sessionSubjectTypeSchema } from "./sessionSubjectTypeSchema.js"
 
 export const sessionSchema = v.strictObject({
   assurance: sessionAssuranceSchema,
@@ -20,7 +21,9 @@ export const sessionSchema = v.strictObject({
   lastUsedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   mfaMethod: v.optional(sessionMfaMethodSchema),
   revokedAt: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0))),
-  userId: v.pipe(v.string(), v.minLength(1)),
+  subjectId: v.pipe(v.string(), v.minLength(1)),
+  subjectType: sessionSubjectTypeSchema,
+  userId: v.optional(v.pipe(v.string(), v.minLength(1))),
 })
 
 export type Session = v.InferOutput<typeof sessionSchema>

@@ -5,8 +5,18 @@ import { httpResultResponseCreate } from "../../../platform/http/httpResultRespo
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
+import { sessionPasswordCreate } from "../../sessions/actions/sessionPasswordCreate.js"
+import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
+import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
+import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { passwordChange } from "../actions/passwordChange.js"
 import { passwordEmailVerify } from "../actions/passwordEmailVerify.js"
 import { passwordLogin } from "../actions/passwordLogin.js"
@@ -15,31 +25,51 @@ import { passwordPolicySet } from "../actions/passwordPolicySet.js"
 import { passwordRecoveryComplete } from "../actions/passwordRecoveryComplete.js"
 import { passwordRecoveryRequest } from "../actions/passwordRecoveryRequest.js"
 import { passwordRegister } from "../actions/passwordRegister.js"
+import type { PasswordSessionCreate } from "../domain/passwordSessionCreate.js"
 import { passwordChangeRequestSchema } from "../public/passwordChangeRequestSchema.js"
 import { passwordEmailVerificationRequestSchema } from "../public/passwordEmailVerificationRequestSchema.js"
 import { passwordLoginRequestSchema } from "../public/passwordLoginRequestSchema.js"
+import type { PasswordLoginResponse } from "../public/passwordLoginResponseSchema.js"
+import { passwordMeChangeRequestSchema } from "../public/passwordMeChangeRequestSchema.js"
 import { passwordPolicySetRequestSchema } from "../public/passwordPolicySetRequestSchema.js"
 import { passwordRecoveryCompleteRequestSchema } from "../public/passwordRecoveryCompleteRequestSchema.js"
-import { passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
-import { passwordRegistrationRequestSchema } from "../public/passwordRegistrationRequestSchema.js"
-import type { PasswordRegistrationDelivery } from "../public/passwordRegistrationDeliverySchema.js"
 import type { PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliverySchema.js"
-import type { PasswordSessionCreate } from "../domain/passwordSessionCreate.js"
-import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
-import { sessionPasswordCreate } from "../../sessions/actions/sessionPasswordCreate.js"
+import { passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
+import type { PasswordRegistrationDelivery } from "../public/passwordRegistrationDeliverySchema.js"
+import { passwordRegistrationRequestSchema } from "../public/passwordRegistrationRequestSchema.js"
 
 type PasswordServerAppCreateOptions = {
+  readonly browserMode?: boolean
   readonly database: StorageDatabase
+  readonly publicOrigin?: string
   readonly systemSecret?: Secret | string
   readonly onRecoveryToken?: (delivery: PasswordRecoveryDelivery) => void
   readonly sessionCreate?: PasswordSessionCreate
   readonly onVerificationToken?: (delivery: PasswordRegistrationDelivery) => void
 }
 
+type PasswordServerEnv = {
+  Variables: {
+    authorizationActor: AuthorizationActorContext
+    cookieAuthenticated: boolean
+    session: Session
+  }
+}
+
 export function passwordServerAppCreate(options: PasswordServerAppCreateOptions) {
-  const app = new Hono()
+  const app = new Hono<PasswordServerEnv>()
   const systemContext = realmSystemContextCreate("system")
   const sessionCreate = options.sessionCreate ?? sessionPasswordCreate()
+  const protectedMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    minimumAssurance: "authenticated",
+    publicOrigin: options.publicOrigin,
+  })
+  const policyWriteMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    minimumAssurance: "multi_factor",
+    publicOrigin: options.publicOrigin,
+  })
 
   app.post("/realms/:realmId/password/register", async (context) => {
     const tenant = passwordTenantContextResolve(
@@ -82,18 +112,17 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     const input = v.safeParse(passwordLoginRequestSchema, body.data)
     if (!input.success)
       return passwordErrorResponseCreate(context, { errorMessage: "The credentials are invalid.", op: "passwordLogin" })
-    return passwordResultResponseCreate(
-      context,
-      passwordLogin({
-        context: tenant.data,
-        database: options.database,
-        input: input.output,
-        realmId: context.req.param("realmId"),
-        organizationId: input.output.organizationId,
-        deviceMetadata: passwordDeviceMetadataGet(context),
-        sessionCreate,
-      }),
-    )
+    const loggedIn = passwordLogin({
+      context: tenant.data,
+      database: options.database,
+      input: input.output,
+      realmId: context.req.param("realmId"),
+      organizationId: input.output.organizationId,
+      deviceMetadata: passwordDeviceMetadataGet(context),
+      sessionCreate,
+    })
+    if (!options.browserMode) return passwordResultResponseCreate(context, loggedIn)
+    return passwordBrowserLoginResponseCreate(context, loggedIn)
   })
 
   app.post("/realms/:realmId/password/verify-email", async (context) => {
@@ -206,19 +235,95 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     )
   })
 
-  app.get("/realms/:realmId/password-policy", (context) => {
-    const tenant = passwordTenantContextResolve(
-      options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.param("realmId"),
-    )
-    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
+  app.post("/realms/:realmId/me/password", protectedMiddleware, async (context) => {
+    const subject = passwordSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return passwordErrorResponseCreate(context, subject)
+    const body = await passwordRequestJsonRead(context)
+    if (!body.success) return passwordErrorResponseCreate(context, body)
+    const input = v.safeParse(passwordMeChangeRequestSchema, body.data)
+    if (!input.success)
+      return passwordErrorResponseCreate(context, {
+        errorMessage: "The password change request is invalid.",
+        op: "passwordMeChange",
+      })
     return passwordResultResponseCreate(
       context,
-      passwordPolicyGet({
-        context: tenant.data,
+      passwordChange({
+        context: subject.data,
         database: options.database,
+        input: input.output,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.get(
+    "/realms/:realmId/password-policy",
+    async (context, next) => {
+      if (!passwordSessionRequestIsAuthenticated(options.database, context)) return next()
+      return protectedMiddleware(context, next)
+    },
+    (context) => {
+      const actor = context.get("authorizationActor")
+      if (actor !== undefined) {
+        const authorized = realmAdministratorContextAuthorize({
+          actor,
+          database: options.database,
+          permission: authorizationPermissionDefinitions.realmRead,
+          realmId: context.req.param("realmId"),
+        })
+        if (!authorized.success) return passwordErrorResponseCreate(context, authorized)
+        return passwordResultResponseCreate(
+          context,
+          passwordPolicyGet({
+            context: realmSystemContextCreate(authorized.data.actorId),
+            database: options.database,
+            realmId: context.req.param("realmId"),
+          }),
+        )
+      }
+      const tenant = passwordTenantContextResolve(
+        options.database,
+        context.req.header("host"),
+        context.req.url,
+        context.req.param("realmId"),
+      )
+      if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
+      return passwordResultResponseCreate(
+        context,
+        passwordPolicyGet({
+          context: tenant.data,
+          database: options.database,
+          realmId: context.req.param("realmId"),
+        }),
+      )
+    },
+  )
+
+  app.patch("/realms/:realmId/password-policy", policyWriteMiddleware, async (context) => {
+    const authorized = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      minimumAssurance: "multi_factor",
+      permission: authorizationPermissionDefinitions.realmWrite,
+      realmId: context.req.param("realmId"),
+    })
+    if (!authorized.success) return passwordErrorResponseCreate(context, authorized)
+    const body = await passwordRequestJsonRead(context)
+    if (!body.success) return passwordErrorResponseCreate(context, body)
+    const input = v.safeParse(passwordPolicySetRequestSchema, body.data)
+    if (!input.success)
+      return passwordErrorResponseCreate(context, {
+        errorMessage: "The password policy is invalid.",
+        op: "passwordPolicySet",
+      })
+    return passwordResultResponseCreate(
+      context,
+      passwordPolicySet({
+        context: realmSystemContextCreate(authorized.data.actorId),
+        database: options.database,
+        input: input.output,
         realmId: context.req.param("realmId"),
       }),
     )
@@ -286,6 +391,20 @@ function passwordRequestHostGet(host: string | undefined, requestUrl: string): s
     : (resolvedHost.split(":")[0] ?? "")
 }
 
+function passwordSessionRequestIsAuthenticated(
+  database: StorageDatabase,
+  context: { req: { header: (name: string) => string | undefined; param: (name: string) => string } },
+): boolean {
+  const authorization = context.req.header("authorization")
+  if (authorization !== undefined) {
+    const token = /^Bearer (.+)$/.exec(authorization)?.[1]
+    return token === undefined
+      ? false
+      : sessionAuthenticate({ database, realmId: context.req.param("realmId"), token }).success
+  }
+  return /(?:^|;)\s*session=[^;]+/.test(context.req.header("cookie") ?? "")
+}
+
 function passwordDeviceMetadataGet(context: {
   req: { header: (name: string) => string | undefined }
 }): SessionDeviceMetadata {
@@ -326,7 +445,17 @@ function passwordResultResponseCreate<T>(
   return httpResultResponseCreate(context, result as Result<T>, status)
 }
 
+function passwordBrowserLoginResponseCreate(context: PasswordRouteContext, result: Result<PasswordLoginResponse>) {
+  const browser = sessionBrowserCredentialResponseCreate(context, result)
+  if (!browser.success) return passwordErrorResponseCreate(context, browser)
+  return httpResultResponseCreate(context, {
+    data: { authentication: browser.data.authentication },
+    success: true,
+  })
+}
+
 type PasswordRouteContext = {
+  readonly header: (name: string, value: string) => void
   readonly json: (body: unknown, status?: number) => Response
   readonly req: { readonly header: (name: string) => string | undefined }
 }
@@ -351,6 +480,21 @@ function passwordSystemAuthorizationGet(
       success: false as const,
     }
   return { data: undefined, success: true as const }
+}
+
+function passwordSubjectContextResolve(
+  context: { readonly get: (key: "authorizationActor") => AuthorizationActorContext },
+  realmId: string,
+): Result<RealmTenantContext> {
+  const actor = context.get("authorizationActor")
+  if (actor.kind !== "user" || actor.realmId !== realmId)
+    return {
+      code: "passwords.forbidden",
+      errorMessage: "The authenticated user is not available in this realm.",
+      op: "passwordSubjectContextResolve",
+      success: false,
+    }
+  return { data: { actor, actorId: actor.actorId, kind: "tenant", realmId }, success: true }
 }
 
 function passwordBearerTokenGet(authorization: string | undefined): string | null {

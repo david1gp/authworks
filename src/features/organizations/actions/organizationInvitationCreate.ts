@@ -23,6 +23,7 @@ import {
   organizationInvitationCreateRequestSchema,
 } from "../public/organizationInvitationCreateRequestSchema.js"
 import type { OrganizationInvitationCreateResponse } from "../public/organizationInvitationCreateResponseSchema.js"
+import type { OrganizationInvitationDelivery } from "../public/organizationInvitationDeliverySchema.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationInvitationCreateOptions = {
@@ -33,6 +34,7 @@ type OrganizationInvitationCreateOptions = {
   readonly organizationId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
+  readonly onInvitationDelivery?: (delivery: OrganizationInvitationDelivery) => void | Promise<void>
 }
 
 export function organizationInvitationCreate(
@@ -56,7 +58,7 @@ export function organizationInvitationCreate(
   const token = secretGenerate(32, runtime)
   const invitationId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
-  return storageTransactionRun(options.database, (transaction) => {
+  const committed = storageTransactionRun(options.database, (transaction) => {
     const repository = organizationRepositoryCreate(transaction)
     const organization = repository.organizationGet(options.organizationId)
     if (!organization.success) return organization
@@ -156,6 +158,24 @@ export function organizationInvitationCreate(
     if (!event.success) return event
     const view = organizationInvitationPublicViewCreate(invitation.data)
     if (!view.success) return view
-    return resultCreate({ invitation: view.data, token: token.valueGet() })
+    return resultCreate({
+      delivery: {
+        email: email.data,
+        entityName: organization.data.name,
+        invitedByEmail: options.context.actorId,
+        invitedByName: options.context.actorId,
+        invitedName: email.data,
+        token: token.valueGet(),
+      },
+      invitation: view.data,
+      token: token.valueGet(),
+    })
   })
+  if (!committed.success) return committed
+  try {
+    if (options.onInvitationDelivery !== undefined) {
+      void Promise.resolve(options.onInvitationDelivery(committed.data.delivery)).catch(() => undefined)
+    }
+  } catch (_error) {}
+  return resultCreate({ invitation: committed.data.invitation, token: committed.data.token })
 }

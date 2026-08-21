@@ -1,5 +1,4 @@
-import { index, integer, sqliteTable } from "drizzle-orm/sqlite-core"
-import { text } from "drizzle-orm/sqlite-core"
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 export const oidcSigningKeyTable = sqliteTable(
   "oidc_signing_keys",

@@ -4,49 +4,56 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
+import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserRequest.js"
 import { type PasswordChangeRequest, passwordChangeRequestSchema } from "../public/passwordChangeRequestSchema.js"
-import { passwordChangeResponseSchema, type PasswordChangeResponse } from "../public/passwordChangeResponseSchema.js"
+import { type PasswordChangeResponse, passwordChangeResponseSchema } from "../public/passwordChangeResponseSchema.js"
 import {
   type PasswordEmailVerificationRequest,
   passwordEmailVerificationRequestSchema,
 } from "../public/passwordEmailVerificationRequestSchema.js"
 import {
-  passwordEmailVerificationResponseSchema,
   type PasswordEmailVerificationResponse,
+  passwordEmailVerificationResponseSchema,
 } from "../public/passwordEmailVerificationResponseSchema.js"
 import { type PasswordLoginRequest, passwordLoginRequestSchema } from "../public/passwordLoginRequestSchema.js"
-import { passwordLoginResponseSchema, type PasswordLoginResponse } from "../public/passwordLoginResponseSchema.js"
-import { passwordPolicyResponseSchema, type PasswordPolicyResponse } from "../public/passwordPolicyResponseSchema.js"
+import { type PasswordLoginResponse, passwordLoginResponseSchema } from "../public/passwordLoginResponseSchema.js"
+import { type PasswordMeChangeRequest, passwordMeChangeRequestSchema } from "../public/passwordMeChangeRequestSchema.js"
+import {
+  type PasswordMeChangeResponse,
+  passwordMeChangeResponseSchema,
+} from "../public/passwordMeChangeResponseSchema.js"
+import { type PasswordPolicyResponse, passwordPolicyResponseSchema } from "../public/passwordPolicyResponseSchema.js"
 import {
   type PasswordPolicySetRequest,
   passwordPolicySetRequestSchema,
 } from "../public/passwordPolicySetRequestSchema.js"
 import {
-  passwordRecoveryCompleteResponseSchema,
-  type PasswordRecoveryCompleteResponse,
-} from "../public/passwordRecoveryCompleteResponseSchema.js"
-import {
   type PasswordRecoveryCompleteRequest,
   passwordRecoveryCompleteRequestSchema,
 } from "../public/passwordRecoveryCompleteRequestSchema.js"
+import {
+  type PasswordRecoveryCompleteResponse,
+  passwordRecoveryCompleteResponseSchema,
+} from "../public/passwordRecoveryCompleteResponseSchema.js"
 import { type PasswordRecoveryRequest, passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
 import {
-  passwordRecoveryResponseSchema,
   type PasswordRecoveryResponse,
+  passwordRecoveryResponseSchema,
 } from "../public/passwordRecoveryResponseSchema.js"
 import {
   type PasswordRegistrationRequest,
   passwordRegistrationRequestSchema,
 } from "../public/passwordRegistrationRequestSchema.js"
 import {
-  passwordRegistrationResponseSchema,
   type PasswordRegistrationResponse,
+  passwordRegistrationResponseSchema,
 } from "../public/passwordRegistrationResponseSchema.js"
 
 type PasswordApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
 type PasswordApiClientCreateOptions = {
   readonly baseUrl: string
+  readonly csrfToken?: string
   readonly fetch?: PasswordApiFetch
   readonly token?: Secret | string
 }
@@ -65,6 +72,11 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
 
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })
+  const browserRequest = (init: RequestInit): RequestInit => {
+    const headers = new Headers(init.headers)
+    if (options.csrfToken !== undefined) headers.set("x-csrf-token", options.csrfToken)
+    return { ...init, credentials: "same-origin", headers }
+  }
   const parsedRequest = <T>(schema: v.GenericSchema<T>, input: unknown, errorMessage: string) => {
     const parsed = v.safeParse(schema, input)
     if (!parsed.success) return resultErrorCreate("passwordApiClientCreate", errorMessage, "passwords.invalid")
@@ -142,10 +154,45 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
         passwordChangeResponseSchema,
       )
     },
+    passwordMeChange(realmId: string, input: PasswordMeChangeRequest): Promise<Result<PasswordMeChangeResponse>> {
+      const parsed = parsedRequest(passwordMeChangeRequestSchema, input, "The password change request is invalid.")
+      if (!parsed.success) return Promise.resolve(parsed)
+      if (options.token !== undefined)
+        return request(
+          `/realms/${encodeURIComponent(realmId)}/me/password`,
+          jsonRequest(parsed.data),
+          passwordMeChangeResponseSchema,
+        )
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: jsonRequest(parsed.data),
+        op: "passwordMeChange",
+        path: `/realms/${encodeURIComponent(realmId)}/me/password`,
+        realmId,
+        schema: passwordMeChangeResponseSchema,
+      })
+    },
     passwordPolicyGet(realmId: string): Promise<Result<PasswordPolicyResponse>> {
       return request(
         `/realms/${encodeURIComponent(realmId)}/password-policy`,
         { method: "GET" },
+        passwordPolicyResponseSchema,
+      )
+    },
+    passwordPolicyTenantGet(realmId: string): Promise<Result<PasswordPolicyResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/password-policy`,
+        browserRequest({ method: "GET" }),
+        passwordPolicyResponseSchema,
+      )
+    },
+    passwordPolicyTenantSet(realmId: string, input: PasswordPolicySetRequest): Promise<Result<PasswordPolicyResponse>> {
+      const parsed = parsedRequest(passwordPolicySetRequestSchema, input, "The password policy is invalid.")
+      if (!parsed.success) return Promise.resolve(parsed)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/password-policy`,
+        browserRequest(patchRequest(parsed.data)),
         passwordPolicyResponseSchema,
       )
     },

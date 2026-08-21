@@ -5,6 +5,8 @@ export const authorizationPermissionDefinitions = {
   realmWrite: "realm.write",
   machineCredentialManage: "machine.credential.manage",
   machineUserManage: "machine.user.manage",
+  oidcRead: "oidc.read",
+  oidcWrite: "oidc.write",
   organizationManage: "organization.manage",
   organizationMembersManage: "organization.members.manage",
   organizationRead: "organization.read",

@@ -2,13 +2,13 @@ import { and, eq, isNull, or } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { externalIdentityProviderTable } from "../../externalIdentities/persistence/externalIdentityProviderTable.js"
 import { realmDomainNormalize } from "../../realms/domain/realmDomainNormalize.js"
-import { organizationBrandingGet } from "./organizationBrandingGet.js"
 import { organizationDomainRepositoryCreate } from "../persistence/organizationDomainRepositoryCreate.js"
-import { organizationLoginPolicyResolve } from "./organizationLoginPolicyResolve.js"
 import { organizationTable } from "../persistence/organizationTable.js"
 import type { OrganizationDiscoveryResponse } from "../public/organizationDiscoveryResponseSchema.js"
-import { externalIdentityProviderTable } from "../../externalIdentities/persistence/externalIdentityProviderTable.js"
+import { organizationBrandingGet } from "./organizationBrandingGet.js"
+import { organizationLoginPolicyResolve } from "./organizationLoginPolicyResolve.js"
 
 type OrganizationDomainDiscoverOptions = {
   readonly database: StorageDatabase

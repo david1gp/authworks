@@ -3,8 +3,8 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import { realmLoginPolicyTable, type RealmLoginPolicyRow } from "./realmLoginPolicyTable.js"
-import { organizationLoginPolicyTable, type OrganizationLoginPolicyRow } from "./organizationLoginPolicyTable.js"
+import { type OrganizationLoginPolicyRow, organizationLoginPolicyTable } from "./organizationLoginPolicyTable.js"
+import { type RealmLoginPolicyRow, realmLoginPolicyTable } from "./realmLoginPolicyTable.js"
 
 export function organizationLoginPolicyRepositoryCreate(database: StorageExecutor) {
   return {

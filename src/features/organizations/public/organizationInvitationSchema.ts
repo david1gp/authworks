@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { organizationInvitationStatusSchema } from "./organizationInvitationStatusSchema.js"
-import { organizationRolesSchema } from "./organizationRolesSchema.js"
 import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
+import { organizationRolesSchema } from "./organizationRolesSchema.js"
 
 export const organizationInvitationSchema = v.strictObject({
   acceptedAt: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(0))),

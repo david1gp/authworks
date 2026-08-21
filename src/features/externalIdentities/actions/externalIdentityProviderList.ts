@@ -1,15 +1,16 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { externalIdentityProviderViewCreate } from "../domain/externalIdentityProviderViewCreate.js"
 import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
 import type { ExternalIdentityProviderListResponse } from "../public/externalIdentityProviderListResponseSchema.js"
-import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 
 type ExternalIdentityProviderListOptions = {
   readonly database: StorageDatabase
+  readonly administration?: boolean
   readonly includeDisabled?: boolean
   readonly realmId: string
   readonly organizationId?: string
@@ -27,11 +28,14 @@ export function externalIdentityProviderList(
       ? resultCreate<typeof realmProviders.data>([])
       : repository.externalIdentityProviderList(options.realmId, options.organizationId)
   if (!organizationProviders.success) return organizationProviders
-  const policy = organizationLoginPolicyResolve({
-    database: options.database,
-    realmId: options.realmId,
-    organizationId: options.organizationId,
-  })
+  const policy =
+    options.administration === true
+      ? resultCreate<{ providerIds: string[] | null }>({ providerIds: null })
+      : organizationLoginPolicyResolve({
+          database: options.database,
+          realmId: options.realmId,
+          organizationId: options.organizationId,
+        })
   if (!policy.success) return policy
   const providerIds = policy.data.providerIds
   const providers = [...realmProviders.data, ...organizationProviders.data].filter(

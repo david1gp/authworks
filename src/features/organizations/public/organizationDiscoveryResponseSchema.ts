@@ -1,8 +1,8 @@
 import * as v from "valibot"
+import { externalIdentityProviderTypeSchema } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
 import { organizationBrandingSchema } from "./organizationBrandingSchema.js"
 import { organizationLoginPolicySchema } from "./organizationLoginPolicySchema.js"
 import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
-import { externalIdentityProviderTypeSchema } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
 
 const organizationDiscoveryOrganizationSchema = v.strictObject({
   id: organizationResourceIdSchema,

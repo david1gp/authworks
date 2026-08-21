@@ -2,8 +2,8 @@ import * as v from "valibot"
 import { type Result } from "#result"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
-import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import {
   type MachineApiKeyCreateRequest,
@@ -33,6 +33,7 @@ import {
   type MachinePersonalAccessTokenCreateRequest,
   machinePersonalAccessTokenCreateRequestSchema,
 } from "../public/machinePersonalAccessTokenCreateRequestSchema.js"
+import { machineProtectedApiResponseSchema } from "../public/machineProtectedApiResponseSchema.js"
 import {
   type MachineUserCreateRequest,
   machineUserCreateRequestSchema,
@@ -51,12 +52,12 @@ import {
   type MachineUserSecretRotateResponse,
   machineUserSecretRotateResponseSchema,
 } from "../public/machineUserSecretRotateResponseSchema.js"
-import { machineProtectedApiResponseSchema } from "../public/machineProtectedApiResponseSchema.js"
 
 type MachineApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
 type MachineUserApiClientCreateOptions = {
   readonly baseUrl: string
+  readonly csrfToken?: string
   readonly fetch?: MachineApiFetch
   readonly token?: Secret | string
 }
@@ -74,6 +75,14 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
     })
 
   const managementPath = (realmId: string, suffix = "") => `/system/realms/${encodeURIComponent(realmId)}${suffix}`
+  const browserPath = (realmId: string, suffix = "") => `/realms/${encodeURIComponent(realmId)}${suffix}`
+  const browserRequestInit = (init: RequestInit): RequestInit => {
+    const headers = new Headers(init.headers)
+    if (options.csrfToken !== undefined) headers.set("x-csrf-token", options.csrfToken)
+    return { ...init, credentials: "same-origin", headers }
+  }
+  const browserRequest = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    request(path, browserRequestInit(init), schema)
 
   return {
     machineApiKeyCreate(
@@ -213,6 +222,149 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
         `${managementPath(realmId, "/machine-users")}${listQueryToSearchParams(query)}`,
         { method: "GET" },
         machineUserListResponseSchema,
+      )
+    },
+
+    machineUserTenantCreate(
+      realmId: string,
+      input: MachineUserCreateRequest,
+    ): Promise<Result<MachineUserCreateResponse>> {
+      const parsed = v.safeParse(machineUserCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientTenantCreate",
+            "The machine user request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
+      return browserRequest(
+        browserPath(realmId, "/machine-users"),
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        machineUserCreateResponseSchema,
+      )
+    },
+
+    machineUserTenantGet(realmId: string, machineUserId: string): Promise<Result<MachineUserResponse>> {
+      return browserRequest(
+        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}`),
+        { method: "GET" },
+        machineUserResponseSchema,
+      )
+    },
+
+    machineUserTenantLifecycleSet(
+      realmId: string,
+      machineUserId: string,
+      input: MachineUserLifecycleRequest,
+    ): Promise<Result<MachineUserResponse>> {
+      const parsed = v.safeParse(machineUserLifecycleRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientTenantLifecycleSet",
+            "The lifecycle request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
+      return browserRequest(
+        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/lifecycle`),
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        machineUserResponseSchema,
+      )
+    },
+
+    machineUserTenantList(realmId: string, query?: ListQuery): Promise<Result<MachineUserListResponse>> {
+      return browserRequest(
+        `${browserPath(realmId, "/machine-users")}${listQueryToSearchParams(query)}`,
+        { method: "GET" },
+        machineUserListResponseSchema,
+      )
+    },
+
+    machineUserTenantClientSecretRotate(
+      realmId: string,
+      machineUserId: string,
+    ): Promise<Result<MachineUserSecretRotateResponse>> {
+      return browserRequest(
+        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/client-secret/rotate`),
+        { method: "POST" },
+        machineUserSecretRotateResponseSchema,
+      )
+    },
+
+    machineUserTenantCredentialList(
+      realmId: string,
+      machineUserId: string,
+      query?: ListQuery,
+    ): Promise<Result<MachineCredentialListResponse>> {
+      return browserRequest(
+        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/credentials`)}${listQueryToSearchParams(query)}`,
+        { method: "GET" },
+        machineCredentialListResponseSchema,
+      )
+    },
+
+    machineUserTenantPersonalAccessTokenCreate(
+      realmId: string,
+      machineUserId: string,
+      input: MachinePersonalAccessTokenCreateRequest,
+    ): Promise<Result<MachineCredentialIssueResponse>> {
+      const parsed = v.safeParse(machinePersonalAccessTokenCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientTenantPersonalAccessTokenCreate",
+            "The personal access token request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
+      return browserRequest(
+        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/personal-access-tokens`),
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        machineCredentialIssueResponseSchema,
+      )
+    },
+
+    machineUserTenantApiKeyCreate(
+      realmId: string,
+      machineUserId: string,
+      input: MachineApiKeyCreateRequest,
+    ): Promise<Result<MachineCredentialIssueResponse>> {
+      const parsed = v.safeParse(machineApiKeyCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientTenantApiKeyCreate",
+            "The API key request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
+      return browserRequest(
+        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/api-keys`),
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        machineCredentialIssueResponseSchema,
+      )
+    },
+
+    machineUserTenantCredentialRevoke(
+      realmId: string,
+      credentialId: string,
+      input: MachineCredentialRevokeRequest = {},
+    ): Promise<Result<MachineCredentialRevokeResponse>> {
+      const parsed = v.safeParse(machineCredentialRevokeRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "machineUserApiClientTenantCredentialRevoke",
+            "The revocation request is invalid.",
+            "machine-users.invalid",
+          ),
+        )
+      return browserRequest(
+        browserPath(realmId, `/machine-credentials/${encodeURIComponent(credentialId)}/revoke`),
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        machineCredentialRevokeResponseSchema,
       )
     },
 

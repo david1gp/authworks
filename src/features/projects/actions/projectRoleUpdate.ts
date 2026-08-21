@@ -1,5 +1,5 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { patchInputParse } from "../../../platform/http/patchInputParse.js"
@@ -14,11 +14,11 @@ import { projectRolePublicViewCreate } from "../domain/projectRolePublicViewCrea
 import { projectEventTypes } from "../events/projectEventTypes.js"
 import { projectRoleUpdatedEventPayloadSchema } from "../events/projectRoleUpdatedEventPayloadSchema.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
-import {
-  projectRoleUpdateRequestSchema,
-  type ProjectRoleUpdateRequest,
-} from "../public/projectRoleUpdateRequestSchema.js"
 import type { ProjectRole } from "../public/projectRoleSchema.js"
+import {
+  type ProjectRoleUpdateRequest,
+  projectRoleUpdateRequestSchema,
+} from "../public/projectRoleUpdateRequestSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectRoleUpdateOptions = {

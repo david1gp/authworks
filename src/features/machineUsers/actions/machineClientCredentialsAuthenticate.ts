@@ -1,16 +1,16 @@
+import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { machineSecretHashVerify } from "../domain/machineSecretHashVerify.js"
-import { machineScopesParse } from "../domain/machineScopesParse.js"
-import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
 import type { MachineClientCredentialsAuthentication } from "../domain/machineClientCredentialsAuthentication.js"
+import { machineScopesParse } from "../domain/machineScopesParse.js"
+import { machineSecretHashVerify } from "../domain/machineSecretHashVerify.js"
+import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
 import {
-  machineClientCredentialsRequestSchema,
   type MachineClientCredentialsRequest,
+  machineClientCredentialsRequestSchema,
 } from "../public/machineClientCredentialsRequestSchema.js"
-import * as v from "valibot"
 
 type MachineClientCredentialsAuthenticateOptions = {
   readonly database: StorageDatabase

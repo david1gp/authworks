@@ -1,6 +1,6 @@
 import {
-  verifyAuthenticationResponse,
   type VerifiedAuthenticationResponse,
+  verifyAuthenticationResponse,
   type WebAuthnCredential,
 } from "@simplewebauthn/server"
 import { and, eq } from "drizzle-orm"
@@ -10,13 +10,14 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import { sessionCredentialCreate } from "../../sessions/domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../../sessions/domain/sessionCredentialHashCreate.js"
 import { sessionPublicViewCreate } from "../../sessions/domain/sessionPublicViewCreate.js"
-import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import { sessionEventTypes } from "../../sessions/events/sessionEventTypes.js"
 import { sessionRotatedEventPayloadSchema } from "../../sessions/events/sessionRotatedEventPayloadSchema.js"
 import { sessionRepositoryCreate } from "../../sessions/persistence/sessionRepositoryCreate.js"
@@ -24,15 +25,14 @@ import { sessionTable } from "../../sessions/persistence/sessionTable.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { passkeyChallengeHashCreate } from "../domain/passkeyChallengeHashCreate.js"
 import { passkeyConfigurationValidate } from "../domain/passkeyConfigurationValidate.js"
+import { passkeyTokenHashCreate } from "../domain/passkeyTokenHashCreate.js"
+import { passkeyUserHandleCreate } from "../domain/passkeyUserHandleCreate.js"
 import { passkeyEventPayloadSchema } from "../events/passkeyEventPayloadSchema.js"
 import { passkeyEventTypes } from "../events/passkeyEventTypes.js"
 import { passkeyRepositoryCreate } from "../persistence/passkeyRepositoryCreate.js"
 import type { PasskeyAuthenticationCompleteRequest } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
 import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
 import type { PasskeyAuthenticationCompleteResponse } from "../public/passkeyAuthenticationCompleteResponseSchema.js"
-import { passkeyTokenHashCreate } from "../domain/passkeyTokenHashCreate.js"
-import { passkeyUserHandleCreate } from "../domain/passkeyUserHandleCreate.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 type PasskeyAuthenticationCompleteOptions = {
   readonly database: StorageDatabase

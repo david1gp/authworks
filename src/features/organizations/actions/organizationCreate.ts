@@ -7,8 +7,11 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationNameNormalize } from "../domain/organizationNameNormalize.js"
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
 import { organizationRolesEncode } from "../domain/organizationRolesEncode.js"
@@ -23,7 +26,7 @@ import {
 import type { Organization } from "../public/organizationSchema.js"
 
 type OrganizationCreateOptions = {
-  readonly context: RealmSystemContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: OrganizationCreateRequest
   readonly realmId: string
@@ -33,12 +36,20 @@ type OrganizationCreateOptions = {
 
 export function organizationCreate(options: OrganizationCreateOptions): Result<{ organization: Organization }> {
   const op = "organizationCreate"
-  if (options.context?.kind !== "system")
-    return resultErrorCodedCreate(
-      op,
-      "Only the system context can create organizations.",
-      "organizations.system-required",
-    )
+  if (options.context?.kind !== "system") {
+    if (options.context?.realmId !== options.realmId)
+      return resultErrorCodedCreate(
+        op,
+        "The organization is not available in this tenant context.",
+        "organizations.tenant-mismatch",
+      )
+    const authorized = authorizationEnforce({
+      actor: options.context.actor,
+      realmId: options.realmId,
+      permission: authorizationPermissionDefinitions.organizationManage,
+    })
+    if (!authorized.success) return authorized
+  }
   const parsed = v.safeParse(organizationCreateRequestSchema, options.input)
   if (!parsed.success)
     return resultErrorCodedCreate(op, "The organization request is invalid.", "organizations.invalid")

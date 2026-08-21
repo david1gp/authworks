@@ -2,13 +2,14 @@ import { and, asc, desc, eq, gt, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
+import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { type OidcAccessTokenRow, oidcAccessTokenTable } from "./oidcAccessTokenTable.js"
 import { type OidcAuthorizationCodeRow, oidcAuthorizationCodeTable } from "./oidcAuthorizationCodeTable.js"
 import { type OidcAuthorizationRequestRow, oidcAuthorizationRequestTable } from "./oidcAuthorizationRequestTable.js"
-import { type OidcAccessTokenRow, oidcAccessTokenTable } from "./oidcAccessTokenTable.js"
 import { type OidcClientRow, oidcClientTable } from "./oidcClientTable.js"
 import { type OidcConsentRow, oidcConsentTable } from "./oidcConsentTable.js"
+import { type OidcInteractionRow, oidcInteractionTable } from "./oidcInteractionTable.js"
 import { type OidcRefreshTokenRow, oidcRefreshTokenTable } from "./oidcRefreshTokenTable.js"
 import { type OidcSigningKeyRow, oidcSigningKeyTable } from "./oidcSigningKeyTable.js"
 
@@ -19,6 +20,7 @@ type OidcSigningKeyUpdate = Partial<OidcSigningKeyInsert>
 type OidcAuthorizationCodeInsert = typeof oidcAuthorizationCodeTable.$inferInsert
 type OidcAuthorizationRequestInsert = typeof oidcAuthorizationRequestTable.$inferInsert
 type OidcConsentInsert = typeof oidcConsentTable.$inferInsert
+type OidcInteractionInsert = typeof oidcInteractionTable.$inferInsert
 type OidcAccessTokenInsert = typeof oidcAccessTokenTable.$inferInsert
 type OidcRefreshTokenInsert = typeof oidcRefreshTokenTable.$inferInsert
 
@@ -310,6 +312,134 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
         return resultErrorCodedCreate(
           "oidcAuthorizationRequestCreate",
           "The authorization request could not be created.",
+          "oidc.write-failed",
+        )
+      }
+    },
+
+    interactionCreate(input: OidcInteractionInsert): Result<OidcInteractionRow> {
+      try {
+        const row = database.insert(oidcInteractionTable).values(input).returning().get()
+        if (row === undefined)
+          return resultErrorCodedCreate(
+            "oidcInteractionCreate",
+            "The OIDC interaction could not be created.",
+            "oidc.write-failed",
+          )
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcInteractionCreate",
+          "The OIDC interaction could not be created.",
+          "oidc.write-failed",
+        )
+      }
+    },
+
+    interactionGetByHandleHash(realmId: string, handleHash: string): Result<OidcInteractionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(oidcInteractionTable)
+            .where(and(eq(oidcInteractionTable.realmId, realmId), eq(oidcInteractionTable.handleHash, handleHash)))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcInteractionGetByHandleHash",
+          "The OIDC interaction could not be read.",
+          "oidc.read-failed",
+        )
+      }
+    },
+
+    interactionBind(
+      realmId: string,
+      interactionId: string,
+      sessionId: string,
+      userId: string,
+    ): Result<OidcInteractionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcInteractionTable)
+            .set({ sessionId, userId })
+            .where(
+              and(
+                eq(oidcInteractionTable.realmId, realmId),
+                eq(oidcInteractionTable.id, interactionId),
+                isNull(oidcInteractionTable.sessionId),
+                isNull(oidcInteractionTable.userId),
+                isNull(oidcInteractionTable.completedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcInteractionBind",
+          "The OIDC interaction could not be bound.",
+          "oidc.write-failed",
+        )
+      }
+    },
+
+    interactionAuthorizationRequestSet(
+      realmId: string,
+      interactionId: string,
+      authorizationRequestId: string,
+    ): Result<OidcInteractionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcInteractionTable)
+            .set({ authorizationRequestId })
+            .where(
+              and(
+                eq(oidcInteractionTable.realmId, realmId),
+                eq(oidcInteractionTable.id, interactionId),
+                isNull(oidcInteractionTable.authorizationRequestId),
+                isNull(oidcInteractionTable.completedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcInteractionAuthorizationRequestSet",
+          "The OIDC interaction could not be updated.",
+          "oidc.write-failed",
+        )
+      }
+    },
+
+    interactionComplete(
+      realmId: string,
+      interactionId: string,
+      completedAt: number,
+    ): Result<OidcInteractionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcInteractionTable)
+            .set({ completedAt })
+            .where(
+              and(
+                eq(oidcInteractionTable.realmId, realmId),
+                eq(oidcInteractionTable.id, interactionId),
+                isNull(oidcInteractionTable.completedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcInteractionComplete",
+          "The OIDC interaction could not be completed.",
           "oidc.write-failed",
         )
       }

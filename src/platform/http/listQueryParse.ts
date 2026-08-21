@@ -1,8 +1,8 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../errors/resultErrorCodedCreate.js"
-import { listQuerySchema, type ListQuery } from "./listQuerySchema.js"
+import { type ListQuery, listQuerySchema } from "./listQuerySchema.js"
 
 export function listQueryParse(input: unknown): Result<ListQuery> {
   const op = "listQueryParse"

@@ -1,5 +1,5 @@
-import type { MfaTotpEnrollment } from "../public/mfaTotpEnrollmentSchema.js"
 import type { MfaTotpEnrollmentRow } from "../persistence/mfaTotpEnrollmentTable.js"
+import type { MfaTotpEnrollment } from "../public/mfaTotpEnrollmentSchema.js"
 
 export function mfaTotpEnrollmentViewCreate(row: MfaTotpEnrollmentRow): MfaTotpEnrollment {
   return {

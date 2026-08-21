@@ -15,11 +15,11 @@ import { passwordPolicyViewCreate } from "../domain/passwordPolicyViewCreate.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordPolicyChangedEventPayloadSchema } from "../events/passwordPolicyChangedEventPayloadSchema.js"
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
+import type { PasswordPolicy } from "../public/passwordPolicySchema.js"
 import {
   type PasswordPolicySetRequest,
   passwordPolicySetRequestSchema,
 } from "../public/passwordPolicySetRequestSchema.js"
-import type { PasswordPolicy } from "../public/passwordPolicySchema.js"
 
 type PasswordPolicySetOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

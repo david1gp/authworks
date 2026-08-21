@@ -2,13 +2,13 @@ import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import { mfaChallengeTable, type MfaChallengeRow } from "./mfaChallengeTable.js"
-import { mfaLockoutTable, type MfaLockoutRow } from "./mfaLockoutTable.js"
-import { mfaPolicyTable, type MfaPolicyRow } from "./mfaPolicyTable.js"
-import { mfaRecoveryCodeTable, type MfaRecoveryCodeRow } from "./mfaRecoveryCodeTable.js"
-import { mfaTotpEnrollmentTable, type MfaTotpEnrollmentRow } from "./mfaTotpEnrollmentTable.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { type MfaChallengeRow, mfaChallengeTable } from "./mfaChallengeTable.js"
+import { type MfaLockoutRow, mfaLockoutTable } from "./mfaLockoutTable.js"
+import { type MfaPolicyRow, mfaPolicyTable } from "./mfaPolicyTable.js"
+import { type MfaRecoveryCodeRow, mfaRecoveryCodeTable } from "./mfaRecoveryCodeTable.js"
+import { type MfaTotpEnrollmentRow, mfaTotpEnrollmentTable } from "./mfaTotpEnrollmentTable.js"
 
 export function mfaRepositoryCreate(database: StorageExecutor) {
   return {

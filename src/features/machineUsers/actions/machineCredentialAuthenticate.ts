@@ -4,12 +4,12 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationActorContextCreate } from "../../authorization/domain/authorizationActorContextCreate.js"
+import type { MachineCredentialAuthentication } from "../domain/machineCredentialAuthentication.js"
 import { machineCredentialPublicViewCreate } from "../domain/machineCredentialPublicViewCreate.js"
-import { machineSecretHashVerify } from "../domain/machineSecretHashVerify.js"
 import { machineScopesParse } from "../domain/machineScopesParse.js"
+import { machineSecretHashVerify } from "../domain/machineSecretHashVerify.js"
 import { machineUserPublicViewCreate } from "../domain/machineUserPublicViewCreate.js"
 import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.js"
-import type { MachineCredentialAuthentication } from "../domain/machineCredentialAuthentication.js"
 
 type MachineCredentialAuthenticateOptions = {
   readonly database: StorageDatabase

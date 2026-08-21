@@ -31,6 +31,7 @@ export function storageDatabaseReset(database: StorageDatabase): Result<void> {
       transaction.run("DROP INDEX IF EXISTS password_challenges_token_hash_idx")
       transaction.run("DROP INDEX IF EXISTS password_lockouts_realm_id_idx")
       transaction.run("DROP INDEX IF EXISTS sessions_token_hash_idx")
+      transaction.run("DROP INDEX IF EXISTS sessions_realm_subject_idx")
       transaction.run("DROP INDEX IF EXISTS sessions_realm_user_idx")
       transaction.run("DROP INDEX IF EXISTS sessions_realm_last_used_idx")
       transaction.run("DROP INDEX IF EXISTS mfa_challenges_token_hash_idx")

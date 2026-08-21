@@ -1,6 +1,6 @@
 import {
-  organizationLoginPolicyOverrideSchema,
   type OrganizationLoginPolicyOverride,
+  organizationLoginPolicyOverrideSchema,
 } from "./organizationLoginPolicyOverrideSchema.js"
 
 export const organizationLoginPolicySetRequestSchema = organizationLoginPolicyOverrideSchema

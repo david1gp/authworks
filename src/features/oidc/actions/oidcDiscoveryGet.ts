@@ -2,10 +2,10 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { machineClientCredentialsSupported } from "../../machineUsers/actions/machineClientCredentialsSupported.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
-import { machineClientCredentialsSupported } from "../../machineUsers/actions/machineClientCredentialsSupported.js"
 import type { OidcDiscovery } from "../public/oidcDiscoverySchema.js"
 
 type OidcDiscoveryGetOptions = {

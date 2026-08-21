@@ -7,6 +7,7 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -17,13 +18,13 @@ import { userCreatedEventPayloadSchema } from "../../users/events/userCreatedEve
 import { userEventTypes } from "../../users/events/userEventTypes.js"
 import { userProfileTable } from "../../users/persistence/userProfileTable.js"
 import { userTable } from "../../users/persistence/userTable.js"
+import { passwordHashCreate } from "../domain/passwordHashCreate.js"
 import { passwordPolicyCheck } from "../domain/passwordPolicyCheck.js"
 import { passwordPolicyDefaults } from "../domain/passwordPolicyDefaults.js"
-import { passwordHashCreate } from "../domain/passwordHashCreate.js"
 import { passwordTokenCreate } from "../domain/passwordTokenCreate.js"
 import { passwordTokenHashCreate } from "../domain/passwordTokenHashCreate.js"
-import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordCredentialChangedEventPayloadSchema } from "../events/passwordCredentialChangedEventPayloadSchema.js"
+import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordRegistrationEventPayloadSchema } from "../events/passwordRegistrationEventPayloadSchema.js"
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
 import type { PasswordRegistrationDelivery } from "../public/passwordRegistrationDeliverySchema.js"
@@ -32,7 +33,6 @@ import {
   passwordRegistrationRequestSchema,
 } from "../public/passwordRegistrationRequestSchema.js"
 import type { PasswordRegistrationResponse } from "../public/passwordRegistrationResponseSchema.js"
-import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 
 type PasswordRegisterOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
@@ -238,7 +238,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   })
   if (!created.success) return created
   try {
-    options.onVerificationToken?.({ realmId: options.realmId, token: token.valueGet(), userId })
+    options.onVerificationToken?.({ email: email.data, realmId: options.realmId, token: token.valueGet(), userId })
   } catch (_error) {}
   return resultCreate({ accepted: true, verificationRequired: true })
 }

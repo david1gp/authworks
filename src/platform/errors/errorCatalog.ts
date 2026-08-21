@@ -1,4 +1,5 @@
 import { authorizationErrorCatalog } from "../../features/authorization/errors/authorizationErrorCatalog.js"
+import { emailErrorCatalog } from "../../features/email/errors/emailErrorCatalog.js"
 import { emailOtpErrorCatalog } from "../../features/emailOtp/errors/emailOtpErrorCatalog.js"
 import { eventsErrorCatalog } from "../../features/events/errors/eventsErrorCatalog.js"
 import { externalIdentitiesErrorCatalog } from "../../features/externalIdentities/errors/externalIdentitiesErrorCatalog.js"
@@ -29,6 +30,7 @@ export const errorCatalog = errorCatalogCompose(
   mfaErrorCatalog,
   impersonationErrorCatalog,
   authorizationErrorCatalog,
+  emailErrorCatalog,
   emailOtpErrorCatalog,
   eventsErrorCatalog,
   realmsErrorCatalog,

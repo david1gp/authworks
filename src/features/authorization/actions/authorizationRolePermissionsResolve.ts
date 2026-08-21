@@ -1,12 +1,12 @@
+import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import * as v from "valibot"
 import { authorizationFixedRoleDefinitions } from "../domain/authorizationFixedRoleDefinitions.js"
-import { authorizationPolicyRuleSchema, type AuthorizationPolicyRule } from "../public/authorizationPolicyRuleSchema.js"
+import { type AuthorizationPolicyRule, authorizationPolicyRuleSchema } from "../public/authorizationPolicyRuleSchema.js"
 import {
-  authorizationRoleDefinitionSchema,
   type AuthorizationRoleDefinition,
+  authorizationRoleDefinitionSchema,
 } from "../public/authorizationRoleDefinitionSchema.js"
 
 type AuthorizationRolePermissionsResolveOptions = {

@@ -4,9 +4,9 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
+import { organizationMembershipAccessList } from "../../organizations/actions/organizationMembershipAccessList.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { organizationMembershipAccessList } from "../../organizations/actions/organizationMembershipAccessList.js"
 
 type ProjectOrganizationAuthorizeOptions = {
   readonly context: RealmSystemContext | RealmTenantContext

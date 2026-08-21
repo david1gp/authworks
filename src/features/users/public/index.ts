@@ -1,3 +1,4 @@
+export * from "./userAuthenticationMethodsSchema.js"
 export * from "./userCreateRequestSchema.js"
 export * from "./userLifecycleRequestSchema.js"
 export * from "./userListResponseSchema.js"

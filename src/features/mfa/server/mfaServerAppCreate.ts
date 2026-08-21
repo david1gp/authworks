@@ -1,17 +1,24 @@
 import { Hono } from "hono"
 import * as v from "valibot"
 import type { Result } from "#result"
-import type { Secret } from "../../../platform/secrets/Secret.js"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
-import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
+import { sessionBrowserCookieTokenGet } from "../../sessions/domain/sessionBrowserCookieTokenGet.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
+import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
+import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { mfaChallengeComplete } from "../actions/mfaChallengeComplete.js"
-import { mfaLoginChallengeStart } from "../actions/mfaLoginChallengeStart.js"
 import { mfaPolicyGet } from "../actions/mfaPolicyGet.js"
 import { mfaPolicySet } from "../actions/mfaPolicySet.js"
-import { mfaRecoveryCodeVerify } from "../actions/mfaRecoveryCodeVerify.js"
 import { mfaRecoveryCodesGenerate } from "../actions/mfaRecoveryCodesGenerate.js"
+import { mfaRecoveryCodeVerify } from "../actions/mfaRecoveryCodeVerify.js"
 import { mfaStepUpComplete } from "../actions/mfaStepUpComplete.js"
 import { mfaStepUpStart } from "../actions/mfaStepUpStart.js"
 import { mfaTotpEnrollmentConfirm } from "../actions/mfaTotpEnrollmentConfirm.js"
@@ -22,27 +29,71 @@ import { mfaChallengeCompleteRequestSchema } from "../public/mfaChallengeComplet
 import { mfaPolicySetRequestSchema } from "../public/mfaPolicySetRequestSchema.js"
 import { mfaTotpEnrollmentConfirmRequestSchema } from "../public/mfaTotpEnrollmentConfirmRequestSchema.js"
 import { mfaTotpEnrollmentStartRequestSchema } from "../public/mfaTotpEnrollmentStartRequestSchema.js"
-import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 
 type MfaServerAppCreateOptions = {
+  readonly browserMode?: boolean
   readonly database: StorageDatabase
   readonly systemSecret?: Secret | string
   readonly encryptionSecret?: Secret | string
+  readonly publicOrigin?: string
 }
 
 type MfaServerEnv = {
   Variables: {
-    authorizationActor: { actorId: string }
-    session: { id: string }
+    authorizationActor: AuthorizationActorContext
+    cookieAuthenticated: boolean
+    session: Session
   }
 }
 
 export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
   const app = new Hono<MfaServerEnv>()
-  const protectedMiddleware = sessionProtectedMiddlewareCreate({ database: options.database })
+  const protectedMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    publicOrigin: options.publicOrigin,
+  })
+  const policyWriteMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    minimumAssurance: "multi_factor",
+    publicOrigin: options.publicOrigin,
+  })
   const encryptionSecret = options.encryptionSecret ?? options.systemSecret
 
-  app.get("/realms/:realmId/mfa-policy", (context) => {
+  app.get(
+    "/realms/:realmId/mfa-policy",
+    async (context, next) => {
+      if (mfaSessionRequestIsAuthenticated(options.database, context)) return protectedMiddleware(context, next)
+      const authorization = mfaSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+      if (!authorization.success) return mfaErrorResponseCreate(context, authorization.errorMessage, "mfa.unauthorized")
+      return mfaResultResponseCreate(
+        context,
+        mfaPolicyGet({
+          context: realmSystemContextCreate("system"),
+          database: options.database,
+          realmId: context.req.param("realmId"),
+        }),
+      )
+    },
+    (context) => {
+      const authorized = realmAdministratorContextAuthorize({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        permission: authorizationPermissionDefinitions.realmRead,
+        realmId: context.req.param("realmId"),
+      })
+      if (!authorized.success) return mfaErrorResponseCreate(context, authorized.errorMessage, authorized.code)
+      return mfaResultResponseCreate(
+        context,
+        mfaPolicyGet({
+          context: realmSystemContextCreate(authorized.data.actorId),
+          database: options.database,
+          realmId: context.req.param("realmId"),
+        }),
+      )
+    },
+  )
+
+  app.get("/system/realms/:realmId/mfa-policy", (context) => {
     const authorization = mfaSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return mfaErrorResponseCreate(context, authorization.errorMessage, "mfa.unauthorized")
     return mfaResultResponseCreate(
@@ -66,6 +117,30 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
       context,
       mfaPolicySet({
         context: realmSystemContextCreate("system"),
+        database: options.database,
+        input: input.output,
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.patch("/realms/:realmId/mfa-policy", policyWriteMiddleware, async (context) => {
+    const authorized = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      minimumAssurance: "multi_factor",
+      permission: authorizationPermissionDefinitions.realmWrite,
+      realmId: context.req.param("realmId"),
+    })
+    if (!authorized.success) return mfaErrorResponseCreate(context, authorized.errorMessage, authorized.code)
+    const body = await mfaJsonRead(context)
+    if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "mfa.invalid")
+    const input = v.safeParse(mfaPolicySetRequestSchema, body.data)
+    if (!input.success) return mfaErrorResponseCreate(context, "The MFA policy is invalid.", "mfa.invalid")
+    return mfaResultResponseCreate(
+      context,
+      mfaPolicySet({
+        context: realmSystemContextCreate(authorized.data.actorId),
         database: options.database,
         input: input.output,
         realmId: context.req.param("realmId"),
@@ -191,16 +266,17 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
     if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "mfa.invalid")
     const input = v.safeParse(mfaChallengeCompleteRequestSchema, body.data)
     if (!input.success) return mfaErrorResponseCreate(context, "The MFA code is invalid.", "mfa.invalid")
+    const completed = mfaStepUpComplete({
+      actorId: context.get("authorizationActor").actorId,
+      database: options.database,
+      encryptionSecret,
+      input: input.output,
+      realmId: context.req.param("realmId"),
+      sessionToken: mfaSessionTokenGet(context, options.browserMode === true),
+    })
     return mfaResultResponseCreate(
       context,
-      mfaStepUpComplete({
-        actorId: context.get("authorizationActor").actorId,
-        database: options.database,
-        encryptionSecret,
-        input: input.output,
-        realmId: context.req.param("realmId"),
-        sessionToken: mfaBearerTokenGet(context.req.header("authorization")),
-      }),
+      options.browserMode ? sessionBrowserCredentialResponseCreate(context, completed) : completed,
     )
   })
 
@@ -209,14 +285,15 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
     if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "mfa.invalid")
     const input = v.safeParse(mfaChallengeCompleteRequestSchema, body.data)
     if (!input.success) return mfaErrorResponseCreate(context, "The MFA code is invalid.", "mfa.invalid")
+    const completed = mfaChallengeComplete({
+      database: options.database,
+      encryptionSecret,
+      input: input.output,
+      realmId: context.req.param("realmId"),
+    })
     return mfaResultResponseCreate(
       context,
-      mfaChallengeComplete({
-        database: options.database,
-        encryptionSecret,
-        input: input.output,
-        realmId: context.req.param("realmId"),
-      }),
+      options.browserMode ? sessionBrowserCredentialResponseCreate(context, completed) : completed,
     )
   })
 
@@ -234,6 +311,26 @@ async function mfaJsonRead(context: { req: { json: <T>() => Promise<T> } }) {
 function mfaBearerTokenGet(authorization: string | undefined): string {
   if (authorization === undefined) return ""
   return /^Bearer (.+)$/.exec(authorization)?.[1] ?? ""
+}
+
+function mfaSessionTokenGet(context: MfaRouteContext, browserMode: boolean): string {
+  const bearer = mfaBearerTokenGet(context.req.header("authorization"))
+  if (bearer.length > 0 || !browserMode || !context.get("cookieAuthenticated")) return bearer
+  return sessionBrowserCookieTokenGet(context.req.header("cookie"))
+}
+
+function mfaSessionRequestIsAuthenticated(
+  database: StorageDatabase,
+  context: { req: { header: (name: string) => string | undefined; param: (name: string) => string } },
+): boolean {
+  const authorization = context.req.header("authorization")
+  if (authorization !== undefined) {
+    const token = /^Bearer (.+)$/.exec(authorization)?.[1]
+    return token === undefined
+      ? false
+      : sessionAuthenticate({ database, realmId: context.req.param("realmId"), token }).success
+  }
+  return /(?:^|;)\s*session=[^;]+/.test(context.req.header("cookie") ?? "")
 }
 
 function mfaSystemAuthorizationGet(authorization: string | undefined, configuredSecret?: Secret | string) {
@@ -262,6 +359,11 @@ function mfaResultResponseCreate<T>(
 }
 
 type MfaRouteContext = {
+  readonly get: {
+    (key: "authorizationActor"): AuthorizationActorContext
+    (key: "cookieAuthenticated"): boolean
+  }
+  readonly header: (name: string, value: string) => void
   readonly json: (body: unknown, status?: number) => Response
   readonly req: { readonly header: (name: string) => string | undefined }
 }

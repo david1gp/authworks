@@ -1,8 +1,8 @@
 import * as v from "valibot"
-import { userStateSchema } from "./userStateSchema.js"
-import { userVerificationStateSchema } from "./userVerificationStateSchema.js"
 import { userProfileSchema } from "./userProfileSchema.js"
 import { userResourceIdSchema } from "./userResourceIdSchema.js"
+import { userStateSchema } from "./userStateSchema.js"
+import { userVerificationStateSchema } from "./userVerificationStateSchema.js"
 
 export const userSchema = v.strictObject({
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),

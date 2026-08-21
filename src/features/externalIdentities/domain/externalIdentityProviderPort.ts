@@ -1,6 +1,6 @@
 import type { Result } from "#result"
-import type { ExternalIdentityProviderIdentity } from "./externalIdentityProviderIdentity.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
+import type { ExternalIdentityProviderIdentity } from "./externalIdentityProviderIdentity.js"
 
 export type ExternalIdentityProviderPortConfiguration = {
   readonly clientId: string

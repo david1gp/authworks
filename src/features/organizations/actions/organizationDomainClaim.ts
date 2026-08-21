@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto"
-import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
+import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -13,19 +13,19 @@ import { realmDomainNormalize } from "../../realms/domain/realmDomainNormalize.j
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { realmDomainTable } from "../../realms/persistence/realmDomainTable.js"
-import { organizationDomainTable } from "../persistence/organizationDomainTable.js"
-import { organizationDomainAddedEventPayloadSchema } from "../events/organizationDomainAddedEventPayloadSchema.js"
-import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationDomainPublicViewCreate } from "../domain/organizationDomainPublicViewCreate.js"
 import { organizationDomainVerificationRecordNameCreate } from "../domain/organizationDomainVerificationRecordNameCreate.js"
 import { organizationDomainVerificationValueCreate } from "../domain/organizationDomainVerificationValueCreate.js"
+import { organizationDomainAddedEventPayloadSchema } from "../events/organizationDomainAddedEventPayloadSchema.js"
+import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationDomainRepositoryCreate } from "../persistence/organizationDomainRepositoryCreate.js"
+import { organizationDomainTable } from "../persistence/organizationDomainTable.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
-import type { OrganizationDomainResponse } from "../public/organizationDomainResponseSchema.js"
 import {
   type OrganizationDomainClaimRequest,
   organizationDomainClaimRequestSchema,
 } from "../public/organizationDomainClaimRequestSchema.js"
+import type { OrganizationDomainResponse } from "../public/organizationDomainResponseSchema.js"
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationDomainClaimOptions = {

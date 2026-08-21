@@ -1,9 +1,9 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
-import { organizationRolesNormalize } from "./organizationRolesNormalize.js"
 import { organizationRolesSchema } from "../public/organizationRolesSchema.js"
+import { organizationRolesNormalize } from "./organizationRolesNormalize.js"
 
 export function organizationRolesDecode(input: string): Result<OrganizationRoleId[]> {
   const op = "organizationRolesDecode"

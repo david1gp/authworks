@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { authorizationPermissionSchema } from "./authorizationPermissionSchema.js"
 import { sessionAssuranceSchema } from "../../sessions/public/sessionAssuranceSchema.js"
+import { authorizationPermissionSchema } from "./authorizationPermissionSchema.js"
 
 export const authorizationPolicyRuleSchema = v.object({
   effect: v.picklist(["allow", "deny"]),

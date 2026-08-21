@@ -1,5 +1,5 @@
-import * as v from "valibot"
 import { and, eq } from "drizzle-orm"
+import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -9,12 +9,12 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
-import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
-import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityViewCreate } from "../domain/externalIdentityViewCreate.js"
-import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
+import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
+import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityProviderTable } from "../persistence/externalIdentityProviderTable.js"
+import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
 import type { ExternalIdentityLinkCompleteRequest } from "../public/externalIdentityLinkCompleteRequestSchema.js"
 import { externalIdentityLinkCompleteRequestSchema } from "../public/externalIdentityLinkCompleteRequestSchema.js"
 import type { ExternalIdentityLinkCompleteResponse } from "../public/externalIdentityLinkCompleteResponseSchema.js"
@@ -39,7 +39,11 @@ export function externalIdentityLinkComplete(
   const parsed = v.safeParse(externalIdentityLinkCompleteRequestSchema, options.input)
   if (!parsed.success)
     return resultErrorCreate(op, "Explicit link confirmation is required.", "external-identities.invalid")
-  if (options.session.realmId !== options.realmId || options.session.userId !== options.userId)
+  if (
+    options.session.realmId !== options.realmId ||
+    options.session.subjectType !== "user" ||
+    options.session.subjectId !== options.userId
+  )
     return resultErrorCreate(op, "The session does not belong to this user.", "external-identities.forbidden")
   if (options.session.assurance === "none")
     return resultErrorCreate(

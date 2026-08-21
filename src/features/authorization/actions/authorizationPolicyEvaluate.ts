@@ -1,8 +1,8 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import { authorizationRolePermissionsResolve } from "./authorizationRolePermissionsResolve.js"
+import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSchema.js"
 import type { AuthorizationActorContext } from "../public/authorizationActorContextSchema.js"
 import { authorizationActorContextSchema } from "../public/authorizationActorContextSchema.js"
 import type { AuthorizationDecision } from "../public/authorizationDecisionSchema.js"
@@ -11,7 +11,7 @@ import { authorizationPermissionSchema } from "../public/authorizationPermission
 import type { AuthorizationPolicyRule } from "../public/authorizationPolicyRuleSchema.js"
 import { authorizationPolicyRuleSchema } from "../public/authorizationPolicyRuleSchema.js"
 import type { AuthorizationRoleDefinition } from "../public/authorizationRoleDefinitionSchema.js"
-import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSchema.js"
+import { authorizationRolePermissionsResolve } from "./authorizationRolePermissionsResolve.js"
 
 type AuthorizationPolicyEvaluateOptions = {
   readonly actor: AuthorizationActorContext

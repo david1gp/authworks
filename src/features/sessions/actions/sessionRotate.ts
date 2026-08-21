@@ -1,3 +1,4 @@
+import { and, eq } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
@@ -7,7 +8,6 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { and, eq } from "drizzle-orm"
 import { realmBootstrapAdminTable } from "../../realms/persistence/realmBootstrapAdminTable.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
@@ -17,6 +17,7 @@ import { sessionEventTypes } from "../events/sessionEventTypes.js"
 import { sessionRotatedEventPayloadSchema } from "../events/sessionRotatedEventPayloadSchema.js"
 import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
 import type { SessionCredentialResponse } from "../public/sessionCredentialResponseSchema.js"
+import { sessionSubjectTypeSchema } from "../public/sessionSubjectTypeSchema.js"
 
 type SessionRotateOptions = {
   readonly database: StorageDatabase
@@ -45,13 +46,46 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
       current.data.expiresAt <= now
     )
       return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
-    const user = transaction
-      .select({ state: userTable.state })
-      .from(userTable)
-      .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, current.data.userId)))
-      .get()
-    if (user === undefined || user.state !== "active")
-      return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
+    const subjectType = v.safeParse(sessionSubjectTypeSchema, current.data.subjectType)
+    if (!subjectType.success) return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
+    if (subjectType.output === "user") {
+      const user = transaction
+        .select({ state: userTable.state })
+        .from(userTable)
+        .where(and(eq(userTable.realmId, options.realmId), eq(userTable.id, current.data.subjectId)))
+        .get()
+      if (user === undefined || user.state !== "active" || current.data.userId !== current.data.subjectId)
+        return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
+      if (current.data.authenticationMethod === "bootstrap_admin")
+        return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
+    }
+    if (subjectType.output === "bootstrap_admin") {
+      const bootstrap = transaction
+        .select({ adminId: realmBootstrapAdminTable.adminId })
+        .from(realmBootstrapAdminTable)
+        .where(
+          and(
+            eq(realmBootstrapAdminTable.realmId, options.realmId),
+            eq(realmBootstrapAdminTable.adminId, current.data.subjectId),
+          ),
+        )
+        .get()
+      if (
+        bootstrap === undefined ||
+        current.data.userId !== null ||
+        current.data.authenticationMethod !== "bootstrap_admin" ||
+        current.data.assurance !== "authenticated" ||
+        current.data.mfaMethod !== null
+      )
+        return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
+      if (
+        current.data.impersonatorId !== null ||
+        current.data.impersonationOrganizationId !== null ||
+        current.data.impersonationPermissions !== null ||
+        current.data.impersonationReason !== null
+      )
+        return resultErrorCreate(op, "Session rotation is invalid.", "sessions.invalid")
+    }
     if (current.data.impersonatorId !== null) {
       const impersonator = transaction
         .select({ id: userTable.id, state: userTable.state })
@@ -90,7 +124,7 @@ export function sessionRotate(options: SessionRotateOptions): Result<SessionCred
     const event = storageEventAppend(
       transaction,
       {
-        actorId: current.data.userId,
+        actorId: current.data.subjectId,
         aggregateId: current.data.id,
         aggregateType: "session",
         aggregateVersion: eventVersion.data + 1,

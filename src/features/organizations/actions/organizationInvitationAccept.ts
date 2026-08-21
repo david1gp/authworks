@@ -24,6 +24,11 @@ import type { OrganizationMembership } from "../public/organizationMembershipSch
 type OrganizationInvitationAcceptOptions = {
   readonly database: StorageDatabase
   readonly input: OrganizationInvitationAcceptRequest
+  readonly subject?: {
+    readonly email: string
+    readonly realmId: string
+    readonly userId: string
+  }
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
@@ -52,6 +57,13 @@ export function organizationInvitationAccept(
     )
     if (!invitation.success) return invitation
     if (invitation.data === null)
+      return resultErrorCodedCreate(op, "The organization invitation is invalid.", "organizations.not-found")
+    if (
+      options.subject !== undefined &&
+      (parsed.output.userId !== options.subject.userId ||
+        invitation.data.realmId !== options.subject.realmId ||
+        invitation.data.email !== options.subject.email)
+    )
       return resultErrorCodedCreate(op, "The organization invitation is invalid.", "organizations.not-found")
     if (invitation.data.status !== "pending")
       return resultErrorCodedCreate(op, "The organization invitation is no longer pending.", "organizations.pending")

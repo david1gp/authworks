@@ -1,7 +1,7 @@
 import * as v from "valibot"
-import { oidcSigningKeyStatusSchema } from "./oidcSigningKeyStatusSchema.js"
-import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 import { oidcPublicJwkSchema } from "./oidcPublicJwkSchema.js"
+import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
+import { oidcSigningKeyStatusSchema } from "./oidcSigningKeyStatusSchema.js"
 
 export const oidcSigningKeySchema = v.strictObject({
   algorithm: v.literal("RS256"),

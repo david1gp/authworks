@@ -1,3 +1,4 @@
+import type { Next } from "hono"
 import { Hono } from "hono"
 import * as v from "valibot"
 import type { Result } from "#result"
@@ -8,11 +9,17 @@ import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromS
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
-import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
+import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { projectAccessCheck } from "../actions/projectAccessCheck.js"
 import { projectApplicationCreate } from "../actions/projectApplicationCreate.js"
 import { projectApplicationDelete } from "../actions/projectApplicationDelete.js"
@@ -49,34 +56,52 @@ import { projectUpdateRequestSchema } from "../public/projectUpdateRequestSchema
 
 type ProjectServerAppCreateOptions = {
   readonly database: StorageDatabase
+  readonly publicOrigin?: string
   readonly systemSecret?: Secret | string
 }
 
+type ProjectServerEnv = {
+  Variables: {
+    authorizationActor: AuthorizationActorContext
+    cookieAuthenticated: boolean
+    session: Session
+  }
+}
+
 type ProjectRequestContext = RealmSystemContext | RealmTenantContext
-type ProjectAuthenticator = (context: {
-  req: { header: (name: string) => string | undefined; url: string }
-}) => { data: ProjectRequestContext; success: true } | { errorMessage: string; op: string; success: false }
+type ProjectRouteContext = {
+  get: (key: "authorizationActor") => AuthorizationActorContext
+  req: { header: (name: string) => string | undefined; param: (name: string) => string | undefined; url: string }
+}
+type ProjectAuthenticator = (
+  context: ProjectRouteContext,
+  permission: AuthorizationPermission,
+) => Result<ProjectRequestContext>
 
 export function projectServerAppCreate(options: ProjectServerAppCreateOptions) {
-  const app = new Hono() as Hono & { projectDatabase?: StorageDatabase }
+  const app = new Hono<ProjectServerEnv>() as Hono<ProjectServerEnv> & { projectDatabase?: StorageDatabase }
   app.projectDatabase = options.database
   projectRoutesRegister(app, "/system/realms/:realmId", (context) =>
     projectSystemAuthenticate(context.req.header("authorization"), options.systemSecret),
   )
-  projectRoutesRegister(app, "/realms/:realmId", (context) =>
-    projectTenantAuthenticate(
-      options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
-    ),
+  const tenantApp = new Hono<ProjectServerEnv>() as Hono<ProjectServerEnv> & { projectDatabase?: StorageDatabase }
+  tenantApp.projectDatabase = options.database
+  const tenantMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    fallback: (context, next) => projectBootstrapFallback(options.database, context, next),
+    publicOrigin: options.publicOrigin,
+  })
+  tenantApp.use("/projects/*", tenantMiddleware)
+  projectRoutesRegister(tenantApp, "", (context, permission) =>
+    projectTenantAuthenticate(context, options.database, permission),
   )
+  app.route("/realms/:realmId", tenantApp)
   return app
 }
 
-function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectAuthenticator) {
+function projectRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, authenticate: ProjectAuthenticator) {
   app.get(`${prefix}/projects`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectRead)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
     if (!query.success) return projectErrorResponseCreate(context, query)
@@ -92,7 +117,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
   })
 
   app.post(`${prefix}/projects`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectCreate)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -115,7 +140,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
   })
 
   app.get(`${prefix}/projects/:projectId`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectRead)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const result = projectGet({
       context: authenticated.data,
@@ -132,7 +157,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
   })
 
   app.patch(`${prefix}/projects/:projectId`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -155,7 +180,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
   })
 
   app.post(`${prefix}/projects/:projectId/lifecycle`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -178,7 +203,7 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
   })
 
   app.delete(`${prefix}/projects/:projectId`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectDelete)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     return projectResultResponseCreate(
       context,
@@ -196,9 +221,13 @@ function projectRoutesRegister(app: Hono, prefix: string, authenticate: ProjectA
   projectGrantRoutesRegister(app, prefix, authenticate)
 }
 
-function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticate: ProjectAuthenticator) {
+function projectApplicationRoutesRegister(
+  app: Hono<ProjectServerEnv>,
+  prefix: string,
+  authenticate: ProjectAuthenticator,
+) {
   app.get(`${prefix}/projects/:projectId/applications`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectAppRead)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
     if (!query.success) return projectErrorResponseCreate(context, query)
@@ -214,7 +243,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
     )
   })
   app.post(`${prefix}/projects/:projectId/applications`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectAppWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -237,7 +266,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
     )
   })
   app.get(`${prefix}/projects/:projectId/applications/:applicationId`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectAppRead)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const result = projectApplicationGet({
       applicationId: projectParamGet(context, "applicationId"),
@@ -254,7 +283,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
     )
   })
   app.patch(`${prefix}/projects/:projectId/applications/:applicationId`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectAppWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -277,7 +306,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
     )
   })
   app.post(`${prefix}/projects/:projectId/applications/:applicationId/lifecycle`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectAppWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -300,7 +329,7 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
     )
   })
   app.delete(`${prefix}/projects/:projectId/applications/:applicationId`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectAppDelete)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     return projectResultResponseCreate(
       context,
@@ -315,9 +344,9 @@ function projectApplicationRoutesRegister(app: Hono, prefix: string, authenticat
   })
 }
 
-function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: ProjectAuthenticator) {
+function projectRoleRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, authenticate: ProjectAuthenticator) {
   app.get(`${prefix}/projects/:projectId/roles`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectRoleRead)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
     if (!query.success) return projectErrorResponseCreate(context, query)
@@ -333,7 +362,7 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
     )
   })
   app.post(`${prefix}/projects/:projectId/roles`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectRoleWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -356,7 +385,7 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
     )
   })
   app.patch(`${prefix}/projects/:projectId/roles/:roleId`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectRoleWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -379,7 +408,7 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
     )
   })
   app.delete(`${prefix}/projects/:projectId/roles/:roleId`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectRoleWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     return projectResultResponseCreate(
       context,
@@ -394,9 +423,9 @@ function projectRoleRoutesRegister(app: Hono, prefix: string, authenticate: Proj
   })
 }
 
-function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: ProjectAuthenticator) {
+function projectGrantRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, authenticate: ProjectAuthenticator) {
   app.get(`${prefix}/projects/:projectId/grants`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectGrantRead)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
     if (!query.success) return projectErrorResponseCreate(context, query)
@@ -412,7 +441,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
     )
   })
   app.post(`${prefix}/projects/:projectId/grants`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectGrantCreate)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -435,7 +464,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
     )
   })
   app.patch(`${prefix}/projects/:projectId/grants/:grantId`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectGrantWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -458,7 +487,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
     )
   })
   app.post(`${prefix}/projects/:projectId/grants/:grantId/lifecycle`, async (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectGrantWrite)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     const body = await projectRequestJsonRead(context)
     if (!body.success) return projectErrorResponseCreate(context, body)
@@ -481,7 +510,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
     )
   })
   app.delete(`${prefix}/projects/:projectId/grants/:grantId`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectGrantDelete)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     return projectResultResponseCreate(
       context,
@@ -495,7 +524,7 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
     )
   })
   app.get(`${prefix}/projects/:projectId/access`, (context) => {
-    const authenticated = authenticate(context)
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectRead)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
     return projectResultResponseCreate(
       context,
@@ -509,8 +538,8 @@ function projectGrantRoutesRegister(app: Hono, prefix: string, authenticate: Pro
   })
 }
 
-function projectDatabaseGet(_app: Hono): StorageDatabase {
-  return (_app as Hono & { projectDatabase?: StorageDatabase }).projectDatabase as StorageDatabase
+function projectDatabaseGet(_app: Hono<ProjectServerEnv>): StorageDatabase {
+  return (_app as Hono<ProjectServerEnv> & { projectDatabase?: StorageDatabase }).projectDatabase as StorageDatabase
 }
 
 function projectParamGet(context: { req: { param: (name: string) => string | undefined } }, name: string): string {
@@ -529,22 +558,52 @@ function projectSystemAuthenticate(authorization: string | undefined, configured
 }
 
 function projectTenantAuthenticate(
+  context: ProjectRouteContext,
   database: StorageDatabase,
-  host: string | undefined,
-  requestUrl: string,
-  authorization: string | undefined,
+  permission: AuthorizationPermission,
 ) {
-  const resolvedHost = host ?? new URL(requestUrl).hostname
-  const normalizedHost = resolvedHost.startsWith("[")
-    ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
-    : resolvedHost.split(":")[0]
-  const tenant = realmTenantContextResolve({ database, host: normalizedHost ?? "" })
+  const host = context.req.header("host") ?? new URL(context.req.url).hostname
+  const tenant = realmTenantContextResolve({ database, host })
   if (!tenant.success) return tenant
-  return realmBootstrapAdminAuthenticate({
+  if (tenant.data.realmId !== projectParamGet(context, "realmId"))
+    return resultErrorCodedCreate(
+      "projectTenantAuthenticate",
+      "The project is not available in this tenant context.",
+      "projects.tenant-mismatch",
+    )
+  return realmAdministratorContextAuthorize({
+    actor: context.get("authorizationActor"),
+    database,
+    minimumAssurance: "authenticated",
+    permission,
+    realmId: projectParamGet(context, "realmId"),
+  })
+}
+
+function projectBootstrapFallback(
+  database: StorageDatabase,
+  context: {
+    readonly json: (body: unknown, status?: number) => Response
+    readonly req: { header: (name: string) => string | undefined; url: string }
+    readonly set: (
+      key: "authorizationActor" | "cookieAuthenticated",
+      value: AuthorizationActorContext | boolean,
+    ) => void
+  },
+  next: Next,
+) {
+  const host = context.req.header("host") ?? new URL(context.req.url).hostname
+  const tenant = realmTenantContextResolve({ database, host })
+  if (!tenant.success) return projectErrorResponseCreate(context, tenant)
+  const authenticated = realmBootstrapAdminAuthenticate({
     context: tenant.data,
     database,
-    secret: projectBearerTokenGet(authorization) ?? "",
+    secret: projectBearerTokenGet(context.req.header("authorization")) ?? "",
   })
+  if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+  context.set("authorizationActor", authenticated.data.actor)
+  context.set("cookieAuthenticated", false)
+  return next()
 }
 
 function projectBearerTokenGet(authorization: string | undefined): string | null {

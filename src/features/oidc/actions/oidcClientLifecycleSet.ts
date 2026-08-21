@@ -1,5 +1,5 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
@@ -11,8 +11,8 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
 import { oidcClientPublicViewCreate } from "../domain/oidcClientPublicViewCreate.js"
-import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcClientStatusChangedEventPayloadSchema } from "../events/oidcClientStatusChangedEventPayloadSchema.js"
+import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import {
   type OidcClientLifecycleRequest,

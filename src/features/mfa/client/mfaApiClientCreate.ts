@@ -35,6 +35,7 @@ type MfaApiFetch = (input: string | URL | Request, init?: RequestInit) => Promis
 
 type MfaApiClientCreateOptions = {
   readonly baseUrl: string
+  readonly csrfToken?: string
   readonly fetch?: MfaApiFetch
   readonly token?: Secret | string
   readonly systemToken?: Secret | string
@@ -61,6 +62,11 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
     return value.success ? resultCreate(value.output) : resultErrorCreate("mfaApiClientCreate", message, "mfa.invalid")
   }
   const json = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
+  const browserRequest = (init: RequestInit): RequestInit => {
+    const headers = new Headers(init.headers)
+    if (options.csrfToken !== undefined) headers.set("x-csrf-token", options.csrfToken)
+    return { ...init, credentials: "same-origin", headers }
+  }
 
   return {
     mfaPolicyGet(realmId: string): Promise<Result<MfaPolicyResponse>> {
@@ -69,6 +75,22 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
         { method: "GET" },
         mfaPolicyResponseSchema,
         options.systemToken,
+      )
+    },
+    mfaPolicyTenantGet(realmId: string): Promise<Result<MfaPolicyResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/mfa-policy`,
+        browserRequest({ method: "GET" }),
+        mfaPolicyResponseSchema,
+      )
+    },
+    mfaPolicyTenantSet(realmId: string, input: MfaPolicySetRequest): Promise<Result<MfaPolicyResponse>> {
+      const checked = parsed(mfaPolicySetRequestSchema, input, "The MFA policy is invalid.")
+      if (!checked.success) return Promise.resolve(checked)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/mfa-policy`,
+        browserRequest({ ...json(checked.data), method: "PATCH" }),
+        mfaPolicyResponseSchema,
       )
     },
     mfaPolicySet(realmId: string, input: MfaPolicySetRequest): Promise<Result<MfaPolicyResponse>> {

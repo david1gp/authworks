@@ -1,4 +1,4 @@
-import { Hono } from "hono"
+import { Hono, type MiddlewareHandler } from "hono"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
@@ -6,11 +6,16 @@ import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromS
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
-import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSchema.js"
+import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { machineApiKeyCreate } from "../actions/machineApiKeyCreate.js"
 import { machineCredentialList } from "../actions/machineCredentialList.js"
 import { machineCredentialRevoke } from "../actions/machineCredentialRevoke.js"
@@ -20,34 +25,49 @@ import { machineUserCreate } from "../actions/machineUserCreate.js"
 import { machineUserGet } from "../actions/machineUserGet.js"
 import { machineUserLifecycleSet } from "../actions/machineUserLifecycleSet.js"
 import { machineUserList } from "../actions/machineUserList.js"
-import { machineProtectedMiddlewareCreate } from "./machineProtectedMiddlewareCreate.js"
 import { machineCredentialIssueRequestSchema } from "../public/machineCredentialIssueRequestSchema.js"
 import { machineCredentialRevokeRequestSchema } from "../public/machineCredentialRevokeRequestSchema.js"
 import { machineUserCreateRequestSchema } from "../public/machineUserCreateRequestSchema.js"
 import { machineUserLifecycleRequestSchema } from "../public/machineUserLifecycleRequestSchema.js"
+import { machineProtectedMiddlewareCreate } from "./machineProtectedMiddlewareCreate.js"
 
 type MachineUserServerAppCreateOptions = {
   readonly database: StorageDatabase
+  readonly publicOrigin?: string
   readonly systemSecret?: Secret | string
 }
 
 type MachineRequestContext = RealmSystemContext | RealmTenantContext
+type MachineUserServerEnv = {
+  Variables: {
+    authorizationActor: AuthorizationActorContext
+  }
+}
 type MachineAuthenticator = (context: {
   req: { header: (name: string) => string | undefined; url: string }
 }) => { data: MachineRequestContext; success: true } | { errorMessage: string; op: string; success: false }
 
 export function machineUserServerAppCreate(options: MachineUserServerAppCreateOptions) {
-  const app = new Hono()
+  const app = new Hono<MachineUserServerEnv>()
   machineRoutesRegister(app, options, "/system/realms/:realmId", (context) =>
     machineSystemAuthenticate(context.req.header("authorization"), options.systemSecret),
   )
-  machineRoutesRegister(app, options, "/realms/:realmId", (context) =>
-    machineTenantAuthenticate(
-      options.database,
-      context.req.header("host"),
-      context.req.url,
-      context.req.header("authorization"),
-    ),
+  const browserProtectedMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    publicOrigin: options.publicOrigin,
+  })
+  machineRoutesRegister(
+    app,
+    options,
+    "/realms/:realmId",
+    (context) =>
+      machineTenantAuthenticate(
+        options.database,
+        context.req.header("host"),
+        context.req.url,
+        context.req.header("authorization"),
+      ),
+    browserProtectedMiddleware,
   )
 
   app.get(
@@ -65,197 +85,303 @@ export function machineUserServerAppCreate(options: MachineUserServerAppCreateOp
 }
 
 function machineRoutesRegister(
-  app: Hono,
+  app: Hono<MachineUserServerEnv>,
   options: MachineUserServerAppCreateOptions,
   prefix: string,
   authenticate: MachineAuthenticator,
+  browserProtectedMiddleware?: MiddlewareHandler,
 ) {
-  app.get(`${prefix}/machine-users`, (context) => {
-    const authenticated = authenticate(context)
-    if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    const query = listQueryFromSearchParams(context.req.query())
-    if (!query.success) return machineErrorResponseCreate(context, query)
-    return machineResultResponseCreate(
+  app.get(`${prefix}/machine-users`, (context) =>
+    machineRouteHandle(
       context,
-      machineUserList({
-        context: authenticated.data,
-        database: options.database,
-        query: query.data,
-        realmId: machineParamGet(context, "realmId"),
-      }),
-    )
-  })
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.user.manage",
+      undefined,
+      (authenticated) => {
+        const query = listQueryFromSearchParams(context.req.query())
+        if (!query.success) return machineErrorResponseCreate(context, query)
+        return machineResultResponseCreate(
+          context,
+          machineUserList({
+            context: authenticated,
+            database: options.database,
+            query: query.data,
+            realmId: machineParamGet(context, "realmId"),
+          }),
+        )
+      },
+    ),
+  )
 
-  app.post(`${prefix}/machine-users`, async (context) => {
-    const authenticated = authenticate(context)
-    if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    const body = await machineRequestJsonRead(context)
-    if (!body.success) return machineErrorResponseCreate(context, body)
-    const input = v.safeParse(machineUserCreateRequestSchema, body.data)
-    if (!input.success)
-      return machineErrorResponseCreate(context, {
-        code: "machine-users.invalid",
-        errorMessage: "The machine user request is invalid.",
-        op: "machineUserCreate",
-      })
-    return machineResultResponseCreate(
+  app.post(`${prefix}/machine-users`, (context) =>
+    machineRouteHandle(
       context,
-      machineUserCreate({
-        context: authenticated.data,
-        database: options.database,
-        input: input.output,
-        realmId: machineParamGet(context, "realmId"),
-      }),
-      201,
-    )
-  })
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.user.manage",
+      "multi_factor",
+      async (authenticated) => {
+        const body = await machineRequestJsonRead(context)
+        if (!body.success) return machineErrorResponseCreate(context, body)
+        const input = v.safeParse(machineUserCreateRequestSchema, body.data)
+        if (!input.success)
+          return machineErrorResponseCreate(context, {
+            code: "machine-users.invalid",
+            errorMessage: "The machine user request is invalid.",
+            op: "machineUserCreate",
+          })
+        return machineResultResponseCreate(
+          context,
+          machineUserCreate({
+            context: authenticated,
+            database: options.database,
+            input: input.output,
+            realmId: machineParamGet(context, "realmId"),
+          }),
+          201,
+        )
+      },
+    ),
+  )
 
-  app.get(`${prefix}/machine-users/:machineUserId`, (context) => {
-    const authenticated = authenticate(context)
-    if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    return machineResultResponseCreate(
+  app.get(`${prefix}/machine-users/:machineUserId`, (context) =>
+    machineRouteHandle(
       context,
-      machineUserGet({
-        context: authenticated.data,
-        database: options.database,
-        realmId: machineParamGet(context, "realmId"),
-        machineUserId: machineParamGet(context, "machineUserId"),
-      }),
-    )
-  })
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.user.manage",
+      undefined,
+      (authenticated) => {
+        return machineResultResponseCreate(
+          context,
+          machineUserGet({
+            context: authenticated,
+            database: options.database,
+            realmId: machineParamGet(context, "realmId"),
+            machineUserId: machineParamGet(context, "machineUserId"),
+          }),
+        )
+      },
+    ),
+  )
 
-  app.post(`${prefix}/machine-users/:machineUserId/lifecycle`, async (context) => {
-    const authenticated = authenticate(context)
-    if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    const body = await machineRequestJsonRead(context)
-    if (!body.success) return machineErrorResponseCreate(context, body)
-    const input = v.safeParse(machineUserLifecycleRequestSchema, body.data)
-    if (!input.success)
-      return machineErrorResponseCreate(context, {
-        code: "machine-users.invalid",
-        errorMessage: "The machine user lifecycle request is invalid.",
-        op: "machineUserLifecycleSet",
-      })
-    return machineResultResponseCreate(
+  app.post(`${prefix}/machine-users/:machineUserId/lifecycle`, (context) =>
+    machineRouteHandle(
       context,
-      machineUserLifecycleSet({
-        context: authenticated.data,
-        database: options.database,
-        input: input.output,
-        realmId: machineParamGet(context, "realmId"),
-        machineUserId: machineParamGet(context, "machineUserId"),
-      }),
-    )
-  })
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.user.manage",
+      undefined,
+      async (authenticated) => {
+        const body = await machineRequestJsonRead(context)
+        if (!body.success) return machineErrorResponseCreate(context, body)
+        const input = v.safeParse(machineUserLifecycleRequestSchema, body.data)
+        if (!input.success)
+          return machineErrorResponseCreate(context, {
+            code: "machine-users.invalid",
+            errorMessage: "The machine user lifecycle request is invalid.",
+            op: "machineUserLifecycleSet",
+          })
+        return machineResultResponseCreate(
+          context,
+          machineUserLifecycleSet({
+            context: authenticated,
+            database: options.database,
+            input: input.output,
+            realmId: machineParamGet(context, "realmId"),
+            machineUserId: machineParamGet(context, "machineUserId"),
+          }),
+        )
+      },
+    ),
+  )
 
-  app.post(`${prefix}/machine-users/:machineUserId/client-secret/rotate`, (context) => {
-    const authenticated = authenticate(context)
-    if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    return machineResultResponseCreate(
+  app.post(`${prefix}/machine-users/:machineUserId/client-secret/rotate`, (context) =>
+    machineRouteHandle(
       context,
-      machineUserClientSecretRotate({
-        context: authenticated.data,
-        database: options.database,
-        realmId: machineParamGet(context, "realmId"),
-        machineUserId: machineParamGet(context, "machineUserId"),
-      }),
-    )
-  })
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.credential.manage",
+      "multi_factor",
+      (authenticated) => {
+        return machineResultResponseCreate(
+          context,
+          machineUserClientSecretRotate({
+            context: authenticated,
+            database: options.database,
+            realmId: machineParamGet(context, "realmId"),
+            machineUserId: machineParamGet(context, "machineUserId"),
+          }),
+        )
+      },
+    ),
+  )
 
-  app.get(`${prefix}/machine-users/:machineUserId/credentials`, (context) => {
-    const authenticated = authenticate(context)
-    if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    const query = listQueryFromSearchParams(context.req.query())
-    if (!query.success) return machineErrorResponseCreate(context, query)
-    return machineResultResponseCreate(
+  app.get(`${prefix}/machine-users/:machineUserId/credentials`, (context) =>
+    machineRouteHandle(
       context,
-      machineCredentialList({
-        context: authenticated.data,
-        database: options.database,
-        realmId: machineParamGet(context, "realmId"),
-        machineUserId: machineParamGet(context, "machineUserId"),
-        query: query.data,
-      }),
-    )
-  })
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.credential.manage",
+      undefined,
+      (authenticated) => {
+        const query = listQueryFromSearchParams(context.req.query())
+        if (!query.success) return machineErrorResponseCreate(context, query)
+        return machineResultResponseCreate(
+          context,
+          machineCredentialList({
+            context: authenticated,
+            database: options.database,
+            realmId: machineParamGet(context, "realmId"),
+            machineUserId: machineParamGet(context, "machineUserId"),
+            query: query.data,
+          }),
+        )
+      },
+    ),
+  )
 
-  app.post(`${prefix}/machine-users/:machineUserId/personal-access-tokens`, async (context) => {
+  app.post(`${prefix}/machine-users/:machineUserId/personal-access-tokens`, (context) =>
+    machineRouteHandle(
+      context,
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.credential.manage",
+      "multi_factor",
+      async (authenticated) => {
+        const body = await machineRequestJsonRead(context)
+        if (!body.success) return machineErrorResponseCreate(context, body)
+        const input = v.safeParse(machineCredentialIssueRequestSchema, {
+          ...machineObjectGet(body.data),
+          machineUserId: machineParamGet(context, "machineUserId"),
+        })
+        if (!input.success)
+          return machineErrorResponseCreate(context, {
+            code: "machine-users.invalid",
+            errorMessage: "The personal access token request is invalid.",
+            op: "machinePersonalAccessTokenCreate",
+          })
+        return machineResultResponseCreate(
+          context,
+          machinePersonalAccessTokenCreate({
+            context: authenticated,
+            database: options.database,
+            input: input.output,
+            realmId: machineParamGet(context, "realmId"),
+          }),
+          201,
+        )
+      },
+    ),
+  )
+
+  app.post(`${prefix}/machine-users/:machineUserId/api-keys`, (context) =>
+    machineRouteHandle(
+      context,
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.credential.manage",
+      "multi_factor",
+      async (authenticated) => {
+        const body = await machineRequestJsonRead(context)
+        if (!body.success) return machineErrorResponseCreate(context, body)
+        const input = v.safeParse(machineCredentialIssueRequestSchema, {
+          ...machineObjectGet(body.data),
+          machineUserId: machineParamGet(context, "machineUserId"),
+        })
+        if (!input.success)
+          return machineErrorResponseCreate(context, {
+            code: "machine-users.invalid",
+            errorMessage: "The API key request is invalid.",
+            op: "machineApiKeyCreate",
+          })
+        return machineResultResponseCreate(
+          context,
+          machineApiKeyCreate({
+            context: authenticated,
+            database: options.database,
+            input: input.output,
+            realmId: machineParamGet(context, "realmId"),
+          }),
+          201,
+        )
+      },
+    ),
+  )
+
+  app.post(`${prefix}/machine-credentials/:credentialId/revoke`, (context) =>
+    machineRouteHandle(
+      context,
+      authenticate,
+      options.database,
+      browserProtectedMiddleware,
+      "machine.credential.manage",
+      "multi_factor",
+      async (authenticated) => {
+        const body = await machineRequestJsonRead(context)
+        if (!body.success) return machineErrorResponseCreate(context, body)
+        const input = v.safeParse(machineCredentialRevokeRequestSchema, body.data)
+        if (!input.success)
+          return machineErrorResponseCreate(context, {
+            code: "machine-users.invalid",
+            errorMessage: "The machine credential revocation request is invalid.",
+            op: "machineCredentialRevoke",
+          })
+        return machineResultResponseCreate(
+          context,
+          machineCredentialRevoke({
+            context: authenticated,
+            credentialId: machineParamGet(context, "credentialId"),
+            database: options.database,
+            input: input.output,
+            realmId: machineParamGet(context, "realmId"),
+          }),
+        )
+      },
+    ),
+  )
+}
+
+async function machineRouteHandle(
+  context: Parameters<MiddlewareHandler>[0],
+  authenticate: MachineAuthenticator,
+  database: StorageDatabase,
+  browserProtectedMiddleware: MiddlewareHandler | undefined,
+  permission: AuthorizationPermission,
+  minimumAssurance: SessionAssurance | undefined,
+  handler: (authenticated: MachineRequestContext) => Response | Promise<Response>,
+): Promise<Response | void> {
+  if (browserProtectedMiddleware === undefined || context.req.header("authorization") !== undefined) {
     const authenticated = authenticate(context)
     if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    const body = await machineRequestJsonRead(context)
-    if (!body.success) return machineErrorResponseCreate(context, body)
-    const input = v.safeParse(machineCredentialIssueRequestSchema, {
-      ...machineObjectGet(body.data),
-      machineUserId: machineParamGet(context, "machineUserId"),
+    return handler(authenticated.data)
+  }
+
+  let response: Response | undefined
+  const middlewareResponse = await browserProtectedMiddleware(context, async () => {
+    const authenticated = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database,
+      minimumAssurance,
+      permission,
+      realmId: machineParamGet(context, "realmId"),
     })
-    if (!input.success)
-      return machineErrorResponseCreate(context, {
-        code: "machine-users.invalid",
-        errorMessage: "The personal access token request is invalid.",
-        op: "machinePersonalAccessTokenCreate",
-      })
-    return machineResultResponseCreate(
-      context,
-      machinePersonalAccessTokenCreate({
-        context: authenticated.data,
-        database: options.database,
-        input: input.output,
-        realmId: machineParamGet(context, "realmId"),
-      }),
-      201,
-    )
+    if (!authenticated.success) {
+      response = machineErrorResponseCreate(context, authenticated)
+      return
+    }
+    response = await handler(authenticated.data)
   })
-
-  app.post(`${prefix}/machine-users/:machineUserId/api-keys`, async (context) => {
-    const authenticated = authenticate(context)
-    if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    const body = await machineRequestJsonRead(context)
-    if (!body.success) return machineErrorResponseCreate(context, body)
-    const input = v.safeParse(machineCredentialIssueRequestSchema, {
-      ...machineObjectGet(body.data),
-      machineUserId: machineParamGet(context, "machineUserId"),
-    })
-    if (!input.success)
-      return machineErrorResponseCreate(context, {
-        code: "machine-users.invalid",
-        errorMessage: "The API key request is invalid.",
-        op: "machineApiKeyCreate",
-      })
-    return machineResultResponseCreate(
-      context,
-      machineApiKeyCreate({
-        context: authenticated.data,
-        database: options.database,
-        input: input.output,
-        realmId: machineParamGet(context, "realmId"),
-      }),
-      201,
-    )
-  })
-
-  app.post(`${prefix}/machine-credentials/:credentialId/revoke`, async (context) => {
-    const authenticated = authenticate(context)
-    if (!authenticated.success) return machineErrorResponseCreate(context, authenticated)
-    const body = await machineRequestJsonRead(context)
-    if (!body.success) return machineErrorResponseCreate(context, body)
-    const input = v.safeParse(machineCredentialRevokeRequestSchema, body.data)
-    if (!input.success)
-      return machineErrorResponseCreate(context, {
-        code: "machine-users.invalid",
-        errorMessage: "The machine credential revocation request is invalid.",
-        op: "machineCredentialRevoke",
-      })
-    return machineResultResponseCreate(
-      context,
-      machineCredentialRevoke({
-        context: authenticated.data,
-        credentialId: machineParamGet(context, "credentialId"),
-        database: options.database,
-        input: input.output,
-        realmId: machineParamGet(context, "realmId"),
-      }),
-    )
-  })
+  return response ?? middlewareResponse
 }
 
 function machineSystemAuthenticate(authorization: string | undefined, configuredSecret: Secret | string | undefined) {

@@ -1,7 +1,7 @@
-import { createResult, type Result } from "#result"
 import * as v from "valibot"
+import { createResult, type Result } from "#result"
 import { resultErrorCreate } from "../errors/resultErrorCreate.js"
-import { configurationSchema, type Configuration } from "./configurationSchema.js"
+import { type Configuration, configurationSchema } from "./configurationSchema.js"
 
 const defaultValues = {
   databasePath: "authworks.sqlite",

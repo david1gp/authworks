@@ -4,10 +4,12 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
+import { authorizationPermissionSchema } from "../../authorization/public/authorizationPermissionSchema.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
 import { sessionPublicViewCreate } from "../domain/sessionPublicViewCreate.js"
@@ -19,11 +21,10 @@ import { sessionAssuranceSchema } from "../public/sessionAssuranceSchema.js"
 import type { SessionAuthenticationMethod } from "../public/sessionAuthenticationMethodSchema.js"
 import { sessionAuthenticationMethodSchema } from "../public/sessionAuthenticationMethodSchema.js"
 import type { SessionCredentialResponse } from "../public/sessionCredentialResponseSchema.js"
-import { sessionDeviceMetadataSchema, type SessionDeviceMetadata } from "../public/sessionDeviceMetadataSchema.js"
+import { type SessionDeviceMetadata, sessionDeviceMetadataSchema } from "../public/sessionDeviceMetadataSchema.js"
 import type { SessionMfaMethod } from "../public/sessionMfaMethodSchema.js"
 import { sessionMfaMethodSchema } from "../public/sessionMfaMethodSchema.js"
-import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
-import { authorizationPermissionSchema } from "../../authorization/public/authorizationPermissionSchema.js"
+import { type SessionSubjectType, sessionSubjectTypeSchema } from "../public/sessionSubjectTypeSchema.js"
 
 type SessionIssueOptions = {
   readonly actorId?: string | null
@@ -42,7 +43,9 @@ type SessionIssueOptions = {
   readonly impersonatorId?: string
   readonly mfaMethod?: SessionMfaMethod
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
-  readonly userId: string
+  readonly subjectId?: string
+  readonly subjectType?: SessionSubjectType
+  readonly userId?: string
 }
 
 const sessionDefaultLifetimeMs = 30 * 24 * 60 * 60 * 1_000
@@ -62,7 +65,12 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
   if (!device.success) return resultErrorCreate(op, "The session device metadata is invalid.", "sessions.invalid")
   const mfaMethod = v.safeParse(v.optional(sessionMfaMethodSchema), options.mfaMethod)
   if (!mfaMethod.success) return resultErrorCreate(op, "The session MFA method is invalid.", "sessions.invalid")
-  if (options.realmId.length === 0 || options.userId.length === 0)
+  const subjectType = v.safeParse(sessionSubjectTypeSchema, options.subjectType ?? "user")
+  if (!subjectType.success) return resultErrorCreate(op, "The session subject is invalid.", "sessions.invalid")
+  const subjectId = options.subjectId ?? options.userId ?? ""
+  if (options.realmId.length === 0 || subjectId.length === 0)
+    return resultErrorCreate(op, "The session ownership is invalid.", "sessions.invalid")
+  if (subjectType.output === "user" && (options.userId === undefined || options.userId !== subjectId))
     return resultErrorCreate(op, "The session ownership is invalid.", "sessions.invalid")
   const impersonationFields = [
     options.impersonationOrganizationId,
@@ -75,8 +83,17 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     impersonationFields.some((field) => field === undefined)
   )
     return resultErrorCreate(op, "The impersonation session marker is invalid.", "sessions.invalid")
-  if (options.impersonatorId !== undefined && options.impersonatorId === options.userId)
+  if (options.impersonatorId !== undefined && options.impersonatorId === subjectId)
     return resultErrorCreate(op, "The impersonation session marker is invalid.", "sessions.invalid")
+  if (
+    (subjectType.output === "bootstrap_admin" &&
+      (authenticationMethod.output !== "bootstrap_admin" ||
+        assurance.output !== "authenticated" ||
+        mfaMethod.output !== undefined ||
+        impersonationFields.some((field) => field !== undefined))) ||
+    (subjectType.output === "user" && authenticationMethod.output === "bootstrap_admin")
+  )
+    return resultErrorCreate(op, "The session subject is invalid.", "sessions.invalid")
   if (options.impersonatorId !== undefined && options.impersonationReason !== undefined) {
     if (options.impersonationReason.length < 3 || options.impersonationReason.length > 256)
       return resultErrorCreate(op, "The impersonation reason is invalid.", "sessions.invalid")
@@ -127,7 +144,9 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     revocationReason: null,
     tokenHash: sessionCredentialHashCreate(token),
     userAgent: deviceData.userAgent ?? null,
-    userId: options.userId,
+    subjectId,
+    subjectType: subjectType.output,
+    userId: subjectType.output === "user" ? subjectId : null,
     version: 1,
   })
   if (!created.success) return created
@@ -143,7 +162,9 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     ...(options.impersonatorId === undefined ? {} : { impersonatorId: options.impersonatorId }),
     ...(mfaMethod.output === undefined ? {} : { mfaMethod: mfaMethod.output }),
     sessionId,
-    userId: options.userId,
+    subjectId,
+    subjectType: subjectType.output,
+    ...(subjectType.output === "user" ? { userId: subjectId } : {}),
   })
   if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.", "sessions.event-invalid")
   const event = storageEventAppend(

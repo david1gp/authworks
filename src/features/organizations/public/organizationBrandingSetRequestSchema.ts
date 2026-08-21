@@ -1,4 +1,4 @@
-import { organizationBrandingSchema, type OrganizationBranding } from "./organizationBrandingSchema.js"
+import { type OrganizationBranding, organizationBrandingSchema } from "./organizationBrandingSchema.js"
 
 export const organizationBrandingSetRequestSchema = organizationBrandingSchema
 

@@ -2,14 +2,14 @@ import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
+import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import {
-  externalIdentityOAuthTransactionTable,
   type ExternalIdentityOAuthTransactionRow,
+  externalIdentityOAuthTransactionTable,
 } from "./externalIdentityOAuthTransactionTable.js"
-import { externalIdentityProviderTable, type ExternalIdentityProviderRow } from "./externalIdentityProviderTable.js"
-import { externalIdentityTable, type ExternalIdentityRow } from "./externalIdentityTable.js"
+import { type ExternalIdentityProviderRow, externalIdentityProviderTable } from "./externalIdentityProviderTable.js"
+import { type ExternalIdentityRow, externalIdentityTable } from "./externalIdentityTable.js"
 
 export function externalIdentityRepositoryCreate(database: StorageExecutor) {
   return {

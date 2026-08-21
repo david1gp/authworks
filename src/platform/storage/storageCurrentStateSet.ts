@@ -1,8 +1,8 @@
 import { type Result } from "#result"
 import { resultCreate } from "../errors/resultCreate.js"
 import { resultErrorCreate } from "../errors/resultErrorCreate.js"
+import { type StorageCurrentState, storageCurrentStateTable } from "./storageCurrentStateTable.js"
 import { storageJsonEncode } from "./storageJsonEncode.js"
-import { storageCurrentStateTable, type StorageCurrentState } from "./storageCurrentStateTable.js"
 import type { StorageExecutor } from "./storageSchema.js"
 
 export type StorageCurrentStateInput = {

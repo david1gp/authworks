@@ -1,3 +1,4 @@
+import type { Next } from "hono"
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
@@ -7,6 +8,11 @@ import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromS
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
+import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
+import { realmAdministratorContextAuthorize } from "../actions/realmAdministratorContextAuthorize.js"
 import { realmBootstrapAdminAuthenticate } from "../actions/realmBootstrapAdminAuthenticate.js"
 import { realmBootstrapAdminCreate } from "../actions/realmBootstrapAdminCreate.js"
 import { realmCreate } from "../actions/realmCreate.js"
@@ -20,11 +26,30 @@ import { realmUpdateRequestSchema } from "../public/realmUpdateRequestSchema.js"
 
 type RealmServerAppCreateOptions = {
   readonly database: StorageDatabase
+  readonly publicOrigin?: string
   readonly systemSecret?: Secret | string
 }
 
+type RealmServerEnv = {
+  Variables: {
+    authorizationActor: AuthorizationActorContext
+    cookieAuthenticated: boolean
+    session: Session
+  }
+}
+
 export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
-  const app = new Hono()
+  const app = new Hono<RealmServerEnv>()
+  const realmReadMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    fallback: (context, next) => realmBootstrapFallback(options.database, context, next),
+    publicOrigin: options.publicOrigin,
+  })
+  const realmWriteMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    fallback: (context, next) => realmBootstrapFallback(options.database, context, next),
+    publicOrigin: options.publicOrigin,
+  })
 
   app.get("/system/realms", (context) => {
     const authorization = systemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
@@ -117,31 +142,48 @@ export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
     )
   })
 
-  app.get("/realms/:realmId", (context) => {
-    const tenant = tenantContextResolve(options.database, context.req.header("host"), context.req.url)
-    if (!tenant.success) return realmErrorResponseCreate(context, tenant)
-    const result = realmGet({
-      context: tenant.data,
+  app.get(
+    "/realms/:realmId",
+    async (context, next) => {
+      if (realmAdministratorRequestPresent(context)) return realmReadMiddleware(context, next)
+      const tenant = tenantContextResolve(options.database, context.req.header("host"), context.req.url)
+      if (!tenant.success) return realmErrorResponseCreate(context, tenant)
+      return realmResultResponseCreate(
+        context,
+        realmGet({ context: tenant.data, database: options.database, realmId: context.req.param("realmId") }),
+        200,
+      )
+    },
+    (context) => {
+      const tenant = realmAdministratorContextAuthorize({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        permission: authorizationPermissionDefinitions.realmRead,
+        realmId: context.req.param("realmId"),
+      })
+      if (!tenant.success) return realmErrorResponseCreate(context, tenant)
+      const result = realmGet({
+        context: tenant.data,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+      })
+      return realmResultResponseCreate(
+        context,
+        result,
+        200,
+        result.success ? new Date(result.data.realm.updatedAt) : undefined,
+      )
+    },
+  )
+
+  app.patch("/realms/:realmId", realmWriteMiddleware, async (context) => {
+    const tenant = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
       database: options.database,
+      permission: authorizationPermissionDefinitions.realmWrite,
       realmId: context.req.param("realmId"),
     })
-    return realmResultResponseCreate(
-      context,
-      result,
-      200,
-      result.success ? new Date(result.data.realm.updatedAt) : undefined,
-    )
-  })
-
-  app.patch("/realms/:realmId", async (context) => {
-    const tenant = tenantContextResolve(options.database, context.req.header("host"), context.req.url)
     if (!tenant.success) return realmErrorResponseCreate(context, tenant)
-    const authenticated = realmBootstrapAdminAuthenticate({
-      context: tenant.data,
-      database: options.database,
-      secret: bearerTokenGet(context.req.header("authorization")) ?? "",
-    })
-    if (!authenticated.success) return realmErrorResponseCreate(context, authenticated)
     const body = await requestJsonRead(context)
     if (!body.success) return realmErrorResponseCreate(context, body)
     const input = v.safeParse(realmUpdateRequestSchema, body.data)
@@ -154,7 +196,7 @@ export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
     return realmResultResponseCreate(
       context,
       realmUpdate({
-        context: authenticated.data,
+        context: tenant.data,
         database: options.database,
         input: input.output,
         realmId: context.req.param("realmId"),
@@ -163,6 +205,42 @@ export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
   })
 
   return app
+}
+
+function realmAdministratorRequestPresent(context: {
+  readonly req: { header: (name: string) => string | undefined }
+}): boolean {
+  return (
+    context.req.header("authorization") !== undefined || context.req.header("cookie")?.includes("session=") === true
+  )
+}
+
+function realmBootstrapFallback(
+  database: StorageDatabase,
+  context: {
+    readonly req: {
+      readonly header: (name: string) => string | undefined
+      readonly url: string
+    }
+    readonly json: (body: unknown, status?: ContentfulStatusCode) => Response
+    readonly set: (
+      key: "authorizationActor" | "cookieAuthenticated",
+      value: AuthorizationActorContext | boolean,
+    ) => void
+  },
+  next: Next,
+) {
+  const tenant = tenantContextResolve(database, context.req.header("host"), context.req.url)
+  if (!tenant.success) return realmErrorResponseCreate(context, tenant)
+  const authenticated = realmBootstrapAdminAuthenticate({
+    context: tenant.data,
+    database,
+    secret: bearerTokenGet(context.req.header("authorization")) ?? "",
+  })
+  if (!authenticated.success) return realmErrorResponseCreate(context, authenticated)
+  context.set("authorizationActor", authenticated.data.actor)
+  context.set("cookieAuthenticated", false)
+  return next()
 }
 
 function bearerTokenGet(authorization: string | undefined): string | null {

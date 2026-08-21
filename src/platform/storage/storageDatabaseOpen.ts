@@ -1,11 +1,11 @@
 import { Database } from "bun:sqlite"
-import { type Result } from "#result"
 import { drizzle } from "drizzle-orm/bun-sqlite"
+import { type Result } from "#result"
 import { resultCreate } from "../errors/resultCreate.js"
 import { resultErrorCreate } from "../errors/resultErrorCreate.js"
 import { runtimeCreate } from "../runtime/runtimeCreate.js"
 import { storagePragmasVerify } from "./storagePragmasVerify.js"
-import { storageSchema, type StorageClient } from "./storageSchema.js"
+import { type StorageClient, storageSchema } from "./storageSchema.js"
 import { storageSchemaCreate } from "./storageSchemaCreate.js"
 
 export type StorageDatabase = {

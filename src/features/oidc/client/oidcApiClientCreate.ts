@@ -16,18 +16,18 @@ import {
   oidcAuthorizationCodeRedeemResponseSchema,
 } from "../public/oidcAuthorizationCodeRedeemResponseSchema.js"
 import {
-  type OidcAuthorizationRequest,
-  oidcAuthorizationRequestSchema,
-} from "../public/oidcAuthorizationRequestSchema.js"
-import {
   type OidcAuthorizationConsentRequest,
   oidcAuthorizationConsentRequestSchema,
 } from "../public/oidcAuthorizationConsentRequestSchema.js"
+import { oidcAuthorizationConsentRequiredSchema } from "../public/oidcAuthorizationConsentRequiredSchema.js"
 import {
   type OidcAuthorizationConsentResponse,
   oidcAuthorizationConsentResponseSchema,
 } from "../public/oidcAuthorizationConsentResponseSchema.js"
-import { oidcAuthorizationConsentRequiredSchema } from "../public/oidcAuthorizationConsentRequiredSchema.js"
+import {
+  type OidcAuthorizationRequest,
+  oidcAuthorizationRequestSchema,
+} from "../public/oidcAuthorizationRequestSchema.js"
 import {
   type OidcAuthorizationResponse,
   oidcAuthorizationResponseSchema,
@@ -48,7 +48,6 @@ import {
   oidcClientSecretRotateResponseSchema,
 } from "../public/oidcClientSecretRotateResponseSchema.js"
 import { type OidcClientUpdateRequest, oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
-import { type OidcDiscovery, oidcDiscoverySchema } from "../public/oidcDiscoverySchema.js"
 import { type OidcConsentListResponse, oidcConsentListResponseSchema } from "../public/oidcConsentListResponseSchema.js"
 import {
   type OidcConsentRevokeRequest,
@@ -58,15 +57,10 @@ import {
   type OidcConsentRevokeResponse,
   oidcConsentRevokeResponseSchema,
 } from "../public/oidcConsentRevokeResponseSchema.js"
+import { type OidcDiscovery, oidcDiscoverySchema } from "../public/oidcDiscoverySchema.js"
+import { type OidcJwks, oidcJwksSchema } from "../public/oidcJwksSchema.js"
 import { type OidcLogoutRequest, oidcLogoutRequestSchema } from "../public/oidcLogoutRequestSchema.js"
 import { type OidcLogoutResponse, oidcLogoutResponseSchema } from "../public/oidcLogoutResponseSchema.js"
-import { type OidcJwks, oidcJwksSchema } from "../public/oidcJwksSchema.js"
-import { type OidcTokenRequest, oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
-import { type OidcTokenRevokeRequest, oidcTokenRevokeRequestSchema } from "../public/oidcTokenRevokeRequestSchema.js"
-import { oidcTokenErrorSchema } from "../public/oidcTokenErrorSchema.js"
-import { type OidcTokenResponse, oidcTokenResponseSchema } from "../public/oidcTokenResponseSchema.js"
-import { type OidcUserInfo, oidcUserInfoSchema } from "../public/oidcUserInfoSchema.js"
-import { oidcUserInfoErrorSchema } from "../public/oidcUserInfoErrorSchema.js"
 import {
   type OidcSigningKeyLifecycleRequest,
   oidcSigningKeyLifecycleRequestSchema,
@@ -76,11 +70,18 @@ import {
   oidcSigningKeyListResponseSchema,
 } from "../public/oidcSigningKeyListResponseSchema.js"
 import { type OidcSigningKeyResponse, oidcSigningKeyResponseSchema } from "../public/oidcSigningKeyResponseSchema.js"
+import { oidcTokenErrorSchema } from "../public/oidcTokenErrorSchema.js"
+import { type OidcTokenRequest, oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
+import { type OidcTokenResponse, oidcTokenResponseSchema } from "../public/oidcTokenResponseSchema.js"
+import { type OidcTokenRevokeRequest, oidcTokenRevokeRequestSchema } from "../public/oidcTokenRevokeRequestSchema.js"
+import { oidcUserInfoErrorSchema } from "../public/oidcUserInfoErrorSchema.js"
+import { type OidcUserInfo, oidcUserInfoSchema } from "../public/oidcUserInfoSchema.js"
 
 type OidcApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
 type OidcApiClientCreateOptions = {
   readonly baseUrl: string
+  readonly csrfToken?: string
   readonly fetch?: OidcApiFetch
   readonly token?: Secret | string
 }
@@ -132,6 +133,45 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       path,
       schema,
       token: options.token,
+    })
+  const browserRequestInit = (init: RequestInit): RequestInit => {
+    const headers = new Headers(init.headers)
+    if (options.csrfToken !== undefined) headers.set("x-csrf-token", options.csrfToken)
+    return { ...init, credentials: "same-origin", headers }
+  }
+  const browserRequest = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init: browserRequestInit(init),
+      invalidResponseErrorGet: (body) => {
+        const consent = v.safeParse(oidcAuthorizationConsentRequiredSchema, body)
+        if (!consent.success) return undefined
+        const error = resultErrorCodedCreate(
+          "oidcAuthorizationConsentRequired",
+          "User consent is required.",
+          "oidc.authorization-consent-required",
+        )
+        error.errorData = JSON.stringify(consent.output)
+        return error
+      },
+      op: "oidcApiClientBrowserRequest",
+      path,
+      schema,
+    })
+  const browserGetRequest = <T>(
+    path: string,
+    schema: v.GenericSchema<T>,
+    getOptions?: HttpGetOptions,
+  ): Promise<HttpGetResult<T>> =>
+    httpApiClientGetRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      ifModifiedSince: getOptions?.ifModifiedSince,
+      init: browserRequestInit({ method: "GET" }),
+      op: "oidcApiClientBrowserRequest",
+      path,
+      schema,
     })
 
   const tokenRequest = (input: OidcTokenRequest): Promise<Result<OidcTokenResponse>> => {
@@ -192,6 +232,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
   }
 
   const managementPath = (realmId: string, suffix = "") => `/system/realms/${encodeURIComponent(realmId)}/oidc${suffix}`
+  const browserManagementPath = (realmId: string, suffix = "") => `/realms/${encodeURIComponent(realmId)}/oidc${suffix}`
 
   return {
     oidcAuthorizationCodeRedeem(
@@ -300,6 +341,14 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       )
     },
 
+    oidcConsentMeList(realmId: string, query?: ListQuery): Promise<Result<OidcConsentListResponse>> {
+      return request(
+        oidcListPath(`/realms/${encodeURIComponent(realmId)}/me/consents`, query),
+        { method: "GET" },
+        oidcConsentListResponseSchema,
+      )
+    },
+
     oidcConsentRevoke(
       realmId: string,
       userId: string,
@@ -317,10 +366,203 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       return request(
         managementPath(
           realmId,
-          `/consents/${encodeURIComponent(userId)}/${encodeURIComponent(input.client_id)}/revoke`,
+          `/consents/${encodeURIComponent(userId)}/${encodeURIComponent(parsed.output.client_id)}/revoke`,
         ),
         { method: "POST" },
         oidcConsentRevokeResponseSchema,
+      )
+    },
+
+    oidcConsentMeRevoke(realmId: string, input: OidcConsentRevokeRequest): Promise<Result<OidcConsentRevokeResponse>> {
+      const parsed = v.safeParse(oidcConsentRevokeRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "oidcApiClientConsentMeRevoke",
+            "The consent request is invalid.",
+            "oidc.invalid-request",
+          ),
+        )
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/me/consents/${encodeURIComponent(parsed.output.client_id)}/revoke`,
+        { method: "POST" },
+        oidcConsentRevokeResponseSchema,
+      )
+    },
+
+    oidcConsentTenantList(
+      realmId: string,
+      userId: string,
+      query?: ListQuery,
+    ): Promise<Result<OidcConsentListResponse>> {
+      return browserRequest(
+        oidcListPath(browserManagementPath(realmId, `/consents/${encodeURIComponent(userId)}`), query),
+        { method: "GET" },
+        oidcConsentListResponseSchema,
+      )
+    },
+
+    oidcConsentTenantRevoke(
+      realmId: string,
+      userId: string,
+      input: OidcConsentRevokeRequest,
+    ): Promise<Result<OidcConsentRevokeResponse>> {
+      const parsed = v.safeParse(oidcConsentRevokeRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "oidcApiClientConsentTenantRevoke",
+            "The consent request is invalid.",
+            "oidc.invalid-request",
+          ),
+        )
+      return browserRequest(
+        browserManagementPath(
+          realmId,
+          `/consents/${encodeURIComponent(userId)}/${encodeURIComponent(parsed.output.client_id)}/revoke`,
+        ),
+        { method: "POST" },
+        oidcConsentRevokeResponseSchema,
+      )
+    },
+
+    oidcClientTenantCreate(realmId: string, input: OidcClientCreateRequest): Promise<Result<OidcClientCreateResponse>> {
+      const parsed = v.safeParse(oidcClientCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "oidcApiClientTenantClientCreate",
+            "The OIDC client request is invalid.",
+            "oidc.invalid",
+          ),
+        )
+      return browserRequest(
+        browserManagementPath(realmId, "/clients"),
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        oidcClientCreateResponseSchema,
+      )
+    },
+
+    oidcClientTenantGet(
+      realmId: string,
+      clientId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<OidcClientResponse>> {
+      return browserGetRequest(
+        browserManagementPath(realmId, `/clients/${encodeURIComponent(clientId)}`),
+        oidcClientResponseSchema,
+        getOptions,
+      )
+    },
+
+    oidcClientTenantList(realmId: string, query?: ListQuery): Promise<Result<OidcClientListResponse>> {
+      return browserRequest(
+        oidcListPath(browserManagementPath(realmId, "/clients"), query),
+        { method: "GET" },
+        oidcClientListResponseSchema,
+      )
+    },
+
+    oidcClientTenantUpdate(
+      realmId: string,
+      clientId: string,
+      input: OidcClientUpdateRequest,
+    ): Promise<Result<OidcClientResponse>> {
+      const parsed = v.safeParse(oidcClientUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "oidcApiClientTenantClientUpdate",
+            "The OIDC client update is invalid.",
+            "oidc.invalid",
+          ),
+        )
+      return browserRequest(
+        browserManagementPath(realmId, `/clients/${encodeURIComponent(clientId)}`),
+        { body: JSON.stringify(parsed.output), method: "PATCH" },
+        oidcClientResponseSchema,
+      )
+    },
+
+    oidcClientTenantLifecycleSet(
+      realmId: string,
+      clientId: string,
+      input: OidcClientLifecycleRequest,
+    ): Promise<Result<OidcClientResponse>> {
+      const parsed = v.safeParse(oidcClientLifecycleRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "oidcApiClientTenantClientLifecycleSet",
+            "The OIDC client lifecycle request is invalid.",
+            "oidc.invalid",
+          ),
+        )
+      return browserRequest(
+        browserManagementPath(realmId, `/clients/${encodeURIComponent(clientId)}/lifecycle`),
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        oidcClientResponseSchema,
+      )
+    },
+
+    oidcClientTenantSecretRotate(realmId: string, clientId: string): Promise<Result<OidcClientSecretRotateResponse>> {
+      return browserRequest(
+        browserManagementPath(realmId, `/clients/${encodeURIComponent(clientId)}/secret/rotate`),
+        { method: "POST" },
+        oidcClientSecretRotateResponseSchema,
+      )
+    },
+
+    oidcClientTenantSecretRevoke(realmId: string, clientId: string): Promise<Result<OidcClientResponse>> {
+      return browserRequest(
+        browserManagementPath(realmId, `/clients/${encodeURIComponent(clientId)}/secret/revoke`),
+        { method: "POST" },
+        oidcClientResponseSchema,
+      )
+    },
+
+    oidcSigningKeyTenantCreate(realmId: string): Promise<Result<OidcSigningKeyResponse>> {
+      return browserRequest(
+        browserManagementPath(realmId, "/signing-keys"),
+        { method: "POST" },
+        oidcSigningKeyResponseSchema,
+      )
+    },
+
+    oidcSigningKeyTenantList(realmId: string, query?: ListQuery): Promise<Result<OidcSigningKeyListResponse>> {
+      return browserRequest(
+        oidcListPath(browserManagementPath(realmId, "/signing-keys"), query),
+        { method: "GET" },
+        oidcSigningKeyListResponseSchema,
+      )
+    },
+
+    oidcSigningKeyTenantRotate(realmId: string): Promise<Result<OidcSigningKeyResponse>> {
+      return browserRequest(
+        browserManagementPath(realmId, "/signing-keys/rotate"),
+        { method: "POST" },
+        oidcSigningKeyResponseSchema,
+      )
+    },
+
+    oidcSigningKeyTenantLifecycleSet(
+      realmId: string,
+      signingKeyId: string,
+      input: OidcSigningKeyLifecycleRequest,
+    ): Promise<Result<OidcSigningKeyResponse>> {
+      const parsed = v.safeParse(oidcSigningKeyLifecycleRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "oidcApiClientTenantSigningKeyLifecycleSet",
+            "The signing key lifecycle request is invalid.",
+            "oidc.invalid",
+          ),
+        )
+      return browserRequest(
+        browserManagementPath(realmId, `/signing-keys/${encodeURIComponent(signingKeyId)}/lifecycle`),
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        oidcSigningKeyResponseSchema,
       )
     },
 
@@ -403,8 +645,20 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       )
     },
 
+    oidcClientSecretRevoke(realmId: string, clientId: string): Promise<Result<OidcClientResponse>> {
+      return request(
+        managementPath(realmId, `/clients/${encodeURIComponent(clientId)}/secret/revoke`),
+        { method: "POST" },
+        oidcClientResponseSchema,
+      )
+    },
+
     oidcSigningKeyCreate(realmId: string): Promise<Result<OidcSigningKeyResponse>> {
       return request(managementPath(realmId, "/signing-keys"), { method: "POST" }, oidcSigningKeyResponseSchema)
+    },
+
+    oidcSigningKeyRotate(realmId: string): Promise<Result<OidcSigningKeyResponse>> {
+      return request(managementPath(realmId, "/signing-keys/rotate"), { method: "POST" }, oidcSigningKeyResponseSchema)
     },
 
     oidcSigningKeyList(realmId: string, query?: ListQuery): Promise<Result<OidcSigningKeyListResponse>> {

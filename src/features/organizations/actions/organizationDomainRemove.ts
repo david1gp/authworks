@@ -9,6 +9,7 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { realmDomainNormalize } from "../../realms/domain/realmDomainNormalize.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationDomainRemovedEventPayloadSchema } from "../events/organizationDomainRemovedEventPayloadSchema.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationDomainRepositoryCreate } from "../persistence/organizationDomainRepositoryCreate.js"
@@ -16,7 +17,7 @@ import { organizationRepositoryCreate } from "../persistence/organizationReposit
 import { organizationContextAuthorize } from "./organizationContextAuthorize.js"
 
 type OrganizationDomainRemoveOptions = {
-  readonly context: RealmSystemContext
+  readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly domain: string
   readonly realmId: string
