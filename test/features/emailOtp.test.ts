@@ -2,21 +2,21 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { emailOtpStart } from "../../src/features/emailOtp/actions/emailOtpStart.js"
+import { emailOtpVerify } from "../../src/features/emailOtp/actions/emailOtpVerify.js"
+import { emailOtpApiClientCreate } from "../../src/features/emailOtp/client/emailOtpApiClientCreate.js"
+import { emailOtpServerAppCreate } from "../../src/features/emailOtp/server/emailOtpServerAppCreate.js"
+import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
+import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
+import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
+import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
+import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
+import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
-import { emailOtpApiClientCreate } from "../../src/features/emailOtp/client/emailOtpApiClientCreate.js"
-import { emailOtpStart } from "../../src/features/emailOtp/actions/emailOtpStart.js"
-import { emailOtpVerify } from "../../src/features/emailOtp/actions/emailOtpVerify.js"
-import { emailOtpServerAppCreate } from "../../src/features/emailOtp/server/emailOtpServerAppCreate.js"
-import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
-import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
-import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
-import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
-import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
-import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
-import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -486,5 +486,40 @@ test("email OTP HTTP and client contracts expose no code material", async () => 
     const verified = await client.emailOtpVerify(realm.id, { challengeId: started.data.challengeId, code })
     expect(verified.success).toBe(true)
     expect(testkit.runtime.now()).toBe(1_700_000_000_000)
+  })
+})
+
+test("email OTP browser verification issues an HttpOnly session cookie without disclosing credentials", async () => {
+  await withDatabase(async (database) => {
+    const { realm } = await createVerifiedUser(database, "email-otp-browser.example.com")
+    let delivery: { challengeId: string; code: string } | undefined
+    const app = emailOtpServerAppCreate({
+      browserMode: true,
+      database,
+      onDelivery: (value) => {
+        delivery = value
+      },
+    })
+    const started = await app.request(`https://email-otp-browser.example.com/realms/${realm.id}/email-otp/start`, {
+      body: JSON.stringify({ email: "otp@example.com" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(started.status).toBe(200)
+    if (delivery === undefined) return
+    const verified = await app.request(`https://email-otp-browser.example.com/realms/${realm.id}/email-otp/verify`, {
+      body: JSON.stringify({ challengeId: delivery.challengeId, code: delivery.code }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(verified.status).toBe(200)
+    const cookie = verified.headers.get("set-cookie") ?? ""
+    const token = /^session=([^;]+);/.exec(cookie)?.[1]
+    const body = (await verified.json()) as { session?: unknown }
+    expect(token).toHaveLength(43)
+    expect(body.session).toBeUndefined()
+    expect(JSON.stringify(body)).not.toContain(token ?? "")
+    expect(cookie).toContain("HttpOnly")
+    if (token !== undefined) expect(sessionAuthenticate({ database, realmId: realm.id, token }).success).toBe(true)
   })
 })

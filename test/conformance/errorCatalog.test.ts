@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test"
-import * as v from "valibot"
 import { readdir, readFile } from "node:fs/promises"
-import { pathToFileURL } from "node:url"
 import { join } from "node:path"
+import { pathToFileURL } from "node:url"
+import * as v from "valibot"
 import { errorCatalog } from "../../src/platform/errors/errorCatalog.js"
 import { resultErrorCodeSchema } from "../../src/platform/errors/resultErrorCodeSchema.js"
 

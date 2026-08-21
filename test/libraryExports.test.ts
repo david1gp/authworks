@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test"
 import * as authorization from "../src/outputs/library/authorization.js"
+import * as email from "../src/outputs/library/email.js"
 import * as emailOtp from "../src/outputs/library/emailOtp.js"
 import * as events from "../src/outputs/library/events.js"
 import * as externalIdentities from "../src/outputs/library/externalIdentities.js"
@@ -31,6 +32,7 @@ test("root library publishes HTTP GET contracts", () => {
 
 test("every completed feature has a public library subpath and client", () => {
   expect(authorization.authorizationActorContextSchema).toBeDefined()
+  expect(email.emailGeneratorApiClientCreate).toBeFunction()
   expect(emailOtp.emailOtpApiClientCreate).toBeFunction()
   expect(events.eventApiClientCreate).toBeFunction()
   expect(externalIdentities.externalIdentityApiClientCreate).toBeFunction()
@@ -53,7 +55,13 @@ test("public contracts include the previously omitted transport schemas", () => 
   expect(machineUsers.machinePersonalAccessTokenCreateRequestSchema).toBeDefined()
   expect(machineUsers.machineProtectedApiResponseSchema).toBeDefined()
   expect(oidc.oidcSigningKeyLifecycleRequestSchema).toBeDefined()
+  expect(passwords.passwordMeChangeRequestSchema).toBeDefined()
+  expect(passwords.passwordMeChangeResponseSchema).toBeDefined()
   expect(projects.projectDeleteResponseSchema).toBeDefined()
+  expect(sessions.sessionMeDeviceMetadataSchema).toBeDefined()
+  expect(sessions.sessionMeListResponseSchema).toBeDefined()
+  expect(sessions.sessionMeSchema).toBeDefined()
+  expect(users.userAuthenticationMethodsSchema).toBeDefined()
 })
 
 test("every API client publishes its complete method set", () => {
@@ -63,19 +71,65 @@ test("every API client publishes its complete method set", () => {
     "realmCreate",
     "realmGet",
     "realmList",
+    "realmTenantGet",
+    "realmTenantUpdate",
     "realmUpdate",
   ])
-  expect(Object.keys(organizations.organizationApiClientCreate(options))).toHaveLength(27)
-  expect(Object.keys(users.userApiClientCreate(options))).toHaveLength(7)
-  expect(Object.keys(passwords.passwordApiClientCreate(options))).toHaveLength(8)
-  expect(Object.keys(sessions.sessionApiClientCreate(options))).toHaveLength(6)
+  expect(Object.keys(organizations.organizationApiClientCreate(options))).toHaveLength(57)
+  expect(Object.keys(users.userApiClientCreate(options))).toEqual([
+    "userCreate",
+    "userGet",
+    "userList",
+    "userMeGet",
+    "userMeAuthenticationMethodsGet",
+    "userMeProfileUpdate",
+    "userProfileUpdate",
+    "userLifecycleSet",
+    "userEmailVerificationSet",
+    "userDelete",
+    "userTenantList",
+    "userTenantGet",
+    "userTenantCreate",
+    "userTenantProfileUpdate",
+    "userTenantLifecycleSet",
+    "userTenantVerificationSet",
+    "userTenantDelete",
+    "userMeDelete",
+  ])
+  expect(Object.keys(passwords.passwordApiClientCreate(options))).toEqual([
+    "passwordRegister",
+    "passwordLogin",
+    "passwordEmailVerify",
+    "passwordRecoveryRequest",
+    "passwordRecoveryComplete",
+    "passwordChange",
+    "passwordMeChange",
+    "passwordPolicyGet",
+    "passwordPolicyTenantGet",
+    "passwordPolicyTenantSet",
+    "passwordPolicySet",
+  ])
+  expect(Object.keys(email.emailGeneratorApiClientCreate(options))).toHaveLength(4)
+  expect(Object.keys(sessions.sessionApiClientCreate(options))).toEqual([
+    "sessionBootstrapAdminSignIn",
+    "sessionCurrent",
+    "sessionList",
+    "sessionMeList",
+    "sessionRecentList",
+    "sessionRotate",
+    "sessionRevoke",
+    "sessionMeRevoke",
+    "sessionRevokeAll",
+    "sessionMeRevokeAll",
+  ])
   expect(Object.keys(emailOtp.emailOtpApiClientCreate(options))).toHaveLength(2)
-  expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(11)
-  expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(21)
-  expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(11)
+  expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(2)
+  expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(20)
+  expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(38)
+  expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(13)
   expect(Object.keys(passkeys.passkeyApiClientCreate(options))).toHaveLength(10)
-  expect(Object.keys(machineUsers.machineUserApiClientCreate(options))).toHaveLength(11)
-  expect(Object.keys(projects.projectApiClientCreate(options))).toHaveLength(22)
+  expect(Object.keys(machineUsers.machineUserApiClientCreate(options))).toHaveLength(20)
+  expect(Object.keys(projects.projectApiClientCreate(options))).toHaveLength(44)
   expect(Object.keys(impersonation.impersonationApiClientCreate(options))).toHaveLength(2)
 })
 
@@ -86,6 +140,7 @@ test("package exports name every library feature boundary", async () => {
     ".",
     "./authorization",
     "./cli",
+    "./email",
     "./emailOtp",
     "./events",
     "./externalIdentities",

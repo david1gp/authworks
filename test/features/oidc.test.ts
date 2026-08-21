@@ -4,10 +4,6 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import * as v from "valibot"
-import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
-import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
-import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
-import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { oidcAuthorizationCodeRedeem } from "../../src/features/oidc/actions/oidcAuthorizationCodeRedeem.js"
 import { oidcAuthorizationRequestAuthorize } from "../../src/features/oidc/actions/oidcAuthorizationRequestAuthorize.js"
 import { oidcAuthorizationRequestConsent } from "../../src/features/oidc/actions/oidcAuthorizationRequestConsent.js"
@@ -17,13 +13,13 @@ import { oidcClientLifecycleSet } from "../../src/features/oidc/actions/oidcClie
 import { oidcClientList } from "../../src/features/oidc/actions/oidcClientList.js"
 import { oidcClientSecretRotate } from "../../src/features/oidc/actions/oidcClientSecretRotate.js"
 import { oidcClientUpdate } from "../../src/features/oidc/actions/oidcClientUpdate.js"
+import { oidcConsentRevoke } from "../../src/features/oidc/actions/oidcConsentRevoke.js"
 import { oidcDiscoveryGet } from "../../src/features/oidc/actions/oidcDiscoveryGet.js"
 import { oidcJwksGet } from "../../src/features/oidc/actions/oidcJwksGet.js"
+import { oidcLogout } from "../../src/features/oidc/actions/oidcLogout.js"
 import { oidcSigningKeyCreate } from "../../src/features/oidc/actions/oidcSigningKeyCreate.js"
 import { oidcSigningKeyList } from "../../src/features/oidc/actions/oidcSigningKeyList.js"
 import { oidcTokenIssue } from "../../src/features/oidc/actions/oidcTokenIssue.js"
-import { oidcConsentRevoke } from "../../src/features/oidc/actions/oidcConsentRevoke.js"
-import { oidcLogout } from "../../src/features/oidc/actions/oidcLogout.js"
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
 import { oidcClientSecretMatches } from "../../src/features/oidc/domain/oidcClientSecretMatches.js"
 import { oidcJwtSign } from "../../src/features/oidc/domain/oidcJwtSign.js"
@@ -40,7 +36,12 @@ import { oidcServerAppCreate } from "../../src/features/oidc/server/oidcServerAp
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
+import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
+import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -1602,6 +1603,127 @@ test("authorization requires consent, reuses grants, supports incremental scopes
     const safeEvents = JSON.stringify(database.sqlite.query("SELECT payload, metadata FROM events").all())
     expect(safeEvents).not.toContain("consent-state")
     expect(safeEvents).not.toContain("incremental-state")
+  })
+})
+
+test("subject-bound consent contracts paginate, redact persistence fields, reject IDOR, and require browser CSRF", async () => {
+  await withDatabase(async (database, testkit) => {
+    const authenticated = await createAuthenticatedSession(database, "consent-me.example.com")
+    const clients = []
+    for (const name of ["First consent client", "Second consent client"]) {
+      const created = oidcClientCreate({
+        context: realmSystemContextCreate(),
+        database,
+        input: {
+          clientType: "public",
+          name,
+          redirectUris: ["https://client.example/callback"],
+        },
+        realmId: authenticated.realm.id,
+      })
+      expect(created.success).toBe(true)
+      if (!created.success) return
+      clients.push(created.data.client)
+    }
+    const createdAt = testkit.runtime.now()
+    for (const client of clients)
+      database.sqlite
+        .query(
+          "INSERT INTO oidc_consents (client_id, created_at, realm_id, scope, updated_at, user_id) VALUES (?, ?, ?, ?, ?, ?)",
+        )
+        .run(
+          client.id,
+          createdAt,
+          authenticated.realm.id,
+          JSON.stringify(["openid", "profile"]),
+          createdAt,
+          authenticated.userId,
+        )
+
+    const app = oidcServerAppCreate({
+      database,
+      publicOrigin: "https://consent-me.example.com",
+      systemSecret: "consent-me-system-secret",
+    })
+    const api = oidcApiClientCreate({
+      baseUrl: "https://consent-me.example.com",
+      fetch: async (input, init) => app.request(input.toString(), init),
+      token: authenticated.token,
+    })
+    const firstPage = await api.oidcConsentMeList(authenticated.realm.id, { pageSize: 1 })
+    expect(firstPage.success).toBe(true)
+    if (!firstPage.success) return
+    expect(firstPage.data.items).toHaveLength(1)
+    expect(firstPage.data.nextPageToken).toBeString()
+    expect(firstPage.data.items[0]).toEqual(
+      expect.objectContaining({ realmId: authenticated.realm.id, userId: authenticated.userId }),
+    )
+    expect(Object.keys(firstPage.data.items[0] ?? {}).sort()).toEqual([
+      "clientId",
+      "createdAt",
+      "realmId",
+      "scope",
+      "updatedAt",
+      "userId",
+    ])
+    expect(JSON.stringify(firstPage.data.items[0])).not.toMatch(/revokedAt|password|secret|token|hash/i)
+
+    const secondPage = await api.oidcConsentMeList(authenticated.realm.id, {
+      pageSize: 1,
+      pageToken: firstPage.data.nextPageToken,
+    })
+    expect(secondPage.success).toBe(true)
+    if (!secondPage.success) return
+    expect(secondPage.data.items).toHaveLength(1)
+    expect(secondPage.data.items[0]?.clientId).not.toBe(firstPage.data.items[0]?.clientId)
+
+    const idor = await app.request(
+      `https://consent-me.example.com/realms/${authenticated.realm.id}/me/consents?userId=another-user`,
+      { headers: { authorization: `Bearer ${authenticated.token}` } },
+    )
+    expect(idor.status).toBe(400)
+    expect(JSON.stringify(await idor.json())).not.toContain("another-user")
+
+    const otherRealm = await createRealm(database, "consent-me-other.example.com")
+    const crossRealm = await app.request(`https://consent-me.example.com/realms/${otherRealm.id}/me/consents`, {
+      headers: { authorization: `Bearer ${authenticated.token}` },
+    })
+    expect(crossRealm.status).toBe(401)
+
+    const systemApi = oidcApiClientCreate({
+      baseUrl: "https://consent-me.example.com",
+      fetch: async (input, init) => app.request(input.toString(), init),
+      token: "consent-me-system-secret",
+    })
+    expect((await systemApi.oidcConsentList(authenticated.realm.id, authenticated.userId)).success).toBe(true)
+
+    const apiRevoked = await api.oidcConsentMeRevoke(authenticated.realm.id, { client_id: clients[0]?.id ?? "" })
+    expect(apiRevoked).toEqual({ data: { revoked: true }, success: true })
+
+    const csrfToken = sessionCsrfTokenCreate(testkit.runtime)
+    const cookie = `session=${authenticated.token}; csrf=${csrfToken}`
+    const missingOrigin = await app.request(
+      `https://consent-me.example.com/realms/${authenticated.realm.id}/me/consents/${clients[1]?.id}/revoke`,
+      { headers: { cookie }, method: "POST" },
+    )
+    expect(missingOrigin.status).toBe(403)
+    const wrongOrigin = await app.request(
+      `https://consent-me.example.com/realms/${authenticated.realm.id}/me/consents/${clients[1]?.id}/revoke`,
+      {
+        headers: { cookie, origin: "https://evil.example.com", "x-csrf-token": csrfToken },
+        method: "POST",
+      },
+    )
+    expect(wrongOrigin.status).toBe(403)
+    const browserRevoked = await app.request(
+      `https://consent-me.example.com/realms/${authenticated.realm.id}/me/consents/${clients[1]?.id}/revoke`,
+      {
+        headers: { cookie, origin: "https://consent-me.example.com", "x-csrf-token": csrfToken },
+        method: "POST",
+      },
+    )
+    expect(browserRevoked.status).toBe(200)
+    expect(await browserRevoked.json()).toEqual({ revoked: true })
   })
 })
 

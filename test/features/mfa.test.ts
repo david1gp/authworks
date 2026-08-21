@@ -2,9 +2,6 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
-import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
-import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
 import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
 import { mfaRecoveryCodesGenerate } from "../../src/features/mfa/actions/mfaRecoveryCodesGenerate.js"
@@ -22,8 +19,12 @@ import { mfaServerAppCreate } from "../../src/features/mfa/server/mfaServerAppCr
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
+import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -568,5 +569,93 @@ test("MFA event failures roll back state, and the API client/CLI surfaces remain
         .all()
         .every((event) => !JSON.stringify(event.payload).includes(started.data.secret)),
     ).toBe(true)
+  })
+})
+
+test("MFA browser completion issues and upgrades an HttpOnly session cookie without disclosing credentials", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "mfa-browser.example.com")
+    const enrolled = await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
+    expect(
+      mfaPolicySet({
+        context: realmSystemContextCreate("system"),
+        database,
+        input: { lockoutDurationMs: 900_000, maxAttempts: 3, mode: "required", totpWindow: 1 },
+        realmId: fixture.realm.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+    const login = passwordLogin({
+      context: fixture.context,
+      database,
+      input: { identifier: "mfa-browser-example-com", password: "Correct Horse 12" },
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      sessionCreate: sessionPasswordCreate(),
+    })
+    expect(login.success && login.data.challenge).toBeTruthy()
+    if (!login.success || login.data.challenge === undefined) return
+    const app = mfaServerAppCreate({
+      browserMode: true,
+      database,
+      encryptionSecret: "mfa-test-secret",
+      publicOrigin: "https://mfa-browser.example.com",
+    })
+    testkit.advance(30_000)
+    const loginCode = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(loginCode.success).toBe(true)
+    if (!loginCode.success) return
+    const completedLogin = await app.request(
+      `https://mfa-browser.example.com/realms/${fixture.realm.id}/mfa/challenge/complete`,
+      {
+        body: JSON.stringify({ code: loginCode.data, token: login.data.challenge.token }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(completedLogin.status).toBe(200)
+    const loginCookie = completedLogin.headers.get("set-cookie") ?? ""
+    const loginToken = /^session=([^;]+);/.exec(loginCookie)?.[1]
+    const loginBody = (await completedLogin.json()) as { session?: unknown }
+    expect(loginToken).toHaveLength(43)
+    expect(loginBody.session).toBeUndefined()
+    if (loginToken === undefined) return
+
+    const csrfToken = sessionCsrfTokenCreate(testkit.runtime)
+    const headers = {
+      cookie: `${loginCookie.split(";", 1)[0]}; csrf=${csrfToken}`,
+      origin: "https://mfa-browser.example.com",
+      "x-csrf-token": csrfToken,
+    }
+    const stepUpStarted = await app.request(
+      `https://mfa-browser.example.com/realms/${fixture.realm.id}/mfa/step-up/start`,
+      {
+        headers,
+        method: "POST",
+      },
+    )
+    expect(stepUpStarted.status).toBe(200)
+    const stepUpBody = (await stepUpStarted.json()) as { token: string }
+    testkit.advance(30_000)
+    const stepUpCode = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(stepUpCode.success).toBe(true)
+    if (!stepUpCode.success) return
+    const upgraded = await app.request(
+      `https://mfa-browser.example.com/realms/${fixture.realm.id}/mfa/step-up/complete`,
+      {
+        body: JSON.stringify({ code: stepUpCode.data, token: stepUpBody.token }),
+        headers: { ...headers, "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(upgraded.status).toBe(200)
+    const rotatedCookie = upgraded.headers.get("set-cookie") ?? ""
+    const rotatedToken = /^session=([^;]+);/.exec(rotatedCookie)?.[1]
+    const upgradedBody = (await upgraded.json()) as { session?: unknown }
+    expect(rotatedToken).toHaveLength(43)
+    expect(upgradedBody.session).toBeUndefined()
+    expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: loginToken }).success).toBe(false)
+    if (rotatedToken !== undefined)
+      expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: rotatedToken }).success).toBe(true)
   })
 })

@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test"
-import * as v from "valibot"
 import { readdir } from "node:fs/promises"
-import { pathToFileURL } from "node:url"
 import { join } from "node:path"
+import { pathToFileURL } from "node:url"
+import * as v from "valibot"
 
 test("every public list response uses the items envelope", async () => {
   const featureRoot = join(process.cwd(), "src/features")

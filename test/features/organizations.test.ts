@@ -2,9 +2,6 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
-import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
-import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationInvitationAccept } from "../../src/features/organizations/actions/organizationInvitationAccept.js"
 import { organizationInvitationCreate } from "../../src/features/organizations/actions/organizationInvitationCreate.js"
@@ -21,6 +18,13 @@ import { organizationUpdate } from "../../src/features/organizations/actions/org
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
 import { organizationEventTypes } from "../../src/features/organizations/events/organizationEventTypes.js"
 import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
+import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
+import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { userCreate } from "../../src/features/users/actions/userCreate.js"
+import { userLifecycleSet } from "../../src/features/users/actions/userLifecycleSet.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -54,6 +58,28 @@ async function createRealm(database: StorageDatabase, domain: string) {
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
   return created.data.realm
+}
+
+async function createActiveUser(database: StorageDatabase, realmId: string, email: string) {
+  const system = realmSystemContextCreate("system")
+  const created = userCreate({
+    context: system,
+    database,
+    input: { email, profile: { displayName: email }, userName: email.split("@")[0] ?? email },
+    realmId,
+  })
+  expect(created.success).toBe(true)
+  if (!created.success) throw new Error(created.errorMessage)
+  const active = userLifecycleSet({
+    context: system,
+    database,
+    input: { state: "active" },
+    realmId,
+    userId: created.data.user.id,
+  })
+  expect(active.success).toBe(true)
+  if (!active.success) throw new Error(active.errorMessage)
+  return created.data.user
 }
 
 test("organizations, roles, memberships, lifecycle, and switching stay inside an realm", async () => {
@@ -667,6 +693,177 @@ test("organization routes and API clients use the same public contracts", async 
     expect(switched.success).toBe(true)
     if (!switched.success) return
     expect(switched.data.context.organizationId).toBe(created.data.organization.id)
+  })
+})
+
+test("subject-bound organization self-service stays isolated and protects invitation tokens", async () => {
+  await withDatabase(async (database, testkit) => {
+    const alpha = await createRealm(database, "self-service-alpha.example.com")
+    const beta = await createRealm(database, "self-service-beta.example.com")
+    const alphaUser = await createActiveUser(database, alpha.id, "alpha-member@example.com")
+    const otherUser = await createActiveUser(database, alpha.id, "other-member@example.com")
+    const system = realmSystemContextCreate("system")
+    const alphaOrganization = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Alpha Self-Service", ownerUserId: alphaUser.id },
+      realmId: alpha.id,
+    })
+    const secondOrganization = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Second Self-Service", ownerUserId: alphaUser.id },
+      realmId: alpha.id,
+    })
+    const invitationOrganization = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Invitation Self-Service" },
+      realmId: alpha.id,
+    })
+    const betaOrganization = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Beta Self-Service", ownerUserId: otherUser.id },
+      realmId: beta.id,
+    })
+    expect(alphaOrganization.success).toBe(true)
+    expect(secondOrganization.success).toBe(true)
+    expect(invitationOrganization.success).toBe(true)
+    expect(betaOrganization.success).toBe(true)
+    if (
+      !alphaOrganization.success ||
+      !secondOrganization.success ||
+      !invitationOrganization.success ||
+      !betaOrganization.success
+    )
+      return
+
+    const invitation = organizationInvitationCreate({
+      context: system,
+      database,
+      input: { email: alphaUser.email, roles: ["member"] },
+      realmId: alpha.id,
+      organizationId: invitationOrganization.data.organization.id,
+    })
+    const otherInvitation = organizationInvitationCreate({
+      context: system,
+      database,
+      input: { email: otherUser.email, roles: ["member"] },
+      realmId: alpha.id,
+      organizationId: secondOrganization.data.organization.id,
+    })
+    const betaInvitation = organizationInvitationCreate({
+      context: system,
+      database,
+      input: { email: otherUser.email, roles: ["member"] },
+      realmId: beta.id,
+      organizationId: betaOrganization.data.organization.id,
+    })
+    expect(invitation.success).toBe(true)
+    expect(otherInvitation.success).toBe(true)
+    expect(betaInvitation.success).toBe(true)
+    if (!invitation.success || !otherInvitation.success || !betaInvitation.success) return
+
+    const issued = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: alpha.id,
+      runtime: testkit.runtime,
+      userId: alphaUser.id,
+    })
+    expect(issued.success).toBe(true)
+    if (!issued.success) return
+    const app = organizationServerAppCreate({ database, publicOrigin: "https://organizations.example.com" })
+    const client = organizationApiClientCreate({
+      baseUrl: "https://server.test",
+      fetch: async (input, init) => app.request(input.toString(), init),
+      token: issued.data.token,
+    })
+
+    const organizations = await client.organizationMeList(alpha.id, { pageSize: 1 })
+    expect(organizations).toMatchObject({ success: true, data: { items: [{ membership: { userId: alphaUser.id } }] } })
+    if (!organizations.success) return
+    expect(organizations.data.nextPageToken).toBeDefined()
+    const next = await client.organizationMeList(alpha.id, { pageSize: 1, pageToken: organizations.data.nextPageToken })
+    expect(next).toMatchObject({ success: true, data: { items: [{ membership: { userId: alphaUser.id } }] } })
+
+    const switched = await client.organizationMeSwitch(alpha.id, {
+      organizationId: alphaOrganization.data.organization.id,
+    })
+    expect(switched).toMatchObject({
+      success: true,
+      data: { activeOrganizationId: alphaOrganization.data.organization.id },
+    })
+    const inspected = await client.organizationInvitationMeInspect(alpha.id, { token: invitation.data.token })
+    expect(inspected).toMatchObject({ success: true, data: { invitation: { id: invitation.data.invitation.id } } })
+    expect(JSON.stringify(inspected)).not.toContain(invitation.data.token)
+    const listedInvitations = await client.organizationInvitationMeList(alpha.id)
+    expect(listedInvitations).toMatchObject({
+      success: true,
+      data: { items: [{ id: invitation.data.invitation.id }] },
+    })
+
+    const wrongEmailInspect = await client.organizationInvitationMeInspect(alpha.id, {
+      token: otherInvitation.data.token,
+    })
+    expect(wrongEmailInspect).toMatchObject({ code: "organizations.not-found", statusCode: 404, success: false })
+    const wrongEmailAccept = await client.organizationInvitationMeAccept(alpha.id, {
+      token: otherInvitation.data.token,
+    })
+    expect(wrongEmailAccept).toMatchObject({ code: "organizations.not-found", statusCode: 404, success: false })
+    const suppliedUserId = await app.request(`https://server.test/realms/${alpha.id}/me/invitations/accept`, {
+      body: JSON.stringify({ token: invitation.data.token, userId: otherUser.id }),
+      headers: { authorization: `Bearer ${issued.data.token}`, "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(suppliedUserId.status).toBe(400)
+
+    const accepted = await client.organizationInvitationMeAccept(alpha.id, { token: invitation.data.token })
+    expect(accepted).toMatchObject({ success: true })
+    expect(JSON.stringify(accepted)).not.toContain(invitation.data.token)
+    const replay = await client.organizationInvitationMeInspect(alpha.id, { token: invitation.data.token })
+    expect(replay).toMatchObject({ code: "organizations.not-found", statusCode: 404, success: false })
+
+    const declinedInvitation = organizationInvitationCreate({
+      context: system,
+      database,
+      input: { email: alphaUser.email, roles: ["guest"] },
+      realmId: alpha.id,
+      organizationId: invitationOrganization.data.organization.id,
+    })
+    expect(declinedInvitation.success).toBe(true)
+    if (!declinedInvitation.success) return
+    const declined = await client.organizationInvitationMeDecline(alpha.id, { token: declinedInvitation.data.token })
+    expect(declined).toMatchObject({ success: true, data: { declined: true } })
+    expect(JSON.stringify(declined)).not.toContain(declinedInvitation.data.token)
+
+    const crossRealm = await app.request(`https://server.test/realms/${beta.id}/me/organizations`, {
+      headers: { authorization: `Bearer ${issued.data.token}` },
+    })
+    expect(crossRealm.status).toBe(401)
+    const cookie = `session=${issued.data.token}`
+    const missingOrigin = await app.request(`https://server.test/realms/${alpha.id}/me/organizations/switch`, {
+      body: JSON.stringify({ organizationId: alphaOrganization.data.organization.id }),
+      headers: { cookie, "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(missingOrigin.status).toBe(403)
+    const csrf = sessionCsrfTokenCreate(testkit.runtime)
+    const validCookieSwitch = await app.request(`https://server.test/realms/${alpha.id}/me/organizations/switch`, {
+      body: JSON.stringify({ organizationId: alphaOrganization.data.organization.id }),
+      headers: {
+        cookie: `${cookie}; csrf=${csrf}`,
+        origin: "https://organizations.example.com",
+        "content-type": "application/json",
+        "x-csrf-token": csrf,
+      },
+      method: "POST",
+    })
+    expect(validCookieSwitch.status).toBe(200)
+    const foreignToken = await client.organizationInvitationMeInspect(alpha.id, { token: betaInvitation.data.token })
+    expect(foreignToken).toMatchObject({ code: "organizations.not-found", statusCode: 404, success: false })
   })
 })
 

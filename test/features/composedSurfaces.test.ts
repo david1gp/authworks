@@ -2,10 +2,11 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
 import { emailOtpApiClientCreate } from "../../src/features/emailOtp/client/emailOtpApiClientCreate.js"
+import { eventApiClientCreate } from "../../src/features/events/client/eventApiClientCreate.js"
 import { externalIdentityApiClientCreate } from "../../src/features/externalIdentities/client/externalIdentityApiClientCreate.js"
 import { impersonationApiClientCreate } from "../../src/features/impersonation/client/impersonationApiClientCreate.js"
-import { realmApiClientCreate } from "../../src/features/realms/client/realmApiClientCreate.js"
 import { machineUserApiClientCreate } from "../../src/features/machineUsers/client/machineUserApiClientCreate.js"
 import { mfaApiClientCreate } from "../../src/features/mfa/client/mfaApiClientCreate.js"
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
@@ -13,9 +14,9 @@ import { organizationApiClientCreate } from "../../src/features/organizations/cl
 import { passkeyApiClientCreate } from "../../src/features/passkeys/client/passkeyApiClientCreate.js"
 import { passwordApiClientCreate } from "../../src/features/passwords/client/passwordApiClientCreate.js"
 import { projectApiClientCreate } from "../../src/features/projects/client/projectApiClientCreate.js"
+import { realmApiClientCreate } from "../../src/features/realms/client/realmApiClientCreate.js"
 import { sessionApiClientCreate } from "../../src/features/sessions/client/sessionApiClientCreate.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
-import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
 
 test("all feature clients round-trip through the composed server", async () => {
   const directory = await mkdtemp(join(tmpdir(), "authworks-composed-surfaces-"))
@@ -42,6 +43,17 @@ test("all feature clients round-trip through the composed server", async () => {
     const realmId = createdRealm.data.realm.id
     expect((await realms.realmList()).success).toBe(true)
     expect((await realms.realmGet(realmId)).success).toBe(true)
+    const events = eventApiClientCreate(system)
+    expect((await events.eventList(realmId)).success).toBe(true)
+    const bootstrap = await realms.realmBootstrapAdminCreate(realmId)
+    expect(bootstrap.success).toBe(true)
+    if (!bootstrap.success) return
+    const tenantEvents = eventApiClientCreate({
+      baseUrl,
+      fetch: fetchFromServer,
+      token: bootstrap.data.bootstrapAdmin.secret,
+    })
+    expect((await tenantEvents.eventTenantList(realmId)).success).toBe(true)
 
     const users = userApiClientCreate(system)
     const createdUser = await users.userCreate(realmId, {
@@ -139,6 +151,21 @@ test("all feature clients round-trip through the composed server", async () => {
 
     const sessions = sessionApiClientCreate({ baseUrl, fetch: fetchFromServer, token: systemSecret })
     expect((await sessions.sessionCurrent(realmId)).success).toBe(false)
+    expect((await sessions.sessionMeList(realmId)).success).toBe(false)
+    expect((await sessions.sessionMeRevoke(realmId, "missing-session")).success).toBe(false)
+    expect((await sessions.sessionMeRevokeAll(realmId)).success).toBe(false)
+    expect((await users.userMeGet(realmId)).success).toBe(false)
+    expect((await users.userMeAuthenticationMethodsGet(realmId)).success).toBe(false)
+    expect((await users.userMeProfileUpdate(realmId, { displayName: "Self" })).success).toBe(false)
+    expect((await users.userMeDelete(realmId)).success).toBe(false)
+    expect(
+      (
+        await passwords.passwordMeChange(realmId, {
+          currentPassword: "Correct Horse 12",
+          newPassword: "New Correct Horse 12",
+        })
+      ).success,
+    ).toBe(false)
 
     const impersonation = impersonationApiClientCreate({ baseUrl, fetch: fetchFromServer, token: systemSecret })
     expect(

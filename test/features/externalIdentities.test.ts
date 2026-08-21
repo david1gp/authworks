@@ -2,32 +2,34 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { resultCreate } from "../../src/platform/errors/resultCreate.js"
-import { externalIdentityApiClientCreate } from "../../src/features/externalIdentities/client/externalIdentityApiClientCreate.js"
-import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
-import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
-import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { externalIdentityCallback } from "../../src/features/externalIdentities/actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../../src/features/externalIdentities/actions/externalIdentityLinkComplete.js"
 import { externalIdentityLinkStart } from "../../src/features/externalIdentities/actions/externalIdentityLinkStart.js"
 import { externalIdentityList } from "../../src/features/externalIdentities/actions/externalIdentityList.js"
 import { externalIdentityProviderCreate } from "../../src/features/externalIdentities/actions/externalIdentityProviderCreate.js"
 import { externalIdentityProviderUpdate } from "../../src/features/externalIdentities/actions/externalIdentityProviderUpdate.js"
-import { externalIdentityProviderPortCreate } from "../../src/features/externalIdentities/domain/externalIdentityProviderPortCreate.js"
-import type { ExternalIdentityProviderPort } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
-import { externalIdentityOAuthTransactionTable } from "../../src/features/externalIdentities/persistence/externalIdentityOAuthTransactionTable.js"
-import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { externalIdentityStart } from "../../src/features/externalIdentities/actions/externalIdentityStart.js"
 import { externalIdentityUnlink } from "../../src/features/externalIdentities/actions/externalIdentityUnlink.js"
+import { externalIdentityApiClientCreate } from "../../src/features/externalIdentities/client/externalIdentityApiClientCreate.js"
+import type { ExternalIdentityProviderPort } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
+import { externalIdentityProviderPortCreate } from "../../src/features/externalIdentities/domain/externalIdentityProviderPortCreate.js"
+import { externalIdentityOAuthTransactionTable } from "../../src/features/externalIdentities/persistence/externalIdentityOAuthTransactionTable.js"
+import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
 import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
-import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
 import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
 import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
+import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
+import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
+import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -700,4 +702,234 @@ test("external identity HTTP, client, and CLI surfaces keep configuration and se
   const helpOutput = await new Response(helpProcess.stdout).text()
   expect(await helpProcess.exited).toBe(0)
   expect(helpOutput).toContain("External identities")
+})
+
+test("external identity browser callback issues an HttpOnly session cookie without disclosing credentials", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "external-browser.example.com")
+    const provider = await createProvider(database, realm.id)
+    const app = externalIdentityServerAppCreate({
+      browserMode: true,
+      database,
+      providerPorts: { google: testPort() },
+    })
+    const started = await app.request(
+      `https://external-browser.example.com/realms/${realm.id}/external-identity/${provider.id}/start`,
+      {
+        body: JSON.stringify({}),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(started.status).toBe(200)
+    const startedBody = (await started.json()) as { authorizationUrl: string }
+    const state = new URL(startedBody.authorizationUrl).searchParams.get("state") ?? ""
+    const callback = await app.request(
+      `https://external-browser.example.com/realms/${realm.id}/external-identity/${provider.id}/callback?code=code&state=${encodeURIComponent(state)}`,
+    )
+    expect(callback.status).toBe(200)
+    const cookie = callback.headers.get("set-cookie") ?? ""
+    const token = /^session=([^;]+);/.exec(cookie)?.[1]
+    const body = (await callback.json()) as { session?: unknown }
+    expect(token).toHaveLength(43)
+    expect(body.session).toBeUndefined()
+    expect(JSON.stringify(body)).not.toContain(token ?? "")
+    expect(cookie).toContain("HttpOnly")
+    if (token !== undefined) expect(sessionAuthenticate({ database, realmId: realm.id, token }).success).toBe(true)
+  })
+})
+
+test("subject-bound external identity routes enforce IDOR, tenant, assurance, CSRF, and secret boundaries", async () => {
+  await withDatabase(async (database, testkit) => {
+    const alpha = await createRealm(database, "external-me-alpha.example.com")
+    const beta = await createRealm(database, "external-me-beta.example.com")
+    const provider = await createProvider(database, alpha.id)
+    const context = realmTenantContextCreate(alpha.id, "anonymous")
+    let verificationToken = ""
+    const registered = passwordRegister({
+      context,
+      database,
+      input: {
+        email: "external-me@example.com",
+        password: "Correct Horse 12",
+        profile: { displayName: "External Me" },
+        userName: "external-me",
+      },
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+      realmId: alpha.id,
+      runtime: testkit.runtime,
+    })
+    expect(registered.success).toBe(true)
+    if (!registered.success) return
+    expect(
+      passwordEmailVerify({
+        context,
+        database,
+        input: { token: verificationToken },
+        realmId: alpha.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+    const login = passwordLogin({
+      context,
+      database,
+      input: { identifier: "external-me", password: "Correct Horse 12" },
+      realmId: alpha.id,
+      runtime: testkit.runtime,
+    })
+    expect(login.success).toBe(true)
+    if (!login.success || login.data.session === undefined) return
+
+    const app = externalIdentityServerAppCreate({
+      database,
+      providerPorts: { google: testPort() },
+      publicOrigin: "https://external-me-alpha.example.com",
+    })
+    const client = externalIdentityApiClientCreate({
+      baseUrl: "https://external-me-alpha.example.com",
+      fetch: async (input, init) => app.request(input.toString(), init),
+      token: login.data.session.token,
+    })
+    const link = async (providerId: string) => {
+      const started = await client.externalIdentityMeLinkStart(alpha.id, providerId)
+      expect(started.success).toBe(true)
+      if (!started.success) return false
+      const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
+      const callback = await app.request(
+        `https://external-me-alpha.example.com/realms/${alpha.id}/external-identity/${providerId}/callback?code=code&state=${encodeURIComponent(state)}`,
+      )
+      expect(callback.status).toBe(200)
+      const callbackBody = (await callback.json()) as { confirmationToken?: string; kind?: string }
+      expect(callbackBody.kind).toBe("link_confirmation")
+      expect(JSON.stringify(callbackBody)).not.toContain("client-secret")
+      if (callbackBody.confirmationToken === undefined) return false
+      const completed = await client.externalIdentityMeLinkComplete(alpha.id, providerId, {
+        confirm: true,
+        confirmationToken: callbackBody.confirmationToken,
+      })
+      expect(completed.success).toBe(true)
+      expect(JSON.stringify(completed)).not.toContain("client-secret")
+      return completed.success
+    }
+
+    const initiallyListed = await client.externalIdentityMeList(alpha.id)
+    expect(initiallyListed.success).toBe(true)
+    if (!initiallyListed.success) return
+    expect(initiallyListed.data.items).toHaveLength(0)
+    expect(await link(provider.id)).toBe(true)
+    const idorBody = await app.request(
+      `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities/${provider.id}/link/complete`,
+      {
+        body: JSON.stringify({ confirm: true, confirmationToken: "invalid", userId: "attacker" }),
+        headers: { authorization: `Bearer ${login.data.session.token}`, "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(idorBody.status).toBe(400)
+    const listed = await client.externalIdentityMeList(alpha.id, { pageSize: 1 })
+    expect(listed.success).toBe(true)
+    if (listed.success) {
+      expect(listed.data.items).toHaveLength(1)
+      expect(listed.data.items[0]?.userId).toBe(login.data.authentication.userId)
+      expect(JSON.stringify(listed.data)).not.toContain("client-secret")
+    }
+    const ignoredUserId = await app.request(
+      `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities?userId=attacker`,
+      { headers: { authorization: `Bearer ${login.data.session.token}` } },
+    )
+    expect(ignoredUserId.status).toBe(200)
+    expect((await ignoredUserId.json()).items[0].userId).toBe(login.data.authentication.userId)
+    const crossTenant = await app.request(
+      `https://external-me-beta.example.com/realms/${beta.id}/me/external-identities`,
+      { headers: { authorization: `Bearer ${login.data.session.token}` } },
+    )
+    expect(crossTenant.status).toBe(401)
+
+    const csrf = sessionCsrfTokenCreate(testkit.runtime)
+    const cookie = `session=${login.data.session.token}`
+    const missingOrigin = await app.request(
+      `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities/${provider.id}/link/start`,
+      { body: "{}", headers: { cookie, "content-type": "application/json" }, method: "POST" },
+    )
+    expect(missingOrigin.status).toBe(403)
+    const wrongOrigin = await app.request(
+      `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities/${provider.id}/link/start`,
+      {
+        body: "{}",
+        headers: {
+          cookie: `${cookie}; csrf=${csrf}`,
+          origin: "https://evil.example.com",
+          "content-type": "application/json",
+          "x-csrf-token": csrf,
+        },
+        method: "POST",
+      },
+    )
+    expect(wrongOrigin.status).toBe(403)
+    const wrongCsrf = await app.request(
+      `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities/${provider.id}/link/start`,
+      {
+        body: "{}",
+        headers: {
+          cookie: `${cookie}; csrf=${csrf}`,
+          origin: "https://external-me-alpha.example.com",
+          "content-type": "application/json",
+          "x-csrf-token": "wrong",
+        },
+        method: "POST",
+      },
+    )
+    expect(wrongCsrf.status).toBe(403)
+    const validCookieStart = await app.request(
+      `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities/${provider.id}/link/start`,
+      {
+        body: "{}",
+        headers: {
+          cookie: `${cookie}; csrf=${csrf}`,
+          origin: "https://external-me-alpha.example.com",
+          "content-type": "application/json",
+          "x-csrf-token": csrf,
+        },
+        method: "POST",
+      },
+    )
+    expect(validCookieStart.status).toBe(200)
+    expect(await validCookieStart.text()).not.toContain("client-secret")
+
+    const weakSession = sessionIssue({
+      assurance: "none",
+      authenticationMethod: "password",
+      database,
+      realmId: alpha.id,
+      runtime: testkit.runtime,
+      userId: login.data.authentication.userId,
+    })
+    expect(weakSession.success).toBe(true)
+    if (!weakSession.success) return
+    const weakUnlink = await app.request(
+      `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities/${provider.id}/subject-1`,
+      { headers: { authorization: `Bearer ${weakSession.data.token}` }, method: "DELETE" },
+    )
+    expect(weakUnlink.status).toBe(403)
+
+    const cookieUnlink = await app.request(
+      `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities/${provider.id}/subject-1`,
+      {
+        headers: {
+          cookie: `${cookie}; csrf=${csrf}`,
+          origin: "https://external-me-alpha.example.com",
+          "x-csrf-token": csrf,
+        },
+        method: "DELETE",
+      },
+    )
+    expect(cookieUnlink.status).toBe(200)
+    expect(await link(provider.id)).toBe(true)
+    expect((await client.externalIdentityMeUnlink(alpha.id, provider.id, "subject-1")).success).toBe(true)
+    const finalList = await client.externalIdentityMeList(alpha.id)
+    expect(finalList.success).toBe(true)
+    if (finalList.success) expect(finalList.data.items).toHaveLength(0)
+  })
 })

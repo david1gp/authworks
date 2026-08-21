@@ -4,25 +4,26 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { isoCBOR } from "@simplewebauthn/server/helpers"
-import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
-import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
-import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
-import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
-import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
-import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
-import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
-import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
-import { passkeyApiClientCreate } from "../../src/features/passkeys/client/passkeyApiClientCreate.js"
 import { passkeyAuthenticationComplete } from "../../src/features/passkeys/actions/passkeyAuthenticationComplete.js"
 import { passkeyAuthenticationStart } from "../../src/features/passkeys/actions/passkeyAuthenticationStart.js"
 import { passkeyCredentialList } from "../../src/features/passkeys/actions/passkeyCredentialList.js"
 import { passkeyCredentialRevoke } from "../../src/features/passkeys/actions/passkeyCredentialRevoke.js"
 import { passkeyRegistrationComplete } from "../../src/features/passkeys/actions/passkeyRegistrationComplete.js"
 import { passkeyRegistrationStart } from "../../src/features/passkeys/actions/passkeyRegistrationStart.js"
-import { passkeyServerAppCreate } from "../../src/features/passkeys/server/passkeyServerAppCreate.js"
+import { passkeyApiClientCreate } from "../../src/features/passkeys/client/passkeyApiClientCreate.js"
 import { passkeyUserHandleCreate } from "../../src/features/passkeys/domain/passkeyUserHandleCreate.js"
 import type { PasskeyAuthenticationResponse } from "../../src/features/passkeys/public/passkeyAuthenticationResponseSchema.js"
 import type { PasskeyRegistrationResponse } from "../../src/features/passkeys/public/passkeyRegistrationResponseSchema.js"
+import { passkeyServerAppCreate } from "../../src/features/passkeys/server/passkeyServerAppCreate.js"
+import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
+import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
+import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
+import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
+import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
+import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
@@ -743,6 +744,128 @@ test("passkey registration binds origin and challenge before consuming its cerem
       userId: fixture.userId,
     })
     expect(invalidOrigin.success).toBe(false)
+  })
+})
+
+test("passkey browser completion issues and upgrades an HttpOnly session cookie without disclosing credentials", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "passkeys-browser.example.com")
+    const keys = generateKeyPairSync("ec", { namedCurve: "prime256v1" })
+    const credentialId = Buffer.from(testkit.runtime.randomBytes(32))
+    const registrationStarted = await passkeyRegistrationStart({
+      actorId: fixture.userId,
+      database,
+      realmId: fixture.realm.id,
+      origins: [origin],
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(registrationStarted.success).toBe(true)
+    if (!registrationStarted.success) return
+    const registered = await passkeyRegistrationComplete({
+      actorId: fixture.userId,
+      database,
+      input: {
+        response: registrationResponse(
+          { challenge: registrationStarted.data.options.challenge, userId: fixture.userId },
+          credentialId,
+          keys.privateKey,
+        ),
+        token: registrationStarted.data.token,
+      },
+      realmId: fixture.realm.id,
+      origins: [origin],
+      rpId,
+      rpName: "Test RP",
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(registered.success).toBe(true)
+    if (!registered.success) return
+
+    const app = passkeyServerAppCreate({
+      browserMode: true,
+      database,
+      origins: [origin],
+      publicOrigin: "https://passkeys-browser.example.com",
+      rpId,
+      rpName: "Test RP",
+    })
+    const authenticationStarted = await app.request(
+      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/authentication/start`,
+      {
+        body: JSON.stringify({}),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(authenticationStarted.status).toBe(200)
+    const authenticationBody = (await authenticationStarted.json()) as { options: { challenge: string }; token: string }
+    const authenticated = await app.request(
+      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/authentication/complete`,
+      {
+        body: JSON.stringify({
+          response: authenticationResponseCreate(
+            authenticationBody.options.challenge,
+            fixture.userId,
+            credentialId,
+            keys.privateKey,
+            1,
+          ),
+          token: authenticationBody.token,
+        }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(authenticated.status).toBe(200)
+    const loginCookie = authenticated.headers.get("set-cookie") ?? ""
+    const loginToken = /^session=([^;]+);/.exec(loginCookie)?.[1]
+    const authenticatedBody = (await authenticated.json()) as { session?: unknown }
+    expect(loginToken).toHaveLength(43)
+    expect(authenticatedBody.session).toBeUndefined()
+    if (loginToken === undefined) return
+
+    const csrfToken = sessionCsrfTokenCreate(testkit.runtime)
+    const headers = {
+      cookie: `${loginCookie.split(";", 1)[0]}; csrf=${csrfToken}`,
+      origin: "https://passkeys-browser.example.com",
+      "x-csrf-token": csrfToken,
+    }
+    const stepUpStarted = await app.request(
+      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/step-up/start`,
+      { headers, method: "POST" },
+    )
+    expect(stepUpStarted.status).toBe(200)
+    const stepUpBody = (await stepUpStarted.json()) as { options: { challenge: string }; token: string }
+    const upgraded = await app.request(
+      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/step-up/complete`,
+      {
+        body: JSON.stringify({
+          response: authenticationResponseCreate(
+            stepUpBody.options.challenge,
+            fixture.userId,
+            credentialId,
+            keys.privateKey,
+            2,
+          ),
+          token: stepUpBody.token,
+        }),
+        headers: { ...headers, "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(upgraded.status).toBe(200)
+    const rotatedCookie = upgraded.headers.get("set-cookie") ?? ""
+    const rotatedToken = /^session=([^;]+);/.exec(rotatedCookie)?.[1]
+    const upgradedBody = (await upgraded.json()) as { session?: unknown }
+    expect(rotatedToken).toHaveLength(43)
+    expect(upgradedBody.session).toBeUndefined()
+    expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: loginToken }).success).toBe(false)
+    if (rotatedToken !== undefined)
+      expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: rotatedToken }).success).toBe(true)
   })
 })
 

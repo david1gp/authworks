@@ -3,24 +3,25 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { Hono } from "hono"
-import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
-import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
-import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
+import { authorizationPolicyEvaluate } from "../../src/features/authorization/actions/authorizationPolicyEvaluate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { passwordServerAppCreate } from "../../src/features/passwords/server/passwordServerAppCreate.js"
-import { authorizationPolicyEvaluate } from "../../src/features/authorization/actions/authorizationPolicyEvaluate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
-import { sessionApiClientCreate } from "../../src/features/sessions/client/sessionApiClientCreate.js"
-import { sessionRevoke } from "../../src/features/sessions/actions/sessionRevoke.js"
-import { sessionRevokeAll } from "../../src/features/sessions/actions/sessionRevokeAll.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionList } from "../../src/features/sessions/actions/sessionList.js"
-import { sessionRecentList } from "../../src/features/sessions/actions/sessionRecentList.js"
-import { sessionProtectedMiddlewareCreate } from "../../src/features/sessions/server/sessionProtectedMiddlewareCreate.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
+import { sessionRecentList } from "../../src/features/sessions/actions/sessionRecentList.js"
+import { sessionRevoke } from "../../src/features/sessions/actions/sessionRevoke.js"
+import { sessionRevokeAll } from "../../src/features/sessions/actions/sessionRevokeAll.js"
 import { sessionRotate } from "../../src/features/sessions/actions/sessionRotate.js"
+import { sessionApiClientCreate } from "../../src/features/sessions/client/sessionApiClientCreate.js"
+import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { sessionProtectedMiddlewareCreate } from "../../src/features/sessions/server/sessionProtectedMiddlewareCreate.js"
 import { sessionServerAppCreate } from "../../src/features/sessions/server/sessionServerAppCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -481,11 +482,94 @@ test("the password HTTP success seam returns a session with device metadata", as
       method: "POST",
     })
     expect(response.status).toBe(200)
+    expect(response.headers.get("set-cookie")).toBeNull()
     const body = (await response.json()) as {
       session?: { session: { device: { fingerprint?: string } }; token: string }
     }
     expect(body.session?.token).toHaveLength(43)
     expect(body.session?.session.device.fingerprint).toBe("http-device")
+  })
+})
+
+test("browser password login, rotation, and logout keep session credentials in cookies", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { realm } = await createVerifiedUser(database, "sessions-browser-http.example.com")
+    const passwordApp = passwordServerAppCreate({ browserMode: true, database })
+    const loginResponse = await passwordApp.request(
+      `https://sessions-browser-http.example.com/realms/${realm.id}/password/login`,
+      {
+        body: JSON.stringify({ identifier: "session-user", password: "Correct Horse 12" }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(loginResponse.status).toBe(200)
+    const loginBody = (await loginResponse.json()) as {
+      authentication: unknown
+      session?: unknown
+      challenge?: unknown
+    }
+    const loginCookie = loginResponse.headers.get("set-cookie") ?? ""
+    const loginToken = /^session=([^;]+);/.exec(loginCookie)?.[1]
+    expect(loginBody.session).toBeUndefined()
+    expect(loginBody.challenge).toBeUndefined()
+    expect(loginToken).toHaveLength(43)
+    expect(JSON.stringify(loginBody)).not.toContain(loginToken ?? "")
+    expect(loginCookie).toContain("Path=/")
+    expect(loginCookie).toContain("HttpOnly")
+    expect(loginCookie).toContain("Secure")
+    expect(loginCookie).toContain("SameSite=Lax")
+    if (loginToken === undefined) return
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: loginToken }).success).toBe(true)
+
+    const sessionApp = sessionServerAppCreate({
+      database,
+      publicOrigin: "https://sessions-browser-http.example.com",
+    })
+    const csrfToken = sessionCsrfTokenCreate(testkit.runtime)
+    const browserHeaders = {
+      cookie: `${loginCookie.split(";", 1)[0]}; csrf=${csrfToken}`,
+      origin: "https://sessions-browser-http.example.com",
+      "x-csrf-token": csrfToken,
+    }
+    const rotatedResponse = await sessionApp.request(`https://server.test/realms/${realm.id}/sessions/rotate`, {
+      headers: browserHeaders,
+      method: "POST",
+    })
+    expect(rotatedResponse.status).toBe(200)
+    const rotatedBody = (await rotatedResponse.json()) as { token?: string; session?: unknown }
+    const rotatedCookie = rotatedResponse.headers.get("set-cookie") ?? ""
+    const rotatedToken = /^session=([^;]+);/.exec(rotatedCookie)?.[1]
+    expect(rotatedBody.token).toBeUndefined()
+    expect(rotatedBody.session).toBeDefined()
+    expect(rotatedToken).toHaveLength(43)
+    expect(rotatedCookie).toContain("Path=/")
+    expect(rotatedCookie).toContain("HttpOnly")
+    expect(rotatedCookie).toContain("Secure")
+    expect(rotatedCookie).toContain("SameSite=Lax")
+    expect(rotatedToken).not.toBe(loginToken)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: loginToken }).success).toBe(false)
+    const replayResponse = await sessionApp.request(`https://server.test/realms/${realm.id}/sessions/rotate`, {
+      headers: browserHeaders,
+      method: "POST",
+    })
+    expect(replayResponse.status).toBe(401)
+    if (rotatedToken === undefined) return
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: rotatedToken }).success).toBe(true)
+
+    const logoutResponse = await sessionApp.request(`https://server.test/realms/${realm.id}/sessions/logout`, {
+      headers: {
+        ...browserHeaders,
+        cookie: `${rotatedCookie.split(";", 1)[0]}; csrf=${csrfToken}`,
+      },
+      method: "POST",
+    })
+    expect(logoutResponse.status).toBe(200)
+    expect(await logoutResponse.json()).toEqual({ revoked: true })
+    expect(logoutResponse.headers.get("set-cookie")).toBe(
+      "session=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+    )
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: rotatedToken }).success).toBe(false)
   })
 })
 
@@ -523,6 +607,14 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
     const protectedBody = (await protectedResponse.json()) as { session: { id: string } }
     expect(protectedBody.session.id).toBe(alphaLogin.data.session.session.id)
     expect((await app.request(`http://server.test/realms/${alpha.realm.id}/protected`)).status).toBe(401)
+    const bearerRotate = await app.request(`http://server.test/realms/${alpha.realm.id}/sessions/rotate`, {
+      headers: { authorization: `Bearer ${token}` },
+      method: "POST",
+    })
+    expect(bearerRotate.status).toBe(200)
+    expect(bearerRotate.headers.get("set-cookie")).toBeNull()
+    const bearerRotateBody = (await bearerRotate.json()) as { token?: string }
+    expect(bearerRotateBody.token).toHaveLength(43)
 
     const revoked = sessionRevoke({
       database,
@@ -580,6 +672,84 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
     })
     expect(decision).toMatchObject({ data: { allowed: false, reason: "insufficient_assurance" }, success: true })
     expect(beta.realm.id).not.toBe(alpha.realm.id)
+  })
+})
+
+test("browser session middleware resolves cookies and protects unsafe requests with origin and CSRF checks", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { realm, userId } = await createVerifiedUser(database, "sessions-browser.example.com")
+    const issued = issueTestSession(database, testkit.runtime, realm.id, userId)
+    const protectedApp = new Hono()
+    protectedApp.all(
+      "/realms/:realmId/protected",
+      sessionProtectedMiddlewareCreate({ database, publicOrigin: "https://sessions-browser.example.com" }),
+      (context) => context.json({ cookieAuthenticated: context.get("cookieAuthenticated") }),
+    )
+    const cookie = `session=${issued.token}`
+
+    const safe = await protectedApp.request(`https://server.test/realms/${realm.id}/protected`, {
+      headers: { cookie },
+      method: "GET",
+    })
+    expect(safe.status).toBe(200)
+    expect(await safe.json()).toEqual({ cookieAuthenticated: true })
+
+    const missingOrigin = await protectedApp.request(`https://server.test/realms/${realm.id}/protected`, {
+      headers: { cookie },
+      method: "POST",
+    })
+    expect(missingOrigin.status).toBe(403)
+
+    const csrfToken = sessionCsrfTokenCreate(testkit.runtime)
+    const validBrowserHeaders = {
+      cookie: `${cookie}; csrf=${csrfToken}`,
+      origin: "https://sessions-browser.example.com",
+      "x-csrf-token": csrfToken,
+    }
+    const validBrowser = await protectedApp.request(`https://server.test/realms/${realm.id}/protected`, {
+      headers: validBrowserHeaders,
+      method: "POST",
+    })
+    expect(validBrowser.status).toBe(200)
+    expect(await validBrowser.json()).toEqual({ cookieAuthenticated: true })
+
+    const hostileOrigin = await protectedApp.request(`https://server.test/realms/${realm.id}/protected`, {
+      headers: { ...validBrowserHeaders, origin: "https://evil.example.test" },
+      method: "POST",
+    })
+    expect(hostileOrigin.status).toBe(403)
+
+    const bearer = await protectedApp.request(`https://server.test/realms/${realm.id}/protected`, {
+      headers: { authorization: `Bearer ${issued.token}` },
+      method: "POST",
+    })
+    expect(bearer.status).toBe(200)
+    expect(await bearer.json()).toEqual({ cookieAuthenticated: false })
+
+    const bearerTakesPrecedence = await protectedApp.request(`https://server.test/realms/${realm.id}/protected`, {
+      headers: { authorization: `Bearer ${issued.token}`, ...validBrowserHeaders, origin: "https://evil.example.test" },
+      method: "POST",
+    })
+    expect(bearerTakesPrecedence.status).toBe(200)
+    expect(await bearerTakesPrecedence.json()).toEqual({ cookieAuthenticated: false })
+
+    const invalidBearerTakesPrecedence = await protectedApp.request(
+      `https://server.test/realms/${realm.id}/protected`,
+      {
+        headers: { authorization: "Bearer invalid-token", cookie },
+        method: "GET",
+      },
+    )
+    expect(invalidBearerTakesPrecedence.status).toBe(401)
+
+    const csrfApp = sessionServerAppCreate({ database, publicOrigin: "https://sessions-browser.example.com" })
+    const csrfResponse = await csrfApp.request(`https://server.test/realms/${realm.id}/sessions/csrf`, {
+      headers: { cookie },
+    })
+    expect(csrfResponse.status).toBe(200)
+    const csrfBody = (await csrfResponse.json()) as { csrfToken: string }
+    expect(csrfBody.csrfToken).toMatch(/^[A-Za-z0-9_-]{43}$/)
+    expect(csrfResponse.headers.get("set-cookie")).toContain(`csrf=${csrfBody.csrfToken}`)
   })
 })
 

@@ -2,9 +2,6 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
-import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
-import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { passwordChange } from "../../src/features/passwords/actions/passwordChange.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
@@ -15,6 +12,11 @@ import { passwordRegister } from "../../src/features/passwords/actions/passwordR
 import { passwordApiClientCreate } from "../../src/features/passwords/client/passwordApiClientCreate.js"
 import { passwordEventTypes } from "../../src/features/passwords/events/passwordEventTypes.js"
 import { passwordServerAppCreate } from "../../src/features/passwords/server/passwordServerAppCreate.js"
+import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
+import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
+import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -525,6 +527,108 @@ test("password server and client expose generic public contracts", async () => {
       },
     )
     expect(unauthorized.success).toBe(false)
+  })
+})
+
+test("authenticated password self-service changes are subject-bound and enumeration-safe", async () => {
+  await withDatabase(async (database, testkit) => {
+    const alpha = await createRealm(database, "passwords-self-service.example.com")
+    const beta = await createRealm(database, "passwords-other.example.com")
+    const context = realmTenantContextCreate(alpha.id, "anonymous")
+    let verificationToken = ""
+    expect(
+      passwordRegister({
+        context,
+        database,
+        input: registrationInput("self-service@example.com", "self-service"),
+        onVerificationToken: ({ token }) => {
+          verificationToken = token
+        },
+        realmId: alpha.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: alpha.id }).success,
+    ).toBe(true)
+    const loggedIn = passwordLogin({
+      context,
+      database,
+      input: { identifier: "self-service", password: "Correct Horse 12" },
+      realmId: alpha.id,
+    })
+    expect(loggedIn.success).toBe(true)
+    if (!loggedIn.success) return
+    const issued = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: alpha.id,
+      runtime: testkit.runtime,
+      userId: loggedIn.data.authentication.userId,
+    })
+    expect(issued.success).toBe(true)
+    if (!issued.success) return
+
+    const publicOrigin = "https://passwords-self-service.example.com"
+    const app = passwordServerAppCreate({ database, publicOrigin })
+    const client = passwordApiClientCreate({
+      baseUrl: publicOrigin,
+      fetch: async (input, init) => app.request(input.toString(), init),
+      token: issued.data.token,
+    })
+    const changed = await client.passwordMeChange(alpha.id, {
+      currentPassword: "Correct Horse 12",
+      newPassword: "New Correct Horse 12",
+    })
+    expect(changed).toEqual({ data: { changed: true }, success: true })
+
+    const wrongCurrent = await client.passwordMeChange(alpha.id, {
+      currentPassword: "Correct Horse 12",
+      newPassword: "Wrong Current Horse 12",
+    })
+    expect(wrongCurrent).toMatchObject({ code: "passwords.unauthorized", statusCode: 401, success: false })
+    expect(JSON.stringify(wrongCurrent)).not.toContain("Correct Horse 12")
+
+    const crossRealm = await app.request(`https://passwords-other.example.com/realms/${beta.id}/me/password`, {
+      body: JSON.stringify({ currentPassword: "New Correct Horse 12", newPassword: "Cross Realm Horse 12" }),
+      headers: { authorization: `Bearer ${issued.data.token}`, "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(crossRealm.status).toBe(401)
+    expect(await crossRealm.text()).not.toContain("Cross Realm Horse 12")
+
+    const csrf = sessionCsrfTokenCreate(testkit.runtime)
+    const cookie = `session=${issued.data.token}; csrf=${csrf}`
+    const missingOrigin = await app.request(
+      `https://passwords-self-service.example.com/realms/${alpha.id}/me/password`,
+      {
+        body: JSON.stringify({ currentPassword: "New Correct Horse 12", newPassword: "Cookie Horse 12" }),
+        headers: { cookie, "content-type": "application/json", "x-csrf-token": csrf },
+        method: "POST",
+      },
+    )
+    expect(missingOrigin.status).toBe(403)
+
+    const cookieChanged = await app.request(
+      `https://passwords-self-service.example.com/realms/${alpha.id}/me/password`,
+      {
+        body: JSON.stringify({ currentPassword: "New Correct Horse 12", newPassword: "Cookie Horse 12" }),
+        headers: { cookie, "content-type": "application/json", origin: publicOrigin, "x-csrf-token": csrf },
+        method: "POST",
+      },
+    )
+    expect(cookieChanged.status).toBe(200)
+    expect(await cookieChanged.json()).toEqual({ changed: true })
+
+    database.sqlite
+      .query("DELETE FROM password_credentials WHERE realm_id = ? AND user_id = ?")
+      .run(alpha.id, loggedIn.data.authentication.userId)
+    const missingCredential = await client.passwordMeChange(alpha.id, {
+      currentPassword: "Cookie Horse 12",
+      newPassword: "Missing Credential Horse 12",
+    })
+    expect(missingCredential).toMatchObject({ code: "passwords.unauthorized", statusCode: 401, success: false })
+    expect(JSON.stringify(missingCredential)).not.toContain("Missing Credential Horse 12")
   })
 })
 

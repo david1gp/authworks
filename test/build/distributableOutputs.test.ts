@@ -16,10 +16,22 @@ test("built library, server, and CLI outputs are executable", async () => {
     return
   }
 
+  const uiIndex = Bun.file("dist/ui/index.html")
+  expect(await uiIndex.exists()).toBe(true)
+  const uiAssets = await readdir("dist/ui/assets")
+  expect(uiAssets.length).toBeGreaterThan(0)
+  const uiHtml = await uiIndex.text()
+  expect(uiHtml).toContain("/assets/")
+  expect(uiHtml).not.toContain("/src/ui/main.tsx")
+
+  const packageJson = (await Bun.file("package.json").json()) as { files?: readonly string[] }
+  expect(packageJson.files).toContain("dist")
+  expect(await Bun.file("dist/package.json").exists()).toBe(true)
+
   const packageImport = await processRun([
     "bun",
     "-e",
-    'const subpaths = ["authorization", "emailOtp", "events", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/authworks/" + path))); const root = await import("@adaptive-ds/authworks"); if (typeof root.packageName !== "string" || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
+    'const subpaths = ["authorization", "email", "emailOtp", "events", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/authworks/" + path))); const root = await import("@adaptive-ds/authworks"); const packageJson = await Bun.file("package.json").json(); if (typeof root.packageName !== "string" || root.packageVersion !== packageJson.version || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
   ])
   expect(packageImport).toEqual({ exitCode: 0, stderr: "", stdout: "" })
 
@@ -89,8 +101,9 @@ test("built library, server, and CLI outputs are executable", async () => {
     env: {
       ...process.env,
       AUTHWORKS_DATABASE_PATH: join(directory, "authworks.sqlite"),
-      AUTHWORKS_PUBLIC_ORIGIN: "http://127.0.0.1:3000",
+      AUTHWORKS_PUBLIC_ORIGIN: "https://127.0.0.1:3000",
       AUTHWORKS_SYSTEM_SECRET: "built-output-secret",
+      NODE_ENV: "production",
     },
     stderr: "pipe",
     stdout: "pipe",
@@ -112,6 +125,27 @@ test("built library, server, and CLI outputs are executable", async () => {
       }
     }
     expect(ready).toBe(true)
+
+    const indexResponse = await fetch("http://127.0.0.1:3000/")
+    expect(indexResponse.status).toBe(200)
+    expect(indexResponse.headers.get("cache-control")).toBe("no-cache")
+    expect(indexResponse.headers.get("content-type")).toContain("text/html")
+
+    const loginResponse = await fetch("http://127.0.0.1:3000/login/deep-link")
+    expect(loginResponse.status).toBe(200)
+    expect(await loginResponse.text()).toContain('<div id="app">')
+
+    const assetName = uiAssets.find((fileName) => fileName.endsWith(".js"))
+    expect(assetName).toBeDefined()
+    if (assetName === undefined) return
+    const assetResponse = await fetch(`http://127.0.0.1:3000/assets/${assetName}`)
+    expect(assetResponse.status).toBe(200)
+    expect(assetResponse.headers.get("cache-control")).toBe("public, max-age=31536000, immutable")
+    expect(assetResponse.headers.get("content-type")).toContain("text/javascript")
+
+    expect((await fetch("http://127.0.0.1:3000/demo/login")).status).toBe(404)
+    expect((await fetch("http://127.0.0.1:3000/assets/missing.js")).status).toBe(404)
+    expect((await fetch("http://127.0.0.1:3000/api/not-a-route")).status).toBe(404)
 
     const cliCreate = await processRun([
       "bun",
