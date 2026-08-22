@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test"
+import { productionAdminSessionBootstrap } from "./productionAdminSessionBootstrap.js"
 
-// The shell's default session realm, used only to scope request interception.
-const realmSlug = "customer-identity"
 // Payloads must satisfy the public UUIDv7-shaped resource identifier schema.
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const clientId = "018f0000-0000-7000-8000-000000000041"
 const userId = "018f0000-0000-7000-8000-000000000021"
 const keyId = "018f0000-0000-7000-8000-000000000061"
+const realmApiPath = new RegExp(`/realms/${realmId}/(?!sessions/current(?:\\?|$))`)
 
 const client = {
   allowedScopes: ["openid", "profile", "email"],
@@ -44,9 +44,17 @@ const user = {
   verificationState: "verified",
 }
 
+test.beforeEach(async ({ page }) => {
+  await productionAdminSessionBootstrap(page, {
+    organizationId: "018f0000-0000-7000-8000-000000000002",
+    organizationName: "Northwind Labs",
+    realmId,
+  })
+})
+
 test("the production client list reads the realm-scoped tenant API", async ({ page }) => {
   const requested: string[] = []
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     requested.push(pathname)
     if (pathname.endsWith("/oidc/clients")) return route.fulfill({ json: { items: [client] } })
@@ -57,14 +65,14 @@ test("the production client list reads the realm-scoped tenant API", async ({ pa
 
   await expect(page.getByText("Acme Web Portal", { exact: true })).toBeVisible()
   await expect(page.getByText("https://portal.acme.example/callback", { exact: true })).toBeVisible()
-  expect(requested).toContain(`/realms/${realmSlug}/oidc/clients`)
+  expect(requested).toContain(`/realms/${realmId}/oidc/clients`)
   // The browser must never reach the operator-only system surface.
   expect(requested.every((pathname) => !pathname.startsWith("/system/"))).toBe(true)
 })
 
 test("registering a client sends a CSRF-protected mutation and shows the secret once", async ({ page }) => {
   let createHadCsrf = false
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -95,7 +103,7 @@ test("registering a client sends a CSRF-protected mutation and shows the secret 
 
 test("rotating a client secret posts to the dedicated path and never re-reads the value", async ({ page }) => {
   let rotateHadCsrf = false
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -121,7 +129,7 @@ test("rotating a client secret posts to the dedicated path and never re-reads th
 
 test("signing key rotation is confirmed before the mutation is sent", async ({ page }) => {
   let rotateRequested = false
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     if (pathname.endsWith("/signing-keys/rotate")) {
@@ -149,7 +157,7 @@ test("signing key rotation is confirmed before the mutation is sent", async ({ p
 
 test("consent revocation posts to the subject's tenant path", async ({ page }) => {
   let revokeRequested = false
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     if (pathname.endsWith("/revoke")) {
@@ -211,7 +219,7 @@ test("protocol documents read the well-known endpoints and stay read-only", asyn
 })
 
 test("permission, assurance, and tenant failures render distinct inaccessible states", async ({ page }) => {
-  await page.route(`**/realms/${realmSlug}/**`, async (route) =>
+  await page.route(realmApiPath, async (route) =>
     route.fulfill({
       json: { error: { code: "oidc.forbidden", message: "Denied.", op: "oidcClientList", status: 403 } },
       status: 403,
@@ -220,7 +228,7 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
   await page.goto("/admin/oidc-clients")
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("permission")
 
-  await page.route(`**/realms/${realmSlug}/**`, async (route) =>
+  await page.route(realmApiPath, async (route) =>
     route.fulfill({
       json: {
         error: { code: "sessions.assurance-required", message: "Step up.", op: "oidcClientGet", status: 403 },
@@ -231,7 +239,7 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
   await page.goto(`/admin/oidc-clients/${clientId}`)
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("stronger")
 
-  await page.route(`**/realms/${realmSlug}/**`, async (route) =>
+  await page.route(realmApiPath, async (route) =>
     route.fulfill({
       json: { error: { code: "oidc.tenant-mismatch", message: "Other realm.", op: "oidcClientGet", status: 404 } },
       status: 404,

@@ -25,12 +25,13 @@ test("organization, invitation, and consent demos are interactive and network-fr
   await expect(page.getByRole("status")).toContainText("Field Notes")
 
   await page.goto("/demo/account/consents")
+  page.once("dialog", (dialog) => void dialog.accept())
   await page.getByRole("button", { name: "Revoke" }).first().click()
   await expect(page.getByRole("status")).toContainText("revoked")
 
-  await page.goto("/demo/account/invitations/accept?state=expired")
+  await page.goto("/demo/invitations/accept?state=expired")
   await expect(page.getByText("This invitation has expired.")).toBeVisible()
-  await page.goto("/demo/account/invitations/accept?state=success")
+  await page.goto("/demo/invitations/accept?state=success")
   await page.getByRole("button", { name: "Continue" }).click()
   await expect(page.getByRole("heading", { name: "Invitation accepted" })).toBeVisible()
 
@@ -46,6 +47,7 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   await page.goto("/demo/account/sessions")
   await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
   await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
+  page.once("dialog", (dialog) => void dialog.accept())
   await page.getByRole("button", { name: "Revoke session" }).click()
   await expect(page.getByText("Safari on iPhone", { exact: true })).toHaveCount(0)
 
@@ -116,6 +118,7 @@ test("production session revocation uses the real account contract and CSRF", as
 
   await page.goto("/account/sessions")
   await expect(page.getByText("Fixture phone", { exact: true })).toBeVisible()
+  page.once("dialog", (dialog) => void dialog.accept())
   await page.getByRole("button", { name: "Revoke session" }).click()
   await expect(page.getByText("Fixture phone", { exact: true })).toHaveCount(0)
   expect(csrfHeader).toBe("deterministic-csrf-token-12345678901234567890")

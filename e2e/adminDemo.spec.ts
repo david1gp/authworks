@@ -13,6 +13,7 @@ test("the administration demo navigates through its list pages", async ({ page }
 
   await expect(navigation.getByRole("link", { name: "Users", exact: true })).toBeVisible()
   await expect(navigation.getByRole("link", { name: "Projects", exact: true })).toBeVisible()
+  await expect(navigation.getByRole("link", { name: "Sessions", exact: true })).toBeVisible()
   await expect(navigation.getByRole("link", { name: "Events", exact: true })).toBeVisible()
 
   await navigation.getByRole("link", { name: "Users", exact: true }).click()
@@ -26,6 +27,10 @@ test("the administration demo navigates through its list pages", async ({ page }
   await expect(page).toHaveURL(/\/demo\/admin\/projects$/)
   await expect(page.getByText("Acme Portal", { exact: true })).toBeVisible()
 
+  await navigation.getByRole("link", { name: "Sessions", exact: true }).click()
+  await expect(page).toHaveURL(/\/demo\/admin\/sessions$/)
+  await expect(page.getByRole("heading", { name: "Administrator session active", exact: true })).toBeVisible()
+
   await navigation.getByRole("link", { name: "Events", exact: true }).click()
   await expect(page).toHaveURL(/\/demo\/admin\/events$/)
   await expect(page.getByText("organization.created", { exact: true })).toBeVisible()
@@ -35,15 +40,34 @@ test("the administration demo navigates through its list pages", async ({ page }
   await expect(page.getByRole("heading", { name: "Members and roles", exact: true })).toBeVisible()
 })
 
-test("planned administration states are stateless and URL-selectable", async ({ page }) => {
-  // Administrator views of a user's sessions remain a planned placeholder destination.
-  await page.goto("/demo/admin/user-sessions?state=empty")
+test("user detail shows stateless security metadata and revokes sessions", async ({ page }) => {
+  const userDetail = "/demo/admin/users/01900000-0000-7000-8000-000000000021"
+  await page.goto(userDetail)
 
-  await expect(page.getByRole("heading", { name: "User sessions", exact: true })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "No fixture records", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
+  await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
+  await expect(page.getByText("Password", { exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Authentication methods", exact: true })).toBeVisible()
+  await expect(page.getByText("1 passkeys", { exact: true })).toBeVisible()
+  await expect(page.getByText(/Authenticator app · confirmed/)).toBeVisible()
+  await expect(page.locator("[data-secret-value], [data-one-time-secret]")).toHaveCount(0)
+
+  const mobileSession = page.locator('[data-admin-user-session="session-admin-mobile"]')
+  await mobileSession.getByRole("button", { name: "Revoke session", exact: true }).click()
+  await expect(mobileSession).toHaveCount(0)
+  await expect(page.getByRole("status").filter({ hasText: "The session was revoked." })).toBeVisible()
+
+  await page.goto(`${userDetail}?state=empty`)
+  await expect(page.getByRole("heading", { name: "This user has no active sessions.", exact: true })).toBeVisible()
+  await expect(
+    page.getByRole("heading", { name: "No authentication methods are configured.", exact: true }),
+  ).toBeVisible()
+
   await page.getByRole("link", { name: "error", exact: true }).click()
   await expect(page).toHaveURL(/state=error/)
-  await expect(page.getByRole("alert")).toContainText("Fixture error")
+  await expect(page.locator("[data-content-state='error']")).toContainText(
+    "The deterministic administration fixture is unavailable.",
+  )
 })
 
 test("an organization can be created from the demo list", async ({ page }) => {

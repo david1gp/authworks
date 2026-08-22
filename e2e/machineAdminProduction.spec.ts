@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test"
+import { productionAdminSessionBootstrap } from "./productionAdminSessionBootstrap.js"
 
-// The shell's default session realm, used only to scope request interception.
-const realmSlug = "customer-identity"
 // Payloads must satisfy the public UUIDv7-shaped resource identifier schema.
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const machineUserId = "018f0000-0000-7000-8000-000000000071"
 const credentialId = "018f0000-0000-7000-8000-000000000081"
+const realmApiPath = new RegExp(`/realms/${realmId}/(?!sessions/current(?:\\?|$))`)
 
 const machineUser = {
   createdAt: 1,
@@ -27,9 +27,17 @@ const credential = {
   scopes: ["billing.read"],
 }
 
+test.beforeEach(async ({ page }) => {
+  await productionAdminSessionBootstrap(page, {
+    organizationId: "018f0000-0000-7000-8000-000000000002",
+    organizationName: "Northwind Labs",
+    realmId,
+  })
+})
+
 test("the production machine user list reads the realm-scoped tenant API", async ({ page }) => {
   const requested: string[] = []
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     requested.push(pathname)
     if (pathname.endsWith("/machine-users")) return route.fulfill({ json: { items: [machineUser] } })
@@ -40,14 +48,14 @@ test("the production machine user list reads the realm-scoped tenant API", async
 
   await expect(page.getByText("Billing Sync Service", { exact: true })).toBeVisible()
   await expect(page.getByText("billing-sync", { exact: true })).toBeVisible()
-  expect(requested).toContain(`/realms/${realmSlug}/machine-users`)
+  expect(requested).toContain(`/realms/${realmId}/machine-users`)
   // The browser must never reach the operator-only system surface.
   expect(requested.every((pathname) => !pathname.startsWith("/system/"))).toBe(true)
 })
 
 test("creating a machine user sends a CSRF-protected mutation and shows the credentials once", async ({ page }) => {
   let createHadCsrf = false
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -83,7 +91,7 @@ test("creating a machine user sends a CSRF-protected mutation and shows the cred
 
 test("rotating a client secret posts to the dedicated path and never re-reads the value", async ({ page }) => {
   let rotateHadCsrf = false
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -113,7 +121,7 @@ test("rotating a client secret posts to the dedicated path and never re-reads th
 
 test("client secret rotation is confirmed before the destructive mutation is sent", async ({ page }) => {
   let rotateRequested = false
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     if (pathname.endsWith("/client-secret/rotate")) {
@@ -139,7 +147,7 @@ test("client secret rotation is confirmed before the destructive mutation is sen
 
 test("issuing a personal access token posts to the token path and shows the value once", async ({ page }) => {
   let tokenPath = ""
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -164,12 +172,12 @@ test("issuing a personal access token posts to the token path and shows the valu
   const panel = page.locator("[data-one-time-secret='machine-credential']")
   await expect(panel).toContainText("New personal access token")
   await expect(panel.locator("[data-secret-value]")).toContainText("t".repeat(43))
-  expect(tokenPath).toBe(`/realms/${realmSlug}/machine-users/${machineUserId}/personal-access-tokens`)
+  expect(tokenPath).toBe(`/realms/${realmId}/machine-users/${machineUserId}/personal-access-tokens`)
 })
 
 test("issuing an API key posts an expiry to the API key path", async ({ page }) => {
   let apiKeyBody: unknown
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -203,7 +211,7 @@ test("issuing an API key posts an expiry to the API key path", async ({ page }) 
 
 test("credential revocation is confirmed and posts to the credential path", async ({ page }) => {
   let revokePath = ""
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     if (pathname.endsWith("/revoke")) {
@@ -229,12 +237,12 @@ test("credential revocation is confirmed and posts to the credential path", asyn
 
   await expect(page.getByRole("status")).toContainText("revoked")
   await expect(row).toContainText("Revoked")
-  expect(revokePath).toBe(`/realms/${realmSlug}/machine-credentials/${credentialId}/revoke`)
+  expect(revokePath).toBe(`/realms/${realmId}/machine-credentials/${credentialId}/revoke`)
 })
 
 test("machine user removal is confirmed before the lifecycle mutation is sent", async ({ page }) => {
   let lifecycleBody: unknown
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -262,7 +270,7 @@ test("machine user removal is confirmed before the lifecycle mutation is sent", 
 })
 
 test("a listed credential never exposes a stored secret value", async ({ page }) => {
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     if (pathname.endsWith("/credentials"))
       return route.fulfill({
@@ -292,7 +300,7 @@ test("a listed credential never exposes a stored secret value", async ({ page })
 })
 
 test("permission, assurance, and tenant failures render distinct inaccessible states", async ({ page }) => {
-  await page.route(`**/realms/${realmSlug}/**`, async (route) =>
+  await page.route(realmApiPath, async (route) =>
     route.fulfill({
       json: {
         error: { code: "machine-users.forbidden", message: "Denied.", op: "machineUserList", status: 403 },
@@ -303,7 +311,7 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
   await page.goto("/admin/machine-users")
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("permission")
 
-  await page.route(`**/realms/${realmSlug}/**`, async (route) =>
+  await page.route(realmApiPath, async (route) =>
     route.fulfill({
       json: {
         error: {
@@ -319,7 +327,7 @@ test("permission, assurance, and tenant failures render distinct inaccessible st
   await page.goto(`/admin/machine-users/${machineUserId}`)
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("stronger")
 
-  await page.route(`**/realms/${realmSlug}/**`, async (route) =>
+  await page.route(realmApiPath, async (route) =>
     route.fulfill({
       json: {
         error: {

@@ -8,6 +8,9 @@ test("the email directory opens each fixture-backed renderer preview", async ({ 
   await expect(page.getByText("EmailOtpRenderRequest", { exact: true })).toBeVisible()
   await expect(page.getByText("EmailRecoveryRenderRequest", { exact: true })).toBeVisible()
   await expect(page.getByText("OrganizationInvitationRenderRequest", { exact: true })).toBeVisible()
+  await expect(page.getByText("EmailOtpSecurityNotificationRenderRequest", { exact: true })).toHaveCount(3)
+  await expect(page.getByText("ImpersonationStartedRenderRequest", { exact: true })).toBeVisible()
+  await expect(page.getByText("ImpersonationEndedRenderRequest", { exact: true })).toBeVisible()
 
   await page.getByRole("link", { name: "Open preview" }).first().click()
   await expect(page).toHaveURL(/\/demo\/emails\/verification$/)
@@ -27,6 +30,31 @@ test("the email directory opens each fixture-backed renderer preview", async ({ 
       heading: "Organization invitation",
       id: "organization-invitation",
       renderedHeading: "Join Preview Organization",
+    },
+    {
+      heading: "Sign-in verification requested",
+      id: "security-requested",
+      renderedHeading: "Sign-in verification requested",
+    },
+    {
+      heading: "Sign-in verification completed",
+      id: "security-verified",
+      renderedHeading: "Sign-in verification completed",
+    },
+    {
+      heading: "Sign-in verification failed",
+      id: "security-failed",
+      renderedHeading: "Sign-in verification failed",
+    },
+    {
+      heading: "Impersonation started",
+      id: "impersonation-started",
+      renderedHeading: "Impersonation started",
+    },
+    {
+      heading: "Impersonation ended",
+      id: "impersonation-ended",
+      renderedHeading: "Impersonation ended",
     },
   ]) {
     await page.goto(`/demo/emails/${fixture.id}`)

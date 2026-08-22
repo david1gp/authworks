@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test"
+import { productionAdminSessionBootstrap } from "./productionAdminSessionBootstrap.js"
 
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const organizationId = "018f0000-0000-7000-8000-000000000002"
-// The default production shell context resolves this realm/organization pair in its route paths.
-const shellRealmPath = "customer-identity"
+const realmApiPath = new RegExp(`/realms/${realmId}/(?!sessions/current(?:\\?|$))`)
 
 const organization = {
   createdAt: 1_755_782_400_000,
@@ -31,11 +31,15 @@ const roles = [
   { id: "guest", name: "Guest" },
 ]
 
+test.beforeEach(async ({ page }) => {
+  await productionAdminSessionBootstrap(page, { organizationId, organizationName: organization.name, realmId })
+})
+
 test("production membership role changes send a CSRF-protected PATCH", async ({ page }) => {
   let patchHadCsrf = false
   let patchBody: unknown
 
-  await page.route(`**/realms/${shellRealmPath}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -63,7 +67,7 @@ test("production membership role changes send a CSRF-protected PATCH", async ({ 
 })
 
 test("production organization pages surface permission and assurance failures", async ({ page }) => {
-  await page.route(`**/realms/${shellRealmPath}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     return route.fulfill({
@@ -87,7 +91,7 @@ test("production organization pages surface permission and assurance failures", 
 test("production organization creation posts through the realm-scoped browser route", async ({ page }) => {
   const createdNames: string[] = []
 
-  await page.route(`**/realms/${shellRealmPath}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -128,7 +132,7 @@ test("a production provider secret rotation never reveals the stored secret", as
   }
   let rotationBody: Record<string, unknown> | undefined
 
-  await page.route(`**/realms/${shellRealmPath}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })

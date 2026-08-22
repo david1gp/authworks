@@ -1,6 +1,32 @@
 import { expect, test } from "@playwright/test"
 
-const realmId = "customer-identity"
+const realmId = "01900000-0000-7000-8000-000000000001"
+const discoveryBody = {
+  branding: {
+    dark: { backgroundColor: "#111827", fontColor: "#f9fafb", primaryColor: "#60a5fa", warnColor: "#f87171" },
+    disableWatermark: true,
+    light: { backgroundColor: "#f8fafc", fontColor: "#111827", primaryColor: "#2563eb", warnColor: "#dc2626" },
+    themeMode: "system",
+  },
+  domain: "auth.example",
+  found: true,
+  organization: {
+    id: "01900000-0000-7000-8000-000000000002",
+    name: "Customer identity",
+    realmId,
+  },
+  policy: {
+    allowDomainDiscovery: true,
+    allowEmailOtp: true,
+    allowExternalIdentity: true,
+    allowPassword: true,
+    allowPasswordRecovery: true,
+    allowPasskey: true,
+    allowRegistration: true,
+    providerIds: [],
+  },
+  providers: [],
+}
 const realmBody = (overrides: Record<string, unknown> = {}) => ({
   realm: {
     createdAt: 1_700_000_000_000,
@@ -29,6 +55,10 @@ const sessionBody = {
     subjectType: "bootstrap_admin",
   },
 }
+
+test.beforeEach(async ({ page }) => {
+  await page.route("**/organization-discovery", (route) => route.fulfill({ json: discoveryBody }))
+})
 
 test("production administrator sign-in posts the credential once and never stores it", async ({ page }) => {
   let signInBody: string | null = null
@@ -73,6 +103,17 @@ test("production realm overview reads the session and realm over cookie routes",
   await page.goto("/admin")
   await expect(page.getByRole("heading", { name: "Customer identity", exact: true })).toBeVisible()
   await expect(page.getByText("auth.example", { exact: true }).first()).toBeVisible()
+})
+
+test("production sessions route renders the existing administrator session view", async ({ page }) => {
+  await page.route(`**/realms/${realmId}/sessions/current`, (route) => route.fulfill({ json: sessionBody }))
+  await page.route(`**/realms/${realmId}`, (route) => route.fulfill({ json: realmBody() }))
+
+  await page.goto("/admin/sessions")
+
+  await expect(page.locator("[data-admin-session='active']")).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Administrator session active", exact: true })).toBeVisible()
+  await expect(page.getByText("This page is ready for its feature content.")).toHaveCount(0)
 })
 
 test("production realm settings send a CSRF token and surface permission denial", async ({ page }) => {

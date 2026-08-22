@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test"
+import { productionAdminSessionBootstrap } from "./productionAdminSessionBootstrap.js"
 
-// The shell's default session realm, used only to scope request interception.
-const realmSlug = "customer-identity"
 // Payloads must satisfy the public UUIDv7-shaped resource identifier schema.
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const projectId = "018f0000-0000-7000-8000-000000000031"
+const realmApiPath = new RegExp(`/realms/${realmId}/(?!sessions/current(?:\\?|$))`)
 
 const project = {
   authorizationRequired: true,
@@ -39,9 +39,17 @@ const organizations = [
   },
 ]
 
+test.beforeEach(async ({ page }) => {
+  await productionAdminSessionBootstrap(page, {
+    organizationId: project.organizationId,
+    organizationName: organizations[0]?.name ?? "Acme Corporation",
+    realmId,
+  })
+})
+
 test("the production project list reads the realm-scoped tenant API", async ({ page }) => {
   const requested: string[] = []
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     requested.push(pathname)
     if (pathname.endsWith("/organizations")) return route.fulfill({ json: { items: organizations } })
@@ -52,15 +60,15 @@ test("the production project list reads the realm-scoped tenant API", async ({ p
   await page.goto("/admin/projects")
 
   await expect(page.getByText("Acme Portal", { exact: true })).toBeVisible()
-  await expect(page.getByText("Acme Corporation", { exact: true })).toBeVisible()
-  expect(requested).toContain(`/realms/${realmSlug}/projects`)
+  await expect(page.getByRole("cell", { name: "Acme Corporation", exact: true })).toBeVisible()
+  expect(requested).toContain(`/realms/${realmId}/projects`)
   // The browser must never reach the operator-only system surface.
   expect(requested.every((pathname) => !pathname.startsWith("/system/"))).toBe(true)
 })
 
 test("creating an application sends a CSRF-protected tenant mutation", async ({ page }) => {
   let createHadCsrf = false
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
@@ -87,7 +95,7 @@ test("creating an application sends a CSRF-protected tenant mutation", async ({ 
 })
 
 test("permission and tenant failures render distinct inaccessible states", async ({ page }) => {
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     if (pathname.endsWith("/organizations")) return route.fulfill({ json: { items: organizations } })
     return route.fulfill({
@@ -98,7 +106,7 @@ test("permission and tenant failures render distinct inaccessible states", async
   await page.goto("/admin/projects")
   await expect(page.locator("[data-content-state='inaccessible']")).toContainText("permission")
 
-  await page.route(`**/realms/${realmSlug}/**`, async (route) => {
+  await page.route(realmApiPath, async (route) => {
     const pathname = new URL(route.request().url()).pathname
     if (pathname.endsWith("/organizations")) return route.fulfill({ json: { items: organizations } })
     return route.fulfill({

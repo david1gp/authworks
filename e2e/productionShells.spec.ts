@@ -1,4 +1,83 @@
+import { AxeBuilder } from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
+
+const realmId = "01900000-0000-7000-8000-000000000001"
+const discovery = {
+  branding: {
+    dark: { backgroundColor: "#111827", fontColor: "#f9fafb", primaryColor: "#60a5fa", warnColor: "#f87171" },
+    disableWatermark: true,
+    light: { backgroundColor: "#f8fafc", fontColor: "#111827", primaryColor: "#2563eb", warnColor: "#dc2626" },
+    themeMode: "system",
+  },
+  domain: "customer.example",
+  found: true,
+  organization: { id: "01900000-0000-7000-8000-000000000002", name: "Customer identity", realmId },
+  policy: {
+    allowDomainDiscovery: true,
+    allowEmailOtp: true,
+    allowExternalIdentity: true,
+    allowPassword: true,
+    allowPasswordRecovery: true,
+    allowPasskey: true,
+    allowRegistration: true,
+    providerIds: [],
+  },
+  providers: [],
+}
+const session = {
+  session: {
+    assurance: "authenticated",
+    authenticationMethod: "password",
+    createdAt: 1_700_000_000_000,
+    current: true,
+    device: {},
+    expiresAt: 1_700_000_900_000,
+    id: "01900000-0000-7000-8000-0000000000a1",
+    lastUsedAt: 1_700_000_000_000,
+    realmId,
+    revokedAt: null,
+    subjectId: "01900000-0000-7000-8000-0000000000b1",
+    subjectType: "user",
+    userId: "01900000-0000-7000-8000-0000000000b1",
+  },
+}
+const realm = {
+  realm: {
+    createdAt: 1_700_000_000_000,
+    domain: "customer.example",
+    domains: ["customer.example"],
+    id: realmId,
+    name: "customer-identity",
+    status: "active",
+    updatedAt: 1_700_000_100_000,
+  },
+}
+
+test.beforeEach(async ({ page }) => {
+  await page.route("**/organization-discovery", (route) => route.fulfill({ json: discovery }))
+  await page.route(`**/realms/${realmId}/sessions/current`, (route) => route.fulfill({ json: session }))
+  await page.route(`**/realms/${realmId}/me`, (route) =>
+    route.fulfill({
+      json: {
+        user: {
+          createdAt: 1_700_000_000_000,
+          email: "user@customer.example",
+          emailVerified: true,
+          id: "01900000-0000-7000-8000-0000000000b1",
+          profile: { displayName: "Customer user" },
+          realmId,
+          state: "active",
+          updatedAt: 1_700_000_000_000,
+          userName: "customer-user",
+          verificationState: "verified",
+        },
+      },
+    }),
+  )
+  await page.route(`**/realms/${realmId}/me/organizations`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}`, (route) => route.fulfill({ json: realm }))
+  await page.route(`**/realms/${realmId}/me/sessions`, (route) => route.fulfill({ json: { items: [] } }))
+})
 
 test("production focus and authenticated shells render without network adapters", async ({ page }) => {
   // `/login` now renders its own branded shell through the login feature adapter, so the shared
@@ -12,7 +91,7 @@ test("production focus and authenticated shells render without network adapters"
   await page.goto("/account/sessions")
   await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
   await expect(page.getByRole("navigation", { name: "Sessions and devices" })).toBeVisible()
-  await expect(page.getByLabel("Realm")).toHaveValue("customer-identity")
+  await expect(page.getByLabel("Realm")).toHaveValue(realmId)
 
   await page.goto("/invitations")
   await expect(page.getByRole("heading", { name: "Invitations", exact: true })).toBeVisible()
@@ -35,4 +114,25 @@ test("authenticated navigation becomes a mobile drawer", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeVisible()
   await expect(page.getByRole("navigation", { name: "Account" })).toBeVisible()
   await expect(page.getByRole("link", { name: "Sessions and devices", exact: true })).toBeVisible()
+})
+
+test("representative production login, account, and administration views have no serious axe violations", async ({
+  page,
+}) => {
+  for (const viewport of [
+    { height: 720, width: 1280 },
+    { height: 844, width: 390 },
+  ]) {
+    await page.setViewportSize(viewport)
+    for (const path of ["/login/password", "/account/sessions", "/admin"]) {
+      await page.goto(path)
+      await expect(page.locator("main")).toBeVisible()
+      const accessibility = await new AxeBuilder({ page }).analyze()
+      expect(
+        accessibility.violations.filter(
+          (violation) => violation.impact === "serious" || violation.impact === "critical",
+        ),
+      ).toEqual([])
+    }
+  }
 })
