@@ -449,7 +449,10 @@ function passwordBrowserLoginResponseCreate(context: PasswordRouteContext, resul
   const browser = sessionBrowserCredentialResponseCreate(context, result)
   if (!browser.success) return passwordErrorResponseCreate(context, browser)
   return httpResultResponseCreate(context, {
-    data: { authentication: browser.data.authentication },
+    data: {
+      authentication: browser.data.authentication,
+      ...(browser.data.challenge === undefined ? {} : { challenge: browser.data.challenge }),
+    },
     success: true,
   })
 }

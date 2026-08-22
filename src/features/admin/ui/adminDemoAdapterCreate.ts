@@ -3,12 +3,16 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import type { Event as TenantEvent } from "../../events/public/eventSchema.js"
 import type { Realm } from "../../realms/public/realmSchema.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { User } from "../../users/public/userSchema.js"
 import type { AdminAdapter } from "./adminAdapter.js"
 import { adminDemoEventFixtures } from "./adminDemoEventFixtures.js"
-import { adminDemoRealmFixture } from "./adminDemoRealmFixture.js"
+import { adminDemoRealmFixtureCreate } from "./adminDemoRealmFixtureCreate.js"
+import { adminDemoUserAuthenticationMethodsFixture } from "./adminDemoUserAuthenticationMethodsFixture.js"
 import { adminDemoUserFixtures } from "./adminDemoUserFixtures.js"
+import { adminDemoUserSessionsFixture } from "./adminDemoUserSessionsFixture.js"
 import { adminSessionDemoAdapterCreate } from "./adminSessionDemoAdapterCreate.js"
+import type { AdminUserSecurityAdapter } from "./adminUserSecurityAdapter.js"
 
 /**
  * Deterministic in-memory administration adapter. Every response is produced locally so
@@ -17,10 +21,11 @@ import { adminSessionDemoAdapterCreate } from "./adminSessionDemoAdapterCreate.j
 export function adminDemoAdapterCreate(
   fixtureState: () => DemoFixtureState,
   options: { readonly signedInInitially?: boolean } = {},
-): AdminAdapter {
-  let realm: Realm = structuredClone(adminDemoRealmFixture)
+): AdminAdapter & AdminUserSecurityAdapter {
+  let realm: Realm = adminDemoRealmFixtureCreate()
   let users: User[] = structuredClone(adminDemoUserFixtures) as User[]
   const events: TenantEvent[] = structuredClone(adminDemoEventFixtures) as TenantEvent[]
+  let userSessions: Session[] = structuredClone([...adminDemoUserSessionsFixture])
   const pending = <T>() => new Promise<T>(() => undefined)
   const readFailure = (op: string) => {
     if (fixtureState() === "error")
@@ -84,6 +89,19 @@ export function adminDemoAdapterCreate(
       users = [...users, created]
       return resultCreate({ user: created })
     },
+    userAuthenticationMethodsGet: async () => {
+      if (fixtureState() === "loading") return pending()
+      const failed = readFailure("adminDemoUserAuthenticationMethodsGet")
+      if (failed !== undefined) return failed
+      if (fixtureState() === "empty")
+        return resultCreate({
+          emailOtp: { available: false },
+          passkeys: { credentials: [] },
+          recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+          totp: { enrolled: false, enrollments: [] },
+        })
+      return resultCreate(structuredClone(adminDemoUserAuthenticationMethodsFixture))
+    },
     userDelete: async (userId) => {
       const failed = writeFailure("adminDemoUserDelete")
       if (failed !== undefined) return failed
@@ -130,6 +148,18 @@ export function adminDemoAdapterCreate(
       }
       users = users.map((item) => (item.id === userId ? updated : item))
       return resultCreate({ user: updated })
+    },
+    userSessionRevoke: async (_userId, sessionId) => {
+      const failed = writeFailure("adminDemoUserSessionRevoke")
+      if (failed !== undefined) return failed
+      userSessions = userSessions.filter((session) => session.id !== sessionId)
+      return resultCreate({ revoked: true })
+    },
+    userSessionsList: async () => {
+      if (fixtureState() === "loading") return pending()
+      const failed = readFailure("adminDemoUserSessionsList")
+      if (failed !== undefined) return failed
+      return resultCreate({ items: fixtureState() === "empty" ? [] : userSessions })
     },
     userVerificationSet: async (userId, input) => {
       const failed = writeFailure("adminDemoUserVerificationSet")

@@ -61,4 +61,36 @@ describe("admin demo adapter", () => {
 
     expect(result.success && result.data.revoked).toBe(true)
   })
+
+  test("serves safe user-security metadata and revokes a fixture session", async () => {
+    const adapter = adapterFor("success")
+
+    const methods = await adapter.userAuthenticationMethodsGet("01900000-0000-7000-8000-000000000021")
+    const sessions = await adapter.userSessionsList("01900000-0000-7000-8000-000000000021")
+
+    expect(methods.success && methods.data.passkeys.credentials).toHaveLength(1)
+    expect(methods.success && JSON.stringify(methods.data)).not.toMatch(/secret|privateKey|recoveryCodes.*codes/i)
+    expect(sessions.success && sessions.data.items.map((session) => session.device.description)).toEqual([
+      "Firefox on Linux",
+      "Safari on iPhone",
+    ])
+
+    const sessionId = sessions.success ? sessions.data.items[0]?.id : undefined
+    expect(sessionId).toBeDefined()
+    if (sessionId === undefined) return
+    expect((await adapter.userSessionRevoke("01900000-0000-7000-8000-000000000021", sessionId)).success).toBe(true)
+    const remaining = await adapter.userSessionsList("01900000-0000-7000-8000-000000000021")
+    expect(remaining.success && remaining.data.items.some((session) => session.id === sessionId)).toBe(false)
+  })
+
+  test("provides empty user-security fixtures", async () => {
+    const adapter = adapterFor("empty")
+
+    const methods = await adapter.userAuthenticationMethodsGet("user")
+    const sessions = await adapter.userSessionsList("user")
+
+    expect(methods.success && methods.data.passkeys.credentials).toEqual([])
+    expect(methods.success && methods.data.totp.enrolled).toBe(false)
+    expect(sessions.success && sessions.data.items).toEqual([])
+  })
 })

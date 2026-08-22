@@ -6,6 +6,8 @@ import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromS
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { sessionAdministratorList } from "../actions/sessionAdministratorList.js"
+import { sessionAdministratorRevoke } from "../actions/sessionAdministratorRevoke.js"
 import { sessionBootstrapAdminSignIn } from "../actions/sessionBootstrapAdminSignIn.js"
 import { sessionList } from "../actions/sessionList.js"
 import { sessionMeList } from "../actions/sessionMeList.js"
@@ -99,6 +101,10 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
 
   app.get("/realms/:realmId/sessions", protectedMiddleware, (context) => sessionListRoute(context, options.database))
 
+  app.get("/realms/:realmId/users/:userId/sessions", protectedMiddleware, (context) =>
+    sessionAdministratorListRoute(context, options.database),
+  )
+
   app.get("/realms/:realmId/me/sessions", protectedMiddleware, (context) =>
     sessionMeListRoute(context, options.database),
   )
@@ -146,6 +152,19 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
         sessionId: context.req.param("sessionId"),
         subjectType: sessionSubjectTypeGet(context.get("authorizationActor")),
         userId: context.get("authorizationActor").actorId,
+      }),
+    ),
+  )
+
+  app.delete("/realms/:realmId/users/:userId/sessions/:sessionId", protectedMiddleware, (context) =>
+    sessionResultResponseCreate(
+      context,
+      sessionAdministratorRevoke({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        sessionId: context.req.param("sessionId"),
+        userId: context.req.param("userId"),
       }),
     ),
   )
@@ -221,6 +240,21 @@ function sessionListRoute(context: SessionRouteContext, database: StorageDatabas
       realmId: context.req.param("realmId"),
       subjectType: sessionSubjectTypeGet(context.get("authorizationActor")),
       userId: context.get("authorizationActor").actorId,
+    }),
+  )
+}
+
+function sessionAdministratorListRoute(context: SessionRouteContext, database: StorageDatabase) {
+  const query = listQueryFromSearchParams(context.req.query())
+  if (!query.success) return sessionErrorResponseCreate(context, query)
+  return sessionResultResponseCreate(
+    context,
+    sessionAdministratorList({
+      actor: context.get("authorizationActor"),
+      database,
+      query: query.data,
+      realmId: context.req.param("realmId"),
+      userId: context.req.param("userId"),
     }),
   )
 }

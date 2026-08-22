@@ -18,6 +18,7 @@ import type { SessionRevocationResponse } from "../public/sessionRevocationRespo
 import type { SessionSubjectType } from "../public/sessionSubjectTypeSchema.js"
 
 type SessionRevokeOptions = {
+  readonly actorId?: string
   readonly database: StorageDatabase
   readonly realmId: string
   readonly reason?: string
@@ -29,6 +30,9 @@ type SessionRevokeOptions = {
 
 export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevocationResponse> {
   const op = "sessionRevoke"
+  const actorId = options.actorId ?? options.userId
+  if (actorId.length === 0 || options.userId.length === 0)
+    return resultErrorCreate(op, "The session ownership is invalid.", "sessions.invalid")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
@@ -67,7 +71,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
     const event = storageEventAppend(
       transaction,
       {
-        actorId: options.userId,
+        actorId,
         aggregateId: options.sessionId,
         aggregateType: "session",
         aggregateVersion: eventVersion.data + 1,
@@ -99,7 +103,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
       const endedPayload = v.safeParse(impersonationEndedEventPayloadSchema, {
         actorId: current.data.impersonatorId,
         endedAt: now,
-        endedById: options.userId,
+        endedById: actorId,
         realmId: options.realmId,
         ...(current.data.impersonationOrganizationId === null
           ? {}
@@ -112,7 +116,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
       const endedEvent = storageEventAppend(
         transaction,
         {
-          actorId: options.userId,
+          actorId,
           aggregateId: options.sessionId,
           aggregateType: "impersonation",
           aggregateVersion: impersonationVersion + 1,

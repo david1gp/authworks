@@ -114,6 +114,9 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         getOptions,
       )
     },
+    userTenantAuthenticationMethodsGet(realmId: string, userId: string): Promise<Result<UserAuthenticationMethods>> {
+      return tenantRead(`${tenantUserPath(realmId, userId)}/authentication-methods`, userAuthenticationMethodsSchema)
+    },
     userMeProfileUpdate(realmId: string, input: UserProfileUpdateRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userProfileUpdateRequestSchema, input)
       if (!parsed.success)

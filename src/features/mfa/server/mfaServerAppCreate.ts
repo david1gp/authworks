@@ -193,7 +193,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
         realmId: context.req.param("realmId"),
-        sessionToken: mfaBearerTokenGet(context.req.header("authorization")),
+        sessionToken: mfaSessionTokenGet(context, options.browserMode === true),
         userId: context.get("authorizationActor").actorId,
       }),
     ),

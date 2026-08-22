@@ -72,16 +72,15 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     return resultErrorCreate(op, "The session ownership is invalid.", "sessions.invalid")
   if (subjectType.output === "user" && (options.userId === undefined || options.userId !== subjectId))
     return resultErrorCreate(op, "The session ownership is invalid.", "sessions.invalid")
-  const impersonationFields = [
-    options.impersonationOrganizationId,
+  const impersonationRequiredFields = [
     options.impersonatorId,
     options.impersonationReason,
     options.impersonationPermissions,
   ]
-  if (
-    impersonationFields.some((field) => field !== undefined) &&
-    impersonationFields.some((field) => field === undefined)
-  )
+  const impersonationMarked =
+    options.impersonationOrganizationId !== undefined ||
+    impersonationRequiredFields.some((field) => field !== undefined)
+  if (impersonationMarked && impersonationRequiredFields.some((field) => field === undefined))
     return resultErrorCreate(op, "The impersonation session marker is invalid.", "sessions.invalid")
   if (options.impersonatorId !== undefined && options.impersonatorId === subjectId)
     return resultErrorCreate(op, "The impersonation session marker is invalid.", "sessions.invalid")
@@ -90,7 +89,7 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
       (authenticationMethod.output !== "bootstrap_admin" ||
         assurance.output !== "authenticated" ||
         mfaMethod.output !== undefined ||
-        impersonationFields.some((field) => field !== undefined))) ||
+        impersonationMarked)) ||
     (subjectType.output === "user" && authenticationMethod.output === "bootstrap_admin")
   )
     return resultErrorCreate(op, "The session subject is invalid.", "sessions.invalid")

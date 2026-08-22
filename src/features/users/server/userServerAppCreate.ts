@@ -17,6 +17,7 @@ import { realmSystemContextCreate } from "../../realms/domain/realmSystemContext
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
+import { userAuthenticationMethodsAdministratorGet } from "../actions/userAuthenticationMethodsAdministratorGet.js"
 import { userAuthenticationMethodsGet } from "../actions/userAuthenticationMethodsGet.js"
 import { userCreate } from "../actions/userCreate.js"
 import { userDelete } from "../actions/userDelete.js"
@@ -240,6 +241,18 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       }),
     )
   })
+
+  app.get("/realms/:realmId/users/:userId/authentication-methods", userReadMiddleware, (context) =>
+    userResultResponseCreate(
+      context,
+      userAuthenticationMethodsAdministratorGet({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    ),
+  )
 
   app.patch("/realms/:realmId/me", protectedMiddleware, async (context) => {
     const subject = userSubjectContextResolve(context, context.req.param("realmId"))

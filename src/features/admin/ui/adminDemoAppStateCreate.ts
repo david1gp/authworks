@@ -42,7 +42,10 @@ const navigationGroups = [
   },
   {
     label: "Operations",
-    items: [{ href: "/demo/admin/events", label: "Events" }],
+    items: [
+      { href: "/demo/admin/sessions", label: "Sessions" },
+      { href: "/demo/admin/events", label: "Events" },
+    ],
   },
 ] as const
 

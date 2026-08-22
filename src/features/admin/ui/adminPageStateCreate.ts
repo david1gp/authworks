@@ -11,12 +11,14 @@ import type { UserState } from "../../users/public/userStateSchema.js"
 import type { UserVerificationState } from "../../users/public/userVerificationStateSchema.js"
 import type { AdminAdapter, AdminSession } from "./adminAdapter.js"
 import type { AdminScreen } from "./adminScreenSchema.js"
+import type { AdminUserSecurityAdapter } from "./adminUserSecurityAdapter.js"
+import { adminUserSecurityStateCreate } from "./adminUserSecurityStateCreate.js"
 import type { AdminViewStatus } from "./adminViewStatusSchema.js"
 
 type FailedResult = { readonly code?: string; readonly errorMessage: string; readonly statusCode?: number }
 
 type AdminPageStateOptions = {
-  readonly adapter: AdminAdapter
+  readonly adapter: AdminAdapter & AdminUserSecurityAdapter
   readonly confirm?: (message: string) => boolean
   readonly initialStatus?: AdminViewStatus
   readonly pageSize?: number
@@ -33,6 +35,12 @@ type AdminPageStateOptions = {
 export function adminPageStateCreate(options: AdminPageStateOptions) {
   const pageSize = options.pageSize ?? 20
   const confirmAction = options.confirm ?? ((message: string) => window.confirm(message))
+  const userSecurity = adminUserSecurityStateCreate({
+    adapter: options.adapter,
+    confirm: confirmAction,
+    reloadKey: options.reloadKey,
+    userId: () => options.userId?.(),
+  })
   const status = createSignalObject<AdminViewStatus>(options.initialStatus ?? "loading")
   const error = createSignalObject<string | undefined>(undefined)
   const notice = createSignalObject<string | undefined>(undefined)
@@ -85,7 +93,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     status.set("loading")
     error.set(undefined)
     notice.set(undefined)
-    if (options.screen() === "sign-in") {
+    if (options.screen() === "sign-in" || options.screen() === "sessions") {
       // An existing administrator session is shown when present, but the sign-in form must stay
       // reachable when there is none, so a failed probe is not an error.
       const current = await options.adapter.sessionCurrent()
@@ -249,6 +257,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     searchTerm,
     status: status.get,
     user: user.get,
+    userSecurity,
     userCreateSubmit: async (event: SubmitEvent) => {
       event.preventDefault()
       validationMessage.set(undefined)

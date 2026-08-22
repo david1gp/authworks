@@ -1,4 +1,8 @@
-import { useLocation, useNavigate, useParams } from "@solidjs/router"
+import { useLocation, useNavigate } from "@solidjs/router"
+import { onMount } from "solid-js"
+import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
+import { productionRouteParamGet } from "../../../ui/production/productionRouteParamGet.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { adminApiCreate } from "./adminApiCreate.js"
 import { adminPageStateCreate } from "./adminPageStateCreate.js"
@@ -9,15 +13,23 @@ export function adminProductionStateCreate(screen: () => AdminScreen) {
   const session = productionSessionContextGet()
   const location = useLocation()
   const navigate = useNavigate()
-  const params = useParams<{ userId?: string }>()
-  const realmId = () => {
+  const fallbackRealmId = () => {
     const realm = session.guard.realm
     return typeof realm === "object" ? realm.realmId : (session.realms[0]?.id ?? "")
   }
   const baseUrl = typeof window === "undefined" ? "http://localhost" : window.location.origin
+  const realmId = createSignalObject(fallbackRealmId())
+  onMount(() => {
+    void productionRealmIdResolve({
+      baseUrl,
+      domain: typeof window === "undefined" ? "localhost" : window.location.host,
+      fallbackRealmId: fallbackRealmId(),
+    }).then(realmId.set)
+  })
 
   return adminPageStateCreate({
-    adapter: adminProductionAdapterCreate({ api: adminApiCreate({ baseUrl }), realmId }),
+    adapter: adminProductionAdapterCreate({ api: adminApiCreate({ baseUrl }), realmId: realmId.get }),
+    reloadKey: realmId.get,
     screen,
     search: () => new URLSearchParams(location.search).get("q") ?? "",
     searchSet: (value: string) => {
@@ -27,6 +39,6 @@ export function adminProductionStateCreate(screen: () => AdminScreen) {
       const encoded = search.toString()
       navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
     },
-    userId: () => params.userId,
+    userId: () => productionRouteParamGet("/admin/users/:userId", location.pathname, "userId"),
   })
 }

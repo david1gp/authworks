@@ -49,6 +49,18 @@ export function adminApiCreate(options: { readonly baseUrl: string; readonly fet
     realmUpdate: realms.realmTenantUpdate,
     sessionCurrent: sessions.sessionCurrent,
     sessionList: sessions.sessionList,
+    userAuthenticationMethodsGet: users.userTenantAuthenticationMethodsGet,
+    userSessionRevoke: (realmId: string, userId: string, sessionId: string) =>
+      sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "DELETE" },
+        op: "adminUserSessionRevoke",
+        path: `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/sessions/${encodeURIComponent(sessionId)}`,
+        realmId,
+        schema: sessionRevocationResponseSchema,
+      }),
+    userSessionsList: sessions.sessionUserList,
     userCreate: users.userTenantCreate,
     userDelete: users.userTenantDelete,
     userGet: users.userTenantGet,

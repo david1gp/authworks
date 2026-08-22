@@ -66,6 +66,13 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
         sessionListResponseSchema,
       )
     },
+    sessionUserList(realmId: string, userId: string, query?: ListQuery): Promise<Result<SessionListResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/sessions${listQueryToSearchParams(query)}`,
+        { method: "GET" },
+        sessionListResponseSchema,
+      )
+    },
     sessionMeList(realmId: string, query?: ListQuery): Promise<Result<SessionMeListResponse>> {
       return request(
         `/realms/${encodeURIComponent(realmId)}/me/sessions${listQueryToSearchParams(query)}`,
@@ -90,6 +97,13 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
     sessionRevoke(realmId: string, sessionId: string): Promise<Result<SessionRevocationResponse>> {
       return request(
         `/realms/${encodeURIComponent(realmId)}/sessions/${encodeURIComponent(sessionId)}`,
+        { method: "DELETE" },
+        sessionRevocationResponseSchema,
+      )
+    },
+    sessionUserRevoke(realmId: string, userId: string, sessionId: string): Promise<Result<SessionRevocationResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/sessions/${encodeURIComponent(sessionId)}`,
         { method: "DELETE" },
         sessionRevocationResponseSchema,
       )

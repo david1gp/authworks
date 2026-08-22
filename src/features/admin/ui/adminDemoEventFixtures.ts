@@ -1,3 +1,4 @@
+import { demoAdminImpersonationSession } from "../../demo/demoAdminImpersonationSession.js"
 import { demoAdminRedactedEvent } from "../../demo/demoAdminRedactedEvent.js"
 import type { Event as TenantEvent } from "../../events/public/eventSchema.js"
 
@@ -5,6 +6,40 @@ const fixtureNow = Date.UTC(2026, 7, 21, 9, 30)
 const realmId = "01900000-0000-7000-8000-000000000001"
 
 export const adminDemoEventFixtures: readonly TenantEvent[] = [
+  {
+    actorId: demoAdminImpersonationSession.actorId,
+    aggregateId: demoAdminImpersonationSession.sessionId,
+    aggregateType: "impersonation",
+    aggregateVersion: 2,
+    correlationId: "01900000-0000-7000-8000-0000000000c5",
+    eventType: "impersonation.ended",
+    id: "01900000-0000-7000-8000-0000000000d5",
+    metadata: { auditSafe: true, source: "impersonation" },
+    occurredAt: demoAdminImpersonationSession.startedAt + 300_000,
+    payload: {
+      reason: "impersonation_ended",
+      sessionId: demoAdminImpersonationSession.sessionId,
+    },
+    realmId,
+  },
+  {
+    actorId: demoAdminImpersonationSession.actorId,
+    aggregateId: demoAdminImpersonationSession.sessionId,
+    aggregateType: "impersonation",
+    aggregateVersion: 1,
+    correlationId: "01900000-0000-7000-8000-0000000000c4",
+    eventType: "impersonation.started",
+    id: "01900000-0000-7000-8000-0000000000d4",
+    metadata: { auditSafe: true, source: "impersonation" },
+    occurredAt: demoAdminImpersonationSession.startedAt,
+    payload: {
+      durationMs: demoAdminImpersonationSession.expiresAt - demoAdminImpersonationSession.startedAt,
+      reason: demoAdminImpersonationSession.reason,
+      sessionId: demoAdminImpersonationSession.sessionId,
+      targetUserId: demoAdminImpersonationSession.subjectId,
+    },
+    realmId,
+  },
   // A payload carrying real secret-shaped fields, so the view proves it redacts before rendering.
   demoAdminRedactedEvent,
   {

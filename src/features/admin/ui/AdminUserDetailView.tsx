@@ -8,6 +8,7 @@ import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { UserState } from "../../users/public/userStateSchema.js"
+import { AdminUserSecurityView } from "./AdminUserSecurityView.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import { adminUserDetailStateCreate } from "./adminUserDetailStateCreate.js"
 import { adminUserStateVariant } from "./adminUserStateVariant.js"
@@ -200,6 +201,8 @@ export function AdminUserDetailView(props: {
                     </A>
                   </article>
                 </Show>
+
+                <AdminUserSecurityView state={props.state.userSecurity} />
 
                 <article class="rounded-2xl border border-danger/40 bg-danger/5 p-6 shadow-sm">
                   <h3 class="font-semibold text-danger">{messageTranslate("admin.users.dangerZone")}</h3>

@@ -16,7 +16,7 @@ export function AdminScreenView(props: {
 }) {
   return (
     <Switch>
-      <Match when={props.screen === "sign-in"}>
+      <Match when={props.screen === "sign-in" || props.screen === "sessions"}>
         <AdminSignInView state={props.state} />
       </Match>
       <Match when={props.screen === "overview"}>

@@ -2,13 +2,14 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { AdminAdapter } from "./adminAdapter.js"
 import type { adminApiCreate } from "./adminApiCreate.js"
+import type { AdminUserSecurityAdapter } from "./adminUserSecurityAdapter.js"
 import { adminSessionProductionAdapterCreate } from "./adminSessionProductionAdapterCreate.js"
 
 /** Binds core administration to real cookie/CSRF browser APIs for the authenticated realm. */
 export function adminProductionAdapterCreate(options: {
   readonly api: ReturnType<typeof adminApiCreate>
   readonly realmId: () => string
-}): AdminAdapter {
+}): AdminAdapter & AdminUserSecurityAdapter {
   const api = options.api
   const missingRealm = (op: string) =>
     resultErrorCodedCreate(op, "The administered realm could not be resolved.", "realms.tenant-required")
@@ -39,5 +40,13 @@ export function adminProductionAdapterCreate(options: {
       realmRequired("adminUserProfileUpdate", (realmId) => api.userProfileUpdate(realmId, userId, input)),
     userVerificationSet: (userId, input) =>
       realmRequired("adminUserVerificationSet", (realmId) => api.userVerificationSet(realmId, userId, input)),
+    userAuthenticationMethodsGet: (userId) =>
+      realmRequired("adminUserAuthenticationMethodsGet", (realmId) =>
+        api.userAuthenticationMethodsGet(realmId, userId),
+      ),
+    userSessionRevoke: (userId, sessionId) =>
+      realmRequired("adminUserSessionRevoke", (realmId) => api.userSessionRevoke(realmId, userId, sessionId)),
+    userSessionsList: (userId, query) =>
+      realmRequired("adminUserSessionsList", (realmId) => api.userSessionsList(realmId, userId, query)),
   }
 }
