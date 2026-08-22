@@ -10,6 +10,7 @@ test("the composed server serves UI assets and known browser routes", async () =
   await mkdir(join(uiDirectory, "assets"), { recursive: true })
   await writeFile(join(uiDirectory, "index.html"), "<!doctype html><title>Authworks UI</title>")
   await writeFile(join(uiDirectory, "assets", "index-abc123.js"), "console.log('asset')")
+  await writeFile(join(uiDirectory, "favicon.svg"), "<svg></svg>")
 
   try {
     const created = serverApplicationCreate({
@@ -28,6 +29,12 @@ test("the composed server serves UI assets and known browser routes", async () =
     expect(index.headers.get("cache-control")).toBe("no-cache")
     expect(index.headers.get("content-type")).toContain("text/html")
 
+    const health = await request("/health")
+    expect(health.status).toBe(200)
+    expect(health.headers.get("cache-control")).toBe("no-store")
+    expect(health.headers.get("content-type")).toContain("application/json")
+    expect(await health.json()).toEqual({ status: "ok" })
+
     for (const pathname of ["/login/deep", "/consent", "/account/profile", "/invitations/one", "/admin/users"]) {
       const response = await request(pathname)
       expect(response.status, pathname).toBe(200)
@@ -41,6 +48,11 @@ test("the composed server serves UI assets and known browser routes", async () =
     expect(asset.status).toBe(200)
     expect(asset.headers.get("cache-control")).toBe("public, max-age=31536000, immutable")
     expect(asset.headers.get("content-type")).toContain("text/javascript")
+
+    const favicon = await request("/favicon.svg")
+    expect(favicon.status).toBe(200)
+    expect(favicon.headers.get("cache-control")).toBe("public, max-age=3600")
+    expect(favicon.headers.get("content-type")).toContain("image/svg+xml")
 
     const api = await request("/system/realms", { headers: { authorization: "Bearer server-ui-secret" } })
     expect(api.status).toBe(200)
@@ -61,6 +73,10 @@ test("the composed server serves UI assets and known browser routes", async () =
     if (!production.success) return
     expect((await production.data.request("https://ui.example/demo/login")).status).toBe(404)
     expect((await production.data.request("https://ui.example/login")).status).toBe(200)
+    const productionRoot = await production.data.request("https://ui.example/")
+    expect(productionRoot.status).toBe(302)
+    expect(productionRoot.headers.get("location")).toBe("/login")
+    expect(productionRoot.headers.get("cache-control")).toBe("no-cache")
   } finally {
     await rm(directory, { force: true, recursive: true })
   }

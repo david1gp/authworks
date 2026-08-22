@@ -1,0 +1,6 @@
+# Set AUTHWORKS_PUBLIC_HOST in the Caddy service environment. Keep this site
+# label identical to the host in AUTHWORKS_PUBLIC_ORIGIN.
+{$AUTHWORKS_PUBLIC_HOST} {
+	encode gzip
+	reverse_proxy 127.0.0.1:3000
+}

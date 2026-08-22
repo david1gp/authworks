@@ -37,6 +37,15 @@ export function uiStaticServerAppCreate(options: UiStaticServerAppCreateOptions 
 
   app.get("*", async (context) => {
     const pathname = new URL(context.req.url).pathname
+    if (options.production === true && pathname === "/") {
+      return new Response(null, {
+        headers: {
+          "cache-control": uiIndexCacheControl,
+          location: "/login",
+        },
+        status: 302,
+      })
+    }
     const staticFile = await uiStaticFileResponseCreate(uiDirectory, pathname, uiStaticCacheControlResolve(pathname))
     if (staticFile !== null) return staticFile
     if (!uiBrowserPathIsKnown(pathname, options.production === true)) return context.notFound()

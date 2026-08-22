@@ -22,7 +22,9 @@ test("built library, server, and CLI outputs are executable", async () => {
   expect(uiAssets.length).toBeGreaterThan(0)
   const uiHtml = await uiIndex.text()
   expect(uiHtml).toContain("/assets/")
+  expect(uiHtml).toContain('rel="icon"')
   expect(uiHtml).not.toContain("/src/ui/main.tsx")
+  expect(await Bun.file("dist/ui/favicon.svg").exists()).toBe(true)
 
   const packageJson = (await Bun.file("package.json").json()) as { files?: readonly string[] }
   expect(packageJson.files).toContain("dist")
@@ -126,10 +128,15 @@ test("built library, server, and CLI outputs are executable", async () => {
     }
     expect(ready).toBe(true)
 
-    const indexResponse = await fetch("http://127.0.0.1:3000/")
-    expect(indexResponse.status).toBe(200)
+    const indexResponse = await fetch("http://127.0.0.1:3000/", { redirect: "manual" })
+    expect(indexResponse.status).toBe(302)
+    expect(indexResponse.headers.get("location")).toBe("/login")
     expect(indexResponse.headers.get("cache-control")).toBe("no-cache")
-    expect(indexResponse.headers.get("content-type")).toContain("text/html")
+
+    const healthResponse = await fetch("http://127.0.0.1:3000/health")
+    expect(healthResponse.status).toBe(200)
+    expect(healthResponse.headers.get("cache-control")).toBe("no-store")
+    expect(await healthResponse.json()).toEqual({ status: "ok" })
 
     const loginResponse = await fetch("http://127.0.0.1:3000/login/deep-link")
     expect(loginResponse.status).toBe(200)
@@ -142,6 +149,11 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(assetResponse.status).toBe(200)
     expect(assetResponse.headers.get("cache-control")).toBe("public, max-age=31536000, immutable")
     expect(assetResponse.headers.get("content-type")).toContain("text/javascript")
+
+    const faviconResponse = await fetch("http://127.0.0.1:3000/favicon.svg")
+    expect(faviconResponse.status).toBe(200)
+    expect(faviconResponse.headers.get("cache-control")).toBe("public, max-age=3600")
+    expect(faviconResponse.headers.get("content-type")).toContain("image/svg+xml")
 
     expect((await fetch("http://127.0.0.1:3000/demo/login")).status).toBe(404)
     expect((await fetch("http://127.0.0.1:3000/assets/missing.js")).status).toBe(404)

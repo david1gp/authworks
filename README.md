@@ -45,7 +45,75 @@ bun run test:all  # source and distributable tests
 bun run build     # emit dist/
 bun run format   # biome
 bun run release  # git-cliff changelog + tag
+bun run deploy   # full check plus optional live HTTPS smoke
 ```
+
+## Production deployment
+
+The repository-managed deployment is one Bun service behind one Caddy HTTPS
+site. The systemd user unit stores the SQLite database and its WAL sidecars in
+`~/.local/share/authworks/authworks.sqlite`; this directory must be included in
+the host's backup plan.
+
+Create `~/.config/authworks/authworks.env` locally with mode `600` and never
+commit it:
+
+```dotenv
+AUTHWORKS_PUBLIC_ORIGIN=https://auth.example.com
+AUTHWORKS_SYSTEM_SECRET=replace-with-a-secret
+# Optional transactional email delivery. Disabled unless explicitly set to true.
+AUTHWORKS_EMAIL_DELIVERY_ENABLED=true
+AUTHWORKS_EMAIL_GENERATOR_BASE_URL=https://email-generator.example.com
+AUTHWORKS_EMAIL_SMTP_HOST=mail.example.com
+AUTHWORKS_EMAIL_SMTP_PORT=587
+AUTHWORKS_EMAIL_SMTP_SECURITY=starttls
+AUTHWORKS_EMAIL_SMTP_USERNAME=mailer@example.com
+AUTHWORKS_EMAIL_SMTP_PASSWORD=replace-with-a-secret
+AUTHWORKS_EMAIL_SMTP_FROM=mailer@example.com
+```
+
+Transactional email is disabled by default. The SMTP settings above are the required production names. The optional
+footer names are `AUTHWORKS_EMAIL_FOOTER_HOMEPAGE_TEXT`, `AUTHWORKS_EMAIL_FOOTER_HOMEPAGE_URL`,
+`AUTHWORKS_EMAIL_FOOTER_HOMEPAGE_SUBTITLE`, `AUTHWORKS_EMAIL_FOOTER_LANGUAGE`, and
+`AUTHWORKS_EMAIL_FOOTER_LEGAL_SIGNATURE`; invitation sender overrides are
+`AUTHWORKS_EMAIL_INVITATION_SENDER_EMAIL` and `AUTHWORKS_EMAIL_INVITATION_SENDER_NAME`. Credentials are read only
+from the uncommitted environment and are never stored in the repository.
+
+The real Mailcow send/receive check is separate from the default suite. It is skipped unless
+`AUTHWORKS_MAILCOW_E2E_ENABLED=true` and reads these uncommitted environment names:
+`AUTHWORKS_MAILCOW_SMTP_HOST`, `AUTHWORKS_MAILCOW_SMTP_PORT`, `AUTHWORKS_MAILCOW_SMTP_SECURITY`,
+`AUTHWORKS_MAILCOW_SMTP_USERNAME`, `AUTHWORKS_MAILCOW_SMTP_PASSWORD`, `AUTHWORKS_MAILCOW_IMAP_HOST`,
+`AUTHWORKS_MAILCOW_IMAP_PORT`, `AUTHWORKS_MAILCOW_IMAP_SECURITY`, `AUTHWORKS_MAILCOW_IMAP_USERNAME`, and
+`AUTHWORKS_MAILCOW_IMAP_PASSWORD`. Use the `it@contentoren.de` mailbox for SMTP and the
+`auth@contentoren.de` mailbox for IMAP; `AUTHWORKS_MAILCOW_IMAP_MAILBOX` optionally selects a mailbox other than
+`INBOX`.
+
+Run it explicitly with `AUTHWORKS_MAILCOW_E2E_ENABLED=true bun run test:mailcow`. Never commit these values.
+
+After building from the conventional `~/adaptive/authworks` checkout, install
+and start the repository-managed service:
+
+```bash
+bun run build
+bash ops/systemd/install.bash
+```
+
+Configure the Caddy service with `ops/Caddyfile`, setting
+`AUTHWORKS_PUBLIC_HOST` to the same host as `AUTHWORKS_PUBLIC_ORIGIN`. Caddy
+terminates HTTPS and proxies only to `127.0.0.1:3000`; it obtains certificates
+for that single public origin. Do not put the system secret in Caddy or the
+repository. After a release, rebuild and restart with
+`systemctl --user restart authworks.service`.
+
+Run the public smoke without storing its URL in the repository:
+
+```bash
+AUTHWORKS_SMOKE_URL=https://auth.example.com bun run smoke:public
+```
+
+The smoke checks HTTPS, the production root redirect, health, the SPA fallback,
+the packaged favicon, built-asset caching, API/static precedence, and production
+exclusion of `/demo/**`.
 
 ## CLI scope defaults
 

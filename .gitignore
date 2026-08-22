@@ -69,8 +69,14 @@ bun.lock
 vite.config.d.ts
 vite.config.js
 
+# Playwright
+/test-results/
+/playwright-report/
+
 # Data
 /data
+*.sqlite
+*.sqlite-*
 
 # Convex
 convex/_generated
