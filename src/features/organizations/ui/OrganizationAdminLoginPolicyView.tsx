@@ -63,6 +63,7 @@ export function OrganizationAdminLoginPolicyView(props: {
 }) {
   return (
     <section class="grid gap-5">
+      <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.organizations.policy.title")}</h1>
       <p class="max-w-2xl text-sm leading-6 text-muted-foreground">
         {messageTranslate("admin.organizations.policy.description")}
       </p>

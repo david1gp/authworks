@@ -24,7 +24,7 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
         }
         mobileChildren={<AdminSidebarContent state={state} />}
       />
-      <main class="min-h-dvh transition-[margin] lg:ltr:ml-64 lg:rtl:mr-64">
+      <main class="min-h-dvh transition-[margin] lg:ltr:ml-64 lg:rtl:mr-64 [&_section>*]:min-w-0">
         <header class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
           <SidebarToggle {...state.sidebar} variant="ghost" />
           <div class="flex items-center gap-2">

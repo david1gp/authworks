@@ -47,7 +47,7 @@ export function OrganizationAdminDetailView(props: {
             <div class="grid gap-5">
               <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h2 class="text-2xl font-semibold tracking-tight">{organization().name}</h2>
+                  <h1 class="text-2xl font-semibold tracking-tight">{organization().name}</h1>
                   <p class="mt-1 font-mono text-xs text-muted-foreground">{organization().id}</p>
                 </div>
                 <Badge variant={organizationAdminStatusVariant(organization().status)}>{organization().status}</Badge>

@@ -10,10 +10,10 @@ export function ProductionFocusShell(props: { readonly children: JSX.Element; re
   const state = productionFocusShellStateCreate()
   return (
     <PageWrapper class="min-h-dvh" innerClass="relative flex min-h-dvh items-center justify-center py-12">
-      <div class="absolute right-4 top-4 flex items-center gap-2">
+      <header class="absolute right-4 top-4 flex items-center gap-2">
         <LanguageSelector />
         <ThemeButton />
-      </div>
+      </header>
       <main class="w-full max-w-xl" data-shell="focus">
         <CardWrapper class="overflow-hidden border-line p-0 shadow-xl shadow-black/5">
           <header class="border-b border-line bg-surface px-6 py-6 sm:px-9">

@@ -21,7 +21,7 @@ export function ProjectAdminApplicationsView(props: {
     <section class="grid gap-6">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.projects.applications.title")}</h2>
+          <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.projects.applications.title")}</h1>
           <p class="mt-1 text-sm text-muted-foreground">
             {messageTranslate("admin.projects.applications.description")}
           </p>

@@ -10,7 +10,7 @@ export function ProjectAdminEffectiveAccessView(props: { readonly state: Project
   return (
     <section class="grid gap-6">
       <div>
-        <h2 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.projects.access.title")}</h2>
+        <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.projects.access.title")}</h1>
         <p class="mt-1 text-sm text-muted-foreground">{messageTranslate("admin.projects.access.description")}</p>
       </div>
 

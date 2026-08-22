@@ -42,7 +42,7 @@ export function OrganizationAdminListView(props: {
     <section class="grid gap-5">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.organizations.list.title")}</h2>
+          <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.organizations.list.title")}</h1>
           <p class="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
             {messageTranslate("admin.organizations.list.description")}
           </p>

@@ -41,9 +41,9 @@ export function OrganizationAdminInvitationsView(props: {
   return (
     <section class="grid gap-5">
       <div>
-        <h2 class="text-2xl font-semibold tracking-tight">
+        <h1 class="text-2xl font-semibold tracking-tight">
           {messageTranslate("admin.organizations.invitations.title")}
-        </h2>
+        </h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
           {messageTranslate("admin.organizations.invitations.description")}
         </p>

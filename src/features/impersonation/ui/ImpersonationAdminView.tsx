@@ -43,7 +43,7 @@ export function ImpersonationAdminView(props: {
         <Show when={state.active()} fallback={<ImpersonationAdminStartSection state={state} />}>
           {(session) => (
             <CardWrapper>
-              <h3 class="text-xl font-semibold">{messageTranslate("admin.impersonation.activeTitle")}</h3>
+              <h1 class="text-xl font-semibold">{messageTranslate("admin.impersonation.activeTitle")}</h1>
               <dl class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <DetailItem label={messageTranslate("admin.impersonation.actor")} value={session().actorLabel} />
                 <DetailItem label={messageTranslate("admin.impersonation.subject")} value={session().subjectLabel} />
@@ -84,7 +84,7 @@ export function ImpersonationAdminView(props: {
 function ImpersonationAdminStartSection(props: { readonly state: ImpersonationAdminPageState }) {
   return (
     <CardWrapper>
-      <h3 class="text-xl font-semibold">{messageTranslate("admin.impersonation.start")}</h3>
+      <h1 class="text-xl font-semibold">{messageTranslate("admin.impersonation.start")}</h1>
       <p class="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
         {messageTranslate("admin.impersonation.description")}
       </p>

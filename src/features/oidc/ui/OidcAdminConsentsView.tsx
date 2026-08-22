@@ -16,7 +16,7 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
   return (
     <section class="grid min-w-0 gap-6">
       <div>
-        <h2 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.oidc.consents.title")}</h2>
+        <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.oidc.consents.title")}</h1>
         <p class="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
           {messageTranslate("admin.oidc.consents.description")}
         </p>

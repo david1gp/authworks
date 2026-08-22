@@ -26,7 +26,7 @@ export function ProjectAdminDetailView(props: {
           <section class="grid gap-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h2 class="text-2xl font-semibold tracking-tight">{project().name}</h2>
+                <h1 class="text-2xl font-semibold tracking-tight">{project().name}</h1>
                 <p class="mt-1 font-mono text-xs text-muted-foreground">{project().id}</p>
               </div>
               <Badge variant={projectStatusBadgeVariant(project().status)}>{project().status}</Badge>

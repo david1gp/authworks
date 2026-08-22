@@ -28,7 +28,7 @@ export function OidcAdminClientDetailView(props: {
           <section class="grid min-w-0 gap-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h2 class="text-2xl font-semibold tracking-tight">{client().name}</h2>
+                <h1 class="text-2xl font-semibold tracking-tight">{client().name}</h1>
                 <p class="mt-1 font-mono text-xs text-muted-foreground">{client().id}</p>
               </div>
               <Badge variant={oidcClientStatusBadgeVariant(client().status)}>{client().status}</Badge>
