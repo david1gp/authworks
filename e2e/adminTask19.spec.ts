@@ -1,10 +1,58 @@
 import { AxeBuilder } from "@axe-core/playwright"
 import { expect, test } from "@playwright/test"
+import { demoAdminScenarioGroups } from "../src/features/demo/demoAdminScenarioGroups.js"
 
 const oidcClientId = "01900000-0000-7000-8000-000000000041"
 const machineUserId = "01900000-0000-7000-8000-000000000071"
+const administrationDemoPages = demoAdminScenarioGroups.flatMap((group) =>
+  group.scenarios.filter((scenario) => scenario.availability === "available").map((scenario) => scenario.path),
+)
 
 test.describe("task 19 administration browser fixes", () => {
+  test("every administration demo page has one page heading", async ({ page }) => {
+    test.setTimeout(180_000)
+    for (const viewport of [
+      { height: 900, width: 1440 },
+      { height: 844, width: 390 },
+    ]) {
+      await page.setViewportSize(viewport)
+      for (const path of administrationDemoPages) {
+        const demoPage = await page.context().newPage()
+        try {
+          await demoPage.setViewportSize(viewport)
+          await demoPage.goto(path, { waitUntil: "domcontentloaded" })
+          await expect(demoPage.locator("h1"), `${viewport.width}px ${path}`).toHaveCount(1)
+        } finally {
+          await demoPage.close()
+        }
+      }
+    }
+  })
+
+  test("every administration demo page has no horizontal overflow", async ({ page }) => {
+    test.setTimeout(180_000)
+    for (const viewport of [
+      { height: 900, width: 1440 },
+      { height: 844, width: 390 },
+    ]) {
+      await page.setViewportSize(viewport)
+      for (const path of administrationDemoPages) {
+        const demoPage = await page.context().newPage()
+        try {
+          await demoPage.setViewportSize(viewport)
+          await demoPage.goto(path, { waitUntil: "domcontentloaded" })
+          const documentWidth = await demoPage.evaluate(() => ({
+            client: document.documentElement.clientWidth,
+            scroll: document.documentElement.scrollWidth,
+          }))
+          expect(documentWidth.scroll, `${viewport.width}px ${path}`).toBeLessThanOrEqual(documentWidth.client)
+        } finally {
+          await demoPage.close()
+        }
+      }
+    }
+  })
+
   for (const viewport of [
     { height: 900, name: "desktop", width: 1440 },
     { height: 844, name: "mobile", width: 390 },

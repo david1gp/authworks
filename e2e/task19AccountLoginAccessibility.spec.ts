@@ -40,6 +40,36 @@ test("account destructive actions require keyboard-operable confirmation", async
   }
 })
 
+test("account identity unlink and invitation decline confirmations guard fixture mutations", async ({ page }) => {
+  await page.goto("/demo/account/identities")
+  const identity = page.getByRole("button", { name: "Unlink", exact: true }).first()
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.message()).toBe("Unlink this external account?")
+    await dialog.dismiss()
+  })
+  await identity.click()
+  await expect(page.getByRole("heading", { name: "github", exact: true })).toBeVisible()
+
+  page.once("dialog", (dialog) => void dialog.accept())
+  await identity.click()
+  await expect(page.getByRole("heading", { name: "github", exact: true })).toHaveCount(0)
+
+  await page.goto("/demo/invitations/accept?state=success")
+  const decline = page.getByRole("button", { name: "Decline", exact: true })
+
+  page.once("dialog", async (dialog) => {
+    expect(dialog.message()).toBe("Decline this invitation?")
+    await dialog.dismiss()
+  })
+  await decline.click()
+  await expect(decline).toBeVisible()
+
+  page.once("dialog", (dialog) => void dialog.accept())
+  await decline.click()
+  await expect(page.getByRole("heading", { name: "Invitation declined", exact: true })).toBeVisible()
+})
+
 test("password and consent controls meet text contrast at desktop and mobile sizes", async ({ page }) => {
   for (const viewport of viewports) {
     await page.setViewportSize(viewport)
