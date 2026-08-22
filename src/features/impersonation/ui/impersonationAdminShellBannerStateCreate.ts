@@ -1,5 +1,6 @@
 import { createEffect, createSignal, on, onCleanup } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { impersonationAdminProductionAdapterCreate } from "./impersonationAdminProductionAdapterCreate.js"
 import type { ImpersonationAdminSession } from "./impersonationAdminAdapter.js"
@@ -11,20 +12,29 @@ import type { ImpersonationAdminSession } from "./impersonationAdminAdapter.js"
  */
 export function impersonationAdminShellBannerStateCreate() {
   const session = productionSessionContextGet()
-  const realmId = () => {
+  const fallbackRealmId = () => {
     const realm = session.guard.realm
     return typeof realm === "object" ? realm.realmId : ""
   }
+  const baseUrl = typeof window === "undefined" ? "http://localhost" : window.location.origin
+  const realmId = createSignalObject(fallbackRealmId())
+  createEffect(() => {
+    void productionRealmIdResolve({
+      baseUrl,
+      domain: typeof window === "undefined" ? "localhost" : window.location.host,
+      fallbackRealmId: fallbackRealmId(),
+    }).then(realmId.set)
+  })
   const adapter = impersonationAdminProductionAdapterCreate({
-    baseUrl: typeof window === "undefined" ? "http://localhost" : window.location.origin,
-    realmId,
+    baseUrl,
+    realmId: realmId.get,
   })
   const active = createSignalObject<ImpersonationAdminSession | null>(null)
   const pending = createSignalObject(false)
   const [now, nowSet] = createSignal(Date.now())
 
   createEffect(
-    on(realmId, async (realm) => {
+    on(realmId.get, async (realm) => {
       if (realm.length === 0) return active.set(null)
       const result = await adapter.activeGet()
       // A failed probe simply means no banner; it must never block the surrounding page.

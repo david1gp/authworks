@@ -16,11 +16,11 @@ import { organizationRolesDecode } from "../../organizations/domain/organization
 import { organizationMembershipTable } from "../../organizations/persistence/organizationMembershipTable.js"
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
+import type { SessionCredentialResponse } from "../../sessions/public/sessionCredentialResponseSchema.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { impersonationEventTypes } from "../events/impersonationEventTypes.js"
 import { impersonationStartedEventPayloadSchema } from "../events/impersonationStartedEventPayloadSchema.js"
 import type { ImpersonationSecurityNotification } from "../public/impersonationSecurityNotificationSchema.js"
-import type { ImpersonationStartResponse } from "../public/impersonationStartResponseSchema.js"
 
 const impersonationMaxDurationMs = 15 * 60 * 1_000
 const impersonationPermission = authorizationPermissionDefinitions.userImpersonate
@@ -38,11 +38,15 @@ type ImpersonationStartOptions = {
   readonly targetUserId: string
 }
 
-export function impersonationStart(options: ImpersonationStartOptions): Result<ImpersonationStartResponse> {
+export function impersonationStart(options: ImpersonationStartOptions): Result<SessionCredentialResponse> {
   const op = "impersonationStart"
   if (options.realmId.length === 0 || options.targetUserId.length === 0)
     return resultErrorCreate(op, "The impersonation target is invalid.", "impersonation.invalid")
-  if (options.actor.impersonatorId !== undefined)
+  if (
+    options.actor.impersonatorId !== undefined ||
+    options.actor.impersonationSessionId !== undefined ||
+    options.actor.impersonationPermissions !== undefined
+  )
     return resultErrorCreate(
       op,
       "Impersonation sessions cannot start another impersonation session.",
@@ -176,7 +180,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<I
       executor: transaction,
       expiresAt,
       realmId: options.realmId,
-      impersonationOrganizationId: options.organizationId,
+      ...(options.organizationId === undefined ? {} : { impersonationOrganizationId: options.organizationId }),
       impersonationPermissions: permissions,
       impersonationReason: options.reason.trim(),
       impersonatorId: options.actor.actorId,

@@ -14,6 +14,7 @@ type ImpersonationApiFetch = (input: string | URL | Request, init?: RequestInit)
 
 type ImpersonationApiClientCreateOptions = {
   readonly baseUrl: string
+  readonly csrfToken?: string
   readonly fetch?: ImpersonationApiFetch
   readonly token?: Secret | string
 }
@@ -29,10 +30,17 @@ export function impersonationApiClientCreate(options: ImpersonationApiClientCrea
       schema,
       token: options.token,
     })
+  const browserRequest = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> => {
+    const headers = new Headers(init.headers)
+    if (options.csrfToken !== undefined) headers.set("x-csrf-token", options.csrfToken)
+    return request(path, { ...init, credentials: "same-origin", headers }, schema)
+  }
+  const mutationRequest = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    options.token === undefined ? browserRequest(path, init, schema) : request(path, init, schema)
 
   return {
     impersonationEnd(realmId: string, sessionId: string): Promise<Result<ImpersonationEndResponse>> {
-      return request(
+      return mutationRequest(
         `/realms/${encodeURIComponent(realmId)}/impersonations/${encodeURIComponent(sessionId)}/end`,
         { method: "POST" },
         impersonationEndResponseSchema,
@@ -44,7 +52,7 @@ export function impersonationApiClientCreate(options: ImpersonationApiClientCrea
         return Promise.resolve(
           resultErrorCreate("impersonationApiClientStart", "The request is invalid.", "impersonation.invalid"),
         )
-      return request(
+      return mutationRequest(
         `/realms/${encodeURIComponent(realmId)}/impersonations`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         impersonationStartResponseSchema,

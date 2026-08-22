@@ -36,6 +36,10 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
   const op = "impersonationEnd"
   if (options.realmId.length === 0 || options.sessionId.length === 0)
     return resultErrorCreate(op, "The impersonation session is invalid.", "impersonation.invalid")
+  if (options.actor.realmId !== options.realmId)
+    return resultErrorCreate(op, "The actor is not available in this tenant context.", "authorization.tenant-mismatch")
+  if (options.actor.kind !== "user" && options.actor.kind !== "bootstrap_admin")
+    return resultErrorCreate(op, "The actor is not authorized to end this impersonation.", "authorization.forbidden")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)

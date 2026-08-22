@@ -4,7 +4,9 @@ import type { Result } from "#result"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
+import { sessionBrowserCookieSerialize } from "../../sessions/domain/sessionBrowserCookieSerialize.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
+import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { impersonationEnd } from "../actions/impersonationEnd.js"
 import { impersonationStart } from "../actions/impersonationStart.js"
@@ -41,46 +43,39 @@ export function impersonationServerAppCreate(options: ImpersonationServerAppCrea
         errorMessage: "The impersonation request is invalid.",
         op: "impersonationStart",
       })
-    return impersonationResultResponseCreate(
-      context,
-      impersonationStart({
-        actor: context.get("authorizationActor"),
-        database: options.database,
-        durationMs: input.output.durationSeconds * 1_000,
-        realmId: context.req.param("realmId"),
-        onSecurityNotification: options.onSecurityNotification,
-        ...(input.output.organizationId === undefined ? {} : { organizationId: input.output.organizationId }),
-        reason: input.output.reason,
-        targetUserId: input.output.targetUserId,
-      }),
-      201,
-    )
+    const started = impersonationStart({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      durationMs: input.output.durationSeconds * 1_000,
+      realmId: context.req.param("realmId"),
+      onSecurityNotification: options.onSecurityNotification,
+      ...(input.output.organizationId === undefined ? {} : { organizationId: input.output.organizationId }),
+      reason: input.output.reason,
+      targetUserId: input.output.targetUserId,
+    })
+    if (!context.get("cookieAuthenticated")) return impersonationResultResponseCreate(context, started, 201)
+    const browser = sessionBrowserCredentialResponseCreate(context, started)
+    return impersonationResultResponseCreate(context, browser, 201)
   })
 
-  app.post("/realms/:realmId/impersonations/:sessionId/end", protectedMiddleware, (context) =>
-    impersonationResultResponseCreate(
-      context,
-      impersonationEnd({
-        actor: context.get("authorizationActor"),
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        onSecurityNotification: options.onSecurityNotification,
-        sessionId: context.req.param("sessionId"),
-      }),
-    ),
-  )
-  app.delete("/realms/:realmId/impersonations/:sessionId", protectedMiddleware, (context) =>
-    impersonationResultResponseCreate(
-      context,
-      impersonationEnd({
-        actor: context.get("authorizationActor"),
-        database: options.database,
-        realmId: context.req.param("realmId"),
-        onSecurityNotification: options.onSecurityNotification,
-        sessionId: context.req.param("sessionId"),
-      }),
-    ),
-  )
+  const endRoute = (context: ImpersonationRouteContext) => {
+    const sessionId = context.req.param("sessionId")
+    const ended = impersonationEnd({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      realmId: context.req.param("realmId"),
+      onSecurityNotification: options.onSecurityNotification,
+      sessionId,
+    })
+    if (ended.success && context.get("cookieAuthenticated") && context.get("session").id === sessionId) {
+      const cleared = sessionBrowserCookieSerialize("session", "", { expires: new Date(0), maxAge: 0 })
+      if (!cleared.success) return impersonationErrorResponseCreate(context, cleared)
+      context.header("set-cookie", cleared.data)
+    }
+    return impersonationResultResponseCreate(context, ended)
+  }
+  app.post("/realms/:realmId/impersonations/:sessionId/end", protectedMiddleware, endRoute)
+  app.delete("/realms/:realmId/impersonations/:sessionId", protectedMiddleware, endRoute)
 
   return app
 }
@@ -122,8 +117,10 @@ function impersonationResultResponseCreate<T>(
 type ImpersonationRouteContext = {
   readonly get: {
     (key: "authorizationActor"): AuthorizationActorContext
+    (key: "cookieAuthenticated"): boolean
     (key: "session"): Session
   }
+  readonly header: (name: string, value: string) => void
   readonly json: (body: unknown, status?: number) => Response
   readonly req: {
     readonly json: <T>() => Promise<T>

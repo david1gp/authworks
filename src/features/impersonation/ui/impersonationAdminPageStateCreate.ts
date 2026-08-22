@@ -11,8 +11,8 @@ import type {
 } from "./impersonationAdminAdapter.js"
 import { impersonationAdminDurationBounds } from "./impersonationAdminDurationBounds.js"
 import { impersonationAdminFailureStatusSelect } from "./impersonationAdminFailureStatusSelect.js"
-import { impersonationAdminUserLabel } from "./impersonationAdminUserLabel.js"
 import type { ImpersonationAdminStatus } from "./impersonationAdminStatusSchema.js"
+import { impersonationAdminUserLabel } from "./impersonationAdminUserLabel.js"
 
 type FailedResult = { readonly code?: string; readonly errorMessage: string; readonly statusCode?: number }
 
@@ -81,7 +81,10 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
     if (options.endedSeed?.() === true) notice.set(messageTranslate("admin.impersonation.endedNotice"))
     // A nested attempt is narrated rather than rendered as a generic failure.
     if (current.data.nested) return status.set("nested-rejected")
-    if (current.data.assurance !== "multi_factor" && !current.data.permitted) return status.set("assurance-required")
+    if (!current.data.permitted) {
+      if (current.data.assurance !== "multi_factor") return status.set("assurance-required")
+      return status.set("permission-denied")
+    }
     status.set("ready")
   }
 
@@ -131,7 +134,7 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
     impersonationStart: async () => {
       validationMessage.set(undefined)
       const current = eligibility.get()
-      if (current !== undefined && current.nested) {
+      if (current?.nested) {
         // Refused locally as well, so a nested attempt never reaches the server.
         validationMessage.set(messageTranslate("admin.impersonation.nestedRejected"))
         return
