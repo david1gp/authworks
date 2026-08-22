@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,Odrzucić to zaproszenie?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,Odłączyć to konto zewnętrzne?
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Wszystkie podglądy wiadomości e-mail
+email.preview.html,Podgląd HTML
+email.preview.impersonationEnded,Zakończono podszywanie się
+email.preview.impersonationStarted,Rozpoczęto podszywanie się
+email.preview.invitation,Zaproszenie do organizacji
+email.preview.isolated,Wyświetlono w izolowanej ramce; dostęp do sieci jest wyłączony.
+email.preview.notFound,Nie znaleziono podglądu wiadomości e-mail
+email.preview.otp,Hasło jednorazowe
+email.preview.recipient,Odbiorca testowy
+email.preview.recovery,Odzyskiwanie hasła
+email.preview.securityFailed,Weryfikacja logowania nie powiodła się
+email.preview.securityRequested,Zażądano weryfikacji logowania
+email.preview.securityVerified,Weryfikacja logowania zakończona
+email.preview.subject,Temat
+email.preview.text,Wersja tekstowa
+email.preview.verification,Weryfikacja adresu e-mail
 login.chooser.description,Wybierz sposób logowania się do {organization}.
 login.chooser.emailOtpDetail,Otrzymaj jednorazowy kod e-mailem
 login.chooser.emailOtpLabel,Kod e-mail

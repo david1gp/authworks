@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,Deze uitnodiging weigeren?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,Dit externe account ontkoppelen?
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Alle e-mailvoorbeelden
+email.preview.html,HTML-voorbeeld
+email.preview.impersonationEnded,Impersonatie beëindigd
+email.preview.impersonationStarted,Impersonatie gestart
+email.preview.invitation,Uitnodiging voor organisatie
+email.preview.isolated,Weergegeven in een geïsoleerd frame; netwerktoegang is uitgeschakeld.
+email.preview.notFound,E-mailvoorbeeld niet gevonden
+email.preview.otp,Eenmalig wachtwoord
+email.preview.recipient,Testontvanger
+email.preview.recovery,Wachtwoordherstel
+email.preview.securityFailed,Verificatie van aanmelding mislukt
+email.preview.securityRequested,Verificatie van aanmelding aangevraagd
+email.preview.securityVerified,Verificatie van aanmelding voltooid
+email.preview.subject,Onderwerp
+email.preview.text,Tekstalternatief
+email.preview.verification,E-mailverificatie
 login.chooser.description,Kies cómo inloggen en {organization}.
 login.chooser.emailOtpDetail,Reciba un code de un solo uso por e-mail electrónico
 login.chooser.emailOtpLabel,Code por e-mail

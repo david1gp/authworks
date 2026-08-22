@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,¿Rechazar esta invitación?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,¿Desvincular esta cuenta externa?
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Todas las vistas previas de correo electrónico
+email.preview.html,Vista previa de HTML
+email.preview.impersonationEnded,Impersonación finalizada
+email.preview.impersonationStarted,Impersonación iniciada
+email.preview.invitation,Invitación a la organización
+email.preview.isolated,Representado en un marco aislado; el acceso a la red está deshabilitado.
+email.preview.notFound,No se encontró la vista previa del correo electrónico
+email.preview.otp,Contraseña de un solo uso
+email.preview.recipient,Destinatario de prueba
+email.preview.recovery,Recuperación de contraseña
+email.preview.securityFailed,Falló la verificación del inicio de sesión
+email.preview.securityRequested,Se solicitó la verificación del inicio de sesión
+email.preview.securityVerified,Verificación del inicio de sesión completada
+email.preview.subject,Asunto
+email.preview.text,Alternativa de texto
+email.preview.verification,Verificación del correo electrónico
 login.chooser.description,Elija cómo iniciar sesión en {organization}.
 login.chooser.emailOtpDetail,Reciba un código de un solo uso por correo electrónico
 login.chooser.emailOtpLabel,Código por correo

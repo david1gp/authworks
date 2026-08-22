@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,要拒绝此邀请吗？
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,要取消关联此外部账户吗？
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,所有电子邮件预览
+email.preview.html,HTML 预览
+email.preview.impersonationEnded,模拟身份已结束
+email.preview.impersonationStarted,模拟身份已开始
+email.preview.invitation,组织邀请
+email.preview.isolated,在禁用网络访问的隔离框架中呈现。
+email.preview.notFound,找不到电子邮件预览
+email.preview.otp,一次性密码
+email.preview.recipient,测试收件人
+email.preview.recovery,密码恢复
+email.preview.securityFailed,登录验证失败
+email.preview.securityRequested,已请求登录验证
+email.preview.securityVerified,登录验证已完成
+email.preview.subject,主题
+email.preview.text,文本替代内容
+email.preview.verification,电子邮件验证
 login.chooser.description,选择登录 {organization} 的方式
 login.chooser.emailOtpDetail,通过电子邮件接收一次性代码
 login.chooser.emailOtpLabel,电子邮件代码

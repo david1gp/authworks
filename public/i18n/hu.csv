@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,Elutasítja ezt a meghívást?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,Leválasztja ezt a külső fiókot?
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Összes e-mail-előnézet
+email.preview.html,HTML-előnézet
+email.preview.impersonationEnded,A megszemélyesítés befejeződött
+email.preview.impersonationStarted,A megszemélyesítés elindult
+email.preview.invitation,Szervezeti meghívó
+email.preview.isolated,Elszigetelt keretben megjelenítve; a hálózati hozzáférés le van tiltva.
+email.preview.notFound,Az e-mail-előnézet nem található
+email.preview.otp,Egyszer használatos jelszó
+email.preview.recipient,Tesztcímzett
+email.preview.recovery,Jelszó-helyreállítás
+email.preview.securityFailed,A bejelentkezés ellenőrzése sikertelen
+email.preview.securityRequested,Bejelentkezés-ellenőrzés kérve
+email.preview.securityVerified,A bejelentkezés ellenőrzése befejeződött
+email.preview.subject,Tárgy
+email.preview.text,Szöveges változat
+email.preview.verification,E-mail-ellenőrzés
 login.chooser.description,"Válassza ki, hogyan szeretne bejelentkezni a {organization} szolgáltatásba."
 login.chooser.emailOtpDetail,Kapjon egy egyszeri kódot e-mailben
 login.chooser.emailOtpLabel,E-mail kód

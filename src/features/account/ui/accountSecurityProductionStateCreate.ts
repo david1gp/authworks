@@ -93,8 +93,10 @@ export function accountSecurityProductionStateCreate(options: {
     codeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => totpCode.set(event.currentTarget.value),
     error: error.get,
     identities: identities.get,
-    identityUnlink: (providerId: string, externalSubject: string) =>
-      void mutate(`identity:${providerId}`, () => api.identityUnlink(options.realmId(), providerId, externalSubject)),
+    identityUnlink: (providerId: string, externalSubject: string) => {
+      if (!window.confirm(messageTranslate("account.identities.unlinkConfirm"))) return
+      void mutate(`identity:${providerId}`, () => api.identityUnlink(options.realmId(), providerId, externalSubject))
+    },
     methods: methods.get,
     oneTimeCodes: oneTimeCodes.get,
     oneTimeCodesDismiss: () => oneTimeCodes.set([]),

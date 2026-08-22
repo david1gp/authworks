@@ -113,8 +113,10 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     codeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => code.set(event.currentTarget.value),
     error: () => (selected() === "error" ? "The deterministic account API fixture could not be loaded." : undefined),
     identities: () => visible(identities.get()),
-    identityUnlink: (providerId: string) =>
-      identities.set(identities.get().filter((item) => item.providerId !== providerId)),
+    identityUnlink: (providerId: string) => {
+      if (!window.confirm(messageTranslate("account.identities.unlinkConfirm"))) return
+      identities.set(identities.get().filter((item) => item.providerId !== providerId))
+    },
     methods: methods.get,
     oneTimeCodes: oneTimeCodes.get,
     oneTimeCodesDismiss: () => oneTimeCodes.set([]),

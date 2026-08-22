@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,هل تريد إلغاء وصول التطب
 account.access.consentRevoked,تم إلغاء وصول التطبيق.
 account.access.created,مُنح في {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,هل تريد رفض هذه الدعوة؟
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,هل تريد إلغاء ربط هذا الحساب الخارجي؟
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,جميع معاينات البريد الإلكتروني
+email.preview.html,معاينة HTML
+email.preview.impersonationEnded,انتهى انتحال الهوية
+email.preview.impersonationStarted,بدأ انتحال الهوية
+email.preview.invitation,دعوة إلى المؤسسة
+email.preview.isolated,يُعرض في إطار معزول مع تعطيل الوصول إلى الشبكة.
+email.preview.notFound,تعذّر العثور على معاينة البريد الإلكتروني
+email.preview.otp,كلمة مرور لمرة واحدة
+email.preview.recipient,مستلم تجريبي
+email.preview.recovery,استعادة كلمة المرور
+email.preview.securityFailed,فشل التحقق من تسجيل الدخول
+email.preview.securityRequested,طُلب التحقق من تسجيل الدخول
+email.preview.securityVerified,اكتمل التحقق من تسجيل الدخول
+email.preview.subject,الموضوع
+email.preview.text,البديل النصي
+email.preview.verification,التحقق من البريد الإلكتروني
 login.chooser.description,اختر طريقة تسجيل الدخول إلى {organization}
 login.chooser.emailOtpDetail,استلام رمز لمرة واحدة عبر البريد الإلكتروني
 login.chooser.emailOtpLabel,رمز البريد الإلكتروني

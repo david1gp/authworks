@@ -130,7 +130,10 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
     error: () => (selected() === "error" ? "The deterministic account fixture failed." : undefined),
     invitation: () => invitationFixture,
     invitationAccept: () => outcome.set("accepted"),
-    invitationDecline: () => outcome.set("declined"),
+    invitationDecline: () => {
+      if (!window.confirm(messageTranslate("account.access.invitationDeclineConfirm"))) return
+      outcome.set("declined")
+    },
     invitations: () => (selected() === "empty" ? [] : invitations.get()),
     notice: notice.get,
     organizationSwitch: (organizationId: string) => {

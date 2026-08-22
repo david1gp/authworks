@@ -103,7 +103,7 @@ export function accountAccessProductionStateCreate(screen: () => AccountAccessSc
       if (succeeded) status.set("accepted")
     },
     invitationDecline: async () => {
-      if (!window.confirm("Decline this invitation?")) return
+      if (!window.confirm(messageTranslate("account.access.invitationDeclineConfirm"))) return
       const succeeded = await mutate("invitation:decline", () => api.invitationDecline(realmId(), token()), true)
       if (succeeded) status.set("declined")
     },

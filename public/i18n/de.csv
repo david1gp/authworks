@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Zugriff für {clientId} widerrufen?
 account.access.consentRevoked,Der Anwendungszugriff wurde widerrufen.
 account.access.created,Erteilt am {date}
 account.access.declined,Einladung abgelehnt
+account.access.invitationDeclineConfirm,Diese Einladung ablehnen?
 account.access.email,E-Mail
 account.access.error,Die Kontoinformationen konnten nicht geladen werden.
 account.access.expired,Diese Einladung ist abgelaufen.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Bestätigungscode
 account.identities.description,"Externe Konten, die mit Ihrer Authworks-Identität verknüpft sind. Trennen Sie Konten, die Sie nicht mehr nutzen."
 account.identities.empty,Es sind keine externen Identitäten verknüpft
 account.identities.unlink,Trennen
+account.identities.unlinkConfirm,Dieses externe Konto trennen?
 account.passkeys.add,Passkey hinzufügen
 account.passkeys.created,Erstellt am {date}
 account.passkeys.description,Passkeys nutzen die Bildschirmsperre Ihres Geräts oder einen Sicherheitsschlüssel für die sichere Anmeldung.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Alle E-Mail-Vorschauen
+email.preview.html,HTML-Vorschau
+email.preview.impersonationEnded,Identitätsübernahme beendet
+email.preview.impersonationStarted,Identitätsübernahme gestartet
+email.preview.invitation,Einladung zur Organisation
+email.preview.isolated,In einem isolierten Frame gerendert; Netzwerkzugriff ist deaktiviert.
+email.preview.notFound,E-Mail-Vorschau nicht gefunden
+email.preview.otp,Einmalpasswort
+email.preview.recipient,Testempfänger
+email.preview.recovery,Passwort-Wiederherstellung
+email.preview.securityFailed,Anmeldebestätigung fehlgeschlagen
+email.preview.securityRequested,Anmeldebestätigung angefordert
+email.preview.securityVerified,Anmeldebestätigung abgeschlossen
+email.preview.subject,Betreff
+email.preview.text,Textalternative
+email.preview.verification,E-Mail-Verifizierung
 login.chooser.description,"Wählen Sie aus, wie Sie sich bei {organization} anmelden möchten."
 login.chooser.emailOtpDetail,Erhalten Sie einen Einmalcode per E-Mail
 login.chooser.emailOtpLabel,E-Mail-Code

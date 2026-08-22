@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,Отклонить это приглашение?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,Отвязать эту внешнюю учётную запись?
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Все предварительные просмотры электронной почты
+email.preview.html,Предварительный просмотр HTML
+email.preview.impersonationEnded,Имперсонация завершена
+email.preview.impersonationStarted,Имперсонация начата
+email.preview.invitation,Приглашение в организацию
+email.preview.isolated,Отображается в изолированном фрейме; доступ к сети отключён.
+email.preview.notFound,Предварительный просмотр письма не найден
+email.preview.otp,Одноразовый пароль
+email.preview.recipient,Тестовый получатель
+email.preview.recovery,Восстановление пароля
+email.preview.securityFailed,Проверка входа не удалась
+email.preview.securityRequested,Запрошена проверка входа
+email.preview.securityVerified,Проверка входа завершена
+email.preview.subject,Тема
+email.preview.text,Текстовая версия
+email.preview.verification,Подтверждение электронной почты
 login.chooser.description,"Выберите, как вы хотите войти в {organization}."
 login.chooser.emailOtpDetail,Получите одноразовый код на электронную почту
 login.chooser.emailOtpLabel,Код электронной почты

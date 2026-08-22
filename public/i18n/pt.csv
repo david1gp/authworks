@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,Recusar este convite?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,Desvincular esta conta externa?
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Todas as pré-visualizações de e-mail
+email.preview.html,Pré-visualização HTML
+email.preview.impersonationEnded,Impersonação terminada
+email.preview.impersonationStarted,Impersonação iniciada
+email.preview.invitation,Convite para a organização
+email.preview.isolated,Apresentado num frame isolado; o acesso à rede está desativado.
+email.preview.notFound,Pré-visualização de e-mail não encontrada
+email.preview.otp,Código de uso único
+email.preview.recipient,Destinatário de teste
+email.preview.recovery,Recuperação de senha
+email.preview.securityFailed,Falha na verificação do início de sessão
+email.preview.securityRequested,Verificação do login solicitada
+email.preview.securityVerified,Verificação do login concluída
+email.preview.subject,Assunto
+email.preview.text,Alternativa de texto
+email.preview.verification,Verificação de e-mail
 login.chooser.description,Escolha como deseja fazer login em {organization}.
 login.chooser.emailOtpDetail,Receba um código único por e-mail
 login.chooser.emailOtpLabel,Código de e-mail

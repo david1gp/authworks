@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,この招待を辞退しますか？
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,この外部アカウントのリンクを解除しますか？
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,すべてのメールプレビュー
+email.preview.html,HTMLプレビュー
+email.preview.impersonationEnded,代理操作が終了しました
+email.preview.impersonationStarted,代理操作が開始されました
+email.preview.invitation,組織への招待
+email.preview.isolated,ネットワークアクセスを無効にしたサンドボックスフレームに表示されています。
+email.preview.notFound,メールプレビューが見つかりません
+email.preview.otp,ワンタイムパスワード
+email.preview.recipient,テスト受信者
+email.preview.recovery,パスワードの復旧
+email.preview.securityFailed,サインインの検証に失敗しました
+email.preview.securityRequested,サインインの検証が要求されました
+email.preview.securityVerified,サインインの検証が完了しました
+email.preview.subject,件名
+email.preview.text,テキスト版
+email.preview.verification,メールアドレスの確認
 login.chooser.description,{organization} へのログイン方法を選択してください
 login.chooser.emailOtpDetail,メールでワンタイムコードを受け取る
 login.chooser.emailOtpLabel,メールコード

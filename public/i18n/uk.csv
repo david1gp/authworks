@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,Відхилити це запрошення?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,Від’єднати цей зовнішній обліковий запис?
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Усі попередні перегляди електронних листів
+email.preview.html,Попередній перегляд HTML
+email.preview.impersonationEnded,Імперсонацію завершено
+email.preview.impersonationStarted,Імперсонацію розпочато
+email.preview.invitation,Запрошення до організації
+email.preview.isolated,Відображено в ізольованому фреймі; доступ до мережі вимкнено.
+email.preview.notFound,Попередній перегляд електронного листа не знайдено
+email.preview.otp,Одноразовий пароль
+email.preview.recipient,Тестовий одержувач
+email.preview.recovery,Відновлення пароля
+email.preview.securityFailed,Не вдалося перевірити вхід
+email.preview.securityRequested,Запит на перевірку входу надіслано
+email.preview.securityVerified,Перевірку входу завершено
+email.preview.subject,Тема
+email.preview.text,Текстова версія
+email.preview.verification,Підтвердження електронної пошти
 login.chooser.description,Виберіть спосіб входу в {organization}
 login.chooser.emailOtpDetail,Отримати одноразовий код електронною поштою
 login.chooser.emailOtpLabel,Код із електронної пошти

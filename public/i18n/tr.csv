@@ -27,6 +27,7 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.invitationDeclineConfirm,Bu davet reddedilsin mi?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
@@ -68,6 +69,7 @@ account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.unlink,Unlink
+account.identities.unlinkConfirm,Bu harici hesabın bağlantısı kaldırılsın mı?
 account.passkeys.add,Add passkey
 account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
@@ -585,22 +587,22 @@ email.directory.open,Open preview
 email.directory.title,Email previews
 email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
 email.hub.open,Open email previews
-email.preview.back,All email previews
-email.preview.html,HTML preview
-email.preview.impersonationEnded,Impersonation ended
-email.preview.impersonationStarted,Impersonation started
-email.preview.invitation,Organization invitation
-email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
-email.preview.notFound,Email preview not found
-email.preview.otp,One-time password
-email.preview.recipient,Fixture recipient
-email.preview.recovery,Password recovery
-email.preview.securityFailed,Sign-in verification failed
-email.preview.securityRequested,Sign-in verification requested
-email.preview.securityVerified,Sign-in verification completed
-email.preview.subject,Subject
-email.preview.text,Text alternative
-email.preview.verification,Email verification
+email.preview.back,Tüm e-posta önizlemeleri
+email.preview.html,HTML önizlemesi
+email.preview.impersonationEnded,Taklit sona erdi
+email.preview.impersonationStarted,Taklit başlatıldı
+email.preview.invitation,Kuruluş daveti
+email.preview.isolated,Ağ erişimi devre dışı bırakılmış yalıtılmış bir çerçevede oluşturuldu.
+email.preview.notFound,E-posta önizlemesi bulunamadı
+email.preview.otp,Tek kullanımlık şifre
+email.preview.recipient,Test alıcısı
+email.preview.recovery,Şifre kurtarma
+email.preview.securityFailed,Oturum açma doğrulaması başarısız oldu
+email.preview.securityRequested,Oturum açma doğrulaması istendi
+email.preview.securityVerified,Oturum açma doğrulaması tamamlandı
+email.preview.subject,Konu
+email.preview.text,Metin alternatifi
+email.preview.verification,E-posta doğrulaması
 login.chooser.description,{organization}'da nasıl oturum açmak istediğinizi seçin.
 login.chooser.emailOtpDetail,E-postayla tek seferlik kod alın
 login.chooser.emailOtpLabel,E-posta kodu
