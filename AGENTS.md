@@ -5,6 +5,8 @@
 - Use Bun for installation, scripts, tests, and builds. Keep the package strict ESM TypeScript.
 - Run `bun run check` before completing a change. It formats-checks, typechecks, tests, and builds all outputs.
 - Use Biome for formatting and linting. Follow the `code-style` skill for TypeScript.
+- Run tests with a maximum concurrency of 1.
+- After a failure, run only the failing file/test name.
 
 ## Architecture and import boundaries
 
