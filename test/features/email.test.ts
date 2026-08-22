@@ -1,8 +1,13 @@
 import { expect, test } from "bun:test"
 import { emailGeneratorApiClientCreate } from "../../src/features/email/client/emailGeneratorApiClientCreate.js"
+import { emailOtpSecurityFailedPreviewFixture } from "../../src/features/email/fixtures/emailOtpSecurityFailedPreviewFixture.js"
+import { emailOtpSecurityRequestedPreviewFixture } from "../../src/features/email/fixtures/emailOtpSecurityRequestedPreviewFixture.js"
+import { emailOtpSecurityVerifiedPreviewFixture } from "../../src/features/email/fixtures/emailOtpSecurityVerifiedPreviewFixture.js"
 import { emailOtpPreviewFixture } from "../../src/features/email/fixtures/emailOtpPreviewFixture.js"
 import { emailRecoveryPreviewFixture } from "../../src/features/email/fixtures/emailRecoveryPreviewFixture.js"
 import { emailVerificationPreviewFixture } from "../../src/features/email/fixtures/emailVerificationPreviewFixture.js"
+import { impersonationEndedPreviewFixture } from "../../src/features/email/fixtures/impersonationEndedPreviewFixture.js"
+import { impersonationStartedPreviewFixture } from "../../src/features/email/fixtures/impersonationStartedPreviewFixture.js"
 import { organizationInvitationPreviewFixture } from "../../src/features/email/fixtures/organizationInvitationPreviewFixture.js"
 
 type CapturedRequest = {
@@ -17,9 +22,9 @@ function fakeEmailGeneratorFetchCreate(requests: CapturedRequest[]) {
     const path = new URL(request.url).pathname
     requests.push({ body, path })
     return Response.json({
-      html: `<main data-template="${path}">${String(body.code ?? body.entityName)}</main>`,
+      html: `<main data-template="${path}">${String(body.code ?? body.entityName ?? body.subject)}</main>`,
       subject: `Preview ${path}`,
-      text: `Rendered ${String(body.code ?? body.entityName)}`,
+      text: `Rendered ${String(body.code ?? body.entityName ?? body.subject)}`,
     })
   }
 }
@@ -31,20 +36,35 @@ test("email generator adapter renders callback-compatible delivery fixtures thro
     fetch: fakeEmailGeneratorFetchCreate(requests),
   })
 
-  const [verification, otp, recovery, invitation] = await Promise.all([
+  const [verification, otp, recovery, invitation, requested, verified, failed, started, ended] = await Promise.all([
     client.emailVerificationRender(emailVerificationPreviewFixture),
     client.emailOtpRender(emailOtpPreviewFixture),
     client.emailRecoveryRender(emailRecoveryPreviewFixture),
     client.organizationInvitationRender(organizationInvitationPreviewFixture),
+    client.emailOtpSecurityNotificationRender(emailOtpSecurityRequestedPreviewFixture),
+    client.emailOtpSecurityNotificationRender(emailOtpSecurityVerifiedPreviewFixture),
+    client.emailOtpSecurityNotificationRender(emailOtpSecurityFailedPreviewFixture),
+    client.impersonationStartedRender(impersonationStartedPreviewFixture),
+    client.impersonationEndedRender(impersonationEndedPreviewFixture),
   ])
 
   expect(verification.success).toBe(true)
   expect(otp.success).toBe(true)
   expect(recovery.success).toBe(true)
   expect(invitation.success).toBe(true)
+  expect(requested.success).toBe(true)
+  expect(verified.success).toBe(true)
+  expect(failed.success).toBe(true)
+  expect(started.success).toBe(true)
+  expect(ended.success).toBe(true)
   expect(requests.map(({ path }) => path).sort()).toEqual([
     "/renderEmailTemplate/orgInvitationV1",
     "/renderEmailTemplate/passwordChangeV1",
+    "/renderEmailTemplate/securityNotificationV1",
+    "/renderEmailTemplate/securityNotificationV1",
+    "/renderEmailTemplate/securityNotificationV1",
+    "/renderEmailTemplate/securityNotificationV1",
+    "/renderEmailTemplate/securityNotificationV1",
     "/renderEmailTemplate/signInV1",
     "/renderEmailTemplate/signUpV1",
   ])
@@ -65,13 +85,30 @@ test("email generator adapter renders callback-compatible delivery fixtures thro
   })
   expect(invitationRequest?.body.email).toBeUndefined()
   expect(verificationRequest?.body.l).toBe("en")
+  expect(requests.filter(({ path }) => path.endsWith("securityNotificationV1"))).toHaveLength(5)
 
-  if (!verification.success || !otp.success || !recovery.success || !invitation.success) return
+  if (
+    !verification.success ||
+    !otp.success ||
+    !recovery.success ||
+    !invitation.success ||
+    !requested.success ||
+    !verified.success ||
+    !failed.success ||
+    !started.success ||
+    !ended.success
+  )
+    return
   expect(verification.data.html).toContain("signUpV1")
   expect(verification.data.text).toContain(emailVerificationPreviewFixture.delivery.token)
   expect(otp.data.html).toContain("signInV1")
   expect(recovery.data.html).toContain("passwordChangeV1")
   expect(invitation.data.html).toContain("orgInvitationV1")
+  expect(requested.data.html).toContain("Sign-in verification requested")
+  expect(verified.data.text).toContain("Sign-in verification completed")
+  expect(failed.data.text).toContain("Sign-in verification failed")
+  expect(started.data.html).toContain("Impersonation started")
+  expect(ended.data.html).toContain("Impersonation ended")
 })
 
 test("email generator adapter rejects invalid callback payloads before calling the server", async () => {

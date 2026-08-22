@@ -33,6 +33,8 @@ test("root library publishes HTTP GET contracts", () => {
 test("every completed feature has a public library subpath and client", () => {
   expect(authorization.authorizationActorContextSchema).toBeDefined()
   expect(email.emailGeneratorApiClientCreate).toBeFunction()
+  expect(email.imapMailReceivePortCreate).toBeFunction()
+  expect(email.smtpMailDeliveryPortCreate).toBeFunction()
   expect(emailOtp.emailOtpApiClientCreate).toBeFunction()
   expect(events.eventApiClientCreate).toBeFunction()
   expect(externalIdentities.externalIdentityApiClientCreate).toBeFunction()
@@ -82,6 +84,7 @@ test("every API client publishes its complete method set", () => {
     "userList",
     "userMeGet",
     "userMeAuthenticationMethodsGet",
+    "userTenantAuthenticationMethodsGet",
     "userMeProfileUpdate",
     "userProfileUpdate",
     "userLifecycleSet",
@@ -109,15 +112,25 @@ test("every API client publishes its complete method set", () => {
     "passwordPolicyTenantSet",
     "passwordPolicySet",
   ])
-  expect(Object.keys(email.emailGeneratorApiClientCreate(options))).toHaveLength(4)
+  expect(Object.keys(email.emailGeneratorApiClientCreate(options))).toEqual([
+    "emailOtpSecurityNotificationRender",
+    "emailVerificationRender",
+    "emailOtpRender",
+    "emailRecoveryRender",
+    "organizationInvitationRender",
+    "impersonationEndedRender",
+    "impersonationStartedRender",
+  ])
   expect(Object.keys(sessions.sessionApiClientCreate(options))).toEqual([
     "sessionBootstrapAdminSignIn",
     "sessionCurrent",
     "sessionList",
+    "sessionUserList",
     "sessionMeList",
     "sessionRecentList",
     "sessionRotate",
     "sessionRevoke",
+    "sessionUserRevoke",
     "sessionMeRevoke",
     "sessionRevokeAll",
     "sessionMeRevokeAll",

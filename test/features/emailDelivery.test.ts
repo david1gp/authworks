@@ -74,7 +74,7 @@ test("composed server renders and delivers verification, recovery, OTP, and invi
     expect(registered.success).toBe(true)
     await queuedDeliveryFlush()
     expect(requests[0]?.path).toBe("/renderEmailTemplate/signUpV1")
-    expect(requests[0]?.body.url).toContain(`/login/verify?realmId=${realm.data.realm.id}&token=`)
+    expect(requests[0]?.body.url).toContain(`/login/verify-email?realmId=${realm.data.realm.id}&token=`)
     expect(fakeMail.messages[0]?.to).toBe("member@example.com")
 
     const verificationToken = String(requests[0]?.body.code)
@@ -85,7 +85,7 @@ test("composed server renders and delivers verification, recovery, OTP, and invi
     ).toBe(true)
     await queuedDeliveryFlush()
     expect(requests[1]?.path).toBe("/renderEmailTemplate/passwordChangeV1")
-    expect(requests[1]?.body.url).toContain(`/login/recovery?realmId=${realm.data.realm.id}&token=`)
+    expect(requests[1]?.body.url).toContain(`/login/password/reset?realmId=${realm.data.realm.id}&token=`)
     expect(fakeMail.messages[1]?.to).toBe("member@example.com")
 
     const emailOtp = emailOtpApiClientCreate({ baseUrl, fetch: fetchFromServer })

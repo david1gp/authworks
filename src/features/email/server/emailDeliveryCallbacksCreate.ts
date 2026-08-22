@@ -56,7 +56,7 @@ export function emailDeliveryCallbacksCreate(options: EmailDeliveryCallbacksCrea
         renderer.emailRecoveryRender({
           delivery,
           footer,
-          url: emailDeliveryUrlCreate(options.publicOrigin, "/login/recovery", {
+          url: emailDeliveryUrlCreate(options.publicOrigin, "/login/password/reset", {
             realmId: delivery.realmId,
             token: delivery.token,
           }),
@@ -70,7 +70,7 @@ export function emailDeliveryCallbacksCreate(options: EmailDeliveryCallbacksCrea
         renderer.emailVerificationRender({
           delivery,
           footer,
-          url: emailDeliveryUrlCreate(options.publicOrigin, "/login/verify", {
+          url: emailDeliveryUrlCreate(options.publicOrigin, "/login/verify-email", {
             realmId: delivery.realmId,
             token: delivery.token,
           }),
