@@ -1,4 +1,6 @@
 import { serverApplicationCreate } from "../compositions/serverApplicationCreate.js"
+import { mailTransportConfigurationParse } from "../features/email/server/mailTransportConfigurationParse.js"
+import { smtpMailDeliveryPortCreate } from "../features/email/server/smtpMailDeliveryPortCreate.js"
 import { configurationParse } from "../platform/configuration/configurationParse.js"
 
 export function serverListen(): void {
@@ -14,8 +16,17 @@ export function serverListen(): void {
     process.exit(1)
   }
 
+  const mailConfiguration = mailTransportConfigurationParse(process.env, parsed.data.publicOrigin)
+  if (!mailConfiguration.success) {
+    console.error(mailConfiguration.errorMessage)
+    process.exit(1)
+  }
+
   const created = serverApplicationCreate({
     databasePath: parsed.data.databasePath,
+    emailGenerator: mailConfiguration.data?.emailGenerator,
+    mailDelivery:
+      mailConfiguration.data === undefined ? undefined : smtpMailDeliveryPortCreate(mailConfiguration.data.smtp),
     production: parsed.data.nodeEnv === "production",
     publicOrigin: parsed.data.publicOrigin,
     systemSecret: process.env.AUTHWORKS_SYSTEM_SECRET,
