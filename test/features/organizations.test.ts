@@ -839,6 +839,24 @@ test("subject-bound organization self-service stays isolated and protects invita
     expect(declined).toMatchObject({ success: true, data: { declined: true } })
     expect(JSON.stringify(declined)).not.toContain(declinedInvitation.data.token)
 
+    const existingMembershipInvitation = organizationInvitationCreate({
+      context: system,
+      database,
+      input: { email: alphaUser.email, roles: ["guest"] },
+      realmId: alpha.id,
+      organizationId: alphaOrganization.data.organization.id,
+    })
+    expect(existingMembershipInvitation.success).toBe(true)
+    if (!existingMembershipInvitation.success) return
+    const existingMembershipAccepted = await client.organizationInvitationMeAccept(alpha.id, {
+      token: existingMembershipInvitation.data.token,
+    })
+    expect(existingMembershipAccepted).toMatchObject({
+      success: true,
+      data: { membership: { organizationId: alphaOrganization.data.organization.id, roles: ["guest", "owner"] } },
+    })
+    expect(JSON.stringify(existingMembershipAccepted)).not.toContain(existingMembershipInvitation.data.token)
+
     const crossRealm = await app.request(`https://server.test/realms/${beta.id}/me/organizations`, {
       headers: { authorization: `Bearer ${issued.data.token}` },
     })

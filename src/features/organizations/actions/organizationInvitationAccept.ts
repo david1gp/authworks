@@ -11,6 +11,7 @@ import { organizationInvitationTokenHashCreate } from "../domain/organizationInv
 import { organizationMembershipPublicViewCreate } from "../domain/organizationMembershipPublicViewCreate.js"
 import { organizationRolesDecode } from "../domain/organizationRolesDecode.js"
 import { organizationRolesEncode } from "../domain/organizationRolesEncode.js"
+import { organizationRolesNormalize } from "../domain/organizationRolesNormalize.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationInvitationStatusEventPayloadSchema } from "../events/organizationInvitationStatusEventPayloadSchema.js"
 import { organizationMembershipEventPayloadSchema } from "../events/organizationMembershipEventPayloadSchema.js"
@@ -162,7 +163,9 @@ export function organizationInvitationAccept(
     } else {
       const existingRoles = organizationRolesDecode(existing.data.roles)
       if (!existingRoles.success) return existingRoles
-      const combinedRoles = organizationRolesEncode([...new Set([...existingRoles.data, ...invitationRoles.data])])
+      const combinedRoleIds = organizationRolesNormalize([...new Set([...existingRoles.data, ...invitationRoles.data])])
+      if (!combinedRoleIds.success) return combinedRoleIds
+      const combinedRoles = organizationRolesEncode(combinedRoleIds.data)
       if (!combinedRoles.success) return combinedRoles
       const updated = repository.organizationMembershipUpdate(existing.data.id, {
         roles: combinedRoles.data,
@@ -177,7 +180,7 @@ export function organizationInvitationAccept(
       membership = view.data
       const membershipPayload = v.safeParse(organizationMembershipEventPayloadSchema, {
         membershipId: updated.data.id,
-        roles: combinedRoles.data,
+        roles: combinedRoleIds.data,
         userId: updated.data.userId,
       })
       if (!membershipPayload.success)
