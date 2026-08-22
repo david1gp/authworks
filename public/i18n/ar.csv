@@ -1,10 +1,31 @@
 key,ar
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
-account.access.consentDescription,Applications that can access information from your account.
-account.access.consentEmpty,No applications have access to this account.
-account.access.consentRevoked,Application access was revoked.
-account.access.created,Granted {date}
+account.access.consentDescription,التطبيقات التي يمكنها الوصول إلى معلومات من حسابك.
+account.access.consentEmpty,لا توجد تطبيقات لديها حق الوصول إلى هذا الحساب.
+account.access.consentRevokeConfirm,هل تريد إلغاء وصول التطبيق {clientId}؟
+account.access.consentRevoked,تم إلغاء وصول التطبيق.
+account.access.created,مُنح في {date}
 account.access.declined,Invitation declined
 account.access.email,Email
 account.access.error,This account information could not be loaded.
@@ -19,7 +40,7 @@ account.access.organizationDescription,Choose which organization you are working
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.permission,You do not have permission to perform this action.
 account.access.roles,Roles: {roles}
-account.access.scopes,Permissions: {scopes}
+account.access.scopes,الأذونات: {scopes}
 account.access.switchOrganization,Switch organization
 account.access.switched,Organization context changed to {organization}.
 account.delete.confirmLabel,Enter {email} to confirm
@@ -93,7 +114,8 @@ account.sessions.current,Current session
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
 account.sessions.empty,No active sessions
 account.sessions.lastUsed,Last used {date}
-account.sessions.revoke,Revoke session
+account.sessions.revoke,إلغاء الجلسة
+account.sessions.revokeConfirm,هل تريد إلغاء هذه الجلسة فورًا؟
 account.sessions.unknownDevice,Unknown device
 account.status.available,Available
 account.status.configured,Configured
@@ -544,7 +566,7 @@ common.error,حدث خطأ ما.
 common.language,اللغة
 common.loading,جارٍ التحميل
 common.retry,إعادة المحاولة
-common.revoke,Revoke
+common.revoke,إبطال
 common.save,حفظ
 common.signIn,تسجيل الدخول
 common.signInWithProvider,تسجيل الدخول باستخدام {provider}
@@ -555,7 +577,7 @@ demo.nav.admin,Admin
 demo.nav.compact,Compact
 demo.nav.emails,Emails
 demo.nav.hub,Hub
-demo.nav.label,Demo
+demo.nav.label,العرض التوضيحي
 demo.nav.login,Login
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
@@ -565,12 +587,17 @@ email.hub.description,Review isolated HTML and plain-text transactional message 
 email.hub.open,Open email previews
 email.preview.back,All email previews
 email.preview.html,HTML preview
+email.preview.impersonationEnded,Impersonation ended
+email.preview.impersonationStarted,Impersonation started
 email.preview.invitation,Organization invitation
 email.preview.isolated,Rendered in a sandboxed frame with network access disabled.
 email.preview.notFound,Email preview not found
 email.preview.otp,One-time password
 email.preview.recipient,Fixture recipient
 email.preview.recovery,Password recovery
+email.preview.securityFailed,Sign-in verification failed
+email.preview.securityRequested,Sign-in verification requested
+email.preview.securityVerified,Sign-in verification completed
 email.preview.subject,Subject
 email.preview.text,Text alternative
 email.preview.verification,Email verification
@@ -719,3 +746,34 @@ admin.impersonation.title,Impersonation
 admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
 admin.impersonation.activeTitle,Active impersonation
 admin.impersonation.userAction,Impersonate this user
+app.tagline,Secure identity services
+demo.account.eyebrow,Self-service identity
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.admin.eyebrow,Realm administration
+demo.admin.directoryTitle,Administration directory
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.admin.realmFixtureName,هوية عملاء نورثويند
+demo.fixture.error,خطأ
+demo.fixture.expired,منتهية
+demo.fixture.loading,جارٍ التحميل
+demo.fixture.preview,معاينة بيانات تجريبية مستقلة
+demo.fixture.state,حالة البيانات التجريبية
+demo.fixture.success,نجاح
+admin.navigation.title,التنقل في الإدارة
+admin.navigation.description,اختر مورداً إدارياً
+admin.navigation.label,الإدارة
+admin.navigation.hide,إخفاء الشريط الجانبي
+common.theme.system,system
+common.theme.light,light
+common.theme.dark,dark
+common.urlPlaceholder,https://
+admin.organizations.domains.placeholder,example.com

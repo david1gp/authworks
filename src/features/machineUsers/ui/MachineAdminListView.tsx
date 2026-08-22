@@ -104,7 +104,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
               value={state.search()}
             />
           </div>
-          <Table>
+          <Table aria-label={messageTranslate("admin.machine.users.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
                 <TableHead>{messageTranslate("admin.machine.users.displayName")}</TableHead>
@@ -120,7 +120,9 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
                   <TableRow class="cursor-pointer" onClick={() => state.machineUserOpen(machineUser.id)}>
                     <TableCell class="font-medium">{machineUser.displayName}</TableCell>
                     <TableCell class="font-mono text-xs">{machineUser.userName}</TableCell>
-                    <TableCell class="max-w-64 truncate font-mono text-xs">{machineUser.scopes.join(", ")}</TableCell>
+                    <TableCell class="min-w-56 whitespace-normal break-all font-mono text-xs">
+                      {machineUser.scopes.join(", ")}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={machineUserStatusBadgeVariant(machineUser.status)}>{machineUser.status}</Badge>
                     </TableCell>

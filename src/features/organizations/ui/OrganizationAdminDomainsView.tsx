@@ -53,7 +53,7 @@ export function OrganizationAdminDomainsView(props: {
               class="max-w-md"
               id="domain-claim"
               onInput={(event) => props.onClaimDomainInput(event.currentTarget.value)}
-              placeholder="example.com"
+              placeholder={messageTranslate("admin.organizations.domains.placeholder")}
               value={props.claimDomain}
             />
           </div>

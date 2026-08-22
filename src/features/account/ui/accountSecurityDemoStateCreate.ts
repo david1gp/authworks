@@ -1,5 +1,6 @@
 import { useLocation } from "@solidjs/router"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
 import type { ExternalIdentity } from "../../externalIdentities/public/externalIdentitySchema.js"
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
@@ -124,7 +125,10 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     recoveryCodesGenerate: () => oneTimeCodes.set(["AX7K-2QPL", "B9MN-4TRS", "C3VW-8XYZ", "D6EF-1GHJ"]),
     reload: () => undefined,
     screen,
-    sessionRevoke: (sessionId: string) => sessions.set(sessions.get().filter((item) => item.id !== sessionId)),
+    sessionRevoke: (sessionId: string) => {
+      if (!window.confirm(messageTranslate("account.sessions.revokeConfirm"))) return
+      sessions.set(sessions.get().filter((item) => item.id !== sessionId))
+    },
     sessions: () => visible(sessions.get()),
     status: () =>
       selected() === "loading"

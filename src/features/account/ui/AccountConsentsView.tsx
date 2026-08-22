@@ -68,6 +68,7 @@ export function AccountConsentsView(props: {
                     </p>
                   </div>
                   <Button
+                    class="text-red-700 dark:text-red-300"
                     disabled={props.pendingId !== undefined}
                     onClick={() => props.onRevoke(consent.clientId)}
                     variant="outlineRed"

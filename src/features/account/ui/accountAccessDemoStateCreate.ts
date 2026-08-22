@@ -1,5 +1,6 @@
 import { useLocation } from "@solidjs/router"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
 import { demoFixtureScenarioHrefBuild } from "../../demo/demoFixtureScenarioHrefBuild.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
@@ -121,6 +122,7 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
   return {
     activeOrganizationId: activeOrganizationId.get,
     consentRevoke: (clientId: string) => {
+      if (!window.confirm(messageTranslate("account.access.consentRevokeConfirm", { clientId }))) return
       consents.set(consents.get().filter((item) => item.clientId !== clientId))
       notice.set("revoked")
     },

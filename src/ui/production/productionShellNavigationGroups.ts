@@ -53,11 +53,7 @@ export const productionShellNavigationGroups = {
     },
     {
       label: "Applications",
-      items: [
-        { href: "/admin/projects", label: "Projects" },
-        { href: "/admin/applications", label: "Applications" },
-        { href: "/admin/roles-grants", label: "Roles and grants" },
-      ],
+      items: [{ href: "/admin/projects", label: "Projects" }],
     },
     {
       label: "OpenID Connect",

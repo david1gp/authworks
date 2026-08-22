@@ -32,7 +32,7 @@ export function LoginFrame(props: LoginFrameProps) {
           {props.children}
         </CardWrapper>
         <Show when={state.legal()?.termsUrl ?? state.legal()?.privacyUrl}>
-          <p class="mt-5 text-pretty text-center text-sm text-muted-foreground">
+          <p class="mt-5 bg-slate-100 text-pretty text-center text-sm text-slate-700 dark:bg-slate-900 dark:text-slate-300">
             <For each={loginLegalSegmentsGet()}>
               {(segment) =>
                 segment.kind === "text" ? (

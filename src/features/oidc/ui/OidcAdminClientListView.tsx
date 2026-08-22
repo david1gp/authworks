@@ -156,7 +156,7 @@ export function OidcAdminClientListView(props: {
               value={state.search()}
             />
           </div>
-          <Table>
+          <Table aria-label={messageTranslate("admin.oidc.clients.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
                 <TableHead>{messageTranslate("admin.oidc.clients.name")}</TableHead>
@@ -177,7 +177,9 @@ export function OidcAdminClientListView(props: {
                         ? messageTranslate("admin.oidc.clients.typePublic")
                         : messageTranslate("admin.oidc.clients.typeConfidential")}
                     </TableCell>
-                    <TableCell class="max-w-64 truncate font-mono text-xs">{client.redirectUris.join(", ")}</TableCell>
+                    <TableCell class="min-w-64 whitespace-normal break-all font-mono text-xs">
+                      {client.redirectUris.join(", ")}
+                    </TableCell>
                     <TableCell>
                       <Show
                         when={client.trusted}

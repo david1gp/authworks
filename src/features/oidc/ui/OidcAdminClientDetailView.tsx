@@ -85,7 +85,7 @@ export function OidcAdminClientDetailView(props: {
                 <div class="grid gap-2">
                   <Label for="oidc-detail-redirects">{messageTranslate("admin.oidc.clients.redirectUris")}</Label>
                   <textarea
-                    class="min-h-24 w-full rounded-lg border border-line bg-surface p-2.5 font-mono text-sm"
+                    class="min-h-24 w-full break-all rounded-lg border border-line bg-surface p-2.5 font-mono text-sm"
                     id="oidc-detail-redirects"
                     onInput={(event) => state.redirectUris.set(event.currentTarget.value)}
                     value={state.redirectUris.get()}
@@ -95,7 +95,7 @@ export function OidcAdminClientDetailView(props: {
                 <div class="grid gap-2">
                   <Label for="oidc-detail-post-logout">{messageTranslate("admin.oidc.clients.postLogoutUris")}</Label>
                   <textarea
-                    class="min-h-16 w-full rounded-lg border border-line bg-surface p-2.5 font-mono text-sm"
+                    class="min-h-16 w-full break-all rounded-lg border border-line bg-surface p-2.5 font-mono text-sm"
                     id="oidc-detail-post-logout"
                     onInput={(event) => state.postLogoutRedirectUris.set(event.currentTarget.value)}
                     value={state.postLogoutRedirectUris.get()}
@@ -111,7 +111,7 @@ export function OidcAdminClientDetailView(props: {
                           onChange={() => state.scopeToggle(scope)}
                           type="checkbox"
                         />
-                        <code class="text-xs">{scope}</code>
+                        <code class="min-w-0 break-all text-xs">{scope}</code>
                       </label>
                     )}
                   </For>

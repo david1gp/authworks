@@ -11,6 +11,7 @@ import type { LoginViewStatus } from "./loginViewStatusSchema.js"
 type LoginPageStateOptions = {
   readonly adapter: LoginAdapter
   readonly basePath: string
+  readonly clearToken?: () => void
   readonly navigate: (path: string) => void
   readonly recoveryToken?: () => string
   readonly screen: () => LoginScreen
@@ -133,6 +134,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     if (token.length === 0) return invalid(messageTranslate("login.error.tokenMissing"))
     const verified = await run(() => options.adapter.verifyEmail(token))
     if (verified !== undefined) {
+      options.clearToken?.()
       email.set(verified.email)
       status.set("verified")
     }
@@ -205,7 +207,10 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     if (newPassword.get().length < 8) return invalid(messageTranslate("login.error.passwordTooShort"))
     if (newPassword.get() !== confirmPassword.get()) return invalid(messageTranslate("login.error.passwordMismatch"))
     const completed = await run(() => options.adapter.recoveryComplete(token, newPassword.get()))
-    if (completed !== undefined) go("recovery-complete")
+    if (completed !== undefined) {
+      options.clearToken?.()
+      go("recovery-complete")
+    }
   }
   const logout = async () => {
     const revoked = await run(() => options.adapter.logout())

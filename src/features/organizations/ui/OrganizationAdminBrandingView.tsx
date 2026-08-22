@@ -99,7 +99,7 @@ export function OrganizationAdminBrandingView(props: {
                       <Input
                         id={`branding-${theme}-logoUrl`}
                         onInput={(event) => props.onThemeAssetInput(theme, "logoUrl", event.currentTarget.value)}
-                        placeholder="https://"
+                        placeholder={messageTranslate("common.urlPlaceholder")}
                         value={(props.branding[theme] as OrganizationBrandingTheme).logoUrl ?? ""}
                       />
                     </div>
@@ -110,7 +110,7 @@ export function OrganizationAdminBrandingView(props: {
                       <Input
                         id={`branding-${theme}-iconUrl`}
                         onInput={(event) => props.onThemeAssetInput(theme, "iconUrl", event.currentTarget.value)}
-                        placeholder="https://"
+                        placeholder={messageTranslate("common.urlPlaceholder")}
                         value={(props.branding[theme] as OrganizationBrandingTheme).iconUrl ?? ""}
                       />
                     </div>
@@ -129,9 +129,9 @@ export function OrganizationAdminBrandingView(props: {
                   onChange={(event) => props.onThemeModeInput(event.currentTarget.value as "dark" | "light" | "system")}
                   value={props.branding.themeMode}
                 >
-                  <option value="system">system</option>
-                  <option value="light">light</option>
-                  <option value="dark">dark</option>
+                  <option value="system">{messageTranslate("common.theme.system")}</option>
+                  <option value="light">{messageTranslate("common.theme.light")}</option>
+                  <option value="dark">{messageTranslate("common.theme.dark")}</option>
                 </select>
               </div>
               <div class="grid gap-2">
@@ -139,7 +139,7 @@ export function OrganizationAdminBrandingView(props: {
                 <Input
                   id="branding-terms"
                   onInput={(event) => props.onLegalUrlInput("termsUrl", event.currentTarget.value)}
-                  placeholder="https://"
+                  placeholder={messageTranslate("common.urlPlaceholder")}
                   value={props.branding.legal?.termsUrl ?? ""}
                 />
               </div>
@@ -148,7 +148,7 @@ export function OrganizationAdminBrandingView(props: {
                 <Input
                   id="branding-privacy"
                   onInput={(event) => props.onLegalUrlInput("privacyUrl", event.currentTarget.value)}
-                  placeholder="https://"
+                  placeholder={messageTranslate("common.urlPlaceholder")}
                   value={props.branding.legal?.privacyUrl ?? ""}
                 />
               </div>

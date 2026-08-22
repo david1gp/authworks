@@ -10,7 +10,7 @@ export function LoginSubmitButton(props: {
   return (
     <Button
       aria-busy={props.pending ? "true" : undefined}
-      class="w-full"
+      class="w-full bg-blue-700 hover:bg-blue-800 dark:bg-blue-600 dark:hover:bg-blue-500"
       disabled={props.pending}
       onClick={props.onClick}
       type={props.type ?? "submit"}

@@ -1,5 +1,6 @@
 import { createEffect, on } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ExternalIdentity } from "../../externalIdentities/public/externalIdentitySchema.js"
 import type { MfaTotpEnrollmentStartResponse } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
@@ -127,8 +128,10 @@ export function accountSecurityProductionStateCreate(options: {
     },
     reload: () => void load(),
     screen: options.screen,
-    sessionRevoke: (sessionId: string) =>
-      void mutate(`session:${sessionId}`, () => api.sessionRevoke(options.realmId(), sessionId)),
+    sessionRevoke: (sessionId: string) => {
+      if (!window.confirm(messageTranslate("account.sessions.revokeConfirm"))) return
+      void mutate(`session:${sessionId}`, () => api.sessionRevoke(options.realmId(), sessionId))
+    },
     sessions: sessions.get,
     status: status.get,
     totpConfirm: async () => {

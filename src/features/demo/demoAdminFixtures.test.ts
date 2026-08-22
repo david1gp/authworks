@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import * as v from "valibot"
 import { adminDemoEventFixtures } from "../admin/ui/adminDemoEventFixtures.js"
-import { adminDemoRealmFixture } from "../admin/ui/adminDemoRealmFixture.js"
+import { adminDemoRealmFixtureCreate } from "../admin/ui/adminDemoRealmFixtureCreate.js"
 import { adminDemoUserFixtures } from "../admin/ui/adminDemoUserFixtures.js"
 import { eventSchema } from "../events/public/eventSchema.js"
 import { organizationMembershipSchema } from "../organizations/public/organizationMembershipSchema.js"
@@ -24,7 +24,7 @@ describe("demo administration fixtures", () => {
     expect(v.safeParse(v.array(projectSchema), demoAdminProjects).success).toBe(true)
     expect(v.safeParse(v.array(projectRoleSchema), demoAdminProjectRoles).success).toBe(true)
     expect(v.safeParse(v.array(eventSchema), adminDemoEventFixtures).success).toBe(true)
-    expect(v.safeParse(realmSchema, adminDemoRealmFixture).success).toBe(true)
+    expect(v.safeParse(realmSchema, adminDemoRealmFixtureCreate()).success).toBe(true)
   })
 
   test("expose a secret-bearing event so the audit view proves browser-side redaction", () => {

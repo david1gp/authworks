@@ -41,7 +41,12 @@ export function loginProductionStateCreate() {
   return loginPageStateCreate({
     adapter,
     basePath: loginBasePath,
-    navigate: (path) => navigate(`${path}${location.search}`),
+    clearToken: () => {
+      const next = new URL(window.location.href)
+      next.searchParams.delete("token")
+      window.history.replaceState(window.history.state, "", `${next.pathname}${next.search}${next.hash}`)
+    },
+    navigate: (path) => navigate(`${path}${window.location.search}`),
     recoveryToken: () => search().get("token") ?? "",
     screen: () => loginPathResolve(location.pathname, loginBasePath)?.screen ?? "unsupported",
     verificationToken: () => search().get("token") ?? "",

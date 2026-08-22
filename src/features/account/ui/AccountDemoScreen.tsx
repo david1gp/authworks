@@ -19,7 +19,7 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
         <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <div class="flex min-w-0 items-center gap-4">
             <A class="font-semibold tracking-tight" href="/demo">
-              Authworks
+              {messageTranslate("app.name")}
             </A>
             <span class="hidden h-5 w-px bg-line sm:block" />
             <span class="hidden text-sm text-muted-foreground sm:block">{ttc("Account demo")}</span>
@@ -45,9 +45,9 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
       <main class="px-4 py-8 sm:px-6 sm:py-12">
         <Show when={props.state.isDirectory()} fallback={<AccountDemoDestination state={props.state} />}>
           <DemoDirectory
-            eyebrow="Self-service identity"
+            eyebrow={messageTranslate("demo.account.eyebrow")}
             title={messageTranslate("account.directory.title")}
-            description="A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+            description={messageTranslate("demo.account.description")}
             groups={demoAccountScenarioGroups}
           />
         </Show>

@@ -3,6 +3,7 @@ import { For, type JSX } from "solid-js"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
+import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { ttc } from "../i18n/model/ttc.js"
 import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
 import { ProductionImpersonationBannerSlot } from "./ProductionImpersonationBannerSlot.js"
@@ -18,7 +19,7 @@ export function ProductionAuthenticatedShell(props: {
     <div class="flex h-full flex-col">
       <div class="border-b border-line px-5 py-5">
         <A class="text-xl font-bold tracking-tight" href={props.kind === "admin" ? "/admin" : "/account"}>
-          Authworks
+          {messageTranslate("app.name")}
         </A>
         <p class="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{props.title}</p>
       </div>

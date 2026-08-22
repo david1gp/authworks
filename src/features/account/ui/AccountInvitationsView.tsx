@@ -10,6 +10,7 @@ export function AccountInvitationsView(props: {
   readonly error?: string
   readonly invitations: readonly OrganizationInvitation[]
   readonly onRetry: () => void
+  readonly organizationsHref: string
   readonly status: AccountAccessStatus
 }) {
   return (
@@ -55,7 +56,7 @@ export function AccountInvitationsView(props: {
             </article>
           )}
         </For>
-        <A class="text-sm font-medium text-accent hover:underline" href="/account/organizations">
+        <A class="text-sm font-medium text-accent hover:underline" href={props.organizationsHref}>
           {messageTranslate("account.access.switchOrganization")}
         </A>
       </section>

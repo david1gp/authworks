@@ -207,8 +207,8 @@ export function organizationAdminPageStateCreate(options: {
       )
       if (created === undefined) return
       invitationToken.set(created.token)
-      notice.set("invitation-created")
       await load()
+      notice.set("invitation-created")
     },
     invitationRevoke: async (invitationId: string, email: string) => {
       if (!confirm(`Revoke the invitation for ${email}? The invitation link stops working immediately.`)) return

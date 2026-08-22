@@ -1,6 +1,7 @@
 import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
 import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
@@ -87,7 +88,7 @@ export function accountAccessProductionStateCreate(screen: () => AccountAccessSc
   return {
     activeOrganizationId: activeOrganizationId.get,
     consentRevoke: async (clientId: string) => {
-      if (!window.confirm("Revoke this application's access?")) return
+      if (!window.confirm(messageTranslate("account.access.consentRevokeConfirm", { clientId }))) return
       const succeeded = await mutate(`consent:${clientId}`, () => api.consentRevoke(realmId(), clientId))
       if (!succeeded) return
       consents.set(consents.get().filter((item) => item.clientId !== clientId))

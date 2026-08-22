@@ -41,6 +41,7 @@ export function AccountAccessDemoAdapter(props: { readonly screen: AccountAccess
             error={state.error()}
             invitations={state.invitations()}
             onRetry={state.reload}
+            organizationsHref="/demo/account/organizations"
             status={state.status()}
           />
         </Match>

@@ -43,6 +43,8 @@ export function UiRouter(props: {
         <Route path="/demo/login/*loginPath" component={LoginDemoApp} />
         <Route path="/demo/account" component={AccountDemoApp} />
         <Route path="/demo/account/*accountPath" component={AccountDemoApp} />
+        <Route path="/demo/invitations" component={AccountDemoApp} />
+        <Route path="/demo/invitations/*invitationPath" component={AccountDemoApp} />
         <Route path="/demo/emails" component={EmailDemoApp} />
         <Route path="/demo/emails/*emailPath" component={EmailDemoApp} />
         <Route path="/demo/admin" component={AdminDemoApp}>
@@ -61,6 +63,8 @@ export function UiRouter(props: {
           <Route path="/branding" component={() => <OrganizationAdminDemoAdapter screen="branding" />} />
           <Route path="/login-policy" component={() => <OrganizationAdminDemoAdapter screen="login-policy" />} />
           <Route path="/users" component={() => <AdminDemoAdapter screen="users" />} />
+          <Route path="/users/:userId/authentication" component={() => <AdminDemoAdapter screen="user-detail" />} />
+          <Route path="/users/:userId/sessions" component={() => <AdminDemoAdapter screen="user-detail" />} />
           <Route path="/users/:userId" component={() => <AdminDemoAdapter screen="user-detail" />} />
           <Route path="/impersonation" component={ImpersonationAdminDemoAdapter} />
           <Route path="/projects" component={() => <ProjectAdminDemoRoute screen="projects" />} />
@@ -88,6 +92,7 @@ export function UiRouter(props: {
             component={() => <MachineAdminDemoRoute screen="machine-user-detail" />}
           />
           <Route path="/machine-credentials" component={() => <MachineAdminDemoRoute screen="machine-credentials" />} />
+          <Route path="/sessions" component={() => <AdminDemoAdapter screen="sessions" />} />
           <Route path="/events" component={() => <AdminDemoAdapter screen="audit-events" />} />
           <Route path="/*adminPath" component={AdminDemoPlaceholder} />
         </Route>

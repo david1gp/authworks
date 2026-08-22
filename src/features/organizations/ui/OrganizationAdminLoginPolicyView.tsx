@@ -238,7 +238,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                   <Input
                     id="provider-redirect-uri"
                     onInput={(event) => props.onProviderCreateInput("redirectUri", event.currentTarget.value)}
-                    placeholder="https://"
+                    placeholder={messageTranslate("common.urlPlaceholder")}
                     value={props.providerCreate.redirectUri}
                   />
                 </div>

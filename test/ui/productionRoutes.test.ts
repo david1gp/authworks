@@ -1,4 +1,10 @@
 import { describe, expect, test } from "bun:test"
+import * as v from "valibot"
+import { adminScreenSchema } from "../../src/features/admin/ui/adminScreenSchema.js"
+import { machineAdminScreenSchema } from "../../src/features/machineUsers/ui/machineAdminScreenSchema.js"
+import { oidcAdminScreenSchema } from "../../src/features/oidc/ui/oidcAdminScreenSchema.js"
+import { organizationAdminScreenSchema } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
+import { projectAdminScreenSchema } from "../../src/features/projects/ui/projectAdminScreenSchema.js"
 import { productionNavigationItemActive } from "../../src/ui/production/productionNavigationItemActive.js"
 import { productionRouteContractMap } from "../../src/ui/production/productionRouteContractMap.js"
 import type { ProductionRouteGuardContext } from "../../src/ui/production/productionRouteGuardContext.js"
@@ -25,6 +31,32 @@ describe("production route contracts", () => {
     expect(productionRouteContractMap.account.screens.map((screen) => screen.path)).toContain("/account/sessions")
     expect(productionRouteContractMap.invitations.screens.map((screen) => screen.path)).toContain("/invitations/accept")
     expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).toContain("/admin/users/:userId")
+
+    const userDetail = productionRouteContractMap.admin.screens.find((screen) => screen.key === "user-detail")
+    expect(userDetail?.contracts).toEqual(
+      expect.arrayContaining(["users.authentication-methods", "sessions.list", "sessions.revoke"]),
+    )
+    expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).not.toContain(
+      "/admin/user-authentication",
+    )
+    expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).not.toContain("/admin/user-sessions")
+  })
+
+  test("renders every advertised administration screen through exactly one feature owner", () => {
+    const featureSchemas = [
+      adminScreenSchema,
+      organizationAdminScreenSchema,
+      projectAdminScreenSchema,
+      oidcAdminScreenSchema,
+      machineAdminScreenSchema,
+    ] as const
+
+    for (const screen of productionRouteContractMap.admin.screens) {
+      const ownerCount =
+        featureSchemas.filter((schema) => v.safeParse(schema, screen.key).success).length +
+        (screen.key === "impersonation" ? 1 : 0)
+      expect(ownerCount, `${screen.path} must resolve to one administration feature`).toBe(1)
+    }
   })
 })
 
@@ -138,5 +170,12 @@ describe("production shell state", () => {
     expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
     expect(productionNavigationItemActive("/admin", "/admin/users")).toBe(false)
     expect(productionNavigationItemActive("/account", "/account/password")).toBe(false)
+  })
+
+  test("keeps administration navigation targets owned by advertised screens", () => {
+    const admin = productionRouteContractMap.admin
+    const hrefs = productionShellNavigationGroups.admin.flatMap((group) => group.items.map((item) => item.href))
+
+    for (const href of hrefs) expect(productionRouteScreenSelect(admin, href), href).toBeDefined()
   })
 })

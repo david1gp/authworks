@@ -2,7 +2,7 @@ import type { JSX } from "solid-js"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
 import { PageWrapper } from "#ui/static/page/PageWrapper.jsx"
-import { ttc } from "../i18n/model/ttc.js"
+import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
 import { productionFocusShellStateCreate } from "./productionFocusShellStateCreate.js"
 
@@ -22,7 +22,7 @@ export function ProductionFocusShell(props: { readonly children: JSX.Element; re
                 A
               </span>
               <div>
-                <p class="font-semibold">Authworks</p>
+                <p class="font-semibold">{messageTranslate("app.name")}</p>
                 <p class="text-xs text-muted-foreground">{state.realmLabel()}</p>
               </div>
             </div>
@@ -30,7 +30,7 @@ export function ProductionFocusShell(props: { readonly children: JSX.Element; re
           </header>
           <div class="bg-surface p-5 sm:p-8">{props.children}</div>
         </CardWrapper>
-        <p class="mt-5 text-center text-xs text-muted-foreground">{ttc("Secure identity services")}</p>
+        <p class="mt-5 text-center text-xs text-muted-foreground">{messageTranslate("app.tagline")}</p>
       </main>
     </PageWrapper>
   )

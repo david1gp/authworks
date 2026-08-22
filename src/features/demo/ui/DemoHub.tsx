@@ -10,10 +10,10 @@ export function DemoHub() {
         <p class="mt-3 text-lg text-muted-foreground">{messageTranslate("demo.hub.description")}</p>
         <div class="mt-8 grid gap-6 md:grid-cols-2">
           <DemoCard
-            title="Administration"
-            description="Manage identity resources and organization settings."
+            title={messageTranslate("admin.navigation.label")}
+            description={messageTranslate("demo.hub.adminDescription")}
             href="/demo/admin"
-            linkLabel="Open administration"
+            linkLabel={messageTranslate("demo.hub.adminOpen")}
           />
           <DemoCard
             title={messageTranslate("email.directory.title")}
@@ -22,16 +22,16 @@ export function DemoHub() {
             linkLabel={messageTranslate("email.hub.open")}
           />
           <DemoCard
-            title="Account"
-            description="Explore self-service profile, organization, and security destinations."
+            title={messageTranslate("demo.nav.account")}
+            description={messageTranslate("demo.hub.accountDescription")}
             href="/demo/account"
-            linkLabel="Open account"
+            linkLabel={messageTranslate("demo.hub.accountOpen")}
           />
           <DemoCard
-            title="Login"
-            description="Explore the authentication experience for your users."
+            title={messageTranslate("demo.nav.login")}
+            description={messageTranslate("demo.hub.loginDescription")}
             href="/demo/login"
-            linkLabel="Open login"
+            linkLabel={messageTranslate("demo.hub.loginOpen")}
           />
         </div>
       </div>

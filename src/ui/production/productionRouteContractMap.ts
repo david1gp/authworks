@@ -222,23 +222,20 @@ export const productionRouteContractMap = {
         title: "Users",
       },
       {
-        contracts: ["users.get", "users.profile", "users.lifecycle", "users.verification", "users.delete"],
+        contracts: [
+          "users.get",
+          "users.profile",
+          "users.lifecycle",
+          "users.verification",
+          "users.delete",
+          "users.authentication-methods",
+          "sessions.list",
+          "sessions.revoke",
+        ],
         guard: { authentication: "required", organization: "not-required", permission: "user.read", realm: "required" },
         key: "user-detail",
         path: "/admin/users/:userId",
         title: "User detail",
-      },
-      {
-        contracts: ["passwords.admin", "mfa.admin", "passkeys.admin", "external-identities.admin"],
-        key: "user-authentication",
-        path: "/admin/user-authentication",
-        title: "Authentication methods",
-      },
-      {
-        contracts: ["sessions.list", "sessions.revoke"],
-        key: "user-sessions",
-        path: "/admin/user-sessions",
-        title: "User sessions",
       },
       {
         contracts: ["impersonation.start", "impersonation.end"],

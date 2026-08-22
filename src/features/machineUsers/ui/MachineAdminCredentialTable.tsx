@@ -26,7 +26,7 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
   const state = props.state
   return (
     <>
-      <Table>
+      <Table aria-label={messageTranslate("admin.machine.credentials.title")} tabIndex={0}>
         <TableHeader>
           <TableRow>
             <TableHead>{messageTranslate("admin.machine.credentials.name")}</TableHead>
@@ -46,7 +46,9 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
                   {credential.name ?? messageTranslate("admin.machine.credentials.unnamed")}
                 </TableCell>
                 <TableCell>{messageTranslate(kindKeys[credential.kind])}</TableCell>
-                <TableCell class="max-w-56 truncate font-mono text-xs">{credential.scopes.join(", ")}</TableCell>
+                <TableCell class="min-w-56 whitespace-normal break-all font-mono text-xs">
+                  {credential.scopes.join(", ")}
+                </TableCell>
                 <TableCell>{localeDateFormat(credential.createdAt, { dateStyle: "medium" })}</TableCell>
                 <TableCell>
                   {credential.expiresAt === undefined
