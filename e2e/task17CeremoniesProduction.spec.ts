@@ -1,6 +1,6 @@
-import { createHmac } from "node:crypto"
 import { type ChildProcess, spawn } from "node:child_process"
-import { expect, type BrowserContext, type Page, test } from "@playwright/test"
+import { createHmac } from "node:crypto"
+import { type BrowserContext, expect, type Page, test } from "@playwright/test"
 
 type E2eServerMetadata = {
   readonly member: { readonly email: string; readonly password: string }

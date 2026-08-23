@@ -102,9 +102,19 @@ test("client secret rotation issues a fresh one-time value", async ({ page }) =>
   await expect(page.getByRole("heading", { name: "Client secret", exact: true })).toBeVisible()
   await expect(page.locator("[data-secret-redacted]")).toBeVisible()
 
-  await page.getByRole("button", { name: "Rotate secret", exact: true }).click()
-
   const panel = page.locator("[data-one-time-secret='oidc-client']")
+  await page.getByRole("button", { name: "Rotate secret", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole("heading", { name: "Confirm this change", exact: true })).toBeVisible()
+  await expect(confirmation).toContainText("Rotate this client secret? The current secret stops working immediately.")
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(panel).toHaveCount(0)
+  await expect(page.locator("[data-secret-redacted]")).toBeVisible()
+
+  await page.getByRole("button", { name: "Rotate secret", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(panel).toBeVisible()
   await expect(panel).toContainText("Rotated client secret")
 })
@@ -124,6 +134,18 @@ test("signing keys expose only public metadata and support guarded rotation", as
   await expect(page.getByText("RS256", { exact: true }).first()).toBeVisible()
 
   await page.getByRole("button", { name: "Rotate key", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole("heading", { name: "Confirm this change", exact: true })).toBeVisible()
+  await expect(confirmation).toContainText(
+    "Rotate the signing key? A new key is published and the current key is retired.",
+  )
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(page.getByRole("row").filter({ hasText: "active" })).toHaveCount(1)
+
+  await page.getByRole("button", { name: "Rotate key", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page.getByRole("status")).toContainText("rotated")
   // Rotation leaves exactly one active key published.
   await expect(page.getByRole("row").filter({ hasText: "active" })).toHaveCount(1)
@@ -137,12 +159,22 @@ test("administrator consent review lists and revokes an approved application", a
 
   const row = page.getByRole("row").filter({ hasText: "Acme Web Portal" })
   await row.getByRole("button", { name: "Revoke", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole("heading", { name: "Confirm this change", exact: true })).toBeVisible()
+  await expect(confirmation).toContainText("Revoke this consent? The user is asked to approve the application again.")
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(row).toBeVisible()
+
+  await row.getByRole("button", { name: "Revoke", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page.getByRole("status")).toContainText("revoked")
   await expect(page.getByText("Acme Web Portal", { exact: true })).toHaveCount(0)
 })
 
-test("protocol documents are read-only with copy and open affordances", async ({ page }) => {
+test("protocol documents are read-only and suppress unreachable endpoint links", async ({ page }) => {
   await page.goto("/demo/admin/protocol-documents")
 
   await expect(page.getByRole("heading", { name: "Protocol documents", exact: true })).toBeVisible()
@@ -152,7 +184,8 @@ test("protocol documents are read-only with copy and open affordances", async ({
 
   // Only viewing and copying are offered; no edit, save, or delete control exists.
   await expect(page.getByRole("button", { name: "Copy document", exact: true })).toHaveCount(2)
-  await expect(page.getByRole("link", { name: "Open endpoint", exact: true })).toHaveCount(2)
+  // Stateless demo fixtures point at an unreachable host, so no broken endpoint links are offered.
+  await expect(page.getByRole("link", { name: "Open endpoint", exact: true })).toHaveCount(0)
   await expect(page.getByRole("button", { name: /save|delete|remove|rotate/i })).toHaveCount(0)
 })
 

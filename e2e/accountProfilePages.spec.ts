@@ -1,11 +1,15 @@
 import { expect, type Page, type Route, test } from "@playwright/test"
+import { productionAccountSessionBootstrap } from "./productionAccountSessionBootstrap.js"
+
+const realmId = "01900000-0000-7000-8000-000000000001"
+const userId = "01900000-0000-7000-8000-0000000000b1"
 
 const user = {
   createdAt: 1_774_000_000_000,
   email: "avery.stone@example.com",
   emailVerified: true,
   emailVerifiedAt: 1_774_000_060_000,
-  id: "019c1234-5678-7abc-8def-0123456789ab",
+  id: userId,
   profile: {
     displayName: "Avery Stone",
     firstName: "Avery",
@@ -13,7 +17,7 @@ const user = {
     nickName: "Avery",
     preferredLanguage: "en",
   },
-  realmId: "019c1234-5678-7abc-8def-1123456789ab",
+  realmId,
   state: "active",
   updatedAt: 1_774_000_060_000,
   userName: "avery.stone",
@@ -48,6 +52,7 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
 
 test("production profile uses the subject API and CSRF", async ({ page }) => {
   let csrfHeader: string | null = null
+  await productionAccountSessionBootstrap(page)
   await accountApiRoutesInstall(page, async (route, method) => {
     if (method === "PATCH") {
       csrfHeader = route.request().headers()["x-csrf-token"] ?? null
@@ -67,6 +72,7 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
 })
 
 test("production password presents an API rejection", async ({ page }) => {
+  await productionAccountSessionBootstrap(page)
   await accountApiRoutesInstall(page, async (route, method) => {
     if (method === "POST") {
       await route.fulfill({
@@ -95,7 +101,16 @@ test("production password presents an API rejection", async ({ page }) => {
 })
 
 async function accountApiRoutesInstall(page: Page, accountRoute: (route: Route, method: string) => Promise<void>) {
-  await page.route("**/realms/customer-identity/**", async (route) => {
+  await page.route(`**/realms/${realmId}/**`, async (route) => {
+    const pathname = new URL(route.request().url()).pathname
+    if (
+      pathname === `/realms/${realmId}` ||
+      pathname.endsWith("/sessions/current") ||
+      pathname.endsWith("/me/organizations")
+    ) {
+      await route.fallback()
+      return
+    }
     if (route.request().url().endsWith("/sessions/csrf")) {
       await route.fulfill({ json: { csrfToken: "e2e-csrf-token" } })
       return

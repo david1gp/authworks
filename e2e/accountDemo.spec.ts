@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test"
+import { productionAccountSessionBootstrap } from "./productionAccountSessionBootstrap.js"
+
+const realmId = "01900000-0000-7000-8000-000000000001"
 
 test("the account directory enumerates self-service destinations", async ({ page }) => {
   await page.goto("/demo/account")
@@ -97,20 +100,21 @@ test("production session revocation uses the real account contract and CSRF", as
       revokedAt: null,
     },
   ]
-  await page.route("**/realms/customer-identity/sessions/csrf", (route) =>
+  await productionAccountSessionBootstrap(page)
+  await page.route(`**/realms/${realmId}/sessions/csrf`, (route) =>
     route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({ csrfToken: "deterministic-csrf-token-12345678901234567890" }),
     }),
   )
-  await page.route("**/realms/customer-identity/me/sessions", async (route) => {
+  await page.route(`**/realms/${realmId}/me/sessions`, async (route) => {
     if (route.request().method() === "GET") {
       await route.fulfill({ contentType: "application/json", body: JSON.stringify({ items: sessions }) })
       return
     }
     await route.fallback()
   })
-  await page.route("**/realms/customer-identity/me/sessions/phone", async (route) => {
+  await page.route(`**/realms/${realmId}/me/sessions/phone`, async (route) => {
     csrfHeader = await route.request().headerValue("x-csrf-token")
     sessions = sessions.filter((session) => session.id !== "phone")
     await route.fulfill({ contentType: "application/json", body: JSON.stringify({ revoked: true }) })
@@ -126,7 +130,8 @@ test("production session revocation uses the real account contract and CSRF", as
 
 test("production recovery codes are fetched with CSRF and displayed once", async ({ page }) => {
   let csrfHeader: string | null = null
-  await page.route("**/realms/customer-identity/me/authentication-methods", (route) =>
+  await productionAccountSessionBootstrap(page)
+  await page.route(`**/realms/${realmId}/me/authentication-methods`, (route) =>
     route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -137,10 +142,10 @@ test("production recovery codes are fetched with CSRF and displayed once", async
       }),
     }),
   )
-  await page.route("**/realms/customer-identity/sessions/csrf", (route) =>
+  await page.route(`**/realms/${realmId}/sessions/csrf`, (route) =>
     route.fulfill({ contentType: "application/json", body: JSON.stringify({ csrfToken: "recovery-csrf" }) }),
   )
-  await page.route("**/realms/customer-identity/mfa/recovery-codes", async (route) => {
+  await page.route(`**/realms/${realmId}/mfa/recovery-codes`, async (route) => {
     csrfHeader = await route.request().headerValue("x-csrf-token")
     await route.fulfill({
       contentType: "application/json",

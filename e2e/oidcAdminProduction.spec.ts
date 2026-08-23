@@ -119,8 +119,10 @@ test("rotating a client secret posts to the dedicated path and never re-reads th
   // The stored secret is only ever presented as redacted before rotation.
   await expect(page.locator("[data-secret-redacted]")).toBeVisible()
 
-  page.once("dialog", (dialog) => void dialog.accept())
   await page.getByRole("button", { name: "Rotate secret", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   const panel = page.locator("[data-one-time-secret='oidc-client']")
   await expect(panel.locator("[data-secret-value]")).toContainText("r".repeat(43))
@@ -143,14 +145,18 @@ test("signing key rotation is confirmed before the mutation is sent", async ({ p
   await page.goto("/admin/signing-keys")
   await expect(page.getByText(keyId, { exact: true })).toBeVisible()
 
-  // A dismissed confirmation must not send the destructive mutation.
-  page.once("dialog", (dialog) => void dialog.dismiss())
+  // A canceled confirmation must not send the destructive mutation.
+  const confirmation = page.getByRole("alertdialog")
   await page.getByRole("button", { name: "Rotate key", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(confirmation).toHaveCount(0)
   await expect(page.getByRole("status")).toHaveCount(0)
   expect(rotateRequested).toBe(false)
 
-  page.once("dialog", (dialog) => void dialog.accept())
   await page.getByRole("button", { name: "Rotate key", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page.getByRole("status")).toContainText("rotated")
   expect(rotateRequested).toBe(true)
 })
@@ -178,8 +184,16 @@ test("consent revocation posts to the subject's tenant path", async ({ page }) =
   await page.goto("/admin/oidc-consents")
   await expect(page.getByText("Acme Web Portal", { exact: true })).toBeVisible()
 
-  page.once("dialog", (dialog) => void dialog.accept())
+  const confirmation = page.getByRole("alertdialog")
   await page.getByRole("button", { name: "Revoke", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(confirmation).toHaveCount(0)
+  expect(revokeRequested).toBe(false)
+
+  await page.getByRole("button", { name: "Revoke", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page.getByRole("status")).toContainText("revoked")
   expect(revokeRequested).toBe(true)

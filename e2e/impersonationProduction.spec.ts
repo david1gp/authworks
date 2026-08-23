@@ -1,5 +1,5 @@
 import { type ChildProcess, spawn } from "node:child_process"
-import { expect, type Browser, type BrowserContext, type Page, test } from "@playwright/test"
+import { type Browser, type BrowserContext, expect, type Page, test } from "@playwright/test"
 
 type E2eServerMetadata = {
   readonly administrator: {
@@ -33,7 +33,6 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
   try {
     await composedApiProxyInstall(page, fixture)
     browserObservationInstall(page, responseBodies, requestUrls)
-    page.on("dialog", (dialog) => void dialog.accept())
 
     await adminSignIn(page, fixture.bootstrapAdmin.secret)
     const bootstrapCookie = await sessionCookieGet(context)
@@ -64,12 +63,22 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     await expect(page.getByLabel("Reason", { exact: true })).toBeVisible()
     await page.getByLabel("Reason", { exact: true }).fill("Ticket IMP-17: investigate the support report.")
     await page.getByLabel("Duration", { exact: true }).selectOption("300")
+    const startPath = `/realms/${fixture.realm.id}/impersonations`
+    const startRequestCount = () => requestUrls.filter((url) => new URL(url).pathname === startPath).length
+    const startRequestsBefore = startRequestCount()
+    await page.getByRole("button", { name: "Start impersonation", exact: true }).click()
+    const startConfirmation = page.getByRole("alertdialog")
+    await expect(startConfirmation).toBeVisible()
+    await startConfirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+    await expect(startConfirmation).toHaveCount(0)
+    expect(startRequestCount()).toBe(startRequestsBefore)
+
     const startResponsePromise = page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        new URL(response.url()).pathname === `/realms/${fixture.realm.id}/impersonations`,
+      (response) => response.request().method() === "POST" && new URL(response.url()).pathname === startPath,
     )
     await page.getByRole("button", { name: "Start impersonation", exact: true }).click()
+    await expect(startConfirmation).toBeVisible()
+    await startConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
     const startResponse = await startResponsePromise
     const startBody = (await startResponse.json()) as {
       readonly session?: {
@@ -82,6 +91,7 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
       readonly token?: string
     }
     expect(startResponse.status()).toBe(201)
+    expect(startRequestCount()).toBe(startRequestsBefore + 1)
     expect(startBody.token).toBeUndefined()
     expect(startBody.session).toMatchObject({
       expiresAt: fixture.now + 5 * 60 * 1_000,
@@ -119,13 +129,24 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     expect(nested.body).toContain("another impersonation session")
     expect(nested.body).toContain("authorization.impersonation-forbidden")
 
+    const endPath = `/realms/${fixture.realm.id}/impersonations/${impersonationSessionId}/end`
+    const endRequestCount = () => requestUrls.filter((url) => new URL(url).pathname === endPath).length
+    const endRequestsBefore = endRequestCount()
+    await page.locator("[data-impersonation-banner]").getByRole("button", { name: "End impersonation" }).click()
+    const endConfirmation = page.getByRole("alertdialog")
+    await expect(endConfirmation).toBeVisible()
+    await endConfirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+    await expect(endConfirmation).toHaveCount(0)
+    expect(endRequestCount()).toBe(endRequestsBefore)
+
     const endResponsePromise = page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        new URL(response.url()).pathname === `/realms/${fixture.realm.id}/impersonations/${impersonationSessionId}/end`,
+      (response) => response.request().method() === "POST" && new URL(response.url()).pathname === endPath,
     )
     await page.locator("[data-impersonation-banner]").getByRole("button", { name: "End impersonation" }).click()
+    await expect(endConfirmation).toBeVisible()
+    await endConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
     expect((await endResponsePromise).status()).toBe(200)
+    expect(endRequestCount()).toBe(endRequestsBefore + 1)
     await expect(page.locator("[data-impersonation-banner]")).toHaveCount(0)
     const endedSession = await page.evaluate(async (realmId) => {
       const response = await fetch(`/realms/${realmId}/sessions/current`, { credentials: "include" })
@@ -146,6 +167,9 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
         new URL(response.url()).pathname === `/realms/${fixture.realm.id}/impersonations`,
     )
     await auditContextPage.getByRole("button", { name: "Start impersonation", exact: true }).click()
+    const expiryConfirmation = auditContextPage.getByRole("alertdialog")
+    await expect(expiryConfirmation).toBeVisible()
+    await expiryConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
     const expiryResponse = await expiryResponsePromise
     expect(expiryResponse.status()).toBe(201)
     await expect(auditContextPage.locator("[data-impersonation-banner]")).toContainText("E2E Administrator")
@@ -226,7 +250,6 @@ async function auxiliaryPageCreate(
   const page = await context.newPage()
   await composedApiProxyInstall(page, fixture)
   browserObservationInstall(page, responseBodies, requestUrls)
-  page.on("dialog", (dialog) => void dialog.accept())
   return page
 }
 
@@ -290,7 +313,11 @@ async function mfaStepUpComplete(
     async ({ csrf, realmId }) => {
       const response = await fetch(`/realms/${realmId}/mfa/step-up/start`, {
         credentials: "include",
-        headers: { "content-type": "application/json", "x-csrf-token": csrf },
+        headers: {
+          "content-type": "application/json",
+          "x-csrf-token": csrf,
+          "x-authworks-browser-mode": "true",
+        },
         method: "POST",
       })
       return (await response.json()) as { readonly token: string }
@@ -302,7 +329,11 @@ async function mfaStepUpComplete(
       const response = await fetch(`/realms/${realmId}/mfa/step-up/complete`, {
         body: JSON.stringify({ code, token }),
         credentials: "include",
-        headers: { "content-type": "application/json", "x-csrf-token": csrf },
+        headers: {
+          "content-type": "application/json",
+          "x-csrf-token": csrf,
+          "x-authworks-browser-mode": "true",
+        },
         method: "POST",
       })
       return { body: await response.text(), status: response.status }

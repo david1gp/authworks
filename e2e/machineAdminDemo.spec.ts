@@ -62,9 +62,21 @@ test("the machine user detail keeps the stored client secret redacted until rota
   await expect(page.locator("[data-secret-redacted]")).toContainText("Stored and hidden")
   await expect(page.locator("[data-secret-value]")).toHaveCount(0)
 
-  await page.getByRole("button", { name: "Rotate client secret", exact: true }).click()
-
   const panel = page.locator("[data-one-time-secret='machine-credential']")
+  await page.getByRole("button", { name: "Rotate client secret", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole("heading", { name: "Confirm this action", exact: true })).toBeVisible()
+  await expect(confirmation).toContainText(
+    "Rotate this client secret? The current secret stops working immediately and cannot be recovered.",
+  )
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(panel).toHaveCount(0)
+  await expect(page.locator("[data-secret-redacted]")).toContainText("Stored and hidden")
+
+  await page.getByRole("button", { name: "Rotate client secret", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(panel).toBeVisible()
   await expect(panel).toContainText("New client secret")
   await expect(panel.locator("[data-secret-value]")).toContainText("demo-secret-")
@@ -155,6 +167,16 @@ test("revoking a credential marks it revoked and removes its action", async ({ p
 
   const row = page.getByRole("row").filter({ hasText: "Deployment pipeline token" })
   await row.getByRole("button", { name: "Revoke", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole("heading", { name: "Confirm this action", exact: true })).toBeVisible()
+  await expect(confirmation).toContainText("Revoke this credential? Anything using it stops working immediately.")
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(row).toContainText("Active")
+
+  await row.getByRole("button", { name: "Revoke", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page.getByRole("status")).toContainText("revoked")
   await expect(row).toContainText("Revoked")
@@ -176,6 +198,18 @@ test("removing a machine user returns to the directory", async ({ page }) => {
   await page.goto(detailBase)
 
   await page.getByRole("button", { name: "Remove machine user", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole("heading", { name: "Confirm this action", exact: true })).toBeVisible()
+  await expect(confirmation).toContainText(
+    "Remove this machine user? Every credential it owns stops working immediately and cannot be restored.",
+  )
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(page.getByRole("heading", { name: "Billing Sync Service", exact: true })).toBeVisible()
+
+  await page.getByRole("button", { name: "Remove machine user", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page).toHaveURL(/\/demo\/admin\/machine-users$/)
   await expect(page.getByRole("heading", { name: "Machine users", exact: true })).toBeVisible()

@@ -111,8 +111,10 @@ test("rotating a client secret posts to the dedicated path and never re-reads th
   await expect(page.locator("[data-secret-redacted]")).toBeVisible()
   await expect(page.locator("[data-secret-value]")).toHaveCount(0)
 
-  page.once("dialog", (dialog) => void dialog.accept())
   await page.getByRole("button", { name: "Rotate client secret", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   const panel = page.locator("[data-one-time-secret='machine-credential']")
   await expect(panel.locator("[data-secret-value]")).toContainText("r".repeat(43))
@@ -138,9 +140,12 @@ test("client secret rotation is confirmed before the destructive mutation is sen
   await page.goto(`/admin/machine-users/${machineUserId}`)
   await expect(page.locator("[data-secret-redacted]")).toBeVisible()
 
-  // A dismissed confirmation must not send the destructive mutation.
-  page.once("dialog", (dialog) => void dialog.dismiss())
+  // A canceled confirmation must not send the destructive mutation.
+  const confirmation = page.getByRole("alertdialog")
   await page.getByRole("button", { name: "Rotate client secret", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(confirmation).toHaveCount(0)
   await expect(page.locator("[data-one-time-secret='machine-credential']")).toHaveCount(0)
   expect(rotateRequested).toBe(false)
 })
@@ -227,13 +232,17 @@ test("credential revocation is confirmed and posts to the credential path", asyn
   const row = page.getByRole("row").filter({ hasText: "Deployment pipeline token" })
   await expect(row).toContainText("Active")
 
-  // A dismissed confirmation must not revoke the credential.
-  page.once("dialog", (dialog) => void dialog.dismiss())
+  // A canceled confirmation must not revoke the credential.
+  const confirmation = page.getByRole("alertdialog")
   await row.getByRole("button", { name: "Revoke", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(confirmation).toHaveCount(0)
   expect(revokePath).toBe("")
 
-  page.once("dialog", (dialog) => void dialog.accept())
   await row.getByRole("button", { name: "Revoke", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page.getByRole("status")).toContainText("revoked")
   await expect(row).toContainText("Revoked")
@@ -257,12 +266,16 @@ test("machine user removal is confirmed before the lifecycle mutation is sent", 
 
   await page.goto(`/admin/machine-users/${machineUserId}`)
 
-  page.once("dialog", (dialog) => void dialog.dismiss())
+  const confirmation = page.getByRole("alertdialog")
   await page.getByRole("button", { name: "Remove machine user", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(confirmation).toHaveCount(0)
   expect(lifecycleBody).toBeUndefined()
 
-  page.once("dialog", (dialog) => void dialog.accept())
   await page.getByRole("button", { name: "Remove machine user", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   // Removal navigates back to the directory once the lifecycle mutation succeeds.
   await expect(page).toHaveURL(/\/admin\/machine-users$/)

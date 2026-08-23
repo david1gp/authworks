@@ -36,6 +36,18 @@ test("a reasoned impersonation exposes its outcome, audit events, and end action
   await page.getByLabel("Reason", { exact: true }).fill("Ticket NW-4821: reproduce the reported checkout failure.")
   await page.getByLabel("Duration", { exact: true }).selectOption("300")
   await page.getByRole("button", { name: "Start impersonation", exact: true }).click()
+  const startConfirmation = page.getByRole("alertdialog")
+  await expect(startConfirmation).toBeVisible()
+  await expect(startConfirmation.getByRole("heading", { name: "Confirm this action", exact: true })).toBeVisible()
+  await expect(startConfirmation).toContainText(
+    "Start acting as Alex Morgan? Everything you do will be recorded against your own identity.",
+  )
+  await startConfirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(page.locator("[data-impersonation-banner]")).toHaveCount(0)
+
+  await page.getByRole("button", { name: "Start impersonation", exact: true }).click()
+  await expect(startConfirmation).toBeVisible()
+  await startConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page.getByRole("status").filter({ hasText: "You are now acting as Alex Morgan." })).toBeVisible()
   await expect(page.locator("[data-impersonation-banner]")).toContainText("Robin Vale is acting as Alex Morgan")
@@ -53,7 +65,18 @@ test("a reasoned impersonation exposes its outcome, audit events, and end action
   await expect(page.getByText("impersonation.ended", { exact: true })).toBeVisible()
 
   await page.goto("/demo/admin/impersonation?state=active")
-  await page.locator("[data-impersonation-banner]").getByRole("button", { name: "End impersonation" }).click()
+  const endButton = page.locator("[data-impersonation-banner]").getByRole("button", { name: "End impersonation" })
+  await endButton.click()
+  const endConfirmation = page.getByRole("alertdialog")
+  await expect(endConfirmation).toBeVisible()
+  await expect(endConfirmation.getByRole("heading", { name: "Confirm this action", exact: true })).toBeVisible()
+  await expect(endConfirmation).toContainText("End the impersonation of Alex Morgan now?")
+  await endConfirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(page.locator("[data-impersonation-banner]")).toBeVisible()
+
+  await endButton.click()
+  await expect(endConfirmation).toBeVisible()
+  await endConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page.getByRole("status")).toContainText("The impersonation session was ended.")
   await expect(page.locator("[data-impersonation-banner]")).toHaveCount(0)
 })

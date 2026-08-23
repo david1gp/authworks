@@ -25,7 +25,7 @@ test("organization administration demo destinations render fixture-backed conten
   await expect(page.getByRole("heading", { name: "Light theme" }).first()).toBeVisible()
 
   await page.goto("/demo/admin/login-policy")
-  await expect(page.getByRole("heading", { name: "Login policy", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Login policy", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Google Workspace", exact: true })).toBeVisible()
 })
 
@@ -81,24 +81,21 @@ test("an invitation link is shown once and is not repeated in the list", async (
 test("destructive organization actions require confirmation", async ({ page }) => {
   await page.goto(organizationPath)
 
-  const dismissed = new Promise<string>((resolve) =>
-    page.once("dialog", (dialog) => {
-      const message = dialog.message()
-      void dialog.dismiss().then(() => resolve(message))
-    }),
-  )
-  await page.getByRole("button", { name: "Remove organization", exact: true }).click()
-  expect(await dismissed).toContain("Remove this organization?")
+  const removeButton = page.getByRole("button", { name: "Remove organization", exact: true })
+  await removeButton.click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole("heading", { name: "Confirm this action", exact: true })).toBeVisible()
+  await expect(confirmation).toContainText("Remove this organization? Members lose access while it is not active.")
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(confirmation).toHaveCount(0)
+  await expect(removeButton).toBeVisible()
   await expect(page.getByRole("heading", { name: "Acme Corporation", exact: true })).toBeVisible()
 
-  const accepted = new Promise<string>((resolve) =>
-    page.once("dialog", (dialog) => {
-      const message = dialog.message()
-      void dialog.accept().then(() => resolve(message))
-    }),
-  )
   await page.getByRole("button", { name: "Deactivate organization", exact: true }).click()
-  expect(await accepted).toContain("Deactivate this organization?")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation).toContainText("Deactivate this organization? Members lose access while it is not active.")
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page.getByRole("status")).toContainText("The organization lifecycle status was changed.")
 })
 

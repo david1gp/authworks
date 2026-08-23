@@ -1,5 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process"
 import { type BrowserContext, expect, type Page, test } from "@playwright/test"
+import { sessionBrowserModeHeaderName } from "../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 
 type E2eServerMetadata = {
   readonly administrator: {
@@ -31,7 +32,6 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
 
   try {
     await composedApiProxyInstall(page, fixture)
-    page.on("dialog", (dialog) => void dialog.accept())
 
     const loginResponsePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/password/login"),
@@ -141,11 +141,29 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
 
     await page.getByRole("link", { name: "e2e-crud", exact: true }).click()
     await expect(page.getByRole("heading", { name: "E2E CRUD", exact: true })).toBeVisible()
+    const userPath = new URL(page.url()).pathname
+    const deleteApiPath = userPath.replace(`/admin/users/`, `/realms/${fixture.realm.id}/users/`)
+    const deleteRequestUrls: string[] = []
+    page.on("request", (request) => {
+      if (request.method() === "DELETE" && new URL(request.url()).pathname === deleteApiPath)
+        deleteRequestUrls.push(request.url())
+    })
     await page.getByLabel("Display name", { exact: true }).fill("E2E CRUD Updated")
     await page.getByRole("button", { name: "Save profile", exact: true }).click()
     await expect(page.getByRole("status")).toContainText("The user profile was saved.")
-    await page.getByRole("button", { name: "Delete user", exact: true }).click()
+    const deleteButton = page.getByRole("button", { name: "Delete user", exact: true })
+    const deleteConfirmation = page.getByRole("alertdialog")
+    await deleteButton.click()
+    await expect(deleteConfirmation).toBeVisible()
+    await deleteConfirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+    await expect(deleteConfirmation).toHaveCount(0)
+    expect(deleteRequestUrls).toHaveLength(0)
+
+    await deleteButton.click()
+    await expect(deleteConfirmation).toBeVisible()
+    await deleteConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
     await expect(page.getByRole("status")).toContainText("e2e-crud was deleted.")
+    expect(deleteRequestUrls).toHaveLength(1)
   } finally {
     await page.close()
     await e2eServerStop(server.process)
@@ -306,8 +324,10 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await page.getByRole("button", { name: "Verify", exact: true }).click()
     await expect(page).toHaveURL(new RegExp(`/admin/machine-users/${fixture.machineUser.id}$`))
 
-    page.once("dialog", (dialog) => void dialog.accept())
     await page.getByRole("button", { name: "Rotate client secret", exact: true }).click()
+    const rotateConfirmation = page.getByRole("alertdialog")
+    await expect(rotateConfirmation).toBeVisible()
+    await rotateConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
     machineSecrets.push(await machineSecretAcknowledge(page))
     await expect(page.locator("[data-secret-redacted]")).toBeVisible()
 
@@ -322,8 +342,10 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     for (const name of ["E2E PAT", "E2E API key"]) {
       const row = page.getByRole("row").filter({ hasText: name })
       await expect(row).toContainText("Active")
-      page.once("dialog", (dialog) => void dialog.accept())
       await row.getByRole("button", { name: "Revoke", exact: true }).click()
+      const revokeConfirmation = page.getByRole("alertdialog")
+      await expect(revokeConfirmation).toBeVisible()
+      await revokeConfirmation.getByRole("button", { name: "Continue", exact: true }).click()
       await expect(row).toContainText("Revoked")
     }
     await page.reload()
@@ -438,6 +460,8 @@ async function composedApiProxyInstall(
     headers.delete("x-e2e-origin")
     headers.delete("content-length")
     headers.set("origin", requestedOrigin ?? fixture.origin)
+    if (/^\/realms\/[^/]+\/external-identity\/[^/]+\/callback$/.test(browserUrl.pathname))
+      headers.set(sessionBrowserModeHeaderName, "true")
     const target = new URL(`${fixture.serverOrigin}${browserUrl.pathname}${browserUrl.search}`)
     if (browserUrl.pathname === "/organization-discovery") target.searchParams.set("domain", fixture.discoveryDomain)
     const response = await fetch(target, {

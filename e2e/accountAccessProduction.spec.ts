@@ -1,20 +1,21 @@
 import { expect, test } from "@playwright/test"
+import { productionAccountSessionBootstrap } from "./productionAccountSessionBootstrap.js"
 
-const realmId = "018f0000-0000-7000-8000-000000000001"
-const northwindId = "018f0000-0000-7000-8000-000000000002"
-const fieldNotesId = "018f0000-0000-7000-8000-000000000003"
-const userId = "018f0000-0000-7000-8000-000000000007"
+const realmId = "01900000-0000-7000-8000-000000000001"
+const northwindId = "01900000-0000-7000-8000-000000000002"
+const fieldNotesId = "01900000-0000-7000-8000-000000000004"
+const userId = "01900000-0000-7000-8000-0000000000b1"
 
 const organizationItems = [
   {
     membership: {
       createdAt: 1,
-      id: "018f0000-0000-7000-8000-000000000004",
+      id: "01900000-0000-7000-8000-000000000005",
       organizationId: northwindId,
       realmId,
       roles: ["owner"],
       updatedAt: 1,
-      userId: "shell-user",
+      userId,
     },
     organization: {
       createdAt: 1,
@@ -28,12 +29,12 @@ const organizationItems = [
   {
     membership: {
       createdAt: 1,
-      id: "018f0000-0000-7000-8000-000000000005",
+      id: "01900000-0000-7000-8000-000000000006",
       organizationId: fieldNotesId,
       realmId,
       roles: ["member"],
       updatedAt: 1,
-      userId: "shell-user",
+      userId,
     },
     organization: {
       createdAt: 1,
@@ -48,9 +49,12 @@ const organizationItems = [
 
 test("production organization switching calls the self-service API with CSRF", async ({ page }) => {
   let switchRequestHadCsrf = false
-  await page.route("**/realms/customer-identity/**", async (route) => {
+  await productionAccountSessionBootstrap(page)
+  await page.route(`**/realms/${realmId}/**`, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
+    if (pathname === `/realms/${realmId}` || pathname.endsWith("/sessions/current") || pathname.endsWith("/me"))
+      return route.fallback()
     if (pathname.endsWith("/sessions/csrf")) {
       return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     }
@@ -61,14 +65,14 @@ test("production organization switching calls the self-service API with CSRF", a
           activeOrganizationId: fieldNotesId,
           context: {
             actor: {
-              actorId: "shell-user",
+              actorId: userId,
               assurance: "authenticated",
               authenticationMethod: "trusted",
               kind: "user",
-              organizationId: "field-notes",
-              realmId: "customer-identity",
+              organizationId: fieldNotesId,
+              realmId,
             },
-            actorId: "shell-user",
+            actorId: userId,
             kind: "organization",
             organizationId: fieldNotesId,
             realmId,
@@ -88,9 +92,12 @@ test("production organization switching calls the self-service API with CSRF", a
 })
 
 test("production consent and invitation adapters expose permission and expiry failures", async ({ page }) => {
-  await page.route("**/realms/customer-identity/**", async (route) => {
+  await productionAccountSessionBootstrap(page)
+  await page.route(`**/realms/${realmId}/**`, async (route) => {
     const request = route.request()
     const pathname = new URL(request.url()).pathname
+    if (pathname === `/realms/${realmId}` || pathname.endsWith("/sessions/current") || pathname.endsWith("/me"))
+      return route.fallback()
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     if (pathname.endsWith("/me/consents") && request.method() === "GET") {
       return route.fulfill({

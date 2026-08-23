@@ -54,6 +54,16 @@ test("user detail shows stateless security metadata and revokes sessions", async
 
   const mobileSession = page.locator('[data-admin-user-session="session-admin-mobile"]')
   await mobileSession.getByRole("button", { name: "Revoke session", exact: true }).click()
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toBeVisible()
+  await expect(confirmation.getByRole("heading", { name: "Confirm this action", exact: true })).toBeVisible()
+  await expect(confirmation).toContainText("Revoke this session immediately? The device is signed out at once.")
+  await confirmation.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(mobileSession).toBeVisible()
+
+  await mobileSession.getByRole("button", { name: "Revoke session", exact: true }).click()
+  await expect(confirmation).toBeVisible()
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(mobileSession).toHaveCount(0)
   await expect(page.getByRole("status").filter({ hasText: "The session was revoked." })).toBeVisible()
 

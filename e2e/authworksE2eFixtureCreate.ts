@@ -20,6 +20,7 @@ import type { PasswordRecoveryDelivery } from "../src/features/passwords/public/
 import type { PasswordRegistrationDelivery } from "../src/features/passwords/public/passwordRegistrationDeliverySchema.js"
 import { projectApiClientCreate } from "../src/features/projects/client/projectApiClientCreate.js"
 import { realmApiClientCreate } from "../src/features/realms/client/realmApiClientCreate.js"
+import { sessionBrowserModeHeaderName } from "../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import { userApiClientCreate } from "../src/features/users/client/userApiClientCreate.js"
 import { resultCreate } from "../src/platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../src/platform/errors/resultErrorCodedCreate.js"
@@ -475,6 +476,7 @@ async function fixtureUserMfaSetup(
     headers.delete("content-length")
     headers.set("host", fixtureDomain)
     headers.set("origin", fixtureOrigin)
+    headers.set(sessionBrowserModeHeaderName, "true")
     if (cookies.size > 0) headers.set("cookie", [...cookies.values()].join("; "))
     if (csrfToken !== undefined && !["GET", "HEAD", "OPTIONS"].includes(method)) headers.set("x-csrf-token", csrfToken)
     const body =

@@ -66,7 +66,7 @@ test.describe("task 19 administration browser fixes", () => {
       await expect(page.locator("html")).toHaveAttribute("lang", "ar")
       await expect(page.getByText("معاينة بيانات تجريبية مستقلة", { exact: true })).toBeVisible()
       await expect(page.getByRole("heading", { name: "نظرة عامة على النطاق", exact: true })).toBeVisible()
-      await expect(page.getByText("هوية عملاء نورثويند", { exact: true })).toBeVisible()
+      await expect(page.getByText("هوية عميل Northwind", { exact: true })).toBeVisible()
       await expect(page.getByText("حالة البيانات التجريبية", { exact: true })).toBeVisible()
       await expect(page.getByRole("link", { name: "نجاح", exact: true })).toBeVisible()
 
