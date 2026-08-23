@@ -189,11 +189,11 @@
     "provenance": true
   },
   "dependencies": {
+    "@adaptive-ds/mdi": "^0.1.2",
     "@adaptive-ds/solid-ui": "^0.19.0",
     "@adaptive-ds/utils": "^0.12.0",
     "@corvu/dialog": "^0.2.4",
     "@corvu/popover": "^0.2.0",
-    "@adaptive-ds/mdi": "^0.1.2",
     "@simplewebauthn/server": "^13.2.2",
     "@solid-primitives/keyed": "^1.5.3",
     "@solid-primitives/scheduled": "^1.5.2",

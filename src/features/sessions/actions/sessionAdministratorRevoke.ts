@@ -3,8 +3,8 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
-import { sessionRevoke } from "./sessionRevoke.js"
 import type { SessionRevocationResponse } from "../public/sessionRevocationResponseSchema.js"
+import { sessionRevoke } from "./sessionRevoke.js"
 
 type SessionAdministratorRevokeOptions = {
   readonly actor: AuthorizationActorContext

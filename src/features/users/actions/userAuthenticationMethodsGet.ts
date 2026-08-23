@@ -2,8 +2,8 @@ import { type Result } from "#result"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { userAuthenticationMethodsRead } from "./userAuthenticationMethodsRead.js"
 import type { UserAuthenticationMethods } from "../public/userAuthenticationMethodsSchema.js"
+import { userAuthenticationMethodsRead } from "./userAuthenticationMethodsRead.js"
 
 type UserAuthenticationMethodsGetOptions = {
   readonly context: RealmTenantContext

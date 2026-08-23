@@ -3,8 +3,8 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
-import { userAuthenticationMethodsRead } from "./userAuthenticationMethodsRead.js"
 import type { UserAuthenticationMethods } from "../public/userAuthenticationMethodsSchema.js"
+import { userAuthenticationMethodsRead } from "./userAuthenticationMethodsRead.js"
 
 type UserAuthenticationMethodsAdministratorGetOptions = {
   readonly actor: AuthorizationActorContext
