@@ -20,6 +20,7 @@ import type { PasswordRegistrationRequest } from "../../passwords/public/passwor
 import { passwordRegistrationResponseSchema } from "../../passwords/public/passwordRegistrationResponseSchema.js"
 import { sessionApiClientCreate } from "../../sessions/client/sessionApiClientCreate.js"
 import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserRequest.js"
+import { sessionBrowserModeHeaderName } from "../../sessions/public/sessionBrowserModeHeaderName.js"
 import { sessionRevocationResponseSchema } from "../../sessions/public/sessionRevocationResponseSchema.js"
 
 type LoginFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
@@ -42,7 +43,7 @@ export function loginApiCreate(options: { readonly baseUrl: string; readonly fet
       init: {
         body: JSON.stringify(body),
         credentials: "include",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "true" },
         method: "POST",
       },
       op: "loginBrowserRequest",
