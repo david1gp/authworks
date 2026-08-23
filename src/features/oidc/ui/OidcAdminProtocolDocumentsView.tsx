@@ -4,6 +4,7 @@ import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { OidcAdminStateBoundary } from "./OidcAdminStateBoundary.js"
 import { oidcAdminDocumentCopyStateCreate } from "./oidcAdminDocumentCopyStateCreate.js"
+import { oidcAdminDocumentOpenHrefSelect } from "./oidcAdminDocumentOpenHrefSelect.js"
 import type { OidcAdminPageState } from "./oidcAdminPageStateCreate.js"
 
 /**
@@ -15,6 +16,17 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
   const copyState = oidcAdminDocumentCopyStateCreate({})
   const discoveryJson = () => JSON.stringify(state.discovery() ?? {}, null, 2)
   const jwksJson = () => JSON.stringify(state.jwks() ?? {}, null, 2)
+  const origin = () => (typeof window === "undefined" ? undefined : window.location.origin)
+  const discoveryHref = () => {
+    const discovery = state.discovery()
+    return discovery === undefined
+      ? undefined
+      : oidcAdminDocumentOpenHrefSelect(`${discovery.issuer}/.well-known/openid-configuration`, origin())
+  }
+  const jwksHref = () => {
+    const discovery = state.discovery()
+    return discovery === undefined ? undefined : oidcAdminDocumentOpenHrefSelect(discovery.jwks_uri, origin())
+  }
 
   return (
     <section class="grid min-w-0 gap-6">
@@ -41,7 +53,7 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
               <CardWrapper class="min-w-0">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h3 class="text-xl font-semibold">{messageTranslate("admin.oidc.documents.discoveryTitle")}</h3>
+                    <h2 class="text-xl font-semibold">{messageTranslate("admin.oidc.documents.discoveryTitle")}</h2>
                     <p class="mt-1 text-sm text-muted-foreground">
                       {messageTranslate("admin.oidc.documents.discoveryDescription")}
                     </p>
@@ -50,14 +62,19 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
                     <Button onClick={() => copyState.copy("discovery", discoveryJson())} variant="outline">
                       {messageTranslate("admin.oidc.documents.copy")}
                     </Button>
-                    <a
-                      class="rounded-lg border border-line px-3 py-2 text-sm font-medium hover:bg-surface-hover"
-                      href={`${discovery().issuer}/.well-known/openid-configuration`}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      {messageTranslate("admin.oidc.documents.open")}
-                    </a>
+                    {/* A fixture endpoint resolves nowhere, so no broken link is offered. */}
+                    <Show when={discoveryHref()}>
+                      {(href) => (
+                        <a
+                          class="rounded-lg border border-line px-3 py-2 text-sm font-medium hover:bg-surface-hover"
+                          href={href()}
+                          rel="noreferrer"
+                          target="_blank"
+                        >
+                          {messageTranslate("admin.oidc.documents.open")}
+                        </a>
+                      )}
+                    </Show>
                     <Show when={copyState.copied("discovery")}>
                       <span class="text-sm font-medium text-green-800" role="status">
                         {messageTranslate("admin.oidc.documents.copied")}
@@ -125,7 +142,7 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
               <CardWrapper class="min-w-0">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h3 class="text-xl font-semibold">{messageTranslate("admin.oidc.documents.jwksTitle")}</h3>
+                    <h2 class="text-xl font-semibold">{messageTranslate("admin.oidc.documents.jwksTitle")}</h2>
                     <p class="mt-1 text-sm text-muted-foreground">
                       {messageTranslate("admin.oidc.documents.jwksDescription")}
                     </p>
@@ -134,11 +151,11 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
                     <Button onClick={() => copyState.copy("jwks", jwksJson())} variant="outline">
                       {messageTranslate("admin.oidc.documents.copy")}
                     </Button>
-                    <Show when={state.discovery()}>
-                      {(discovery) => (
+                    <Show when={jwksHref()}>
+                      {(href) => (
                         <a
                           class="rounded-lg border border-line px-3 py-2 text-sm font-medium hover:bg-surface-hover"
-                          href={discovery().jwks_uri}
+                          href={href()}
                           rel="noreferrer"
                           target="_blank"
                         >

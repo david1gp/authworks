@@ -18,7 +18,7 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 
 type ImpersonationAdminPageStateOptions = {
   readonly adapter: ImpersonationAdminAdapter
-  readonly confirm: (message: string) => boolean
+  readonly confirm: (message: string) => boolean | Promise<boolean>
   /** Renders the ended confirmation without a prior mutation, so the state is URL-reachable. */
   readonly endedSeed?: () => boolean
   /** Injected so remaining-time display is deterministic in tests and demo fixtures. */
@@ -121,8 +121,10 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
     impersonationEnd: async () => {
       const session = active.get()
       if (session === null) return
-      if (!options.confirm(messageTranslate("admin.impersonation.endConfirm", { subject: session.subjectLabel })))
-        return
+      const confirmed = await options.confirm(
+        messageTranslate("admin.impersonation.endConfirm", { subject: session.subjectLabel }),
+      )
+      if (confirmed !== true) return
       const data = await mutate(`impersonation:end:${session.sessionId}`, () =>
         adapter.impersonationEnd(session.sessionId),
       )
@@ -164,14 +166,12 @@ export function impersonationAdminPageStateCreate(options: ImpersonationAdminPag
         return
       }
       const organization = organizationId.get()
-      if (
-        !options.confirm(
-          messageTranslate("admin.impersonation.startConfirm", {
-            subject: impersonationAdminUserLabel(subject),
-          }),
-        )
+      const confirmed = await options.confirm(
+        messageTranslate("admin.impersonation.startConfirm", {
+          subject: impersonationAdminUserLabel(subject),
+        }),
       )
-        return
+      if (confirmed !== true) return
       const data = await mutate("impersonation:start", () =>
         adapter.impersonationStart({
           durationSeconds: duration,

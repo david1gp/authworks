@@ -1,13 +1,13 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoAdminMemberships } from "../../demo/demoAdminMemberships.js"
 import { demoAdminOrganizationDomains } from "../../demo/demoAdminOrganizationDomains.js"
 import { demoAdminOrganizationInvitations } from "../../demo/demoAdminOrganizationInvitations.js"
 import { demoAdminOrganizationProviders } from "../../demo/demoAdminOrganizationProviders.js"
 import { demoAdminOrganizationRoles } from "../../demo/demoAdminOrganizationRoles.js"
 import { demoAdminOrganizations } from "../../demo/demoAdminOrganizations.js"
+import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoResourceIdGenerate } from "../../demo/demoResourceIdGenerate.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import { organizationBrandingDefaultCreate } from "../domain/organizationBrandingDefaultCreate.js"
@@ -140,7 +140,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
           found.verification = undefined
           found.version += 1
         }
-        return { domain: found ?? domains[0]! }
+        return { domain: { ...(found ?? domains[0]!) } }
       }),
     invitationCreate: (organizationId, input) =>
       guard("organizationAdminDemoInvitationCreate", () => {
@@ -214,7 +214,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
           found.roles = input.roles
           found.updatedAt = now
         }
-        return { membership: found ?? memberships[0]! }
+        return { membership: { ...(found ?? memberships[0]!) } }
       }),
     organizationCreate: (input) =>
       guard("organizationAdminDemoOrganizationCreate", () => {
@@ -238,7 +238,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         const found = organizations.find((item) => item.id === organizationId) ?? organizations[0]!
         found.status = input.status
         found.updatedAt = now
-        return { organization: found }
+        return { organization: { ...found } }
       }),
     organizationList: () => guard("organizationAdminDemoOrganizationList", () => listOf(organizations)),
     organizationUpdate: (organizationId, input) =>
@@ -246,7 +246,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         const found = organizations.find((item) => item.id === organizationId) ?? organizations[0]!
         found.name = input.name
         found.updatedAt = now
-        return { organization: found }
+        return { organization: { ...found } }
       }),
     providerCreate: (input) =>
       guard("organizationAdminDemoProviderCreate", () => {
@@ -274,7 +274,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         const found = providers.find((item) => item.id === providerId) ?? providers[0]!
         found.enabled = false
         found.version += 1
-        return { provider: found }
+        return { provider: { ...found } }
       }),
     providerList: () => guard("organizationAdminDemoProviderList", () => listOf(providers)),
     providerUpdate: (providerId, input) =>
@@ -283,7 +283,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         if (input.displayName !== undefined) found.displayName = input.displayName
         if (input.enabled !== undefined) found.enabled = input.enabled
         found.version += 1
-        return { provider: found }
+        return { provider: { ...found } }
       }),
     roleList: () => guard("organizationAdminDemoRoleList", () => ({ items: [...demoAdminOrganizationRoles] })),
   }

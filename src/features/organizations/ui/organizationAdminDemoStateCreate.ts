@@ -1,12 +1,15 @@
 import { useLocation, useParams } from "@solidjs/router"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { demoAdminScenarioGroups } from "../../demo/demoAdminScenarioGroups.js"
 import { demoFixtureScenarioHrefBuild } from "../../demo/demoFixtureScenarioHrefBuild.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
+import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import { organizationAdminDemoAdapterCreate } from "./organizationAdminDemoAdapterCreate.js"
+import { organizationAdminInvitationAcknowledgementStore } from "./organizationAdminInvitationAcknowledgementStore.js"
 import { organizationAdminPageStateCreate } from "./organizationAdminPageStateCreate.js"
-import { organizationAdminScreenStateCreate } from "./organizationAdminScreenStateCreate.js"
 import type { OrganizationAdminScreen } from "./organizationAdminScreenSchema.js"
+import { organizationAdminScreenStateCreate } from "./organizationAdminScreenStateCreate.js"
 
 const demoOrganizationId = "01900000-0000-7000-8000-000000000011"
 
@@ -18,16 +21,38 @@ export function organizationAdminDemoStateCreate(screen: () => OrganizationAdmin
   const fixtureState = () => demoFixtureStateSelect(location.search, scenario()?.states ?? ["success"])
   const organizationId = () => params.organizationId ?? demoOrganizationId
   const adapter = organizationAdminDemoAdapterCreate(fixtureState)
-  // The demo keeps the real confirmation prompts so destructive flows stay faithful to production.
-  const page = organizationAdminPageStateCreate({ adapter, organizationId, screen })
-  const screenState = organizationAdminScreenStateCreate({ basePath: "/demo/admin", page })
+  const initialInvitationToken = () => {
+    if (fixtureState() !== "one-time") return undefined
+    const marker = organizationAdminInvitationAcknowledgementStore.markerBuild(organizationId(), fixtureState())
+    return organizationAdminInvitationAcknowledgementStore.acknowledged(marker)
+      ? undefined
+      : "demo-invitation-token-0f9c31a7e5b24d68"
+  }
+  // The demo shows the same in-app confirmation as production, so destructive flows stay faithful.
+  const confirmState = confirmStateCreate()
+  const page = organizationAdminPageStateCreate({
+    adapter,
+    confirm: confirmState.confirm,
+    initialInvitationToken,
+    onInvitationTokenDismiss: () => {
+      if (fixtureState() === "one-time") {
+        organizationAdminInvitationAcknowledgementStore.acknowledge(
+          organizationAdminInvitationAcknowledgementStore.markerBuild(organizationId(), fixtureState()),
+        )
+      }
+    },
+    organizationId,
+    reloadKey: fixtureState,
+    screen,
+  })
+  const screenState = organizationAdminScreenStateCreate({ basePath: "/demo/admin", confirmState, page })
 
   return {
     ...screenState,
     stateOptions: () =>
       (scenario()?.states ?? ["success"]).map((state) => ({
         href: demoFixtureScenarioHrefBuild(location.pathname, state),
-        label: state,
+        label: demoFixtureStateLabel(state),
         selected: state === fixtureState(),
       })),
   }

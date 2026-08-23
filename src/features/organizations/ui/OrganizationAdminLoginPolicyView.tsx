@@ -4,12 +4,12 @@ import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Badge } from "#ui/static/badge/Badge.jsx"
 import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
-import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
-import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
+import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
@@ -76,7 +76,7 @@ export function OrganizationAdminLoginPolicyView(props: {
       >
         <div class="grid gap-5">
           <CardWrapper>
-            <h3 class="text-lg font-semibold">{messageTranslate("admin.organizations.policy.title")}</h3>
+            <h2 class="text-lg font-semibold">{messageTranslate("admin.organizations.policy.title")}</h2>
             <form class="mt-4 grid gap-4" onSubmit={props.onPolicySubmit}>
               <For each={policyFields}>
                 {(field) => (
@@ -105,7 +105,7 @@ export function OrganizationAdminLoginPolicyView(props: {
             </form>
           </CardWrapper>
           <CardWrapper>
-            <h3 class="text-lg font-semibold">{messageTranslate("admin.organizations.providers.title")}</h3>
+            <h2 class="text-lg font-semibold">{messageTranslate("admin.organizations.providers.title")}</h2>
             <p class="mt-1 text-sm text-muted-foreground">
               {messageTranslate("admin.organizations.providers.description")}
             </p>
@@ -122,10 +122,12 @@ export function OrganizationAdminLoginPolicyView(props: {
                       <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
                           <div class="flex flex-wrap items-center gap-2">
-                            <h4 class="font-semibold">{provider.displayName}</h4>
+                            <h3 class="font-semibold">{provider.displayName}</h3>
                             <Badge variant="outline">{provider.type}</Badge>
                             <Badge variant={provider.enabled ? "filledGreen" : "filledYellow"}>
-                              {provider.enabled ? "enabled" : "disabled"}
+                              {provider.enabled
+                                ? messageTranslate("common.enabled")
+                                : messageTranslate("common.disabled")}
                             </Badge>
                           </div>
                           <p class="mt-2 font-mono text-xs text-muted-foreground">{provider.clientId}</p>
@@ -137,7 +139,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                             onClick={() => props.onProviderEnabledToggle(provider)}
                             variant="outline"
                           >
-                            {provider.enabled ? "disable" : "enable"}
+                            {provider.enabled ? messageTranslate("common.disable") : messageTranslate("common.enable")}
                           </Button>
                           <Show when={provider.enabled}>
                             <Button
@@ -186,7 +188,7 @@ export function OrganizationAdminLoginPolicyView(props: {
             </Show>
           </CardWrapper>
           <CardWrapper>
-            <h3 class="text-lg font-semibold">{messageTranslate("admin.organizations.providers.create")}</h3>
+            <h2 class="text-lg font-semibold">{messageTranslate("admin.organizations.providers.create")}</h2>
             <form class="mt-4 grid gap-4" onSubmit={props.onProviderCreateSubmit}>
               <div class="grid gap-4 sm:grid-cols-2">
                 <div class="grid gap-2">

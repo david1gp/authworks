@@ -12,8 +12,8 @@ import { MachineAdminNotice } from "./MachineAdminNotice.js"
 import { MachineAdminPagination } from "./MachineAdminPagination.js"
 import { MachineAdminSecretPanel } from "./MachineAdminSecretPanel.js"
 import { MachineAdminStateBoundary } from "./MachineAdminStateBoundary.js"
-import { machineUserStatusBadgeVariant } from "./machineUserStatusBadgeVariant.js"
 import type { machineAdminListViewStateCreate } from "./machineAdminListViewStateCreate.js"
+import { machineUserStatusBadgeVariant } from "./machineUserStatusBadgeVariant.js"
 
 export function MachineAdminListView(props: { readonly state: ReturnType<typeof machineAdminListViewStateCreate> }) {
   const state = props.state
@@ -117,7 +117,17 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
             <TableBody>
               <For each={state.filteredMachineUsers()}>
                 {(machineUser) => (
-                  <TableRow class="cursor-pointer" onClick={() => state.machineUserOpen(machineUser.id)}>
+                  <TableRow
+                    class="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    onClick={() => state.machineUserOpen(machineUser.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        state.machineUserOpen(machineUser.id)
+                      }
+                    }}
+                    tabIndex={0}
+                  >
                     <TableCell class="font-medium">{machineUser.displayName}</TableCell>
                     <TableCell class="font-mono text-xs">{machineUser.userName}</TableCell>
                     <TableCell class="min-w-56 whitespace-normal break-all font-mono text-xs">

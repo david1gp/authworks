@@ -4,8 +4,8 @@ import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MachineCredential } from "../public/machineCredentialSchema.js"
 import type { MachineUserCreateRequest } from "../public/machineUserCreateRequestSchema.js"
-import type { MachineUserStatus } from "../public/machineUserStatusSchema.js"
 import type { MachineUser } from "../public/machineUserSchema.js"
+import type { MachineUserStatus } from "../public/machineUserStatusSchema.js"
 import type { MachineAdminAdapter } from "./machineAdminAdapter.js"
 import { machineAdminFailureStatusSelect } from "./machineAdminFailureStatusSelect.js"
 import type { MachineAdminIssuedSecret } from "./machineAdminIssuedSecret.js"
@@ -22,15 +22,18 @@ type MachineCredentialIssueInput = {
 
 type MachineAdminPageStateCreateOptions = {
   readonly adapter: MachineAdminAdapter
-  readonly confirm: (message: string) => boolean
+  readonly confirm: (message: string) => boolean | Promise<boolean>
   readonly machineUserId: () => string | undefined
   /**
    * Renders an already-issued one-time secret without a mutation. Only the demo adapter
    * supplies this, so the one-time state is reachable directly from a URL.
    */
   readonly issuedSecretSeed?: () => MachineAdminIssuedSecret | undefined
+  /** Records that a seeded one-time secret was acknowledged, so a reload does not show it again. */
+  readonly onIssuedSecretAcknowledge?: (issued: MachineAdminIssuedSecret) => void
   /** Injected so credential expiry is deterministic in tests and demo fixtures. */
   readonly now: () => number
+  readonly reloadKey?: () => string
   readonly screen: () => MachineAdminScreen
 }
 
@@ -58,6 +61,10 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
     status.set(machineAdminFailureStatusSelect(result))
   }
   const pageToken = () => pageTokens.get().at(-1)
+  const issuedSecretSeed = () => options.issuedSecretSeed?.()
+  /** Every destructive action awaits an explicit confirmation that the operator can cancel. */
+  const confirmed = async (key: Parameters<typeof messageTranslate>[0]) =>
+    (await options.confirm(messageTranslate(key))) === true
   const machineUserName = (machineUserId: string) =>
     machineUsers.get().find((item) => item.id === machineUserId)?.displayName ??
     (machineUser.get()?.id === machineUserId ? machineUser.get()?.displayName : undefined) ??
@@ -133,13 +140,24 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
     secretAcknowledged.set(false)
     issuedSecret.set({
       kind: credential.kind,
+      machineUserId: credential.machineUserId,
       machineUserName: machineUserName(credential.machineUserId),
       name: credential.name ?? credential.id,
       secret,
     })
   }
 
-  createEffect(on(() => `${options.screen()}:${options.machineUserId() ?? ""}:${pageTokens.get().length}`, load))
+  createEffect(
+    on(
+      () =>
+        `${options.screen()}:${options.machineUserId() ?? ""}:${pageTokens.get().length}:${options.reloadKey?.() ?? ""}`,
+      () => {
+        secretAcknowledged.set(false)
+        issuedSecret.set(undefined)
+        void load()
+      },
+    ),
+  )
 
   return {
     apiKeyCreate: async (machineUserId: string, input: MachineCredentialIssueInput) => {
@@ -151,7 +169,7 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
       return true
     },
     clientSecretRotate: async (machineUserId: string) => {
-      if (!options.confirm(messageTranslate("admin.machine.secret.rotateConfirm"))) return
+      if (!(await confirmed("admin.machine.secret.rotateConfirm"))) return
       const rotated = await mutate(`client-secret:${machineUserId}`, () => adapter.clientSecretRotate(machineUserId))
       if (rotated === undefined) return
       machineUser.set(rotated.machineUser)
@@ -161,13 +179,14 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
       issuedSecret.set({
         clientId: rotated.clientId,
         kind: "client_secret",
+        machineUserId: rotated.machineUser.id,
         machineUserName: rotated.machineUser.displayName,
         name: rotated.machineUser.displayName,
         secret: rotated.clientSecret,
       })
     },
     credentialRevoke: async (credentialId: string) => {
-      if (!options.confirm(messageTranslate("admin.machine.credentials.revokeConfirm"))) return
+      if (!(await confirmed("admin.machine.credentials.revokeConfirm"))) return
       const revoked = await mutate(`credential:${credentialId}`, () => adapter.credentialRevoke(credentialId))
       if (revoked === undefined) return
       credentials.set(credentials.get().map((item) => (item.id === credentialId ? revoked : item)))
@@ -185,9 +204,12 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
     /** The one-time secret, hidden as soon as it has been acknowledged. */
     issuedSecret: () => {
       if (secretAcknowledged.get()) return undefined
-      return issuedSecret.get() ?? options.issuedSecretSeed?.()
+      return issuedSecret.get() ?? issuedSecretSeed()
     },
     issuedSecretAcknowledge: () => {
+      // An acknowledged seeded secret must stay hidden across reloads in this browser session.
+      const seeded = issuedSecret.get() === undefined ? issuedSecretSeed() : undefined
+      if (seeded !== undefined) options.onIssuedSecretAcknowledge?.(seeded)
       secretAcknowledged.set(true)
       issuedSecret.set(undefined)
     },
@@ -202,6 +224,7 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
       issuedSecret.set({
         clientId: created.clientId,
         kind: "client_secret",
+        machineUserId: created.machineUser.id,
         machineUserName: created.machineUser.displayName,
         name: created.machineUser.displayName,
         secret: created.clientSecret,
@@ -209,8 +232,7 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
       return true
     },
     machineUserLifecycleSet: async (machineUserId: string, nextStatus: MachineUserStatus) => {
-      if (nextStatus === "removed" && !options.confirm(messageTranslate("admin.machine.lifecycle.removeConfirm")))
-        return
+      if (nextStatus === "removed" && !(await confirmed("admin.machine.lifecycle.removeConfirm"))) return
       const updated = await mutate(`machine-user:${machineUserId}`, () =>
         adapter.machineUserLifecycleSet(machineUserId, { status: nextStatus }),
       )

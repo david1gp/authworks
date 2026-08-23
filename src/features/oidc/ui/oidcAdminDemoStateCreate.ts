@@ -4,10 +4,13 @@ import { demoAdminOidcClients } from "../../demo/demoAdminOidcClients.js"
 import { demoAdminScenarioGroups } from "../../demo/demoAdminScenarioGroups.js"
 import { demoFixtureScenarioHrefBuild } from "../../demo/demoFixtureScenarioHrefBuild.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
+import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
 import { oidcAdminDemoAdapterCreate } from "./oidcAdminDemoAdapterCreate.js"
-import { oidcAdminScreenStateCreate } from "./oidcAdminScreenStateCreate.js"
+import { oidcAdminDemoIssuedSecretSeedSelect } from "./oidcAdminDemoIssuedSecretSeedSelect.js"
 import type { OidcAdminScreen } from "./oidcAdminScreenSchema.js"
+import { oidcAdminScreenStateCreate } from "./oidcAdminScreenStateCreate.js"
+import { oidcAdminSecretAcknowledgementStore } from "./oidcAdminSecretAcknowledgementStore.js"
 
 export function oidcAdminDemoStateCreate(options: {
   readonly clientId: () => string | undefined
@@ -18,24 +21,30 @@ export function oidcAdminDemoStateCreate(options: {
   const fixtureState = () => demoFixtureStateSelect(location.search, scenario()?.states ?? ["success"])
 
   // The one-time state is reachable straight from a URL, so it seeds an already-issued
-  // secret instead of requiring the operator to run a mutation first.
-  const issuedSecretSeed = () =>
-    fixtureState() === "one-time"
-      ? {
-          clientId: demoAdminOidcClients[0]?.id ?? "",
-          clientName: demoAdminOidcClients[0]?.name ?? "",
-          kind: "rotated" as const,
-          secret: demoAdminOidcClientSecret,
-        }
-      : undefined
+  // secret instead of requiring the operator to run a mutation first. Once acknowledged it
+  // must not reappear on reload, so the acknowledgement is remembered for this session.
+  const issuedSecretSeed = () => {
+    if (fixtureState() !== "one-time") return undefined
+    // A deep link to one client must show that client's secret, never the first client's.
+    const seeded = oidcAdminDemoIssuedSecretSeedSelect({
+      clientId: options.clientId(),
+      clients: demoAdminOidcClients,
+      secret: demoAdminOidcClientSecret,
+    })
+    if (seeded === undefined) return undefined
+    const marker = oidcAdminSecretAcknowledgementStore.markerBuild(seeded.clientId, seeded.kind)
+    return oidcAdminSecretAcknowledgementStore.acknowledged(marker) ? undefined : seeded
+  }
 
   const screenState = oidcAdminScreenStateCreate({
     adapter: oidcAdminDemoAdapterCreate(fixtureState),
     basePath: "/demo/admin",
     clientId: options.clientId,
     issuedSecretSeed,
-    // Demo destinations stay network-free and non-blocking, so confirmations auto-accept.
-    confirm: () => true,
+    onIssuedSecretAcknowledge: (issued) =>
+      oidcAdminSecretAcknowledgementStore.acknowledge(
+        oidcAdminSecretAcknowledgementStore.markerBuild(issued.clientId, issued.kind),
+      ),
     screen: options.screen,
   })
 
@@ -45,7 +54,7 @@ export function oidcAdminDemoStateCreate(options: {
     stateOptions: () =>
       (scenario()?.states ?? ["success"]).map((state) => ({
         href: demoFixtureScenarioHrefBuild(location.pathname, state),
-        label: state,
+        label: demoFixtureStateLabel(state),
         selected: state === fixtureState(),
       })),
   }

@@ -1,7 +1,7 @@
-import { impersonationApiClientCreate } from "../client/impersonationApiClientCreate.js"
 import { organizationApiClientCreate } from "../../organizations/client/organizationApiClientCreate.js"
 import { sessionApiClientCreate } from "../../sessions/client/sessionApiClientCreate.js"
 import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
+import { impersonationApiClientCreate } from "../client/impersonationApiClientCreate.js"
 
 type ImpersonationAdminFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 

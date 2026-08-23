@@ -1,7 +1,7 @@
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { oidcAdminProductionAdapterCreate } from "./oidcAdminProductionAdapterCreate.js"
-import { oidcAdminScreenStateCreate } from "./oidcAdminScreenStateCreate.js"
 import type { OidcAdminScreen } from "./oidcAdminScreenSchema.js"
+import { oidcAdminScreenStateCreate } from "./oidcAdminScreenStateCreate.js"
 
 export function oidcAdminProductionStateCreate(options: {
   readonly clientId: () => string | undefined
@@ -17,7 +17,6 @@ export function oidcAdminProductionStateCreate(options: {
     adapter: oidcAdminProductionAdapterCreate({ baseUrl: window.location.origin, realmId }),
     basePath: "/admin",
     clientId: options.clientId,
-    confirm: (message) => window.confirm(message),
     screen: options.screen,
   })
 }

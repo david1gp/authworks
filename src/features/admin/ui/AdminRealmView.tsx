@@ -64,100 +64,102 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                 </p>
               </header>
 
-              <form class="rounded-2xl border border-line bg-surface p-6 shadow-sm" onSubmit={props.state.realmSave}>
-                <h3 class="font-semibold">{messageTranslate("admin.realm.settingsTitle")}</h3>
-                <div class="mt-5 grid gap-4">
-                  <div class="grid gap-2">
-                    <Label for="admin-realm-name">{messageTranslate("admin.realm.name")}</Label>
-                    <Input
-                      id="admin-realm-name"
-                      maxlength={128}
-                      onInput={(event) => props.state.realmName.set(event.currentTarget.value)}
-                      value={props.state.realmName.get()}
-                    />
-                  </div>
-                  <div class="grid gap-2">
-                    <Label for="admin-realm-domains">{messageTranslate("admin.realm.domains")}</Label>
-                    <Input
-                      id="admin-realm-domains"
-                      onInput={(event) => props.state.realmDomains.set(event.currentTarget.value)}
-                      value={props.state.realmDomains.get()}
-                    />
-                    <p class="text-xs text-muted-foreground">{messageTranslate("admin.realm.domainsHint")}</p>
-                  </div>
-                  <div class="grid gap-2">
-                    <Label for="admin-realm-status">{messageTranslate("admin.realm.status")}</Label>
-                    <select
-                      class="block w-full rounded-lg border border-line bg-surface p-2.5"
-                      id="admin-realm-status"
-                      onChange={(event) =>
-                        props.state.realmStatus.set(event.currentTarget.value === "disabled" ? "disabled" : "active")
-                      }
-                      value={props.state.realmStatus.get()}
-                    >
-                      <option value="active">{messageTranslate("admin.realm.statusActive")}</option>
-                      <option value="disabled">{messageTranslate("admin.realm.statusDisabled")}</option>
-                    </select>
-                  </div>
-                </div>
-                <Show when={props.state.validationMessage()}>
-                  {(message) => (
-                    <p class="mt-4 text-sm text-danger" role="alert">
-                      {message()}
-                    </p>
-                  )}
-                </Show>
-                <Button class="mt-5" disabled={props.state.pendingId() !== undefined} type="submit">
-                  {messageTranslate("admin.realm.save")}
-                </Button>
-              </form>
-
-              <section class="rounded-2xl border border-danger/40 bg-surface p-6 shadow-sm">
-                <p class="text-xs font-bold uppercase tracking-[0.16em] text-danger">
-                  {messageTranslate("admin.realm.dangerZone")}
-                </p>
-                <h3 class="mt-2 font-semibold">{messageTranslate("admin.realm.lifecycleTitle")}</h3>
-                <Show
-                  when={realm().status === "active"}
-                  fallback={
-                    <div>
-                      <p class="mt-3 text-sm leading-6 text-muted-foreground">
-                        {messageTranslate("admin.realm.enableDescription")}
-                      </p>
-                      <Button
-                        class="mt-5"
-                        disabled={props.state.pendingId() === "realm:lifecycle:active"}
-                        onClick={() => props.state.realmLifecycleApply("active")}
-                      >
-                        {messageTranslate("admin.realm.enable")}
-                      </Button>
+              <Show when={props.state.status() !== "permission-denied"}>
+                <form class="rounded-2xl border border-line bg-surface p-6 shadow-sm" onSubmit={props.state.realmSave}>
+                  <h3 class="font-semibold">{messageTranslate("admin.realm.settingsTitle")}</h3>
+                  <div class="mt-5 grid gap-4">
+                    <div class="grid gap-2">
+                      <Label for="admin-realm-name">{messageTranslate("admin.realm.name")}</Label>
+                      <Input
+                        id="admin-realm-name"
+                        maxlength={128}
+                        onInput={(event) => props.state.realmName.set(event.currentTarget.value)}
+                        value={props.state.realmName.get()}
+                      />
                     </div>
-                  }
-                >
-                  <p class="mt-3 text-sm leading-6 text-muted-foreground">
-                    {messageTranslate("admin.realm.disableWarning")}
-                  </p>
-                  <div class="mt-5 grid gap-2">
-                    <Label for="admin-realm-confirm">
-                      {messageTranslate("admin.realm.confirmLabel", { name: realm().name })}
-                    </Label>
-                    <Input
-                      autocomplete="off"
-                      id="admin-realm-confirm"
-                      onInput={(event) => props.state.lifecycleConfirmation.set(event.currentTarget.value)}
-                      value={props.state.lifecycleConfirmation.get()}
-                    />
+                    <div class="grid gap-2">
+                      <Label for="admin-realm-domains">{messageTranslate("admin.realm.domains")}</Label>
+                      <Input
+                        id="admin-realm-domains"
+                        onInput={(event) => props.state.realmDomains.set(event.currentTarget.value)}
+                        value={props.state.realmDomains.get()}
+                      />
+                      <p class="text-xs text-muted-foreground">{messageTranslate("admin.realm.domainsHint")}</p>
+                    </div>
+                    <div class="grid gap-2">
+                      <Label for="admin-realm-status">{messageTranslate("admin.realm.status")}</Label>
+                      <select
+                        class="block w-full rounded-lg border border-line bg-surface p-2.5"
+                        id="admin-realm-status"
+                        onChange={(event) =>
+                          props.state.realmStatus.set(event.currentTarget.value === "disabled" ? "disabled" : "active")
+                        }
+                        value={props.state.realmStatus.get()}
+                      >
+                        <option value="active">{messageTranslate("admin.realm.statusActive")}</option>
+                        <option value="disabled">{messageTranslate("admin.realm.statusDisabled")}</option>
+                      </select>
+                    </div>
                   </div>
-                  <Button
-                    class="mt-5"
-                    disabled={props.state.pendingId() === "realm:lifecycle:disabled"}
-                    onClick={() => props.state.realmLifecycleApply("disabled")}
-                    variant="outline"
-                  >
-                    {messageTranslate("admin.realm.disable")}
+                  <Show when={props.state.validationMessage()}>
+                    {(message) => (
+                      <p class="mt-4 text-sm text-danger" role="alert">
+                        {message()}
+                      </p>
+                    )}
+                  </Show>
+                  <Button class="mt-5" disabled={props.state.pendingId() !== undefined} type="submit">
+                    {messageTranslate("admin.realm.save")}
                   </Button>
-                </Show>
-              </section>
+                </form>
+
+                <section class="rounded-2xl border border-danger/40 bg-surface p-6 shadow-sm">
+                  <p class="text-xs font-bold uppercase tracking-[0.16em] text-danger">
+                    {messageTranslate("admin.realm.dangerZone")}
+                  </p>
+                  <h3 class="mt-2 font-semibold">{messageTranslate("admin.realm.lifecycleTitle")}</h3>
+                  <Show
+                    when={realm().status === "active"}
+                    fallback={
+                      <div>
+                        <p class="mt-3 text-sm leading-6 text-muted-foreground">
+                          {messageTranslate("admin.realm.enableDescription")}
+                        </p>
+                        <Button
+                          class="mt-5"
+                          disabled={props.state.pendingId() === "realm:lifecycle:active"}
+                          onClick={() => props.state.realmLifecycleApply("active")}
+                        >
+                          {messageTranslate("admin.realm.enable")}
+                        </Button>
+                      </div>
+                    }
+                  >
+                    <p class="mt-3 text-sm leading-6 text-muted-foreground">
+                      {messageTranslate("admin.realm.disableWarning")}
+                    </p>
+                    <div class="mt-5 grid gap-2">
+                      <Label for="admin-realm-confirm">
+                        {messageTranslate("admin.realm.confirmLabel", { name: realm().name })}
+                      </Label>
+                      <Input
+                        autocomplete="off"
+                        id="admin-realm-confirm"
+                        onInput={(event) => props.state.lifecycleConfirmation.set(event.currentTarget.value)}
+                        value={props.state.lifecycleConfirmation.get()}
+                      />
+                    </div>
+                    <Button
+                      class="mt-5"
+                      disabled={props.state.pendingId() === "realm:lifecycle:disabled"}
+                      onClick={() => props.state.realmLifecycleApply("disabled")}
+                      variant="outline"
+                    >
+                      {messageTranslate("admin.realm.disable")}
+                    </Button>
+                  </Show>
+                </section>
+              </Show>
             </>
           )}
         </Show>

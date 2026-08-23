@@ -1,4 +1,5 @@
 import { Match, Switch } from "solid-js"
+import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { OidcAdminClientDetailView } from "./OidcAdminClientDetailView.js"
 import { OidcAdminClientListView } from "./OidcAdminClientListView.js"
 import { OidcAdminConsentsView } from "./OidcAdminConsentsView.js"
@@ -10,22 +11,25 @@ import type { oidcAdminScreenStateCreate } from "./oidcAdminScreenStateCreate.js
 export function OidcAdminScreenView(props: { readonly state: ReturnType<typeof oidcAdminScreenStateCreate> }) {
   const state = props.state
   return (
-    <Switch>
-      <Match when={state.screen() === "oidc-clients"}>
-        <OidcAdminClientListView state={state.list} />
-      </Match>
-      <Match when={state.screen() === "oidc-client-detail"}>
-        <OidcAdminClientDetailView state={state.detail} />
-      </Match>
-      <Match when={state.screen() === "signing-keys"}>
-        <OidcAdminSigningKeysView state={state.page} />
-      </Match>
-      <Match when={state.screen() === "oidc-consents"}>
-        <OidcAdminConsentsView state={state.consents} />
-      </Match>
-      <Match when={state.screen() === "protocol-documents"}>
-        <OidcAdminProtocolDocumentsView state={state.page} />
-      </Match>
-    </Switch>
+    <>
+      <ConfirmDialog state={state.confirmState} titleKey="admin.oidc.confirmTitle" />
+      <Switch>
+        <Match when={state.screen() === "oidc-clients"}>
+          <OidcAdminClientListView state={state.list} />
+        </Match>
+        <Match when={state.screen() === "oidc-client-detail"}>
+          <OidcAdminClientDetailView state={state.detail} />
+        </Match>
+        <Match when={state.screen() === "signing-keys"}>
+          <OidcAdminSigningKeysView state={state.page} />
+        </Match>
+        <Match when={state.screen() === "oidc-consents"}>
+          <OidcAdminConsentsView state={state.consents} />
+        </Match>
+        <Match when={state.screen() === "protocol-documents"}>
+          <OidcAdminProtocolDocumentsView state={state.page} />
+        </Match>
+      </Switch>
+    </>
   )
 }

@@ -1,6 +1,6 @@
 import { Show } from "solid-js"
-import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 
 const noticeKeys = {
   "branding-saved": "admin.organizations.branding.saved",

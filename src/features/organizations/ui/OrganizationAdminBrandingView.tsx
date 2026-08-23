@@ -55,11 +55,11 @@ export function OrganizationAdminBrandingView(props: {
             <For each={["light", "dark"] as const}>
               {(theme) => (
                 <CardWrapper>
-                  <h3 class="text-lg font-semibold">
+                  <h2 class="text-lg font-semibold">
                     {theme === "light"
                       ? messageTranslate("admin.organizations.branding.light")
                       : messageTranslate("admin.organizations.branding.dark")}
-                  </h3>
+                  </h2>
                   <div class="mt-4 grid gap-4">
                     <For each={themeColorFields}>
                       {(field) => {
@@ -70,12 +70,11 @@ export function OrganizationAdminBrandingView(props: {
                             <Label for={id}>{messageTranslate(field.labelKey)}</Label>
                             <div class="flex items-center gap-3">
                               <input
-                                aria-hidden="true"
+                                aria-label={messageTranslate(field.labelKey)}
                                 class="size-9 cursor-pointer rounded border border-line bg-transparent"
                                 onInput={(event) =>
                                   props.onThemeColorInput(theme, field.key, event.currentTarget.value)
                                 }
-                                tabindex={-1}
                                 type="color"
                                 value={value()}
                               />
@@ -165,7 +164,7 @@ export function OrganizationAdminBrandingView(props: {
             </div>
           </CardWrapper>
           <CardWrapper>
-            <h3 class="text-lg font-semibold">{messageTranslate("admin.organizations.branding.preview")}</h3>
+            <h2 class="text-lg font-semibold">{messageTranslate("admin.organizations.branding.preview")}</h2>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">
               <For each={["light", "dark"] as const}>
                 {(theme) => {

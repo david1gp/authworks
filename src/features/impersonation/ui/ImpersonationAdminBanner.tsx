@@ -2,8 +2,8 @@ import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { impersonationAdminRemainingFormat } from "./impersonationAdminRemainingFormat.js"
 import type { ImpersonationAdminSession } from "./impersonationAdminAdapter.js"
+import { impersonationAdminRemainingFormat } from "./impersonationAdminRemainingFormat.js"
 
 /**
  * The persistent impersonation banner. It names the acting administrator and the subject,
@@ -23,7 +23,6 @@ export function ImpersonationAdminBanner(props: {
       aria-label={messageTranslate("admin.impersonation.bannerLabel")}
       class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-amber-300 bg-amber-100 px-4 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-50"
       data-impersonation-banner
-      role="region"
     >
       <p class="min-w-0 font-medium" data-impersonation-summary>
         {messageTranslate("admin.impersonation.bannerSummary", {

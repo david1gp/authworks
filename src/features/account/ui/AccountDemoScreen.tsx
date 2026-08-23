@@ -22,20 +22,20 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
               {messageTranslate("app.name")}
             </A>
             <span class="hidden h-5 w-px bg-line sm:block" />
-            <span class="hidden text-sm text-muted-foreground sm:block">{ttc("Account demo")}</span>
+            <span class="hidden text-sm text-muted-foreground sm:block">{messageTranslate("demo.account.title")}</span>
           </div>
           <div class="flex min-w-0 items-center gap-2 sm:gap-3">
             <A
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/login"
             >
-              {ttc("Login")}
+              {messageTranslate("demo.nav.login")}
             </A>
             <A
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/admin"
             >
-              {ttc("Administration")}
+              {messageTranslate("demo.nav.admin")}
             </A>
             <LanguageSelector />
             <ThemeButton />
@@ -45,9 +45,9 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
       <main class="px-4 py-8 sm:px-6 sm:py-12">
         <Show when={props.state.isDirectory()} fallback={<AccountDemoDestination state={props.state} />}>
           <DemoDirectory
-            eyebrow={messageTranslate("demo.account.eyebrow")}
-            title={messageTranslate("account.directory.title")}
-            description={messageTranslate("demo.account.description")}
+            eyebrow={() => messageTranslate("demo.account.eyebrow")}
+            title={() => messageTranslate("account.directory.title")}
+            description={() => messageTranslate("demo.account.description")}
             groups={demoAccountScenarioGroups}
           />
         </Show>
@@ -72,7 +72,7 @@ function AccountDemoDestination(props: { state: ReturnType<typeof accountDemoApp
                 <div>
                   <div class="mx-auto mb-5 max-w-5xl">
                     <A class="text-sm font-medium text-accent hover:underline" href="/demo/account">
-                      ← {ttc("Back to directory")}
+                      ← {messageTranslate("demo.directory.back")}
                     </A>
                   </div>
                   <AccountDemoAdapter kind={kind()} path={props.state.path()} />

@@ -79,7 +79,7 @@ export function AdminUserDetailView(props: {
                   <DetailItem label={messageTranslate("admin.users.userName")} value={user().userName} />
                   <DetailItem label={messageTranslate("admin.users.email")} value={user().email} />
                   <DetailItem
-                    label={messageTranslate("admin.users.created")}
+                    label={messageTranslate("admin.users.createdAt")}
                     value={localeDateFormat(user().createdAt, { dateStyle: "medium", timeStyle: "short" })}
                   />
                   <DetailItem

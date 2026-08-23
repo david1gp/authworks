@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import * as v from "valibot"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import type { OidcAdminAdapter } from "./oidcAdminAdapter.js"
 import { oidcAdminClientDetailViewStateCreate } from "./oidcAdminClientDetailViewStateCreate.js"
 import { oidcAdminClientListViewStateCreate } from "./oidcAdminClientListViewStateCreate.js"
 import { oidcAdminConsentsViewStateCreate } from "./oidcAdminConsentsViewStateCreate.js"
-import { oidcAdminPageStateCreate } from "./oidcAdminPageStateCreate.js"
 import type { OidcAdminIssuedSecret } from "./oidcAdminIssuedSecret.js"
+import { oidcAdminPageStateCreate } from "./oidcAdminPageStateCreate.js"
 import type { OidcAdminScreen } from "./oidcAdminScreenSchema.js"
 
 const dialogSchema = v.picklist(["client"])
@@ -17,11 +18,13 @@ const dialogSchema = v.picklist(["client"])
 export function oidcAdminScreenStateCreate(options: {
   readonly adapter: OidcAdminAdapter
   readonly basePath: string
-  readonly confirm: (message: string) => boolean
   readonly clientId: () => string | undefined
   readonly issuedSecretSeed?: () => OidcAdminIssuedSecret | undefined
+  readonly onIssuedSecretAcknowledge?: (issued: OidcAdminIssuedSecret) => void
   readonly screen: () => OidcAdminScreen
 }) {
+  // Destructive prompts are rendered in-app, so they are translated and always cancelable.
+  const confirmState = confirmStateCreate()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -46,13 +49,17 @@ export function oidcAdminScreenStateCreate(options: {
   const page = oidcAdminPageStateCreate({
     adapter: options.adapter,
     clientId: options.clientId,
-    confirm: options.confirm,
+    confirm: confirmState.confirm,
     consentUserId,
     ...(options.issuedSecretSeed === undefined ? {} : { issuedSecretSeed: options.issuedSecretSeed }),
+    ...(options.onIssuedSecretAcknowledge === undefined
+      ? {}
+      : { onIssuedSecretAcknowledge: options.onIssuedSecretAcknowledge }),
     screen: options.screen,
   })
 
   return {
+    confirmState,
     consents: oidcAdminConsentsViewStateCreate({
       consentUserId,
       consentUserIdSet: (userId: string) => searchParamsSet((params) => params.set("userId", userId)),

@@ -1,6 +1,7 @@
 import { useSearchParams } from "@solidjs/router"
 import { onMount } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { impersonationAdminPageStateCreate } from "./impersonationAdminPageStateCreate.js"
@@ -24,14 +25,18 @@ export function impersonationAdminProductionStateCreate() {
     }).then(realmId.set)
   })
 
-  return impersonationAdminPageStateCreate({
+  // The same localized dialog as the demo answers the destructive end action.
+  const confirmState = confirmStateCreate()
+  const page = impersonationAdminPageStateCreate({
     adapter: impersonationAdminProductionAdapterCreate({
       baseUrl,
       realmId: realmId.get,
     }),
-    confirm: (message) => window.confirm(message),
+    confirm: confirmState.confirm,
     now: () => Date.now(),
     reloadKey: realmId.get,
     targetUserId: () => searchParams.userId,
   })
+
+  return { ...page, confirmState }
 }

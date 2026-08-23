@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { projectApplicationCreateRequestSchema } from "../public/projectApplicationCreateRequestSchema.js"
 import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
 
@@ -21,7 +22,7 @@ export function projectAdminApplicationsViewStateCreate(options: {
       name: name.get(),
     })
     if (!parsed.success) {
-      formError.set("Enter an application name and choose a type.")
+      formError.set(messageTranslate("admin.projects.applications.invalid"))
       return
     }
     formError.set(undefined)

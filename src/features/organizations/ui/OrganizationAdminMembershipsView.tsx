@@ -73,7 +73,7 @@ export function OrganizationAdminMembershipsView(props: {
             )}
           </Show>
           <div>
-            <Button disabled={props.pendingId === "membership:create"} type="submit">
+            <Button disabled={props.pendingId === "membership:create"} type="submit" variant="filledBlue">
               {messageTranslate("admin.organizations.memberships.add")}
             </Button>
           </div>
@@ -89,12 +89,14 @@ export function OrganizationAdminMembershipsView(props: {
           <p class="mb-4 text-sm text-muted-foreground">
             {messageTranslate("admin.organizations.memberships.rolesFixed")}
           </p>
-          <Table>
+          <Table aria-label={messageTranslate("admin.organizations.memberships.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
                 <TableHead>{messageTranslate("admin.organizations.memberships.userId")}</TableHead>
                 <TableHead>{messageTranslate("admin.organizations.memberships.roles")}</TableHead>
-                <TableHead />
+                <TableHead class="text-right">
+                  <span class="sr-only">{messageTranslate("admin.organizations.memberships.remove")}</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -113,7 +115,7 @@ export function OrganizationAdminMembershipsView(props: {
                         selected={membership.roles}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell class="text-right">
                       <Button
                         disabled={props.pendingId === `membership:${membership.id}`}
                         onClick={() => props.onRemove(membership.id, membership.userId)}

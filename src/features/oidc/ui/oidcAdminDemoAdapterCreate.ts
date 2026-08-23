@@ -6,13 +6,13 @@ import { demoAdminOidcConsents } from "../../demo/demoAdminOidcConsents.js"
 import { demoAdminOidcDiscovery } from "../../demo/demoAdminOidcDiscovery.js"
 import { demoAdminOidcJwks } from "../../demo/demoAdminOidcJwks.js"
 import { demoAdminOidcSigningKeys } from "../../demo/demoAdminOidcSigningKeys.js"
+import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoRealmId } from "../../demo/demoRealmId.js"
 import { demoResourceIdGenerate } from "../../demo/demoResourceIdGenerate.js"
-import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
-import { adminDemoUserFixtures } from "../../admin/ui/adminDemoUserFixtures.js"
 import type { OidcClient } from "../public/oidcClientSchema.js"
 import type { OidcSigningKey } from "../public/oidcSigningKeySchema.js"
 import type { OidcAdminAdapter } from "./oidcAdminAdapter.js"
+import { oidcAdminDemoUserFixtures } from "./oidcAdminDemoUserFixtures.js"
 
 const neverResolves = <T>(): Promise<Result<T>> => new Promise<Result<T>>(() => undefined)
 
@@ -175,7 +175,7 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
         signingKeys.push(key)
         return resultCreate(key)
       }),
-    users: () => gate(() => resultCreate(adminDemoUserFixtures.map((user) => ({ id: user.id, label: user.email })))),
+    users: () => gate(() => resultCreate(oidcAdminDemoUserFixtures.map((user) => ({ ...user })))),
   }
 
   function signingKeyCreate(): OidcSigningKey {

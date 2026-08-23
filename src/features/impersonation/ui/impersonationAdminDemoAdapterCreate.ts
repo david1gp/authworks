@@ -1,13 +1,13 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import { adminDemoUserFixtures } from "../../admin/ui/adminDemoUserFixtures.js"
 import { demoAdminImpersonationNow } from "../../demo/demoAdminImpersonationNow.js"
 import { demoAdminImpersonationSession } from "../../demo/demoAdminImpersonationSession.js"
 import { demoAdminOrganizations } from "../../demo/demoAdminOrganizations.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
-import { impersonationAdminUserLabel } from "./impersonationAdminUserLabel.js"
 import type { ImpersonationAdminAdapter, ImpersonationAdminSession } from "./impersonationAdminAdapter.js"
+import { impersonationAdminDemoUserFixtures } from "./impersonationAdminDemoUserFixtures.js"
+import { impersonationAdminUserLabel } from "./impersonationAdminUserLabel.js"
 
 const neverResolves = <T>(): Promise<Result<T>> => new Promise<Result<T>>(() => undefined)
 
@@ -19,7 +19,7 @@ const neverResolves = <T>(): Promise<Result<T>> => new Promise<Result<T>>(() => 
  * No session credential is ever produced here, so no demo screen can suggest a usable token.
  */
 export function impersonationAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState): ImpersonationAdminAdapter {
-  const users = adminDemoUserFixtures.map((user) => ({ ...user }))
+  const users = impersonationAdminDemoUserFixtures.map((user) => ({ ...user }))
   const organizations = demoAdminOrganizations.map((organization) => ({ ...organization }))
   const seeded = (): ImpersonationAdminSession | null => {
     const state = fixtureState()

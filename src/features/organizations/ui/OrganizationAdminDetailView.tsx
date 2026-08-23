@@ -12,8 +12,8 @@ import type { OrganizationMembership } from "../public/organizationMembershipSch
 import type { Organization } from "../public/organizationSchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
-import { organizationAdminStatusVariant } from "./organizationAdminStatusVariant.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
+import { organizationAdminStatusVariant } from "./organizationAdminStatusVariant.js"
 
 export function OrganizationAdminDetailView(props: {
   readonly backHref: string
@@ -84,23 +84,35 @@ export function OrganizationAdminDetailView(props: {
                       value={props.name}
                     />
                   </div>
-                  <Button disabled={props.pendingId === "organization:rename"} type="submit">
+                  <Button disabled={props.pendingId !== undefined} type="submit" variant="filledBlue">
                     {messageTranslate("common.save")}
                   </Button>
                 </form>
                 <div class="mt-6 flex flex-wrap gap-3 border-t border-line pt-5">
                   <Show when={organization().status !== "active"}>
-                    <Button onClick={() => props.onLifecycleSet("active")} variant="outline">
+                    <Button
+                      disabled={props.pendingId !== undefined}
+                      onClick={() => props.onLifecycleSet("active")}
+                      variant="outline"
+                    >
                       {messageTranslate("admin.organizations.lifecycle.activate")}
                     </Button>
                   </Show>
                   <Show when={organization().status === "active"}>
-                    <Button onClick={() => props.onLifecycleSet("inactive")} variant="outline">
+                    <Button
+                      disabled={props.pendingId !== undefined}
+                      onClick={() => props.onLifecycleSet("inactive")}
+                      variant="outline"
+                    >
                       {messageTranslate("admin.organizations.lifecycle.deactivate")}
                     </Button>
                   </Show>
                   <Show when={organization().status !== "removed"}>
-                    <Button onClick={() => props.onLifecycleSet("removed")} variant="filledRed">
+                    <Button
+                      disabled={props.pendingId !== undefined}
+                      onClick={() => props.onLifecycleSet("removed")}
+                      variant="filledRed"
+                    >
                       {messageTranslate("admin.organizations.lifecycle.remove")}
                     </Button>
                   </Show>
@@ -121,7 +133,11 @@ export function OrganizationAdminDetailView(props: {
                     </p>
                   }
                 >
-                  <Table class="mt-3">
+                  <Table
+                    aria-label={messageTranslate("admin.organizations.memberships.title")}
+                    class="mt-3"
+                    tabIndex={0}
+                  >
                     <TableHeader>
                       <TableRow>
                         <TableHead>{messageTranslate("admin.organizations.memberships.userId")}</TableHead>

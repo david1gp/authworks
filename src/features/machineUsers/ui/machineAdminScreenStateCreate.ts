@@ -1,11 +1,12 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import * as v from "valibot"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import type { MachineAdminAdapter } from "./machineAdminAdapter.js"
 import { machineAdminCredentialsViewStateCreate } from "./machineAdminCredentialsViewStateCreate.js"
 import { machineAdminDetailViewStateCreate } from "./machineAdminDetailViewStateCreate.js"
+import type { MachineAdminIssuedSecret } from "./machineAdminIssuedSecret.js"
 import { machineAdminListViewStateCreate } from "./machineAdminListViewStateCreate.js"
 import { machineAdminPageStateCreate } from "./machineAdminPageStateCreate.js"
-import type { MachineAdminIssuedSecret } from "./machineAdminIssuedSecret.js"
 import type { MachineAdminScreen } from "./machineAdminScreenSchema.js"
 
 const dialogSchema = v.picklist(["machine-user", "credential"])
@@ -18,12 +19,15 @@ const issueKindSchema = v.picklist(["api_key", "personal_access_token"])
 export function machineAdminScreenStateCreate(options: {
   readonly adapter: MachineAdminAdapter
   readonly basePath: string
-  readonly confirm: (message: string) => boolean
   readonly issuedSecretSeed?: () => MachineAdminIssuedSecret | undefined
   readonly machineUserId: () => string | undefined
   readonly now: () => number
+  readonly onIssuedSecretAcknowledge?: (issued: MachineAdminIssuedSecret) => void
+  readonly reloadKey?: () => string
   readonly screen: () => MachineAdminScreen
 }) {
+  // Destructive prompts are rendered in-app, so they are translated and always cancelable.
+  const confirmState = confirmStateCreate()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -57,14 +61,19 @@ export function machineAdminScreenStateCreate(options: {
 
   const page = machineAdminPageStateCreate({
     adapter: options.adapter,
-    confirm: options.confirm,
+    confirm: confirmState.confirm,
     ...(options.issuedSecretSeed === undefined ? {} : { issuedSecretSeed: options.issuedSecretSeed }),
     machineUserId,
     now: options.now,
+    ...(options.onIssuedSecretAcknowledge === undefined
+      ? {}
+      : { onIssuedSecretAcknowledge: options.onIssuedSecretAcknowledge }),
+    ...(options.reloadKey === undefined ? {} : { reloadKey: options.reloadKey }),
     screen: options.screen,
   })
 
   return {
+    confirmState,
     credentials: machineAdminCredentialsViewStateCreate({
       issueKind,
       issueKindSet,

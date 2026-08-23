@@ -125,7 +125,7 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
                 <TableHead>{messageTranslate("admin.users.email")}</TableHead>
                 <TableHead>{messageTranslate("admin.users.verification")}</TableHead>
                 <TableHead>{messageTranslate("admin.users.state")}</TableHead>
-                <TableHead>{messageTranslate("admin.users.created")}</TableHead>
+                <TableHead>{messageTranslate("admin.users.createdAt")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

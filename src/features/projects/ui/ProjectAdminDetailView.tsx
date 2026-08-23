@@ -5,6 +5,7 @@ import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Badge } from "#ui/static/badge/Badge.jsx"
 import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
+import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProjectAdminStateBoundary } from "./ProjectAdminStateBoundary.js"
 import type { projectAdminDetailViewStateCreate } from "./projectAdminDetailViewStateCreate.js"
@@ -15,7 +16,7 @@ export function ProjectAdminDetailView(props: {
 }) {
   const state = props.state
   return (
-    <section class="grid gap-6">
+    <section class="grid min-w-0 gap-6">
       {/* The page heading stays outside the data boundary, so every fixture state has one h1. */}
       <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.projects.detailTitle")}</h1>
       <ProjectAdminStateBoundary
@@ -26,7 +27,7 @@ export function ProjectAdminDetailView(props: {
       >
         <Show when={state.page.project()}>
           {(project) => (
-            <section class="grid gap-6">
+            <section class="grid min-w-0 gap-6">
               <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h2 class="break-words text-2xl font-semibold tracking-tight">{project().name}</h2>
@@ -35,7 +36,7 @@ export function ProjectAdminDetailView(props: {
                 <Badge variant={projectStatusBadgeVariant(project().status)}>{project().status}</Badge>
               </div>
 
-              <CardWrapper>
+              <CardWrapper class="min-w-0">
                 <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <DetailItem
                     label={messageTranslate("admin.projects.detail.organization")}
@@ -43,17 +44,17 @@ export function ProjectAdminDetailView(props: {
                   />
                   <DetailItem
                     label={messageTranslate("admin.projects.detail.created")}
-                    value={new Date(project().createdAt).toLocaleString()}
+                    value={localeDateFormat(project().createdAt, { dateStyle: "medium", timeStyle: "short" })}
                   />
                   <DetailItem
                     label={messageTranslate("admin.projects.detail.updated")}
-                    value={new Date(project().updatedAt).toLocaleString()}
+                    value={localeDateFormat(project().updatedAt, { dateStyle: "medium", timeStyle: "short" })}
                   />
                   <DetailItem label={messageTranslate("admin.projects.status")} value={project().status} />
                 </dl>
               </CardWrapper>
 
-              <CardWrapper>
+              <CardWrapper class="min-w-0">
                 <h3 class="text-xl font-semibold">{messageTranslate("admin.projects.detail.settingsTitle")}</h3>
                 <p class="mt-1 text-sm text-muted-foreground">
                   {messageTranslate("admin.projects.detail.settingsDescription")}

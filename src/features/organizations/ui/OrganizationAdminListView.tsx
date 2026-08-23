@@ -14,8 +14,8 @@ import type { OrganizationStatus } from "../public/organizationStatusSchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminPagination } from "./OrganizationAdminPagination.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
-import { organizationAdminStatusVariant } from "./organizationAdminStatusVariant.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
+import { organizationAdminStatusVariant } from "./organizationAdminStatusVariant.js"
 
 export function OrganizationAdminListView(props: {
   readonly createName: string
@@ -97,7 +97,7 @@ export function OrganizationAdminListView(props: {
               value={props.search}
             />
           </div>
-          <Table>
+          <Table aria-label={messageTranslate("admin.organizations.list.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
                 <TableHead>{messageTranslate("admin.organizations.list.name")}</TableHead>

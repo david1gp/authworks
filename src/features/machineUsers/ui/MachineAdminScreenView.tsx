@@ -1,4 +1,5 @@
 import { Match, Switch } from "solid-js"
+import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { MachineAdminCredentialsView } from "./MachineAdminCredentialsView.js"
 import { MachineAdminDetailView } from "./MachineAdminDetailView.js"
 import { MachineAdminListView } from "./MachineAdminListView.js"
@@ -8,16 +9,19 @@ import type { machineAdminScreenStateCreate } from "./machineAdminScreenStateCre
 export function MachineAdminScreenView(props: { readonly state: ReturnType<typeof machineAdminScreenStateCreate> }) {
   const state = props.state
   return (
-    <Switch>
-      <Match when={state.screen() === "machine-users"}>
-        <MachineAdminListView state={state.list} />
-      </Match>
-      <Match when={state.screen() === "machine-user-detail"}>
-        <MachineAdminDetailView state={state.detail} />
-      </Match>
-      <Match when={state.screen() === "machine-credentials"}>
-        <MachineAdminCredentialsView state={state.credentials} />
-      </Match>
-    </Switch>
+    <>
+      <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
+      <Switch>
+        <Match when={state.screen() === "machine-users"}>
+          <MachineAdminListView state={state.list} />
+        </Match>
+        <Match when={state.screen() === "machine-user-detail"}>
+          <MachineAdminDetailView state={state.detail} />
+        </Match>
+        <Match when={state.screen() === "machine-credentials"}>
+          <MachineAdminCredentialsView state={state.credentials} />
+        </Match>
+      </Switch>
+    </>
   )
 }

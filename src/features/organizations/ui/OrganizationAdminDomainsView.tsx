@@ -75,7 +75,7 @@ export function OrganizationAdminDomainsView(props: {
             )}
           </Show>
           <div>
-            <Button disabled={props.pendingId === "domain:claim"} type="submit">
+            <Button disabled={props.pendingId === "domain:claim"} type="submit" variant="filledBlue">
               {messageTranslate("admin.organizations.domains.claim")}
             </Button>
           </div>

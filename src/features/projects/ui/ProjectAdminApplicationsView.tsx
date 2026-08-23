@@ -18,7 +18,7 @@ export function ProjectAdminApplicationsView(props: {
 }) {
   const state = props.state
   return (
-    <section class="grid gap-6">
+    <section class="grid min-w-0 gap-6">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.projects.applications.title")}</h1>
@@ -71,27 +71,29 @@ export function ProjectAdminApplicationsView(props: {
         onRetry={state.page.reload}
         status={state.page.status()}
       >
-        <CardWrapper>
-          <Table>
+        <CardWrapper class="min-w-0">
+          <Table aria-label={messageTranslate("admin.projects.applications.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
-                <TableHead>{messageTranslate("admin.projects.applications.name")}</TableHead>
-                <TableHead>{messageTranslate("admin.projects.applications.type")}</TableHead>
-                <TableHead>{messageTranslate("admin.projects.status")}</TableHead>
-                <TableHead class="text-right">{messageTranslate("common.save")}</TableHead>
+                <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.applications.name")}</TableHead>
+                <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.applications.type")}</TableHead>
+                <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.status")}</TableHead>
+                <TableHead class="text-right whitespace-nowrap">
+                  {messageTranslate("admin.projects.lifecycle.remove")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <For each={state.page.applications()}>
                 {(application) => (
                   <TableRow>
-                    <TableCell class="font-medium">{application.name}</TableCell>
-                    <TableCell class="uppercase">{application.applicationType}</TableCell>
-                    <TableCell>
+                    <TableCell class="font-medium whitespace-nowrap">{application.name}</TableCell>
+                    <TableCell class="uppercase whitespace-nowrap">{application.applicationType}</TableCell>
+                    <TableCell class="whitespace-nowrap">
                       <Badge variant={projectStatusBadgeVariant(application.status)}>{application.status}</Badge>
                     </TableCell>
-                    <TableCell class="text-right">
-                      <div class="flex justify-end gap-2">
+                    <TableCell class="text-right whitespace-nowrap">
+                      <div class="flex flex-nowrap justify-end gap-2">
                         <Show when={application.status === "active"}>
                           <Button
                             disabled={state.page.pendingId() !== undefined}

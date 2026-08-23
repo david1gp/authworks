@@ -5,6 +5,7 @@ import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.
 import { demoFixtureScenarioHrefBuild } from "../../demo/demoFixtureScenarioHrefBuild.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
+import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
 import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
@@ -127,7 +128,7 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
       notice.set("revoked")
     },
     consents: () => (selected() === "empty" ? [] : consents.get()),
-    error: () => (selected() === "error" ? "The deterministic account fixture failed." : undefined),
+    error: () => (selected() === "error" ? messageTranslate("demo.fixture.accountError") : undefined),
     invitation: () => invitationFixture,
     invitationAccept: () => outcome.set("accepted"),
     invitationDecline: () => {
@@ -147,7 +148,7 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
     stateOptions: () =>
       (scenario()?.states ?? ["success"]).map((fixtureState) => ({
         href: demoFixtureScenarioHrefBuild(location.pathname, fixtureState),
-        label: fixtureState,
+        label: demoFixtureStateLabel(fixtureState),
         selected: fixtureState === selected(),
       })),
   }

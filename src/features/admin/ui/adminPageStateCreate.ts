@@ -19,7 +19,11 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 
 type AdminPageStateOptions = {
   readonly adapter: AdminAdapter & AdminUserSecurityAdapter
-  readonly confirm?: (message: string) => boolean
+  /**
+   * Confirmation for every guarded action. It is answered by the shared in-app dialog rather
+   * than a native prompt, so it may resolve asynchronously and the operator can always cancel.
+   */
+  readonly confirm: (message: string) => boolean | Promise<boolean>
   readonly initialStatus?: AdminViewStatus
   readonly pageSize?: number
   /** An extra reactive key that forces a reload, such as the selected demo fixture state. */
@@ -34,7 +38,7 @@ type AdminPageStateOptions = {
 /** Owns every administration list, detail, mutation, and pagination behavior shared by both adapters. */
 export function adminPageStateCreate(options: AdminPageStateOptions) {
   const pageSize = options.pageSize ?? 20
-  const confirmAction = options.confirm ?? ((message: string) => window.confirm(message))
+  const confirmAction = options.confirm
   const userSecurity = adminUserSecurityStateCreate({
     adapter: options.adapter,
     confirm: confirmAction,
@@ -97,7 +101,12 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       // An existing administrator session is shown when present, but the sign-in form must stay
       // reachable when there is none, so a failed probe is not an error.
       const current = await options.adapter.sessionCurrent()
-      if (!current.success) return status.set("ready")
+      if (!current.success) {
+        // The sign-in form must stay reachable without a session, but a fixture or backend
+        // failure still has to surface so the operator sees why sign-in cannot proceed.
+        if (current.code !== "sessions.unauthorized" && current.statusCode !== 401) error.set(current.errorMessage)
+        return status.set("ready")
+      }
       session.set(current.data)
       return status.set("signed-in")
     }
@@ -239,12 +248,10 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
         validationMessage.set(messageTranslate("admin.realm.invalid"))
         return
       }
-      if (
-        realmStatus.get() === "disabled" &&
-        realm.get()?.status !== "disabled" &&
-        !confirmAction(messageTranslate("admin.realm.disableConfirm"))
-      )
-        return
+      if (realmStatus.get() === "disabled" && realm.get()?.status !== "disabled") {
+        const confirmed = await confirmAction(messageTranslate("admin.realm.disableConfirm"))
+        if (confirmed !== true) return
+      }
       const data = await mutate("realm", () =>
         options.adapter.realmUpdate({ domain: domains[0], domains, name, status: realmStatus.get() }),
       )
@@ -287,7 +294,10 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     userDelete: async () => {
       const current = user.get()
       if (current === undefined) return
-      if (!confirmAction(messageTranslate("admin.users.deleteConfirm", { userName: current.userName }))) return
+      const confirmed = await confirmAction(
+        messageTranslate("admin.users.deleteConfirm", { userName: current.userName }),
+      )
+      if (confirmed !== true) return
       const data = await mutate(`user:delete:${current.id}`, () => options.adapter.userDelete(current.id))
       if (data === undefined) return
       user.set(data.user)
@@ -297,11 +307,12 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     userLifecycleSet: async (state: UserState) => {
       const current = user.get()
       if (current === undefined) return
-      if (
-        (state === "locked" || state === "inactive" || state === "suspended") &&
-        !confirmAction(messageTranslate("admin.users.lifecycleConfirm", { state, userName: current.userName }))
-      )
-        return
+      if (state === "locked" || state === "inactive" || state === "suspended") {
+        const confirmed = await confirmAction(
+          messageTranslate("admin.users.lifecycleConfirm", { state, userName: current.userName }),
+        )
+        if (confirmed !== true) return
+      }
       const data = await mutate(`user:lifecycle:${current.id}`, () =>
         options.adapter.userLifecycleSet(current.id, { state }),
       )

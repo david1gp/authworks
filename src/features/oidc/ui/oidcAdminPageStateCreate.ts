@@ -3,9 +3,9 @@ import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OidcClientCreateRequest } from "../public/oidcClientCreateRequestSchema.js"
+import type { OidcClient } from "../public/oidcClientSchema.js"
 import type { OidcClientStatus } from "../public/oidcClientStatusSchema.js"
 import type { OidcClientUpdateRequest } from "../public/oidcClientUpdateRequestSchema.js"
-import type { OidcClient } from "../public/oidcClientSchema.js"
 import type { OidcConsent } from "../public/oidcConsentSchema.js"
 import type { OidcDiscovery } from "../public/oidcDiscoverySchema.js"
 import type { OidcJwks } from "../public/oidcJwksSchema.js"
@@ -21,7 +21,7 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 
 type OidcAdminPageStateCreateOptions = {
   readonly adapter: OidcAdminAdapter
-  readonly confirm: (message: string) => boolean
+  readonly confirm: (message: string) => boolean | Promise<boolean>
   readonly clientId: () => string | undefined
   readonly consentUserId: () => string | undefined
   /**
@@ -29,6 +29,11 @@ type OidcAdminPageStateCreateOptions = {
    * supplies this, so the one-time state is reachable directly from a URL.
    */
   readonly issuedSecretSeed?: () => OidcAdminIssuedSecret | undefined
+  /**
+   * Records that a seeded one-time secret was acknowledged so it does not reappear after a
+   * reload. It receives only the client identity and kind, never the secret value.
+   */
+  readonly onIssuedSecretAcknowledge?: (issued: OidcAdminIssuedSecret) => void
   readonly screen: () => OidcAdminScreen
 }
 
@@ -55,11 +60,16 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
   const nextPageToken = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<readonly string[]>([])
 
+  /** Every destructive action awaits an explicit confirmation that the operator can cancel. */
+  const confirmed = async (key: Parameters<typeof messageTranslate>[0]) =>
+    (await options.confirm(messageTranslate(key))) === true
+
   const fail = (result: FailedResult) => {
     error.set(result.errorMessage)
     status.set(oidcAdminFailureStatusSelect(result))
   }
   const pageToken = () => pageTokens.get().at(-1)
+  const issuedSecretSeed = () => options.issuedSecretSeed?.()
 
   const load = async () => {
     status.set("loading")
@@ -163,7 +173,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
       return true
     },
     clientLifecycleSet: async (clientId: string, nextStatus: OidcClientStatus) => {
-      if (nextStatus === "removed" && !options.confirm(messageTranslate("admin.oidc.clients.removeConfirm"))) return
+      if (nextStatus === "removed" && !(await confirmed("admin.oidc.clients.removeConfirm"))) return
       const updated = await mutate(`client:${clientId}`, () =>
         adapter.clientLifecycleSet(clientId, { status: nextStatus }),
       )
@@ -175,7 +185,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
     clientName: (clientId: string) => clients.get().find((item) => item.id === clientId)?.name ?? clientId,
     clients: clients.get,
     clientSecretRevoke: async (clientId: string) => {
-      if (!options.confirm(messageTranslate("admin.oidc.secret.revokeConfirm"))) return
+      if (!(await confirmed("admin.oidc.secret.revokeConfirm"))) return
       const updated = await mutate(`secret:${clientId}`, () => adapter.clientSecretRevoke(clientId))
       if (updated === undefined) return
       client.set(updated)
@@ -184,7 +194,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
       notice.set("secret-revoked")
     },
     clientSecretRotate: async (clientId: string) => {
-      if (!options.confirm(messageTranslate("admin.oidc.secret.rotateConfirm"))) return
+      if (!(await confirmed("admin.oidc.secret.rotateConfirm"))) return
       const rotated = await mutate(`secret:${clientId}`, () => adapter.clientSecretRotate(clientId))
       if (rotated === undefined) return
       client.set(rotated.client)
@@ -208,7 +218,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
       return true
     },
     consentRevoke: async (userId: string, clientId: string) => {
-      if (!options.confirm(messageTranslate("admin.oidc.consents.revokeConfirm"))) return
+      if (!(await confirmed("admin.oidc.consents.revokeConfirm"))) return
       const revoked = await mutate(`consent:${clientId}`, () => adapter.consentRevoke(userId, clientId))
       if (revoked === undefined) return
       const remaining = consents.get().filter((item) => item.clientId !== clientId)
@@ -224,9 +234,12 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
     /** The one-time secret, hidden as soon as it has been acknowledged. */
     issuedSecret: () => {
       if (secretAcknowledged.get()) return undefined
-      return issuedSecret.get() ?? options.issuedSecretSeed?.()
+      return issuedSecret.get() ?? issuedSecretSeed()
     },
     issuedSecretAcknowledge: () => {
+      // An acknowledged seeded secret must stay hidden across reloads in this browser session.
+      const seeded = issuedSecret.get() === undefined ? issuedSecretSeed() : undefined
+      if (seeded !== undefined) options.onIssuedSecretAcknowledge?.(seeded)
       secretAcknowledged.set(true)
       issuedSecret.set(undefined)
     },
@@ -248,14 +261,14 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
       notice.set("signing-key-created")
     },
     signingKeyRetire: async (signingKeyId: string) => {
-      if (!options.confirm(messageTranslate("admin.oidc.keys.retireConfirm"))) return
+      if (!(await confirmed("admin.oidc.keys.retireConfirm"))) return
       const updated = await mutate(`signing-key:${signingKeyId}`, () => adapter.signingKeyRetire(signingKeyId))
       if (updated === undefined) return
       signingKeys.set(signingKeys.get().map((item) => (item.id === signingKeyId ? updated : item)))
       notice.set("signing-key-retired")
     },
     signingKeyRotate: async () => {
-      if (!options.confirm(messageTranslate("admin.oidc.keys.rotateConfirm"))) return
+      if (!(await confirmed("admin.oidc.keys.rotateConfirm"))) return
       const created = await mutate("signing-key:rotate", () => adapter.signingKeyRotate())
       if (created === undefined) return
       const listed = await adapter.signingKeyList()

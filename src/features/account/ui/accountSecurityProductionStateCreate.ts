@@ -45,7 +45,7 @@ export function accountSecurityProductionStateCreate(options: {
     if (screen === "sessions") {
       const result = await api.sessionsList(realmId)
       if (!result.success) return failed(result.errorMessage)
-      sessions.set(result.data.items)
+      sessions.set(result.data.items.filter((session) => session.revokedAt === null))
     }
     if (screen === "passkeys") {
       const result = await api.passkeyList(realmId)

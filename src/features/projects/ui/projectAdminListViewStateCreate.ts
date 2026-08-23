@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { projectCreateRequestSchema } from "../public/projectCreateRequestSchema.js"
 import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
 
@@ -30,7 +31,7 @@ export function projectAdminListViewStateCreate(options: {
       organizationId: selectedOrganization,
     })
     if (!parsed.success) {
-      formError.set("Enter a project name and choose an organization.")
+      formError.set(messageTranslate("admin.projects.list.invalid"))
       return
     }
     formError.set(undefined)

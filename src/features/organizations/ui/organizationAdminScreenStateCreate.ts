@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import { createEffect, on } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import type { ConfirmState } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
@@ -19,6 +20,7 @@ type ThemeColorKey = "backgroundColor" | "fontColor" | "primaryColor" | "warnCol
 /** Glues the adapter-driven page state to local form input, URL state, and route links. */
 export function organizationAdminScreenStateCreate(options: {
   readonly basePath: string
+  readonly confirmState: ConfirmState
   readonly page: ReturnType<typeof organizationAdminPageStateCreate>
 }) {
   const form = organizationAdminFormStateCreate()
@@ -77,6 +79,7 @@ export function organizationAdminScreenStateCreate(options: {
     brandingThemeColorSet: (theme: ThemeKey, key: ThemeColorKey, value: string) => themeUpdate(theme, { [key]: value }),
     brandingThemeModeSet: (value: "dark" | "light" | "system") => brandingUpdate({ ...branding(), themeMode: value }),
     brandingWatermarkToggle: () => brandingUpdate({ ...branding(), disableWatermark: !branding().disableWatermark }),
+    confirmState: options.confirmState,
     createOpen,
     createOpenSet,
     detailHrefBuild: (organizationId: string) => `${options.basePath}/organizations/${organizationId}`,

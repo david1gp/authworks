@@ -7,6 +7,7 @@ import { CorvuDialog } from "#ui/interactive/dialog/CorvuDialog.jsx"
 import { Badge } from "#ui/static/badge/Badge.jsx"
 import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProjectAdminPagination } from "./ProjectAdminPagination.js"
 import { ProjectAdminStateBoundary } from "./ProjectAdminStateBoundary.js"
@@ -16,7 +17,7 @@ import { projectStatusBadgeVariant } from "./projectStatusBadgeVariant.js"
 export function ProjectAdminListView(props: { readonly state: ReturnType<typeof projectAdminListViewStateCreate> }) {
   const state = props.state
   return (
-    <section class="grid gap-6">
+    <section class="grid min-w-0 gap-6">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.projects.list.title")}</h1>
@@ -68,7 +69,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
         onRetry={state.page.reload}
         status={state.page.status()}
       >
-        <CardWrapper>
+        <CardWrapper class="min-w-0">
           <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
             <Label class="sr-only" for="project-search">
               {messageTranslate("admin.projects.list.search")}
@@ -84,22 +85,38 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
           <Table aria-label={messageTranslate("admin.projects.list.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
-                <TableHead>{messageTranslate("admin.projects.list.name")}</TableHead>
-                <TableHead>{messageTranslate("admin.projects.detail.organization")}</TableHead>
-                <TableHead>{messageTranslate("admin.projects.status")}</TableHead>
-                <TableHead>{messageTranslate("admin.projects.detail.updated")}</TableHead>
+                <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.list.name")}</TableHead>
+                <TableHead class="whitespace-nowrap">
+                  {messageTranslate("admin.projects.detail.organization")}
+                </TableHead>
+                <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.status")}</TableHead>
+                <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.detail.updated")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <For each={state.filteredProjects()}>
                 {(project) => (
-                  <TableRow class="cursor-pointer" onClick={() => state.projectOpen(project.id)}>
-                    <TableCell class="font-medium">{project.name}</TableCell>
-                    <TableCell>{state.page.organizationName(project.organizationId)}</TableCell>
-                    <TableCell>
+                  <TableRow
+                    class="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    onClick={() => state.projectOpen(project.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        state.projectOpen(project.id)
+                      }
+                    }}
+                    tabIndex={0}
+                  >
+                    <TableCell class="font-medium whitespace-nowrap">{project.name}</TableCell>
+                    <TableCell class="whitespace-nowrap">
+                      {state.page.organizationName(project.organizationId)}
+                    </TableCell>
+                    <TableCell class="whitespace-nowrap">
                       <Badge variant={projectStatusBadgeVariant(project.status)}>{project.status}</Badge>
                     </TableCell>
-                    <TableCell>{new Date(project.updatedAt).toLocaleDateString()}</TableCell>
+                    <TableCell class="whitespace-nowrap">
+                      {localeDateFormat(project.updatedAt, { dateStyle: "medium" })}
+                    </TableCell>
                   </TableRow>
                 )}
               </For>

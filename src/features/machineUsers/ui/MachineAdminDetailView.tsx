@@ -10,8 +10,8 @@ import { MachineAdminCredentialTable } from "./MachineAdminCredentialTable.js"
 import { MachineAdminNotice } from "./MachineAdminNotice.js"
 import { MachineAdminSecretPanel } from "./MachineAdminSecretPanel.js"
 import { MachineAdminStateBoundary } from "./MachineAdminStateBoundary.js"
-import { machineUserStatusBadgeVariant } from "./machineUserStatusBadgeVariant.js"
 import type { machineAdminDetailViewStateCreate } from "./machineAdminDetailViewStateCreate.js"
+import { machineUserStatusBadgeVariant } from "./machineUserStatusBadgeVariant.js"
 
 export function MachineAdminDetailView(props: {
   readonly state: ReturnType<typeof machineAdminDetailViewStateCreate>

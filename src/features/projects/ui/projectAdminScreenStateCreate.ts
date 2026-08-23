@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import * as v from "valibot"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import type { ProjectAdminAdapter } from "./projectAdminAdapter.js"
 import { projectAdminApplicationsViewStateCreate } from "./projectAdminApplicationsViewStateCreate.js"
 import { projectAdminDetailViewStateCreate } from "./projectAdminDetailViewStateCreate.js"
@@ -17,10 +18,11 @@ const dialogSchema = v.picklist(["project", "application", "role", "grant"])
 export function projectAdminScreenStateCreate(options: {
   readonly adapter: ProjectAdminAdapter
   readonly basePath: string
-  readonly confirm: (message: string) => boolean
   readonly projectId: () => string | undefined
   readonly screen: () => ProjectAdminScreen
 }) {
+  // Destructive prompts are rendered in-app, so they are translated and always cancelable.
+  const confirmState = confirmStateCreate()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -43,7 +45,7 @@ export function projectAdminScreenStateCreate(options: {
 
   const page = projectAdminPageStateCreate({
     adapter: options.adapter,
-    confirm: options.confirm,
+    confirm: confirmState.confirm,
     projectId: options.projectId,
     screen: options.screen,
   })
@@ -55,6 +57,7 @@ export function projectAdminScreenStateCreate(options: {
       page,
       projectId: () => options.projectId() ?? "",
     }),
+    confirmState,
     detail: projectAdminDetailViewStateCreate({
       onDeleted: () => navigate(`${options.basePath}/projects`),
       page,

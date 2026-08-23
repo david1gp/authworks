@@ -1,7 +1,9 @@
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
-import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
+import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { externalIdentityProviderCreateRequestSchema } from "../../externalIdentities/public/externalIdentityProviderCreateRequestSchema.js"
+import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
 import { organizationCreateRequestSchema } from "../public/organizationCreateRequestSchema.js"
 import { organizationDomainClaimRequestSchema } from "../public/organizationDomainClaimRequestSchema.js"
@@ -43,8 +45,8 @@ export function organizationAdminFormStateCreate() {
     const current = signal.get()
     signal.set(current.includes(role) ? current.filter((item) => item !== role) : [...current, role])
   }
-  const invalid = (message: string) => {
-    validationMessage.set(message)
+  const invalid = (key: MessageKey) => {
+    validationMessage.set(messageTranslate(key))
     return false
   }
   const valid = () => {
@@ -77,29 +79,31 @@ export function organizationAdminFormStateCreate() {
         isPrimary: claimPrimary.get(),
       }).success
         ? valid()
-        : invalid("Enter a valid domain name."),
+        : invalid("admin.organizations.domains.invalid"),
     validateInvitation: () =>
       !v.safeParse(emailSchema, invitationEmail.get()).success
-        ? invalid("Enter a valid email address.")
+        ? invalid("admin.organizations.invitations.emailInvalid")
         : v.safeParse(organizationInvitationCreateRequestSchema, {
               email: invitationEmail.get(),
               roles: invitationRoles.get(),
             }).success
           ? valid()
-          : invalid("Choose between one and four roles."),
+          : invalid("admin.organizations.invitations.rolesInvalid"),
     validateMembership: () =>
       v.safeParse(organizationMembershipCreateRequestSchema, {
         roles: membershipRoles.get(),
         userId: membershipUserId.get(),
       }).success
         ? valid()
-        : invalid("Enter a user ID and choose between one and four roles."),
+        : invalid("admin.organizations.memberships.invalid"),
     validateOrganizationName: (name: string) =>
-      v.safeParse(organizationCreateRequestSchema, { name }).success ? valid() : invalid("Enter an organization name."),
+      v.safeParse(organizationCreateRequestSchema, { name }).success
+        ? valid()
+        : invalid("admin.organizations.list.nameRequired"),
     validateProviderCreate: () =>
       v.safeParse(externalIdentityProviderCreateRequestSchema, providerCreate.get()).success
         ? valid()
-        : invalid("Enter a display name, client ID, client secret, and an absolute redirect URI."),
+        : invalid("admin.organizations.providers.invalid"),
     validationMessage,
   }
 }

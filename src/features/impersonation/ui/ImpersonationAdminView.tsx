@@ -7,8 +7,8 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ImpersonationAdminBanner } from "./ImpersonationAdminBanner.js"
 import { ImpersonationAdminStartForm } from "./ImpersonationAdminStartForm.js"
 import { ImpersonationAdminStateBoundary } from "./ImpersonationAdminStateBoundary.js"
-import { impersonationAdminRemainingFormat } from "./impersonationAdminRemainingFormat.js"
 import type { ImpersonationAdminPageState } from "./impersonationAdminPageStateCreate.js"
+import { impersonationAdminRemainingFormat } from "./impersonationAdminRemainingFormat.js"
 
 /** The single stateless view shared by the production and demo impersonation adapters. */
 export function ImpersonationAdminView(props: {

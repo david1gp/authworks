@@ -51,7 +51,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
         status={state.status()}
       >
         <CardWrapper class="min-w-0">
-          <Table>
+          <Table aria-label={messageTranslate("admin.oidc.keys.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
                 <TableHead>{messageTranslate("admin.oidc.keys.keyId")}</TableHead>

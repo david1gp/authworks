@@ -78,30 +78,34 @@ export function ProjectAdminRolesGrantsView(props: {
                 </form>
               </CorvuDialog>
             </div>
-            <CardWrapper>
+            <CardWrapper class="min-w-0">
               <Show
                 when={state.page.roles().length > 0}
                 fallback={
                   <p class="py-6 text-center text-muted-foreground">{messageTranslate("admin.projects.roles.empty")}</p>
                 }
               >
-                <Table>
+                <Table aria-label={messageTranslate("admin.projects.roles.title")} tabIndex={0}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{messageTranslate("admin.projects.roles.key")}</TableHead>
-                      <TableHead>{messageTranslate("admin.projects.roles.displayName")}</TableHead>
-                      <TableHead>{messageTranslate("admin.projects.roles.group")}</TableHead>
-                      <TableHead class="text-right">{messageTranslate("common.save")}</TableHead>
+                      <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.roles.key")}</TableHead>
+                      <TableHead class="whitespace-nowrap">
+                        {messageTranslate("admin.projects.roles.displayName")}
+                      </TableHead>
+                      <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.roles.group")}</TableHead>
+                      <TableHead class="text-right whitespace-nowrap">
+                        {messageTranslate("admin.projects.lifecycle.remove")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     <For each={state.page.roles()}>
                       {(role) => (
                         <TableRow>
-                          <TableCell class="font-mono">{role.key}</TableCell>
-                          <TableCell>{role.displayName}</TableCell>
-                          <TableCell>{role.group ?? "—"}</TableCell>
-                          <TableCell class="text-right">
+                          <TableCell class="font-mono whitespace-nowrap">{role.key}</TableCell>
+                          <TableCell class="whitespace-nowrap">{role.displayName}</TableCell>
+                          <TableCell class="whitespace-nowrap">{role.group ?? "—"}</TableCell>
+                          <TableCell class="text-right whitespace-nowrap">
                             <Button
                               disabled={state.page.pendingId() !== undefined}
                               onClick={() => state.roleDelete(role.id)}
@@ -176,7 +180,7 @@ export function ProjectAdminRolesGrantsView(props: {
                 </form>
               </CorvuDialog>
             </div>
-            <CardWrapper>
+            <CardWrapper class="min-w-0">
               <Show
                 when={state.page.grants().length > 0}
                 fallback={
@@ -185,33 +189,37 @@ export function ProjectAdminRolesGrantsView(props: {
                   </p>
                 }
               >
-                <Table>
+                <Table aria-label={messageTranslate("admin.projects.grants.title")} tabIndex={0}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{messageTranslate("admin.projects.grants.grantedOrganization")}</TableHead>
-                      <TableHead>{messageTranslate("admin.projects.grants.roleKeys")}</TableHead>
-                      <TableHead>{messageTranslate("admin.projects.status")}</TableHead>
-                      <TableHead class="text-right">{messageTranslate("common.save")}</TableHead>
+                      <TableHead class="whitespace-nowrap">
+                        {messageTranslate("admin.projects.grants.grantedOrganization")}
+                      </TableHead>
+                      <TableHead class="whitespace-nowrap">
+                        {messageTranslate("admin.projects.grants.roleKeys")}
+                      </TableHead>
+                      <TableHead class="whitespace-nowrap">{messageTranslate("admin.projects.status")}</TableHead>
+                      <TableHead class="text-right whitespace-nowrap">{messageTranslate("common.revoke")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     <For each={state.page.grants()}>
                       {(grant) => (
                         <TableRow>
-                          <TableCell class="font-medium">
+                          <TableCell class="font-medium whitespace-nowrap">
                             <span>{state.page.organizationName(grant.grantedOrganizationId)}</span>
                             <Show when={grant.grantedOrganizationId !== grant.organizationId}>
-                              <span class="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                              <span class="ml-2 inline-block rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground whitespace-nowrap">
                                 {messageTranslate("admin.projects.access.grantedOrganization")}
                               </span>
                             </Show>
                           </TableCell>
-                          <TableCell>{grant.roleKeys.join(", ") || "—"}</TableCell>
-                          <TableCell>
+                          <TableCell class="min-w-40 max-w-xs">{grant.roleKeys.join(", ") || "—"}</TableCell>
+                          <TableCell class="whitespace-nowrap">
                             <Badge variant={projectStatusBadgeVariant(grant.status)}>{grant.status}</Badge>
                           </TableCell>
-                          <TableCell class="text-right">
-                            <div class="flex justify-end gap-2">
+                          <TableCell class="text-right whitespace-nowrap">
+                            <div class="flex flex-nowrap justify-end gap-2">
                               <Show when={grant.status === "active"}>
                                 <Button
                                   disabled={state.page.pendingId() !== undefined}

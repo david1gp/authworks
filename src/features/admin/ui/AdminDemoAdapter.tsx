@@ -1,3 +1,4 @@
+import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import { AdminScreenView } from "./AdminScreenView.js"
@@ -22,6 +23,7 @@ export function AdminDemoAdapter(props: { readonly screen: AdminScreen }) {
         </div>
       </header>
       <AdminScreenView basePath="/demo/admin" screen={props.screen} state={state} />
+      <ConfirmDialog state={state.confirmState} titleKey="admin.common.confirmTitle" />
     </div>
   )
 }

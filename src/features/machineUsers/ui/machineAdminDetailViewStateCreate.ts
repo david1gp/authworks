@@ -1,5 +1,5 @@
-import type { MachineAdminPageState } from "./machineAdminPageStateCreate.js"
 import { machineAdminCredentialFormStateCreate } from "./machineAdminCredentialFormStateCreate.js"
+import type { MachineAdminPageState } from "./machineAdminPageStateCreate.js"
 
 /**
  * View state for a single machine user: lifecycle, the write-only client secret, and the

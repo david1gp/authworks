@@ -17,7 +17,7 @@ const statusForFailure = (result: FailedResult): AdminViewStatus => {
 /** Owns independent administrator reads and revocation state for one user's security metadata. */
 export function adminUserSecurityStateCreate(options: {
   readonly adapter: AdminUserSecurityAdapter
-  readonly confirm: (message: string) => boolean
+  readonly confirm: (message: string) => boolean | Promise<boolean>
   readonly reloadKey?: () => string
   readonly userId: () => string | undefined
 }) {
@@ -80,7 +80,8 @@ export function adminUserSecurityStateCreate(options: {
     sessionRevoke: async (sessionId: string) => {
       const userId = options.userId()
       if (userId === undefined) return
-      if (!options.confirm(messageTranslate("admin.users.sessions.revokeConfirm"))) return
+      const confirmed = await options.confirm(messageTranslate("admin.users.sessions.revokeConfirm"))
+      if (confirmed !== true) return
       pendingSessionId.set(sessionId)
       sessionsError.set(undefined)
       const result = await options.adapter.userSessionRevoke(userId, sessionId)

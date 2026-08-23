@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import { onMount } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
 import { productionRouteParamGet } from "../../../ui/production/productionRouteParamGet.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
@@ -27,8 +28,11 @@ export function adminProductionStateCreate(screen: () => AdminScreen) {
     }).then(realmId.set)
   })
 
-  return adminPageStateCreate({
+  // Production shows the same localized dialog as the demo rather than a native prompt.
+  const confirmState = confirmStateCreate()
+  const page = adminPageStateCreate({
     adapter: adminProductionAdapterCreate({ api: adminApiCreate({ baseUrl }), realmId: realmId.get }),
+    confirm: confirmState.confirm,
     reloadKey: realmId.get,
     screen,
     search: () => new URLSearchParams(location.search).get("q") ?? "",
@@ -41,4 +45,6 @@ export function adminProductionStateCreate(screen: () => AdminScreen) {
     },
     userId: () => productionRouteParamGet("/admin/users/:userId", location.pathname, "userId"),
   })
+
+  return { ...page, confirmState }
 }

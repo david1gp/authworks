@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { machineUserCreateRequestSchema } from "../public/machineUserCreateRequestSchema.js"
 import type { MachineAdminPageState } from "./machineAdminPageStateCreate.js"
 import { machineAdminScopeListParse } from "./machineAdminScopeListParse.js"
@@ -39,7 +40,7 @@ export function machineAdminListViewStateCreate(options: {
       userName: userName.get(),
     })
     if (!parsed.success) {
-      formError.set("Enter a display name and a user name, and use only valid scope values.")
+      formError.set(messageTranslate("admin.machine.users.invalid"))
       return
     }
     formError.set(undefined)

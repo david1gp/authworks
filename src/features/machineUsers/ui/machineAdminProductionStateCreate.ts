@@ -1,7 +1,7 @@
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { machineAdminProductionAdapterCreate } from "./machineAdminProductionAdapterCreate.js"
-import { machineAdminScreenStateCreate } from "./machineAdminScreenStateCreate.js"
 import type { MachineAdminScreen } from "./machineAdminScreenSchema.js"
+import { machineAdminScreenStateCreate } from "./machineAdminScreenStateCreate.js"
 
 export function machineAdminProductionStateCreate(options: {
   readonly machineUserId: () => string | undefined
@@ -16,7 +16,6 @@ export function machineAdminProductionStateCreate(options: {
   return machineAdminScreenStateCreate({
     adapter: machineAdminProductionAdapterCreate({ baseUrl: window.location.origin, realmId }),
     basePath: "/admin",
-    confirm: (message) => window.confirm(message),
     machineUserId: options.machineUserId,
     now: () => Date.now(),
     screen: options.screen,

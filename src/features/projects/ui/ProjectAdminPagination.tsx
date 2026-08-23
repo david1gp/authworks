@@ -10,14 +10,14 @@ export function ProjectAdminPagination(props: {
 }) {
   return (
     <Show when={props.hasNext || props.hasPrevious}>
-      <div class="mt-4 flex justify-end gap-2">
+      <nav aria-label={messageTranslate("admin.projects.list.title")} class="mt-4 flex justify-end gap-2">
         <Button disabled={!props.hasPrevious} onClick={props.onPrevious} variant="outline">
           {messageTranslate("admin.projects.pagePrevious")}
         </Button>
         <Button disabled={!props.hasNext} onClick={props.onNext} variant="outline">
           {messageTranslate("admin.projects.pageNext")}
         </Button>
-      </div>
+      </nav>
     </Show>
   )
 }

@@ -5,8 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { MachineAdminPagination } from "./MachineAdminPagination.js"
-import { machineCredentialStateBadgeVariant } from "./machineCredentialStateBadgeVariant.js"
 import type { MachineAdminPageState } from "./machineAdminPageStateCreate.js"
+import { machineCredentialStateBadgeVariant } from "./machineCredentialStateBadgeVariant.js"
 
 const kindKeys = {
   access_token: "admin.machine.credentials.kindAccessToken",

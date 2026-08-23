@@ -1,6 +1,7 @@
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
-import { machineAdminScopeListParse } from "./machineAdminScopeListParse.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MachineAdminPageState } from "./machineAdminPageStateCreate.js"
+import { machineAdminScopeListParse } from "./machineAdminScopeListParse.js"
 
 /**
  * Shared issue form for personal access tokens and API keys. An empty expiry means the
@@ -22,17 +23,17 @@ export function machineAdminCredentialFormStateCreate(options: {
     const machineUserId = options.machineUserId()
     if (machineUserId === undefined) return
     if (name.get().trim().length === 0) {
-      formError.set("Enter a name so this credential can be recognised later.")
+      formError.set(messageTranslate("admin.machine.credentials.nameRequired"))
       return
     }
     const expiryInput = expiresAt.get().trim()
     const expiryTimestamp = expiryInput.length === 0 ? undefined : Date.parse(expiryInput)
     if (expiryTimestamp !== undefined && Number.isNaN(expiryTimestamp)) {
-      formError.set("Enter a valid expiry date, or leave it empty for a credential that does not expire.")
+      formError.set(messageTranslate("admin.machine.credentials.expiryInvalid"))
       return
     }
     if (expiryTimestamp !== undefined && expiryTimestamp <= options.page.now()) {
-      formError.set("Choose an expiry date in the future.")
+      formError.set(messageTranslate("admin.machine.credentials.expiryPast"))
       return
     }
     const parsedScopes = machineAdminScopeListParse(scopes.get())

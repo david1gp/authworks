@@ -1,16 +1,20 @@
 import { createEffect, createSignal, on, onCleanup } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
-import { impersonationAdminProductionAdapterCreate } from "./impersonationAdminProductionAdapterCreate.js"
 import type { ImpersonationAdminSession } from "./impersonationAdminAdapter.js"
+import { impersonationAdminProductionAdapterCreate } from "./impersonationAdminProductionAdapterCreate.js"
 
 /**
  * The minimal state behind the persistent shell banner. It only resolves whether the current
  * browser session is impersonated and offers the explicit end action; it never reads or holds
  * a session credential, and it renders nothing when there is no impersonation.
  */
-export function impersonationAdminShellBannerStateCreate() {
+export function impersonationAdminShellBannerStateCreate(options: {
+  readonly confirm: (message: string) => boolean | Promise<boolean>
+}) {
+  const confirmAction = options.confirm
   const session = productionSessionContextGet()
   const fallbackRealmId = () => {
     const realm = session.guard.realm
@@ -54,6 +58,11 @@ export function impersonationAdminShellBannerStateCreate() {
     end: async () => {
       const current = active.get()
       if (current === null) return
+      // Ending impersonation is destructive for the current browser session, so it is confirmed.
+      const confirmed = await confirmAction(
+        messageTranslate("admin.impersonation.endConfirm", { subject: current.subjectLabel }),
+      )
+      if (confirmed !== true) return
       pending.set(true)
       const result = await adapter.impersonationEnd(current.sessionId)
       pending.set(false)

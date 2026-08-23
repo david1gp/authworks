@@ -2,8 +2,8 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { AdminAdapter } from "./adminAdapter.js"
 import type { adminApiCreate } from "./adminApiCreate.js"
-import type { AdminUserSecurityAdapter } from "./adminUserSecurityAdapter.js"
 import { adminSessionProductionAdapterCreate } from "./adminSessionProductionAdapterCreate.js"
+import type { AdminUserSecurityAdapter } from "./adminUserSecurityAdapter.js"
 
 /** Binds core administration to real cookie/CSRF browser APIs for the authenticated realm. */
 export function adminProductionAdapterCreate(options: {

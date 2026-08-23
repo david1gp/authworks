@@ -4,11 +4,12 @@ import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
+import { organizationBrandingDefaultCreate } from "../domain/organizationBrandingDefaultCreate.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
 import type { OrganizationDomain } from "../public/organizationDomainSchema.js"
 import type { OrganizationInvitation } from "../public/organizationInvitationSchema.js"
-import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
+import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 import type { OrganizationRole } from "../public/organizationRoleSchema.js"
@@ -18,7 +19,6 @@ import type { OrganizationAdminAdapter } from "./organizationAdminAdapter.js"
 import { organizationAdminFailureStatusSelect } from "./organizationAdminFailureStatusSelect.js"
 import type { OrganizationAdminScreen } from "./organizationAdminScreenSchema.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
-import { organizationBrandingDefaultCreate } from "../domain/organizationBrandingDefaultCreate.js"
 
 const emptyPolicy: OrganizationLoginPolicy = {
   allowDomainDiscovery: true,
@@ -37,11 +37,16 @@ const emptyPolicy: OrganizationLoginPolicy = {
  */
 export function organizationAdminPageStateCreate(options: {
   readonly adapter: OrganizationAdminAdapter
-  readonly confirm?: (message: string) => boolean
+  readonly confirm?: (message: string) => boolean | Promise<boolean>
+  readonly initialInvitationToken?: () => string | undefined
+  readonly onInvitationTokenDismiss?: () => void
   readonly organizationId: () => string
+  readonly reloadKey?: () => string
   readonly screen: () => OrganizationAdminScreen
 }) {
-  const confirm = options.confirm ?? ((message: string) => window.confirm(message))
+  // Every destructive guard awaits the shared in-app prompt. Without a wired prompt the
+  // guard declines, so an unwired screen can never destroy anything silently.
+  const confirmed = async (message: string) => (await options.confirm?.(message)) === true
   const status = createSignalObject<OrganizationAdminStatus>("loading")
   const error = createSignalObject<string | undefined>(undefined)
   const notice = createSignalObject<string | undefined>(undefined)
@@ -58,7 +63,7 @@ export function organizationAdminPageStateCreate(options: {
   const overrides = createSignalObject<OrganizationLoginPolicyOverride>({})
   const nextPageToken = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<string[]>([])
-  const invitationToken = createSignalObject<string | undefined>(undefined)
+  const invitationToken = createSignalObject<string | undefined>(options.initialInvitationToken?.())
 
   const fail = (failure: { code?: string; errorMessage: string; statusCode?: number }) => {
     error.set(failure.errorMessage)
@@ -156,9 +161,9 @@ export function organizationAdminPageStateCreate(options: {
 
   createEffect(
     on(
-      () => `${options.screen()}:${options.organizationId()}:${pageToken() ?? ""}`,
+      () => `${options.screen()}:${options.organizationId()}:${pageToken() ?? ""}:${options.reloadKey?.() ?? ""}`,
       () => {
-        invitationToken.set(undefined)
+        invitationToken.set(options.initialInvitationToken?.())
         void load()
       },
     ),
@@ -183,7 +188,7 @@ export function organizationAdminPageStateCreate(options: {
       await load()
     },
     domainRemove: async (domain: string) => {
-      if (!confirm(messageTranslate("admin.organizations.domains.removeConfirm", { domain }))) return
+      if (!(await confirmed(messageTranslate("admin.organizations.domains.removeConfirm", { domain })))) return
       const removed = await mutate(`domain:${domain}`, () =>
         options.adapter.domainRemove(options.organizationId(), domain),
       )
@@ -212,7 +217,7 @@ export function organizationAdminPageStateCreate(options: {
       notice.set("invitation-created")
     },
     invitationRevoke: async (invitationId: string, email: string) => {
-      if (!confirm(messageTranslate("admin.organizations.invitations.revokeConfirm", { email }))) return
+      if (!(await confirmed(messageTranslate("admin.organizations.invitations.revokeConfirm", { email })))) return
       const revoked = await mutate(`invitation:${invitationId}`, () =>
         options.adapter.invitationRevoke(options.organizationId(), invitationId),
       )
@@ -222,7 +227,10 @@ export function organizationAdminPageStateCreate(options: {
     },
     invitations: invitations.get,
     invitationToken: invitationToken.get,
-    invitationTokenDismiss: () => invitationToken.set(undefined),
+    invitationTokenDismiss: () => {
+      options.onInvitationTokenDismiss?.()
+      invitationToken.set(undefined)
+    },
     memberships: memberships.get,
     membershipAdd: async (userId: string, membershipRoles: readonly OrganizationRoleId[]) => {
       const created = await mutate("membership:create", () =>
@@ -233,7 +241,7 @@ export function organizationAdminPageStateCreate(options: {
       await load()
     },
     membershipRemove: async (membershipId: string, userId: string) => {
-      if (!confirm(messageTranslate("admin.organizations.memberships.removeConfirm", { userId }))) return
+      if (!(await confirmed(messageTranslate("admin.organizations.memberships.removeConfirm", { userId })))) return
       const removed = await mutate(`membership:${membershipId}`, () =>
         options.adapter.membershipRemove(options.organizationId(), membershipId),
       )
@@ -272,12 +280,12 @@ export function organizationAdminPageStateCreate(options: {
           : nextStatus === "inactive"
             ? "admin.organizations.lifecycle.deactivateConfirm"
             : "admin.organizations.lifecycle.activateConfirm"
-      if (!confirm(messageTranslate(confirmKey))) return
+      if (!(await confirmed(messageTranslate(confirmKey)))) return
       const updated = await mutate("organization:lifecycle", () =>
         options.adapter.organizationLifecycleSet(options.organizationId(), { status: nextStatus }),
       )
       if (updated === undefined) return
-      organization.set(updated.organization)
+      organization.set({ ...updated.organization })
       notice.set("organization-lifecycle")
     },
     organizationRename: async (name: string) => {
@@ -285,7 +293,7 @@ export function organizationAdminPageStateCreate(options: {
         options.adapter.organizationUpdate(options.organizationId(), { name }),
       )
       if (updated === undefined) return
-      organization.set(updated.organization)
+      organization.set({ ...updated.organization })
       notice.set("organization-renamed")
     },
     organizations: organizations.get,
@@ -327,7 +335,7 @@ export function organizationAdminPageStateCreate(options: {
       await load()
     },
     providerDisable: async (providerId: string, displayName: string) => {
-      if (!confirm(messageTranslate("admin.organizations.providers.disableConfirm", { displayName }))) return
+      if (!(await confirmed(messageTranslate("admin.organizations.providers.disableConfirm", { displayName })))) return
       const disabled = await mutate(`provider:${providerId}`, () => options.adapter.providerDisable(providerId))
       if (disabled === undefined) return
       providers.set(providers.get().map((item) => (item.id === providerId ? disabled.provider : item)))

@@ -1,7 +1,7 @@
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { projectAdminProductionAdapterCreate } from "./projectAdminProductionAdapterCreate.js"
-import { projectAdminScreenStateCreate } from "./projectAdminScreenStateCreate.js"
 import type { ProjectAdminScreen } from "./projectAdminScreenSchema.js"
+import { projectAdminScreenStateCreate } from "./projectAdminScreenStateCreate.js"
 
 export function projectAdminProductionStateCreate(options: {
   readonly projectId: () => string | undefined
@@ -16,7 +16,6 @@ export function projectAdminProductionStateCreate(options: {
   return projectAdminScreenStateCreate({
     adapter: projectAdminProductionAdapterCreate({ baseUrl: window.location.origin, realmId }),
     basePath: "/admin",
-    confirm: (message) => window.confirm(message),
     projectId: options.projectId,
     screen: options.screen,
   })

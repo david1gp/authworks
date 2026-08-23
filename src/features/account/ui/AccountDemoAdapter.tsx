@@ -1,4 +1,5 @@
 import { Match, Switch } from "solid-js"
+import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import { AccountDeleteView } from "./AccountDeleteView.js"
 import { AccountPasswordView } from "./AccountPasswordView.js"
@@ -15,9 +16,9 @@ export function AccountDemoAdapter(props: {
     <div class="mx-auto max-w-5xl">
       <div class="mb-6 rounded-xl border border-line bg-surface p-4">
         <DemoFixtureStateSelector
-          options={["success", "loading", "error"].map((fixtureState) => ({
+          options={(["success", "loading", "error"] as const).map((fixtureState) => ({
             href: `${props.path}?state=${fixtureState}`,
-            label: fixtureState[0]?.toUpperCase() + fixtureState.slice(1),
+            label: demoFixtureStateLabel(fixtureState),
             selected: state.fixtureState() === fixtureState,
           }))}
         />

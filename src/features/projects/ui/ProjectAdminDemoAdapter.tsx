@@ -9,7 +9,7 @@ export function ProjectAdminDemoAdapter(props: { readonly projectId?: string; re
     screen: () => props.screen,
   })
   return (
-    <div class="mx-auto grid max-w-6xl gap-6">
+    <div class="mx-auto grid min-w-0 max-w-6xl gap-6">
       <DemoFixtureStateSelector options={state.stateOptions()} />
       <ProjectAdminScreenView state={state} />
     </div>

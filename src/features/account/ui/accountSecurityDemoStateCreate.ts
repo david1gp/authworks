@@ -6,6 +6,8 @@ import type { ExternalIdentity } from "../../externalIdentities/public/externalI
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
 import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
+import { accountDemoUserFixture } from "./accountDemoUserFixture.js"
+import { accountRecoveryCodeAcknowledgementStore } from "./accountRecoveryCodeAcknowledgementStore.js"
 import type { AccountSecurityScreen } from "./accountSecurityScreenSchema.js"
 
 const now = Date.UTC(2026, 7, 21, 9, 30)
@@ -101,17 +103,27 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       version: 1,
     },
   ])
+  const demoRecoveryCodes = ["AX7K-2QPL", "B9MN-4TRS", "C3VW-8XYZ", "D6EF-1GHJ"]
+  // The marker identifies the deterministic issuance, never any code material.
+  const acknowledgementMarker = () =>
+    accountRecoveryCodeAcknowledgementStore.markerBuild(
+      accountDemoUserFixture.id,
+      methods.get().recoveryCodes?.generatedAt,
+    )
   const oneTimeCodes = createSignalObject<string[]>([])
   const pendingId = createSignalObject<string | undefined>(undefined)
   const code = createSignalObject("")
   const selected = () => demoFixtureStateSelect(location.search, ["success", "empty", "loading", "error", "one-time"])
   const visible = <T>(values: readonly T[]) => (selected() === "empty" ? [] : [...values])
-  if (selected() === "one-time") oneTimeCodes.set(["AX7K-2QPL", "B9MN-4TRS", "C3VW-8XYZ", "D6EF-1GHJ"])
+  // The one-time state is reachable straight from a URL, so it seeds already-issued codes. Once
+  // dismissed they must not reappear on reload, so acknowledgement is remembered for this session.
+  if (selected() === "one-time" && !accountRecoveryCodeAcknowledgementStore.acknowledged(acknowledgementMarker()))
+    oneTimeCodes.set([...demoRecoveryCodes])
 
   return {
     code: code.get,
     codeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => code.set(event.currentTarget.value),
-    error: () => (selected() === "error" ? "The deterministic account API fixture could not be loaded." : undefined),
+    error: () => (selected() === "error" ? messageTranslate("demo.fixture.accountError") : undefined),
     identities: () => visible(identities.get()),
     identityUnlink: (providerId: string) => {
       if (!window.confirm(messageTranslate("account.identities.unlinkConfirm"))) return
@@ -119,12 +131,19 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     },
     methods: methods.get,
     oneTimeCodes: oneTimeCodes.get,
-    oneTimeCodesDismiss: () => oneTimeCodes.set([]),
+    oneTimeCodesDismiss: () => {
+      accountRecoveryCodeAcknowledgementStore.acknowledge(acknowledgementMarker())
+      oneTimeCodes.set([])
+    },
     passkeyAdd: () => undefined,
     passkeyRevoke: (credentialId: string) => passkeys.set(passkeys.get().filter((item) => item.id !== credentialId)),
     passkeys: () => visible(passkeys.get()),
     pendingId: pendingId.get,
-    recoveryCodesGenerate: () => oneTimeCodes.set(["AX7K-2QPL", "B9MN-4TRS", "C3VW-8XYZ", "D6EF-1GHJ"]),
+    recoveryCodesGenerate: () => {
+      // A regeneration is a new issuance, so it gets its own marker and is shown again.
+      methods.set({ ...methods.get(), recoveryCodes: { available: true, generatedAt: now, remaining: 8 } })
+      oneTimeCodes.set([...demoRecoveryCodes])
+    },
     reload: () => undefined,
     screen,
     sessionRevoke: (sessionId: string) => {

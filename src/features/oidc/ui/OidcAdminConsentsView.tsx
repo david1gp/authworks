@@ -43,7 +43,7 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
         status={state.page.status()}
       >
         <CardWrapper class="min-w-0">
-          <Table>
+          <Table aria-label={messageTranslate("admin.oidc.consents.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
                 <TableHead>{messageTranslate("admin.oidc.consents.client")}</TableHead>

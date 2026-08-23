@@ -1,15 +1,20 @@
 import { describe, expect, mock, test } from "bun:test"
 
 mock.module("solid-js", () => ({
+  createEffect: (fn: () => void) => fn(),
   createSignal: <T>(initial: T) => {
     let value = initial
     return [() => value, (next: T) => (value = next)] as const
   },
+  on: (_deps: unknown, fn: () => void) => fn,
 }))
 
-const { machineAdminSecretPanelStateCreate } = await import(
-  "../../src/features/machineUsers/ui/machineAdminSecretPanelStateCreate.js"
-)
+const [{ machineAdminSecretPanelStateCreate }, { machineAdminDemoIssuedSecretSeedSelect }, { demoAdminMachineUsers }] =
+  await Promise.all([
+    import("../../src/features/machineUsers/ui/machineAdminSecretPanelStateCreate.js"),
+    import("../../src/features/machineUsers/ui/machineAdminDemoIssuedSecretSeedSelect.js"),
+    import("../../src/features/demo/demoAdminMachineUsers.js"),
+  ])
 
 describe("one-time machine credential panel", () => {
   test("requires a copy before acknowledgement is offered", async () => {
@@ -79,5 +84,42 @@ describe("one-time machine credential panel", () => {
 
     expect(written).toEqual([])
     expect(state.copied()).toBe(false)
+  })
+})
+
+describe("one-time demo secret seeding", () => {
+  test("seeds the selected machine user rather than always the first user", () => {
+    const second = demoAdminMachineUsers[1]
+    if (second === undefined) throw new Error("fixture is missing a second machine user")
+
+    const seeded = machineAdminDemoIssuedSecretSeedSelect({
+      machineUserId: second.id,
+      machineUsers: demoAdminMachineUsers,
+      secret: "demo-secret",
+    })
+
+    expect(seeded?.machineUserId).toBe(second.id)
+    expect(seeded?.machineUserName).toBe(second.displayName)
+    expect(seeded?.clientId).toBe(second.userName)
+  })
+
+  test("seeds the first machine user only for a collection screen without a selection", () => {
+    const seeded = machineAdminDemoIssuedSecretSeedSelect({
+      machineUserId: undefined,
+      machineUsers: demoAdminMachineUsers,
+      secret: "demo-secret",
+    })
+
+    expect(seeded?.machineUserId).toBe(demoAdminMachineUsers[0]?.id)
+  })
+
+  test("seeds nothing for an unknown machine user so no foreign identity is shown", () => {
+    expect(
+      machineAdminDemoIssuedSecretSeedSelect({
+        machineUserId: "missing",
+        machineUsers: demoAdminMachineUsers,
+        secret: "demo-secret",
+      }),
+    ).toBeUndefined()
   })
 })

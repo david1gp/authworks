@@ -170,15 +170,28 @@ export function OidcAdminClientListView(props: {
             <TableBody>
               <For each={state.filteredClients()}>
                 {(client) => (
-                  <TableRow class="cursor-pointer" onClick={() => state.clientOpen(client.id)}>
+                  <TableRow
+                    class="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                    onClick={() => state.clientOpen(client.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault()
+                        state.clientOpen(client.id)
+                      }
+                    }}
+                    tabIndex={0}
+                  >
                     <TableCell class="font-medium">{client.name}</TableCell>
                     <TableCell>
                       {client.clientType === "public"
                         ? messageTranslate("admin.oidc.clients.typePublic")
                         : messageTranslate("admin.oidc.clients.typeConfidential")}
                     </TableCell>
-                    <TableCell class="min-w-64 whitespace-normal break-all font-mono text-xs">
-                      {client.redirectUris.join(", ")}
+                    {/* Long exact URIs wrap inside a bounded column so a phone never needs to scroll sideways. */}
+                    <TableCell class="max-w-56 whitespace-normal break-all font-mono text-xs">
+                      <ul class="grid gap-1">
+                        <For each={client.redirectUris}>{(uri) => <li>{uri}</li>}</For>
+                      </ul>
                     </TableCell>
                     <TableCell>
                       <Show

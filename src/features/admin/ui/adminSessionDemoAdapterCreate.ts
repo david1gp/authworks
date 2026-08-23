@@ -37,14 +37,14 @@ export function adminSessionDemoAdapterCreate(options: {
     },
     sessionCurrent: async () => {
       if (state() === "loading") return pending()
-      if (state() === "expired") return expired("adminDemoSessionCurrent")
-      if (!signedIn && options.signedInInitially !== true) return expired("adminDemoSessionCurrent")
       if (state() === "error")
         return resultErrorCodedCreate(
           "adminDemoSessionCurrent",
           "The deterministic administration fixture is unavailable.",
           "realms.read-failed",
         )
+      if (state() === "expired") return expired("adminDemoSessionCurrent")
+      if (!signedIn && options.signedInInitially !== true) return expired("adminDemoSessionCurrent")
       return resultCreate(structuredClone(adminDemoSessionFixture))
     },
   }

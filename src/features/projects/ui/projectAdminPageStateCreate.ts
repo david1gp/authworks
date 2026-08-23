@@ -15,7 +15,7 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 
 type ProjectAdminPageStateCreateOptions = {
   readonly adapter: ProjectAdminAdapter
-  readonly confirm: (message: string) => boolean
+  readonly confirm: (message: string) => boolean | Promise<boolean>
   readonly projectId: () => string | undefined
   readonly screen: () => ProjectAdminScreen
 }
@@ -129,6 +129,10 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
     status.set("ready")
   }
 
+  // Every destructive guard awaits the same in-app prompt, so cancel is always non-destructive.
+  const confirmed = async (key: Parameters<typeof messageTranslate>[0]) =>
+    (await options.confirm(messageTranslate(key))) === true
+
   const mutate = async <T>(id: string, operation: () => Promise<Result<T>>): Promise<T | undefined> => {
     pendingId.set(id)
     error.set(undefined)
@@ -160,8 +164,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       applicationId: string,
       nextStatus: "active" | "inactive" | "removed",
     ) => {
-      if (nextStatus === "removed" && !options.confirm(messageTranslate("admin.projects.applications.removeConfirm")))
-        return
+      if (nextStatus === "removed" && !(await confirmed("admin.projects.applications.removeConfirm"))) return
       const updated = await mutate(`application:${applicationId}`, () =>
         adapter.applicationLifecycleSet(projectId, applicationId, { status: nextStatus }),
       )
@@ -182,7 +185,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       return true
     },
     grantDelete: async (projectId: string, grantId: string) => {
-      if (!options.confirm(messageTranslate("admin.projects.grants.revokeConfirm"))) return
+      if (!(await confirmed("admin.projects.grants.revokeConfirm"))) return
       const deleted = await mutate(`grant:${grantId}`, () => adapter.grantDelete(projectId, grantId))
       if (deleted === undefined) return
       const remaining = grants.get().filter((item) => item.id !== grantId)
@@ -222,15 +225,14 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       return true
     },
     projectDelete: async (projectId: string) => {
-      if (!options.confirm(messageTranslate("admin.projects.deleteConfirm"))) return false
+      if (!(await confirmed("admin.projects.deleteConfirm"))) return false
       const deleted = await mutate(`project:${projectId}`, () => adapter.projectDelete(projectId))
       if (deleted === undefined) return false
       projects.set(projects.get().filter((item) => item.id !== projectId))
       return true
     },
     projectLifecycleSet: async (projectId: string, nextStatus: "active" | "inactive" | "removed") => {
-      if (nextStatus === "removed" && !options.confirm(messageTranslate("admin.projects.lifecycle.removeConfirm")))
-        return
+      if (nextStatus === "removed" && !(await confirmed("admin.projects.lifecycle.removeConfirm"))) return
       const updated = await mutate(`project:${projectId}`, () =>
         adapter.projectLifecycleSet(projectId, { status: nextStatus }),
       )
@@ -266,7 +268,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       return true
     },
     roleDelete: async (projectId: string, roleId: string) => {
-      if (!options.confirm(messageTranslate("admin.projects.roles.deleteConfirm"))) return
+      if (!(await confirmed("admin.projects.roles.deleteConfirm"))) return
       const deleted = await mutate(`role:${roleId}`, () => adapter.roleDelete(projectId, roleId))
       if (deleted === undefined) return
       const remaining = roles.get().filter((item) => item.id !== roleId)

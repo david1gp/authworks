@@ -95,7 +95,7 @@ export function OrganizationAdminInvitationsView(props: {
             )}
           </Show>
           <div>
-            <Button disabled={props.pendingId === "invitation:create"} type="submit">
+            <Button disabled={props.pendingId === "invitation:create"} type="submit" variant="filledBlue">
               {messageTranslate("admin.organizations.invitations.create")}
             </Button>
           </div>
@@ -108,14 +108,16 @@ export function OrganizationAdminInvitationsView(props: {
         status={props.status}
       >
         <CardWrapper>
-          <Table>
+          <Table aria-label={messageTranslate("admin.organizations.invitations.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
                 <TableHead>{messageTranslate("admin.organizations.invitations.email")}</TableHead>
                 <TableHead>{messageTranslate("admin.organizations.memberships.roles")}</TableHead>
                 <TableHead>{messageTranslate("admin.organizations.status")}</TableHead>
                 <TableHead>{messageTranslate("admin.organizations.invitations.expires")}</TableHead>
-                <TableHead />
+                <TableHead class="text-right">
+                  <span class="sr-only">{messageTranslate("admin.organizations.invitations.revoke")}</span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -130,7 +132,7 @@ export function OrganizationAdminInvitationsView(props: {
                       </Badge>
                     </TableCell>
                     <TableCell>{localeDateFormat(invitation.expiresAt, { dateStyle: "medium" })}</TableCell>
-                    <TableCell>
+                    <TableCell class="text-right">
                       <Show when={invitation.status === "pending"}>
                         <Button
                           disabled={props.pendingId === `invitation:${invitation.id}`}

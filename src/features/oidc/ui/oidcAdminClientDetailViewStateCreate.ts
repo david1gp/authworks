@@ -1,6 +1,7 @@
 import { createEffect, on } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
 import type { OidcAdminPageState } from "./oidcAdminPageStateCreate.js"
 import { oidcAdminScopesSupported } from "./oidcAdminScopesSupported.js"
@@ -63,7 +64,7 @@ export function oidcAdminClientDetailViewStateCreate(options: {
         trusted: trusted.get(),
       })
       if (!parsed.success) {
-        formError.set("Enter a client name, at least one exact redirect URI, and at least one scope.")
+        formError.set(messageTranslate("admin.oidc.clients.invalid"))
         return
       }
       formError.set(undefined)

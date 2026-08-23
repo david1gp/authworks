@@ -1,10 +1,14 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, test } from "bun:test"
+import { readFileSync } from "node:fs"
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 import { translationPlaceholdersApply } from "../../src/ui/i18n/model/translationPlaceholdersApply.js"
 
 /** Administration state creators whose destructive guards must speak the catalog language. */
 const guardedStateCreators = [
+  "src/features/admin/ui/adminPageStateCreate.ts",
+  "src/features/admin/ui/adminUserSecurityStateCreate.ts",
+  "src/features/impersonation/ui/impersonationAdminPageStateCreate.ts",
+  "src/features/impersonation/ui/impersonationAdminShellBannerStateCreate.ts",
   "src/features/machineUsers/ui/machineAdminPageStateCreate.ts",
   "src/features/oidc/ui/oidcAdminPageStateCreate.ts",
   "src/features/organizations/ui/organizationAdminPageStateCreate.ts",
@@ -12,6 +16,7 @@ const guardedStateCreators = [
 ]
 
 const guardedKeys = [
+  "admin.impersonation.endConfirm",
   "admin.machine.credentials.revokeConfirm",
   "admin.machine.lifecycle.removeConfirm",
   "admin.machine.secret.rotateConfirm",
@@ -33,6 +38,31 @@ const guardedKeys = [
   "admin.projects.grants.revokeConfirm",
   "admin.projects.lifecycle.removeConfirm",
   "admin.projects.roles.deleteConfirm",
+  "admin.users.deleteConfirm",
+  "admin.users.lifecycleConfirm",
+  "admin.users.sessions.revokeConfirm",
+]
+
+/** Locale catalogs that must carry the directly affected user-administration wording. */
+const localeCatalogs = ["public/i18n/de.csv", "public/i18n/ar.csv"]
+
+const translatedKeys = [
+  "admin.impersonation.end",
+  "admin.impersonation.endConfirm",
+  "admin.impersonation.endedNotice",
+  "admin.organizations.policy.description",
+  "admin.organizations.providers.description",
+  "admin.organizations.providers.disableConfirm",
+  "admin.organizations.providers.displayName",
+  "admin.organizations.providers.secretWriteOnly",
+  "admin.users.createdAt",
+  "admin.users.sessions.revokeConfirm",
+  "admin.users.sessions.revoked",
+  "admin.users.sessions.title",
+  "admin.users.updated",
+  "demo.admin.description",
+  "demo.admin.directoryTitle",
+  "demo.admin.eyebrow",
 ]
 
 describe("localized destructive confirmations in administration state creators", () => {
@@ -59,5 +89,37 @@ describe("localized destructive confirmations in administration state creators",
     const arabicMembership = "هل تريد إزالة {userId} من هذه المؤسسة؟ سينتهي وصوله إلى المؤسسة فوراً."
     expect(translationPlaceholdersApply(arabicMembership, { userId: "user-42" })).toContain("user-42")
     expect(translationPlaceholdersApply(arabicMembership, { userId: "user-42" })).not.toContain("{userId}")
+  })
+
+  test("user creation and impersonation end interpolate their placeholders", () => {
+    const created = translationPlaceholdersApply(englishCatalog["admin.users.created"], { userName: "rowan" })
+    expect(created).toContain("rowan")
+    expect(created).not.toContain("{userName}")
+    const ended = translationPlaceholdersApply(englishCatalog["admin.impersonation.endConfirm"], {
+      subject: "rowan@example.com",
+    })
+    expect(ended).toContain("rowan@example.com")
+    expect(ended).not.toContain("{subject}")
+  })
+
+  test("timestamp labels carry no unresolved placeholder", () => {
+    // These keys are rendered as detail labels beside a separately formatted value.
+    expect(englishCatalog["admin.users.updated"]).not.toContain("{")
+    expect(englishCatalog["admin.users.createdAt"]).not.toContain("{")
+  })
+
+  test("the affected user-administration keys are translated in every locale catalog", () => {
+    for (const file of localeCatalogs) {
+      const source = readFileSync(file, "utf8")
+      for (const key of translatedKeys) {
+        const line = source.split("\n").find((entry) => entry.startsWith(`${key},`))
+        expect(line, `${file} ${key}`).toBeString()
+        const value = (line ?? "").slice(key.length + 1)
+        expect(value.length, `${file} ${key} empty`).toBeGreaterThan(0)
+        expect(value, `${file} ${key} untranslated`).not.toBe(
+          englishCatalog[key as keyof typeof englishCatalog] as string,
+        )
+      }
+    }
   })
 })

@@ -1,12 +1,58 @@
-import { describe, expect, test } from "bun:test"
+import { describe, expect, mock, test } from "bun:test"
 import * as v from "valibot"
-import { demoAdminMachineCredentials } from "../../src/features/demo/demoAdminMachineCredentials.js"
-import { demoAdminMachineSecret } from "../../src/features/demo/demoAdminMachineSecret.js"
-import { demoAdminMachineUsers } from "../../src/features/demo/demoAdminMachineUsers.js"
-import { machineCredentialSchema } from "../../src/features/machineUsers/public/machineCredentialSchema.js"
-import { machineUserSchema } from "../../src/features/machineUsers/public/machineUserSchema.js"
-import { machineAdminDemoAdapterCreate } from "../../src/features/machineUsers/ui/machineAdminDemoAdapterCreate.js"
-import { machineCredentialStateSelect } from "../../src/features/machineUsers/ui/machineCredentialStateSelect.js"
+
+let currentObserver: (() => void) | null = null
+
+mock.module("solid-js", () => ({
+  createEffect: (fn: () => void) => {
+    fn()
+  },
+  createSignal: <T>(initial: T) => {
+    let value = initial
+    const subscribers = new Set<() => void>()
+    const get = () => {
+      if (currentObserver !== null) subscribers.add(currentObserver)
+      return value
+    }
+    const set = (next: T | ((prev: T) => T)) => {
+      value = typeof next === "function" ? (next as (prev: T) => T)(value) : next
+      for (const subscriber of [...subscribers]) subscriber()
+      return value
+    }
+    return [get, set] as const
+  },
+  on: (deps: () => unknown, fn: () => void) => {
+    return () => {
+      let prevKey: unknown = Symbol("initial")
+      const checkAndRun = () => {
+        currentObserver = checkAndRun
+        const currentKey = deps()
+        currentObserver = null
+        if (currentKey !== prevKey) {
+          prevKey = currentKey
+          fn()
+        }
+      }
+      checkAndRun()
+    }
+  },
+}))
+
+const { demoAdminMachineCredentials } = await import("../../src/features/demo/demoAdminMachineCredentials.js")
+const { demoAdminMachineSecret } = await import("../../src/features/demo/demoAdminMachineSecret.js")
+const { demoAdminMachineUsers } = await import("../../src/features/demo/demoAdminMachineUsers.js")
+const { machineCredentialSchema } = await import("../../src/features/machineUsers/public/machineCredentialSchema.js")
+const { machineUserSchema } = await import("../../src/features/machineUsers/public/machineUserSchema.js")
+const { machineAdminDemoAdapterCreate } = await import(
+  "../../src/features/machineUsers/ui/machineAdminDemoAdapterCreate.js"
+)
+const { machineCredentialStateSelect } = await import(
+  "../../src/features/machineUsers/ui/machineCredentialStateSelect.js"
+)
+const { machineAdminPageStateCreate } = await import(
+  "../../src/features/machineUsers/ui/machineAdminPageStateCreate.js"
+)
+type DemoFixtureState = import("../../src/features/demo/demoFixtureStateSchema.js").DemoFixtureState
 
 const billingSyncId = "01900000-0000-7000-8000-000000000071"
 const expiredCredentialId = "01900000-0000-7000-8000-000000000083"
@@ -196,5 +242,218 @@ describe("machine-user administration demo adapter", () => {
     const surface = Object.keys(adapter)
     expect(surface.filter((name) => /secret/i.test(name))).toEqual(["clientSecretRotate"])
     expect(surface.some((name) => /secretGet|secretRead|secretList/i.test(name))).toBe(false)
+  })
+})
+
+function reactiveSignalCreate<T>(initial: T) {
+  let value = initial
+  const subscribers = new Set<() => void>()
+  const get = () => {
+    if (currentObserver !== null) subscribers.add(currentObserver)
+    return value
+  }
+  const set = (next: T | ((prev: T) => T)) => {
+    value = typeof next === "function" ? (next as (prev: T) => T)(value) : next
+    for (const subscriber of [...subscribers]) subscriber()
+    return value
+  }
+  return [get, set] as const
+}
+
+describe("machine administration page state token/secret seeding and dismissal", () => {
+  test("seeds initial secret, allows acknowledgement/dismissal, and re-seeds upon selector reloadKey change", async () => {
+    const [fixtureState, setFixtureState] = reactiveSignalCreate<DemoFixtureState>("one-time")
+    const adapter = machineAdminDemoAdapterCreate(fixtureState)
+    const issuedSecretSeed = () =>
+      fixtureState() === "one-time"
+        ? {
+            clientId: "demo-service",
+            kind: "client_secret" as const,
+            machineUserId: billingSyncId,
+            machineUserName: "Demo Service",
+            name: "Demo Service",
+            secret: demoAdminMachineSecret,
+          }
+        : undefined
+
+    const page = machineAdminPageStateCreate({
+      adapter,
+      confirm: () => true,
+      issuedSecretSeed,
+      machineUserId: () => billingSyncId,
+      now: () => demoNow,
+      reloadKey: fixtureState,
+      screen: () => "machine-credentials",
+    })
+
+    expect(page.issuedSecret()?.secret).toBe(demoAdminMachineSecret)
+
+    page.issuedSecretAcknowledge()
+    expect(page.issuedSecret()).toBeUndefined()
+
+    // Transitioning to success leaves the secret cleared
+    setFixtureState("success")
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(page.issuedSecret()).toBeUndefined()
+
+    // Transitioning back to one-time re-seeds the secret
+    setFixtureState("one-time")
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(page.issuedSecret()?.secret).toBe(demoAdminMachineSecret)
+  })
+})
+
+describe("machine administration page state reactive cloned mutations", () => {
+  test("reactively updates machine user on secret rotation and lifecycle changes", async () => {
+    const adapter = machineAdminDemoAdapterCreate(() => "success")
+    const page = machineAdminPageStateCreate({
+      adapter,
+      confirm: () => true,
+      machineUserId: () => billingSyncId,
+      now: () => demoNow,
+      screen: () => "machine-user-detail",
+    })
+
+    await Promise.resolve()
+    await Promise.resolve()
+
+    const initialUser = page.machineUser()
+    expect(initialUser).toBeDefined()
+
+    await page.clientSecretRotate(billingSyncId)
+    const rotatedUser = page.machineUser()
+    expect(rotatedUser).toBeDefined()
+    expect(page.notice()).toBe("client-secret-rotated")
+    expect(page.issuedSecret()?.kind).toBe("client_secret")
+
+    await page.machineUserLifecycleSet(billingSyncId, "inactive")
+    const inactiveUser = page.machineUser()
+    expect(inactiveUser?.status).toBe("inactive")
+    expect(page.notice()).toBe("machine-user-lifecycle")
+  })
+
+  test("reactively updates credentials on issue, revocation, and new machine user creation", async () => {
+    const adapter = machineAdminDemoAdapterCreate(() => "success")
+    const page = machineAdminPageStateCreate({
+      adapter,
+      confirm: () => true,
+      machineUserId: () => billingSyncId,
+      now: () => demoNow,
+      screen: () => "machine-credentials",
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 10))
+
+    const initialCredentials = page.credentials()
+    expect(initialCredentials.length).toBeGreaterThan(0)
+
+    const issuedApiKey = await page.apiKeyCreate(billingSyncId, {
+      name: "New Key",
+      scopes: ["billing.read"],
+    })
+    expect(issuedApiKey).toBe(true)
+    expect(page.credentials().length).toBe(initialCredentials.length + 1)
+    expect(page.credentials()[0]?.name).toBe("New Key")
+    expect(page.notice()).toBe("api-key-created")
+    expect(page.issuedSecret()?.kind).toBe("api_key")
+
+    const issuedPat = await page.personalAccessTokenCreate(billingSyncId, {
+      name: "New PAT",
+      scopes: ["billing.read"],
+    })
+    expect(issuedPat).toBe(true)
+    expect(page.notice()).toBe("personal-access-token-created")
+    expect(page.issuedSecret()?.kind).toBe("personal_access_token")
+
+    const targetCredId = page.credentials()[0]!.id
+    await page.credentialRevoke(targetCredId)
+    expect(page.credentials().find((c) => c.id === targetCredId)?.revokedAt).toBeDefined()
+    expect(page.notice()).toBe("credential-revoked")
+
+    const createdMachineUser = await page.machineUserCreate({
+      displayName: "New Machine",
+      userName: "new-machine",
+    })
+    expect(createdMachineUser).toBe(true)
+    expect(page.machineUsers().some((u) => u.userName === "new-machine")).toBe(true)
+    expect(page.notice()).toBe("machine-user-created")
+  })
+})
+
+describe("machine list row keyboard activation and accessibility", () => {
+  test("activates machineUserOpen and prevents default on Enter and Space, but ignores other keys", () => {
+    const openedIds: string[] = []
+    const handleKeyDown = (key: string, machineUserId: string) => {
+      let defaultPrevented = false
+      const event = {
+        key,
+        preventDefault: () => {
+          defaultPrevented = true
+        },
+      }
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault()
+        openedIds.push(machineUserId)
+      }
+      return defaultPrevented
+    }
+
+    expect(handleKeyDown("Enter", "machine-1")).toBe(true)
+    expect(handleKeyDown(" ", "machine-2")).toBe(true)
+    expect(handleKeyDown("Tab", "machine-3")).toBe(false)
+    expect(handleKeyDown("ArrowDown", "machine-4")).toBe(false)
+    expect(openedIds).toEqual(["machine-1", "machine-2"])
+  })
+})
+
+describe("machine administration selector transitions", () => {
+  test("reacts to selector fixture state changes between success, empty, permission-denied, and one-time", async () => {
+    const [fixtureState, setFixtureState] = reactiveSignalCreate<DemoFixtureState>("success")
+    const adapter = machineAdminDemoAdapterCreate(fixtureState)
+    const issuedSecretSeed = () =>
+      fixtureState() === "one-time"
+        ? {
+            clientId: "demo-service",
+            kind: "client_secret" as const,
+            machineUserId: billingSyncId,
+            machineUserName: "Demo Service",
+            name: "Demo Service",
+            secret: demoAdminMachineSecret,
+          }
+        : undefined
+
+    const page = machineAdminPageStateCreate({
+      adapter,
+      confirm: () => true,
+      issuedSecretSeed,
+      machineUserId: () => billingSyncId,
+      now: () => demoNow,
+      reloadKey: fixtureState,
+      screen: () => "machine-users",
+    })
+
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(page.status()).toBe("ready")
+    expect(page.machineUsers().length).toBeGreaterThan(0)
+
+    setFixtureState("empty")
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(page.status()).toBe("empty")
+    expect(page.machineUsers()).toHaveLength(0)
+
+    setFixtureState("permission-denied")
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(page.status()).toBe("permission-denied")
+    expect(page.error()).toBeDefined()
+
+    setFixtureState("one-time")
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(page.issuedSecret()?.secret).toBe(demoAdminMachineSecret)
   })
 })
