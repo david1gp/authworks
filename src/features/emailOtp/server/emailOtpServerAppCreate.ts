@@ -8,6 +8,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
+import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { emailOtpStart } from "../actions/emailOtpStart.js"
 import { emailOtpVerify } from "../actions/emailOtpVerify.js"
 import type { EmailOtpDelivery } from "../public/emailOtpDeliverySchema.js"
@@ -88,7 +89,9 @@ export function emailOtpServerAppCreate(options: EmailOtpServerAppCreateOptions)
     })
     return emailOtpResultResponseCreate(
       context,
-      options.browserMode ? sessionBrowserCredentialResponseCreate(context, verified) : verified,
+      sessionBrowserModeRequested(context, options.browserMode)
+        ? sessionBrowserCredentialResponseCreate(context, verified)
+        : verified,
     )
   })
 

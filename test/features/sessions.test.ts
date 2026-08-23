@@ -21,6 +21,7 @@ import { sessionRevokeAll } from "../../src/features/sessions/actions/sessionRev
 import { sessionRotate } from "../../src/features/sessions/actions/sessionRotate.js"
 import { sessionApiClientCreate } from "../../src/features/sessions/client/sessionApiClientCreate.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import { sessionProtectedMiddlewareCreate } from "../../src/features/sessions/server/sessionProtectedMiddlewareCreate.js"
 import { sessionServerAppCreate } from "../../src/features/sessions/server/sessionServerAppCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -471,7 +472,7 @@ test("revoke-all preserves the requested session and rolls back on event failure
 test("the password HTTP success seam returns a session with device metadata", async () => {
   await withDatabase(async (database) => {
     const { realm } = await createVerifiedUser(database, "sessions-http.example.com")
-    const app = passwordServerAppCreate({ database })
+    const app = passwordServerAppCreate({ browserMode: true, database })
     const response = await app.request(`https://sessions-http.example.com/realms/${realm.id}/password/login`, {
       body: JSON.stringify({ identifier: "session-user", password: "Correct Horse 12" }),
       headers: {
@@ -488,6 +489,16 @@ test("the password HTTP success seam returns a session with device metadata", as
     }
     expect(body.session?.token).toHaveLength(43)
     expect(body.session?.session.device.fingerprint).toBe("http-device")
+
+    const invalidMarker = await app.request(`https://sessions-http.example.com/realms/${realm.id}/password/login`, {
+      body: JSON.stringify({ identifier: "session-user", password: "Correct Horse 12" }),
+      headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "TRUE" },
+      method: "POST",
+    })
+    expect(invalidMarker.status).toBe(200)
+    expect(invalidMarker.headers.get("set-cookie")).toBeNull()
+    const invalidMarkerBody = (await invalidMarker.json()) as { session?: { token?: string } }
+    expect(invalidMarkerBody.session?.token).toHaveLength(43)
   })
 })
 
@@ -499,7 +510,7 @@ test("browser password login, rotation, and logout keep session credentials in c
       `https://sessions-browser-http.example.com/realms/${realm.id}/password/login`,
       {
         body: JSON.stringify({ identifier: "session-user", password: "Correct Horse 12" }),
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "true" },
         method: "POST",
       },
     )

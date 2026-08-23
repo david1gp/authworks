@@ -24,6 +24,7 @@ import { realmTenantContextCreate } from "../../src/features/realms/domain/realm
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
@@ -816,7 +817,7 @@ test("passkey browser completion issues and upgrades an HttpOnly session cookie 
           ),
           token: authenticationBody.token,
         }),
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "true" },
         method: "POST",
       },
     )
@@ -828,10 +829,75 @@ test("passkey browser completion issues and upgrades an HttpOnly session cookie 
     expect(authenticatedBody.session).toBeUndefined()
     if (loginToken === undefined) return
 
+    const unmarkedStart = await app.request(
+      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/authentication/start`,
+      {
+        body: JSON.stringify({}),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(unmarkedStart.status).toBe(200)
+    const unmarkedStartBody = (await unmarkedStart.json()) as { options: { challenge: string }; token: string }
+    const unmarked = await app.request(
+      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/authentication/complete`,
+      {
+        body: JSON.stringify({
+          response: authenticationResponseCreate(
+            unmarkedStartBody.options.challenge,
+            fixture.userId,
+            credentialId,
+            keys.privateKey,
+            2,
+          ),
+          token: unmarkedStartBody.token,
+        }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(unmarked.status).toBe(200)
+    expect(unmarked.headers.get("set-cookie")).toBeNull()
+    const unmarkedBody = (await unmarked.json()) as { session?: { token?: string } }
+    expect(unmarkedBody.session?.token).toHaveLength(43)
+
+    const invalidStart = await app.request(
+      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/authentication/start`,
+      {
+        body: JSON.stringify({}),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(invalidStart.status).toBe(200)
+    const invalidStartBody = (await invalidStart.json()) as { options: { challenge: string }; token: string }
+    const invalid = await app.request(
+      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/authentication/complete`,
+      {
+        body: JSON.stringify({
+          response: authenticationResponseCreate(
+            invalidStartBody.options.challenge,
+            fixture.userId,
+            credentialId,
+            keys.privateKey,
+            3,
+          ),
+          token: invalidStartBody.token,
+        }),
+        headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "false" },
+        method: "POST",
+      },
+    )
+    expect(invalid.status).toBe(200)
+    expect(invalid.headers.get("set-cookie")).toBeNull()
+    const invalidBody = (await invalid.json()) as { session?: { token?: string } }
+    expect(invalidBody.session?.token).toHaveLength(43)
+
     const csrfToken = sessionCsrfTokenCreate(testkit.runtime)
     const headers = {
       cookie: `${loginCookie.split(";", 1)[0]}; csrf=${csrfToken}`,
       origin: "https://passkeys-browser.example.com",
+      [sessionBrowserModeHeaderName]: "true",
       "x-csrf-token": csrfToken,
     }
     const stepUpStarted = await app.request(
@@ -849,7 +915,7 @@ test("passkey browser completion issues and upgrades an HttpOnly session cookie 
             fixture.userId,
             credentialId,
             keys.privateKey,
-            2,
+            4,
           ),
           token: stepUpBody.token,
         }),

@@ -25,6 +25,7 @@ import { realmTenantContextCreate } from "../../src/features/realms/domain/realm
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -609,7 +610,7 @@ test("MFA browser completion issues and upgrades an HttpOnly session cookie with
       `https://mfa-browser.example.com/realms/${fixture.realm.id}/mfa/challenge/complete`,
       {
         body: JSON.stringify({ code: loginCode.data, token: login.data.challenge.token }),
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "true" },
         method: "POST",
       },
     )
@@ -625,6 +626,7 @@ test("MFA browser completion issues and upgrades an HttpOnly session cookie with
     const headers = {
       cookie: `${loginCookie.split(";", 1)[0]}; csrf=${csrfToken}`,
       origin: "https://mfa-browser.example.com",
+      [sessionBrowserModeHeaderName]: "true",
       "x-csrf-token": csrfToken,
     }
     const stepUpStarted = await app.request(
@@ -657,5 +659,59 @@ test("MFA browser completion issues and upgrades an HttpOnly session cookie with
     expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: loginToken }).success).toBe(false)
     if (rotatedToken !== undefined)
       expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: rotatedToken }).success).toBe(true)
+
+    const unmarkedLogin = passwordLogin({
+      context: fixture.context,
+      database,
+      input: { identifier: "mfa-browser-example-com", password: "Correct Horse 12" },
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      sessionCreate: sessionPasswordCreate(),
+    })
+    expect(unmarkedLogin.success && unmarkedLogin.data.challenge).toBeTruthy()
+    if (!unmarkedLogin.success || unmarkedLogin.data.challenge === undefined) return
+    testkit.advance(30_000)
+    const unmarkedCode = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(unmarkedCode.success).toBe(true)
+    if (!unmarkedCode.success) return
+    const unmarked = await app.request(
+      `https://mfa-browser.example.com/realms/${fixture.realm.id}/mfa/challenge/complete`,
+      {
+        body: JSON.stringify({ code: unmarkedCode.data, token: unmarkedLogin.data.challenge.token }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(unmarked.status).toBe(200)
+    expect(unmarked.headers.get("set-cookie")).toBeNull()
+    const unmarkedBody = (await unmarked.json()) as { session?: { token?: string } }
+    expect(unmarkedBody.session?.token).toHaveLength(43)
+
+    const invalidLogin = passwordLogin({
+      context: fixture.context,
+      database,
+      input: { identifier: "mfa-browser-example-com", password: "Correct Horse 12" },
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      sessionCreate: sessionPasswordCreate(),
+    })
+    expect(invalidLogin.success && invalidLogin.data.challenge).toBeTruthy()
+    if (!invalidLogin.success || invalidLogin.data.challenge === undefined) return
+    testkit.advance(30_000)
+    const invalidCode = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(invalidCode.success).toBe(true)
+    if (!invalidCode.success) return
+    const invalid = await app.request(
+      `https://mfa-browser.example.com/realms/${fixture.realm.id}/mfa/challenge/complete`,
+      {
+        body: JSON.stringify({ code: invalidCode.data, token: invalidLogin.data.challenge.token }),
+        headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "yes" },
+        method: "POST",
+      },
+    )
+    expect(invalid.status).toBe(200)
+    expect(invalid.headers.get("set-cookie")).toBeNull()
+    const invalidBody = (await invalid.json()) as { session?: { token?: string } }
+    expect(invalidBody.session?.token).toHaveLength(43)
   })
 })

@@ -16,6 +16,7 @@ import { passwordApiClientCreate } from "../../src/features/passwords/client/pas
 import { projectApiClientCreate } from "../../src/features/projects/client/projectApiClientCreate.js"
 import { realmApiClientCreate } from "../../src/features/realms/client/realmApiClientCreate.js"
 import { sessionApiClientCreate } from "../../src/features/sessions/client/sessionApiClientCreate.js"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
 
 test("all feature clients round-trip through the composed server", async () => {
@@ -177,6 +178,75 @@ test("all feature clients round-trip through the composed server", async () => {
         })
       ).success,
     ).toBe(false)
+  } finally {
+    await rm(directory, { force: true, recursive: true })
+  }
+})
+
+test("the composed server switches credential responses only for marked browser requests", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "authworks-composed-browser-mode-"))
+  const domain = "composed-browser-mode.example.com"
+  const systemSecret = "composed-browser-mode-secret"
+  let verificationToken = ""
+  try {
+    const created = serverApplicationCreate({
+      browserMode: true,
+      databasePath: join(directory, "authworks.sqlite"),
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+      publicOrigin: `https://${domain}`,
+      systemSecret,
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+    const app = created.data
+    const fetchFromServer = async (input: string | URL | Request, init?: RequestInit) =>
+      app.request(input instanceof Request ? input : input.toString(), init)
+    const baseUrl = `https://${domain}`
+    const realms = realmApiClientCreate({ baseUrl, fetch: fetchFromServer, token: systemSecret })
+    const createdRealm = await realms.realmCreate({ domain, name: "Composed browser mode" })
+    expect(createdRealm.success).toBe(true)
+    if (!createdRealm.success) return
+    const passwords = passwordApiClientCreate({ baseUrl, fetch: fetchFromServer })
+    const registered = await passwords.passwordRegister(createdRealm.data.realm.id, {
+      email: "browser-mode@composed.example",
+      password: "Correct Horse 12",
+      profile: { displayName: "Composed browser mode" },
+      userName: "composed-browser-mode",
+    })
+    expect(registered.success).toBe(true)
+    expect(verificationToken).toHaveLength(43)
+    const verified = await passwords.passwordEmailVerify(createdRealm.data.realm.id, { token: verificationToken })
+    expect(verified.success).toBe(true)
+    const path = `/realms/${createdRealm.data.realm.id}/password/login`
+    const body = JSON.stringify({ identifier: "composed-browser-mode", password: "Correct Horse 12" })
+    const marked = await fetchFromServer(`${baseUrl}${path}`, {
+      body,
+      headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "true" },
+      method: "POST",
+    })
+    expect(marked.status).toBe(200)
+    expect(marked.headers.get("set-cookie")).toContain("HttpOnly")
+    expect(((await marked.json()) as { session?: unknown }).session).toBeUndefined()
+
+    const unmarked = await fetchFromServer(`${baseUrl}${path}`, {
+      body,
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(unmarked.status).toBe(200)
+    expect(unmarked.headers.get("set-cookie")).toBeNull()
+    expect(((await unmarked.json()) as { session?: { token?: string } }).session?.token).toHaveLength(43)
+
+    const invalid = await fetchFromServer(`${baseUrl}${path}`, {
+      body,
+      headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "invalid" },
+      method: "POST",
+    })
+    expect(invalid.status).toBe(200)
+    expect(invalid.headers.get("set-cookie")).toBeNull()
+    expect(((await invalid.json()) as { session?: { token?: string } }).session?.token).toHaveLength(43)
   } finally {
     await rm(directory, { force: true, recursive: true })
   }

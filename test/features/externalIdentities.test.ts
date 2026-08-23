@@ -29,6 +29,7 @@ import { realmTenantContextCreate } from "../../src/features/realms/domain/realm
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -726,6 +727,7 @@ test("external identity browser callback issues an HttpOnly session cookie witho
     const state = new URL(startedBody.authorizationUrl).searchParams.get("state") ?? ""
     const callback = await app.request(
       `https://external-browser.example.com/realms/${realm.id}/external-identity/${provider.id}/callback?code=code&state=${encodeURIComponent(state)}`,
+      { headers: { [sessionBrowserModeHeaderName]: "true" } },
     )
     expect(callback.status).toBe(200)
     const cookie = callback.headers.get("set-cookie") ?? ""
@@ -736,6 +738,37 @@ test("external identity browser callback issues an HttpOnly session cookie witho
     expect(JSON.stringify(body)).not.toContain(token ?? "")
     expect(cookie).toContain("HttpOnly")
     if (token !== undefined) expect(sessionAuthenticate({ database, realmId: realm.id, token }).success).toBe(true)
+
+    const unmarkedStart = await app.request(
+      `https://external-browser.example.com/realms/${realm.id}/external-identity/${provider.id}/start`,
+      { body: JSON.stringify({}), headers: { "content-type": "application/json" }, method: "POST" },
+    )
+    expect(unmarkedStart.status).toBe(200)
+    const unmarkedStartBody = (await unmarkedStart.json()) as { authorizationUrl: string }
+    const unmarkedState = new URL(unmarkedStartBody.authorizationUrl).searchParams.get("state") ?? ""
+    const unmarked = await app.request(
+      `https://external-browser.example.com/realms/${realm.id}/external-identity/${provider.id}/callback?code=code&state=${encodeURIComponent(unmarkedState)}`,
+    )
+    expect(unmarked.status).toBe(200)
+    expect(unmarked.headers.get("set-cookie")).toBeNull()
+    const unmarkedBody = (await unmarked.json()) as { session?: { token?: string } }
+    expect(unmarkedBody.session?.token).toHaveLength(43)
+
+    const invalidStart = await app.request(
+      `https://external-browser.example.com/realms/${realm.id}/external-identity/${provider.id}/start`,
+      { body: JSON.stringify({}), headers: { "content-type": "application/json" }, method: "POST" },
+    )
+    expect(invalidStart.status).toBe(200)
+    const invalidStartBody = (await invalidStart.json()) as { authorizationUrl: string }
+    const invalidState = new URL(invalidStartBody.authorizationUrl).searchParams.get("state") ?? ""
+    const invalid = await app.request(
+      `https://external-browser.example.com/realms/${realm.id}/external-identity/${provider.id}/callback?code=code&state=${encodeURIComponent(invalidState)}`,
+      { headers: { [sessionBrowserModeHeaderName]: "invalid" } },
+    )
+    expect(invalid.status).toBe(200)
+    expect(invalid.headers.get("set-cookie")).toBeNull()
+    const invalidBody = (await invalid.json()) as { session?: { token?: string } }
+    expect(invalidBody.session?.token).toHaveLength(43)
   })
 })
 

@@ -16,6 +16,7 @@ import { sessionPasswordCreate } from "../../sessions/actions/sessionPasswordCre
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
+import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { passwordChange } from "../actions/passwordChange.js"
 import { passwordEmailVerify } from "../actions/passwordEmailVerify.js"
@@ -121,7 +122,8 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
       deviceMetadata: passwordDeviceMetadataGet(context),
       sessionCreate,
     })
-    if (!options.browserMode) return passwordResultResponseCreate(context, loggedIn)
+    if (!sessionBrowserModeRequested(context, options.browserMode))
+      return passwordResultResponseCreate(context, loggedIn)
     return passwordBrowserLoginResponseCreate(context, loggedIn)
   })
 

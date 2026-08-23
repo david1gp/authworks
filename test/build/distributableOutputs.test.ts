@@ -2,6 +2,7 @@ import { expect, test } from "bun:test"
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 
 type ProcessResult = {
   readonly exitCode: number
@@ -176,6 +177,97 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(cliCreate.exitCode).toBe(0)
     expect(cliCreate.stderr).toBe("")
     expect(JSON.parse(cliCreate.stdout)).toMatchObject({ realm: { domains: ["built-output.task-20.example"] } })
+
+    const builtRealmId = (JSON.parse(cliCreate.stdout) as { realm: { id: string } }).realm.id
+    const registration = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/register`, {
+      body: JSON.stringify({
+        email: "browser-mode@built-output.task-20.example",
+        password: "Built Output Password 123!",
+        profile: { displayName: "Built Output Browser" },
+        userName: "built-output-browser",
+      }),
+      headers: { "content-type": "application/json", host: "built-output.task-20.example" },
+      method: "POST",
+    })
+    expect(registration.status).toBe(200)
+
+    const cliArguments = [
+      "--server",
+      "http://127.0.0.1:3000",
+      "--token",
+      "built-output-secret",
+      "--realm-id",
+      builtRealmId,
+    ] as const
+    const userListRun = await processRun(["bun", "dist/cli/cli.js", "users", "list", ...cliArguments])
+    expect(userListRun.exitCode).toBe(0)
+    const builtUserId = (JSON.parse(userListRun.stdout) as { items: { id: string }[] }).items[0]?.id
+    expect(builtUserId).toBeDefined()
+    if (builtUserId === undefined) return
+    for (const [command, state] of [
+      ["verify", "verified"],
+      ["lifecycle", "active"],
+    ] as const) {
+      const changed = await processRun([
+        "bun",
+        "dist/cli/cli.js",
+        "users",
+        command,
+        ...cliArguments,
+        "--user-id",
+        builtUserId,
+        "--state",
+        state,
+      ])
+      expect(changed.exitCode, command).toBe(0)
+    }
+
+    const loginAttempt = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/login`, {
+      body: JSON.stringify({
+        identifier: "browser-mode@built-output.task-20.example",
+        password: "Built Output Password 123!",
+      }),
+      headers: {
+        "content-type": "application/json",
+        host: "built-output.task-20.example",
+        [sessionBrowserModeHeaderName]: "true",
+      },
+      method: "POST",
+    })
+    expect(loginAttempt.status).toBe(200)
+    expect(await loginAttempt.text()).not.toContain('"token"')
+    const loginCookie = loginAttempt.headers.get("set-cookie") ?? ""
+    expect(loginCookie).toContain("HttpOnly")
+    expect(loginCookie).toContain("Secure")
+    expect(loginCookie).toContain("SameSite=Lax")
+
+    const apiLoginAttempt = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/login`, {
+      body: JSON.stringify({
+        identifier: "browser-mode@built-output.task-20.example",
+        password: "Built Output Password 123!",
+      }),
+      headers: { "content-type": "application/json", host: "built-output.task-20.example" },
+      method: "POST",
+    })
+    expect(apiLoginAttempt.status).toBe(200)
+    expect(apiLoginAttempt.headers.get("set-cookie")).toBeNull()
+    expect(await apiLoginAttempt.text()).toContain('"token"')
+
+    const invalidLoginAttempt = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/login`, {
+      body: JSON.stringify({
+        identifier: "browser-mode@built-output.task-20.example",
+        password: "Built Output Password 123!",
+      }),
+      headers: {
+        "content-type": "application/json",
+        host: "built-output.task-20.example",
+        [sessionBrowserModeHeaderName]: "TRUE",
+      },
+      method: "POST",
+    })
+    expect(invalidLoginAttempt.status).toBe(200)
+    expect(invalidLoginAttempt.headers.get("set-cookie")).toBeNull()
+    expect(await invalidLoginAttempt.text()).toContain('"token"')
   } finally {
     child.kill()
     await child.exited

@@ -7,6 +7,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { sessionBrowserCookieTokenGet } from "../../sessions/domain/sessionBrowserCookieTokenGet.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
+import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { passkeyAuthenticationComplete } from "../actions/passkeyAuthenticationComplete.js"
 import { passkeyAuthenticationStart } from "../actions/passkeyAuthenticationStart.js"
@@ -159,7 +160,9 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     })
     return passkeyResultResponseCreate(
       context,
-      options.browserMode ? sessionBrowserCredentialResponseCreate(context, completed) : completed,
+      sessionBrowserModeRequested(context, options.browserMode)
+        ? sessionBrowserCredentialResponseCreate(context, completed)
+        : completed,
     )
   })
 
@@ -270,11 +273,13 @@ async function passkeyAuthenticationCompleteRoute(
     rpId: options.rpId,
     rpName: options.rpName,
     expectedPurpose: purpose,
-    sessionToken: passkeySessionTokenGet(context, options.browserMode === true),
+    sessionToken: passkeySessionTokenGet(context, sessionBrowserModeRequested(context, options.browserMode)),
   })
   return passkeyResultResponseCreate(
     context,
-    options.browserMode ? sessionBrowserCredentialResponseCreate(context, completed) : completed,
+    sessionBrowserModeRequested(context, options.browserMode)
+      ? sessionBrowserCredentialResponseCreate(context, completed)
+      : completed,
   )
 }
 

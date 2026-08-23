@@ -2,6 +2,7 @@ import type * as v from "valibot"
 import type { Result } from "#result"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { sessionCsrfTokenGet } from "./sessionCsrfTokenGet.js"
+import { sessionBrowserModeHeaderName } from "../public/sessionBrowserModeHeaderName.js"
 
 type SessionBrowserFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -25,6 +26,7 @@ export async function sessionBrowserRequest<T>(options: SessionBrowserRequestOpt
 
   const headers = new Headers(options.init.headers)
   headers.set("x-csrf-token", csrf.data)
+  headers.set(sessionBrowserModeHeaderName, "true")
   return httpApiClientRequest({
     baseUrl: options.baseUrl,
     fetch: options.fetch,

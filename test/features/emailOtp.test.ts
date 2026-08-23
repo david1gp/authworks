@@ -17,6 +17,7 @@ import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -490,7 +491,7 @@ test("email OTP HTTP and client contracts expose no code material", async () => 
 })
 
 test("email OTP browser verification issues an HttpOnly session cookie without disclosing credentials", async () => {
-  await withDatabase(async (database) => {
+  await withDatabase(async (database, testkit) => {
     const { realm } = await createVerifiedUser(database, "email-otp-browser.example.com")
     let delivery: { challengeId: string; code: string } | undefined
     const app = emailOtpServerAppCreate({
@@ -509,7 +510,7 @@ test("email OTP browser verification issues an HttpOnly session cookie without d
     if (delivery === undefined) return
     const verified = await app.request(`https://email-otp-browser.example.com/realms/${realm.id}/email-otp/verify`, {
       body: JSON.stringify({ challengeId: delivery.challengeId, code: delivery.code }),
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "true" },
       method: "POST",
     })
     expect(verified.status).toBe(200)
@@ -521,5 +522,44 @@ test("email OTP browser verification issues an HttpOnly session cookie without d
     expect(JSON.stringify(body)).not.toContain(token ?? "")
     expect(cookie).toContain("HttpOnly")
     if (token !== undefined) expect(sessionAuthenticate({ database, realmId: realm.id, token }).success).toBe(true)
+
+    testkit.advance(60_000)
+    const unmarkedStart = await app.request(
+      `https://email-otp-browser.example.com/realms/${realm.id}/email-otp/start`,
+      {
+        body: JSON.stringify({ email: "otp@example.com" }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(unmarkedStart.status).toBe(200)
+    if (delivery === undefined) return
+    const unmarked = await app.request(`https://email-otp-browser.example.com/realms/${realm.id}/email-otp/verify`, {
+      body: JSON.stringify({ challengeId: delivery.challengeId, code: delivery.code }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(unmarked.status).toBe(200)
+    expect(unmarked.headers.get("set-cookie")).toBeNull()
+    const unmarkedBody = (await unmarked.json()) as { session?: { token?: string } }
+    expect(unmarkedBody.session?.token).toHaveLength(43)
+
+    testkit.advance(60_000)
+    const invalidStart = await app.request(`https://email-otp-browser.example.com/realms/${realm.id}/email-otp/start`, {
+      body: JSON.stringify({ email: "otp@example.com" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(invalidStart.status).toBe(200)
+    if (delivery === undefined) return
+    const invalid = await app.request(`https://email-otp-browser.example.com/realms/${realm.id}/email-otp/verify`, {
+      body: JSON.stringify({ challengeId: delivery.challengeId, code: delivery.code }),
+      headers: { "content-type": "application/json", [sessionBrowserModeHeaderName]: "1" },
+      method: "POST",
+    })
+    expect(invalid.status).toBe(200)
+    expect(invalid.headers.get("set-cookie")).toBeNull()
+    const invalidBody = (await invalid.json()) as { session?: { token?: string } }
+    expect(invalidBody.session?.token).toHaveLength(43)
   })
 })

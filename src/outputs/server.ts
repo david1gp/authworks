@@ -23,6 +23,7 @@ export function serverListen(): void {
   }
 
   const created = serverApplicationCreate({
+    browserMode: true,
     databasePath: parsed.data.databasePath,
     emailGenerator: mailConfiguration.data?.emailGenerator,
     mailDelivery:

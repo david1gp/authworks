@@ -15,6 +15,7 @@ import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.
 import { sessionReturnPathValidate } from "../../sessions/domain/sessionReturnPathValidate.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
+import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { externalIdentityCallback } from "../actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../actions/externalIdentityLinkComplete.js"
@@ -377,10 +378,11 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       providerPorts,
       state,
     })
-    if (!options.browserMode || interactionHandle === undefined)
+    const browserMode = sessionBrowserModeRequested(context, options.browserMode)
+    if (!browserMode || interactionHandle === undefined)
       return externalIdentityResultResponseCreate(
         context,
-        options.browserMode ? sessionBrowserCredentialResponseCreate(context, callback) : callback,
+        browserMode ? sessionBrowserCredentialResponseCreate(context, callback) : callback,
       )
     const resumePath = externalIdentityInteractionResumePathCreate(interactionHandle, options.publicOrigin)
     if (!resumePath.success) return externalIdentityErrorResponseCreate(context, resumePath)

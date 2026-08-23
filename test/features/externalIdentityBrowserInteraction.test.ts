@@ -7,6 +7,7 @@ import type { ExternalIdentityProviderPort } from "../../src/features/externalId
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -91,6 +92,7 @@ test("browser external callbacks issue only a cookie and resume opaque interacti
       new URL(authorizationUrl.authorizationUrl ?? "https://provider.example/").searchParams.get("state") ?? ""
     const callback = await app.request(
       `https://external-browser.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/callback?code=provider-code&state=${encodeURIComponent(state)}`,
+      { headers: { [sessionBrowserModeHeaderName]: "true" } },
     )
     expect(callback.status).toBe(302)
     expect(callback.headers.get("location")).toBe(`/oauth2/authorize?interaction=${interaction}`)

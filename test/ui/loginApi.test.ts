@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { loginApiCreate } from "../../src/features/login/ui/loginApiCreate.js"
+import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const baseUrl = "https://auth.example"
@@ -32,7 +33,9 @@ describe("hosted login browser API", () => {
     expect(requests).toHaveLength(1)
     expect(requests[0]?.url).toBe(`${baseUrl}/realms/${realmId}/password/login`)
     expect(requests[0]?.init?.credentials).toBe("include")
-    expect(new Headers(requests[0]?.init?.headers).get("authorization")).toBeNull()
+    const headers = new Headers(requests[0]?.init?.headers)
+    expect(headers.get("authorization")).toBeNull()
+    expect(headers.get(sessionBrowserModeHeaderName)).toBe("true")
     expect(JSON.parse(String(requests[0]?.init?.body))).toEqual({
       identifier: "alex@acme.example",
       organizationId: "org-1",

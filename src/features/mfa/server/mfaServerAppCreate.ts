@@ -13,6 +13,7 @@ import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.
 import { sessionBrowserCookieTokenGet } from "../../sessions/domain/sessionBrowserCookieTokenGet.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
+import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { mfaChallengeComplete } from "../actions/mfaChallengeComplete.js"
 import { mfaPolicyGet } from "../actions/mfaPolicyGet.js"
@@ -193,7 +194,7 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
         realmId: context.req.param("realmId"),
-        sessionToken: mfaSessionTokenGet(context, options.browserMode === true),
+        sessionToken: mfaSessionTokenGet(context, sessionBrowserModeRequested(context, options.browserMode)),
         userId: context.get("authorizationActor").actorId,
       }),
     ),
@@ -272,11 +273,13 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
       encryptionSecret,
       input: input.output,
       realmId: context.req.param("realmId"),
-      sessionToken: mfaSessionTokenGet(context, options.browserMode === true),
+      sessionToken: mfaSessionTokenGet(context, sessionBrowserModeRequested(context, options.browserMode)),
     })
     return mfaResultResponseCreate(
       context,
-      options.browserMode ? sessionBrowserCredentialResponseCreate(context, completed) : completed,
+      sessionBrowserModeRequested(context, options.browserMode)
+        ? sessionBrowserCredentialResponseCreate(context, completed)
+        : completed,
     )
   })
 
@@ -293,7 +296,9 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
     })
     return mfaResultResponseCreate(
       context,
-      options.browserMode ? sessionBrowserCredentialResponseCreate(context, completed) : completed,
+      sessionBrowserModeRequested(context, options.browserMode)
+        ? sessionBrowserCredentialResponseCreate(context, completed)
+        : completed,
     )
   })
 

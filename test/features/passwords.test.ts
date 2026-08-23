@@ -485,13 +485,36 @@ test("password changes and policy events are atomic and audit safe", async () =>
 test("password server and client expose generic public contracts", async () => {
   await withDatabase(async (database) => {
     const realm = await createRealm(database, "passwords-api.example.com")
-    const app = passwordServerAppCreate({ database, systemSecret: "system-secret" })
+    let verificationToken = ""
+    const app = passwordServerAppCreate({
+      browserMode: true,
+      database,
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+      systemSecret: "system-secret",
+    })
     const client = passwordApiClientCreate({
       baseUrl: "https://passwords-api.example.com",
       fetch: async (input, init) => app.request(input.toString(), init),
     })
     const registered = await client.passwordRegister(realm.id, registrationInput())
     expect(registered).toEqual({ data: { accepted: true, verificationRequired: true }, success: true })
+    expect(
+      passwordEmailVerify({
+        context: realmTenantContextCreate(realm.id, "anonymous"),
+        database,
+        input: { token: verificationToken },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    const loggedIn = await client.passwordLogin(realm.id, {
+      identifier: "ada",
+      password: "Correct Horse 12",
+    })
+    expect(loggedIn.success).toBe(true)
+    if (!loggedIn.success) return
+    expect(loggedIn.data.session?.token).toHaveLength(43)
     const invalid = await client.passwordLogin(realm.id, { identifier: "ada", password: "wrong" })
     expect(invalid.success).toBe(false)
     const policy = await client.passwordPolicyGet(realm.id)
