@@ -1,5 +1,7 @@
 import { A } from "@solidjs/router"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
+import { demoFixtureStateLabel } from "../demoFixtureStateLabel.js"
 import type { DemoFixtureScenario } from "../demoFixtureScenarioSchema.js"
 
 export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario }) {
@@ -13,7 +15,9 @@ export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario
               : "bg-muted text-muted-foreground"
           }`}
         >
-          {ttc(props.scenario.availability === "available" ? "Available" : "Planned")}
+          {props.scenario.availability === "available"
+            ? messageTranslate("demo.directory.available")
+            : messageTranslate("demo.directory.planned")}
         </span>
         <span class="font-mono text-xs text-muted-foreground">{props.scenario.path.replace(/^\/demo\//, "/")}</span>
       </div>
@@ -25,11 +29,13 @@ export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario
       <p class="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{ttc(props.scenario.description)}</p>
       <div class="mt-5 border-t border-line-subtle pt-4">
         <p class="mb-2 text-[0.68rem] font-bold uppercase tracking-wider text-muted-foreground">
-          {ttc("Fixture states")}
+          {messageTranslate("demo.directory.fixtureStates")}
         </p>
         <div class="flex flex-wrap gap-1.5">
           {props.scenario.states.map((fixtureState) => (
-            <span class="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">{ttc(fixtureState)}</span>
+            <span class="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+              {demoFixtureStateLabel(fixtureState)}
+            </span>
           ))}
         </div>
       </div>
@@ -37,7 +43,9 @@ export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario
         class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover"
         href={props.scenario.path}
       >
-        {ttc(props.scenario.availability === "available" ? "Open demo" : "Preview foundation")}
+        {props.scenario.availability === "available"
+          ? messageTranslate("demo.directory.openDemo")
+          : messageTranslate("demo.directory.previewFoundation")}
         <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">
           →
         </span>

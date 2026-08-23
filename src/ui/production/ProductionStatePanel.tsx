@@ -1,9 +1,10 @@
-import { mdiAlertCircleOutline, mdiInboxOutline, mdiLockOutline } from "@mdi/js"
+import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
+import { mdiInboxOutline } from "@adaptive-ds/mdi/mdiInboxOutline.js"
+import { mdiLockOutline } from "@adaptive-ds/mdi/mdiLockOutline.js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { LoaderSpin4Square } from "#ui/static/loaders/LoaderSpin4Square.jsx"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
-import { ttc } from "../i18n/model/ttc.js"
 
 export function ProductionStatePanel(props: {
   readonly detail?: string
@@ -39,18 +40,18 @@ export function ProductionStatePanel(props: {
             : props.state === "error"
               ? messageTranslate("common.error")
               : props.state === "inaccessible"
-                ? ttc("This page is not available")
-                : ttc("Nothing here yet"))}
+                ? messageTranslate("shell.state.pageUnavailable")
+                : messageTranslate("shell.state.nothingHere"))}
       </h2>
       <p class="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
         {props.detail ??
           (props.state === "loading"
-            ? ttc("Preparing this page and its security context.")
+            ? messageTranslate("shell.state.loadingDetail")
             : props.state === "error"
-              ? ttc("The page could not be prepared. Try again when you are ready.")
+              ? messageTranslate("shell.state.errorDetail")
               : props.state === "inaccessible"
-                ? ttc("You do not have access to this destination in the current context.")
-                : ttc("This page is ready for its feature content."))}
+                ? messageTranslate("shell.state.inaccessibleDetail")
+                : messageTranslate("shell.state.readyDetail"))}
       </p>
       {props.state === "error" && props.onRetry ? (
         <Button class="mt-6" onClick={props.onRetry}>

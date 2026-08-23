@@ -17,5 +17,6 @@ export function productionAuthenticatedShellStateCreate(kind: () => "account" | 
     realmId: () => (typeof session.guard.realm === "object" ? session.guard.realm.realmId : ""),
     session,
     sidebar,
+    signOutHref: "/login/logout",
   }
 }

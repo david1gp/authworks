@@ -1,8 +1,8 @@
 import { render } from "solid-js/web"
 import { languageInitialize } from "./i18n/model/languageInitialize.js"
-import { UiRouter } from "./UiRouter.js"
 import { productionApplicationContextsCreate } from "./production/productionApplicationContextsCreate.js"
 import { productionShellContextDefault } from "./production/productionShellContextDefault.js"
+import { UiRouter } from "./UiRouter.js"
 import "./styles.css"
 
 const root = document.getElementById("app")

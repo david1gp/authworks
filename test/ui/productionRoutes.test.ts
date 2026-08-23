@@ -5,6 +5,7 @@ import { machineAdminScreenSchema } from "../../src/features/machineUsers/ui/mac
 import { oidcAdminScreenSchema } from "../../src/features/oidc/ui/oidcAdminScreenSchema.js"
 import { organizationAdminScreenSchema } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
 import { projectAdminScreenSchema } from "../../src/features/projects/ui/projectAdminScreenSchema.js"
+import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 import { productionNavigationItemActive } from "../../src/ui/production/productionNavigationItemActive.js"
 import { productionRouteContractMap } from "../../src/ui/production/productionRouteContractMap.js"
 import type { ProductionRouteGuardContext } from "../../src/ui/production/productionRouteGuardContext.js"
@@ -40,6 +41,46 @@ describe("production route contracts", () => {
       "/admin/user-authentication",
     )
     expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).not.toContain("/admin/user-sessions")
+  })
+
+  test("advertises only typed catalog keys for screen titles and shell navigation labels", () => {
+    const catalogKeys = new Set(Object.keys(englishCatalog))
+
+    for (const route of Object.values(productionRouteContractMap)) {
+      for (const screen of route.screens) {
+        expect(catalogKeys.has(screen.title), `${screen.path} title must be a typed key`).toBe(true)
+      }
+    }
+    for (const groups of Object.values(productionShellNavigationGroups)) {
+      for (const group of groups) {
+        expect(catalogKeys.has(group.label), `${group.label} must be a typed key`).toBe(true)
+        for (const item of group.items) {
+          expect(catalogKeys.has(item.label), `${item.href} label must be a typed key`).toBe(true)
+        }
+      }
+    }
+  })
+
+  test("resolves shell labels that share an English value through distinct unambiguous keys", () => {
+    const accountOverview = productionShellNavigationGroups.account[0]?.items[0]
+    const adminOverview = productionShellNavigationGroups.admin[0]?.items[0]
+    expect(accountOverview?.label).toBe("shell.nav.overview")
+    expect(adminOverview?.label).toBe("shell.nav.overview")
+
+    // "Application consents" is also the English value of admin.oidc.consents.title.
+    const accountConsents = productionShellNavigationGroups.account[2]?.items[0]
+    expect(accountConsents?.label).toBe("shell.nav.applicationConsents")
+    expect(englishCatalog["shell.nav.applicationConsents"]).toBe(englishCatalog["admin.oidc.consents.title"])
+
+    // "Password" and "Profile" and "Email address" duplicate feature catalog values.
+    expect(englishCatalog["shell.nav.password"]).toBe(englishCatalog["login.password.label"])
+    expect(englishCatalog["shell.nav.profile"]).toBe(englishCatalog["admin.users.profileTitle"])
+    expect(englishCatalog["shell.nav.emailAddress"]).toBe(englishCatalog["account.profile.email"])
+
+    const accountScreens = productionRouteContractMap.account.screens
+    expect(accountScreens.find((screen) => screen.key === "password")?.title).toBe("shell.nav.password")
+    expect(accountScreens.find((screen) => screen.key === "profile")?.title).toBe("shell.nav.profile")
+    expect(accountScreens.find((screen) => screen.key === "email")?.title).toBe("shell.nav.emailAddress")
   })
 
   test("renders every advertised administration screen through exactly one feature owner", () => {
@@ -156,20 +197,25 @@ describe("production shell state", () => {
 
   test("keeps navigation grouped and marks only the matching destination active", () => {
     expect(productionShellNavigationGroups.account.map((group) => group.label)).toEqual([
-      "Personal information",
-      "Security",
-      "Access",
+      "shell.nav.personalInformation",
+      "shell.nav.security",
+      "shell.nav.access",
     ])
     expect(productionShellNavigationGroups.admin.map((group) => group.label)).toEqual([
-      "Realm",
-      "Directory",
-      "Applications",
-      "OpenID Connect",
-      "Operations",
+      "shell.nav.realm",
+      "shell.nav.directory",
+      "shell.nav.applications",
+      "shell.nav.openIdConnect",
+      "shell.nav.operations",
     ])
     expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
     expect(productionNavigationItemActive("/admin", "/admin/users")).toBe(false)
     expect(productionNavigationItemActive("/account", "/account/password")).toBe(false)
+  })
+
+  test("offers an advertised sign-out destination from every authenticated shell", () => {
+    const signOutHref = "/login/logout"
+    expect(productionRouteScreenSelect(productionRouteContractMap.login, signOutHref)?.key).toBe("logout")
   })
 
   test("keeps administration navigation targets owned by advertised screens", () => {

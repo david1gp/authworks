@@ -103,6 +103,7 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+admin.common.confirmTitle,Підтвердьте цю дію
 admin.common.next,Далі
 admin.common.pagination,Посторінкова навігація
 admin.common.permission,Ви не маєте дозволу переглядати ці адміністративні дані.
@@ -145,7 +146,7 @@ admin.impersonation.noOrganization,No organization
 admin.impersonation.organization,Organization
 admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
 admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.permissionDeniedTitle,Доступ недоступний
 admin.impersonation.reason,Reason
 admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
 admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
@@ -169,6 +170,8 @@ admin.machine.credentials.description,"Облікові дані, які маш�
 admin.machine.credentials.empty,Цей машинний користувач ще не має облікових даних.
 admin.machine.credentials.expires,Спливає
 admin.machine.credentials.expiresHint,"Залиште порожнім, щоб видати облікові дані без терміну дії."
+admin.machine.credentials.expiryInvalid,"Введіть дійсну дату завершення дії або залиште поле порожнім, щоб облікові дані не спливали."
+admin.machine.credentials.expiryPast,Виберіть дату завершення дії в майбутньому.
 admin.machine.credentials.issue,Видати облікові дані
 admin.machine.credentials.issueDescription,Видайте персональний токен доступу або ключ API. Значення показується один раз і не може бути відновлене.
 admin.machine.credentials.kind,Тип облікових даних
@@ -178,6 +181,7 @@ admin.machine.credentials.kindClientSecret,Секрет клієнта
 admin.machine.credentials.kindHint,Персональний токен доступу діє безпосередньо від імені машинного користувача. Ключ API призначений для однієї інтеграції.
 admin.machine.credentials.kindToken,Персональний токен доступу
 admin.machine.credentials.name,Назва
+admin.machine.credentials.nameRequired,"Введіть назву, щоб пізніше розпізнати ці облікові дані."
 admin.machine.credentials.neverExpires,Не спливає
 admin.machine.credentials.onceWarning,"Видане значення показується один раз. Збережіть його, перш ніж закрити це вікно; отримати його знову буде неможливо."
 admin.machine.credentials.revoke,Відкликати
@@ -229,6 +233,7 @@ admin.machine.users.description,"Нелюдські ідентичності, я
 admin.machine.users.detailTitle,Відомості про машинного користувача
 admin.machine.users.displayName,Відображуване ім'я
 admin.machine.users.empty,У цьому realm ще немає машинних користувачів.
+admin.machine.users.invalid,Введіть відображуване ім'я та ім'я користувача й використовуйте лише дійсні значення областей.
 admin.machine.users.lifecycleChanged,Статус машинного користувача змінено.
 admin.machine.users.missingId,Для цього розділу потрібно вибрати машинного користувача.
 admin.machine.users.noScopes,Немає областей
@@ -240,7 +245,7 @@ admin.machine.users.userName,Ім'я користувача
 admin.machine.users.userNameHint,Використовується як ідентифікатор клієнта під час обміну облікових даних клієнта.
 admin.navigation.description,Choose an administration resource
 admin.navigation.hide,Hide sidebar
-admin.navigation.label,Administration
+admin.navigation.label,Адміністрування
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Керування налаштуваннями OpenID Connect потребує надійнішого та новішого входу. Увійдіть знову, щоб продовжити."
 admin.oidc.assuranceRequiredTitle,Потрібен надійніший вхід
@@ -254,6 +259,7 @@ admin.oidc.clients.description,"Застосунки, які автентифі�
 admin.oidc.clients.detailTitle,Відомості про клієнта OIDC
 admin.oidc.clients.empty,У цій області ще не зареєстровано жодного клієнта OpenID Connect.
 admin.oidc.clients.exactMatchHint,"По одному URI в рядку. Кожне перенаправлення звіряється точно, тому символи підстановки та відмінності в закінченні відхиляються."
+admin.oidc.clients.invalid,"Введіть назву клієнта, щонайменше один точний URI переспрямування та щонайменше одну область."
 admin.oidc.clients.lifecycleChanged,Стан клієнта змінено.
 admin.oidc.clients.missingId,Для цього розділу потрібно вибрати клієнта OIDC.
 admin.oidc.clients.name,Назва клієнта
@@ -273,6 +279,7 @@ admin.oidc.clients.type,Тип клієнта
 admin.oidc.clients.typeConfidential,Конфіденційний
 admin.oidc.clients.typeHint,"Конфіденційний клієнт зберігає секрет на сервері. Публічний клієнт, як-от мобільний або односторінковий застосунок, цього не може."
 admin.oidc.clients.typePublic,Публічний
+admin.oidc.confirmTitle,Підтвердьте цю зміну
 admin.oidc.consents.client,Застосунок
 admin.oidc.consents.description,"Застосунки, які людина підтвердила. Відкликання згоди призведе до повторного запиту підтвердження застосунку."
 admin.oidc.consents.empty,Ця людина ще не підтвердила жодного застосунку.
@@ -375,6 +382,7 @@ admin.organizations.domains.discoveryFound,{domain} розв'язується д
 admin.organizations.domains.discoveryMissing,{domain} не розв'язується до жодної організації.
 admin.organizations.domains.domain,Домен
 admin.organizations.domains.empty,Ця організація ще не заявила жодного домену.
+admin.organizations.domains.invalid,Введіть дійсне доменне ім'я.
 admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Основний домен
 admin.organizations.domains.remove,Видалити домен
@@ -389,11 +397,13 @@ admin.organizations.domains.verifyDone,Домен підтверджено.
 admin.organizations.invitations.create,Запросити людину
 admin.organizations.invitations.description,"Запрошуйте людей електронною поштою та відстежуйте, які запрошення ще очікують."
 admin.organizations.invitations.email,Email address
+admin.organizations.invitations.emailInvalid,Введіть дійсну адресу електронної пошти.
 admin.organizations.invitations.empty,Для цієї організації не надіслано жодного запрошення.
 admin.organizations.invitations.expires,Спливає
 admin.organizations.invitations.revoke,Відкликати запрошення
 admin.organizations.invitations.revokeConfirm,Відкликати запрошення для {email}? Посилання запрошення одразу припинить працювати.
 admin.organizations.invitations.revoked,Запрошення відкликано.
+admin.organizations.invitations.rolesInvalid,Виберіть від однієї до чотирьох ролей.
 admin.organizations.invitations.sent,Запрошення створено.
 admin.organizations.invitations.title,Запрошення
 admin.organizations.invitations.tokenDismiss,Я зберіг це посилання
@@ -410,12 +420,14 @@ admin.organizations.list.create,Створити організацію
 admin.organizations.list.description,"Організації об'єднують людей, домени та оформлення цього realm."
 admin.organizations.list.empty,У цьому realm ще немає організацій.
 admin.organizations.list.name,Назва організації
+admin.organizations.list.nameRequired,Введіть назву організації.
 admin.organizations.list.search,Пошук організацій
 admin.organizations.list.title,Організації
 admin.organizations.memberships.add,Додати учасника
 admin.organizations.memberships.added,Учасника додано.
 admin.organizations.memberships.description,Люди в цій організації та призначені їм фіксовані ролі.
 admin.organizations.memberships.empty,У цій організації ще немає учасників.
+admin.organizations.memberships.invalid,Введіть ідентифікатор користувача та виберіть від однієї до чотирьох ролей.
 admin.organizations.memberships.remove,Видалити учасника
 admin.organizations.memberships.removeConfirm,Видалити {userId} з цієї організації? Доступ до організації буде негайно припинено.
 admin.organizations.memberships.removed,Учасника видалено.
@@ -436,7 +448,7 @@ admin.organizations.policy.externalIdentity,Зовнішні провайдер�
 admin.organizations.policy.inherited,Успадковано від realm
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Пароль
-admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.passwordRecovery,Відновлення пароля
 admin.organizations.policy.registration,Самостійна реєстрація
 admin.organizations.policy.saved,Політику входу збережено.
 admin.organizations.policy.title,Політика входу
@@ -451,6 +463,7 @@ admin.organizations.providers.disableConfirm,Вимкнути {displayName}? Л�
 admin.organizations.providers.disabled,Провайдера вимкнено.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Зовнішнього провайдера ідентифікації ще не налаштовано.
+admin.organizations.providers.invalid,"Введіть відображуване ім'я, ідентифікатор клієнта, секрет клієнта та абсолютний URI переспрямування."
 admin.organizations.providers.redirectUri,URI перенаправлення
 admin.organizations.providers.rotateSecret,Замінити секрет клієнта
 admin.organizations.providers.secretRotated,Секрет клієнта замінено.
@@ -473,6 +486,7 @@ admin.projects.access.title,Чинний доступ
 admin.projects.applications.create,Додати застосунок
 admin.projects.applications.description,"Застосунки, які автентифікуються в цьому проєкті."
 admin.projects.applications.empty,Цей проєкт ще не має застосунків.
+admin.projects.applications.invalid,Введіть назву застосунку та виберіть тип.
 admin.projects.applications.name,Назва застосунку
 admin.projects.applications.removeConfirm,Видалити цей застосунок? Цю дію неможливо скасувати.
 admin.projects.applications.title,Застосунки
@@ -501,6 +515,7 @@ admin.projects.lifecycle.removeConfirm,Видалити цей проєкт?
 admin.projects.list.create,Створити проєкт
 admin.projects.list.description,"Проєкти об'єднують застосунки, ролі та надання організації."
 admin.projects.list.empty,У цьому realm ще немає проєктів.
+admin.projects.list.invalid,Введіть назву проєкту та виберіть організацію.
 admin.projects.list.name,Назва проєкту
 admin.projects.list.search,Пошук проєктів
 admin.projects.list.title,Проєкти
@@ -576,6 +591,7 @@ admin.users.create,Створити користувача
 admin.users.createDescription,Додайте користувача-людину до поточного realm.
 admin.users.createSubmit,Створити
 admin.users.created,{userName} створено.
+admin.users.createdAt,Створено
 admin.users.dangerZone,Небезпечна зона
 admin.users.delete,Видалити користувача
 admin.users.deleteConfirm,Остаточно видалити {userName}?
@@ -623,7 +639,7 @@ admin.users.sessions.title,Sessions and devices
 admin.users.state,Статус
 admin.users.title,Користувачі
 admin.users.unverified,Не підтверджено
-admin.users.updated,Останнє оновлення {date}
+admin.users.updated,Останнє оновлення
 admin.users.userName,Username
 admin.users.verification,Підтвердження
 admin.users.verificationChanged,Статус підтвердження тепер {state}.
@@ -631,12 +647,16 @@ admin.users.verificationDescription,"Визначте, чи вважається
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
-app.tagline,Secure identity services
+app.tagline,Безпечні сервіси ідентифікації
 common.back,Назад
 common.cancel,Скасувати
 common.close,Закрити
 common.continue,Продовжити
 common.decline,Decline
+common.disable,Вимкнути
+common.disabled,Вимкнено
+common.enable,Увімкнути
+common.enabled,Увімкнено
 common.error,Щось пішло не так.
 common.language,Мова
 common.loading,Завантаження
@@ -646,45 +666,259 @@ common.save,Зберегти
 common.signIn,Увійти
 common.signInWithProvider,Увійти за допомогою {provider}
 common.signOut,Вийти
-common.theme.dark,dark
-common.theme.light,light
-common.theme.system,system
+common.theme.dark,Темна
+common.theme.light,Світла
+common.theme.system,Система
 common.urlPlaceholder,https://
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.account.eyebrow,Self-service identity
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.admin.directoryTitle,Administration directory
-demo.admin.eyebrow,Realm administration
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.description,"Explore the login, account, administration, and transactional email demos."
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.nav.account,Account
-demo.nav.admin,Admin
-demo.nav.compact,Compact
-demo.nav.emails,Emails
-demo.nav.hub,Hub
-demo.nav.label,Demo
-demo.nav.login,Login
+demo.account.description,"Автономна карта інтерфейсів керування профілем, організацією, безпекою та доступом до додатків, які підтримує Authworks. Кожне призначення має чіткий контракт стану тестових даних."
+demo.account.eyebrow,Самообслуговування ідентифікації
+demo.account.group.access.description,"Додатки та дозволи, надані цим обліковим записом."
+demo.account.group.access.title,Доступ
+demo.account.group.identity.description,"Дані профілю та входу, якими користувачі керують самостійно."
+demo.account.group.identity.title,Особисті дані
+demo.account.group.organizations.description,"Членство, контекст організації та запрошення."
+demo.account.group.organizations.title,Організації
+demo.account.group.security.description,"Сеанси, фактори автентифікації та підключені ідентичності."
+demo.account.group.security.title,Безпека
+demo.account.scenario.consents.description,"Переглядайте та відкликайте дозволи, раніше надані додаткам."
+demo.account.scenario.consents.title,Згоди додатків
+demo.account.scenario.delete.description,Оцініть наслідки та підтвердьте остаточне видалення облікового запису.
+demo.account.scenario.delete.title,Видалити обліковий запис
+demo.account.scenario.email.description,"Переглядайте підтверджену адресу, що використовується для входу та зв'язку облікового запису."
+demo.account.scenario.email.title,Адреса електронної пошти
+demo.account.scenario.factors.description,"Керуйте факторами додатка автентифікатора, електронної пошти та ключів доступу."
+demo.account.scenario.factors.title,Багатофакторна автентифікація
+demo.account.scenario.identities.description,"Переглядайте та відв'язуйте облікові записи Google, GitHub та Microsoft."
+demo.account.scenario.identities.title,Зв'язані ідентичності
+demo.account.scenario.invitation.description,Перевірте запрошення перед приєднанням до організації.
+demo.account.scenario.invitation.title,Прийняти запрошення
+demo.account.scenario.invitations.description,"Переглядайте запрошення, надіслані до увійшовшого облікового запису."
+demo.account.scenario.invitations.title,Мої запрошення
+demo.account.scenario.organizations.description,Переглядайте членства та перемикайте активну організацію.
+demo.account.scenario.organizations.title,Мої організації
+demo.account.scenario.passkeys.description,"Реєструйте, називайте та видаляйте безпарольні облікові дані."
+demo.account.scenario.passkeys.title,Ключі доступу
+demo.account.scenario.password.description,Змініть поточний пароль та перевірте стан його безпеки.
+demo.account.scenario.password.title,Пароль
+demo.account.scenario.profile.description,"Переглядайте та оновлюйте імена, ім'я користувача та бажану мову."
+demo.account.scenario.profile.title,Профіль
+demo.account.scenario.recovery_codes.description,Згенеруйте запасні коди та відобразіть їх один раз.
+demo.account.scenario.recovery_codes.title,Коди відновлення
+demo.account.scenario.sessions.description,"Переглядайте активні сеанси та відкликайте пристрої, які більше не використовуються."
+demo.account.scenario.sessions.title,Сеанси та пристрої
+demo.account.title,Демонстрація облікового запису
+demo.admin.description,"Переміщуйтеся поточним реалмом за допомогою інформаційної архітектури, зосередженої навколо людей, організацій, додатків, облікових даних та подій аудиту. Доступні демо та заплановані призначення без стану чітко розділені."
+demo.admin.directoryTitle,Каталог адміністрування
+demo.admin.eyebrow,Адміністрування реалму
+demo.admin.group.authorization.description,"Додатки, проєктні ролі, гранти та оцінений доступ."
+demo.admin.group.authorization.title,Проєкти та авторизація
+demo.admin.group.machine_users.description,Нелюдські ідентичності та їхні облікові дані лише для запису.
+demo.admin.group.machine_users.title,Сервісні користувачі
+demo.admin.group.oidc.description,"Клієнти, точні налаштування перенаправлення, згода, області дії та ключі підпису."
+demo.admin.group.oidc.title,OpenID Connect
+demo.admin.group.operations.description,Сеанси реалму та незмінна активність безпеки.
+demo.admin.group.operations.title,Операції
+demo.admin.group.organizations.description,"Налаштування організації, користувачі, запрошення та підтверджені домени."
+demo.admin.group.organizations.title,Організації
+demo.admin.group.realm.description,"Конфігурація ідентичності, життєвого циклу та входу в масштабах реалму."
+demo.admin.group.realm.title,Реалм
+demo.admin.group.users.description,"Облікові записи людей, облікові дані, сеанси та захищені дії підтримки."
+demo.admin.group.users.title,Користувачі
+demo.admin.realmFixtureName,Ідентичність клієнта Northwind
+demo.admin.scenario.admin_sign_in.description,Обміняйте початкові облікові дані на короткий сеанс браузера адміністратора.
+demo.admin.scenario.admin_sign_in.title,Вхід адміністратора
+demo.admin.scenario.applications.description,Керуйте додатками проєкту та їхнім життєвим циклом.
+demo.admin.scenario.applications.title,Додатки
+demo.admin.scenario.audit_events.description,Переглядайте поточний потік подій безпеки на основі тестових даних.
+demo.admin.scenario.audit_events.title,Події аудиту
+demo.admin.scenario.branding.description,"Налаштуйте кольори, логотипи та юридичні посилання з урахуванням організації."
+demo.admin.scenario.branding.title,Брендинг
+demo.admin.scenario.domains.description,Перевіряйте домени та контролюйте виявлення організації.
+demo.admin.scenario.domains.title,Домени та виявлення
+demo.admin.scenario.effective_access.description,"Переглядайте доступні лише для читання дійсні ролі, дозволи та перевірки доступу."
+demo.admin.scenario.effective_access.title,Фактичний доступ
+demo.admin.scenario.impersonation.description,Запустіть обґрунтований сеанс підтримки з обмеженням за часом за наявності дозволу.
+demo.admin.scenario.impersonation.title,Уособлення
+demo.admin.scenario.invitations.description,Запрошуйте людей та відстежуйте очікувані або прострочені запрошення.
+demo.admin.scenario.invitations.title,Запрошення
+demo.admin.scenario.login_policy.description,"Встановіть політику входу та налаштуйте Google, GitHub або Microsoft."
+demo.admin.scenario.login_policy.title,Вхід та провайдери ідентичності
+demo.admin.scenario.machine_credentials.description,"Видавайте, ротуйте та відкликайте облікові дані клієнта, токени PAT та ключі API."
+demo.admin.scenario.machine_credentials.title,Облікові дані та токени
+demo.admin.scenario.machine_user_detail.description,"Переглядайте області дії та життєвий цикл, ротуйте секрет клієнта та керуйте обліковими даними."
+demo.admin.scenario.machine_user_detail.title,Деталі сервісного користувача
+demo.admin.scenario.machine_users.description,Створюйте та керуйте сервісними ідентичностями та їхнім життєвим циклом.
+demo.admin.scenario.machine_users.title,Каталог сервісних користувачів
+demo.admin.scenario.memberships.description,Призначайте фіксовані ролі організації учасникам.
+demo.admin.scenario.memberships.title,Членства та ролі
+demo.admin.scenario.oidc_client_detail.description,"Редагуйте точні перенаправлення та області дії, а також ротуйте або відкликайте секрет клієнта."
+demo.admin.scenario.oidc_client_detail.title,Налаштування клієнта OIDC
+demo.admin.scenario.oidc_clients.description,"Керуйте клієнтами, перенаправленнями, областями дії, довірою та одноразовими секретами."
+demo.admin.scenario.oidc_clients.title,Клієнти OIDC
+demo.admin.scenario.oidc_consents.description,"Переглядайте та відкликайте додатки, схвалені особою."
+demo.admin.scenario.oidc_consents.title,Згоди додатків
+demo.admin.scenario.organization_detail.description,"Переглядайте налаштування організації, життєвий цикл та поточні членства."
+demo.admin.scenario.organization_detail.title,Деталі організації
+demo.admin.scenario.organizations.description,"Переглядайте, шукайте та створюйте організації в поточному реалмі."
+demo.admin.scenario.organizations.title,Каталог організацій
+demo.admin.scenario.project_detail.description,Переглядайте та редагуйте налаштування і життєвий цикл проєкту.
+demo.admin.scenario.project_detail.title,Налаштування проєкту
+demo.admin.scenario.projects.description,"Переглядайте, шукайте та створюйте проєкти в поточному реалмі."
+demo.admin.scenario.projects.title,Каталог проєктів
+demo.admin.scenario.protocol_documents.description,Переглядайте доступні лише для читання кінцеві точки виявлення та JWKS.
+demo.admin.scenario.protocol_documents.title,Документи протоколу
+demo.admin.scenario.realm_overview.description,"Переглядайте ідентичність реалму, домени, стан життєвого циклу та поточний сеанс."
+demo.admin.scenario.realm_overview.title,Огляд реалму
+demo.admin.scenario.realm_settings.description,"Керуйте назвою поточного реалму, доменами, станом та життєвим циклом."
+demo.admin.scenario.realm_settings.title,Загальні налаштування
+demo.admin.scenario.roles_grants.description,Налаштуйте проєктні ролі та гранти доступу організації.
+demo.admin.scenario.roles_grants.title,Ролі та гранти
+demo.admin.scenario.sessions.description,Переглядайте сеанси реалму з контекстом суб'єкта та пристрою.
+demo.admin.scenario.sessions.title,Сеанси
+demo.admin.scenario.signing_keys.description,Переглядайте метадані ключів та виконуйте захищену ротацію.
+demo.admin.scenario.signing_keys.title,Ключі підпису
+demo.admin.scenario.user_authentication.description,"Переглядайте безпечні метадані факторів, ключів доступу та відновлення в деталях користувача."
+demo.admin.scenario.user_authentication.title,Методи автентифікації
+demo.admin.scenario.user_detail.description,"Переглядайте профіль, життєвий цикл, сеанси та безпечні метадані автентифікації."
+demo.admin.scenario.user_detail.title,Деталі користувача
+demo.admin.scenario.user_sessions.description,Перевіряйте та відкликайте активні сеанси браузера користувача.
+demo.admin.scenario.user_sessions.title,Сеанси користувача
+demo.admin.scenario.users.description,Переглядайте та шукайте користувачів-людей у поточному реалмі.
+demo.admin.scenario.users.title,Каталог користувачів
+demo.directory.available,Доступно
+demo.directory.availableDemos,доступних демо
+demo.directory.back,Назад до каталогу
+demo.directory.fixtureStates,Стани тестових даних
+demo.directory.openDemo,Відкрити демо
+demo.directory.planned,Заплановано
+demo.directory.plannedDestinations,запланованих призначень
+demo.directory.previewFoundation,Базовий попередній перегляд
+demo.fixture.accepted,прийнято
+demo.fixture.accountError,Не вдалося завантажити детерміновані тестові дані облікового запису.
+demo.fixture.active,активно
+demo.fixture.assuranceRequired,потрібне підтвердження
+demo.fixture.crossTenant,міжорганізаційний
+demo.fixture.declined,відхилено
+demo.fixture.empty,порожньо
+demo.fixture.ended,завершено
+demo.fixture.error,помилка
+demo.fixture.expired,минув термін
+demo.fixture.expiring,закінчується термін
+demo.fixture.loading,завантаження
+demo.fixture.nestedRejected,вкладена відмова
+demo.fixture.oneTime,одноразовий
+demo.fixture.permissionDenied,у доступі відмовлено
+demo.fixture.preview,Попередній перегляд даних без стану
+demo.fixture.redacted,приховано
+demo.fixture.replayed,відтворено повторно
+demo.fixture.state,Стан даних
+demo.fixture.success,успішно
+demo.hub.accountDescription,"Досліджуйте призначення самообслуговування для профілю, організації та безпеки."
+demo.hub.accountOpen,Відкрити обліковий запис
+demo.hub.adminDescription,Керуйте ресурсами ідентифікації та налаштуваннями організації.
+demo.hub.adminOpen,Відкрити адміністрування
+demo.hub.description,"Досліджуйте демо входу, облікового запису, адміністрування та транзакційних листів."
+demo.hub.loginDescription,Оцініть процес автентифікації для ваших користувачів.
+demo.hub.loginOpen,Відкрити вхід
+demo.login.description,"Досліджуйте детерміновані тестові дані входу, відновлення та взаємодії. Існуючі процеси залишаються інтерактивними, тоді як заплановані призначення демонструють контракти сценаріїв без стану."
+demo.login.eyebrow,Розміщена автентифікація
+demo.login.group.chooser.description,"Точки входу, визначені на основі виявленої політики входу та локально збережених облікових записів."
+demo.login.group.chooser.title,Почати вхід
+demo.login.group.chrome.description,Міжпроцесні резервні варіанти для кожного розміщеного екрана взаємодії.
+demo.login.group.chrome.title,Спільні стани
+demo.login.group.interaction.description,Результати взаємодії та вихід для розміщених запитів OIDC.
+demo.login.group.interaction.title,Взаємодія та вихід
+demo.login.group.mfa.description,"Перевірки другого фактора, підключення автентифікатора та коди відновлення."
+demo.login.group.mfa.title,Багатофакторна автентифікація
+demo.login.group.password_email.description,Автентифікація за паролем та кодом з листа з детермінованими локальними даними.
+demo.login.group.password_email.title,Пароль та код з листа
+demo.login.group.passwordless.description,"Ключі доступу та налаштовані провайдери Google, GitHub та Microsoft."
+demo.login.group.passwordless.title,Безпарольний та зовнішній вхід
+demo.login.group.recovery.description,Запросіть та завершіть відновлення пароля без розкриття даних облікового запису.
+demo.login.group.recovery.title,Відновлення
+demo.login.group.registration.description,Реєстрація та підтвердження поштою від сервера.
+demo.login.group.registration.title,Реєстрація та перевірка
+demo.login.scenario.chooser.description,Виберіть дозволений основний метод автентифікації.
+demo.login.scenario.chooser.title,Вибір способу входу
+demo.login.scenario.chooser_recent_accounts.description,"Продовжити з обліковим записом, збереженим на цьому пристрої."
+demo.login.scenario.chooser_recent_accounts.title,Нещодавні облікові записи
+demo.login.scenario.email_otp.description,"Запросіть одноразовий код, надісланий електронною поштою."
+demo.login.scenario.email_otp.title,Запросити код на пошту
+demo.login.scenario.email_otp_code.description,Введіть шестизначний код підтвердження з листа.
+demo.login.scenario.email_otp_code.title,Перевірити код з листа
+demo.login.scenario.idp.description,Продовжити через налаштованого зовнішнього провайдера ідентичності.
+demo.login.scenario.idp.title,Зовнішня ідентичність
+demo.login.scenario.idp_failure.description,Відновлення після помилки запуску зовнішнього провайдера.
+demo.login.scenario.idp_failure.title,Збій провайдера
+demo.login.scenario.loading.description,Показувати хід виконання під час виявлення реалму.
+demo.login.scenario.loading.title,Завантаження
+demo.login.scenario.logout.description,Підтвердьте вихід для поточного сеансу браузера.
+demo.login.scenario.logout.title,Вихід
+demo.login.scenario.logout_done.description,Підтвердьте завершений вихід та перевірений шлях повернення.
+demo.login.scenario.logout_done.title,Вихід виконано
+demo.login.scenario.mfa.description,Виберіть доступний другий фактор.
+demo.login.scenario.mfa.title,Виберіть фактор
+demo.login.scenario.mfa_email_otp.description,Перевірте другий фактор електронною поштою.
+demo.login.scenario.mfa_email_otp.title,Код з листа
+demo.login.scenario.mfa_passkey.description,Перевірте ключ доступу як другий фактор.
+demo.login.scenario.mfa_passkey.title,Фактор ключа доступу
+demo.login.scenario.mfa_recovery_code.description,"Використовуйте один код відновлення, коли інші фактори недоступні."
+demo.login.scenario.mfa_recovery_code.title,Код відновлення
+demo.login.scenario.mfa_totp.description,Перевірте тимчасовий код автентифікатора.
+demo.login.scenario.mfa_totp.title,Код автентифікатора
+demo.login.scenario.mfa_totp_enroll.description,Підключіть та підтвердьте новий автентифікатор.
+demo.login.scenario.mfa_totp_enroll.title,Підключити автентифікатор
+demo.login.scenario.passkey.description,"Автентифікуйтеся за допомогою ключа доступу, прив'язаного до пристрою."
+demo.login.scenario.passkey.title,Ключ доступу
+demo.login.scenario.passkey_unsupported.description,Поясніть несумісність браузера або пристрою.
+demo.login.scenario.passkey_unsupported.title,Ключ доступу недоступний
+demo.login.scenario.password.description,Увійдіть за допомогою адреси електронної пошти або імені користувача та пароля.
+demo.login.scenario.password.title,Пароль
+demo.login.scenario.password_change_required.description,Встановіть новий пароль перед продовженням.
+demo.login.scenario.password_change_required.title,Потрібна зміна пароля
+demo.login.scenario.password_error.description,Відобразіть безпечну відповідь про недійсні облікові дані.
+demo.login.scenario.password_error.title,Недійсні облікові дані
+demo.login.scenario.password_forgot.description,Запросіть інструкції щодо відновлення пароля.
+demo.login.scenario.password_forgot.title,Запросити відновлення
+demo.login.scenario.password_forgot_sent.description,Відобразіть підтвердження поштою без розкриття даних.
+demo.login.scenario.password_forgot_sent.title,Відновлення запрошено
+demo.login.scenario.password_reset.description,Виберіть новий пароль за посиланням для відновлення.
+demo.login.scenario.password_reset.title,Скинути пароль
+demo.login.scenario.password_reset_complete.description,Поверніться до входу після успішного скидання.
+demo.login.scenario.password_reset_complete.title,Скидання завершено
+demo.login.scenario.register.description,Створіть обліковий запис людини відповідно до активної політики входу.
+demo.login.scenario.register.title,Реєстрація
+demo.login.scenario.register_done.description,Відобразіть сповіщення про перевірку без розкриття даних.
+demo.login.scenario.register_done.title,Підтвердження надіслано
+demo.login.scenario.signed_in.description,Відобразіть підтвердження відновленої взаємодії.
+demo.login.scenario.signed_in.title,Взаємодія завершена
+demo.login.scenario.unsupported.description,Поясніть непідтримувану або прострочену взаємодію.
+demo.login.scenario.unsupported.title,Недоступний запит
+demo.login.scenario.verify_email.description,Підтвердьте адресу за посиланням від сервера.
+demo.login.scenario.verify_email.title,Підтвердження пошти
+demo.login.title,Демо входу
+demo.nav.account,Обліковий запис
+demo.nav.admin,Адміністрування
+demo.nav.compact,Компактний
+demo.nav.emails,Листи
+demo.nav.hub,Головна
+demo.nav.label,Демо
+demo.nav.login,Вхід
+demo.placeholder.emptyDescription,Це призначення готове до навмисного порожнього стану.
+demo.placeholder.emptyTitle,Немає записів тестових даних
+demo.placeholder.errorDescription,Детерміновану помилку можна відобразити тут без мережевого запиту.
+demo.placeholder.errorTitle,Помилка тестових даних
+demo.placeholder.loading,Завантаження тестових даних
+demo.placeholder.notFoundDescription,Виберіть підтримуване призначення з каталогу.
+demo.placeholder.notFoundTitle,Демо-призначення не знайдено
+demo.placeholder.readyDescription,"Маршрут, підтримувані стани та межі демо-адаптера визначено. Сторінку функції навмисно не реалізовано на цьому етапі."
+demo.placeholder.readyTitle,Контракт тестових даних готовий
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
 email.directory.open,Open preview
-email.directory.title,Email previews
-email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
-email.hub.open,Open email previews
+email.directory.title,Попередній перегляд листів
+email.hub.description,Переглядайте ізольовані HTML та текстові дані транзакційних повідомлень.
+email.hub.open,Відкрити попередній перегляд листів
 email.preview.back,Усі попередні перегляди електронних листів
 email.preview.html,Попередній перегляд HTML
 email.preview.impersonationEnded,Імперсонацію завершено
@@ -796,9 +1030,9 @@ login.register.userName,Ім’я користувача
 login.signedIn.description,Ви ввійшли в обліковий запис {organization}.
 login.signedIn.title,Вхід виконано
 login.status.loading,Підготовка до входу
-login.status.unavailableDescription,Не вдалося виконати цей запит на вхід. Поверніться до застосунку та спробуйте ще раз.
+login.status.unavailableDescription,Цей запит на вхід неможливо виконати. Поверніться до програми та спробуйте ще раз.
 login.status.unavailableTitle,Вхід недоступний
-login.totpEnroll.description,"Додайте цей ключ налаштування до застосунку-автентифікатора, а потім введіть згенерований ним код. Ключ буде показано лише зараз."
+login.totpEnroll.description,"Додайте цей ключ налаштування до програми автентифікації, а потім введіть створений код. Ключ відображається лише зараз."
 login.totpEnroll.start,Показати ключ налаштування
 login.totpEnroll.submit,Завершити налаштування
 login.totpEnroll.title,Налаштувати застосунок-автентифікатор
@@ -807,3 +1041,72 @@ login.verify.submit,Підтвердити адресу електронної �
 login.verify.title,Підтвердьте адресу електронної пошти
 login.verify.verifiedDescription,{email} підтверджено. Тепер можна ввійти.
 login.verify.verifiedTitle,Адресу електронної пошти підтверджено
+shell.guard.accessUnavailable,Доступ недоступний
+shell.guard.contextRequired,Потрібен контекст
+shell.guard.contextRequiredDetail,Виберіть потрібний realm або організацію перед продовженням.
+shell.guard.destinationUnavailable,Призначення недоступне
+shell.guard.destinationUnavailableDetail,Запитуване призначення не є частиною цієї програми.
+shell.guard.pageNotFound,Сторінку не знайдено
+shell.guard.signInRequired,Потрібен вхід
+shell.guard.signInRequiredDetail,"Увійдіть, щоб продовжити до цього призначення."
+shell.nav.acceptInvitation,Прийняти запрошення
+shell.nav.access,Доступ
+shell.nav.account,Обліковий запис
+shell.nav.administratorSignIn,Вхід адміністратора
+shell.nav.applicationConsent,Згода для програми
+shell.nav.applicationConsents,Згоди застосунків
+shell.nav.applications,Застосунки
+shell.nav.auditEvents,Події аудиту
+shell.nav.branding,Оформлення
+shell.nav.chooseDestination,Виберіть призначення
+shell.nav.credentialsTokens,Облікові дані та токени
+shell.nav.deleteAccount,Видалити обліковий запис
+shell.nav.directory,Каталог
+shell.nav.emailAddress,Адреса електронної пошти
+shell.nav.emailOtpSignIn,Вхід за кодом з листа
+shell.nav.externalIdentitySignIn,Вхід за зовнішньою ідентифікацією
+shell.nav.impersonation,Імперсонація
+shell.nav.invitations,Запрошення
+shell.nav.linkedIdentities,Пов'язані облікові записи
+shell.nav.loginPolicy,Вхід та ідентифікація
+shell.nav.loginPolicyProviders,Вхід та постачальники ідентифікації
+shell.nav.logout,Вийти
+shell.nav.machineCredentials,Облікові дані машини
+shell.nav.machineUsers,Машинні користувачі
+shell.nav.membershipsRoles,Учасники та ролі
+shell.nav.mfa,Багатофакторна автентифікація
+shell.nav.mfaSignIn,Багатофакторний вхід
+shell.nav.myOrganizations,Мої організації
+shell.nav.navigationTitle,Навігація {title}
+shell.nav.oidcClients,Клієнти OIDC
+shell.nav.openIdConnect,OpenID Connect
+shell.nav.operations,Операції
+shell.nav.organization,Організація
+shell.nav.organizations,Організації
+shell.nav.overview,Огляд
+shell.nav.passkeySignIn,Вхід за ключем доступу
+shell.nav.passkeys,Ключі доступу
+shell.nav.password,Пароль
+shell.nav.passwordRecovery,Відновлення пароля
+shell.nav.passwordSignIn,Вхід за паролем
+shell.nav.personalInformation,Особисті дані
+shell.nav.profile,Профіль
+shell.nav.projects,Проєкти
+shell.nav.protocolDocuments,Документи протоколу
+shell.nav.realm,Область
+shell.nav.realmSettings,Налаштування області
+shell.nav.recoveryCodes,Коди відновлення
+shell.nav.registration,Реєстрація
+shell.nav.rolesGrants,Ролі та дозволи
+shell.nav.security,Безпека
+shell.nav.sessions,Сесії
+shell.nav.sessionsDevices,Сеанси та пристрої
+shell.nav.signingKeys,Ключі підпису
+shell.nav.users,Користувачі
+shell.nav.verifyEmail,Підтвердити ел. пошту
+shell.state.errorDetail,"Не вдалося підготувати сторінку. Спробуйте ще раз, коли будете готові."
+shell.state.inaccessibleDetail,У вас немає доступу до цього призначення в поточному контексті.
+shell.state.loadingDetail,Підготовка цієї сторінки та її контексту безпеки.
+shell.state.nothingHere,Тут ще нічого немає
+shell.state.pageUnavailable,Ця сторінка недоступна
+shell.state.readyDetail,Ця сторінка готова до показу вмісту.

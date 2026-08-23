@@ -103,6 +103,7 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+admin.common.confirmTitle,Confirmar esta acción
 admin.common.next,Siguiente
 admin.common.pagination,Paginación
 admin.common.permission,No tienes permiso para ver estos datos de administración.
@@ -145,7 +146,7 @@ admin.impersonation.noOrganization,No organization
 admin.impersonation.organization,Organization
 admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
 admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.permissionDeniedTitle,Acceso no disponible
 admin.impersonation.reason,Reason
 admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
 admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
@@ -169,6 +170,8 @@ admin.machine.credentials.description,"Credenciales que un usuario de máquina p
 admin.machine.credentials.empty,Este usuario de máquina aún no tiene credenciales.
 admin.machine.credentials.expires,Caduca
 admin.machine.credentials.expiresHint,Deje esto vacío para emitir una credencial que no caduque.
+admin.machine.credentials.expiryInvalid,Introduzca una fecha de caducidad válida o deje el campo vacío para una credencial sin caducidad.
+admin.machine.credentials.expiryPast,Elija una fecha de caducidad futura.
 admin.machine.credentials.issue,Emitir credencial
 admin.machine.credentials.issueDescription,Emita un token de acceso personal o una clave de API. El valor se muestra una sola vez y no se puede recuperar.
 admin.machine.credentials.kind,Tipo de credencial
@@ -178,6 +181,7 @@ admin.machine.credentials.kindClientSecret,Secreto de cliente
 admin.machine.credentials.kindHint,Un token de acceso personal actúa directamente en nombre del usuario de máquina. Una clave de API está pensada para una única integración.
 admin.machine.credentials.kindToken,Token de acceso personal
 admin.machine.credentials.name,Nombre
+admin.machine.credentials.nameRequired,Introduzca un nombre para poder reconocer esta credencial más adelante.
 admin.machine.credentials.neverExpires,No caduca
 admin.machine.credentials.onceWarning,El valor emitido se muestra una sola vez. Guárdelo antes de cerrar este diálogo; no se podrá recuperar de nuevo.
 admin.machine.credentials.revoke,Revocar
@@ -229,6 +233,7 @@ admin.machine.users.description,"Identidades no humanas que se autentican con cr
 admin.machine.users.detailTitle,Detalle del usuario máquina
 admin.machine.users.displayName,Nombre visible
 admin.machine.users.empty,Todavía no existe ningún usuario de máquina en este realm.
+admin.machine.users.invalid,"Introduzca un nombre visible y un nombre de usuario, y utilice solo valores de ámbito válidos."
 admin.machine.users.lifecycleChanged,El estado del usuario de máquina fue cambiado.
 admin.machine.users.missingId,Debe seleccionarse un usuario máquina para este destino.
 admin.machine.users.noScopes,Sin ámbitos
@@ -240,7 +245,7 @@ admin.machine.users.userName,Nombre de usuario
 admin.machine.users.userNameHint,Se usa como ID de cliente al intercambiar credenciales de cliente.
 admin.navigation.description,Choose an administration resource
 admin.navigation.hide,Hide sidebar
-admin.navigation.label,Administration
+admin.navigation.label,Administración
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,Administrar la configuración de OpenID Connect requiere un inicio de sesión más fuerte y reciente. Vuelva a iniciar sesión para continuar.
 admin.oidc.assuranceRequiredTitle,Se requiere un inicio de sesión más fuerte
@@ -254,6 +259,7 @@ admin.oidc.clients.description,Aplicaciones que autentican a las personas median
 admin.oidc.clients.detailTitle,Detalle del cliente OIDC
 admin.oidc.clients.empty,Todavía no hay clientes de OpenID Connect registrados en este dominio.
 admin.oidc.clients.exactMatchHint,"Una URI por línea. Cada redirección se compara de forma exacta, por lo que se rechazan los comodines y las diferencias finales."
+admin.oidc.clients.invalid,"Introduzca un nombre de cliente, al menos un URI de redirección exacto y al menos un ámbito."
 admin.oidc.clients.lifecycleChanged,Se cambió el estado del cliente.
 admin.oidc.clients.missingId,Debe seleccionarse un cliente OIDC para este destino.
 admin.oidc.clients.name,Nombre del cliente
@@ -273,6 +279,7 @@ admin.oidc.clients.type,Tipo de cliente
 admin.oidc.clients.typeConfidential,Confidencial
 admin.oidc.clients.typeHint,"Un cliente confidencial guarda un secreto en un servidor. Un cliente público, como una aplicación móvil o de página única, no puede hacerlo."
 admin.oidc.clients.typePublic,Público
+admin.oidc.confirmTitle,Confirmar este cambio
 admin.oidc.consents.client,Aplicación
 admin.oidc.consents.description,Aplicaciones que una persona ha aprobado. Al revocar un consentimiento se le pide que apruebe la aplicación de nuevo.
 admin.oidc.consents.empty,Esta persona todavía no ha aprobado ninguna aplicación.
@@ -375,6 +382,7 @@ admin.organizations.domains.discoveryFound,{domain} se resuelve en {organization
 admin.organizations.domains.discoveryMissing,{domain} no se resuelve en una organización.
 admin.organizations.domains.domain,Dominio
 admin.organizations.domains.empty,Esta organización todavía no ha reclamado un dominio.
+admin.organizations.domains.invalid,Introduzca un nombre de dominio válido.
 admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Dominio principal
 admin.organizations.domains.remove,Eliminar dominio
@@ -389,11 +397,13 @@ admin.organizations.domains.verifyDone,El dominio se ha verificado.
 admin.organizations.invitations.create,Invitar a una persona
 admin.organizations.invitations.description,Invita a personas por correo y haz seguimiento de las invitaciones pendientes.
 admin.organizations.invitations.email,Email address
+admin.organizations.invitations.emailInvalid,Introduzca una dirección de correo electrónico válida.
 admin.organizations.invitations.empty,No se ha enviado ninguna invitación para esta organización.
 admin.organizations.invitations.expires,Caduca
 admin.organizations.invitations.revoke,Revocar invitación
 admin.organizations.invitations.revokeConfirm,¿Revocar la invitación de {email}? El enlace de invitación deja de funcionar inmediatamente.
 admin.organizations.invitations.revoked,La invitación se ha revocado.
+admin.organizations.invitations.rolesInvalid,Elija entre uno y cuatro roles.
 admin.organizations.invitations.sent,La invitación se ha creado.
 admin.organizations.invitations.title,Invitaciones
 admin.organizations.invitations.tokenDismiss,He guardado este enlace
@@ -410,12 +420,14 @@ admin.organizations.list.create,Crear organización
 admin.organizations.list.description,"Las organizaciones agrupan las personas, los dominios y la personalización de este realm."
 admin.organizations.list.empty,Todavía no existe ninguna organización en este realm.
 admin.organizations.list.name,Nombre de la organización
+admin.organizations.list.nameRequired,Introduzca un nombre de organización.
 admin.organizations.list.search,Buscar organizaciones
 admin.organizations.list.title,Organizaciones
 admin.organizations.memberships.add,Añadir miembro
 admin.organizations.memberships.added,El miembro se ha añadido.
 admin.organizations.memberships.description,Las personas de esta organización y los roles fijos que se les han asignado.
 admin.organizations.memberships.empty,Esta organización todavía no tiene miembros.
+admin.organizations.memberships.invalid,Introduzca un ID de usuario y elija entre uno y cuatro roles.
 admin.organizations.memberships.remove,Eliminar miembro
 admin.organizations.memberships.removeConfirm,¿Quitar a {userId} de esta organización? Su acceso a la organización termina inmediatamente.
 admin.organizations.memberships.removed,El miembro se ha eliminado.
@@ -436,7 +448,7 @@ admin.organizations.policy.externalIdentity,Proveedores de identidad externos
 admin.organizations.policy.inherited,Heredado del realm
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Contraseña
-admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.passwordRecovery,Recuperación de contraseña
 admin.organizations.policy.registration,Registro de autoservicio
 admin.organizations.policy.saved,La política de inicio de sesión se ha guardado.
 admin.organizations.policy.title,Política de inicio de sesión
@@ -451,6 +463,7 @@ admin.organizations.providers.disableConfirm,¿Desactivar {displayName}? Las per
 admin.organizations.providers.disabled,El proveedor se ha deshabilitado.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Todavía no hay ningún proveedor de identidad externo configurado.
+admin.organizations.providers.invalid,"Introduzca un nombre visible, un ID de cliente, un secreto de cliente y un URI de redirección absoluto."
 admin.organizations.providers.redirectUri,URI de redirección
 admin.organizations.providers.rotateSecret,Sustituir secreto de cliente
 admin.organizations.providers.secretRotated,El secreto de cliente se ha sustituido.
@@ -473,6 +486,7 @@ admin.projects.access.title,Acceso efectivo
 admin.projects.applications.create,Añadir aplicación
 admin.projects.applications.description,Aplicaciones que se autentican contra este proyecto.
 admin.projects.applications.empty,Este proyecto todavía no tiene aplicaciones.
+admin.projects.applications.invalid,Introduzca un nombre de aplicación y elija un tipo.
 admin.projects.applications.name,Nombre de la aplicación
 admin.projects.applications.removeConfirm,¿Eliminar esta aplicación? No se puede deshacer.
 admin.projects.applications.title,Aplicaciones
@@ -501,6 +515,7 @@ admin.projects.lifecycle.removeConfirm,¿Eliminar este proyecto?
 admin.projects.list.create,Crear proyecto
 admin.projects.list.description,"Los proyectos agrupan las aplicaciones, los roles y las concesiones de una organización."
 admin.projects.list.empty,Todavía no existe ningún proyecto en este realm.
+admin.projects.list.invalid,Introduzca un nombre de proyecto y elija una organización.
 admin.projects.list.name,Nombre del proyecto
 admin.projects.list.search,Buscar proyectos
 admin.projects.list.title,Proyectos
@@ -576,6 +591,7 @@ admin.users.create,Crear usuario
 admin.users.createDescription,Añade un usuario humano al realm actual.
 admin.users.createSubmit,Crear
 admin.users.created,{userName} se ha creado.
+admin.users.createdAt,Creado
 admin.users.dangerZone,Zona de peligro
 admin.users.delete,Eliminar usuario
 admin.users.deleteConfirm,¿Eliminar permanentemente a {userName}?
@@ -623,7 +639,7 @@ admin.users.sessions.title,Sessions and devices
 admin.users.state,Estado
 admin.users.title,Usuarios
 admin.users.unverified,No verificado
-admin.users.updated,Última actualización {date}
+admin.users.updated,Última actualización
 admin.users.userName,Username
 admin.users.verification,Verificación
 admin.users.verificationChanged,El estado de verificación ahora es {state}.
@@ -631,12 +647,16 @@ admin.users.verificationDescription,Controla si la dirección de correo de este 
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
-app.tagline,Secure identity services
+app.tagline,Servicios de identidad seguros
 common.back,Atrás
 common.cancel,Cancelar
 common.close,Cerrar
 common.continue,Continuar
 common.decline,Decline
+common.disable,Desactivar
+common.disabled,Desactivado
+common.enable,Activar
+common.enabled,Activado
 common.error,Algo salió mal.
 common.language,Idioma
 common.loading,Cargando
@@ -646,45 +666,259 @@ common.save,Guardar
 common.signIn,Iniciar sesión
 common.signInWithProvider,Iniciar sesión con {provider}
 common.signOut,Cerrar sesión
-common.theme.dark,dark
-common.theme.light,light
-common.theme.system,system
+common.theme.dark,Oscuro
+common.theme.light,Claro
+common.theme.system,Sistema
 common.urlPlaceholder,https://
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.account.eyebrow,Self-service identity
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.admin.directoryTitle,Administration directory
-demo.admin.eyebrow,Realm administration
-demo.admin.realmFixtureName,Northwind customer identity
+demo.account.description,"Explore las experiencias de administración de perfiles, organizaciones, seguridad y acceso a aplicaciones compatibles con Authworks sin red. Cada destino cuenta con un contrato explícito de estado de fixture."
+demo.account.eyebrow,Identidad de autoservicio
+demo.account.group.access.description,Aplicaciones y permisos otorgados por esta cuenta.
+demo.account.group.access.title,Acceso
+demo.account.group.identity.description,Los datos de perfil e inicio de sesión que los usuarios administran por sí mismos.
+demo.account.group.identity.title,Información personal
+demo.account.group.organizations.description,"Membresía, contexto de la organización e invitaciones."
+demo.account.group.organizations.title,Organizaciones
+demo.account.group.security.description,"Sesiones, factores de autenticación e identidades conectadas."
+demo.account.group.security.title,Seguridad
+demo.account.scenario.consents.description,Revise y revoque los permisos otorgados previamente a aplicaciones.
+demo.account.scenario.consents.title,Consentimientos de aplicaciones
+demo.account.scenario.delete.description,Revise el impacto y confirme la eliminación permanente de la cuenta.
+demo.account.scenario.delete.title,Eliminar cuenta
+demo.account.scenario.email.description,Revise la dirección verificada utilizada para el inicio de sesión y la comunicación de la cuenta.
+demo.account.scenario.email.title,Dirección de correo electrónico
+demo.account.scenario.factors.description,"Administre factores de autenticador, correo electrónico y clave de paso."
+demo.account.scenario.factors.title,Autenticación multifactor
+demo.account.scenario.identities.description,"Revise y desvincule cuentas de Google, GitHub y Microsoft."
+demo.account.scenario.identities.title,Identidades vinculadas
+demo.account.scenario.invitation.description,Inspeccione una invitación antes de unirse a una organización.
+demo.account.scenario.invitation.title,Aceptar invitación
+demo.account.scenario.invitations.description,Revise las invitaciones dirigidas a la cuenta que ha iniciado sesión.
+demo.account.scenario.invitations.title,Mis invitaciones
+demo.account.scenario.organizations.description,Vea membresías y cambie la organización activa.
+demo.account.scenario.organizations.title,Mis organizaciones
+demo.account.scenario.passkeys.description,"Registre, nombre y elimine credenciales sin contraseña."
+demo.account.scenario.passkeys.title,Claves de paso
+demo.account.scenario.password.description,Cambie la contraseña actual y revise su estado de seguridad.
+demo.account.scenario.password.title,Contraseña
+demo.account.scenario.profile.description,"Revise y actualice nombres, nombre de usuario e idioma preferido."
+demo.account.scenario.profile.title,Perfil
+demo.account.scenario.recovery_codes.description,Genere códigos de reemplazo y muéstrelos una sola vez.
+demo.account.scenario.recovery_codes.title,Códigos de recuperación
+demo.account.scenario.sessions.description,Revise sesiones activas y revoque dispositivos que ya no use.
+demo.account.scenario.sessions.title,Sesiones y dispositivos
+demo.account.title,Demostración de cuenta
+demo.admin.description,"Navegue por el realm actual utilizando una arquitectura de información organizada en torno a personas, organizaciones, aplicaciones, credenciales y actividades de auditoría. Las demostraciones disponibles y los destinos planificados sin estado están claramente separados."
+demo.admin.directoryTitle,Directorio de administración
+demo.admin.eyebrow,Administración del realm
+demo.admin.group.authorization.description,"Aplicaciones, roles de proyecto, concesiones y acceso evaluado."
+demo.admin.group.authorization.title,Proyectos y autorización
+demo.admin.group.machine_users.description,Identidades no humanas y sus credenciales de solo escritura.
+demo.admin.group.machine_users.title,Usuarios de máquina
+demo.admin.group.oidc.description,"Clientes, configuración exacta de redirección, consentimiento, ámbitos y claves de firma."
+demo.admin.group.oidc.title,OpenID Connect
+demo.admin.group.operations.description,Sesiones de realm y actividad de seguridad inmutable.
+demo.admin.group.operations.title,Operaciones
+demo.admin.group.organizations.description,"Configuración de la organización, personas, invitaciones y dominios verificados."
+demo.admin.group.organizations.title,Organizaciones
+demo.admin.group.realm.description,"Configuración de identidad, ciclo de vida e inicio de sesión a nivel de realm."
+demo.admin.group.realm.title,Realm
+demo.admin.group.users.description,"Identidades humanas, credenciales, sesiones y acciones de soporte protegidas."
+demo.admin.group.users.title,Usuarios
+demo.admin.realmFixtureName,Identidad de cliente Northwind
+demo.admin.scenario.admin_sign_in.description,Canjee una credencial de inicio por una breve sesión de navegador de administrador.
+demo.admin.scenario.admin_sign_in.title,Inicio de sesión de administrador
+demo.admin.scenario.applications.description,Administre las aplicaciones del proyecto y su ciclo de vida.
+demo.admin.scenario.applications.title,Aplicaciones
+demo.admin.scenario.audit_events.description,Explore el flujo de eventos de seguridad respaldado por fixtures.
+demo.admin.scenario.audit_events.title,Eventos de auditoría
+demo.admin.scenario.branding.description,"Configure colores, logotipos y enlaces legales adaptados a la organización."
+demo.admin.scenario.branding.title,Marca
+demo.admin.scenario.domains.description,Verifique dominios y controle la detección de organizaciones.
+demo.admin.scenario.domains.title,Dominios y detección
+demo.admin.scenario.effective_access.description,"Inspeccione roles, permisos y comprobaciones de acceso efectivos de solo lectura."
+demo.admin.scenario.effective_access.title,Acceso efectivo
+demo.admin.scenario.impersonation.description,Inicie una sesión de soporte motivada y con límite de tiempo cuando esté permitido.
+demo.admin.scenario.impersonation.title,Suplantación
+demo.admin.scenario.invitations.description,Invite a personas y realice un seguimiento de las invitaciones pendientes o caducadas.
+demo.admin.scenario.invitations.title,Invitaciones
+demo.admin.scenario.login_policy.description,"Establezca la directiva de inicio de sesión y configure Google, GitHub o Microsoft."
+demo.admin.scenario.login_policy.title,Inicio de sesión y proveedores de identidad
+demo.admin.scenario.machine_credentials.description,"Emita, rote y revoque credenciales de cliente, PAT y claves de API."
+demo.admin.scenario.machine_credentials.title,Credenciales y tokens
+demo.admin.scenario.machine_user_detail.description,"Revise ámbitos y ciclo de vida, rote el secreto de cliente y administre credenciales."
+demo.admin.scenario.machine_user_detail.title,Detalle del usuario de máquina
+demo.admin.scenario.machine_users.description,Cree y administre identidades de servicio y su ciclo de vida.
+demo.admin.scenario.machine_users.title,Directorio de usuarios de máquina
+demo.admin.scenario.memberships.description,Asigne roles fijos de la organización a los miembros.
+demo.admin.scenario.memberships.title,Membresías y roles
+demo.admin.scenario.oidc_client_detail.description,"Edite redirecciones exactas y ámbitos, y rote o revoque el secreto de cliente."
+demo.admin.scenario.oidc_client_detail.title,Configuración del cliente OIDC
+demo.admin.scenario.oidc_clients.description,"Administre clientes, redirecciones, ámbitos, confianza y secretos de un solo uso."
+demo.admin.scenario.oidc_clients.title,Clientes OIDC
+demo.admin.scenario.oidc_consents.description,Revise y revoque las aplicaciones que una persona ha aprobado.
+demo.admin.scenario.oidc_consents.title,Consentimientos de aplicaciones
+demo.admin.scenario.organization_detail.description,"Revise la configuración de la organización, el ciclo de vida y las membresías actuales."
+demo.admin.scenario.organization_detail.title,Detalle de la organización
+demo.admin.scenario.organizations.description,"Explore, busque y cree organizaciones en el realm actual."
+demo.admin.scenario.organizations.title,Directorio de organizaciones
+demo.admin.scenario.project_detail.description,Revise y edite la configuración y el ciclo de vida de un proyecto.
+demo.admin.scenario.project_detail.title,Configuración del proyecto
+demo.admin.scenario.projects.description,"Explore, busque y cree proyectos en el realm actual."
+demo.admin.scenario.projects.title,Directorio de proyectos
+demo.admin.scenario.protocol_documents.description,Inspeccione los puntos de conexión de detección y JWKS de solo lectura.
+demo.admin.scenario.protocol_documents.title,Documentos de protocolo
+demo.admin.scenario.realm_overview.description,"Revise la identidad del realm, dominios, estado del ciclo de vida y la sesión actual."
+demo.admin.scenario.realm_overview.title,Resumen del realm
+demo.admin.scenario.realm_settings.description,"Administre el nombre del realm actual, dominios, estado y ciclo de vida."
+demo.admin.scenario.realm_settings.title,Configuración general
+demo.admin.scenario.roles_grants.description,Configure roles de proyecto y concesiones de acceso a la organización.
+demo.admin.scenario.roles_grants.title,Roles y concesiones
+demo.admin.scenario.sessions.description,Revise sesiones de realm con contexto de sujeto y dispositivo.
+demo.admin.scenario.sessions.title,Sesiones
+demo.admin.scenario.signing_keys.description,Revise metadatos de clave y realice una rotación protegida.
+demo.admin.scenario.signing_keys.title,Claves de firma
+demo.admin.scenario.user_authentication.description,"Revise metadatos seguros de factores, claves de paso y recuperación en el detalle del usuario."
+demo.admin.scenario.user_authentication.title,Métodos de autenticación
+demo.admin.scenario.user_detail.description,"Revise el perfil, ciclo de vida, sesiones y metadatos de autenticación seguros."
+demo.admin.scenario.user_detail.title,Detalle de usuario
+demo.admin.scenario.user_sessions.description,Inspeccione y revoque las sesiones de navegador activas de un usuario.
+demo.admin.scenario.user_sessions.title,Sesiones de usuario
+demo.admin.scenario.users.description,Explore y busque usuarios humanos en el realm actual.
+demo.admin.scenario.users.title,Directorio de usuarios
+demo.directory.available,Disponible
+demo.directory.availableDemos,demostraciones disponibles
+demo.directory.back,Volver al directorio
+demo.directory.fixtureStates,Estados de fixture
+demo.directory.openDemo,Abrir demo
+demo.directory.planned,Planificado
+demo.directory.plannedDestinations,destinos planificados
+demo.directory.previewFoundation,Vista previa básica
+demo.fixture.accepted,aceptado
+demo.fixture.accountError,No se pudieron cargar los datos de prueba deterministas de la cuenta.
+demo.fixture.active,activo
+demo.fixture.assuranceRequired,garantía requerida
+demo.fixture.crossTenant,entre inquilinos
+demo.fixture.declined,rechazado
+demo.fixture.empty,vacío
+demo.fixture.ended,finalizado
 demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.description,"Explore the login, account, administration, and transactional email demos."
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.nav.account,Account
-demo.nav.admin,Admin
-demo.nav.compact,Compact
-demo.nav.emails,Emails
-demo.nav.hub,Hub
+demo.fixture.expired,caducado
+demo.fixture.expiring,a punto de caducar
+demo.fixture.loading,cargando
+demo.fixture.nestedRejected,anidado rechazado
+demo.fixture.oneTime,de un solo uso
+demo.fixture.permissionDenied,permiso denegado
+demo.fixture.preview,Vista previa de fixture sin estado
+demo.fixture.redacted,redactado
+demo.fixture.replayed,reproducido
+demo.fixture.state,Estado de la fixture
+demo.fixture.success,correcto
+demo.hub.accountDescription,"Explore destinos de perfil de autoservicio, organización y seguridad."
+demo.hub.accountOpen,Abrir cuenta
+demo.hub.adminDescription,Administre recursos de identidad y configuraciones de organización.
+demo.hub.adminOpen,Abrir administración
+demo.hub.description,"Explore las demostraciones de inicio de sesión, cuenta, administración y correos electrónicos transaccionales."
+demo.hub.loginDescription,Explore la experiencia de autenticación para sus usuarios.
+demo.hub.loginOpen,Abrir inicio de sesión
+demo.login.description,"Explore fixtures deterministas de inicio de sesión, recuperación e interacción. Los flujos existentes siguen siendo interactivos mientras que los destinos planificados exponen sus contratos de escenarios sin estado."
+demo.login.eyebrow,Autenticación alojada
+demo.login.group.chooser.description,Puntos de entrada derivados de la directiva de inicio de sesión detectada y cuentas recordadas localmente.
+demo.login.group.chooser.title,Iniciar inicio de sesión
+demo.login.group.chrome.description,Alternativas entre flujos utilizadas por cada pantalla de interacción alojada.
+demo.login.group.chrome.title,Estados compartidos
+demo.login.group.interaction.description,Resultados de interacción y cierre de sesión para solicitudes OIDC alojadas.
+demo.login.group.interaction.title,Interacción y cierre de sesión
+demo.login.group.mfa.description,"Desafíos de segundo factor, registro de autenticador y códigos de recuperación."
+demo.login.group.mfa.title,Autenticación multifactor
+demo.login.group.password_email.description,Autenticación por contraseña y código de correo con fixtures locales deterministas.
+demo.login.group.password_email.title,Contraseña y código de correo
+demo.login.group.passwordless.description,"Claves de paso y proveedores configurados de Google, GitHub y Microsoft."
+demo.login.group.passwordless.title,Sin contraseña y externo
+demo.login.group.recovery.description,Solicite y complete la recuperación de contraseña sin revelación de la cuenta.
+demo.login.group.recovery.title,Recuperación
+demo.login.group.registration.description,Registro y confirmación de correo electrónico emitida por el servidor.
+demo.login.group.registration.title,Registro y verificación
+demo.login.scenario.chooser.description,Elija un método de autenticación principal permitido.
+demo.login.scenario.chooser.title,Selector de método
+demo.login.scenario.chooser_recent_accounts.description,Continúe con una cuenta recordada en este dispositivo.
+demo.login.scenario.chooser_recent_accounts.title,Cuentas recientes
+demo.login.scenario.email_otp.description,Solicite un código de un solo uso enviado por correo electrónico.
+demo.login.scenario.email_otp.title,Solicitar código de correo
+demo.login.scenario.email_otp_code.description,Introduzca el código de verificación de correo electrónico de seis dígitos.
+demo.login.scenario.email_otp_code.title,Verificar código de correo
+demo.login.scenario.idp.description,Continúe a través de un proveedor de identidad externo configurado.
+demo.login.scenario.idp.title,Identidad externa
+demo.login.scenario.idp_failure.description,Recupérese de un error de inicio del proveedor externo.
+demo.login.scenario.idp_failure.title,Fallo del proveedor
+demo.login.scenario.loading.description,Muestre el progreso mientras se resuelve la detección del realm.
+demo.login.scenario.loading.title,Cargando
+demo.login.scenario.logout.description,Confirme el cierre de sesión para la sesión actual del navegador.
+demo.login.scenario.logout.title,Cerrar sesión
+demo.login.scenario.logout_done.description,Confirme un cierre de sesión completado y una ruta de retorno validada.
+demo.login.scenario.logout_done.title,Sesión cerrada
+demo.login.scenario.mfa.description,Elija un segundo factor disponible.
+demo.login.scenario.mfa.title,Elija un factor
+demo.login.scenario.mfa_email_otp.description,Verifique un segundo factor por correo electrónico.
+demo.login.scenario.mfa_email_otp.title,Código de correo
+demo.login.scenario.mfa_passkey.description,Verifique una clave de paso como segundo factor.
+demo.login.scenario.mfa_passkey.title,Factor de clave de paso
+demo.login.scenario.mfa_recovery_code.description,Use un solo código de recuperación cuando otros factores no estén disponibles.
+demo.login.scenario.mfa_recovery_code.title,Código de recuperación
+demo.login.scenario.mfa_totp.description,Verifique un código de autenticador basado en el tiempo.
+demo.login.scenario.mfa_totp.title,Código de autenticador
+demo.login.scenario.mfa_totp_enroll.description,Conecte y confirme un nuevo autenticador.
+demo.login.scenario.mfa_totp_enroll.title,Registrar autenticador
+demo.login.scenario.passkey.description,Autentíquese con una clave de paso vinculada al dispositivo.
+demo.login.scenario.passkey.title,Clave de paso
+demo.login.scenario.passkey_unsupported.description,Explique la incompatibilidad del navegador o dispositivo.
+demo.login.scenario.passkey_unsupported.title,Clave de paso no disponible
+demo.login.scenario.password.description,Inicie sesión con una dirección de correo electrónico o nombre de usuario y contraseña.
+demo.login.scenario.password.title,Contraseña
+demo.login.scenario.password_change_required.description,Establezca una nueva contraseña antes de continuar.
+demo.login.scenario.password_change_required.title,Cambio de contraseña requerido
+demo.login.scenario.password_error.description,Muestre una respuesta segura de credenciales no válidas.
+demo.login.scenario.password_error.title,Credenciales no válidas
+demo.login.scenario.password_forgot.description,Solicite instrucciones de recuperación de contraseña.
+demo.login.scenario.password_forgot.title,Solicitar recuperación
+demo.login.scenario.password_forgot_sent.description,Muestre la confirmación de correo electrónico sin revelación de datos.
+demo.login.scenario.password_forgot_sent.title,Recuperación solicitada
+demo.login.scenario.password_reset.description,Elija una nueva contraseña desde un enlace de recuperación.
+demo.login.scenario.password_reset.title,Restablecer contraseña
+demo.login.scenario.password_reset_complete.description,Vuelva al inicio de sesión tras un restablecimiento correcto.
+demo.login.scenario.password_reset_complete.title,Restablecimiento completado
+demo.login.scenario.register.description,Cree una cuenta humana bajo la directiva de inicio de sesión activa.
+demo.login.scenario.register.title,Registro
+demo.login.scenario.register_done.description,Muestre el aviso de verificación sin revelación de datos.
+demo.login.scenario.register_done.title,Confirmación enviada
+demo.login.scenario.signed_in.description,Muestre la confirmación de interacción reanudada.
+demo.login.scenario.signed_in.title,Interacción completada
+demo.login.scenario.unsupported.description,Explique una interacción no compatible o caducada.
+demo.login.scenario.unsupported.title,Solicitud no disponible
+demo.login.scenario.verify_email.description,Confirme una dirección desde un enlace emitido por el servidor.
+demo.login.scenario.verify_email.title,Verificación de correo electrónico
+demo.login.title,Demostración de inicio de sesión
+demo.nav.account,Cuenta
+demo.nav.admin,Administración
+demo.nav.compact,Compacto
+demo.nav.emails,Correos
+demo.nav.hub,Inicio
 demo.nav.label,Demo
-demo.nav.login,Login
+demo.nav.login,Iniciar sesión
+demo.placeholder.emptyDescription,Este destino está listo para un estado vacío intencional.
+demo.placeholder.emptyTitle,Sin registros de fixture
+demo.placeholder.errorDescription,Se puede presentar aquí un error determinista sin una solicitud de red.
+demo.placeholder.errorTitle,Error de fixture
+demo.placeholder.loading,Cargando fixture
+demo.placeholder.notFoundDescription,Elija un destino compatible del directorio.
+demo.placeholder.notFoundTitle,Destino de demostración no encontrado
+demo.placeholder.readyDescription,"La ruta, los estados admitidos y el límite del adaptador de demostración están definidos. La página de funciones no está implementada intencionalmente en este incremento."
+demo.placeholder.readyTitle,Contrato de fixture listo
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
 email.directory.open,Open preview
-email.directory.title,Email previews
-email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
-email.hub.open,Open email previews
+email.directory.title,Vistas previas de correo
+email.hub.description,Revise fixtures aisladas de mensajes transaccionales en HTML y texto plano.
+email.hub.open,Abrir vistas previas de correo
 email.preview.back,Todas las vistas previas de correo electrónico
 email.preview.html,Vista previa de HTML
 email.preview.impersonationEnded,Impersonación finalizada
@@ -796,9 +1030,9 @@ login.register.userName,Nombre de usuario
 login.signedIn.description,Ha iniciado sesión en {organization}.
 login.signedIn.title,Sesión iniciada
 login.status.loading,Preparando el inicio de sesión
-login.status.unavailableDescription,No se puede completar esta solicitud de inicio de sesión. Vuelva a la aplicación e inténtelo de nuevo.
+login.status.unavailableDescription,Esta solicitud de inicio de sesión no se puede completar. Vuelva a la aplicación e inténtelo de nuevo.
 login.status.unavailableTitle,Inicio de sesión no disponible
-login.totpEnroll.description,Añada esta clave de configuración a su aplicación de autenticación y luego introduzca el código que genera. La clave solo se muestra ahora.
+login.totpEnroll.description,Agregue esta clave de configuración a su aplicación de autenticación y luego ingrese el código generado. La clave solo se muestra ahora.
 login.totpEnroll.start,Mostrar clave de configuración
 login.totpEnroll.submit,Finalizar configuración
 login.totpEnroll.title,Configurar una aplicación de autenticación
@@ -807,3 +1041,72 @@ login.verify.submit,Confirmar dirección de correo
 login.verify.title,Verificar su dirección de correo
 login.verify.verifiedDescription,{email} está confirmada. Ya puede iniciar sesión.
 login.verify.verifiedTitle,Dirección de correo confirmada
+shell.guard.accessUnavailable,Acceso no disponible
+shell.guard.contextRequired,Contexto requerido
+shell.guard.contextRequiredDetail,Elija el realm o la organización requerida antes de continuar.
+shell.guard.destinationUnavailable,Destino no disponible
+shell.guard.destinationUnavailableDetail,El destino solicitado no forma parte de esta aplicación.
+shell.guard.pageNotFound,Página no encontrada
+shell.guard.signInRequired,Inicio de sesión requerido
+shell.guard.signInRequiredDetail,Inicie sesión para continuar a este destino.
+shell.nav.acceptInvitation,Aceptar invitación
+shell.nav.access,Acceso
+shell.nav.account,Cuenta
+shell.nav.administratorSignIn,Inicio de sesión de administrador
+shell.nav.applicationConsent,Consentimiento de aplicación
+shell.nav.applicationConsents,Consentimientos de aplicaciones
+shell.nav.applications,Aplicaciones
+shell.nav.auditEvents,Eventos de auditoría
+shell.nav.branding,Personalización
+shell.nav.chooseDestination,Elegir un destino
+shell.nav.credentialsTokens,Credenciales y tokens
+shell.nav.deleteAccount,Eliminar cuenta
+shell.nav.directory,Directorio
+shell.nav.emailAddress,Dirección de correo
+shell.nav.emailOtpSignIn,Inicio de sesión con código de correo
+shell.nav.externalIdentitySignIn,Inicio de sesión con identidad externa
+shell.nav.impersonation,Suplantación de identidad
+shell.nav.invitations,Invitaciones
+shell.nav.linkedIdentities,Identidades vinculadas
+shell.nav.loginPolicy,Inicio de sesión e identidad
+shell.nav.loginPolicyProviders,Inicio de sesión y proveedores de identidad
+shell.nav.logout,Cerrar sesión
+shell.nav.machineCredentials,Credenciales de máquina
+shell.nav.machineUsers,Usuarios de máquina
+shell.nav.membershipsRoles,Miembros y roles
+shell.nav.mfa,Autenticación multifactor
+shell.nav.mfaSignIn,Inicio de sesión multifactor
+shell.nav.myOrganizations,Mis organizaciones
+shell.nav.navigationTitle,Navegación de {title}
+shell.nav.oidcClients,Clientes OIDC
+shell.nav.openIdConnect,OpenID Connect
+shell.nav.operations,Operaciones
+shell.nav.organization,Organización
+shell.nav.organizations,Organizaciones
+shell.nav.overview,Resumen
+shell.nav.passkeySignIn,Inicio de sesión con passkey
+shell.nav.passkeys,Claves de acceso
+shell.nav.password,Contraseña
+shell.nav.passwordRecovery,Recuperación de contraseña
+shell.nav.passwordSignIn,Inicio de sesión con contraseña
+shell.nav.personalInformation,Información personal
+shell.nav.profile,Perfil
+shell.nav.projects,Proyectos
+shell.nav.protocolDocuments,Documentos de protocolo
+shell.nav.realm,Ámbito
+shell.nav.realmSettings,Configuración del ámbito
+shell.nav.recoveryCodes,Códigos de recuperación
+shell.nav.registration,Registro
+shell.nav.rolesGrants,Roles y asignaciones
+shell.nav.security,Seguridad
+shell.nav.sessions,Sesiones
+shell.nav.sessionsDevices,Sesiones y dispositivos
+shell.nav.signingKeys,Claves de firma
+shell.nav.users,Usuarios
+shell.nav.verifyEmail,Verificar correo electrónico
+shell.state.errorDetail,No se pudo preparar la página. Vuelva a intentarlo cuando esté listo.
+shell.state.inaccessibleDetail,No tiene acceso a este destino en el contexto actual.
+shell.state.loadingDetail,Preparando esta página y su contexto de seguridad.
+shell.state.nothingHere,Nada por aquí todavía
+shell.state.pageUnavailable,Esta página no está disponible
+shell.state.readyDetail,Esta página está lista para su contenido.

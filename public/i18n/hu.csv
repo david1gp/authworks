@@ -103,6 +103,7 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+admin.common.confirmTitle,Erősítse meg ezt a műveletet
 admin.common.next,Következő
 admin.common.pagination,Lapozás
 admin.common.permission,Nincs jogosultsága megtekinteni ezeket az adminisztrációs adatokat.
@@ -145,7 +146,7 @@ admin.impersonation.noOrganization,No organization
 admin.impersonation.organization,Organization
 admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
 admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.permissionDeniedTitle,A hozzáférés nem érhető el
 admin.impersonation.reason,Reason
 admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
 admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
@@ -169,6 +170,8 @@ admin.machine.credentials.description,"Hitelesítő adatok, amelyeket egy gépi 
 admin.machine.credentials.empty,Ennek a gépi felhasználónak még nincsenek hitelesítő adatai.
 admin.machine.credentials.expires,Lejár
 admin.machine.credentials.expiresHint,"Hagyja üresen, ha lejárat nélküli hitelesítő adatot szeretne kiadni."
+admin.machine.credentials.expiryInvalid,"Adjon meg érvényes lejárati dátumot, vagy hagyja üresen a mezőt a le nem járó hitelesítő adathoz."
+admin.machine.credentials.expiryPast,Válasszon jövőbeli lejárati dátumot.
 admin.machine.credentials.issue,Hitelesítő adat kiadása
 admin.machine.credentials.issueDescription,"Adjon ki személyes hozzáférési tokent vagy API-kulcsot. Az érték egyszer jelenik meg, és nem állítható helyre."
 admin.machine.credentials.kind,Hitelesítő adat típusa
@@ -178,6 +181,7 @@ admin.machine.credentials.kindClientSecret,Ügyfél-titok
 admin.machine.credentials.kindHint,A személyes hozzáférési token közvetlenül a gépi felhasználó nevében jár el. Az API-kulcs egyetlen integrációhoz készül.
 admin.machine.credentials.kindToken,Személyes hozzáférési token
 admin.machine.credentials.name,Név
+admin.machine.credentials.nameRequired,"Adjon meg egy nevet, hogy később felismerhető legyen ez a hitelesítő adat."
 admin.machine.credentials.neverExpires,Nem jár le
 admin.machine.credentials.onceWarning,"A kiadott érték egyszer jelenik meg. Mentse el, mielőtt bezárja ezt a párbeszédpanelt; később nem kérhető le újra."
 admin.machine.credentials.revoke,Visszavonás
@@ -229,6 +233,7 @@ admin.machine.users.description,"Nem emberi identitások, amelyek ügyfél-hitel
 admin.machine.users.detailTitle,Gépi felhasználó részletei
 admin.machine.users.displayName,Megjelenítendő név
 admin.machine.users.empty,Ebben a realmben még nincs gépi felhasználó.
+admin.machine.users.invalid,"Adjon meg megjelenítendő nevet és felhasználónevet, és csak érvényes hatóköri értékeket használjon."
 admin.machine.users.lifecycleChanged,A gépi felhasználó állapota megváltozott.
 admin.machine.users.missingId,Ehhez a célhoz ki kell választani egy gépi felhasználót.
 admin.machine.users.noScopes,Nincsenek hatókörök
@@ -240,7 +245,7 @@ admin.machine.users.userName,Felhasználónév
 admin.machine.users.userNameHint,Ügyfélazonosítóként használatos az ügyfél-hitelesítő adatok cseréjekor.
 admin.navigation.description,Choose an administration resource
 admin.navigation.hide,Hide sidebar
-admin.navigation.label,Administration
+admin.navigation.label,Adminisztráció
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,Az OpenID Connect beállítások kezeléséhez erősebb és frissebb bejelentkezés szükséges. A folytatáshoz jelentkezzen be újra.
 admin.oidc.assuranceRequiredTitle,Erősebb bejelentkezés szükséges
@@ -254,6 +259,7 @@ admin.oidc.clients.description,"Alkalmazások, amelyek OpenID Connect használat
 admin.oidc.clients.detailTitle,OIDC-kliens részletei
 admin.oidc.clients.empty,Ebben a tartományban még nincs regisztrált OpenID Connect kliens.
 admin.oidc.clients.exactMatchHint,"Soronként egy URI. Minden átirányítás pontos egyezéssel kerül összehasonlításra, ezért a helyettesítő karakterek és a végződésbeli eltérések elutasításra kerülnek."
+admin.oidc.clients.invalid,"Adjon meg ügyfélnevet, legalább egy pontos átirányítási URI-t és legalább egy hatókört."
 admin.oidc.clients.lifecycleChanged,A kliens állapota megváltozott.
 admin.oidc.clients.missingId,Ehhez a célhoz ki kell választani egy OIDC-ügyfelet.
 admin.oidc.clients.name,Kliens neve
@@ -273,6 +279,7 @@ admin.oidc.clients.type,Kliens típusa
 admin.oidc.clients.typeConfidential,Bizalmas
 admin.oidc.clients.typeHint,"A bizalmas kliens kiszolgálón tárolja a titkot. A nyilvános kliens, például egy mobil- vagy egyoldalas alkalmazás, erre nem képes."
 admin.oidc.clients.typePublic,Nyilvános
+admin.oidc.confirmTitle,Erősítse meg ezt a módosítást
 admin.oidc.consents.client,Alkalmazás
 admin.oidc.consents.description,Az adott személy által jóváhagyott alkalmazások. A hozzájárulás visszavonása után újra jóvá kell hagynia az alkalmazást.
 admin.oidc.consents.empty,Ez a személy még egyetlen alkalmazást sem hagyott jóvá.
@@ -375,6 +382,7 @@ admin.organizations.domains.discoveryFound,A(z) {domain} a(z) {organization} sze
 admin.organizations.domains.discoveryMissing,A(z) {domain} nem oldódik fel egyetlen szervezetre sem.
 admin.organizations.domains.domain,Tartomány
 admin.organizations.domains.empty,Ez a szervezet még nem igényelt tartományt.
+admin.organizations.domains.invalid,Adjon meg érvényes tartománynevet.
 admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Elsődleges domain
 admin.organizations.domains.remove,Tartomány eltávolítása
@@ -389,11 +397,13 @@ admin.organizations.domains.verifyDone,A tartomány ellenőrizve.
 admin.organizations.invitations.create,Személy meghívása
 admin.organizations.invitations.description,"Hívjon meg embereket e-mailben, és kövesse, mely meghívók vannak még függőben."
 admin.organizations.invitations.email,Email address
+admin.organizations.invitations.emailInvalid,Adjon meg érvényes e-mail-címet.
 admin.organizations.invitations.empty,Ehhez a szervezethez nem küldtek meghívót.
 admin.organizations.invitations.expires,Lejár
 admin.organizations.invitations.revoke,Meghívó visszavonása
 admin.organizations.invitations.revokeConfirm,Visszavonja a(z) {email} meghívását? A meghívó link azonnal leáll.
 admin.organizations.invitations.revoked,A meghívó visszavonva.
+admin.organizations.invitations.rolesInvalid,Válasszon egy és négy közötti számú szerepkört.
 admin.organizations.invitations.sent,A meghívó létrehozva.
 admin.organizations.invitations.title,Meghívók
 admin.organizations.invitations.tokenDismiss,Elmentettem ezt a hivatkozást
@@ -410,12 +420,14 @@ admin.organizations.list.create,Szervezet létrehozása
 admin.organizations.list.description,"A szervezetek csoportosítják ennek a realmnek az embereit, tartományait és arculatát."
 admin.organizations.list.empty,Ebben a realmben még nincs szervezet.
 admin.organizations.list.name,Szervezet neve
+admin.organizations.list.nameRequired,Adjon meg egy szervezetnevet.
 admin.organizations.list.search,Szervezetek keresése
 admin.organizations.list.title,Szervezetek
 admin.organizations.memberships.add,Tag hozzáadása
 admin.organizations.memberships.added,A tag hozzáadva.
 admin.organizations.memberships.description,Az ebben a szervezetben lévő emberek és a nekik kiosztott rögzített szerepkörök.
 admin.organizations.memberships.empty,Ennek a szervezetnek még nincsenek tagjai.
+admin.organizations.memberships.invalid,"Adjon meg egy felhasználóazonosítót, és válasszon egy és négy közötti számú szerepkört."
 admin.organizations.memberships.remove,Tag eltávolítása
 admin.organizations.memberships.removeConfirm,Eltávolítja a(z) {userId} felhasználót ebből a szervezetből? Szervezeti hozzáférése azonnal megszűnik.
 admin.organizations.memberships.removed,A tag eltávolítva.
@@ -436,7 +448,7 @@ admin.organizations.policy.externalIdentity,Külső identitásszolgáltatók
 admin.organizations.policy.inherited,A realmből örökölve
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Jelszó
-admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.passwordRecovery,Jelszó-helyreállítás
 admin.organizations.policy.registration,Önkiszolgáló regisztráció
 admin.organizations.policy.saved,A bejelentkezési szabályzat mentve.
 admin.organizations.policy.title,Bejelentkezési szabályzat
@@ -451,6 +463,7 @@ admin.organizations.providers.disableConfirm,Letiltja a következőt: {displayNa
 admin.organizations.providers.disabled,A szolgáltató letiltva.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Még nincs beállítva külső identitásszolgáltató.
+admin.organizations.providers.invalid,"Adjon meg megjelenítendő nevet, ügyfélazonosítót, ügyféltitkot és abszolút átirányítási URI-t."
 admin.organizations.providers.redirectUri,Átirányítási URI
 admin.organizations.providers.rotateSecret,Ügyféltitok cseréje
 admin.organizations.providers.secretRotated,Az ügyféltitok cserélve.
@@ -473,6 +486,7 @@ admin.projects.access.title,Tényleges hozzáférés
 admin.projects.applications.create,Alkalmazás hozzáadása
 admin.projects.applications.description,"Alkalmazások, amelyek ezzel a projekttel hitelesítenek."
 admin.projects.applications.empty,Ennek a projektnek még nincsenek alkalmazásai.
+admin.projects.applications.invalid,"Adjon meg egy alkalmazásnevet, és válasszon típust."
 admin.projects.applications.name,Alkalmazás neve
 admin.projects.applications.removeConfirm,Eltávolítja ezt az alkalmazást? Ez nem vonható vissza.
 admin.projects.applications.title,Alkalmazások
@@ -501,6 +515,7 @@ admin.projects.lifecycle.removeConfirm,Eltávolítja ezt a projektet?
 admin.projects.list.create,Projekt létrehozása
 admin.projects.list.description,"A projektek csoportosítják egy szervezet alkalmazásait, szerepköreit és hozzáféréseit."
 admin.projects.list.empty,Ebben a realmben még nincs projekt.
+admin.projects.list.invalid,"Adjon meg egy projektnevet, és válasszon szervezetet."
 admin.projects.list.name,Projekt neve
 admin.projects.list.search,Projektek keresése
 admin.projects.list.title,Projektek
@@ -576,6 +591,7 @@ admin.users.create,Felhasználó létrehozása
 admin.users.createDescription,Adjon hozzá egy emberi felhasználót a jelenlegi realmhez.
 admin.users.createSubmit,Létrehozás
 admin.users.created,A(z) {userName} létrehozva.
+admin.users.createdAt,Létrehozva
 admin.users.dangerZone,Veszélyes műveletek
 admin.users.delete,Felhasználó törlése
 admin.users.deleteConfirm,Véglegesen törli a(z) {userName} felhasználót?
@@ -623,7 +639,7 @@ admin.users.sessions.title,Sessions and devices
 admin.users.state,Állapot
 admin.users.title,Felhasználók
 admin.users.unverified,Nem ellenőrzött
-admin.users.updated,Utolsó frissítés: {date}
+admin.users.updated,Utolsó frissítés
 admin.users.userName,Username
 admin.users.verification,Ellenőrzés
 admin.users.verificationChanged,Az ellenőrzési állapot most: {state}.
@@ -631,12 +647,16 @@ admin.users.verificationDescription,"Szabályozza, hogy a felhasználó e-mail-c
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
-app.tagline,Secure identity services
+app.tagline,Biztonságos identitásszolgáltatások
 common.back,Vissza
 common.cancel,Mégse
 common.close,Bezárás
 common.continue,Folytatás
 common.decline,Decline
+common.disable,Kikapcsolás
+common.disabled,Kikapcsolva
+common.enable,Bekapcsolás
+common.enabled,Bekapcsolva
 common.error,Valami hiba történt.
 common.language,Nyelv
 common.loading,Betöltés
@@ -646,45 +666,259 @@ common.save,Mentés
 common.signIn,Bejelentkezés
 common.signInWithProvider,Bejelentkezés ezzel: {provider}
 common.signOut,Kijelentkezés
-common.theme.dark,dark
-common.theme.light,light
-common.theme.system,system
+common.theme.dark,Sötét
+common.theme.light,Világos
+common.theme.system,Rendszer
 common.urlPlaceholder,https://
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.account.eyebrow,Self-service identity
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.admin.directoryTitle,Administration directory
-demo.admin.eyebrow,Realm administration
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.description,"Explore the login, account, administration, and transactional email demos."
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.nav.account,Account
-demo.nav.admin,Admin
-demo.nav.compact,Compact
-demo.nav.emails,Emails
-demo.nav.hub,Hub
-demo.nav.label,Demo
-demo.nav.login,Login
+demo.account.description,"Hálózatmentes áttekintés a profil-, szervezet-, biztonság- és alkalmazáshozzáférés-kezelésről, amelyet az Authworks támogat. Minden cél explicit mintaállapot-szerződéssel rendelkezik."
+demo.account.eyebrow,Önkiszolgáló identitás
+demo.account.group.access.description,A fiók által megadott alkalmazások és engedélyek.
+demo.account.group.access.title,Hozzáférés
+demo.account.group.identity.description,"A profil- és bejelentkezési adatok, amelyeket a felhasználók maguk kezelnek."
+demo.account.group.identity.title,Személyes adatok
+demo.account.group.organizations.description,"Tagság, szervezeti környezet és meghívók."
+demo.account.group.organizations.title,Szervezetek
+demo.account.group.security.description,"Munkamenetek, hitelesítési tényezők és kapcsolt identitások."
+demo.account.group.security.title,Biztonság
+demo.account.scenario.consents.description,Az alkalmazásoknak korábban megadott engedélyek áttekintése és visszavonása.
+demo.account.scenario.consents.title,Alkalmazás-hozzájárulások
+demo.account.scenario.delete.description,A következmények áttekintése és a fiók végleges törlésének megerősítése.
+demo.account.scenario.delete.title,Fiók törlése
+demo.account.scenario.email.description,A bejelentkezéshez és fiókkommunikációhoz használt ellenőrzött cím áttekintése.
+demo.account.scenario.email.title,E-mail-cím
+demo.account.scenario.factors.description,"Hitelesítő alkalmazás, e-mail és passkey tényezők kezelése."
+demo.account.scenario.factors.title,Többtényezős hitelesítés
+demo.account.scenario.identities.description,"Google, GitHub és Microsoft fiókok áttekintése és szétkapcsolása."
+demo.account.scenario.identities.title,Kapcsolt identitások
+demo.account.scenario.invitation.description,Meghívó megtekintése a szervezethez való csatlakozás előtt.
+demo.account.scenario.invitation.title,Meghívó elfogadása
+demo.account.scenario.invitations.description,A bejelentkezett fióknak címzett meghívók áttekintése.
+demo.account.scenario.invitations.title,Meghívóim
+demo.account.scenario.organizations.description,Tagságok megtekintése és az aktív szervezet váltása.
+demo.account.scenario.organizations.title,Szervezeteim
+demo.account.scenario.passkeys.description,"Jelszó nélküli hitelesítő adatok regisztrálása, elnevezése és eltávolítása."
+demo.account.scenario.passkeys.title,Passkey-k
+demo.account.scenario.password.description,A jelenlegi jelszó módosítása és biztonsági állapotának ellenőrzése.
+demo.account.scenario.password.title,Jelszó
+demo.account.scenario.profile.description,"Nevek, felhasználónév és preferált nyelv áttekintése és frissítése."
+demo.account.scenario.profile.title,Profil
+demo.account.scenario.recovery_codes.description,Cserekódok generálása és egyszeri megjelenítése.
+demo.account.scenario.recovery_codes.title,Helyreállítási kódok
+demo.account.scenario.sessions.description,Aktív munkamenetek áttekintése és a már nem használt eszközök visszavonása.
+demo.account.scenario.sessions.title,Munkamenetek és eszközök
+demo.account.title,Fiók bemutató
+demo.admin.description,"Navigáljon az aktuális realmben a személyek, szervezetek, alkalmazások, hitelesítő adatok és audit-tevékenységek köré épített információs architektúra segítségével. Az elérhető bemutatók és a tervezett állapotmentes célok egyértelműen elkülönülnek."
+demo.admin.directoryTitle,Adminisztrációs jegyzék
+demo.admin.eyebrow,Realm adminisztráció
+demo.admin.group.authorization.description,"Alkalmazások, projektszerepkörök, jogosultságok és kiértékelt hozzáférés."
+demo.admin.group.authorization.title,Projektek és engedélyezés
+demo.admin.group.machine_users.description,Nem emberi identitások és csak írható hitelesítő adataik.
+demo.admin.group.machine_users.title,Gépi felhasználók
+demo.admin.group.oidc.description,"Kliensek, pontos átirányítási beállítások, hozzájárulás, hatókörök és aláírókulcsok."
+demo.admin.group.oidc.title,OpenID Connect
+demo.admin.group.operations.description,Realm-munkamenetek és módosíthatatlan biztonsági tevékenység.
+demo.admin.group.operations.title,Műveletek
+demo.admin.group.organizations.description,"Szervezeti beállítások, személyek, meghívók és ellenőrzött domainek."
+demo.admin.group.organizations.title,Szervezetek
+demo.admin.group.realm.description,"Realm-szintű identitás-, életciklus- és bejelentkezési konfiguráció."
+demo.admin.group.realm.title,Realm
+demo.admin.group.users.description,"Emberi identitások, hitelesítő adatok, munkamenetek és védett támogatási műveletek."
+demo.admin.group.users.title,Felhasználók
+demo.admin.realmFixtureName,Northwind ügyfélidentitás
+demo.admin.scenario.admin_sign_in.description,Kezdő hitelesítő adat beváltása rövid adminisztrátori böngésző-munkamenetre.
+demo.admin.scenario.admin_sign_in.title,Adminisztrátori bejelentkezés
+demo.admin.scenario.applications.description,Projektalkalmazások és életciklusuk kezelése.
+demo.admin.scenario.applications.title,Alkalmazások
+demo.admin.scenario.audit_events.description,Böngésszen az aktuális mintavezérelt biztonsági eseményfolyamban.
+demo.admin.scenario.audit_events.title,Audit események
+demo.admin.scenario.branding.description,"Szervezetspecifikus színek, logók és jogi hivatkozások konfigurálása."
+demo.admin.scenario.branding.title,Márkajelzés
+demo.admin.scenario.domains.description,Domainek ellenőrzése és a szervezet felderítésének vezérlése.
+demo.admin.scenario.domains.title,Domainek és felderítés
+demo.admin.scenario.effective_access.description,"Csak olvasható tényleges szerepkörök, engedélyek és hozzáférés-ellenőrzések megtekintése."
+demo.admin.scenario.effective_access.title,Tényleges hozzáférés
+demo.admin.scenario.impersonation.description,"Indokoltsághoz kötött, időkorlátos támogatási munkamenet indítása, ha engedélyezett."
+demo.admin.scenario.impersonation.title,Megszemélyesítés
+demo.admin.scenario.invitations.description,Személyek meghívása és a függőben lévő vagy lejárt meghívók nyomon követése.
+demo.admin.scenario.invitations.title,Meghívók
+demo.admin.scenario.login_policy.description,"Bejelentkezési szabályzat beállítása és Google, GitHub vagy Microsoft konfigurálása."
+demo.admin.scenario.login_policy.title,Bejelentkezési és identitásszolgáltatók
+demo.admin.scenario.machine_credentials.description,"Kliens hitelesítő adatok, PAT-ok és API-kulcsok kiadása, rotálása és visszavonása."
+demo.admin.scenario.machine_credentials.title,Hitelesítő adatok és tokenek
+demo.admin.scenario.machine_user_detail.description,"Hatókörök és életciklus áttekintése, kliens titkának rotálása és hitelesítő adatok kezelése."
+demo.admin.scenario.machine_user_detail.title,Gépi felhasználó részletei
+demo.admin.scenario.machine_users.description,Szolgáltatásidentitások és életciklusuk létrehozása és kezelése.
+demo.admin.scenario.machine_users.title,Gépi felhasználói jegyzék
+demo.admin.scenario.memberships.description,Rögzített szervezeti szerepkörök hozzárendelése a tagokhoz.
+demo.admin.scenario.memberships.title,Tagságok és szerepkörök
+demo.admin.scenario.oidc_client_detail.description,"Pontos átirányítások és hatókörök szerkesztése, valamint a kliens titkának rotálása vagy visszavonása."
+demo.admin.scenario.oidc_client_detail.title,OIDC kliensbeállítások
+demo.admin.scenario.oidc_clients.description,"Kliensek, átirányítások, hatókörök, megbízhatóság és egyszeri titkok kezelése."
+demo.admin.scenario.oidc_clients.title,OIDC kliensek
+demo.admin.scenario.oidc_consents.description,A személy által jóváhagyott alkalmazások áttekintése és visszavonása.
+demo.admin.scenario.oidc_consents.title,Alkalmazás-hozzájárulások
+demo.admin.scenario.organization_detail.description,"Szervezeti beállítások, életciklus és aktuális tagságok áttekintése."
+demo.admin.scenario.organization_detail.title,Szervezeti részletek
+demo.admin.scenario.organizations.description,"Szervezetek böngészése, keresése és létrehozása az aktuális realmben."
+demo.admin.scenario.organizations.title,Szervezeti jegyzék
+demo.admin.scenario.project_detail.description,A projekt beállításainak és életciklusának áttekintése és szerkesztése.
+demo.admin.scenario.project_detail.title,Projektbeállítások
+demo.admin.scenario.projects.description,"Projektek böngészése, keresése és létrehozása az aktuális realmben."
+demo.admin.scenario.projects.title,Projektjegyzék
+demo.admin.scenario.protocol_documents.description,Csak olvasható felderítési és JWKS végpontok vizsgálata.
+demo.admin.scenario.protocol_documents.title,Protokolldokumentumok
+demo.admin.scenario.realm_overview.description,"A realm identitásának, domainjeinek, életciklus-állapotának és az aktuális munkamenetnek az áttekintése."
+demo.admin.scenario.realm_overview.title,Realm áttekintése
+demo.admin.scenario.realm_settings.description,"Az aktuális realm nevének, domainjeinek, állapotának és életciklusának kezelése."
+demo.admin.scenario.realm_settings.title,Általános beállítások
+demo.admin.scenario.roles_grants.description,Projektszerepkörök és szervezeti hozzáférési jogosultságok konfigurálása.
+demo.admin.scenario.roles_grants.title,Szerepkörök és jogosultságok
+demo.admin.scenario.sessions.description,Realm-munkamenetek áttekintése alany- és eszközkörnyezettel.
+demo.admin.scenario.sessions.title,Munkamenetek
+demo.admin.scenario.signing_keys.description,Kulcs metaadatainak áttekintése és védett rotáció végrehajtása.
+demo.admin.scenario.signing_keys.title,Aláírókulcsok
+demo.admin.scenario.user_authentication.description,"Biztonságos tényező-, passkey- és helyreállítási metaadatok áttekintése a felhasználói részletekben."
+demo.admin.scenario.user_authentication.title,Hitelesítési módszerek
+demo.admin.scenario.user_detail.description,"Profil, életciklus, munkamenetek és biztonságos hitelesítési metaadatok áttekintése."
+demo.admin.scenario.user_detail.title,Felhasználói részletek
+demo.admin.scenario.user_sessions.description,A felhasználó aktív böngésző-munkameneteinek vizsgálata és visszavonása.
+demo.admin.scenario.user_sessions.title,Felhasználói munkamenetek
+demo.admin.scenario.users.description,Emberi felhasználók böngészése és keresése az aktuális realmben.
+demo.admin.scenario.users.title,Felhasználói jegyzék
+demo.directory.available,Elérhető
+demo.directory.availableDemos,elérhető bemutató
+demo.directory.back,Vissza a jegyzékhez
+demo.directory.fixtureStates,Mintaállapotok
+demo.directory.openDemo,Bemutató megnyitása
+demo.directory.planned,Tervezett
+demo.directory.plannedDestinations,tervezett cél
+demo.directory.previewFoundation,Alap előnézet
+demo.fixture.accepted,elfogadva
+demo.fixture.accountError,A fiók determinisztikus tesztadatai nem tölthetők be.
+demo.fixture.active,aktív
+demo.fixture.assuranceRequired,megerősítés szükséges
+demo.fixture.crossTenant,bérlők közötti
+demo.fixture.declined,elutasítva
+demo.fixture.empty,üres
+demo.fixture.ended,befejezve
+demo.fixture.error,hiba
+demo.fixture.expired,lejárt
+demo.fixture.expiring,lejáróban
+demo.fixture.loading,betöltés
+demo.fixture.nestedRejected,beágyazott elutasítva
+demo.fixture.oneTime,egyszeri
+demo.fixture.permissionDenied,hozzáférés megtagadva
+demo.fixture.preview,Állapotmentes minta-előnézet
+demo.fixture.redacted,kitakart
+demo.fixture.replayed,újrajátszott
+demo.fixture.state,Minta állapota
+demo.fixture.success,sikeres
+demo.hub.accountDescription,"Fedezze fel az önkiszolgáló profil-, szervezet- és biztonsági célokat."
+demo.hub.accountOpen,Fiók megnyitása
+demo.hub.adminDescription,Identitás-erőforrások és szervezeti beállítások kezelése.
+demo.hub.adminOpen,Adminisztráció megnyitása
+demo.hub.description,"Fedezze fel a bejelentkezési, fiók-, adminisztrációs és tranzakciós e-mail bemutatókat."
+demo.hub.loginDescription,Fedezze fel a felhasználók hitelesítési élményét.
+demo.hub.loginOpen,Bejelentkezés megnyitása
+demo.login.description,"Fedezzen fel determinisztikus bejelentkezési, helyreállítási és interakciós mintákat. A meglévő folyamatok interaktívak maradnak, míg a tervezett célok bemutatják állapotmentes forgatókönyv-szerződéseiket."
+demo.login.eyebrow,Hosztolt hitelesítés
+demo.login.group.chooser.description,A felderített bejelentkezési szabályzatból és a helyileg megjegyzett fiókokból származó belépési pontok.
+demo.login.group.chooser.title,Bejelentkezés indítása
+demo.login.group.chrome.description,Folyamatok közötti tartalékmegoldások minden hosztolt interakciós képernyőhöz.
+demo.login.group.chrome.title,Közös állapotok
+demo.login.group.interaction.description,Interakciós eredmények és kijelentkezés hosztolt OIDC kérésekhez.
+demo.login.group.interaction.title,Interakció és kijelentkezés
+demo.login.group.mfa.description,"Második tényezős kihívások, hitelesítő regisztráció és helyreállítási kódok."
+demo.login.group.mfa.title,Többtényezős hitelesítés
+demo.login.group.password_email.description,Jelszavas és e-mail kódos hitelesítés determinisztikus helyi mintákkal.
+demo.login.group.password_email.title,Jelszó és e-mail kód
+demo.login.group.passwordless.description,"Passkey-k és konfigurált Google, GitHub és Microsoft szolgáltatók."
+demo.login.group.passwordless.title,Jelszó nélküli és külső
+demo.login.group.recovery.description,Jelszó-helyreállítás kérése és befejezése a fiók adatainak felfedése nélkül.
+demo.login.group.recovery.title,Helyreállítás
+demo.login.group.registration.description,Regisztráció és szerver által kibocsátott e-mail megerősítés.
+demo.login.group.registration.title,Regisztráció és ellenőrzés
+demo.login.scenario.chooser.description,Engedélyezett elsődleges hitelesítési módszer kiválasztása.
+demo.login.scenario.chooser.title,Módszerválasztó
+demo.login.scenario.chooser_recent_accounts.description,Folytatás az ezen az eszközön megjegyzett fiókkal.
+demo.login.scenario.chooser_recent_accounts.title,Legutóbbi fiókok
+demo.login.scenario.email_otp.description,Egyszeri kód kérése e-mailben kézbesítve.
+demo.login.scenario.email_otp.title,E-mail kód kérése
+demo.login.scenario.email_otp_code.description,Adja meg a hatjegyű e-mail ellenőrző kódot.
+demo.login.scenario.email_otp_code.title,E-mail kód ellenőrzése
+demo.login.scenario.idp.description,Folytatás egy konfigurált külső identitásszolgáltatón keresztül.
+demo.login.scenario.idp.title,Külső identitás
+demo.login.scenario.idp_failure.description,Helyreállítás a külső szolgáltató indítási hibájából.
+demo.login.scenario.idp_failure.title,Szolgáltatói hiba
+demo.login.scenario.loading.description,Folyamatjelzés megjelenítése a realm felderítése közben.
+demo.login.scenario.loading.title,Betöltés
+demo.login.scenario.logout.description,Kijelentkezés megerősítése az aktuális böngésző-munkamenethez.
+demo.login.scenario.logout.title,Kijelentkezés
+demo.login.scenario.logout_done.description,A befejezett kijelentkezés és az érvényesített visszatérési útvonal megerősítése.
+demo.login.scenario.logout_done.title,Kijelentkezve
+demo.login.scenario.mfa.description,Válasszon egy elérhető második tényezőt.
+demo.login.scenario.mfa.title,Tényező kiválasztása
+demo.login.scenario.mfa_email_otp.description,E-mail második tényező ellenőrzése.
+demo.login.scenario.mfa_email_otp.title,E-mail kód
+demo.login.scenario.mfa_passkey.description,Passkey ellenőrzése második tényezőként.
+demo.login.scenario.mfa_passkey.title,Passkey tényező
+demo.login.scenario.mfa_recovery_code.description,"Egyetlen helyreállítási kód használata, ha más tényezők nem érhetők el."
+demo.login.scenario.mfa_recovery_code.title,Helyreállítási kód
+demo.login.scenario.mfa_totp.description,Időalapú hitelesítő kód ellenőrzése.
+demo.login.scenario.mfa_totp.title,Hitelesítő kód
+demo.login.scenario.mfa_totp_enroll.description,Új hitelesítő csatlakoztatása és megerősítése.
+demo.login.scenario.mfa_totp_enroll.title,Hitelesítő regisztrálása
+demo.login.scenario.passkey.description,Hitelesítés eszközhöz kötött passkey-vel.
+demo.login.scenario.passkey.title,Passkey
+demo.login.scenario.passkey_unsupported.description,A böngésző vagy eszköz inkompatibilitásának magyarázata.
+demo.login.scenario.passkey_unsupported.title,Passkey nem érhető el
+demo.login.scenario.password.description,Bejelentkezés e-mail-címmel vagy felhasználónévvel és jelszóval.
+demo.login.scenario.password.title,Jelszó
+demo.login.scenario.password_change_required.description,Új jelszó megadása a folytatás előtt.
+demo.login.scenario.password_change_required.title,Jelszómódosítás szükséges
+demo.login.scenario.password_error.description,Biztonságos válasz megjelenítése érvénytelen hitelesítő adatok esetén.
+demo.login.scenario.password_error.title,Érvénytelen hitelesítő adatok
+demo.login.scenario.password_forgot.description,Jelszó-helyreállítási utasítások kérése.
+demo.login.scenario.password_forgot.title,Helyreállítás kérése
+demo.login.scenario.password_forgot_sent.description,Nem felfedő jellegű e-mail megerősítés megjelenítése.
+demo.login.scenario.password_forgot_sent.title,Helyreállítás kérve
+demo.login.scenario.password_reset.description,Új jelszó kiválasztása helyreállítási hivatkozásból.
+demo.login.scenario.password_reset.title,Jelszó visszaállítása
+demo.login.scenario.password_reset_complete.description,Visszatérés a bejelentkezéshez a sikeres visszaállítás után.
+demo.login.scenario.password_reset_complete.title,Visszaállítás befejezve
+demo.login.scenario.register.description,Emberi fiók létrehozása az aktív bejelentkezési szabályzat szerint.
+demo.login.scenario.register.title,Regisztráció
+demo.login.scenario.register_done.description,Nem felfedő jellegű ellenőrzési értesítés megjelenítése.
+demo.login.scenario.register_done.title,Megerősítés elküldve
+demo.login.scenario.signed_in.description,A folytatott interakció megerősítésének megjelenítése.
+demo.login.scenario.signed_in.title,Interakció befejezve
+demo.login.scenario.unsupported.description,Nem támogatott vagy lejárt interakció magyarázata.
+demo.login.scenario.unsupported.title,Nem elérhető kérés
+demo.login.scenario.verify_email.description,Cím megerősítése a szerver által kibocsátott hivatkozásról.
+demo.login.scenario.verify_email.title,E-mail ellenőrzése
+demo.login.title,Bejelentkezési bemutató
+demo.nav.account,Fiók
+demo.nav.admin,Adminisztráció
+demo.nav.compact,Kompakt
+demo.nav.emails,E-mailek
+demo.nav.hub,Kezdőlap
+demo.nav.label,Bemutató
+demo.nav.login,Bejelentkezés
+demo.placeholder.emptyDescription,Ez a cél készen áll a szándékos üres állapot megjelenítésére.
+demo.placeholder.emptyTitle,Nincsenek mintarekordok
+demo.placeholder.errorDescription,Egy determinisztikus hiba hálózati kérés nélkül is megjeleníthető itt.
+demo.placeholder.errorTitle,Mintahiba
+demo.placeholder.loading,Minta betöltése
+demo.placeholder.notFoundDescription,Válasszon egy támogatott célt a jegyzékből.
+demo.placeholder.notFoundTitle,A bemutató cél nem található
+demo.placeholder.readyDescription,"Az útvonal, a támogatott állapotok és a bemutató adapter határa meghatározva. A funkcióoldal szándékosan nincs implementálva ebben a lépésben."
+demo.placeholder.readyTitle,Mintaszerződés kész
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
 email.directory.open,Open preview
-email.directory.title,Email previews
-email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
-email.hub.open,Open email previews
+email.directory.title,E-mail előnézetek
+email.hub.description,Elkülönített HTML és egyszerű szöveges tranzakciós üzenetminták áttekintése.
+email.hub.open,E-mail előnézetek megnyitása
 email.preview.back,Összes e-mail-előnézet
 email.preview.html,HTML-előnézet
 email.preview.impersonationEnded,A megszemélyesítés befejeződött
@@ -796,9 +1030,9 @@ login.register.userName,Felhasználónév
 login.signedIn.description,Ön bejelentkezett ide: {organization}.
 login.signedIn.title,Bejelentkezve
 login.status.loading,Bejelentkezés előkészítése
-login.status.unavailableDescription,"Ez a bejelentkezési kérelem nem teljesíthető. Térjen vissza az alkalmazáshoz, és próbálja újra."
+login.status.unavailableDescription,"A bejelentkezési kérés nem teljesíthető. Térjen vissza az alkalmazásba, és próbálja újra."
 login.status.unavailableTitle,A bejelentkezés nem érhető el
-login.totpEnroll.description,"Adja hozzá ezt a beállítási kulcsot a hitelesítő alkalmazáshoz, majd írja be az általa generált kódot. A kulcs csak most látható."
+login.totpEnroll.description,"Adja hozzá ezt a beállítási kulcsot a hitelesítő alkalmazáshoz, majd írja be a generált kódot. A kulcs csak most látható."
 login.totpEnroll.start,Beállítási kulcs megjelenítése
 login.totpEnroll.submit,Fejezze be a beállítást
 login.totpEnroll.title,Állítson be egy hitelesítő alkalmazást
@@ -807,3 +1041,72 @@ login.verify.submit,Erősítse meg az e-mail címet
 login.verify.title,Igazolja e-mail címét
 login.verify.verifiedDescription,{email} megerősítve. Most már bejelentkezhet.
 login.verify.verifiedTitle,E-mail cím megerősítve
+shell.guard.accessUnavailable,A hozzáférés nem érhető el
+shell.guard.contextRequired,Kontextus szükséges
+shell.guard.contextRequiredDetail,Válassza ki a szükséges realm-et vagy szervezetet a folytatás előtt.
+shell.guard.destinationUnavailable,A cél nem érhető el
+shell.guard.destinationUnavailableDetail,A kért cél nem része ennek az alkalmazásnak.
+shell.guard.pageNotFound,Az oldal nem található
+shell.guard.signInRequired,Bejelentkezés szükséges
+shell.guard.signInRequiredDetail,Jelentkezzen be a folytatáshoz.
+shell.nav.acceptInvitation,Meghívás elfogadása
+shell.nav.access,Hozzáférés
+shell.nav.account,Fiók
+shell.nav.administratorSignIn,Rendszergazdai bejelentkezés
+shell.nav.applicationConsent,Alkalmazás jóváhagyása
+shell.nav.applicationConsents,Alkalmazás-hozzájárulások
+shell.nav.applications,Alkalmazások
+shell.nav.auditEvents,Naplózott események
+shell.nav.branding,Arculat
+shell.nav.chooseDestination,Válasszon célt
+shell.nav.credentialsTokens,Hitelesítő adatok és tokenek
+shell.nav.deleteAccount,Fiók törlése
+shell.nav.directory,Címtár
+shell.nav.emailAddress,E-mail cím
+shell.nav.emailOtpSignIn,E-mail kódos bejelentkezés
+shell.nav.externalIdentitySignIn,Külső identitásos bejelentkezés
+shell.nav.impersonation,Megszemélyesítés
+shell.nav.invitations,Meghívók
+shell.nav.linkedIdentities,Kapcsolt identitások
+shell.nav.loginPolicy,Bejelentkezés és identitás
+shell.nav.loginPolicyProviders,Bejelentkezés és identitásszolgáltatók
+shell.nav.logout,Kijelentkezés
+shell.nav.machineCredentials,Gépi hitelesítő adatok
+shell.nav.machineUsers,Gépi felhasználók
+shell.nav.membershipsRoles,Tagok és szerepkörök
+shell.nav.mfa,Többlépcsős azonosítás
+shell.nav.mfaSignIn,Többtényezős bejelentkezés
+shell.nav.myOrganizations,Szervezeteim
+shell.nav.navigationTitle,{title} navigáció
+shell.nav.oidcClients,OIDC-kliensek
+shell.nav.openIdConnect,OpenID Connect
+shell.nav.operations,Műveletek
+shell.nav.organization,Szervezet
+shell.nav.organizations,Szervezetek
+shell.nav.overview,Áttekintés
+shell.nav.passkeySignIn,Jelkipróbás bejelentkezés
+shell.nav.passkeys,Belépési kulcsok
+shell.nav.password,Jelszó
+shell.nav.passwordRecovery,Jelszó-helyreállítás
+shell.nav.passwordSignIn,Jelszavas bejelentkezés
+shell.nav.personalInformation,Személyes adatok
+shell.nav.profile,Profil
+shell.nav.projects,Projektek
+shell.nav.protocolDocuments,Protokolldokumentumok
+shell.nav.realm,Tartomány
+shell.nav.realmSettings,Tartománybeállítások
+shell.nav.recoveryCodes,Helyreállítási kódok
+shell.nav.registration,Regisztráció
+shell.nav.rolesGrants,Szerepkörök és jogosultságok
+shell.nav.security,Biztonság
+shell.nav.sessions,Munkamenetek
+shell.nav.sessionsDevices,Munkamenetek és eszközök
+shell.nav.signingKeys,Aláíró kulcsok
+shell.nav.users,Felhasználók
+shell.nav.verifyEmail,E-mail megerősítése
+shell.state.errorDetail,"Az oldalt nem sikerült előkészíteni. Próbálja újra, ha készen áll."
+shell.state.inaccessibleDetail,Nincs hozzáférése ehhez a célhoz a jelenlegi környezetben.
+shell.state.loadingDetail,Az oldal és a biztonsági környezet előkészítése.
+shell.state.nothingHere,Itt még nincs semmi
+shell.state.pageUnavailable,Ez az oldal nem érhető el
+shell.state.readyDetail,Ez az oldal készen áll a tartalomra.

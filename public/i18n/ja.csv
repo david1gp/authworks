@@ -103,6 +103,7 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+admin.common.confirmTitle,この操作を確認
 admin.common.next,次へ
 admin.common.pagination,ページ送り
 admin.common.permission,この管理データを表示する権限がありません。
@@ -145,7 +146,7 @@ admin.impersonation.noOrganization,No organization
 admin.impersonation.organization,Organization
 admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
 admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.permissionDeniedTitle,アクセスできません
 admin.impersonation.reason,Reason
 admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
 admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
@@ -169,6 +170,8 @@ admin.machine.credentials.description,マシンユーザーがアクセストー
 admin.machine.credentials.empty,このマシンユーザーにはまだ資格情報がありません。
 admin.machine.credentials.expires,有効期限
 admin.machine.credentials.expiresHint,有効期限のない資格情報を発行するには、ここを空のままにします。
+admin.machine.credentials.expiryInvalid,有効な有効期限を入力するか、期限のない資格情報にする場合は空のままにしてください。
+admin.machine.credentials.expiryPast,未来の有効期限を選択してください。
 admin.machine.credentials.issue,資格情報を発行
 admin.machine.credentials.issueDescription,個人アクセストークンまたは API キーを発行します。値は一度だけ表示され、復元できません。
 admin.machine.credentials.kind,資格情報の種類
@@ -178,6 +181,7 @@ admin.machine.credentials.kindClientSecret,クライアントシークレット
 admin.machine.credentials.kindHint,個人アクセストークンはマシンユーザーとして直接動作します。API キーは単一の連携向けです。
 admin.machine.credentials.kindToken,個人アクセストークン
 admin.machine.credentials.name,名前
+admin.machine.credentials.nameRequired,後でこの資格情報を識別できるように名前を入力してください。
 admin.machine.credentials.neverExpires,有効期限なし
 admin.machine.credentials.onceWarning,発行された値は一度だけ表示されます。このダイアログを閉じる前に保存してください。再取得はできません。
 admin.machine.credentials.revoke,取り消す
@@ -229,6 +233,7 @@ admin.machine.users.description,このレルムでクライアント資格情報
 admin.machine.users.detailTitle,マシンユーザーの詳細
 admin.machine.users.displayName,表示名
 admin.machine.users.empty,このレルムにはまだマシンユーザーが存在しません。
+admin.machine.users.invalid,表示名とユーザー名を入力し、有効なスコープ値のみを使用してください。
 admin.machine.users.lifecycleChanged,マシンユーザーのステータスを変更しました。
 admin.machine.users.missingId,この宛先にはマシンユーザーの選択が必要です。
 admin.machine.users.noScopes,スコープなし
@@ -240,7 +245,7 @@ admin.machine.users.userName,ユーザー名
 admin.machine.users.userNameHint,クライアント資格情報を交換するときのクライアント ID として使用されます。
 admin.navigation.description,Choose an administration resource
 admin.navigation.hide,Hide sidebar
-admin.navigation.label,Administration
+admin.navigation.label,管理
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,OpenID Connect の設定を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
 admin.oidc.assuranceRequiredTitle,より強力なサインインが必要です
@@ -254,6 +259,7 @@ admin.oidc.clients.description,このレルムで OpenID Connect を通じて人
 admin.oidc.clients.detailTitle,OIDC クライアントの詳細
 admin.oidc.clients.empty,このレルムにはまだ OpenID Connect クライアントが登録されていません。
 admin.oidc.clients.exactMatchHint,1 行につき 1 つの URI。すべてのリダイレクトは完全一致で照合されるため、ワイルドカードや末尾の差異は拒否されます。
+admin.oidc.clients.invalid,クライアント名、完全一致のリダイレクト URI を 1 つ以上、スコープを 1 つ以上入力してください。
 admin.oidc.clients.lifecycleChanged,クライアントの状態を変更しました。
 admin.oidc.clients.missingId,この宛先にはOIDCクライアントの選択が必要です。
 admin.oidc.clients.name,クライアント名
@@ -273,6 +279,7 @@ admin.oidc.clients.type,クライアントの種類
 admin.oidc.clients.typeConfidential,機密
 admin.oidc.clients.typeHint,機密クライアントはサーバー上にシークレットを保持します。モバイルアプリやシングルページアプリなどのパブリッククライアントはそれができません。
 admin.oidc.clients.typePublic,パブリック
+admin.oidc.confirmTitle,この変更を確認
 admin.oidc.consents.client,アプリケーション
 admin.oidc.consents.description,本人が承認したアプリケーション。同意を取り消すと、再度アプリケーションの承認を求められます。
 admin.oidc.consents.empty,この人はまだどのアプリケーションも承認していません。
@@ -375,6 +382,7 @@ admin.organizations.domains.discoveryFound,{domain} は {organization} に解決
 admin.organizations.domains.discoveryMissing,{domain} はどの組織にも解決されません。
 admin.organizations.domains.domain,ドメイン
 admin.organizations.domains.empty,この組織はまだドメインを申請していません。
+admin.organizations.domains.invalid,有効なドメイン名を入力してください。
 admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,主ドメイン
 admin.organizations.domains.remove,ドメインを削除
@@ -389,11 +397,13 @@ admin.organizations.domains.verifyDone,ドメインを検証しました。
 admin.organizations.invitations.create,ユーザーを招待
 admin.organizations.invitations.description,メールで招待し、まだ保留中の招待を追跡します。
 admin.organizations.invitations.email,Email address
+admin.organizations.invitations.emailInvalid,有効なメールアドレスを入力してください。
 admin.organizations.invitations.empty,この組織に対して招待は送信されていません。
 admin.organizations.invitations.expires,有効期限
 admin.organizations.invitations.revoke,招待を取り消す
 admin.organizations.invitations.revokeConfirm,{email} の招待を取り消しますか？招待リンクは即座に無効になります。
 admin.organizations.invitations.revoked,招待を取り消しました。
+admin.organizations.invitations.rolesInvalid,1 つから 4 つまでのロールを選択してください。
 admin.organizations.invitations.sent,招待を作成しました。
 admin.organizations.invitations.title,招待
 admin.organizations.invitations.tokenDismiss,このリンクを保存しました
@@ -410,12 +420,14 @@ admin.organizations.list.create,組織を作成
 admin.organizations.list.description,組織は、このレルムの人、ドメイン、ブランディングをまとめます。
 admin.organizations.list.empty,このレルムにはまだ組織がありません。
 admin.organizations.list.name,組織名
+admin.organizations.list.nameRequired,組織名を入力してください。
 admin.organizations.list.search,組織を検索
 admin.organizations.list.title,組織
 admin.organizations.memberships.add,メンバーを追加
 admin.organizations.memberships.added,メンバーを追加しました。
 admin.organizations.memberships.description,この組織の人と、割り当てられた固定ロール。
 admin.organizations.memberships.empty,この組織にはまだメンバーがいません。
+admin.organizations.memberships.invalid,ユーザー ID を入力し、1 つから 4 つまでのロールを選択してください。
 admin.organizations.memberships.remove,メンバーを削除
 admin.organizations.memberships.removeConfirm,{userId} をこの組織から削除しますか？組織へのアクセスは直ちに終了します。
 admin.organizations.memberships.removed,メンバーを削除しました。
@@ -436,7 +448,7 @@ admin.organizations.policy.externalIdentity,外部 ID プロバイダー
 admin.organizations.policy.inherited,レルムから継承
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,パスワード
-admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.passwordRecovery,パスワードの復旧
 admin.organizations.policy.registration,セルフサービス登録
 admin.organizations.policy.saved,サインインポリシーを保存しました。
 admin.organizations.policy.title,サインインポリシー
@@ -451,6 +463,7 @@ admin.organizations.providers.disableConfirm,{displayName} を無効化します
 admin.organizations.providers.disabled,プロバイダーを無効化しました。
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,外部 ID プロバイダーはまだ構成されていません。
+admin.organizations.providers.invalid,表示名、クライアント ID、クライアントシークレット、絶対リダイレクト URI を入力してください。
 admin.organizations.providers.redirectUri,リダイレクト URI
 admin.organizations.providers.rotateSecret,クライアントシークレットを置き換える
 admin.organizations.providers.secretRotated,クライアントシークレットを置き換えました。
@@ -473,6 +486,7 @@ admin.projects.access.title,実効アクセス権
 admin.projects.applications.create,アプリケーションを追加
 admin.projects.applications.description,このプロジェクトに対して認証するアプリケーション。
 admin.projects.applications.empty,このプロジェクトにはまだアプリケーションがありません。
+admin.projects.applications.invalid,アプリケーション名を入力し、種類を選択してください。
 admin.projects.applications.name,アプリケーション名
 admin.projects.applications.removeConfirm,このアプリケーションを削除しますか？この操作は元に戻せません。
 admin.projects.applications.title,アプリケーション
@@ -501,6 +515,7 @@ admin.projects.lifecycle.removeConfirm,このプロジェクトを削除しま�
 admin.projects.list.create,プロジェクトを作成
 admin.projects.list.description,プロジェクトは、組織のアプリケーション、ロール、付与をまとめます。
 admin.projects.list.empty,このレルムにはまだプロジェクトがありません。
+admin.projects.list.invalid,プロジェクト名を入力し、組織を選択してください。
 admin.projects.list.name,プロジェクト名
 admin.projects.list.search,プロジェクトを検索
 admin.projects.list.title,プロジェクト
@@ -576,6 +591,7 @@ admin.users.create,ユーザーを作成
 admin.users.createDescription,現在のレルムに人間のユーザーを追加します。
 admin.users.createSubmit,作成
 admin.users.created,{userName} を作成しました。
+admin.users.createdAt,作成日時
 admin.users.dangerZone,危険な操作
 admin.users.delete,ユーザーを削除
 admin.users.deleteConfirm,{userName} を完全に削除しますか？
@@ -623,7 +639,7 @@ admin.users.sessions.title,Sessions and devices
 admin.users.state,状態
 admin.users.title,ユーザー
 admin.users.unverified,未検証
-admin.users.updated,最終更新 {date}
+admin.users.updated,最終更新
 admin.users.userName,Username
 admin.users.verification,検証
 admin.users.verificationChanged,検証状態は現在 {state} です。
@@ -631,12 +647,16 @@ admin.users.verificationDescription,このユーザーのメールアドレス�
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
-app.tagline,Secure identity services
+app.tagline,安全なアイデンティティサービス
 common.back,戻る
 common.cancel,キャンセル
 common.close,閉じる
 common.continue,続行
 common.decline,Decline
+common.disable,オフにする
+common.disabled,無効
+common.enable,オンにする
+common.enabled,有効
 common.error,問題が発生しました。
 common.language,言語
 common.loading,読み込み中
@@ -646,45 +666,259 @@ common.save,保存
 common.signIn,サインイン
 common.signInWithProvider,{provider}でサインイン
 common.signOut,サインアウト
-common.theme.dark,dark
-common.theme.light,light
-common.theme.system,system
+common.theme.dark,ダーク
+common.theme.light,ライト
+common.theme.system,システム
 common.urlPlaceholder,https://
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.account.eyebrow,Self-service identity
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.admin.directoryTitle,Administration directory
-demo.admin.eyebrow,Realm administration
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.description,"Explore the login, account, administration, and transactional email demos."
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.nav.account,Account
-demo.nav.admin,Admin
-demo.nav.compact,Compact
-demo.nav.emails,Emails
-demo.nav.hub,Hub
-demo.nav.label,Demo
-demo.nav.login,Login
+demo.account.description,Authworksがサポートするプロファイル、組織、セキュリティ、およびアプリケーションアクセス管理体験のネットワーク不要なマップ。各遷移先には明示的なフィクスチャ状態契約があります。
+demo.account.eyebrow,セルフサービスID
+demo.account.group.access.description,このアカウントによって付与されたアプリケーションと権限。
+demo.account.group.access.title,アクセス
+demo.account.group.identity.description,ユーザー自身が管理するプロファイルとサインインの詳細。
+demo.account.group.identity.title,個人情報
+demo.account.group.organizations.description,メンバーシップ、組織コンテキスト、および招待。
+demo.account.group.organizations.title,組織
+demo.account.group.security.description,セッション、認証要素、および接続されたID。
+demo.account.group.security.title,セキュリティ
+demo.account.scenario.consents.description,以前にアプリケーションに付与された権限を確認および取り消します。
+demo.account.scenario.consents.title,アプリケーションの同意
+demo.account.scenario.delete.description,影響を確認し、アカウントの完全な削除を確認します。
+demo.account.scenario.delete.title,アカウントを削除
+demo.account.scenario.email.description,サインインおよびアカウント通信に使用される確認済みアドレスを確認します。
+demo.account.scenario.email.title,メールアドレス
+demo.account.scenario.factors.description,オーセンティケーター、メール、パスキーの要素を管理します。
+demo.account.scenario.factors.title,多要素認証
+demo.account.scenario.identities.description,Google、GitHub、Microsoftアカウントを確認およびリンク解除します。
+demo.account.scenario.identities.title,リンクされたID
+demo.account.scenario.invitation.description,組織に参加する前に招待を確認します。
+demo.account.scenario.invitation.title,招待を承諾
+demo.account.scenario.invitations.description,サインイン中のアカウント宛ての招待を確認します。
+demo.account.scenario.invitations.title,自分の招待
+demo.account.scenario.organizations.description,メンバーシップを表示し、アクティブな組織を切り替えます。
+demo.account.scenario.organizations.title,自分の組織
+demo.account.scenario.passkeys.description,パスワードレス認証情報を登録、命名、および削除します。
+demo.account.scenario.passkeys.title,パスキー
+demo.account.scenario.password.description,現在のパスワードを変更し、そのセキュリティステータスを確認します。
+demo.account.scenario.password.title,パスワード
+demo.account.scenario.profile.description,名前、ユーザー名、希望言語を確認および更新します。
+demo.account.scenario.profile.title,プロフィール
+demo.account.scenario.recovery_codes.description,代替コードを生成し、1回だけ表示します。
+demo.account.scenario.recovery_codes.title,リカバリーコード
+demo.account.scenario.sessions.description,アクティブなセッションを確認し、使用しなくなったデバイスを取り消します。
+demo.account.scenario.sessions.title,セッションとデバイス
+demo.account.title,アカウントデモ
+demo.admin.description,ユーザー、組織、アプリケーション、認証情報、および監査アクティビティに基づいて構築された情報アーキテクチャを使用して、現在のレルムをナビゲートします。利用可能なデモと予定されているステートレスな遷移先は明確に分離されています。
+demo.admin.directoryTitle,管理ディレクトリ
+demo.admin.eyebrow,レルム管理
+demo.admin.group.authorization.description,アプリケーション、プロジェクトロール、付与、および評価されたアクセス。
+demo.admin.group.authorization.title,プロジェクトと認可
+demo.admin.group.machine_users.description,非人間IDおよびその書き込み専用認証情報。
+demo.admin.group.machine_users.title,マシンユーザー
+demo.admin.group.oidc.description,クライアント、正確なリダイレクト設定、同意、スコープ、および署名鍵。
+demo.admin.group.oidc.title,OpenID Connect
+demo.admin.group.operations.description,レルムセッションおよび不変のセキュリティアクティビティ。
+demo.admin.group.operations.title,オペレーション
+demo.admin.group.organizations.description,組織の設定、ユーザー、招待、および確認済みドメイン。
+demo.admin.group.organizations.title,組織
+demo.admin.group.realm.description,レルム全体のID、ライフサイクル、およびサインイン設定。
+demo.admin.group.realm.title,レルム
+demo.admin.group.users.description,人間のID、認証情報、セッション、および保護されたサポートアクション。
+demo.admin.group.users.title,ユーザー
+demo.admin.realmFixtureName,Northwind 顧客ID
+demo.admin.scenario.admin_sign_in.description,ブートストラップ認証情報を短期の管理者ブラウザセッションと交換します。
+demo.admin.scenario.admin_sign_in.title,管理者サインイン
+demo.admin.scenario.applications.description,プロジェクトアプリケーションとそのライフサイクルを管理します。
+demo.admin.scenario.applications.title,アプリケーション
+demo.admin.scenario.audit_events.description,現在のフィクスチャに基づくセキュリティイベントストリームを閲覧します。
+demo.admin.scenario.audit_events.title,監査イベント
+demo.admin.scenario.branding.description,組織に応じた色、ロゴ、および法的リンクを設定します。
+demo.admin.scenario.branding.title,ブランディング
+demo.admin.scenario.domains.description,ドメインを検証し、組織の検出を制御します。
+demo.admin.scenario.domains.title,ドメインと検出
+demo.admin.scenario.effective_access.description,読み取り専用の有効なロール、権限、およびアクセスチェックを確認します。
+demo.admin.scenario.effective_access.title,有効なアクセス
+demo.admin.scenario.impersonation.description,許可されている場合に、理由付きの期間限定サポートセッションを開始します。
+demo.admin.scenario.impersonation.title,なりすまし
+demo.admin.scenario.invitations.description,ユーザーを招待し、保留中または期限切れの招待を追跡します。
+demo.admin.scenario.invitations.title,招待
+demo.admin.scenario.login_policy.description,ログインポリシーを設定し、Google、GitHub、またはMicrosoftを設定します。
+demo.admin.scenario.login_policy.title,ログインとIDプロバイダー
+demo.admin.scenario.machine_credentials.description,クライアント認証情報、PAT、およびAPIキーを発行、ローテーション、および取り消します。
+demo.admin.scenario.machine_credentials.title,認証情報とトークン
+demo.admin.scenario.machine_user_detail.description,スコープとライフサイクルを確認し、クライアントシークレットをローテーションして認証情報を管理します。
+demo.admin.scenario.machine_user_detail.title,マシンユーザーの詳細
+demo.admin.scenario.machine_users.description,サービスIDとそのライフサイクルを作成および管理します。
+demo.admin.scenario.machine_users.title,マシンユーザーディレクトリ
+demo.admin.scenario.memberships.description,メンバーに固定の組織ロールを割り当てます。
+demo.admin.scenario.memberships.title,メンバーシップとロール
+demo.admin.scenario.oidc_client_detail.description,正確なリダイレクトとスコープを編集し、クライアントシークレットをローテーションまたは取り消します。
+demo.admin.scenario.oidc_client_detail.title,OIDCクライアント設定
+demo.admin.scenario.oidc_clients.description,クライアント、リダイレクト、スコープ、信頼、およびワンタイムシークレットを管理します。
+demo.admin.scenario.oidc_clients.title,OIDCクライアント
+demo.admin.scenario.oidc_consents.description,ユーザーが承認したアプリケーションを確認および取り消します。
+demo.admin.scenario.oidc_consents.title,アプリケーションの同意
+demo.admin.scenario.organization_detail.description,組織の設定、ライフサイクル、および現在のメンバーシップを確認します。
+demo.admin.scenario.organization_detail.title,組織の詳細
+demo.admin.scenario.organizations.description,現在のレルム内の組織を閲覧、検索、および作成します。
+demo.admin.scenario.organizations.title,組織ディレクトリ
+demo.admin.scenario.project_detail.description,プロジェクトの設定とライフサイクルを確認および編集します。
+demo.admin.scenario.project_detail.title,プロジェクト設定
+demo.admin.scenario.projects.description,現在のレルム内のプロジェクトを閲覧、検索、および作成します。
+demo.admin.scenario.projects.title,プロジェクトディレクトリ
+demo.admin.scenario.protocol_documents.description,読み取り専用のディスカバリーおよびJWKSエンドポイントを確認します。
+demo.admin.scenario.protocol_documents.title,プロトコル文書
+demo.admin.scenario.realm_overview.description,レルムのID、ドメイン、ライフサイクルステータス、および現在のセッションを確認します。
+demo.admin.scenario.realm_overview.title,レルムの概要
+demo.admin.scenario.realm_settings.description,現在のレルム名、ドメイン、ステータス、およびライフサイクルを管理します。
+demo.admin.scenario.realm_settings.title,一般設定
+demo.admin.scenario.roles_grants.description,プロジェクトロールと組織アクセス付与を設定します。
+demo.admin.scenario.roles_grants.title,ロールと付与
+demo.admin.scenario.sessions.description,サブジェクトとデバイスのコンテキストを含むレルムセッションを確認します。
+demo.admin.scenario.sessions.title,セッション
+demo.admin.scenario.signing_keys.description,鍵のメタデータを確認し、保護されたローテーションを実行します。
+demo.admin.scenario.signing_keys.title,署名鍵
+demo.admin.scenario.user_authentication.description,ユーザー詳細で安全な要素、パスキー、およびリカバリーのメタデータを確認します。
+demo.admin.scenario.user_authentication.title,認証方法
+demo.admin.scenario.user_detail.description,プロファイル、ライフサイクル、セッション、および安全な認証メタデータを確認します。
+demo.admin.scenario.user_detail.title,ユーザーの詳細
+demo.admin.scenario.user_sessions.description,ユーザーのアクティブなブラウザセッションを検査および取り消します。
+demo.admin.scenario.user_sessions.title,ユーザーセッション
+demo.admin.scenario.users.description,現在のレルム内の人間のユーザーを閲覧および検索します。
+demo.admin.scenario.users.title,ユーザーディレクトリ
+demo.directory.available,利用可能
+demo.directory.availableDemos,利用可能なデモ
+demo.directory.back,ディレクトリに戻る
+demo.directory.fixtureStates,フィクスチャ状態
+demo.directory.openDemo,デモを開く
+demo.directory.planned,予定
+demo.directory.plannedDestinations,予定された遷移先
+demo.directory.previewFoundation,プレビュー基盤
+demo.fixture.accepted,承諾済み
+demo.fixture.accountError,アカウントの決定論的なテストデータを読み込めませんでした。
+demo.fixture.active,アクティブ
+demo.fixture.assuranceRequired,保証が必要
+demo.fixture.crossTenant,テナント間
+demo.fixture.declined,辞退済み
+demo.fixture.empty,空
+demo.fixture.ended,終了
+demo.fixture.error,エラー
+demo.fixture.expired,期限切れ
+demo.fixture.expiring,期限切れ間近
+demo.fixture.loading,読み込み中
+demo.fixture.nestedRejected,ネスト拒否
+demo.fixture.oneTime,ワンタイム
+demo.fixture.permissionDenied,権限拒否
+demo.fixture.preview,ステートレスフィクスチャプレビュー
+demo.fixture.redacted,墨消し済み
+demo.fixture.replayed,再実行済み
+demo.fixture.state,フィクスチャ状態
+demo.fixture.success,成功
+demo.hub.accountDescription,セルフサービスのプロファイル、組織、およびセキュリティの遷移先を探索します。
+demo.hub.accountOpen,アカウントを開く
+demo.hub.adminDescription,IDリソースと組織設定を管理します。
+demo.hub.adminOpen,管理を開く
+demo.hub.description,ログイン、アカウント、管理、およびトランザクションメールのデモを探索します。
+demo.hub.loginDescription,ユーザー向けの認証エクスペリエンスを体験してください。
+demo.hub.loginOpen,ログインを開く
+demo.login.description,確定的なサインイン、リカバリ、およびインタラクションフィクスチャを探索します。既存のフローはインタラクティブのままであり、予定された遷移先はステートレスシナリオ契約を公開します。
+demo.login.eyebrow,ホスト型認証
+demo.login.group.chooser.description,検出されたログインポリシーおよびローカルに記憶されたアカウントから派生したエントリポイント。
+demo.login.group.chooser.title,サインインの開始
+demo.login.group.chrome.description,ホストされたすべての対話画面で使用されるクロスフローフォールバック。
+demo.login.group.chrome.title,共有状態
+demo.login.group.interaction.description,ホストされたOIDCリクエストの対話結果とサインアウト。
+demo.login.group.interaction.title,対話とログアウト
+demo.login.group.mfa.description,第2要素チャレンジ、オーセンティケーター登録、およびリカバリーコード。
+demo.login.group.mfa.title,多要素認証
+demo.login.group.password_email.description,確定的なローカルフィクスチャを使用したパスワードおよびメールコード認証。
+demo.login.group.password_email.title,パスワードとメールコード
+demo.login.group.passwordless.description,パスキーおよび設定されたGoogle、GitHub、Microsoftプロバイダー。
+demo.login.group.passwordless.title,パスワードレスと外部認証
+demo.login.group.recovery.description,アカウント情報を開示することなく、パスワードの復元をリクエストして完了します。
+demo.login.group.recovery.title,リカバリー
+demo.login.group.registration.description,登録とサーバー発行のメール確認。
+demo.login.group.registration.title,登録と確認
+demo.login.scenario.chooser.description,許可されているプライマリ認証方法を選択します。
+demo.login.scenario.chooser.title,方法の選択
+demo.login.scenario.chooser_recent_accounts.description,このデバイスで記憶されているアカウントで続行します。
+demo.login.scenario.chooser_recent_accounts.title,最近のアカウント
+demo.login.scenario.email_otp.description,メールで配信されるワンタイムコードをリクエストします。
+demo.login.scenario.email_otp.title,メールコードをリクエスト
+demo.login.scenario.email_otp_code.description,6桁のメール確認コードを入力してください。
+demo.login.scenario.email_otp_code.title,メールコードを確認
+demo.login.scenario.idp.description,設定された外部IDプロバイダー経由で続行します。
+demo.login.scenario.idp.title,外部ID
+demo.login.scenario.idp_failure.description,外部プロバイダーの開始エラーから回復します。
+demo.login.scenario.idp_failure.title,プロバイダーエラー
+demo.login.scenario.loading.description,レルム検出の解決中に進行状況を表示します。
+demo.login.scenario.loading.title,読み込み中
+demo.login.scenario.logout.description,現在のブラウザセッションのサインアウトを確認します。
+demo.login.scenario.logout.title,ログアウト
+demo.login.scenario.logout_done.description,完了したサインアウトと検証済みリターンパスを確認します。
+demo.login.scenario.logout_done.title,サインアウト済み
+demo.login.scenario.mfa.description,利用可能な第2要素を選択します。
+demo.login.scenario.mfa.title,要素を選択
+demo.login.scenario.mfa_email_otp.description,メールによる第2要素を確認します。
+demo.login.scenario.mfa_email_otp.title,メールコード
+demo.login.scenario.mfa_passkey.description,パスキーを第2要素として確認します。
+demo.login.scenario.mfa_passkey.title,パスキー要素
+demo.login.scenario.mfa_recovery_code.description,他の要素が利用できない場合は、単一のリカバリーコードを使用します。
+demo.login.scenario.mfa_recovery_code.title,リカバリーコード
+demo.login.scenario.mfa_totp.description,時間ベースのオーセンティケーターコードを確認します。
+demo.login.scenario.mfa_totp.title,オーセンティケーターコード
+demo.login.scenario.mfa_totp_enroll.description,新しいオーセンティケーターを接続して確認します。
+demo.login.scenario.mfa_totp_enroll.title,オーセンティケーターを登録
+demo.login.scenario.passkey.description,デバイスバウンドパスキーで認証します。
+demo.login.scenario.passkey.title,パスキー
+demo.login.scenario.passkey_unsupported.description,ブラウザまたはデバイスの非互換性を説明します。
+demo.login.scenario.passkey_unsupported.title,パスキーが利用できません
+demo.login.scenario.password.description,メールアドレスまたはユーザー名とパスワードでサインインします。
+demo.login.scenario.password.title,パスワード
+demo.login.scenario.password_change_required.description,続行する前に新しいパスワードを設定してください。
+demo.login.scenario.password_change_required.title,パスワードの変更が必要です
+demo.login.scenario.password_error.description,安全な無効な認証情報レスポンスを表示します。
+demo.login.scenario.password_error.title,無効な認証情報
+demo.login.scenario.password_forgot.description,パスワード復元の手順をリクエストします。
+demo.login.scenario.password_forgot.title,リカバリーをリクエスト
+demo.login.scenario.password_forgot_sent.description,情報を開示しないメール確認を表示します。
+demo.login.scenario.password_forgot_sent.title,リカバリーがリクエストされました
+demo.login.scenario.password_reset.description,リカバリーリンクから新しいパスワードを選択します。
+demo.login.scenario.password_reset.title,パスワードをリセット
+demo.login.scenario.password_reset_complete.description,リセットが成功した後、サインインに戻ります。
+demo.login.scenario.password_reset_complete.title,リセット完了
+demo.login.scenario.register.description,アクティブなログインポリシーの下で人間のアカウントを作成します。
+demo.login.scenario.register.title,登録
+demo.login.scenario.register_done.description,情報を開示しない確認通知を表示します。
+demo.login.scenario.register_done.title,確認を送信しました
+demo.login.scenario.signed_in.description,再開された対話の確認を表示します。
+demo.login.scenario.signed_in.title,対話完了
+demo.login.scenario.unsupported.description,サポートされていないか期限切れの対話を説明します。
+demo.login.scenario.unsupported.title,利用できないリクエスト
+demo.login.scenario.verify_email.description,サーバーが発行したリンクからアドレスを確認します。
+demo.login.scenario.verify_email.title,メールの確認
+demo.login.title,ログインデモ
+demo.nav.account,アカウント
+demo.nav.admin,管理
+demo.nav.compact,コンパクト
+demo.nav.emails,メール
+demo.nav.hub,ホーム
+demo.nav.label,デモ
+demo.nav.login,ログイン
+demo.placeholder.emptyDescription,この遷移先は意図的な空状態を表示する準備ができています。
+demo.placeholder.emptyTitle,フィクスチャレコードがありません
+demo.placeholder.errorDescription,ネットワークリクエストなしで確定的なエラーをここに表示できます。
+demo.placeholder.errorTitle,フィクスチャエラー
+demo.placeholder.loading,フィクスチャを読み込み中
+demo.placeholder.notFoundDescription,ディレクトリからサポートされている遷移先を選択してください。
+demo.placeholder.notFoundTitle,デモの遷移先が見つかりません
+demo.placeholder.readyDescription,ルート、サポートされている状態、およびデモアダプターの境界が定義されています。この増分では機能ページは意図的に実装されていません。
+demo.placeholder.readyTitle,フィクスチャ契約の準備完了
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
 email.directory.open,Open preview
-email.directory.title,Email previews
-email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
-email.hub.open,Open email previews
+email.directory.title,メールプレビュー
+email.hub.description,分離されたHTMLおよびプレーンテキストのトランザクションメッセージフィクスチャを確認します。
+email.hub.open,メールプレビューを開く
 email.preview.back,すべてのメールプレビュー
 email.preview.html,HTMLプレビュー
 email.preview.impersonationEnded,代理操作が終了しました
@@ -796,9 +1030,9 @@ login.register.userName,ユーザー名
 login.signedIn.description,{organization} にログインしています。
 login.signedIn.title,ログイン済み
 login.status.loading,ログインを準備中
-login.status.unavailableDescription,このログイン要求を完了できません。アプリに戻って、もう一度お試しください。
-login.status.unavailableTitle,ログインできません
-login.totpEnroll.description,この設定キーを認証アプリに追加し、生成されたコードを入力してください。キーは今回のみ表示されます。
+login.status.unavailableDescription,このサインインリクエストは完了できません。アプリケーションに戻ってやり直してください。
+login.status.unavailableTitle,サインインを利用できません
+login.totpEnroll.description,この設定キーを認証アプリに追加し、生成されたコードを入力してください。キーは今だけ表示されます。
 login.totpEnroll.start,設定キーを表示
 login.totpEnroll.submit,設定を完了
 login.totpEnroll.title,認証アプリを設定
@@ -807,3 +1041,72 @@ login.verify.submit,メールアドレスを確認
 login.verify.title,メールアドレスを確認
 login.verify.verifiedDescription,{email} を確認しました。これでログインできます。
 login.verify.verifiedTitle,メールアドレスを確認しました
+shell.guard.accessUnavailable,アクセスできません
+shell.guard.contextRequired,コンテキストが必要です
+shell.guard.contextRequiredDetail,続行する前に必要なレルムまたは組織を選択してください。
+shell.guard.destinationUnavailable,利用できない宛先です
+shell.guard.destinationUnavailableDetail,リクエストされた宛先はこのアプリケーションに含まれていません。
+shell.guard.pageNotFound,ページが見つかりません
+shell.guard.signInRequired,サインインが必要です
+shell.guard.signInRequiredDetail,この宛先に進むにはサインインしてください。
+shell.nav.acceptInvitation,招待を承諾
+shell.nav.access,アクセス
+shell.nav.account,アカウント
+shell.nav.administratorSignIn,管理者サインイン
+shell.nav.applicationConsent,アプリケーションの同意
+shell.nav.applicationConsents,アプリケーションの同意
+shell.nav.applications,アプリケーション
+shell.nav.auditEvents,監査イベント
+shell.nav.branding,ブランディング
+shell.nav.chooseDestination,宛先を選択
+shell.nav.credentialsTokens,資格情報とトークン
+shell.nav.deleteAccount,アカウントを削除
+shell.nav.directory,ディレクトリ
+shell.nav.emailAddress,メールアドレス
+shell.nav.emailOtpSignIn,メールコードサインイン
+shell.nav.externalIdentitySignIn,外部IDサインイン
+shell.nav.impersonation,代理ログイン
+shell.nav.invitations,招待
+shell.nav.linkedIdentities,連携済みID
+shell.nav.loginPolicy,ログインとID
+shell.nav.loginPolicyProviders,ログインとIDプロバイダー
+shell.nav.logout,ログアウト
+shell.nav.machineCredentials,マシン認証情報
+shell.nav.machineUsers,マシンユーザー
+shell.nav.membershipsRoles,メンバーとロール
+shell.nav.mfa,多要素認証
+shell.nav.mfaSignIn,多要素サインイン
+shell.nav.myOrganizations,マイ組織
+shell.nav.navigationTitle,{title}ナビゲーション
+shell.nav.oidcClients,OIDCクライアント
+shell.nav.openIdConnect,OpenID Connect
+shell.nav.operations,運用
+shell.nav.organization,組織
+shell.nav.organizations,組織
+shell.nav.overview,概要
+shell.nav.passkeySignIn,パスキーサインイン
+shell.nav.passkeys,パスキー
+shell.nav.password,パスワード
+shell.nav.passwordRecovery,パスワードの復旧
+shell.nav.passwordSignIn,パスワードサインイン
+shell.nav.personalInformation,個人情報
+shell.nav.profile,プロフィール
+shell.nav.projects,プロジェクト
+shell.nav.protocolDocuments,プロトコルドキュメント
+shell.nav.realm,レルム
+shell.nav.realmSettings,レルム設定
+shell.nav.recoveryCodes,リカバリコード
+shell.nav.registration,登録
+shell.nav.rolesGrants,ロールと権限付与
+shell.nav.security,セキュリティ
+shell.nav.sessions,セッション
+shell.nav.sessionsDevices,セッションとデバイス
+shell.nav.signingKeys,署名鍵
+shell.nav.users,ユーザー
+shell.nav.verifyEmail,メールアドレスを確認
+shell.state.errorDetail,ページを準備できませんでした。準備ができたら再試行してください。
+shell.state.inaccessibleDetail,現在のコンテキストではこの宛先へのアクセス権がありません。
+shell.state.loadingDetail,このページとセキュリティコンテキストを準備しています。
+shell.state.nothingHere,ここにはまだ何もありません
+shell.state.pageUnavailable,このページは利用できません
+shell.state.readyDetail,このページはコンテンツを表示する準備ができています。

@@ -1,11 +1,11 @@
 import { A } from "@solidjs/router"
-import { ttc } from "../../../ui/i18n/model/ttc.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 
 type StateOption = { href: string; label: string; selected: boolean }
 
 export function DemoFixtureStateSelector(props: { options: readonly StateOption[] }) {
   return (
-    <nav aria-label={ttc("Fixture state")} class="flex flex-wrap gap-2">
+    <nav aria-label={messageTranslate("demo.fixture.state")} class="flex flex-wrap gap-2">
       {props.options.map((option) => (
         <A
           aria-current={option.selected ? "page" : undefined}
@@ -16,7 +16,7 @@ export function DemoFixtureStateSelector(props: { options: readonly StateOption[
           }`}
           href={option.href}
         >
-          {ttc(option.label)}
+          {option.label}
         </A>
       ))}
     </nav>

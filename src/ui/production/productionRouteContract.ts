@@ -1,3 +1,4 @@
+import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import type { ProductionRouteGuardRequirement } from "./productionRouteGuardRequirement.js"
 
 type ProductionRouteFeature = "account" | "admin" | "login" | "oidc" | "organizations"
@@ -27,7 +28,7 @@ export type ProductionRouteContract = {
   readonly screens: readonly {
     readonly key: string
     readonly path: `/${string}`
-    readonly title: string
+    readonly title: MessageKey
     readonly contracts: readonly ProductionFeatureContract[]
     readonly guard?: ProductionRouteGuardRequirement
   }[]

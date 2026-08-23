@@ -103,6 +103,7 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+admin.common.confirmTitle,Bu işlemi onaylayın
 admin.common.next,İleri
 admin.common.pagination,Sayfalama
 admin.common.permission,Bu yönetim verilerini görüntüleme izniniz yok.
@@ -145,7 +146,7 @@ admin.impersonation.noOrganization,No organization
 admin.impersonation.organization,Organization
 admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
 admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.permissionDeniedTitle,Erişim kullanılamıyor
 admin.impersonation.reason,Reason
 admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
 admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
@@ -169,6 +170,8 @@ admin.machine.credentials.description,"Bir makine kullanıcısının erişim bel
 admin.machine.credentials.empty,Bu makine kullanıcısının henüz kimlik bilgisi yok.
 admin.machine.credentials.expires,Sona eriyor
 admin.machine.credentials.expiresHint,Sona ermeyen bir kimlik bilgisi vermek için burayı boş bırakın.
+admin.machine.credentials.expiryInvalid,Geçerli bir son kullanma tarihi girin veya süresi dolmayan bir kimlik bilgisi için alanı boş bırakın.
+admin.machine.credentials.expiryPast,Gelecekte bir son kullanma tarihi seçin.
 admin.machine.credentials.issue,Kimlik bilgisi ver
 admin.machine.credentials.issueDescription,Bir kişisel erişim belirteci veya API anahtarı verin. Değer yalnızca bir kez gösterilir ve kurtarılamaz.
 admin.machine.credentials.kind,Kimlik bilgisi türü
@@ -178,6 +181,7 @@ admin.machine.credentials.kindClientSecret,İstemci parolası
 admin.machine.credentials.kindHint,Kişisel erişim belirteci doğrudan makine kullanıcısı adına hareket eder. API anahtarı tek bir entegrasyon içindir.
 admin.machine.credentials.kindToken,Kişisel erişim belirteci
 admin.machine.credentials.name,Ad
+admin.machine.credentials.nameRequired,Bu kimlik bilgisinin daha sonra tanınabilmesi için bir ad girin.
 admin.machine.credentials.neverExpires,Sona ermez
 admin.machine.credentials.onceWarning,Verilen değer yalnızca bir kez gösterilir. Bu pencereyi kapatmadan önce saklayın; tekrar alınamaz.
 admin.machine.credentials.revoke,İptal et
@@ -229,6 +233,7 @@ admin.machine.users.description,"Bu realm'de istemci kimlik bilgileri, belirteç
 admin.machine.users.detailTitle,Makine kullanıcısı ayrıntısı
 admin.machine.users.displayName,Görünen ad
 admin.machine.users.empty,Bu realm'de henüz makine kullanıcısı yok.
+admin.machine.users.invalid,Bir görünen ad ve bir kullanıcı adı girin ve yalnızca geçerli kapsam değerleri kullanın.
 admin.machine.users.lifecycleChanged,Makine kullanıcısının durumu değiştirildi.
 admin.machine.users.missingId,Bu hedef için bir makine kullanıcısı seçilmiş olmalıdır.
 admin.machine.users.noScopes,Kapsam yok
@@ -240,7 +245,7 @@ admin.machine.users.userName,Kullanıcı adı
 admin.machine.users.userNameHint,İstemci kimlik bilgileri değiştirilirken istemci kimliği olarak kullanılır.
 admin.navigation.description,Choose an administration resource
 admin.navigation.hide,Hide sidebar
-admin.navigation.label,Administration
+admin.navigation.label,Yönetim
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,OpenID Connect ayarlarını yönetmek daha güçlü ve daha yeni bir oturum açma gerektirir. Devam etmek için yeniden oturum açın.
 admin.oidc.assuranceRequiredTitle,Daha güçlü oturum açma gerekli
@@ -254,6 +259,7 @@ admin.oidc.clients.description,Bu alanda kişileri OpenID Connect üzerinden do�
 admin.oidc.clients.detailTitle,OIDC istemci ayrıntısı
 admin.oidc.clients.empty,Bu alanda henüz kayıtlı bir OpenID Connect istemcisi yok.
 admin.oidc.clients.exactMatchHint,Satır başına bir URI. Her yönlendirme tam olarak eşleştirilir; bu nedenle joker karakterler ve sondaki farklılıklar reddedilir.
+admin.oidc.clients.invalid,"Bir istemci adı, en az bir tam yönlendirme URI'si ve en az bir kapsam girin."
 admin.oidc.clients.lifecycleChanged,İstemcinin durumu değiştirildi.
 admin.oidc.clients.missingId,Bu hedef için bir OIDC istemcisi seçilmiş olmalıdır.
 admin.oidc.clients.name,İstemci adı
@@ -273,6 +279,7 @@ admin.oidc.clients.type,İstemci türü
 admin.oidc.clients.typeConfidential,Gizli
 admin.oidc.clients.typeHint,Gizli bir istemci gizli anahtarı bir sunucuda tutar. Mobil veya tek sayfalık uygulama gibi genel bir istemci bunu yapamaz.
 admin.oidc.clients.typePublic,Genel
+admin.oidc.confirmTitle,Bu değişikliği onaylayın
 admin.oidc.consents.client,Uygulama
 admin.oidc.consents.description,"Bir kişinin onayladığı uygulamalar. Bir onayı geri almak, uygulamayı yeniden onaylamasını gerektirir."
 admin.oidc.consents.empty,Bu kişi henüz hiçbir uygulamayı onaylamadı.
@@ -375,6 +382,7 @@ admin.organizations.domains.discoveryFound,"{domain}, {organization} kuruluşuna
 admin.organizations.domains.discoveryMissing,{domain} herhangi bir kuruluşa çözümlenmiyor.
 admin.organizations.domains.domain,Alan adı
 admin.organizations.domains.empty,Bu kuruluş henüz bir alan adı talep etmedi.
+admin.organizations.domains.invalid,Geçerli bir alan adı girin.
 admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Birincil etki alanı
 admin.organizations.domains.remove,Alan adını kaldır
@@ -389,11 +397,13 @@ admin.organizations.domains.verifyDone,Alan adı doğrulandı.
 admin.organizations.invitations.create,Kişi davet et
 admin.organizations.invitations.description,Kişileri e-posta ile davet edin ve hangi davetlerin hâlâ beklemede olduğunu izleyin.
 admin.organizations.invitations.email,Email address
+admin.organizations.invitations.emailInvalid,Geçerli bir e-posta adresi girin.
 admin.organizations.invitations.empty,Bu kuruluş için hiç davet gönderilmedi.
 admin.organizations.invitations.expires,Sona eriyor
 admin.organizations.invitations.revoke,Daveti iptal et
 admin.organizations.invitations.revokeConfirm,{email} için davet iptal edilsin mi? Davet bağlantısı anında çalışmayı durdurur.
 admin.organizations.invitations.revoked,Davet iptal edildi.
+admin.organizations.invitations.rolesInvalid,Bir ile dört arasında rol seçin.
 admin.organizations.invitations.sent,Davet oluşturuldu.
 admin.organizations.invitations.title,Davetler
 admin.organizations.invitations.tokenDismiss,Bu bağlantıyı kaydettim
@@ -410,12 +420,14 @@ admin.organizations.list.create,Kuruluş oluştur
 admin.organizations.list.description,"Kuruluşlar bu realm'in kişilerini, alan adlarını ve marka görünümünü gruplar."
 admin.organizations.list.empty,Bu realm'de henüz kuruluş yok.
 admin.organizations.list.name,Kuruluş adı
+admin.organizations.list.nameRequired,Bir kuruluş adı girin.
 admin.organizations.list.search,Kuruluşları ara
 admin.organizations.list.title,Kuruluşlar
 admin.organizations.memberships.add,Üye ekle
 admin.organizations.memberships.added,Üye eklendi.
 admin.organizations.memberships.description,Bu kuruluştaki kişiler ve kendilerine atanan sabit roller.
 admin.organizations.memberships.empty,Bu kuruluşun henüz üyesi yok.
+admin.organizations.memberships.invalid,Bir kullanıcı kimliği girin ve bir ile dört arasında rol seçin.
 admin.organizations.memberships.remove,Üyeyi kaldır
 admin.organizations.memberships.removeConfirm,{userId} bu organizasyondan çıkarılsın mı? Organizasyon erişimi hemen sona erer.
 admin.organizations.memberships.removed,Üye kaldırıldı.
@@ -436,7 +448,7 @@ admin.organizations.policy.externalIdentity,Harici kimlik sağlayıcıları
 admin.organizations.policy.inherited,Realm'den devralındı
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Şifre
-admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.passwordRecovery,Parola kurtarma
 admin.organizations.policy.registration,Self servis kayıt
 admin.organizations.policy.saved,Oturum açma politikası kaydedildi.
 admin.organizations.policy.title,Oturum açma politikası
@@ -451,6 +463,7 @@ admin.organizations.providers.disableConfirm,{displayName} devre dışı bırak�
 admin.organizations.providers.disabled,Sağlayıcı devre dışı bırakıldı.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Henüz harici kimlik sağlayıcısı yapılandırılmadı.
+admin.organizations.providers.invalid,"Bir görünen ad, istemci kimliği, istemci parolası ve mutlak bir yönlendirme URI'si girin."
 admin.organizations.providers.redirectUri,Yönlendirme URI'si
 admin.organizations.providers.rotateSecret,İstemci gizli anahtarını değiştir
 admin.organizations.providers.secretRotated,İstemci gizli anahtarı değiştirildi.
@@ -473,6 +486,7 @@ admin.projects.access.title,Etkin erişim
 admin.projects.applications.create,Uygulama ekle
 admin.projects.applications.description,Bu projeye karşı kimlik doğrulayan uygulamalar.
 admin.projects.applications.empty,Bu projenin henüz uygulaması yok.
+admin.projects.applications.invalid,Bir uygulama adı girin ve bir tür seçin.
 admin.projects.applications.name,Uygulama adı
 admin.projects.applications.removeConfirm,Bu uygulama kaldırılsın mı? Bu işlem geri alınamaz.
 admin.projects.applications.title,Uygulamalar
@@ -501,6 +515,7 @@ admin.projects.lifecycle.removeConfirm,Bu proje kaldırılsın mı?
 admin.projects.list.create,Proje oluştur
 admin.projects.list.description,"Projeler bir kuruluşun uygulamalarını, rollerini ve yetkilerini gruplar."
 admin.projects.list.empty,Bu realm'de henüz proje yok.
+admin.projects.list.invalid,Bir proje adı girin ve bir kuruluş seçin.
 admin.projects.list.name,Proje adı
 admin.projects.list.search,Projeleri ara
 admin.projects.list.title,Projeler
@@ -576,6 +591,7 @@ admin.users.create,Kullanıcı oluştur
 admin.users.createDescription,Geçerli realm'e bir insan kullanıcı ekleyin.
 admin.users.createSubmit,Oluştur
 admin.users.created,{userName} oluşturuldu.
+admin.users.createdAt,Oluşturulma
 admin.users.dangerZone,Tehlikeli bölge
 admin.users.delete,Kullanıcıyı sil
 admin.users.deleteConfirm,{userName} kalıcı olarak silinsin mi?
@@ -623,7 +639,7 @@ admin.users.sessions.title,Sessions and devices
 admin.users.state,Durum
 admin.users.title,Kullanıcılar
 admin.users.unverified,Doğrulanmamış
-admin.users.updated,Son güncelleme {date}
+admin.users.updated,Son güncelleme
 admin.users.userName,Username
 admin.users.verification,Doğrulama
 admin.users.verificationChanged,Doğrulama durumu artık {state}.
@@ -631,12 +647,16 @@ admin.users.verificationDescription,Bu kullanıcının e-posta adresinin doğrul
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
-app.tagline,Secure identity services
+app.tagline,Güvenli kimlik hizmetleri
 common.back,Geri
 common.cancel,İptal
 common.close,Kapat
 common.continue,Devam et
 common.decline,Decline
+common.disable,Kapat
+common.disabled,Kapalı
+common.enable,Aç
+common.enabled,Açık
 common.error,Bir şeyler ters gitti.
 common.language,Dil
 common.loading,Yükleniyor
@@ -646,45 +666,259 @@ common.save,Kaydet
 common.signIn,Giriş yap
 common.signInWithProvider,{provider} ile giriş yap
 common.signOut,Çıkış yap
-common.theme.dark,dark
-common.theme.light,light
-common.theme.system,system
+common.theme.dark,Koyu
+common.theme.light,Açık
+common.theme.system,Sistem
 common.urlPlaceholder,https://
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.account.eyebrow,Self-service identity
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.admin.directoryTitle,Administration directory
-demo.admin.eyebrow,Realm administration
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.description,"Explore the login, account, administration, and transactional email demos."
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.nav.account,Account
-demo.nav.admin,Admin
-demo.nav.compact,Compact
-demo.nav.emails,Emails
-demo.nav.hub,Hub
+demo.account.description,"Authworks tarafından desteklenen profil, kuruluş, güvenlik ve uygulama erişim yönetimi deneyimlerinin ağsız bir haritası. Her hedefin açık bir veri durumu sözleşmesi vardır."
+demo.account.eyebrow,Self servis kimlik
+demo.account.group.access.description,Bu hesap tarafından verilen uygulamalar ve izinler.
+demo.account.group.access.title,Erişim
+demo.account.group.identity.description,Kullanıcıların kendileri için yönettiği profil ve giriş ayrıntıları.
+demo.account.group.identity.title,Kişisel bilgiler
+demo.account.group.organizations.description,"Üyelik, kuruluş bağlamı ve davetler."
+demo.account.group.organizations.title,Kuruluşlar
+demo.account.group.security.description,"Oturumlar, kimlik doğrulama faktörleri ve bağlı kimlikler."
+demo.account.group.security.title,Güvenlik
+demo.account.scenario.consents.description,Daha önce uygulamalara verilen izinleri gözden geçirin ve iptal edin.
+demo.account.scenario.consents.title,Uygulama onayları
+demo.account.scenario.delete.description,Etkiyi gözden geçirin ve kalıcı hesap silme işlemini onaylayın.
+demo.account.scenario.delete.title,Hesabı sil
+demo.account.scenario.email.description,Giriş ve hesap iletişimi için kullanılan doğrulanmış adresi gözden geçirin.
+demo.account.scenario.email.title,E-posta adresi
+demo.account.scenario.factors.description,"Kimlik doğrulayıcı, e-posta ve geçiş anahtarı faktörlerini yönetin."
+demo.account.scenario.factors.title,Çok faktörlü kimlik doğrulama
+demo.account.scenario.identities.description,"Google, GitHub ve Microsoft hesaplarını gözden geçirin ve bağlantısını kaldırın."
+demo.account.scenario.identities.title,Bağlı kimlikler
+demo.account.scenario.invitation.description,Bir kuruluşa katılmadan önce daveti inceleyin.
+demo.account.scenario.invitation.title,Daveti kabul et
+demo.account.scenario.invitations.description,Giriş yapılmış hesaba gönderilen davetleri gözden geçirin.
+demo.account.scenario.invitations.title,Davetlerim
+demo.account.scenario.organizations.description,Üyelikleri görün ve aktif kuruluşu değiştirin.
+demo.account.scenario.organizations.title,Kuruluşlarım
+demo.account.scenario.passkeys.description,"Şifresiz kimlik bilgilerini kaydedin, adlandırın ve kaldırın."
+demo.account.scenario.passkeys.title,Geçiş anahtarları
+demo.account.scenario.password.description,Mevcut şifreyi değiştirin ve güvenlik durumunu gözden geçirin.
+demo.account.scenario.password.title,Şifre
+demo.account.scenario.profile.description,"Adları, kullanıcı adını ve tercih edilen dili gözden geçirin ve güncelleyin."
+demo.account.scenario.profile.title,Profil
+demo.account.scenario.recovery_codes.description,Yedek kodlar oluşturun ve bunları bir kez görüntüleyin.
+demo.account.scenario.recovery_codes.title,Kurtarma kodları
+demo.account.scenario.sessions.description,Aktif oturumları gözden geçirin ve artık kullanılmayan cihazları iptal edin.
+demo.account.scenario.sessions.title,Oturumlar ve cihazlar
+demo.account.title,Hesap demosu
+demo.admin.description,"Kişiler, kuruluşlar, uygulamalar, kimlik bilgileri ve denetim etkinliği etrafında şekillendirilmiş bir bilgi mimarisi kullanarak mevcut realmde gezinin. Kullanılabilir demolar ve planlanan durumsuz hedefler açıkça ayrılmıştır."
+demo.admin.directoryTitle,Yönetim dizini
+demo.admin.eyebrow,Realm yönetimi
+demo.admin.group.authorization.description,"Uygulamalar, proje rolleri, yetkiler ve değerlendirilen erişim."
+demo.admin.group.authorization.title,Projeler ve yetkilendirme
+demo.admin.group.machine_users.description,İnsan dışı kimlikler ve salt yazılır kimlik bilgileri.
+demo.admin.group.machine_users.title,Makine kullanıcıları
+demo.admin.group.oidc.description,"İstemciler, tam yönlendirme ayarları, onay, kapsamlar ve imzalama anahtarları."
+demo.admin.group.oidc.title,OpenID Connect
+demo.admin.group.operations.description,Realm oturumları ve değişmez güvenlik etkinliği.
+demo.admin.group.operations.title,İşlemler
+demo.admin.group.organizations.description,"Kuruluş ayarları, kişiler, davetler ve doğrulanmış alan adları."
+demo.admin.group.organizations.title,Kuruluşlar
+demo.admin.group.realm.description,"Realm genelinde kimlik, yaşam döngüsü ve giriş yapılandırması."
+demo.admin.group.realm.title,Realm
+demo.admin.group.users.description,"İnsan kimlikleri, kimlik bilgileri, oturumlar ve korunan destek eylemleri."
+demo.admin.group.users.title,Kullanıcılar
+demo.admin.realmFixtureName,Northwind müşteri kimliği
+demo.admin.scenario.admin_sign_in.description,Bir önyükleme kimlik bilgisini kısa bir yönetici tarayıcı oturumuyla değiştirin.
+demo.admin.scenario.admin_sign_in.title,Yönetici girişi
+demo.admin.scenario.applications.description,Proje uygulamalarını ve yaşam döngülerini yönetin.
+demo.admin.scenario.applications.title,Uygulamalar
+demo.admin.scenario.audit_events.description,Mevcut veri destekli güvenlik olayı akışına göz atın.
+demo.admin.scenario.audit_events.title,Denetim olayları
+demo.admin.scenario.branding.description,"Kuruluşa duyarlı renkleri, logoları ve yasal bağlantıları yapılandırın."
+demo.admin.scenario.branding.title,Markalama
+demo.admin.scenario.domains.description,Alan adlarını doğrulayın ve kuruluş keşfini denetleyin.
+demo.admin.scenario.domains.title,Alan adları ve keşif
+demo.admin.scenario.effective_access.description,"Salt okunur geçerli rolleri, izinleri ve erişim denetimlerini inceleyin."
+demo.admin.scenario.effective_access.title,Geçerli erişim
+demo.admin.scenario.impersonation.description,İzin verildiğinde gerekçeli ve zaman sınırlı bir destek oturumu başlatın.
+demo.admin.scenario.impersonation.title,Kimliğe bürünme
+demo.admin.scenario.invitations.description,Kişileri davet edin ve bekleyen veya süresi dolmuş davetleri takip edin.
+demo.admin.scenario.invitations.title,Davetler
+demo.admin.scenario.login_policy.description,"Giriş politikasını belirleyin ve Google, GitHub veya Microsoft'u yapılandırın."
+demo.admin.scenario.login_policy.title,Giriş ve kimlik sağlayıcıları
+demo.admin.scenario.machine_credentials.description,"İstemci kimlik bilgilerini, PAT'leri ve API anahtarlarını verin, döndürün ve iptal edin."
+demo.admin.scenario.machine_credentials.title,Kimlik bilgileri ve belirteçler
+demo.admin.scenario.machine_user_detail.description,"Kapsamları ve yaşam döngüsünü gözden geçirin, istemci gizli anahtarını döndürün ve kimlik bilgilerini yönetin."
+demo.admin.scenario.machine_user_detail.title,Makine kullanıcısı ayrıntısı
+demo.admin.scenario.machine_users.description,Hizmet kimliklerini ve yaşam döngülerini oluşturun ve yönetin.
+demo.admin.scenario.machine_users.title,Makine kullanıcısı dizini
+demo.admin.scenario.memberships.description,Üyelere sabit kuruluş rolleri atayın.
+demo.admin.scenario.memberships.title,Üyelikler ve roller
+demo.admin.scenario.oidc_client_detail.description,Tam yönlendirmeleri ve kapsamları düzenleyin ve istemci gizli anahtarını döndürün veya iptal edin.
+demo.admin.scenario.oidc_client_detail.title,OIDC istemci ayarları
+demo.admin.scenario.oidc_clients.description,"İstemcileri, yönlendirmeleri, kapsamları, güveni ve tek kullanımlık gizli anahtarları yönetin."
+demo.admin.scenario.oidc_clients.title,OIDC istemcileri
+demo.admin.scenario.oidc_consents.description,Bir kişinin onayladığı uygulamaları gözden geçirin ve iptal edin.
+demo.admin.scenario.oidc_consents.title,Uygulama onayları
+demo.admin.scenario.organization_detail.description,"Kuruluş ayarlarını, yaşam döngüsünü ve mevcut üyelikleri gözden geçirin."
+demo.admin.scenario.organization_detail.title,Kuruluş ayrıntısı
+demo.admin.scenario.organizations.description,"Mevcut realmdeki kuruluşlara göz atın, arayın ve oluşturun."
+demo.admin.scenario.organizations.title,Kuruluş dizini
+demo.admin.scenario.project_detail.description,Bir projenin ayarlarını ve yaşam döngüsünü gözden geçirin ve düzenleyin.
+demo.admin.scenario.project_detail.title,Proje ayarları
+demo.admin.scenario.projects.description,"Mevcut realmdeki projelere göz atın, arayın ve oluşturun."
+demo.admin.scenario.projects.title,Proje dizini
+demo.admin.scenario.protocol_documents.description,Salt okunur keşif ve JWKS uç noktalarını inceleyin.
+demo.admin.scenario.protocol_documents.title,Protokol belgeleri
+demo.admin.scenario.realm_overview.description,"Realm kimliğini, alan adlarını, yaşam döngüsü durumunu ve mevcut oturumu gözden geçirin."
+demo.admin.scenario.realm_overview.title,Realm genel bakış
+demo.admin.scenario.realm_settings.description,"Mevcut realm adını, alan adlarını, durumunu ve yaşam döngüsünü yönetin."
+demo.admin.scenario.realm_settings.title,Genel ayarlar
+demo.admin.scenario.roles_grants.description,Proje rollerini ve kuruluş erişim yetkilerini yapılandırın.
+demo.admin.scenario.roles_grants.title,Roller ve yetkiler
+demo.admin.scenario.sessions.description,Özne ve cihaz bağlamıyla realm oturumlarını gözden geçirin.
+demo.admin.scenario.sessions.title,Oturumlar
+demo.admin.scenario.signing_keys.description,Anahtar meta verilerini gözden geçirin ve korumalı döndürme gerçekleştirin.
+demo.admin.scenario.signing_keys.title,İmzalama anahtarları
+demo.admin.scenario.user_authentication.description,"Kullanıcı ayrıntılarında güvenli faktör, geçiş anahtarı ve kurtarma meta verilerini gözden geçirin."
+demo.admin.scenario.user_authentication.title,Kimlik doğrulama yöntemleri
+demo.admin.scenario.user_detail.description,"Profili, yaşam döngüsünü, oturumları ve güvenli kimlik doğrulama meta verilerini gözden geçirin."
+demo.admin.scenario.user_detail.title,Kullanıcı ayrıntısı
+demo.admin.scenario.user_sessions.description,Bir kullanıcının aktif tarayıcı oturumlarını inceleyin ve iptal edin.
+demo.admin.scenario.user_sessions.title,Kullanıcı oturumları
+demo.admin.scenario.users.description,Mevcut realmdeki insan kullanıcılarına göz atın ve arayın.
+demo.admin.scenario.users.title,Kullanıcı dizini
+demo.directory.available,Kullanılabilir
+demo.directory.availableDemos,kullanılabilir demo
+demo.directory.back,Dizine dön
+demo.directory.fixtureStates,Veri durumları
+demo.directory.openDemo,Demoyu aç
+demo.directory.planned,Planlanan
+demo.directory.plannedDestinations,planlanan hedef
+demo.directory.previewFoundation,Temel önizleme
+demo.fixture.accepted,kabul edildi
+demo.fixture.accountError,Hesabın belirlenimci test verileri yüklenemedi.
+demo.fixture.active,aktif
+demo.fixture.assuranceRequired,güvence gerekli
+demo.fixture.crossTenant,kiracılar arası
+demo.fixture.declined,reddedildi
+demo.fixture.empty,boş
+demo.fixture.ended,sonlandırıldı
+demo.fixture.error,hata
+demo.fixture.expired,süresi doldu
+demo.fixture.expiring,süresi doluyor
+demo.fixture.loading,yükleniyor
+demo.fixture.nestedRejected,iç içe reddedildi
+demo.fixture.oneTime,tek kullanımlık
+demo.fixture.permissionDenied,erişim engellendi
+demo.fixture.preview,Durumsuz veri önizlemesi
+demo.fixture.redacted,gizlendi
+demo.fixture.replayed,yeniden oynatıldı
+demo.fixture.state,Veri durumu
+demo.fixture.success,başarılı
+demo.hub.accountDescription,"Self servis profil, kuruluş ve güvenlik hedeflerini keşfedin."
+demo.hub.accountOpen,Hesabı aç
+demo.hub.adminDescription,Kimlik kaynaklarını ve kuruluş ayarlarını yönetin.
+demo.hub.adminOpen,Yönetimi aç
+demo.hub.description,"Giriş, hesap, yönetim ve işlem e-postaları demolarını keşfedin."
+demo.hub.loginDescription,Kullanıcılarınız için kimlik doğrulama deneyimini keşfedin.
+demo.hub.loginOpen,Girişi aç
+demo.login.description,"Belirleyici giriş, kurtarma ve etkileşim verilerini keşfedin. Mevcut akışlar etkileşimli kalırken planlanan hedefler durumsuz senaryo sözleşmelerini sunar."
+demo.login.eyebrow,Barındırılan kimlik doğrulama
+demo.login.group.chooser.description,Keşfedilen giriş politikasından ve yerel olarak hatırlanan hesaplardan türetilen giriş noktaları.
+demo.login.group.chooser.title,Girişi başlat
+demo.login.group.chrome.description,Barındırılan her etkileşim ekranı tarafından kullanılan akışlar arası yedekler.
+demo.login.group.chrome.title,Paylaşılan durumlar
+demo.login.group.interaction.description,Barındırılan OIDC istekleri için etkileşim sonuçları ve oturumu kapatma.
+demo.login.group.interaction.title,Etkileşim ve çıkış
+demo.login.group.mfa.description,"İkinci faktör zorlukları, kimlik doğrulayıcı kaydı ve kurtarma kodları."
+demo.login.group.mfa.title,Çok faktörlü kimlik doğrulama
+demo.login.group.password_email.description,Belirleyici yerel verilerle şifre ve e-posta koduyla kimlik doğrulama.
+demo.login.group.password_email.title,Şifre ve e-posta kodu
+demo.login.group.passwordless.description,"Geçiş anahtarları ve yapılandırılmış Google, GitHub ve Microsoft sağlayıcıları."
+demo.login.group.passwordless.title,Şifresiz ve harici
+demo.login.group.recovery.description,Hesap ifşa edilmeden şifre kurtarma isteğinde bulunun ve tamamlayın.
+demo.login.group.recovery.title,Kurtarma
+demo.login.group.registration.description,Kayıt ve sunucu tarafından verilen e-posta onayı.
+demo.login.group.registration.title,Kayıt ve doğrulama
+demo.login.scenario.chooser.description,İzin verilen bir birincil kimlik doğrulama yöntemi seçin.
+demo.login.scenario.chooser.title,Yöntem seçici
+demo.login.scenario.chooser_recent_accounts.description,Bu cihazda hatırlanan bir hesapla devam edin.
+demo.login.scenario.chooser_recent_accounts.title,Son hesaplar
+demo.login.scenario.email_otp.description,E-posta ile gönderilen tek kullanımlık bir kod isteyin.
+demo.login.scenario.email_otp.title,E-posta kodu iste
+demo.login.scenario.email_otp_code.description,Altı haneli e-posta doğrulama kodunu girin.
+demo.login.scenario.email_otp_code.title,E-posta kodunu doğrula
+demo.login.scenario.idp.description,Yapılandırılmış bir harici kimlik sağlayıcısı üzerinden devam edin.
+demo.login.scenario.idp.title,Harici kimlik
+demo.login.scenario.idp_failure.description,Harici sağlayıcı başlatma hatasından kurtarın.
+demo.login.scenario.idp_failure.title,Sağlayıcı hatası
+demo.login.scenario.loading.description,Realm keşfi çözümlenirken ilerlemeyi gösterin.
+demo.login.scenario.loading.title,Yükleniyor
+demo.login.scenario.logout.description,Mevcut tarayıcı oturumu için çıkış yapmayı onaylayın.
+demo.login.scenario.logout.title,Çıkış yap
+demo.login.scenario.logout_done.description,Tamamlanmış bir çıkışı ve doğrulanmış dönüş yolunu onaylayın.
+demo.login.scenario.logout_done.title,Çıkış yapıldı
+demo.login.scenario.mfa.description,Kullanılabilir bir ikinci faktör seçin.
+demo.login.scenario.mfa.title,Bir faktör seçin
+demo.login.scenario.mfa_email_otp.description,E-posta ile ikinci faktörü doğrulayın.
+demo.login.scenario.mfa_email_otp.title,E-posta kodu
+demo.login.scenario.mfa_passkey.description,İkinci faktör olarak bir geçiş anahtarını doğrulayın.
+demo.login.scenario.mfa_passkey.title,Geçiş anahtarı faktörü
+demo.login.scenario.mfa_recovery_code.description,Diğer faktörler kullanılamadığında tek bir kurtarma kodu kullanın.
+demo.login.scenario.mfa_recovery_code.title,Kurtarma kodu
+demo.login.scenario.mfa_totp.description,Zaman tabanlı bir kimlik doğrulayıcı kodunu doğrulayın.
+demo.login.scenario.mfa_totp.title,Kimlik doğrulayıcı kodu
+demo.login.scenario.mfa_totp_enroll.description,Yeni bir kimlik doğrulayıcı bağlayın ve onaylayın.
+demo.login.scenario.mfa_totp_enroll.title,Kimlik doğrulayıcıyı kaydet
+demo.login.scenario.passkey.description,Cihaza bağlı bir geçiş anahtarıyla kimlik doğrulaması yapın.
+demo.login.scenario.passkey.title,Geçiş anahtarı
+demo.login.scenario.passkey_unsupported.description,Tarayıcı veya cihaz uyumsuzluğunu açıklayın.
+demo.login.scenario.passkey_unsupported.title,Geçiş anahtarı kullanılamıyor
+demo.login.scenario.password.description,E-posta adresi veya kullanıcı adı ve şifre ile giriş yapın.
+demo.login.scenario.password.title,Şifre
+demo.login.scenario.password_change_required.description,Devam etmeden önce yeni bir şifre belirleyin.
+demo.login.scenario.password_change_required.title,Şifre değişikliği gerekli
+demo.login.scenario.password_error.description,Güvenli bir geçersiz kimlik bilgisi yanıtı gösterin.
+demo.login.scenario.password_error.title,Geçersiz kimlik bilgileri
+demo.login.scenario.password_forgot.description,Şifre kurtarma talimatlarını isteyin.
+demo.login.scenario.password_forgot.title,Kurtarma iste
+demo.login.scenario.password_forgot_sent.description,İfşa etmeyen e-posta onayını gösterin.
+demo.login.scenario.password_forgot_sent.title,Kurtarma istendi
+demo.login.scenario.password_reset.description,Kurtarma bağlantısından yeni bir şifre seçin.
+demo.login.scenario.password_reset.title,Şifreyi sıfırla
+demo.login.scenario.password_reset_complete.description,Başarılı bir sıfırlamanın ardından girişe dönün.
+demo.login.scenario.password_reset_complete.title,Sıfırlama tamamlandı
+demo.login.scenario.register.description,Aktif giriş politikası kapsamında bir insan hesabı oluşturun.
+demo.login.scenario.register.title,Kayıt
+demo.login.scenario.register_done.description,İfşa etmeyen doğrulama bildirimini gösterin.
+demo.login.scenario.register_done.title,Onay gönderildi
+demo.login.scenario.signed_in.description,Devam ettirilen etkileşim onayını gösterin.
+demo.login.scenario.signed_in.title,Etkileşim tamamlandı
+demo.login.scenario.unsupported.description,Desteklenmeyen veya süresi dolmuş bir etkileşimi açıklayın.
+demo.login.scenario.unsupported.title,Kullanılamayan istek
+demo.login.scenario.verify_email.description,Sunucu tarafından verilen bir bağlantıdan adresi onaylayın.
+demo.login.scenario.verify_email.title,E-posta doğrulama
+demo.login.title,Giriş demosu
+demo.nav.account,Hesap
+demo.nav.admin,Yönetim
+demo.nav.compact,Kompakt
+demo.nav.emails,E-postalar
+demo.nav.hub,Ana Sayfa
 demo.nav.label,Demo
-demo.nav.login,Login
+demo.nav.login,Giriş
+demo.placeholder.emptyDescription,Bu hedef kasıtlı bir boş durum için hazırdır.
+demo.placeholder.emptyTitle,Veri kaydı yok
+demo.placeholder.errorDescription,Belirleyici bir hata ağ isteği olmadan burada sunulabilir.
+demo.placeholder.errorTitle,Veri hatası
+demo.placeholder.loading,Veri yükleniyor
+demo.placeholder.notFoundDescription,Dizinden desteklenen bir hedef seçin.
+demo.placeholder.notFoundTitle,Demo hedefi bulunamadı
+demo.placeholder.readyDescription,"Rota, desteklenen durumlar ve demo bağdaştırıcı sınırı tanımlandı. Özellik sayfası bu aşamada kasıtlı olarak uygulanmamıştır."
+demo.placeholder.readyTitle,Veri sözleşmesi hazır
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
 email.directory.open,Open preview
-email.directory.title,Email previews
-email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
-email.hub.open,Open email previews
+email.directory.title,E-posta önizlemeleri
+email.hub.description,Ayrılmış HTML ve düz metin işlem mesajı verilerini gözden geçirin.
+email.hub.open,E-posta önizlemelerini aç
 email.preview.back,Tüm e-posta önizlemeleri
 email.preview.html,HTML önizlemesi
 email.preview.impersonationEnded,Taklit sona erdi
@@ -796,9 +1030,9 @@ login.register.userName,Kullanıcı adı
 login.signedIn.description,{organization}'da oturum açtınız.
 login.signedIn.title,Oturum açıldı
 login.status.loading,Oturum açma işlemi hazırlanıyor
-login.status.unavailableDescription,Bu oturum açma isteği tamamlanamıyor. Uygulamaya dönüp tekrar deneyin.
+login.status.unavailableDescription,Bu oturum açma isteği tamamlanamıyor. Uygulamaya dönün ve tekrar deneyin.
 login.status.unavailableTitle,Oturum açma kullanılamıyor
-login.totpEnroll.description,Bu kurulum anahtarını kimlik doğrulayıcı uygulamanıza ekleyin ve ardından oluşturduğu kodu girin. Anahtar yalnızca şimdi gösteriliyor.
+login.totpEnroll.description,Bu kurulum anahtarını kimlik doğrulama uygulamanıza ekleyin ve ardından oluşturduğu kodu girin. Anahtar yalnızca şimdi gösterilir.
 login.totpEnroll.start,Kurulum anahtarını göster
 login.totpEnroll.submit,Kurulumu bitir
 login.totpEnroll.title,Bir kimlik doğrulayıcı uygulaması kurun
@@ -807,3 +1041,72 @@ login.verify.submit,E
 login.verify.title,E-posta adresinizi doğrulayın
 login.verify.verifiedDescription,{email} onaylandı. Şimdi oturum açabilirsiniz.
 login.verify.verifiedTitle,E-posta adresi onaylandı
+shell.guard.accessUnavailable,Erişim kullanılamıyor
+shell.guard.contextRequired,Bağlam gerekli
+shell.guard.contextRequiredDetail,Devam etmeden önce gerekli realm veya organizasyonu seçin.
+shell.guard.destinationUnavailable,Hedef kullanılamıyor
+shell.guard.destinationUnavailableDetail,İstenen hedef bu uygulamanın bir parçası değil.
+shell.guard.pageNotFound,Sayfa bulunamadı
+shell.guard.signInRequired,Oturum açma gerekli
+shell.guard.signInRequiredDetail,Bu hedefe devam etmek için oturum açın.
+shell.nav.acceptInvitation,Daveti kabul et
+shell.nav.access,Erişim
+shell.nav.account,Hesap
+shell.nav.administratorSignIn,Yönetici oturumu açma
+shell.nav.applicationConsent,Uygulama onayı
+shell.nav.applicationConsents,Uygulama onayları
+shell.nav.applications,Uygulamalar
+shell.nav.auditEvents,Denetim olayları
+shell.nav.branding,Marka görünümü
+shell.nav.chooseDestination,Bir hedef seçin
+shell.nav.credentialsTokens,Kimlik bilgileri ve belirteçler
+shell.nav.deleteAccount,Hesabı sil
+shell.nav.directory,Dizin
+shell.nav.emailAddress,E-posta adresi
+shell.nav.emailOtpSignIn,E-posta kodu ile giriş
+shell.nav.externalIdentitySignIn,Harici kimlik ile giriş
+shell.nav.impersonation,Kimliğe bürünme
+shell.nav.invitations,Davetler
+shell.nav.linkedIdentities,Bağlı kimlikler
+shell.nav.loginPolicy,Oturum açma ve kimlik
+shell.nav.loginPolicyProviders,Oturum açma ve kimlik sağlayıcıları
+shell.nav.logout,Oturumu kapat
+shell.nav.machineCredentials,Makine kimlik bilgileri
+shell.nav.machineUsers,Makine kullanıcıları
+shell.nav.membershipsRoles,Üyeler ve roller
+shell.nav.mfa,Çok faktörlü kimlik doğrulama
+shell.nav.mfaSignIn,Çok faktörlü giriş
+shell.nav.myOrganizations,Organizasyonlarım
+shell.nav.navigationTitle,{title} gezintisi
+shell.nav.oidcClients,OIDC istemcileri
+shell.nav.openIdConnect,OpenID Connect
+shell.nav.operations,İşlemler
+shell.nav.organization,Kuruluş
+shell.nav.organizations,Kuruluşlar
+shell.nav.overview,Genel bakış
+shell.nav.passkeySignIn,Geçiş anahtarı ile giriş
+shell.nav.passkeys,Geçiş anahtarları
+shell.nav.password,Şifre
+shell.nav.passwordRecovery,Parola kurtarma
+shell.nav.passwordSignIn,Şifre ile giriş
+shell.nav.personalInformation,Kişisel bilgiler
+shell.nav.profile,Profil
+shell.nav.projects,Projeler
+shell.nav.protocolDocuments,Protokol belgeleri
+shell.nav.realm,Alan
+shell.nav.realmSettings,Alan ayarları
+shell.nav.recoveryCodes,Kurtarma kodları
+shell.nav.registration,Kayıt
+shell.nav.rolesGrants,Roller ve yetkiler
+shell.nav.security,Güvenlik
+shell.nav.sessions,Oturumlar
+shell.nav.sessionsDevices,Oturumlar ve cihazlar
+shell.nav.signingKeys,İmzalama anahtarları
+shell.nav.users,Kullanıcılar
+shell.nav.verifyEmail,E-postayı doğrula
+shell.state.errorDetail,Sayfa hazırlanamadı. Hazır olduğunuzda tekrar deneyin.
+shell.state.inaccessibleDetail,Mevcut bağlamda bu hedefe erişiminiz yok.
+shell.state.loadingDetail,Bu sayfa ve güvenlik bağlamı hazırlanıyor.
+shell.state.nothingHere,Henüz burada bir şey yok
+shell.state.pageUnavailable,Bu sayfa kullanılamıyor
+shell.state.readyDetail,Bu sayfa özellik içeriği için hazır.

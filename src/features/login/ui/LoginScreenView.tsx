@@ -40,7 +40,7 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
       <Match when={state.status() === "unavailable" || state.screen() === "unsupported"}>
         <LoginUnavailableFrame>
           <LoginNoticePanel
-            description={state.errorMessage() ?? messageTranslate("login.status.unavailableDescription")}
+            description={messageTranslate("login.status.unavailableDescription")}
             kind="error"
             title={messageTranslate("login.status.unavailableTitle")}
           />

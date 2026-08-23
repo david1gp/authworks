@@ -16,7 +16,7 @@ import { OrganizationAdminProductionAdapter } from "../../features/organizations
 import { organizationAdminScreenSchema } from "../../features/organizations/ui/organizationAdminScreenSchema.js"
 import { ProjectAdminProductionAdapter } from "../../features/projects/ui/ProjectAdminProductionAdapter.js"
 import { projectAdminScreenSchema } from "../../features/projects/ui/projectAdminScreenSchema.js"
-import { ttc } from "../i18n/model/ttc.js"
+import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { ProductionAuthenticatedShell } from "./ProductionAuthenticatedShell.js"
 import { ProductionFocusShell } from "./ProductionFocusShell.js"
 import { ProductionStatePanel } from "./ProductionStatePanel.js"
@@ -32,11 +32,11 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
     <Show
       when={state.screen()}
       fallback={
-        <ProductionFocusShell title={ttc("Page not found")}>
+        <ProductionFocusShell title={messageTranslate("shell.guard.pageNotFound")}>
           <ProductionStatePanel
-            detail={ttc("The requested destination is not part of this application.")}
+            detail={messageTranslate("shell.guard.destinationUnavailableDetail")}
             state="inaccessible"
-            title={ttc("Destination unavailable")}
+            title={messageTranslate("shell.guard.destinationUnavailable")}
           />
         </ProductionFocusShell>
       }
@@ -44,51 +44,51 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
       {(screen) => (
         <Switch>
           <Match when={state.guardState().status === "loading"}>
-            <ProductionFocusShell title={ttc(screen().title)}>
+            <ProductionFocusShell title={messageTranslate(screen().title)}>
               <ProductionStatePanel state="loading" />
             </ProductionFocusShell>
           </Match>
           <Match when={state.guardState().status === "anonymous"}>
-            <ProductionFocusShell title={ttc(screen().title)}>
+            <ProductionFocusShell title={messageTranslate(screen().title)}>
               <ProductionStatePanel
-                detail={ttc("Sign in to continue to this destination.")}
+                detail={messageTranslate("shell.guard.signInRequiredDetail")}
                 state="inaccessible"
-                title={ttc("Sign-in required")}
+                title={messageTranslate("shell.guard.signInRequired")}
               />
             </ProductionFocusShell>
           </Match>
           <Match when={state.guardState().status === "missing-context"}>
-            <ProductionFocusShell title={ttc(screen().title)}>
+            <ProductionFocusShell title={messageTranslate(screen().title)}>
               <ProductionStatePanel
-                detail={ttc("Choose the required realm or organization before continuing.")}
+                detail={messageTranslate("shell.guard.contextRequiredDetail")}
                 state="inaccessible"
-                title={ttc("Context required")}
+                title={messageTranslate("shell.guard.contextRequired")}
               />
             </ProductionFocusShell>
           </Match>
           <Match when={state.guardState().status === "insufficient-permission"}>
-            <ProductionFocusShell title={ttc(screen().title)}>
-              <ProductionStatePanel state="inaccessible" title={ttc("Access unavailable")} />
+            <ProductionFocusShell title={messageTranslate(screen().title)}>
+              <ProductionStatePanel state="inaccessible" title={messageTranslate("shell.guard.accessUnavailable")} />
             </ProductionFocusShell>
           </Match>
           <Match when={state.guardState().status === "authenticated"}>
             <Show
               when={state.shellKind() !== "focus" && screen().key !== "sign-in"}
               fallback={
-                <ProductionFocusShell title={ttc(screen().title)}>
+                <ProductionFocusShell title={messageTranslate(screen().title)}>
                   <ProductionRouteContent state={state} />
                 </ProductionFocusShell>
               }
             >
               <ProductionAuthenticatedShell
                 kind={state.shellKind() as "account" | "admin" | "invitations"}
-                title={ttc(screen().title)}
+                title={screen().title}
               >
                 <header class="mb-7">
                   <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    {ttc("Authworks")}
+                    {messageTranslate("app.name")}
                   </p>
-                  <h1 class="mt-2 text-3xl font-semibold tracking-tight">{ttc(screen().title)}</h1>
+                  <h1 class="mt-2 text-3xl font-semibold tracking-tight">{messageTranslate(screen().title)}</h1>
                 </header>
                 <ProductionRouteContent state={state} />
               </ProductionAuthenticatedShell>

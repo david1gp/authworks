@@ -2,6 +2,7 @@ import { useLocation } from "@solidjs/router"
 import type { DemoFixtureScenarioGroup } from "../demoFixtureScenarioGroupSchema.js"
 import { demoFixtureScenarioHrefBuild } from "../demoFixtureScenarioHrefBuild.js"
 import { demoFixtureScenarioSelect } from "../demoFixtureScenarioSelect.js"
+import { demoFixtureStateLabel } from "../demoFixtureStateLabel.js"
 import { demoFixtureStateSelect } from "../demoFixtureStateSelect.js"
 
 export function demoScenarioPlaceholderStateCreate(groups: () => readonly DemoFixtureScenarioGroup[]) {
@@ -15,7 +16,7 @@ export function demoScenarioPlaceholderStateCreate(groups: () => readonly DemoFi
     stateOptions: () =>
       (scenario()?.states ?? ["success"]).map((fixtureState) => ({
         href: demoFixtureScenarioHrefBuild(location.pathname, fixtureState),
-        label: fixtureState,
+        label: demoFixtureStateLabel(fixtureState),
         selected: fixtureState === selectedState(),
       })),
   }

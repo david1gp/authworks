@@ -103,6 +103,7 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+admin.common.confirmTitle,Deze actie bevestigen
 admin.common.next,Volgende
 admin.common.pagination,Paginering
 admin.common.permission,U hebt geen toestemming om deze beheergegevens te bekijken.
@@ -145,7 +146,7 @@ admin.impersonation.noOrganization,No organization
 admin.impersonation.organization,Organization
 admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
 admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.permissionDeniedTitle,Toegang niet beschikbaar
 admin.impersonation.reason,Reason
 admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
 admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
@@ -169,6 +170,8 @@ admin.machine.credentials.description,"Referenties die een machinegebruiker toon
 admin.machine.credentials.empty,Deze machinegebruiker heeft nog geen referenties.
 admin.machine.credentials.expires,Verloopt
 admin.machine.credentials.expiresHint,Laat dit leeg om een referentie zonder vervaldatum uit te geven.
+admin.machine.credentials.expiryInvalid,Voer een geldige vervaldatum in of laat het veld leeg voor een referentie zonder vervaldatum.
+admin.machine.credentials.expiryPast,Kies een vervaldatum in de toekomst.
 admin.machine.credentials.issue,Referentie uitgeven
 admin.machine.credentials.issueDescription,Geef een persoonlijk toegangstoken of een API-sleutel uit. De waarde wordt eenmalig getoond en kan niet worden hersteld.
 admin.machine.credentials.kind,Type referentie
@@ -178,6 +181,7 @@ admin.machine.credentials.kindClientSecret,Clientgeheim
 admin.machine.credentials.kindHint,Een persoonlijk toegangstoken handelt rechtstreeks namens de machinegebruiker. Een API-sleutel is bedoeld voor één integratie.
 admin.machine.credentials.kindToken,Persoonlijk toegangstoken
 admin.machine.credentials.name,Naam
+admin.machine.credentials.nameRequired,Voer een naam in zodat deze referentie later herkenbaar is.
 admin.machine.credentials.neverExpires,Verloopt niet
 admin.machine.credentials.onceWarning,De uitgegeven waarde wordt eenmalig getoond. Bewaar deze voordat u dit venster sluit; ze kan niet opnieuw worden opgehaald.
 admin.machine.credentials.revoke,Intrekken
@@ -229,6 +233,7 @@ admin.machine.users.description,"Niet-menselijke identiteiten die zich in dit re
 admin.machine.users.detailTitle,Machinegebruikersdetails
 admin.machine.users.displayName,Weergavenaam
 admin.machine.users.empty,Er bestaat nog geen machinegebruiker in dit realm.
+admin.machine.users.invalid,Voer een weergavenaam en een gebruikersnaam in en gebruik alleen geldige scopewaarden.
 admin.machine.users.lifecycleChanged,De status van de machinegebruiker is gewijzigd.
 admin.machine.users.missingId,Er moet een machinegebruiker zijn geselecteerd voor deze bestemming.
 admin.machine.users.noScopes,Geen scopes
@@ -240,7 +245,7 @@ admin.machine.users.userName,Gebruikersnaam
 admin.machine.users.userNameHint,Wordt gebruikt als client-ID bij het inwisselen van clientreferenties.
 admin.navigation.description,Choose an administration resource
 admin.navigation.hide,Hide sidebar
-admin.navigation.label,Administration
+admin.navigation.label,Beheer
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Het beheren van OpenID Connect-instellingen vereist een sterkere, recentere aanmelding. Meld u opnieuw aan om door te gaan."
 admin.oidc.assuranceRequiredTitle,Sterkere aanmelding vereist
@@ -254,6 +259,7 @@ admin.oidc.clients.description,Toepassingen die mensen via OpenID Connect authen
 admin.oidc.clients.detailTitle,OIDC-clientdetails
 admin.oidc.clients.empty,Er zijn nog geen OpenID Connect-clients geregistreerd in dit realm.
 admin.oidc.clients.exactMatchHint,"Eén URI per regel. Elke omleiding wordt exact vergeleken, dus jokertekens en afwijkende einden worden geweigerd."
+admin.oidc.clients.invalid,"Voer een clientnaam, minstens één exacte redirect-URI en minstens één scope in."
 admin.oidc.clients.lifecycleChanged,De status van de client is gewijzigd.
 admin.oidc.clients.missingId,Er moet een OIDC-client zijn geselecteerd voor deze bestemming.
 admin.oidc.clients.name,Clientnaam
@@ -273,6 +279,7 @@ admin.oidc.clients.type,Clienttype
 admin.oidc.clients.typeConfidential,Vertrouwelijk
 admin.oidc.clients.typeHint,"Een vertrouwelijke client bewaart een secret op een server. Een openbare client, zoals een mobiele of single-page-app, kan dat niet."
 admin.oidc.clients.typePublic,Openbaar
+admin.oidc.confirmTitle,Deze wijziging bevestigen
 admin.oidc.consents.client,Toepassing
 admin.oidc.consents.description,Toepassingen die een persoon heeft goedgekeurd. Bij het intrekken van een toestemming wordt opnieuw om goedkeuring gevraagd.
 admin.oidc.consents.empty,Deze persoon heeft nog geen enkele toepassing goedgekeurd.
@@ -375,6 +382,7 @@ admin.organizations.domains.discoveryFound,{domain} wordt herleid naar {organiza
 admin.organizations.domains.discoveryMissing,{domain} wordt niet herleid naar een organisatie.
 admin.organizations.domains.domain,Domein
 admin.organizations.domains.empty,Deze organisatie heeft nog geen domein geclaimd.
+admin.organizations.domains.invalid,Voer een geldige domeinnaam in.
 admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Primair domein
 admin.organizations.domains.remove,Domein verwijderen
@@ -389,11 +397,13 @@ admin.organizations.domains.verifyDone,Het domein is geverifieerd.
 admin.organizations.invitations.create,Persoon uitnodigen
 admin.organizations.invitations.description,Nodig mensen uit per e-mail en volg welke uitnodigingen nog openstaan.
 admin.organizations.invitations.email,Email address
+admin.organizations.invitations.emailInvalid,Voer een geldig e-mailadres in.
 admin.organizations.invitations.empty,Er zijn geen uitnodigingen verstuurd voor deze organisatie.
 admin.organizations.invitations.expires,Verloopt
 admin.organizations.invitations.revoke,Uitnodiging intrekken
 admin.organizations.invitations.revokeConfirm,De uitnodiging voor {email} intrekken? De uitnodigingslink werkt onmiddellijk niet meer.
 admin.organizations.invitations.revoked,De uitnodiging is ingetrokken.
+admin.organizations.invitations.rolesInvalid,Kies tussen één en vier rollen.
 admin.organizations.invitations.sent,De uitnodiging is aangemaakt.
 admin.organizations.invitations.title,Uitnodigingen
 admin.organizations.invitations.tokenDismiss,Ik heb deze link opgeslagen
@@ -410,12 +420,14 @@ admin.organizations.list.create,Organisatie aanmaken
 admin.organizations.list.description,"Organisaties groeperen de mensen, domeinen en huisstijl van dit realm."
 admin.organizations.list.empty,Er bestaan nog geen organisaties in dit realm.
 admin.organizations.list.name,Organisatienaam
+admin.organizations.list.nameRequired,Voer een organisatienaam in.
 admin.organizations.list.search,Organisaties zoeken
 admin.organizations.list.title,Organisaties
 admin.organizations.memberships.add,Lid toevoegen
 admin.organizations.memberships.added,Het lid is toegevoegd.
 admin.organizations.memberships.description,De mensen in deze organisatie en de vaste rollen die aan hen zijn toegewezen.
 admin.organizations.memberships.empty,Deze organisatie heeft nog geen leden.
+admin.organizations.memberships.invalid,Voer een gebruikers-ID in en kies tussen één en vier rollen.
 admin.organizations.memberships.remove,Lid verwijderen
 admin.organizations.memberships.removeConfirm,{userId} uit deze organisatie verwijderen? Toegang tot de organisatie eindigt onmiddellijk.
 admin.organizations.memberships.removed,Het lid is verwijderd.
@@ -436,7 +448,7 @@ admin.organizations.policy.externalIdentity,Externe identiteitsproviders
 admin.organizations.policy.inherited,Overgenomen van het realm
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Wachtwoord
-admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.passwordRecovery,Wachtwoordherstel
 admin.organizations.policy.registration,Zelfregistratie
 admin.organizations.policy.saved,Het inlogbeleid is opgeslagen.
 admin.organizations.policy.title,Inlogbeleid
@@ -451,6 +463,7 @@ admin.organizations.providers.disableConfirm,{displayName} uitschakelen? Mensen 
 admin.organizations.providers.disabled,De provider is uitgeschakeld.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Er is nog geen externe identiteitsprovider geconfigureerd.
+admin.organizations.providers.invalid,"Voer een weergavenaam, client-ID, clientgeheim en een absolute redirect-URI in."
 admin.organizations.providers.redirectUri,Redirect-URI
 admin.organizations.providers.rotateSecret,Clientgeheim vervangen
 admin.organizations.providers.secretRotated,Het clientgeheim is vervangen.
@@ -473,6 +486,7 @@ admin.projects.access.title,Effectieve toegang
 admin.projects.applications.create,Applicatie toevoegen
 admin.projects.applications.description,Applicaties die zich authenticeren bij dit project.
 admin.projects.applications.empty,Dit project heeft nog geen applicaties.
+admin.projects.applications.invalid,Voer een toepassingsnaam in en kies een type.
 admin.projects.applications.name,Applicatienaam
 admin.projects.applications.removeConfirm,Deze toepassing verwijderen? Dit kan niet ongedaan worden gemaakt.
 admin.projects.applications.title,Applicaties
@@ -501,6 +515,7 @@ admin.projects.lifecycle.removeConfirm,Dit project verwijderen?
 admin.projects.list.create,Project aanmaken
 admin.projects.list.description,"Projecten groeperen de applicaties, rollen en toekenningen van een organisatie."
 admin.projects.list.empty,Er bestaan nog geen projecten in dit realm.
+admin.projects.list.invalid,Voer een projectnaam in en kies een organisatie.
 admin.projects.list.name,Projectnaam
 admin.projects.list.search,Projecten zoeken
 admin.projects.list.title,Projecten
@@ -576,6 +591,7 @@ admin.users.create,Gebruiker aanmaken
 admin.users.createDescription,Voeg een menselijke gebruiker toe aan het huidige realm.
 admin.users.createSubmit,Aanmaken
 admin.users.created,{userName} is aangemaakt.
+admin.users.createdAt,Aangemaakt
 admin.users.dangerZone,Gevarenzone
 admin.users.delete,Gebruiker verwijderen
 admin.users.deleteConfirm,{userName} definitief verwijderen?
@@ -623,7 +639,7 @@ admin.users.sessions.title,Sessions and devices
 admin.users.state,Status
 admin.users.title,Gebruikers
 admin.users.unverified,Niet geverifieerd
-admin.users.updated,Laatst bijgewerkt {date}
+admin.users.updated,Laatst bijgewerkt
 admin.users.userName,Username
 admin.users.verification,Verificatie
 admin.users.verificationChanged,De verificatiestatus is nu {state}.
@@ -631,12 +647,16 @@ admin.users.verificationDescription,Bepaal of het e-mailadres van deze gebruiker
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
-app.tagline,Secure identity services
+app.tagline,Veilige identiteitsdiensten
 common.back,Terug
 common.cancel,Annuleren
 common.close,Sluiten
 common.continue,Doorgaan
 common.decline,Decline
+common.disable,Uitschakelen
+common.disabled,Uitgeschakeld
+common.enable,Inschakelen
+common.enabled,Ingeschakeld
 common.error,Er is iets misgegaan.
 common.language,Taal
 common.loading,Laden
@@ -646,45 +666,259 @@ common.save,Opslaan
 common.signIn,Inloggen
 common.signInWithProvider,Inloggen met {provider}
 common.signOut,Uitloggen
-common.theme.dark,dark
-common.theme.light,light
-common.theme.system,system
+common.theme.dark,Donker
+common.theme.light,Licht
+common.theme.system,Systeem
 common.urlPlaceholder,https://
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.account.eyebrow,Self-service identity
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.admin.directoryTitle,Administration directory
-demo.admin.eyebrow,Realm administration
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.description,"Explore the login, account, administration, and transactional email demos."
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
+demo.account.description,"Een netwerkvrije kaart van de ervaringen met profiel-, organisatie-, beveiligings- en applicatietoegangsbeheer die Authworks ondersteunt. Elke bestemming heeft een expliciet fixture-statuscontract."
+demo.account.eyebrow,Selfservice-identiteit
+demo.account.group.access.description,Applicaties en machtigingen verleend door dit account.
+demo.account.group.access.title,Toegang
+demo.account.group.identity.description,De profiel- en inloggegevens die gebruikers voor zichzelf beheren.
+demo.account.group.identity.title,Persoonlijke gegevens
+demo.account.group.organizations.description,"Lidmaatschap, organisatiecontext en uitnodigingen."
+demo.account.group.organizations.title,Organisaties
+demo.account.group.security.description,"Sessies, authenticatiefactoren en gekoppelde identiteiten."
+demo.account.group.security.title,Beveiliging
+demo.account.scenario.consents.description,Controleer en trek eerder verleende machtigingen aan applicaties in.
+demo.account.scenario.consents.title,Applicatietoestemmingen
+demo.account.scenario.delete.description,Controleer de gevolgen en bevestig permanente verwijdering van het account.
+demo.account.scenario.delete.title,Account verwijderen
+demo.account.scenario.email.description,Controleer het geverifieerde adres dat wordt gebruikt voor inloggen en accountcommunicatie.
+demo.account.scenario.email.title,E-mailadres
+demo.account.scenario.factors.description,"Beheer authenticator-, e-mail- en passkey-factoren."
+demo.account.scenario.factors.title,Meervoudige authenticatie
+demo.account.scenario.identities.description,"Controleer en ontkoppel Google-, GitHub- en Microsoft-accounts."
+demo.account.scenario.identities.title,Gekoppelde identiteiten
+demo.account.scenario.invitation.description,Inspecteer een uitnodiging voordat u lid wordt van een organisatie.
+demo.account.scenario.invitation.title,Uitnodiging accepteren
+demo.account.scenario.invitations.description,Controleer uitnodigingen die zijn gericht aan het ingelogde account.
+demo.account.scenario.invitations.title,Mijn uitnodigingen
+demo.account.scenario.organizations.description,Bekijk lidmaatschappen en wissel van actieve organisatie.
+demo.account.scenario.organizations.title,Mijn organisaties
+demo.account.scenario.passkeys.description,"Registreer, benoem en verwijder wachtwoordloze inloggegevens."
+demo.account.scenario.passkeys.title,Passkeys
+demo.account.scenario.password.description,Wijzig het huidige wachtwoord en controleer de beveiligingsstatus.
+demo.account.scenario.password.title,Wachtwoord
+demo.account.scenario.profile.description,"Controleer en update namen, gebruikersnaam en voorkeurstaal."
+demo.account.scenario.profile.title,Profiel
+demo.account.scenario.recovery_codes.description,Genereer vervangende codes en toon ze eenmalig.
+demo.account.scenario.recovery_codes.title,Herstelcodes
+demo.account.scenario.sessions.description,Controleer actieve sessies en trek niet meer gebruikte apparaten in.
+demo.account.scenario.sessions.title,Sessies en apparaten
+demo.account.title,Accountdemo
+demo.admin.description,"Navigeer door de huidige realm met behulp van een informatiearchitectuur rond mensen, organisaties, applicaties, inloggegevens en auditactiviteiten. Beschikbare demo's en geplande statusloze bestemmingen zijn duidelijk gescheiden."
+demo.admin.directoryTitle,Beheerdersoverzicht
+demo.admin.eyebrow,Realm-beheer
+demo.admin.group.authorization.description,"Applicaties, projectrollen, toekenningen en geëvalueerde toegang."
+demo.admin.group.authorization.title,Projecten en autorisatie
+demo.admin.group.machine_users.description,Niet-menselijke identiteiten en hun alleen-schrijven inloggegevens.
+demo.admin.group.machine_users.title,Machinegebruikers
+demo.admin.group.oidc.description,"Clients, exacte omleidingsinstellingen, toestemming, scopes en ondertekeningssleutels."
+demo.admin.group.oidc.title,OpenID Connect
+demo.admin.group.operations.description,Realm-sessies en onveranderlijke beveiligingsactiviteit.
+demo.admin.group.operations.title,Bewerkingen
+demo.admin.group.organizations.description,"Organisatie-instellingen, personen, uitnodigingen en geverifieerde domeinen."
+demo.admin.group.organizations.title,Organisaties
+demo.admin.group.realm.description,"Realm-brede configuratie van identiteit, levenscyclus en inloggen."
+demo.admin.group.realm.title,Realm
+demo.admin.group.users.description,"Menselijke identiteiten, inloggegevens, sessies en beveiligde ondersteuningsacties."
+demo.admin.group.users.title,Gebruikers
+demo.admin.realmFixtureName,Northwind-klantidentiteit
+demo.admin.scenario.admin_sign_in.description,Wissel een bootstrap-inloggegeven in voor een korte beheerdersbrowsersessie.
+demo.admin.scenario.admin_sign_in.title,Beheerdersaanmelding
+demo.admin.scenario.applications.description,Beheer projectapplicaties en hun levenscyclus.
+demo.admin.scenario.applications.title,Applicaties
+demo.admin.scenario.audit_events.description,"Blader door de huidige, door fixtures ondersteunde beveiligingsgebeurtenissenstroom."
+demo.admin.scenario.audit_events.title,Auditgebeurtenissen
+demo.admin.scenario.branding.description,"Configureer organisatiebewuste kleuren, logo's en juridische links."
+demo.admin.scenario.branding.title,Huisstijl
+demo.admin.scenario.domains.description,Verifieer domeinen en beheer organisatiedetectie.
+demo.admin.scenario.domains.title,Domeinen en detectie
+demo.admin.scenario.effective_access.description,"Inspecteer alleen-lezen effectieve rollen, machtigingen en toegangscontroles."
+demo.admin.scenario.effective_access.title,Effectieve toegang
+demo.admin.scenario.impersonation.description,"Start een gemotiveerde, tijdsgebonden ondersteuningssessie indien toegestaan."
+demo.admin.scenario.impersonation.title,Identiteitsaanname
+demo.admin.scenario.invitations.description,Nodig mensen uit en volg openstaande of verlopen uitnodigingen.
+demo.admin.scenario.invitations.title,Uitnodigingen
+demo.admin.scenario.login_policy.description,"Stel het inlogbeleid in en configureer Google, GitHub of Microsoft."
+demo.admin.scenario.login_policy.title,Inloggen en identiteitsproviders
+demo.admin.scenario.machine_credentials.description,"Verstrek, roteer en trek client-inloggegevens, PAT's en API-sleutels in."
+demo.admin.scenario.machine_credentials.title,Inloggegevens en tokens
+demo.admin.scenario.machine_user_detail.description,"Controleer scopes en levenscyclus, roteer het clientgeheim en beheer inloggegevens."
+demo.admin.scenario.machine_user_detail.title,Machinegebruikersdetails
+demo.admin.scenario.machine_users.description,Maak en beheer service-identiteiten en hun levenscyclus.
+demo.admin.scenario.machine_users.title,Machinegebruikersoverzicht
+demo.admin.scenario.memberships.description,Wijs vaste organisatierollen toe aan leden.
+demo.admin.scenario.memberships.title,Lidmaatschappen en rollen
+demo.admin.scenario.oidc_client_detail.description,"Bewerk exacte omleidingen en scopes, en roteer of trek het clientgeheim in."
+demo.admin.scenario.oidc_client_detail.title,OIDC-clientinstellingen
+demo.admin.scenario.oidc_clients.description,"Beheer clients, omleidingen, scopes, vertrouwen en eenmalige geheimen."
+demo.admin.scenario.oidc_clients.title,OIDC-clients
+demo.admin.scenario.oidc_consents.description,Controleer en trek de applicaties in die een persoon heeft goedgekeurd.
+demo.admin.scenario.oidc_consents.title,Applicatietoestemmingen
+demo.admin.scenario.organization_detail.description,"Controleer organisatie-instellingen, levenscyclus en huidige lidmaatschappen."
+demo.admin.scenario.organization_detail.title,Organisatiedetails
+demo.admin.scenario.organizations.description,"Blader, zoek en maak organisaties in de huidige realm."
+demo.admin.scenario.organizations.title,Organisatieoverzicht
+demo.admin.scenario.project_detail.description,Controleer en bewerk de instellingen en levenscyclus van een project.
+demo.admin.scenario.project_detail.title,Projectinstellingen
+demo.admin.scenario.projects.description,"Blader, zoek en maak projecten in de huidige realm."
+demo.admin.scenario.projects.title,Projectoverzicht
+demo.admin.scenario.protocol_documents.description,Inspecteer alleen-lezen detectie- en JWKS-eindpunten.
+demo.admin.scenario.protocol_documents.title,Protocoldocumenten
+demo.admin.scenario.realm_overview.description,"Controleer realm-identiteit, domeinen, levenscyclusstatus en de huidige sessie."
+demo.admin.scenario.realm_overview.title,Realm-overzicht
+demo.admin.scenario.realm_settings.description,"Beheer de huidige realmnaam, domeinen, status en levenscyclus."
+demo.admin.scenario.realm_settings.title,Algemene instellingen
+demo.admin.scenario.roles_grants.description,Configureer projectrollen en organisatietoegangstoekenningen.
+demo.admin.scenario.roles_grants.title,Rollen en toekenningen
+demo.admin.scenario.sessions.description,Controleer realm-sessies met subject- en apparaatcontext.
+demo.admin.scenario.sessions.title,Sessies
+demo.admin.scenario.signing_keys.description,Controleer sleutelmetadata en voer beveiligde rotatie uit.
+demo.admin.scenario.signing_keys.title,Ondertekeningssleutels
+demo.admin.scenario.user_authentication.description,"Controleer veilige factor-, passkey- en herstelmetadata in gebruikersdetails."
+demo.admin.scenario.user_authentication.title,Authenticatiemethoden
+demo.admin.scenario.user_detail.description,"Controleer profiel, levenscyclus, sessies en veilige authenticatiemetadata."
+demo.admin.scenario.user_detail.title,Gebruikersdetails
+demo.admin.scenario.user_sessions.description,Inspecteer en trek actieve browsersessies van een gebruiker in.
+demo.admin.scenario.user_sessions.title,Gebruikerssessies
+demo.admin.scenario.users.description,Blader en zoek menselijke gebruikers in de huidige realm.
+demo.admin.scenario.users.title,Gebruikersoverzicht
+demo.directory.available,Beschikbaar
+demo.directory.availableDemos,beschikbare demo's
+demo.directory.back,Terug naar overzicht
+demo.directory.fixtureStates,Fixture-statussen
+demo.directory.openDemo,Demo openen
+demo.directory.planned,Gepland
+demo.directory.plannedDestinations,geplande bestemmingen
+demo.directory.previewFoundation,Basisvoorbeeld
+demo.fixture.accepted,geaccepteerd
+demo.fixture.accountError,De deterministische testgegevens van het account konden niet worden geladen.
+demo.fixture.active,actief
+demo.fixture.assuranceRequired,zekerheid vereist
+demo.fixture.crossTenant,cross-tenant
+demo.fixture.declined,afgewezen
+demo.fixture.empty,leeg
+demo.fixture.ended,beëindigd
+demo.fixture.error,fout
+demo.fixture.expired,verlopen
+demo.fixture.expiring,verloopt binnenkort
+demo.fixture.loading,laden
+demo.fixture.nestedRejected,genest afgewezen
+demo.fixture.oneTime,eenmalig
+demo.fixture.permissionDenied,toegang geweigerd
+demo.fixture.preview,Statusloos fixture-voorbeeld
+demo.fixture.redacted,bewerkt
+demo.fixture.replayed,opnieuw afgespeeld
+demo.fixture.state,Fixture-status
+demo.fixture.success,geslaagd
+demo.hub.accountDescription,"Verken selfservice profiel-, organisatie- en beveiligingsbestemmingen."
+demo.hub.accountOpen,Account openen
+demo.hub.adminDescription,Beheer identiteitsbronnen en organisatie-instellingen.
+demo.hub.adminOpen,Beheer openen
+demo.hub.description,"Verken de demo's voor inloggen, account, beheer en transactionele e-mails."
+demo.hub.loginDescription,Ervaar de authenticatie-ervaring voor uw gebruikers.
+demo.hub.loginOpen,Inloggen openen
+demo.login.description,"Verken deterministische inlog-, herstel- en interactiefixtures. Bestaande stromen blijven interactief terwijl geplande bestemmingen hun statusloze scenariocontracten tonen."
+demo.login.eyebrow,Gehoste authenticatie
+demo.login.group.chooser.description,Toegangspunten afgeleid van het ontdekte inlogbeleid en lokaal onthouden accounts.
+demo.login.group.chooser.title,Inloggen starten
+demo.login.group.chrome.description,Stroomoverschrijdende terugvalopties voor elk gehost interactiescherm.
+demo.login.group.chrome.title,Gedeelde statussen
+demo.login.group.interaction.description,Interactieresultaten en afmelden voor gehoste OIDC-verzoeken.
+demo.login.group.interaction.title,Interactie en uitloggen
+demo.login.group.mfa.description,"Tweede-factoruitdagingen, authenticatorregistratie en herstelcodes."
+demo.login.group.mfa.title,Meervoudige authenticatie
+demo.login.group.password_email.description,Wachtwoord- en e-mailcode-authenticatie met deterministische lokale fixtures.
+demo.login.group.password_email.title,Wachtwoord en e-mailcode
+demo.login.group.passwordless.description,"Passkeys en geconfigureerde Google-, GitHub- en Microsoft-providers."
+demo.login.group.passwordless.title,Wachtwoordloos en extern
+demo.login.group.recovery.description,Vraag wachtwoordherstel aan en voltooi dit zonder openbaarmaking van het account.
+demo.login.group.recovery.title,Herstel
+demo.login.group.registration.description,Registratie en door de server uitgegeven e-mailbevestiging.
+demo.login.group.registration.title,Registratie en verificatie
+demo.login.scenario.chooser.description,Kies een toegestane primaire authenticatiemethode.
+demo.login.scenario.chooser.title,Methodekiezer
+demo.login.scenario.chooser_recent_accounts.description,Ga verder met een account dat op dit apparaat is onthouden.
+demo.login.scenario.chooser_recent_accounts.title,Recente accounts
+demo.login.scenario.email_otp.description,Vraag een eenmalige code aan die per e-mail wordt verzonden.
+demo.login.scenario.email_otp.title,E-mailcode aanvragen
+demo.login.scenario.email_otp_code.description,Voer de zescijferige e-mailverificatiecode in.
+demo.login.scenario.email_otp_code.title,E-mailcode verifiëren
+demo.login.scenario.idp.description,Ga verder via een geconfigureerde externe identiteitsprovider.
+demo.login.scenario.idp.title,Externe identiteit
+demo.login.scenario.idp_failure.description,Herstel van een startfout van de externe provider.
+demo.login.scenario.idp_failure.title,Providerfout
+demo.login.scenario.loading.description,Toon voortgang terwijl realm-detectie wordt opgelost.
+demo.login.scenario.loading.title,Laden
+demo.login.scenario.logout.description,Bevestig uitloggen voor de huidige browsersessie.
+demo.login.scenario.logout.title,Uitloggen
+demo.login.scenario.logout_done.description,Bevestig een voltooide afmelding en gevalideerd terugkeerpad.
+demo.login.scenario.logout_done.title,Uitgelogd
+demo.login.scenario.mfa.description,Kies een beschikbare tweede factor.
+demo.login.scenario.mfa.title,Kies een factor
+demo.login.scenario.mfa_email_otp.description,Verifieer een e-mail als tweede factor.
+demo.login.scenario.mfa_email_otp.title,E-mailcode
+demo.login.scenario.mfa_passkey.description,Verifieer een passkey als tweede factor.
+demo.login.scenario.mfa_passkey.title,Passkey-factor
+demo.login.scenario.mfa_recovery_code.description,Gebruik een enkele herstelcode wanneer andere factoren niet beschikbaar zijn.
+demo.login.scenario.mfa_recovery_code.title,Herstelcode
+demo.login.scenario.mfa_totp.description,Verifieer een op tijd gebaseerde authenticatorcode.
+demo.login.scenario.mfa_totp.title,Authenticatorcode
+demo.login.scenario.mfa_totp_enroll.description,Koppel en bevestig een nieuwe authenticator.
+demo.login.scenario.mfa_totp_enroll.title,Authenticator registreren
+demo.login.scenario.passkey.description,Authenticeer met een apparaatgehechte passkey.
+demo.login.scenario.passkey.title,Passkey
+demo.login.scenario.passkey_unsupported.description,Leg incompatibiliteit van browser of apparaat uit.
+demo.login.scenario.passkey_unsupported.title,Passkey niet beschikbaar
+demo.login.scenario.password.description,Log in met een e-mailadres of gebruikersnaam en wachtwoord.
+demo.login.scenario.password.title,Wachtwoord
+demo.login.scenario.password_change_required.description,Stel een nieuw wachtwoord in voordat u verdergaat.
+demo.login.scenario.password_change_required.title,Wachtwoordwijziging vereist
+demo.login.scenario.password_error.description,Toon een veilige reactie voor ongeldige inloggegevens.
+demo.login.scenario.password_error.title,Ongeldige inloggegevens
+demo.login.scenario.password_forgot.description,Vraag instructies voor wachtwoordherstel aan.
+demo.login.scenario.password_forgot.title,Herstel aanvragen
+demo.login.scenario.password_forgot_sent.description,Toon de niet-openbaarmakende e-mailbevestiging.
+demo.login.scenario.password_forgot_sent.title,Herstel aangevraagd
+demo.login.scenario.password_reset.description,Kies een nieuw wachtwoord via een herstellink.
+demo.login.scenario.password_reset.title,Wachtwoord opnieuw instellen
+demo.login.scenario.password_reset_complete.description,Keer terug naar inloggen na een geslaagde reset.
+demo.login.scenario.password_reset_complete.title,Opnieuw instellen voltooid
+demo.login.scenario.register.description,Maak een menselijk account aan onder het actieve inlogbeleid.
+demo.login.scenario.register.title,Registratie
+demo.login.scenario.register_done.description,Toon de niet-openbaarmakende verificatiemelding.
+demo.login.scenario.register_done.title,Bevestiging verzonden
+demo.login.scenario.signed_in.description,Toon de bevestiging van de hervatte interactie.
+demo.login.scenario.signed_in.title,Interactie voltooid
+demo.login.scenario.unsupported.description,Leg een niet-ondersteunde of verlopen interactie uit.
+demo.login.scenario.unsupported.title,Niet-beschikbaar verzoek
+demo.login.scenario.verify_email.description,Bevestig een adres via een door de server uitgegeven link.
+demo.login.scenario.verify_email.title,E-mailverificatie
+demo.login.title,Inlogdemo
 demo.nav.account,Account
-demo.nav.admin,Admin
+demo.nav.admin,Beheer
 demo.nav.compact,Compact
-demo.nav.emails,Emails
-demo.nav.hub,Hub
+demo.nav.emails,E-mails
+demo.nav.hub,Home
 demo.nav.label,Demo
-demo.nav.login,Login
+demo.nav.login,Inloggen
+demo.placeholder.emptyDescription,Deze bestemming is klaar voor een opzettelijke lege status.
+demo.placeholder.emptyTitle,Geen fixture-records
+demo.placeholder.errorDescription,Een deterministische fout kan hier worden weergegeven zonder netwerkverzoek.
+demo.placeholder.errorTitle,Fixture-fout
+demo.placeholder.loading,Fixture laden
+demo.placeholder.notFoundDescription,Kies een ondersteunde bestemming uit het overzicht.
+demo.placeholder.notFoundTitle,Demobestemming niet gevonden
+demo.placeholder.readyDescription,"De route, ondersteunde statussen en de demo-adaptergrens zijn gedefinieerd. De functiepagina is in deze stap opzettelijk niet geïmplementeerd."
+demo.placeholder.readyTitle,Fixture-contract gereed
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
 email.directory.open,Open preview
-email.directory.title,Email previews
-email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
-email.hub.open,Open email previews
+email.directory.title,E-mailvoorbeelden
+email.hub.description,Controleer geïsoleerde HTML- en platte-tekst transactionele berichtfixtures.
+email.hub.open,E-mailvoorbeelden openen
 email.preview.back,Alle e-mailvoorbeelden
 email.preview.html,HTML-voorbeeld
 email.preview.impersonationEnded,Impersonatie beëindigd
@@ -796,9 +1030,9 @@ login.register.userName,Nombre de usuario
 login.signedIn.description,Ha iniciado sesión en {organization}.
 login.signedIn.title,Sesión iniciada
 login.status.loading,Preparando el inicio de sesión
-login.status.unavailableDescription,No se puede completar esta solicitud de inicio de sesión. Vuelva a la aplicación e inténtelo de nuevo.
-login.status.unavailableTitle,Inicio de sesión no disponible
-login.totpEnroll.description,Añada esta clave de configuración a uw aplicación de autenticación y luego introduzca el code que genera. La clave solo se muestra ahora.
+login.status.unavailableDescription,Dit inlogverzoek kan niet worden voltooid. Ga terug naar de applicatie en probeer het opnieuw.
+login.status.unavailableTitle,Inloggen niet beschikbaar
+login.totpEnroll.description,Voeg deze configuratiesleutel toe aan uw authenticator-app en voer vervolgens de gegenereerde code in. De sleutel wordt alleen nu getoond.
 login.totpEnroll.start,Mostrar clave de configuración
 login.totpEnroll.submit,Finalizar configuración
 login.totpEnroll.title,Configurar una aplicación de autenticación
@@ -807,3 +1041,72 @@ login.verify.submit,Confirmar adres de e-mail
 login.verify.title,Verificar uw adres de e-mail
 login.verify.verifiedDescription,{email} está confirmada. Ya puede inloggen.
 login.verify.verifiedTitle,Adres de e-mail confirmada
+shell.guard.accessUnavailable,Toegang niet beschikbaar
+shell.guard.contextRequired,Context vereist
+shell.guard.contextRequiredDetail,Kies de vereiste realm of organisatie voordat u doorgaat.
+shell.guard.destinationUnavailable,Bestemming niet beschikbaar
+shell.guard.destinationUnavailableDetail,De opgevraagde bestemming maakt geen deel uit van deze applicatie.
+shell.guard.pageNotFound,Pagina niet gevonden
+shell.guard.signInRequired,Inloggen vereist
+shell.guard.signInRequiredDetail,Log in om door te gaan naar deze bestemming.
+shell.nav.acceptInvitation,Uitnodiging accepteren
+shell.nav.access,Toegang
+shell.nav.account,Gebruikersaccount
+shell.nav.administratorSignIn,Beheerdersaanmelding
+shell.nav.applicationConsent,Toestemming voor toepassing
+shell.nav.applicationConsents,Toepassingstoestemmingen
+shell.nav.applications,Applicaties
+shell.nav.auditEvents,Auditgebeurtenissen
+shell.nav.branding,Huisstijl
+shell.nav.chooseDestination,Kies een bestemming
+shell.nav.credentialsTokens,Referenties en tokens
+shell.nav.deleteAccount,Account verwijderen
+shell.nav.directory,Gebruikersoverzicht
+shell.nav.emailAddress,Adres de e-mail
+shell.nav.emailOtpSignIn,Inloggen met e-mailcode
+shell.nav.externalIdentitySignIn,Inloggen met externe identiteit
+shell.nav.impersonation,Imitatie
+shell.nav.invitations,Uitnodigingen
+shell.nav.linkedIdentities,Gekoppelde identiteiten
+shell.nav.loginPolicy,Inloggen en identiteit
+shell.nav.loginPolicyProviders,Inloggen en identiteitsproviders
+shell.nav.logout,Uitloggen
+shell.nav.machineCredentials,Machine-inloggegevens
+shell.nav.machineUsers,Machinegebruikers
+shell.nav.membershipsRoles,Leden en rollen
+shell.nav.mfa,Multi-factor authenticatie
+shell.nav.mfaSignIn,Multi-factor inloggen
+shell.nav.myOrganizations,Mijn organisaties
+shell.nav.navigationTitle,{title}-navigatie
+shell.nav.oidcClients,OIDC-clients
+shell.nav.openIdConnect,OpenID Connect
+shell.nav.operations,Bewerkingen
+shell.nav.organization,Organisatie
+shell.nav.organizations,Organisaties
+shell.nav.overview,Overzicht
+shell.nav.passkeySignIn,Inloggen met passkey
+shell.nav.passkeys,Toegangssleutels
+shell.nav.password,Wachtwoord
+shell.nav.passwordRecovery,Wachtwoordherstel
+shell.nav.passwordSignIn,Inloggen met wachtwoord
+shell.nav.personalInformation,Persoonlijke gegevens
+shell.nav.profile,Profiel
+shell.nav.projects,Projecten
+shell.nav.protocolDocuments,Protocoldocumenten
+shell.nav.realm,Domein
+shell.nav.realmSettings,Realm-instellingen
+shell.nav.recoveryCodes,Herstelcodes
+shell.nav.registration,Registratie
+shell.nav.rolesGrants,Rollen en toewijzingen
+shell.nav.security,Beveiliging
+shell.nav.sessions,Sessies
+shell.nav.sessionsDevices,Sessies en apparaten
+shell.nav.signingKeys,Ondertekeningssleutels
+shell.nav.users,Gebruikers
+shell.nav.verifyEmail,E-mail verifiëren
+shell.state.errorDetail,De pagina kon niet worden voorbereid. Probeer het opnieuw als u klaar bent.
+shell.state.inaccessibleDetail,U hebt in de huidige context geen toegang tot deze bestemming.
+shell.state.loadingDetail,Deze pagina en de beveiligingscontext worden voorbereid.
+shell.state.nothingHere,Hier is nog niets
+shell.state.pageUnavailable,Deze pagina is niet beschikbaar
+shell.state.readyDetail,Deze pagina is klaar voor inhoud.

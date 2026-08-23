@@ -1,6 +1,7 @@
 import { A } from "@solidjs/router"
 import { Match, Show, Switch } from "solid-js"
 import { LoaderShuffle4Dots } from "#ui/static/loaders/LoaderShuffle4Dots.jsx"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
 import type { DemoFixtureScenarioGroup } from "../demoFixtureScenarioGroupSchema.js"
 import { DemoFixtureStateSelector } from "./DemoFixtureStateSelector.js"
@@ -11,14 +12,14 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
   return (
     <div class="mx-auto max-w-4xl py-4 sm:py-10">
       <A class="text-sm font-medium text-accent hover:underline" href={props.backHref}>
-        ← {ttc("Back to directory")}
+        ← {messageTranslate("demo.directory.back")}
       </A>
       <Show
         when={state.scenario()}
         fallback={
           <section class="mt-6 rounded-2xl border border-line bg-surface p-8">
-            <h1 class="text-2xl font-semibold">{ttc("Demo destination not found")}</h1>
-            <p class="mt-2 text-muted-foreground">{ttc("Choose a supported destination from the directory.")}</p>
+            <h1 class="text-2xl font-semibold">{messageTranslate("demo.placeholder.notFoundTitle")}</h1>
+            <p class="mt-2 text-muted-foreground">{messageTranslate("demo.placeholder.notFoundDescription")}</p>
           </section>
         }
       >
@@ -27,7 +28,7 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
             <header class="mt-6 rounded-2xl border border-line bg-surface p-6 shadow-sm sm:p-8">
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <span class="rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {ttc("Stateless fixture preview")}
+                  {messageTranslate("demo.fixture.preview")}
                 </span>
                 <code class="text-xs text-muted-foreground">{scenario().path}</code>
               </div>
@@ -35,7 +36,7 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
               <p class="mt-3 max-w-2xl leading-7 text-muted-foreground">{ttc(scenario().description)}</p>
               <div class="mt-6">
                 <p class="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  {ttc("Fixture state")}
+                  {messageTranslate("demo.fixture.state")}
                 </p>
                 <DemoFixtureStateSelector options={state.stateOptions()} />
               </div>
@@ -46,7 +47,7 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
                   <div class="grid h-48 place-items-center text-center" role="status">
                     <div>
                       <LoaderShuffle4Dots />
-                      <p class="mt-4 font-medium">{ttc("Loading fixture")}</p>
+                      <p class="mt-4 font-medium">{messageTranslate("demo.placeholder.loading")}</p>
                     </div>
                   </div>
                 </Match>
@@ -56,9 +57,9 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
                       <p class="text-3xl" aria-hidden="true">
                         ○
                       </p>
-                      <h2 class="mt-3 text-xl font-semibold">{ttc("No fixture records")}</h2>
+                      <h2 class="mt-3 text-xl font-semibold">{messageTranslate("demo.placeholder.emptyTitle")}</h2>
                       <p class="mt-2 text-sm text-muted-foreground">
-                        {ttc("This destination is ready for an intentional empty state.")}
+                        {messageTranslate("demo.placeholder.emptyDescription")}
                       </p>
                     </div>
                   </div>
@@ -69,9 +70,9 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
                       <p class="text-3xl text-danger" aria-hidden="true">
                         !
                       </p>
-                      <h2 class="mt-3 text-xl font-semibold">{ttc("Fixture error")}</h2>
+                      <h2 class="mt-3 text-xl font-semibold">{messageTranslate("demo.placeholder.errorTitle")}</h2>
                       <p class="mt-2 text-sm text-muted-foreground">
-                        {ttc("A deterministic error can be presented here without a network request.")}
+                        {messageTranslate("demo.placeholder.errorDescription")}
                       </p>
                     </div>
                   </div>
@@ -82,11 +83,9 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
                       <p class="text-3xl text-success" aria-hidden="true">
                         ✓
                       </p>
-                      <h2 class="mt-3 text-xl font-semibold">{ttc("Fixture contract ready")}</h2>
+                      <h2 class="mt-3 text-xl font-semibold">{messageTranslate("demo.placeholder.readyTitle")}</h2>
                       <p class="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-                        {ttc(
-                          "The route, supported states, and demo adapter boundary are defined. The feature page is intentionally not implemented in this increment.",
-                        )}
+                        {messageTranslate("demo.placeholder.readyDescription")}
                       </p>
                     </div>
                   </div>

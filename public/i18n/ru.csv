@@ -103,6 +103,7 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+admin.common.confirmTitle,Подтвердите это действие
 admin.common.next,Далее
 admin.common.pagination,Постраничная навигация
 admin.common.permission,У вас нет разрешения просматривать эти административные данные.
@@ -145,7 +146,7 @@ admin.impersonation.noOrganization,No organization
 admin.impersonation.organization,Organization
 admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
 admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.permissionDeniedTitle,Доступ недоступен
 admin.impersonation.reason,Reason
 admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
 admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
@@ -169,6 +170,8 @@ admin.machine.credentials.description,"Учётные данные, которы
 admin.machine.credentials.empty,У этого машинного пользователя пока нет учётных данных.
 admin.machine.credentials.expires,Истекает
 admin.machine.credentials.expiresHint,"Оставьте поле пустым, чтобы выпустить учётные данные без срока действия."
+admin.machine.credentials.expiryInvalid,"Введите допустимую дату окончания срока действия или оставьте поле пустым, чтобы учётные данные не истекали."
+admin.machine.credentials.expiryPast,Выберите дату окончания срока действия в будущем.
 admin.machine.credentials.issue,Выпустить учётные данные
 admin.machine.credentials.issueDescription,Выпустите персональный токен доступа или ключ API. Значение показывается один раз и не может быть восстановлено.
 admin.machine.credentials.kind,Тип учётных данных
@@ -178,6 +181,7 @@ admin.machine.credentials.kindClientSecret,Секрет клиента
 admin.machine.credentials.kindHint,Персональный токен доступа действует непосредственно от имени машинного пользователя. Ключ API предназначен для одной интеграции.
 admin.machine.credentials.kindToken,Персональный токен доступа
 admin.machine.credentials.name,Имя
+admin.machine.credentials.nameRequired,"Введите название, чтобы позже распознать эти учётные данные."
 admin.machine.credentials.neverExpires,Не истекает
 admin.machine.credentials.onceWarning,Выпущенное значение показывается один раз. Сохраните его перед закрытием этого окна; получить его снова будет невозможно.
 admin.machine.credentials.revoke,Отозвать
@@ -229,6 +233,7 @@ admin.machine.users.description,"Нечеловеческие личности, 
 admin.machine.users.detailTitle,Сведения о машинном пользователе
 admin.machine.users.displayName,Отображаемое имя
 admin.machine.users.empty,В этом realm пока нет машинных пользователей.
+admin.machine.users.invalid,Введите отображаемое имя и имя пользователя и используйте только допустимые значения областей.
 admin.machine.users.lifecycleChanged,Статус машинного пользователя изменён.
 admin.machine.users.missingId,Для этого раздела необходимо выбрать машинного пользователя.
 admin.machine.users.noScopes,Нет областей
@@ -240,7 +245,7 @@ admin.machine.users.userName,Имя пользователя
 admin.machine.users.userNameHint,Используется как идентификатор клиента при обмене учётных данных клиента.
 admin.navigation.description,Choose an administration resource
 admin.navigation.hide,Hide sidebar
-admin.navigation.label,Administration
+admin.navigation.label,Администрирование
 admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Для управления настройками OpenID Connect требуется более надёжный и недавний вход. Войдите снова, чтобы продолжить."
 admin.oidc.assuranceRequiredTitle,Требуется более надёжный вход
@@ -254,6 +259,7 @@ admin.oidc.clients.description,"Приложения, которые аутен�
 admin.oidc.clients.detailTitle,Сведения о клиенте OIDC
 admin.oidc.clients.empty,В этой области ещё не зарегистрировано ни одного клиента OpenID Connect.
 admin.oidc.clients.exactMatchHint,"По одному URI в строке. Каждое перенаправление сверяется точно, поэтому подстановочные знаки и различия в окончании отклоняются."
+admin.oidc.clients.invalid,"Введите имя клиента, хотя бы один точный URI перенаправления и хотя бы одну область."
 admin.oidc.clients.lifecycleChanged,Состояние клиента изменено.
 admin.oidc.clients.missingId,Для этого раздела необходимо выбрать клиента OIDC.
 admin.oidc.clients.name,Имя клиента
@@ -273,6 +279,7 @@ admin.oidc.clients.type,Тип клиента
 admin.oidc.clients.typeConfidential,Конфиденциальный
 admin.oidc.clients.typeHint,"Конфиденциальный клиент хранит секрет на сервере. Публичный клиент, например мобильное или одностраничное приложение, этого не может."
 admin.oidc.clients.typePublic,Публичный
+admin.oidc.confirmTitle,Подтвердите это изменение
 admin.oidc.consents.client,Приложение
 admin.oidc.consents.description,"Приложения, которые пользователь подтвердил. Отзыв согласия приведёт к повторному запросу подтверждения приложения."
 admin.oidc.consents.empty,Этот пользователь пока не подтвердил ни одного приложения.
@@ -375,6 +382,7 @@ admin.organizations.domains.discoveryFound,{domain} разрешается в {o
 admin.organizations.domains.discoveryMissing,{domain} не разрешается ни в одну организацию.
 admin.organizations.domains.domain,Домен
 admin.organizations.domains.empty,Эта организация ещё не заявила ни одного домена.
+admin.organizations.domains.invalid,Введите допустимое доменное имя.
 admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Основной домен
 admin.organizations.domains.remove,Удалить домен
@@ -389,11 +397,13 @@ admin.organizations.domains.verifyDone,Домен подтверждён.
 admin.organizations.invitations.create,Пригласить человека
 admin.organizations.invitations.description,"Приглашайте людей по электронной почте и отслеживайте, какие приглашения ещё не приняты."
 admin.organizations.invitations.email,Email address
+admin.organizations.invitations.emailInvalid,Введите действительный адрес электронной почты.
 admin.organizations.invitations.empty,Для этой организации не отправлено ни одного приглашения.
 admin.organizations.invitations.expires,Истекает
 admin.organizations.invitations.revoke,Отозвать приглашение
 admin.organizations.invitations.revokeConfirm,Отозвать приглашение для {email}? Ссылка приглашения сразу перестанет работать.
 admin.organizations.invitations.revoked,Приглашение отозвано.
+admin.organizations.invitations.rolesInvalid,Выберите от одной до четырёх ролей.
 admin.organizations.invitations.sent,Приглашение создано.
 admin.organizations.invitations.title,Приглашения
 admin.organizations.invitations.tokenDismiss,Я сохранил эту ссылку
@@ -410,12 +420,14 @@ admin.organizations.list.create,Создать организацию
 admin.organizations.list.description,"Организации объединяют людей, домены и оформление этого realm."
 admin.organizations.list.empty,В этом realm ещё нет организаций.
 admin.organizations.list.name,Название организации
+admin.organizations.list.nameRequired,Введите название организации.
 admin.organizations.list.search,Поиск организаций
 admin.organizations.list.title,Организации
 admin.organizations.memberships.add,Добавить участника
 admin.organizations.memberships.added,Участник добавлен.
 admin.organizations.memberships.description,Люди в этой организации и назначенные им фиксированные роли.
 admin.organizations.memberships.empty,В этой организации пока нет участников.
+admin.organizations.memberships.invalid,Введите идентификатор пользователя и выберите от одной до четырёх ролей.
 admin.organizations.memberships.remove,Удалить участника
 admin.organizations.memberships.removeConfirm,Удалить {userId} из этой организации? Доступ к организации будет немедленно прекращён.
 admin.organizations.memberships.removed,Участник удалён.
@@ -436,7 +448,7 @@ admin.organizations.policy.externalIdentity,Внешние провайдеры 
 admin.organizations.policy.inherited,Унаследовано от realm
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Пароль
-admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.passwordRecovery,Восстановление пароля
 admin.organizations.policy.registration,Самостоятельная регистрация
 admin.organizations.policy.saved,Политика входа сохранена.
 admin.organizations.policy.title,Политика входа
@@ -451,6 +463,7 @@ admin.organizations.providers.disableConfirm,Отключить {displayName}? �
 admin.organizations.providers.disabled,Провайдер отключён.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Внешний провайдер идентификации ещё не настроен.
+admin.organizations.providers.invalid,"Введите отображаемое имя, идентификатор клиента, секрет клиента и абсолютный URI перенаправления."
 admin.organizations.providers.redirectUri,URI перенаправления
 admin.organizations.providers.rotateSecret,Заменить секрет клиента
 admin.organizations.providers.secretRotated,Секрет клиента заменён.
@@ -473,6 +486,7 @@ admin.projects.access.title,Действующий доступ
 admin.projects.applications.create,Добавить приложение
 admin.projects.applications.description,"Приложения, которые аутентифицируются в этом проекте."
 admin.projects.applications.empty,В этом проекте пока нет приложений.
+admin.projects.applications.invalid,Введите название приложения и выберите тип.
 admin.projects.applications.name,Название приложения
 admin.projects.applications.removeConfirm,Удалить это приложение? Это действие нельзя отменить.
 admin.projects.applications.title,Приложения
@@ -501,6 +515,7 @@ admin.projects.lifecycle.removeConfirm,Удалить этот проект?
 admin.projects.list.create,Создать проект
 admin.projects.list.description,"Проекты объединяют приложения, роли и предоставления организации."
 admin.projects.list.empty,В этом realm ещё нет проектов.
+admin.projects.list.invalid,Введите название проекта и выберите организацию.
 admin.projects.list.name,Название проекта
 admin.projects.list.search,Поиск проектов
 admin.projects.list.title,Проекты
@@ -576,6 +591,7 @@ admin.users.create,Создать пользователя
 admin.users.createDescription,Добавьте человека-пользователя в текущий realm.
 admin.users.createSubmit,Создать
 admin.users.created,{userName} создан.
+admin.users.createdAt,Создано
 admin.users.dangerZone,Опасная зона
 admin.users.delete,Удалить пользователя
 admin.users.deleteConfirm,Безвозвратно удалить {userName}?
@@ -623,7 +639,7 @@ admin.users.sessions.title,Sessions and devices
 admin.users.state,Статус
 admin.users.title,Пользователи
 admin.users.unverified,Не подтверждён
-admin.users.updated,Последнее обновление {date}
+admin.users.updated,Последнее обновление
 admin.users.userName,Username
 admin.users.verification,Подтверждение
 admin.users.verificationChanged,Статус подтверждения теперь {state}.
@@ -631,12 +647,16 @@ admin.users.verificationDescription,"Определите, считается л
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
-app.tagline,Secure identity services
+app.tagline,Безопасные сервисы идентификации
 common.back,Назад
 common.cancel,Отмена
 common.close,Закрыть
 common.continue,Продолжить
 common.decline,Decline
+common.disable,Выключить
+common.disabled,Отключено
+common.enable,Включить
+common.enabled,Включено
 common.error,Что-то пошло не так.
 common.language,Язык
 common.loading,Загрузка
@@ -646,45 +666,259 @@ common.save,Сохранить
 common.signIn,Войти
 common.signInWithProvider,Войти с помощью {provider}
 common.signOut,Выйти
-common.theme.dark,dark
-common.theme.light,light
-common.theme.system,system
+common.theme.dark,Тёмная
+common.theme.light,Светлая
+common.theme.system,Система
 common.urlPlaceholder,https://
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.account.eyebrow,Self-service identity
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.admin.directoryTitle,Administration directory
-demo.admin.eyebrow,Realm administration
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.description,"Explore the login, account, administration, and transactional email demos."
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.nav.account,Account
-demo.nav.admin,Admin
-demo.nav.compact,Compact
-demo.nav.emails,Emails
-demo.nav.hub,Hub
-demo.nav.label,Demo
-demo.nav.login,Login
+demo.account.description,"Автономная карта интерфейсов управления профилем, организацией, безопасностью и доступом к приложениям, поддерживаемым Authworks. У каждого назначения есть явный контракт состояния данных."
+demo.account.eyebrow,Самообслуживание идентификации
+demo.account.group.access.description,"Приложения и разрешения, предоставленные этой учетной записью."
+demo.account.group.access.title,Доступ
+demo.account.group.identity.description,"Данные профиля и входа, которыми пользователи управляют самостоятельно."
+demo.account.group.identity.title,Личные данные
+demo.account.group.organizations.description,"Членство, контекст организации и приглашения."
+demo.account.group.organizations.title,Организации
+demo.account.group.security.description,"Сеансы, факторы аутентификации и подключенные удостоверения."
+demo.account.group.security.title,Безопасность
+demo.account.scenario.consents.description,"Просматривайте и отзывайте разрешения, ранее предоставленные приложениям."
+demo.account.scenario.consents.title,Согласия приложений
+demo.account.scenario.delete.description,Оцените последствия и подтвердите безвозвратное удаление аккаунта.
+demo.account.scenario.delete.title,Удалить аккаунт
+demo.account.scenario.email.description,"Просматривайте подтвержденный адрес, используемый для входа и сообщений аккаунта."
+demo.account.scenario.email.title,Адрес электронной почты
+demo.account.scenario.factors.description,"Управляйте факторами приложения-аутентификатора, электронной почты и ключей доступа."
+demo.account.scenario.factors.title,Многофакторная аутентификация
+demo.account.scenario.identities.description,"Просматривайте и отвязывайте учетные записи Google, GitHub и Microsoft."
+demo.account.scenario.identities.title,Связанные удостоверения
+demo.account.scenario.invitation.description,Проверьте приглашение перед вступлением в организацию.
+demo.account.scenario.invitation.title,Принять приглашение
+demo.account.scenario.invitations.description,"Просматривайте приглашения, отправленные текущему аккаунту."
+demo.account.scenario.invitations.title,Мои приглашения
+demo.account.scenario.organizations.description,Просматривайте членства и переключайте активную организацию.
+demo.account.scenario.organizations.title,Мои организации
+demo.account.scenario.passkeys.description,"Регистрируйте, называйте и удаляйте беспарольные учетные данные."
+demo.account.scenario.passkeys.title,Ключи доступа
+demo.account.scenario.password.description,Измените текущий пароль и проверьте статус его безопасности.
+demo.account.scenario.password.title,Пароль
+demo.account.scenario.profile.description,"Просматривайте и обновляйте имена, имя пользователя и предпочтительный язык."
+demo.account.scenario.profile.title,Профиль
+demo.account.scenario.recovery_codes.description,Сгенерируйте запасные коды и отобразите их один раз.
+demo.account.scenario.recovery_codes.title,Коды восстановления
+demo.account.scenario.sessions.description,Просматривайте активные сеансы и отзывайте неиспользуемые устройства.
+demo.account.scenario.sessions.title,Сеансы и устройства
+demo.account.title,Демонстрация аккаунта
+demo.admin.description,"Перемещайтесь по текущему реалму с помощью информационной архитектуры, организованной вокруг людей, организаций, приложений, учетных данных и событий аудита. Доступные демо и запланированные назначения без состояния четко разделены."
+demo.admin.directoryTitle,Каталог администрирования
+demo.admin.eyebrow,Администрирование реалма
+demo.admin.group.authorization.description,"Приложения, проектные роли, предоставления и оцененный доступ."
+demo.admin.group.authorization.title,Проекты и авторизация
+demo.admin.group.machine_users.description,Нечеловеческие учетные записи и их учетные данные только для записи.
+demo.admin.group.machine_users.title,Сервисные пользователи
+demo.admin.group.oidc.description,"Клиенты, точные настройки перенаправления, согласие, области действия и ключи подписи."
+demo.admin.group.oidc.title,OpenID Connect
+demo.admin.group.operations.description,Сеансы реалма и неизменяемая активность безопасности.
+demo.admin.group.operations.title,Операции
+demo.admin.group.organizations.description,"Настройки организации, пользователи, приглашения и подтвержденные домены."
+demo.admin.group.organizations.title,Организации
+demo.admin.group.realm.description,"Конфигурация удостоверений, жизненного цикла и входа для всего реалма."
+demo.admin.group.realm.title,Реалм
+demo.admin.group.users.description,"Учетные записи людей, учетные данные, сеансы и защищенные действия поддержки."
+demo.admin.group.users.title,Пользователи
+demo.admin.realmFixtureName,Идентификация клиента Northwind
+demo.admin.scenario.admin_sign_in.description,Обменяйте начальные учетные данные на короткий сеанс браузера администратора.
+demo.admin.scenario.admin_sign_in.title,Вход администратора
+demo.admin.scenario.applications.description,Управляйте приложениями проекта и их жизненным циклом.
+demo.admin.scenario.applications.title,Приложения
+demo.admin.scenario.audit_events.description,Просматривайте текущий поток событий безопасности на основе тестовых данных.
+demo.admin.scenario.audit_events.title,События аудита
+demo.admin.scenario.branding.description,"Настройте цвета, логотипы и юридические ссылки с учетом организации."
+demo.admin.scenario.branding.title,Брендинг
+demo.admin.scenario.domains.description,Проверяйте домены и управляйте обнаружением организации.
+demo.admin.scenario.domains.title,Домены и обнаружение
+demo.admin.scenario.effective_access.description,"Просматривайте доступные только для чтения действующие роли, разрешения и проверки доступа."
+demo.admin.scenario.effective_access.title,Фактический доступ
+demo.admin.scenario.impersonation.description,Запустите обоснованный сеанс поддержки с ограничением по времени при наличии разрешения.
+demo.admin.scenario.impersonation.title,Олицетворение
+demo.admin.scenario.invitations.description,Приглашайте пользователей и отслеживайте ожидающие или просроченные приглашения.
+demo.admin.scenario.invitations.title,Приглашения
+demo.admin.scenario.login_policy.description,"Задайте политику входа и настройте Google, GitHub или Microsoft."
+demo.admin.scenario.login_policy.title,Вход и поставщики удостоверений
+demo.admin.scenario.machine_credentials.description,"Выдавайте, ротируйте и отзывайте учетные данные клиентов, токены PAT и ключи API."
+demo.admin.scenario.machine_credentials.title,Учетные данные и токены
+demo.admin.scenario.machine_user_detail.description,"Просматривайте области действия и жизненный цикл, ротируйте секрет клиента и управляйте учетными данными."
+demo.admin.scenario.machine_user_detail.title,Детали сервисного пользователя
+demo.admin.scenario.machine_users.description,Создавайте сервисные учетные записи и управляйте их жизненным циклом.
+demo.admin.scenario.machine_users.title,Каталог сервисных пользователей
+demo.admin.scenario.memberships.description,Назначайте фиксированные роли организации участникам.
+demo.admin.scenario.memberships.title,Членства и роли
+demo.admin.scenario.oidc_client_detail.description,"Редактируйте точные перенаправления и области действия, а также ротируйте или отзывайте секрет клиента."
+demo.admin.scenario.oidc_client_detail.title,Настройки клиента OIDC
+demo.admin.scenario.oidc_clients.description,"Управляйте клиентами, перенаправлениями, областями действия, доверием и одноразовыми секретами."
+demo.admin.scenario.oidc_clients.title,Клиенты OIDC
+demo.admin.scenario.oidc_consents.description,"Просматривайте и отзывайте приложения, одобренные пользователем."
+demo.admin.scenario.oidc_consents.title,Согласия приложений
+demo.admin.scenario.organization_detail.description,"Просматривайте настройки организации, жизненный цикл и текущее членство."
+demo.admin.scenario.organization_detail.title,Детали организации
+demo.admin.scenario.organizations.description,"Просматривайте, ищите и создавайте организации в текущем реалме."
+demo.admin.scenario.organizations.title,Каталог организаций
+demo.admin.scenario.project_detail.description,Просматривайте и редактируйте настройки и жизненный цикл проекта.
+demo.admin.scenario.project_detail.title,Настройки проекта
+demo.admin.scenario.projects.description,"Просматривайте, ищите и создавайте проекты в текущем реалме."
+demo.admin.scenario.projects.title,Каталог проектов
+demo.admin.scenario.protocol_documents.description,Просматривайте доступные только для чтения конечные точки обнаружения и JWKS.
+demo.admin.scenario.protocol_documents.title,Документы протокола
+demo.admin.scenario.realm_overview.description,"Просматривайте идентификацию реалма, домены, статус жизненного цикла и текущий сеанс."
+demo.admin.scenario.realm_overview.title,Обзор реалма
+demo.admin.scenario.realm_settings.description,"Управляйте именем текущего реалма, доменами, статусом и жизненным циклом."
+demo.admin.scenario.realm_settings.title,Общие настройки
+demo.admin.scenario.roles_grants.description,Настройте роли проекта и разрешения доступа организации.
+demo.admin.scenario.roles_grants.title,Роли и предоставления
+demo.admin.scenario.sessions.description,Просматривайте сеансы реалма с контекстом субъекта и устройства.
+demo.admin.scenario.sessions.title,Сеансы
+demo.admin.scenario.signing_keys.description,Просматривайте метаданные ключей и выполняйте защищенную ротацию.
+demo.admin.scenario.signing_keys.title,Ключи подписи
+demo.admin.scenario.user_authentication.description,"Просматривайте безопасные метаданные факторов, ключей доступа и восстановления в деталях пользователя."
+demo.admin.scenario.user_authentication.title,Методы аутентификации
+demo.admin.scenario.user_detail.description,"Просматривайте профиль, жизненный цикл, сеансы и безопасные метаданные аутентификации."
+demo.admin.scenario.user_detail.title,Детали пользователя
+demo.admin.scenario.user_sessions.description,Проверяйте и отзывайте активные сеансы браузера пользователя.
+demo.admin.scenario.user_sessions.title,Сеансы пользователя
+demo.admin.scenario.users.description,Просматривайте и ищите пользователей-людей в текущем реалме.
+demo.admin.scenario.users.title,Каталог пользователей
+demo.directory.available,Доступно
+demo.directory.availableDemos,доступных демо
+demo.directory.back,Назад в каталог
+demo.directory.fixtureStates,Состояния данных
+demo.directory.openDemo,Открыть демо
+demo.directory.planned,Запланировано
+demo.directory.plannedDestinations,запланированных назначений
+demo.directory.previewFoundation,Базовый предпросмотр
+demo.fixture.accepted,принято
+demo.fixture.accountError,Не удалось загрузить детерминированные тестовые данные учётной записи.
+demo.fixture.active,активно
+demo.fixture.assuranceRequired,требуется подтверждение
+demo.fixture.crossTenant,межтенантный
+demo.fixture.declined,отклонено
+demo.fixture.empty,пусто
+demo.fixture.ended,завершено
+demo.fixture.error,ошибка
+demo.fixture.expired,истекло
+demo.fixture.expiring,истекает
+demo.fixture.loading,загрузка
+demo.fixture.nestedRejected,вложенный отказ
+demo.fixture.oneTime,одноразовый
+demo.fixture.permissionDenied,в доступе отказано
+demo.fixture.preview,Предпросмотр данных без состояния
+demo.fixture.redacted,скрыто
+demo.fixture.replayed,повторно воспроизведено
+demo.fixture.state,Состояние данных
+demo.fixture.success,успешно
+demo.hub.accountDescription,"Исследуйте назначения самообслуживания для профиля, организации и безопасности."
+demo.hub.accountOpen,Открыть аккаунт
+demo.hub.adminDescription,Управление ресурсами идентификации и настройками организации.
+demo.hub.adminOpen,Открыть администрирование
+demo.hub.description,"Исследуйте демо входа, аккаунта, администрирования и транзакционных писем."
+demo.hub.loginDescription,Оцените процесс аутентификации для ваших пользователей.
+demo.hub.loginOpen,Открыть вход
+demo.login.description,"Исследуйте детерминированные тестовые данные входа, восстановления и взаимодействия. Существующие процессы остаются интерактивными, а запланированные назначения демонстрируют контракты сценариев без состояния."
+demo.login.eyebrow,Размещенная аутентификация
+demo.login.group.chooser.description,"Точки входа, определенные на основе обнаруженной политики входа и локально сохраненных аккаунтов."
+demo.login.group.chooser.title,Начать вход
+demo.login.group.chrome.description,Межпроцессные резервные варианты для каждого размещенного экрана взаимодействия.
+demo.login.group.chrome.title,Общие состояния
+demo.login.group.interaction.description,Результаты взаимодействия и выход для размещенных запросов OIDC.
+demo.login.group.interaction.title,Взаимодействие и выход
+demo.login.group.mfa.description,"Проверки второго фактора, подключение аутентификатора и коды восстановления."
+demo.login.group.mfa.title,Многофакторная аутентификация
+demo.login.group.password_email.description,Аутентификация по паролю и коду из письма с детерминированными локальными данными.
+demo.login.group.password_email.title,Пароль и код из письма
+demo.login.group.passwordless.description,"Ключи доступа и настроенные провайдеры Google, GitHub и Microsoft."
+demo.login.group.passwordless.title,Беспарольный и внешний вход
+demo.login.group.recovery.description,Запросите и завершите восстановление пароля без раскрытия данных аккаунта.
+demo.login.group.recovery.title,Восстановление
+demo.login.group.registration.description,Регистрация и подтверждение по почте от сервера.
+demo.login.group.registration.title,Регистрация и подтверждение
+demo.login.scenario.chooser.description,Выберите разрешенный основной метод аутентификации.
+demo.login.scenario.chooser.title,Выбор способа входа
+demo.login.scenario.chooser_recent_accounts.description,"Продолжить с аккаунтом, сохраненным на этом устройстве."
+demo.login.scenario.chooser_recent_accounts.title,Недавние аккаунты
+demo.login.scenario.email_otp.description,"Запросите одноразовый код, отправленный по электронной почте."
+demo.login.scenario.email_otp.title,Запросить код на почту
+demo.login.scenario.email_otp_code.description,Введите шестизначный код подтверждения из письма.
+demo.login.scenario.email_otp_code.title,Проверить код из письма
+demo.login.scenario.idp.description,Продолжить через настроенного внешнего поставщика удостоверений.
+demo.login.scenario.idp.title,Внешнее удостоверение
+demo.login.scenario.idp_failure.description,Восстановление после ошибки запуска внешнего поставщика.
+demo.login.scenario.idp_failure.title,Сбой поставщика
+demo.login.scenario.loading.description,Показывать ход выполнения во время обнаружения реалма.
+demo.login.scenario.loading.title,Загрузка
+demo.login.scenario.logout.description,Подтвердите выход для текущего сеанса браузера.
+demo.login.scenario.logout.title,Выход
+demo.login.scenario.logout_done.description,Подтвердите завершенный выход и проверенный путь возврата.
+demo.login.scenario.logout_done.title,Выход выполнен
+demo.login.scenario.mfa.description,Выберите доступный второй фактор.
+demo.login.scenario.mfa.title,Выберите фактор
+demo.login.scenario.mfa_email_otp.description,Проверьте второй фактор по электронной почте.
+demo.login.scenario.mfa_email_otp.title,Код из письма
+demo.login.scenario.mfa_passkey.description,Проверьте ключ доступа в качестве второго фактора.
+demo.login.scenario.mfa_passkey.title,Фактор ключа доступа
+demo.login.scenario.mfa_recovery_code.description,"Используйте один код восстановления, когда другие факторы недоступны."
+demo.login.scenario.mfa_recovery_code.title,Код восстановления
+demo.login.scenario.mfa_totp.description,Проверьте временный код аутентификатора.
+demo.login.scenario.mfa_totp.title,Код аутентификатора
+demo.login.scenario.mfa_totp_enroll.description,Подключите и подтвердите новый аутентификатор.
+demo.login.scenario.mfa_totp_enroll.title,Подключить аутентификатор
+demo.login.scenario.passkey.description,"Аутентифицируйтесь с помощью ключа доступа, привязанного к устройству."
+demo.login.scenario.passkey.title,Ключ доступа
+demo.login.scenario.passkey_unsupported.description,Объясните несовместимость браузера или устройства.
+demo.login.scenario.passkey_unsupported.title,Ключ доступа недоступен
+demo.login.scenario.password.description,Войдите с помощью адреса электронной почты или имени пользователя и пароля.
+demo.login.scenario.password.title,Пароль
+demo.login.scenario.password_change_required.description,Установите новый пароль перед продолжением.
+demo.login.scenario.password_change_required.title,Требуется смена пароля
+demo.login.scenario.password_error.description,Отобразите безопасный ответ о недействительных учетных данных.
+demo.login.scenario.password_error.title,Недействительные учетные данные
+demo.login.scenario.password_forgot.description,Запросите инструкции по восстановлению пароля.
+demo.login.scenario.password_forgot.title,Запросить восстановление
+demo.login.scenario.password_forgot_sent.description,Отобразите подтверждение по почте без раскрытия данных.
+demo.login.scenario.password_forgot_sent.title,Восстановление запрошено
+demo.login.scenario.password_reset.description,Выберите новый пароль по ссылке для восстановления.
+demo.login.scenario.password_reset.title,Сбросить пароль
+demo.login.scenario.password_reset_complete.description,Вернитесь к входу после успешного сброса.
+demo.login.scenario.password_reset_complete.title,Сброс завершен
+demo.login.scenario.register.description,Создайте учетную запись человека в соответствии с активной политикой входа.
+demo.login.scenario.register.title,Регистрация
+demo.login.scenario.register_done.description,Отобразите уведомление о проверке без раскрытия данных.
+demo.login.scenario.register_done.title,Подтверждение отправлено
+demo.login.scenario.signed_in.description,Отобразите подтверждение возобновленного взаимодействия.
+demo.login.scenario.signed_in.title,Взаимодействие завершено
+demo.login.scenario.unsupported.description,Объясните неподдерживаемое или просроченное взаимодействие.
+demo.login.scenario.unsupported.title,Недоступный запрос
+demo.login.scenario.verify_email.description,Подтвердите адрес по ссылке от сервера.
+demo.login.scenario.verify_email.title,Подтверждение почты
+demo.login.title,Демо входа
+demo.nav.account,Аккаунт
+demo.nav.admin,Администрирование
+demo.nav.compact,Компактный
+demo.nav.emails,Письма
+demo.nav.hub,Главная
+demo.nav.label,Демо
+demo.nav.login,Вход
+demo.placeholder.emptyDescription,Это назначение готово для намеренного пустого состояния.
+demo.placeholder.emptyTitle,Нет тестовых записей
+demo.placeholder.errorDescription,Детерминированная ошибка может быть отображена здесь без сетевого запроса.
+demo.placeholder.errorTitle,Ошибка данных
+demo.placeholder.loading,Загрузка данных
+demo.placeholder.notFoundDescription,Выберите поддерживаемое назначение из каталога.
+demo.placeholder.notFoundTitle,Демо-назначение не найдено
+demo.placeholder.readyDescription,"Маршрут, поддерживаемые состояния и граница демо-адаптера определены. Страница функции намеренно не реализована в этом обновлении."
+demo.placeholder.readyTitle,Контракт данных готов
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
 email.directory.open,Open preview
-email.directory.title,Email previews
-email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
-email.hub.open,Open email previews
+email.directory.title,Предпросмотр писем
+email.hub.description,Просматривайте изолированные HTML и текстовые данные транзакционных сообщений.
+email.hub.open,Открыть предпросмотр писем
 email.preview.back,Все предварительные просмотры электронной почты
 email.preview.html,Предварительный просмотр HTML
 email.preview.impersonationEnded,Имперсонация завершена
@@ -798,7 +1032,7 @@ login.signedIn.title,Вошёл в систему
 login.status.loading,Подготовка входа в систему
 login.status.unavailableDescription,Этот запрос на вход не может быть выполнен. Вернитесь в приложение и повторите попытку.
 login.status.unavailableTitle,Вход недоступен
-login.totpEnroll.description,"Добавьте этот ключ настройки в свое приложение для аутентификации, а затем введите сгенерированный им код. Ключ отображается только сейчас."
+login.totpEnroll.description,"Добавьте этот ключ настройки в приложение аутентификации, затем введите созданный код. Ключ показывается только сейчас."
 login.totpEnroll.start,Показать ключ настройки
 login.totpEnroll.submit,Завершить настройку
 login.totpEnroll.title,Настройте приложение для аутентификации
@@ -807,3 +1041,72 @@ login.verify.submit,Подтвердите адрес электронной п�
 login.verify.title,Подтвердите свой адрес электронной почты
 login.verify.verifiedDescription,{email} подтвержден. Вы можете войти в систему сейчас.
 login.verify.verifiedTitle,Адрес электронной почты подтвержден
+shell.guard.accessUnavailable,Доступ недоступен
+shell.guard.contextRequired,Требуется контекст
+shell.guard.contextRequiredDetail,Выберите необходимый realm или организацию перед продолжением.
+shell.guard.destinationUnavailable,Раздел недоступен
+shell.guard.destinationUnavailableDetail,Запрошенный раздел не является частью этого приложения.
+shell.guard.pageNotFound,Страница не найдена
+shell.guard.signInRequired,Требуется вход
+shell.guard.signInRequiredDetail,"Войдите, чтобы перейти в этот раздел."
+shell.nav.acceptInvitation,Принять приглашение
+shell.nav.access,Доступ
+shell.nav.account,Аккаунт
+shell.nav.administratorSignIn,Вход администратора
+shell.nav.applicationConsent,Согласие приложения
+shell.nav.applicationConsents,Согласия приложений
+shell.nav.applications,Приложения
+shell.nav.auditEvents,События аудита
+shell.nav.branding,Оформление
+shell.nav.chooseDestination,Выберите раздел
+shell.nav.credentialsTokens,Учётные данные и токены
+shell.nav.deleteAccount,Удалить аккаунт
+shell.nav.directory,Каталог
+shell.nav.emailAddress,Адрес электронной почты
+shell.nav.emailOtpSignIn,Вход по коду из письма
+shell.nav.externalIdentitySignIn,Вход через внешний сервис
+shell.nav.impersonation,Имперсонация
+shell.nav.invitations,Приглашения
+shell.nav.linkedIdentities,Связанные учетные записи
+shell.nav.loginPolicy,Вход и идентификация
+shell.nav.loginPolicyProviders,Вход и поставщики удостоверений
+shell.nav.logout,Выйти
+shell.nav.machineCredentials,Учетные данные машины
+shell.nav.machineUsers,Машинные пользователи
+shell.nav.membershipsRoles,Участники и роли
+shell.nav.mfa,Многофакторная аутентификация
+shell.nav.mfaSignIn,Многофакторный вход
+shell.nav.myOrganizations,Мои организации
+shell.nav.navigationTitle,Навигация {title}
+shell.nav.oidcClients,Клиенты OIDC
+shell.nav.openIdConnect,OpenID Connect
+shell.nav.operations,Операции
+shell.nav.organization,Организация
+shell.nav.organizations,Организации
+shell.nav.overview,Обзор
+shell.nav.passkeySignIn,Вход по ключу доступа
+shell.nav.passkeys,Ключи доступа
+shell.nav.password,Пароль
+shell.nav.passwordRecovery,Восстановление пароля
+shell.nav.passwordSignIn,Вход по паролю
+shell.nav.personalInformation,Личные данные
+shell.nav.profile,Профиль
+shell.nav.projects,Проекты
+shell.nav.protocolDocuments,Документы протокола
+shell.nav.realm,Область
+shell.nav.realmSettings,Настройки области
+shell.nav.recoveryCodes,Коды восстановления
+shell.nav.registration,Регистрация
+shell.nav.rolesGrants,Роли и разрешения
+shell.nav.security,Безопасность
+shell.nav.sessions,Сессии
+shell.nav.sessionsDevices,Сеансы и устройства
+shell.nav.signingKeys,Ключи подписи
+shell.nav.users,Пользователи
+shell.nav.verifyEmail,Подтверждение почты
+shell.state.errorDetail,Не удалось подготовить страницу. Повторите попытку позже.
+shell.state.inaccessibleDetail,У вас нет доступа к этому разделу в текущем контексте.
+shell.state.loadingDetail,Подготовка этой страницы и контекста безопасности.
+shell.state.nothingHere,Здесь пока ничего нет
+shell.state.pageUnavailable,Эта страница недоступна
+shell.state.readyDetail,Эта страница готова к отображению содержимого.

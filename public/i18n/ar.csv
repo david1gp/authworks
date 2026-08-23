@@ -1,108 +1,109 @@
 key,ar
-account.access.accepted,Invitation accepted
-account.access.active,Active organization
+account.access.accepted,تم قبول الدعوة
+account.access.active,المنظمة النشطة
 account.access.consentDescription,التطبيقات التي يمكنها الوصول إلى معلومات من حسابك.
 account.access.consentEmpty,لا توجد تطبيقات لديها حق الوصول إلى هذا الحساب.
 account.access.consentRevokeConfirm,هل تريد إلغاء وصول التطبيق {clientId}؟
 account.access.consentRevoked,تم إلغاء وصول التطبيق.
 account.access.created,مُنح في {date}
-account.access.declined,Invitation declined
-account.access.email,Email
-account.access.error,This account information could not be loaded.
-account.access.expired,This invitation has expired.
+account.access.declined,تم رفض الدعوة
+account.access.email,البريد الإلكتروني
+account.access.error,تعذر تحميل معلومات هذا الحساب.
+account.access.expired,انتهت صلاحية هذه الدعوة.
 account.access.invitationDeclineConfirm,هل تريد رفض هذه الدعوة؟
-account.access.invitationDescription,Review the organization and roles before you respond.
-account.access.invitationEmpty,There are no pending invitations for this account.
-account.access.invitationFor,Invitation for {email}
-account.access.invitationMissing,Open the complete invitation link to continue.
-account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.membership,Membership roles
-account.access.organizationDescription,Choose which organization you are working in.
-account.access.organizationEmpty,This account does not belong to an organization.
-account.access.permission,You do not have permission to perform this action.
-account.access.roles,Roles: {roles}
+account.access.invitationDescription,راجع المنظمة والأدوار قبل الرد.
+account.access.invitationEmpty,لا توجد دعوات معلقة لهذا الحساب.
+account.access.invitationFor,دعوة إلى {email}
+account.access.invitationMissing,افتح رابط الدعوة الكامل للمتابعة.
+account.access.invitationReplay,تم استخدام هذه الدعوة بالفعل أو لم تعد متاحة.
+account.access.membership,أدوار العضوية
+account.access.organizationDescription,اختر المنظمة التي تعمل بها.
+account.access.organizationEmpty,هذا الحساب لا ينتمي إلى أي منظمة.
+account.access.permission,ليس لديك إذن لتنفيذ هذا الإجراء.
+account.access.roles,الأدوار: {roles}
 account.access.scopes,الأذونات: {scopes}
-account.access.switchOrganization,Switch organization
-account.access.switched,Organization context changed to {organization}.
-account.delete.confirmLabel,Enter {email} to confirm
-account.delete.dangerZone,Danger zone
-account.delete.deletedDetail,Your account and access have been permanently removed.
-account.delete.deletedTitle,Account deleted
-account.delete.emailMismatch,The email address does not match.
-account.delete.submit,Delete account permanently
-account.delete.title,Permanently delete this account
-account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
-account.directory.title,Your account
-account.factors.addTotp,Add authenticator
-account.factors.codeCount,{count} recovery codes
-account.factors.confirm,Confirm
-account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
-account.factors.emailOtp,Email code
-account.factors.finishTotp,Finish authenticator setup
-account.factors.passkeyCount,{count} passkeys
-account.factors.passkeys,Passkeys
-account.factors.recovery,Recovery
-account.factors.removeTotp,Remove authenticator
-account.factors.totp,Authenticator app
-account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
-account.factors.verificationCode,Verification code
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
-account.identities.empty,No external identities are linked
-account.identities.unlink,Unlink
+account.access.switchOrganization,تبديل المنظمة
+account.access.switched,تم تغيير سياق المنظمة إلى {organization}.
+account.delete.confirmLabel,أدخل {email} للتأكيد
+account.delete.dangerZone,منطقة الخطر
+account.delete.deletedDetail,تمت إزالة حسابك وحق الوصول الخاص بك نهائيًا.
+account.delete.deletedTitle,تم حذف الحساب
+account.delete.emailMismatch,عنوان البريد الإلكتروني غير متطابق.
+account.delete.submit,حذف الحساب نهائيًا
+account.delete.title,حذف هذا الحساب نهائيًا
+account.delete.warning,لا يمكن التراجع عن هذا الإجراء. ستتوقف جلساتك وحق الوصول الخاص بك عن العمل.
+account.directory.title,حسابك
+account.factors.addTotp,إضافة تطبيق مصادقة
+account.factors.codeCount,{count} رموز استرداد
+account.factors.confirm,تأكيد
+account.factors.description,راجع طرق المصادقة المتاحة لحسابك وقم بإدارة تطبيق المصادقة الخاص بك.
+account.factors.emailOtp,رمز البريد الإلكتروني
+account.factors.finishTotp,إكمال إعداد تطبيق المصادقة
+account.factors.passkeyCount,{count} مفاتيح مرور
+account.factors.passkeys,مفاتيح المرور
+account.factors.recovery,الاسترداد
+account.factors.removeTotp,إزالة تطبيق المصادقة
+account.factors.totp,تطبيق المصادقة
+account.factors.totpSecretOnce,أضف هذا المفتاح السري إلى تطبيق المصادقة الخاص بك، ثم أدخل الرمز المكون من ستة أرقام. يتم عرض مفتاح الإعداد هذا الآن فقط.
+account.factors.verificationCode,رمز التحقق
+account.identities.description,الحسابات الخارجية المرتبطة بهويتك في Authworks. قم بإلغاء ربط الحسابات التي لم تعد تستخدمها.
+account.identities.empty,لا توجد هويات خارجية مرتبطة
+account.identities.unlink,إلغاء الربط
 account.identities.unlinkConfirm,هل تريد إلغاء ربط هذا الحساب الخارجي؟
-account.passkeys.add,Add passkey
-account.passkeys.created,Created {date}
-account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
-account.passkeys.deviceBound,Device-bound passkey
-account.passkeys.empty,No passkeys registered
-account.passkeys.remove,Remove
-account.passkeys.synced,Synced passkey
-account.password.changed,Your password was changed.
-account.password.confirm,Confirm new password
-account.password.current,Current password
-account.password.description,Use a unique password that you do not use for other services.
-account.password.mismatch,The new passwords do not match.
-account.password.new,New password
-account.password.submit,Change password
-account.password.title,Change password
-account.password.tooShort,The new password must contain at least 8 characters.
-account.profile.displayName,Display name
-account.profile.displayNameRequired,Enter a display name.
-account.profile.email,Email address
-account.profile.emailDescription,Review the verified address used for sign-in and account communication.
-account.profile.emailTitle,Email address and verification
-account.profile.firstName,First name
-account.profile.lastName,Last name
-account.profile.nickName,Nickname
-account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
-account.profile.personalInformation,Personal information
-account.profile.preferredLanguage,Preferred language
-account.profile.save,Save changes
-account.profile.saved,Your profile was saved.
-account.profile.signInDescription,These details identify your account.
-account.profile.signInTitle,Sign-in details
-account.profile.userName,Username
-account.profile.verificationPending,Verification pending
-account.profile.verified,Verified
-account.recovery.generate,Generate new codes
-account.recovery.once,Copy or print these codes now. They cannot be displayed again.
-account.recovery.remaining,{count} unused codes remain. Generating new codes invalidates the previous set.
-account.recovery.saveNow,Save your recovery codes now
-account.recovery.saved,I saved these codes
-account.recovery.summary,Recovery access
-account.security.label,Account security management
-account.sessionExpired,Your session has expired
-account.sessions.current,Current session
-account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
-account.sessions.empty,No active sessions
-account.sessions.lastUsed,Last used {date}
+account.passkeys.add,إضافة مفتاح مرور
+account.passkeys.created,تم الإنشاء في {date}
+account.passkeys.description,تستخدم مفاتيح المرور قفل شاشة جهازك أو مفتاح الأمان لتسجيل الدخول الآمن.
+account.passkeys.deviceBound,مفتاح مرور مرتبط بالجهاز
+account.passkeys.empty,لم يتم تسجيل أي مفاتيح مرور
+account.passkeys.remove,إزالة
+account.passkeys.synced,مفتاح مرور متزامن
+account.password.changed,تم تغيير كلمة المرور الخاصة بك.
+account.password.confirm,تأكيد كلمة المرور الجديدة
+account.password.current,كلمة المرور الحالية
+account.password.description,استخدم كلمة مرور فريدة لا تستخدمها في خدمات أخرى.
+account.password.mismatch,كلمات المرور الجديدة غير متطابقة.
+account.password.new,كلمة المرور الجديدة
+account.password.submit,تغيير كلمة المرور
+account.password.title,تغيير كلمة المرور
+account.password.tooShort,يجب أن تحتوي كلمة المرور الجديدة على 8 أحرف على الأقل.
+account.profile.displayName,الاسم المعروض
+account.profile.displayNameRequired,أدخل اسمًا معروضًا.
+account.profile.email,عنوان البريد الإلكتروني
+account.profile.emailDescription,راجع العنوان المؤكد المستخدم لتسجيل الدخول والتواصل بشأن الحساب.
+account.profile.emailTitle,عنوان البريد الإلكتروني والتحقق
+account.profile.firstName,الاسم الأول
+account.profile.lastName,اسم العائلة
+account.profile.nickName,الاسم المستعار
+account.profile.personalDescription,حافظ على تحديث الملف الشخصي المعروض للتطبيقات والمسؤولين.
+account.profile.personalInformation,المعلومات الشخصية
+account.profile.preferredLanguage,اللغة المفضلة
+account.profile.save,حفظ التغييرات
+account.profile.saved,تم حفظ ملفك الشخصي.
+account.profile.signInDescription,تحدد هذه التفاصيل حسابك.
+account.profile.signInTitle,تفاصيل تسجيل الدخول
+account.profile.userName,اسم المستخدم
+account.profile.verificationPending,التحقق معلق
+account.profile.verified,تم التحقق
+account.recovery.generate,إنشاء رموز جديدة
+account.recovery.once,انسخ أو اطبع هذه الرموز الآن. لا يمكن عرضها مرة أخرى.
+account.recovery.remaining,تبقى {count} من الرموز غير المستخدمة. يؤدي إنشاء رموز جديدة إلى إبطال المجموعة السابقة.
+account.recovery.saveNow,احفظ رموز الاسترداد الخاصة بك الآن
+account.recovery.saved,لقد حفظت هذه الرموز
+account.recovery.summary,الوصول للاسترداد
+account.security.label,إدارة أمان الحساب
+account.sessionExpired,انتهت صلاحية جلستك
+account.sessions.current,الجلسة الحالية
+account.sessions.description,راجع الأجهزة التي تم تسجيل الدخول إلى حسابك منها، وقم بإلغاء أي جلسة لا تتعرف عليها.
+account.sessions.empty,لا توجد جلسات نشطة
+account.sessions.lastUsed,آخر استخدام في {date}
 account.sessions.revoke,إلغاء الجلسة
 account.sessions.revokeConfirm,هل تريد إلغاء هذه الجلسة فورًا؟
-account.sessions.unknownDevice,Unknown device
-account.status.available,Available
-account.status.configured,Configured
-account.status.notConfigured,Not configured
-account.status.unavailable,Unavailable
+account.sessions.unknownDevice,جهاز غير معروف
+account.status.available,متاح
+account.status.configured,تمت التهيئة
+account.status.notConfigured,غير مهيأ
+account.status.unavailable,غير متاح
+admin.common.confirmTitle,تأكيد هذا الإجراء
 admin.common.next,التالي
 admin.common.pagination,ترقيم الصفحات
 admin.common.permission,ليس لديك إذن لعرض بيانات الإدارة هذه.
@@ -134,9 +135,9 @@ admin.impersonation.duration,Duration
 admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
 admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
 admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.end,إنهاء انتحال الهوية
+admin.impersonation.endConfirm,هل تريد إنهاء انتحال هوية {subject} الآن؟
+admin.impersonation.endedNotice,تم إنهاء جلسة انتحال الهوية.
 admin.impersonation.expires,Ends
 admin.impersonation.expiringSoon,This impersonation ends in under a minute.
 admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
@@ -145,7 +146,7 @@ admin.impersonation.noOrganization,No organization
 admin.impersonation.organization,Organization
 admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
 admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.permissionDeniedTitle,الوصول غير متاح
 admin.impersonation.reason,Reason
 admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
 admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
@@ -169,6 +170,8 @@ admin.machine.credentials.description,بيانات اعتماد يقدّمها �
 admin.machine.credentials.empty,لا توجد بعد بيانات اعتماد لمستخدم الجهاز هذا.
 admin.machine.credentials.expires,تنتهي الصلاحية
 admin.machine.credentials.expiresHint,اترك هذا الحقل فارغًا لإصدار بيانات اعتماد لا تنتهي صلاحيتها.
+admin.machine.credentials.expiryInvalid,أدخل تاريخ انتهاء صلاحية صالحاً، أو اترك الحقل فارغاً لبيانات اعتماد لا تنتهي صلاحيتها.
+admin.machine.credentials.expiryPast,اختر تاريخ انتهاء صلاحية في المستقبل.
 admin.machine.credentials.issue,إصدار بيانات اعتماد
 admin.machine.credentials.issueDescription,أصدر رمز وصول شخصيًا أو مفتاح واجهة برمجة. تظهر القيمة مرة واحدة فقط ولا يمكن استرجاعها.
 admin.machine.credentials.kind,نوع بيانات الاعتماد
@@ -178,6 +181,7 @@ admin.machine.credentials.kindClientSecret,سر العميل
 admin.machine.credentials.kindHint,يتصرف رمز الوصول الشخصي نيابةً عن مستخدم الجهاز مباشرةً. أما مفتاح واجهة البرمجة فمخصّص لتكامل واحد.
 admin.machine.credentials.kindToken,رمز وصول شخصي
 admin.machine.credentials.name,الاسم
+admin.machine.credentials.nameRequired,أدخل اسماً حتى يمكن التعرف على بيانات الاعتماد هذه لاحقاً.
 admin.machine.credentials.neverExpires,لا تنتهي صلاحيته
 admin.machine.credentials.onceWarning,تظهر القيمة الصادرة مرة واحدة فقط. احفظها قبل إغلاق هذه النافذة؛ لا يمكن استرجاعها مرة أخرى.
 admin.machine.credentials.revoke,إبطال
@@ -229,6 +233,7 @@ admin.machine.users.description,هويات غير بشرية تُصادق في �
 admin.machine.users.detailTitle,تفاصيل مستخدم الآلة
 admin.machine.users.displayName,الاسم المعروض
 admin.machine.users.empty,لا يوجد بعد أي مستخدم جهاز في هذا النطاق.
+admin.machine.users.invalid,أدخل اسم عرض واسم مستخدم، واستخدم قيم نطاقات صالحة فقط.
 admin.machine.users.lifecycleChanged,تم تغيير حالة مستخدم الجهاز.
 admin.machine.users.missingId,يجب اختيار مستخدم آلي لهذه الوجهة.
 admin.machine.users.noScopes,لا توجد نطاقات
@@ -254,6 +259,7 @@ admin.oidc.clients.description,التطبيقات التي تصادق الأشخ
 admin.oidc.clients.detailTitle,تفاصيل عميل OIDC
 admin.oidc.clients.empty,لا يوجد بعد أي عميل OpenID Connect مسجّل في هذا النطاق.
 admin.oidc.clients.exactMatchHint,معرّف URI واحد في كل سطر. تتم مطابقة كل إعادة توجيه بشكل تام، لذا تُرفض أحرف البدل والاختلافات في النهاية.
+admin.oidc.clients.invalid,أدخل اسم عميل، ومعرّف URI واحداً على الأقل لإعادة التوجيه المطابق تماماً، ونطاقاً واحداً على الأقل.
 admin.oidc.clients.lifecycleChanged,تم تغيير حالة العميل.
 admin.oidc.clients.missingId,يجب اختيار عميل OIDC لهذه الوجهة.
 admin.oidc.clients.name,اسم العميل
@@ -273,6 +279,7 @@ admin.oidc.clients.type,نوع العميل
 admin.oidc.clients.typeConfidential,سري
 admin.oidc.clients.typeHint,يحتفظ العميل السري بسر على خادم. أما العميل العام، مثل تطبيق الجوال أو تطبيق الصفحة الواحدة، فلا يستطيع ذلك.
 admin.oidc.clients.typePublic,عام
+admin.oidc.confirmTitle,تأكيد هذا التغيير
 admin.oidc.consents.client,التطبيق
 admin.oidc.consents.description,التطبيقات التي وافق عليها الشخص. يؤدي إلغاء الموافقة إلى مطالبته بالموافقة على التطبيق مرة أخرى.
 admin.oidc.consents.empty,لم يوافق هذا الشخص على أي تطبيق بعد.
@@ -375,6 +382,7 @@ admin.organizations.domains.discoveryFound,يُحل {domain} إلى {organizatio
 admin.organizations.domains.discoveryMissing,لا يُحل {domain} إلى أي مؤسسة.
 admin.organizations.domains.domain,النطاق
 admin.organizations.domains.empty,لم تطالب هذه المؤسسة بأي نطاق بعد.
+admin.organizations.domains.invalid,أدخل اسم نطاق صالحاً.
 admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,المجال الأساسي
 admin.organizations.domains.remove,إزالة النطاق
@@ -389,11 +397,13 @@ admin.organizations.domains.verifyDone,تم التحقق من النطاق.
 admin.organizations.invitations.create,دعوة شخص
 admin.organizations.invitations.description,ادعُ الأشخاص عبر البريد الإلكتروني وتتبّع الدعوات التي ما زالت معلّقة.
 admin.organizations.invitations.email,Email address
+admin.organizations.invitations.emailInvalid,أدخل عنوان بريد إلكتروني صالحاً.
 admin.organizations.invitations.empty,لم تُرسل أي دعوة لهذه المؤسسة.
 admin.organizations.invitations.expires,ينتهي في
 admin.organizations.invitations.revoke,إبطال الدعوة
 admin.organizations.invitations.revokeConfirm,هل تريد إبطال الدعوة لـ {email}؟ سيتوقف رابط الدعوة عن العمل فوراً.
 admin.organizations.invitations.revoked,تم إبطال الدعوة.
+admin.organizations.invitations.rolesInvalid,اختر ما بين دور واحد وأربعة أدوار.
 admin.organizations.invitations.sent,تم إنشاء الدعوة.
 admin.organizations.invitations.title,الدعوات
 admin.organizations.invitations.tokenDismiss,لقد حفظت هذا الرابط
@@ -410,12 +420,14 @@ admin.organizations.list.create,إنشاء مؤسسة
 admin.organizations.list.description,تجمع المؤسسات الأشخاص والنطاقات والهوية البصرية لهذا النطاق.
 admin.organizations.list.empty,لا توجد مؤسسات في هذا النطاق بعد.
 admin.organizations.list.name,اسم المؤسسة
+admin.organizations.list.nameRequired,أدخل اسم المنظمة.
 admin.organizations.list.search,البحث في المؤسسات
 admin.organizations.list.title,المؤسسات
 admin.organizations.memberships.add,إضافة عضو
 admin.organizations.memberships.added,تمت إضافة العضو.
 admin.organizations.memberships.description,الأشخاص في هذه المؤسسة والأدوار الثابتة المسندة إليهم.
 admin.organizations.memberships.empty,لا يوجد أعضاء في هذه المؤسسة بعد.
+admin.organizations.memberships.invalid,أدخل معرّف مستخدم واختر ما بين دور واحد وأربعة أدوار.
 admin.organizations.memberships.remove,إزالة العضو
 admin.organizations.memberships.removeConfirm,هل تريد إزالة {userId} من هذه المؤسسة؟ سينتهي وصوله إلى المؤسسة فوراً.
 admin.organizations.memberships.removed,تمت إزالة العضو.
@@ -429,14 +441,14 @@ admin.organizations.pageNext,الصفحة التالية
 admin.organizations.pagePrevious,الصفحة السابقة
 admin.organizations.permissionDenied,ليس لديك إذن لعرض هذه المؤسسة أو تغييرها.
 admin.organizations.permissionDeniedTitle,الوصول غير متاح
-admin.organizations.policy.description,اختر طرق تسجيل الدخول المتاحة للأشخاص والمزوّدين المهيّئين الذين يظهرون.
+admin.organizations.policy.description,اختر طرق تسجيل الدخول التي يمكن للأشخاص استخدامها وموفري الهوية المكوّنين الذين سيظهرون.
 admin.organizations.policy.domainDiscovery,اكتشاف المؤسسة من نطاق البريد الإلكتروني
 admin.organizations.policy.emailOtp,رمز لمرة واحدة عبر البريد الإلكتروني
 admin.organizations.policy.externalIdentity,مزوّدو الهوية الخارجيون
 admin.organizations.policy.inherited,موروث من النطاق
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,كلمة المرور
-admin.organizations.policy.passwordRecovery,Password recovery
+admin.organizations.policy.passwordRecovery,استعادة كلمة المرور
 admin.organizations.policy.registration,التسجيل الذاتي
 admin.organizations.policy.saved,تم حفظ سياسة تسجيل الدخول.
 admin.organizations.policy.title,سياسة تسجيل الدخول
@@ -445,16 +457,17 @@ admin.organizations.providers.clientId,معرّف العميل
 admin.organizations.providers.clientSecret,سر العميل
 admin.organizations.providers.create,إضافة مزوّد
 admin.organizations.providers.created,تمت تهيئة المزوّد.
-admin.organizations.providers.description,مزوّدو Google وGitHub وMicrosoft المهيّئون لهذه المؤسسة.
+admin.organizations.providers.description,موفرو Google وGitHub وMicrosoft المكوّنون لهذه المؤسسة.
 admin.organizations.providers.disable,تعطيل المزوّد
-admin.organizations.providers.disableConfirm,هل تريد تعطيل {displayName}؟ لن يتمكن الأشخاص من تسجيل الدخول بهذا الموفر بعد الآن.
+admin.organizations.providers.disableConfirm,هل تريد تعطيل {displayName}؟ لن يتمكن الأشخاص من تسجيل الدخول باستخدام هذا المزوّد بعد الآن.
 admin.organizations.providers.disabled,تم تعطيل المزوّد.
-admin.organizations.providers.displayName,Display name
+admin.organizations.providers.displayName,اسم العرض
 admin.organizations.providers.empty,لم يتم تهيئة أي مزوّد هوية خارجي بعد.
+admin.organizations.providers.invalid,أدخل اسم عرض، ومعرّف عميل، وسر عميل، ومعرّف URI مطلقاً لإعادة التوجيه.
 admin.organizations.providers.redirectUri,عنوان URI لإعادة التوجيه
 admin.organizations.providers.rotateSecret,استبدال سر العميل
 admin.organizations.providers.secretRotated,تم استبدال سر العميل.
-admin.organizations.providers.secretWriteOnly,لا يُعرض سر العميل المخزّن أبداً. أدخل قيمة جديدة لاستبداله.
+admin.organizations.providers.secretWriteOnly,لا يتم عرض سر العميل المخزن أبداً. أدخل قيمة جديدة لاستبداله.
 admin.organizations.providers.title,مزوّدو الهوية
 admin.organizations.providers.type,المزوّد
 admin.organizations.providers.updated,تم تحديث المزوّد.
@@ -473,6 +486,7 @@ admin.projects.access.title,الوصول الفعلي
 admin.projects.applications.create,إضافة تطبيق
 admin.projects.applications.description,التطبيقات التي تصادق على هذا المشروع.
 admin.projects.applications.empty,لا توجد تطبيقات في هذا المشروع بعد.
+admin.projects.applications.invalid,أدخل اسم التطبيق واختر نوعاً.
 admin.projects.applications.name,اسم التطبيق
 admin.projects.applications.removeConfirm,هل تريد إزالة هذا التطبيق؟ لا يمكن التراجع عن هذا الإجراء.
 admin.projects.applications.title,التطبيقات
@@ -496,11 +510,12 @@ admin.projects.grants.roleKeys,الأدوار الممنوحة
 admin.projects.grants.title,منح المؤسسة
 admin.projects.lifecycle.activate,تفعيل
 admin.projects.lifecycle.deactivate,إلغاء التفعيل
-admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.remove,إزالة
 admin.projects.lifecycle.removeConfirm,هل تريد إزالة هذا المشروع؟
 admin.projects.list.create,إنشاء مشروع
 admin.projects.list.description,تجمع المشاريع تطبيقات المؤسسة وأدوارها ومنحها.
 admin.projects.list.empty,لا توجد مشاريع في هذا النطاق بعد.
+admin.projects.list.invalid,أدخل اسم المشروع واختر منظمة.
 admin.projects.list.name,اسم المشروع
 admin.projects.list.search,البحث في المشاريع
 admin.projects.list.title,المشاريع
@@ -511,7 +526,7 @@ admin.projects.permissionDenied,ليس لديك إذن لعرض معلومات �
 admin.projects.roles.create,إنشاء دور
 admin.projects.roles.deleteConfirm,هل تريد حذف دور المشروع هذا؟ ستفقد المنح التي تشير إليه هذا الدور.
 admin.projects.roles.description,الأدوار التي يمكن لهذا المشروع إسنادها إلى المؤسسات وأعضائها.
-admin.projects.roles.displayName,Display name
+admin.projects.roles.displayName,اسم العرض
 admin.projects.roles.empty,لا يحدّد هذا المشروع أي أدوار بعد.
 admin.projects.roles.group,المجموعة
 admin.projects.roles.key,مفتاح الدور
@@ -576,6 +591,7 @@ admin.users.create,إنشاء مستخدم
 admin.users.createDescription,أضف مستخدماً بشرياً إلى النطاق الحالي.
 admin.users.createSubmit,إنشاء
 admin.users.created,تم إنشاء {userName}.
+admin.users.createdAt,تاريخ الإنشاء
 admin.users.dangerZone,منطقة الخطر
 admin.users.delete,حذف المستخدم
 admin.users.deleteConfirm,حذف {userName} نهائياً؟
@@ -610,20 +626,20 @@ admin.users.profileSaved,تم حفظ الملف الشخصي للمستخدم.
 admin.users.profileTitle,الملف الشخصي
 admin.users.search,البحث في المستخدمين
 admin.users.searchPlaceholder,تصفية حسب اسم المستخدم أو البريد الإلكتروني أو المعرّف
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
+admin.users.sessions.created,تاريخ الإنشاء
+admin.users.sessions.description,افحص الجلسات النشطة لهذا المستخدم وألغِ الوصول من أي جهاز.
+admin.users.sessions.empty,لا توجد جلسات نشطة لهذا المستخدم.
+admin.users.sessions.expires,تنتهي في
+admin.users.sessions.ipAddress,عنوان IP
+admin.users.sessions.lastUsed,آخر استخدام
+admin.users.sessions.method,طريقة تسجيل الدخول
+admin.users.sessions.revokeConfirm,هل تريد إلغاء هذه الجلسة فورًا؟ سيتم تسجيل خروج الجهاز على الفور.
+admin.users.sessions.revoked,تم إلغاء الجلسة.
+admin.users.sessions.title,الجلسات والأجهزة
 admin.users.state,الحالة
 admin.users.title,المستخدمون
 admin.users.unverified,غير موثّق
-admin.users.updated,آخر تحديث {date}
+admin.users.updated,آخر تحديث
 admin.users.userName,Username
 admin.users.verification,التحقق
 admin.users.verificationChanged,حالة التحقق الآن {state}.
@@ -631,12 +647,16 @@ admin.users.verificationDescription,تحكّم في ما إذا كان عنوا�
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
-app.tagline,Secure identity services
+app.tagline,خدمات هوية آمنة
 common.back,رجوع
 common.cancel,إلغاء
 common.close,إغلاق
 common.continue,متابعة
 common.decline,Decline
+common.disable,إيقاف
+common.disabled,معطل
+common.enable,تشغيل
+common.enabled,مفعل
 common.error,حدث خطأ ما.
 common.language,اللغة
 common.loading,جارٍ التحميل
@@ -646,45 +666,259 @@ common.save,حفظ
 common.signIn,تسجيل الدخول
 common.signInWithProvider,تسجيل الدخول باستخدام {provider}
 common.signOut,تسجيل الخروج
-common.theme.dark,dark
-common.theme.light,light
-common.theme.system,system
+common.theme.dark,داكن
+common.theme.light,فاتح
+common.theme.system,النظام
 common.urlPlaceholder,https://
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.account.eyebrow,Self-service identity
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.admin.directoryTitle,Administration directory
-demo.admin.eyebrow,Realm administration
-demo.admin.realmFixtureName,هوية عملاء نورثويند
+demo.account.description,خريطة بدون اتصال بالشبكة لتجارب إدارة الملف الشخصي والمنظمة والأمان والوصول إلى التطبيقات التي يدعمها Authworks. كل وجهة لها عقد صريح لحالة البيانات التجريبية.
+demo.account.eyebrow,الهوية بالخدمة الذاتية
+demo.account.group.access.description,التطبيقات والأذونات الممنوحة من قبل هذا الحساب.
+demo.account.group.access.title,الوصول
+demo.account.group.identity.description,تفاصيل الملف الشخصي وتسجيل الدخول التي يديرها المستخدمون بأنفسهم.
+demo.account.group.identity.title,المعلومات الشخصية
+demo.account.group.organizations.description,العضوية وسياق المنظمة والدعوات.
+demo.account.group.organizations.title,المنظمات
+demo.account.group.security.description,الجلسات وعوامل المصادقة والهويات المتصلة.
+demo.account.group.security.title,الأمان
+demo.account.scenario.consents.description,مراجعة وإلغاء الأذونات الممنوحة مسبقاً للتطبيقات.
+demo.account.scenario.consents.title,موافقات التطبيقات
+demo.account.scenario.delete.description,مراجعة التأثير وتأكيد الحذف الدائم للحساب.
+demo.account.scenario.delete.title,حذف الحساب
+demo.account.scenario.email.description,مراجعة العنوان المؤكد المستخدم لتسجيل الدخول والتواصل بشأن الحساب.
+demo.account.scenario.email.title,عنوان البريد الإلكتروني
+demo.account.scenario.factors.description,إدارة عوامل تطبيق المصادقة والبريد الإلكتروني ومفتاح المرور.
+demo.account.scenario.factors.title,المصادقة متعددة العوامل
+demo.account.scenario.identities.description,مراجعة وإلغاء ربط حسابات Google وGitHub وMicrosoft.
+demo.account.scenario.identities.title,الهويات المرتبطة
+demo.account.scenario.invitation.description,فحص الدعوة قبل الانضمام إلى المنظمة.
+demo.account.scenario.invitation.title,قبول الدعوة
+demo.account.scenario.invitations.description,مراجعة الدعوات الموجهة إلى الحساب المسجل الدخول به.
+demo.account.scenario.invitations.title,دعواتي
+demo.account.scenario.organizations.description,عرض العضويات وتبديل المنظمة النشطة.
+demo.account.scenario.organizations.title,منظماتي
+demo.account.scenario.passkeys.description,تسجيل بيانات الاعتماد بدون كلمة مرور وتسميتها وإزالتها.
+demo.account.scenario.passkeys.title,مفاتيح المرور
+demo.account.scenario.password.description,تغيير كلمة المرور الحالية ومراجعة حالة أمانها.
+demo.account.scenario.password.title,كلمة المرور
+demo.account.scenario.profile.description,مراجعة وتحديث الأسماء واسم المستخدم واللغة المفضلة.
+demo.account.scenario.profile.title,الملف الشخصي
+demo.account.scenario.recovery_codes.description,إنشاء رموز بديلة وعرضها لمرة واحدة.
+demo.account.scenario.recovery_codes.title,رموز الاسترداد
+demo.account.scenario.sessions.description,مراجعة الجلسات النشطة وإلغاء الأجهزة التي لم تعد قيد الاستخدام.
+demo.account.scenario.sessions.title,الجلسات والأجهزة
+demo.account.title,عرض تجريبي للحساب
+demo.admin.description,تنقل في النطاق الحالي باستخدام بنية معلومات تتمحور حول الأشخاص والمنظمات والتطبيقات وبيانات الاعتماد ونشاط التدقيق. العروض التجريبية المتاحة والوجهات المخططة المستقلة مفصولة بوضوح.
+demo.admin.directoryTitle,دليل الإدارة
+demo.admin.eyebrow,إدارة النطاق
+demo.admin.group.authorization.description,التطبيقات وأدوار المشروع والمنح والوصول المقيم.
+demo.admin.group.authorization.title,المشاريع والتفويض
+demo.admin.group.machine_users.description,الهويات غير البشرية وبيانات اعتمادها للكتابة فقط.
+demo.admin.group.machine_users.title,المستخدمون الآليون
+demo.admin.group.oidc.description,العملاء وإعدادات إعادة التوجيه الدقيقة والموافقة والنطاقات ومفاتيح التوقيع.
+demo.admin.group.oidc.title,OpenID Connect
+demo.admin.group.operations.description,جلسات النطاق ونشاط الأمان غير القابل للتعديل.
+demo.admin.group.operations.title,العمليات
+demo.admin.group.organizations.description,إعدادات المنظمة والأشخاص والدعوات والنطاقات المؤكدة.
+demo.admin.group.organizations.title,المنظمات
+demo.admin.group.realm.description,إعدادات الهوية ودورة الحياة وتسجيل الدخول على مستوى النطاق.
+demo.admin.group.realm.title,النطاق
+demo.admin.group.users.description,الهويات البشرية وبيانات الاعتماد والجلسات وإجراءات الدعم المحمية.
+demo.admin.group.users.title,المستخدمون
+demo.admin.realmFixtureName,هوية عميل Northwind
+demo.admin.scenario.admin_sign_in.description,تبادل بيانات اعتماد التشغيل الأولي بجلسة متصفح قصيرة للمسؤول.
+demo.admin.scenario.admin_sign_in.title,تسجيل دخول المسؤول
+demo.admin.scenario.applications.description,إدارة تطبيقات المشروع ودورة حياتها.
+demo.admin.scenario.applications.title,التطبيقات
+demo.admin.scenario.audit_events.description,استعراض تدفق أحداث الأمان التجريبية الحالي.
+demo.admin.scenario.audit_events.title,أحداث التدقيق
+demo.admin.scenario.branding.description,تكوين الألوان والشعارات والروابط القانونية الخاصة بالمنظمة.
+demo.admin.scenario.branding.title,العلامة التجارية
+demo.admin.scenario.domains.description,التحقق من النطاقات والتحكم في اكتشاف المنظمة.
+demo.admin.scenario.domains.title,النطاقات واكتشاف المنظمة
+demo.admin.scenario.effective_access.description,فحص الأدوار والأذونات الفعلية وفحوصات الوصول للقراءة فقط.
+demo.admin.scenario.effective_access.title,الوصول الفعلي
+demo.admin.scenario.impersonation.description,بدء جلسة دعم مبررة ومحددة بوقت عند السماح بذلك.
+demo.admin.scenario.impersonation.title,انتحال الهوية
+demo.admin.scenario.invitations.description,دعوة الأشخاص وتتبع الدعوات المعلقة أو منتهية الصلاحية.
+demo.admin.scenario.invitations.title,الدعوات
+demo.admin.scenario.login_policy.description,تعيين سياسة تسجيل الدخول وتكوين Google أو GitHub أو Microsoft.
+demo.admin.scenario.login_policy.title,تسجيل الدخول وموفرو الهوية
+demo.admin.scenario.machine_credentials.description,إصدار وتدوير وإلغاء بيانات اعتماد العميل ورموز الوصول الشخصية ومفاتيح واجهة برمجة التطبيقات.
+demo.admin.scenario.machine_credentials.title,بيانات الاعتماد والرموز المميزة
+demo.admin.scenario.machine_user_detail.description,مراجعة النطاقات ودورة الحياة، وتدوير سر العميل، وإدارة بيانات الاعتماد.
+demo.admin.scenario.machine_user_detail.title,تفاصيل المستخدم الآلي
+demo.admin.scenario.machine_users.description,إنشاء وإدارة هويات الخدمة ودورة حياتها.
+demo.admin.scenario.machine_users.title,دليل المستخدمين الآليين
+demo.admin.scenario.memberships.description,تعيين أدوار المنظمة الثابتة للأعضاء.
+demo.admin.scenario.memberships.title,العضويات والأدوار
+demo.admin.scenario.oidc_client_detail.description,تعديل عمليات إعادة التوجيه الدقيقة والنطاقات، وتدوير سر العميل أو إلغاؤه.
+demo.admin.scenario.oidc_client_detail.title,إعدادات عميل OIDC
+demo.admin.scenario.oidc_clients.description,إدارة العملاء وعمليات إعادة التوجيه والنطاقات والثقة والأسرار لمرة واحدة.
+demo.admin.scenario.oidc_clients.title,عملاء OIDC
+demo.admin.scenario.oidc_consents.description,مراجعة وإلغاء التطبيقات التي وافق عليها الشخص.
+demo.admin.scenario.oidc_consents.title,موافقات التطبيقات
+demo.admin.scenario.organization_detail.description,مراجعة إعدادات المنظمة ودورة الحياة والعضويات الحالية.
+demo.admin.scenario.organization_detail.title,تفاصيل المنظمة
+demo.admin.scenario.organizations.description,استعراض والبحث وإنشاء منظمات في النطاق الحالي.
+demo.admin.scenario.organizations.title,دليل المنظمات
+demo.admin.scenario.project_detail.description,مراجعة وتعديل إعدادات المشروع ودورة حياته.
+demo.admin.scenario.project_detail.title,إعدادات المشروع
+demo.admin.scenario.projects.description,استعراض والبحث وإنشاء مشاريع في النطاق الحالي.
+demo.admin.scenario.projects.title,دليل المشاريع
+demo.admin.scenario.protocol_documents.description,فحص نقاط نهاية الاكتشاف وJWKS للقراءة فقط.
+demo.admin.scenario.protocol_documents.title,وثائق البروتوكول
+demo.admin.scenario.realm_overview.description,مراجعة هوية النطاق والنطاقات الفرعية وحالة دورة الحياة والجلسة الحالية.
+demo.admin.scenario.realm_overview.title,نظرة عامة على النطاق
+demo.admin.scenario.realm_settings.description,إدارة اسم النطاق الحالي والنطاقات الفرعية والحالة ودورة الحياة.
+demo.admin.scenario.realm_settings.title,الإعدادات العامة
+demo.admin.scenario.roles_grants.description,تكوين أدوار المشروع ومنح وصول المنظمة.
+demo.admin.scenario.roles_grants.title,الأدوار والمنح
+demo.admin.scenario.sessions.description,مراجعة جلسات النطاق مع سياق الفاعل والجهاز.
+demo.admin.scenario.sessions.title,الجلسات
+demo.admin.scenario.signing_keys.description,مراجعة بيانات المفتاح الوصفية وإجراء التدوير المحمي.
+demo.admin.scenario.signing_keys.title,مفاتيح التوقيع
+demo.admin.scenario.user_authentication.description,مراجعة بيانات العوامل الآمنة ومفاتيح المرور والاسترداد الوصفية في تفاصيل المستخدم.
+demo.admin.scenario.user_authentication.title,طرق المصادقة
+demo.admin.scenario.user_detail.description,مراجعة الملف الشخصي ودورة الحياة والجلسات وبيانات المصادقة الوصفية الآمنة.
+demo.admin.scenario.user_detail.title,تفاصيل المستخدم
+demo.admin.scenario.user_sessions.description,فحص وإلغاء جلسات المتصفح النشطة للمستخدم.
+demo.admin.scenario.user_sessions.title,جلسات المستخدم
+demo.admin.scenario.users.description,استعراض والبحث عن المستخدمين البشريين في النطاق الحالي.
+demo.admin.scenario.users.title,دليل المستخدمين
+demo.directory.available,متاح
+demo.directory.availableDemos,عروض تجريبية متاحة
+demo.directory.back,العودة إلى الدليل
+demo.directory.fixtureStates,حالات البيانات التجريبية
+demo.directory.openDemo,فتح العرض التجريبي
+demo.directory.planned,مخطط
+demo.directory.plannedDestinations,وجهات مخططة
+demo.directory.previewFoundation,معاينة الأساس
+demo.fixture.accepted,مقبول
+demo.fixture.accountError,تعذّر تحميل بيانات الاختبار الحتمية للحساب.
+demo.fixture.active,نشط
+demo.fixture.assuranceRequired,الضمان مطلوب
+demo.fixture.crossTenant,عبر المستأجرين
+demo.fixture.declined,مرفوض
+demo.fixture.empty,فارغ
+demo.fixture.ended,منتهٍ
 demo.fixture.error,خطأ
 demo.fixture.expired,منتهية
+demo.fixture.expiring,تنتهي صلاحيته قريباً
 demo.fixture.loading,جارٍ التحميل
+demo.fixture.nestedRejected,رفض متداخل
+demo.fixture.oneTime,لمرة واحدة
+demo.fixture.permissionDenied,تم رفض الإذن
 demo.fixture.preview,معاينة بيانات تجريبية مستقلة
+demo.fixture.redacted,منقح
+demo.fixture.replayed,معاد تشغيله
 demo.fixture.state,حالة البيانات التجريبية
 demo.fixture.success,نجاح
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.description,"Explore the login, account, administration, and transactional email demos."
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.nav.account,Account
-demo.nav.admin,Admin
-demo.nav.compact,Compact
-demo.nav.emails,Emails
-demo.nav.hub,Hub
-demo.nav.label,العرض التوضيحي
-demo.nav.login,Login
+demo.hub.accountDescription,استكشف وجهات الملف الشخصي والمنظمة والأمان بالخدمة الذاتية.
+demo.hub.accountOpen,فتح الحساب
+demo.hub.adminDescription,إدارة موارد الهوية وإعدادات المنظمة.
+demo.hub.adminOpen,فتح الإدارة
+demo.hub.description,استكشف العروض التجريبية لتسجيل الدخول والحساب والإدارة ورسائل البريد الإلكتروني للمعاملات.
+demo.hub.loginDescription,استكشف تجربة المصادقة للمستخدمين لديك.
+demo.hub.loginOpen,فتح تسجيل الدخول
+demo.login.description,استكشف بيانات تجريبية محددة لتسجيل الدخول والاسترداد والتفاعل. تظل التدفقات الحالية تفاعلية بينما تعرض الوجهات المخططة عقود السيناريوهات المستقلة.
+demo.login.eyebrow,المصادقة المستضافة
+demo.login.group.chooser.description,نقاط الدخول المشتقة من سياسة تسجيل الدخول المكتشفة والحسابات المحفوظة محلياً.
+demo.login.group.chooser.title,بدء تسجيل الدخول
+demo.login.group.chrome.description,الخيارات البديلة عبر التدفقات المستخدمة في كل شاشة تفاعل مستضافة.
+demo.login.group.chrome.title,الحالات المشتركة
+demo.login.group.interaction.description,نتائج التفاعل وتسجيل الخروج لطلبات OIDC المستضافة.
+demo.login.group.interaction.title,التفاعل وتسجيل الخروج
+demo.login.group.mfa.description,تحديات العامل الثاني وتسجيل تطبيق المصادقة ورموز الاسترداد.
+demo.login.group.mfa.title,المصادقة متعددة العوامل
+demo.login.group.password_email.description,المصادقة بكلمة المرور ورمز البريد الإلكتروني ببيانات تجريبية محلية محددة.
+demo.login.group.password_email.title,كلمة المرور ورمز البريد الإلكتروني
+demo.login.group.passwordless.description,مفاتيح المرور وموفرو Google وGitHub وMicrosoft المكونون.
+demo.login.group.passwordless.title,بدون كلمة مرور والمصادقة الخارجية
+demo.login.group.recovery.description,طلب واستكمال استرداد كلمة المرور دون الكشف عن الحساب.
+demo.login.group.recovery.title,الاسترداد
+demo.login.group.registration.description,التسجيل وتأكيد البريد الإلكتروني الصادر عن الخادم.
+demo.login.group.registration.title,التسجيل والتحقق
+demo.login.scenario.chooser.description,اختر طريقة مصادقة أساسية مسموح بها.
+demo.login.scenario.chooser.title,اختيار طريقة الدخول
+demo.login.scenario.chooser_recent_accounts.description,المتابعة بحساب محفوظ على هذا الجهاز.
+demo.login.scenario.chooser_recent_accounts.title,الحسابات الأخيرة
+demo.login.scenario.email_otp.description,طلب رمز لمرة واحدة يتم تسليمه عبر البريد الإلكتروني.
+demo.login.scenario.email_otp.title,طلب رمز البريد الإلكتروني
+demo.login.scenario.email_otp_code.description,أدخل رمز التحقق المكون من ستة أرقام للبريد الإلكتروني.
+demo.login.scenario.email_otp_code.title,التحقق من رمز البريد الإلكتروني
+demo.login.scenario.idp.description,المتابعة من خلال موفر هوية خارجي مهيأ.
+demo.login.scenario.idp.title,الهوية الخارجية
+demo.login.scenario.idp_failure.description,التعافي من فشل بدء موفر الهوية الخارجي.
+demo.login.scenario.idp_failure.title,فشل موفر الهوية
+demo.login.scenario.loading.description,إظهار التقدم أثناء معالجة اكتشاف النطاق.
+demo.login.scenario.loading.title,جارٍ التحميل
+demo.login.scenario.logout.description,تأكيد تسجيل الخروج لجلسة المتصفح الحالية.
+demo.login.scenario.logout.title,تسجيل الخروج
+demo.login.scenario.logout_done.description,تأكيد اكتمال تسجيل الخروج ومسار العودة الذي تم التحقق منه.
+demo.login.scenario.logout_done.title,تم تسجيل الخروج
+demo.login.scenario.mfa.description,اختر عاملاً ثانياً متاحاً.
+demo.login.scenario.mfa.title,اختر عاملاً
+demo.login.scenario.mfa_email_otp.description,التحقق من العامل الثاني عبر البريد الإلكتروني.
+demo.login.scenario.mfa_email_otp.title,رمز البريد الإلكتروني
+demo.login.scenario.mfa_passkey.description,التحقق من مفتاح المرور كعامل ثانٍ.
+demo.login.scenario.mfa_passkey.title,عامل مفتاح المرور
+demo.login.scenario.mfa_recovery_code.description,استخدام رمز استرداد فردي عندما تكون العوامل الأخرى غير متاحة.
+demo.login.scenario.mfa_recovery_code.title,رمز الاسترداد
+demo.login.scenario.mfa_totp.description,التحقق من رمز تطبيق المصادقة المستند إلى الوقت.
+demo.login.scenario.mfa_totp.title,رمز تطبيق المصادقة
+demo.login.scenario.mfa_totp_enroll.description,ربط وتأكيد تطبيق مصادقة جديد.
+demo.login.scenario.mfa_totp_enroll.title,تسجيل تطبيق المصادقة
+demo.login.scenario.passkey.description,المصادقة باستخدام مفتاح مرور مرتبط بالجهاز.
+demo.login.scenario.passkey.title,مفتاح المرور
+demo.login.scenario.passkey_unsupported.description,شرح عدم توافق المتصفح أو الجهاز.
+demo.login.scenario.passkey_unsupported.title,مفتاح المرور غير متاح
+demo.login.scenario.password.description,تسجيل الدخول باستخدام عنوان بريد إلكتروني أو اسم مستخدم وكلمة مرور.
+demo.login.scenario.password.title,كلمة المرور
+demo.login.scenario.password_change_required.description,تعيين كلمة مرور جديدة قبل المتابعة.
+demo.login.scenario.password_change_required.title,تغيير كلمة المرور مطلوب
+demo.login.scenario.password_error.description,عرض استجابة آمنة لبيانات الاعتماد غير الصالحة.
+demo.login.scenario.password_error.title,بيانات الاعتماد غير صالحة
+demo.login.scenario.password_forgot.description,طلب تعليمات استرداد كلمة المرور.
+demo.login.scenario.password_forgot.title,طلب الاسترداد
+demo.login.scenario.password_forgot_sent.description,عرض تأكيد البريد الإلكتروني غير الكاشف للمعلومات.
+demo.login.scenario.password_forgot_sent.title,تم طلب الاسترداد
+demo.login.scenario.password_reset.description,اختيار كلمة مرور جديدة من خلال رابط الاسترداد.
+demo.login.scenario.password_reset.title,إعادة تعيين كلمة المرور
+demo.login.scenario.password_reset_complete.description,العودة إلى تسجيل الدخول بعد إعادة التعيين بنجاح.
+demo.login.scenario.password_reset_complete.title,اكتملت إعادة التعيين
+demo.login.scenario.register.description,إنشاء حساب بشري وفقاً لسياسة تسجيل الدخول النشطة.
+demo.login.scenario.register.title,التسجيل
+demo.login.scenario.register_done.description,عرض إشعار التحقق غير الكاشف للمعلومات.
+demo.login.scenario.register_done.title,تم إرسال التأكيد
+demo.login.scenario.signed_in.description,عرض تأكيد استئناف التفاعل.
+demo.login.scenario.signed_in.title,اكتمل التفاعل
+demo.login.scenario.unsupported.description,شرح التفاعل غير المدعوم أو منتهي الصلاحية.
+demo.login.scenario.unsupported.title,الطلب غير متاح
+demo.login.scenario.verify_email.description,تأكيد العنوان من خلال رابط صادر عن الخادم.
+demo.login.scenario.verify_email.title,التحقق من البريد الإلكتروني
+demo.login.title,عرض تجريبي لتسجيل الدخول
+demo.nav.account,الحساب
+demo.nav.admin,الإدارة
+demo.nav.compact,مضغوط
+demo.nav.emails,رسائل البريد الإلكتروني
+demo.nav.hub,الرئيسية
+demo.nav.label,عرض تجريبي
+demo.nav.login,تسجيل الدخول
+demo.placeholder.emptyDescription,هذه الوجهة جاهزة لحالة فارغة مقصودة.
+demo.placeholder.emptyTitle,لا توجد سجلات تجريبية
+demo.placeholder.errorDescription,يمكن عرض خطأ محدد هنا دون طلب شبكة.
+demo.placeholder.errorTitle,خطأ في البيانات التجريبية
+demo.placeholder.loading,جارٍ تحميل البيانات التجريبية
+demo.placeholder.notFoundDescription,اختر وجهة مدعومة من الدليل.
+demo.placeholder.notFoundTitle,لم يتم العثور على وجهة العرض التجريبي
+demo.placeholder.readyDescription,تم تحديد المسار والحالات المدعومة وحدود محول العرض التجريبي. لم يتم تنفيذ صفحة الميزة عن قصد في هذه المرحلة.
+demo.placeholder.readyTitle,عقد البيانات التجريبية جاهز
 email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
 email.directory.eyebrow,Transactional messages
 email.directory.open,Open preview
-email.directory.title,Email previews
-email.hub.description,Review isolated HTML and plain-text transactional message fixtures.
-email.hub.open,Open email previews
+email.directory.title,معاينات البريد الإلكتروني
+email.hub.description,مراجعة البيانات التجريبية لرسائل المعاملات بتنسيق HTML والنص العادي المنعزل.
+email.hub.open,فتح معاينات البريد الإلكتروني
 email.preview.back,جميع معاينات البريد الإلكتروني
 email.preview.html,معاينة HTML
 email.preview.impersonationEnded,انتهى انتحال الهوية
@@ -807,3 +1041,72 @@ login.verify.submit,تأكيد عنوان البريد الإلكتروني
 login.verify.title,التحقق من عنوان البريد الإلكتروني
 login.verify.verifiedDescription,تم تأكيد {email}. يمكنك تسجيل الدخول الآن.
 login.verify.verifiedTitle,تم تأكيد عنوان البريد الإلكتروني
+shell.guard.accessUnavailable,الوصول غير متاح
+shell.guard.contextRequired,السياق مطلوب
+shell.guard.contextRequiredDetail,اختر النطاق أو المنظمة المطلوبة قبل المتابعة.
+shell.guard.destinationUnavailable,الوجهة غير متاحة
+shell.guard.destinationUnavailableDetail,الوجهة المطلوبة ليست جزءاً من هذا التطبيق.
+shell.guard.pageNotFound,الصفحة غير موجودة
+shell.guard.signInRequired,تسجيل الدخول مطلوب
+shell.guard.signInRequiredDetail,سجل الدخول للمتابعة إلى هذه الوجهة.
+shell.nav.acceptInvitation,قبول الدعوة
+shell.nav.access,الوصول
+shell.nav.account,الحساب
+shell.nav.administratorSignIn,تسجيل دخول المسؤول
+shell.nav.applicationConsent,الموافقة على التطبيق
+shell.nav.applicationConsents,موافقات التطبيقات
+shell.nav.applications,التطبيقات
+shell.nav.auditEvents,أحداث التدقيق
+shell.nav.branding,الهوية البصرية
+shell.nav.chooseDestination,اختر وجهة
+shell.nav.credentialsTokens,بيانات الاعتماد والرموز
+shell.nav.deleteAccount,حذف الحساب
+shell.nav.directory,الدليل
+shell.nav.emailAddress,عنوان البريد الإلكتروني
+shell.nav.emailOtpSignIn,تسجيل الدخول برمز البريد الإلكتروني
+shell.nav.externalIdentitySignIn,تسجيل الدخول بهوية خارجية
+shell.nav.impersonation,انتحال الهوية
+shell.nav.invitations,الدعوات
+shell.nav.linkedIdentities,الهويات المرتبطة
+shell.nav.loginPolicy,تسجيل الدخول والهوية
+shell.nav.loginPolicyProviders,تسجيل الدخول وموفرو الهوية
+shell.nav.logout,تسجيل الخروج
+shell.nav.machineCredentials,بيانات اعتماد الآلة
+shell.nav.machineUsers,مستخدمو الأجهزة
+shell.nav.membershipsRoles,الأعضاء والأدوار
+shell.nav.mfa,المصادقة متعددة العوامل
+shell.nav.mfaSignIn,تسجيل الدخول متعدد العوامل
+shell.nav.myOrganizations,منظماتي
+shell.nav.navigationTitle,تنقل {title}
+shell.nav.oidcClients,عملاء OIDC
+shell.nav.openIdConnect,OpenID Connect
+shell.nav.operations,العمليات
+shell.nav.organization,المؤسسة
+shell.nav.organizations,المؤسسات
+shell.nav.overview,نظرة عامة
+shell.nav.passkeySignIn,تسجيل الدخول بمفتاح المرور
+shell.nav.passkeys,مفاتيح المرور
+shell.nav.password,كلمة المرور
+shell.nav.passwordRecovery,استعادة كلمة المرور
+shell.nav.passwordSignIn,تسجيل الدخول بكلمة المرور
+shell.nav.personalInformation,المعلومات الشخصية
+shell.nav.profile,الملف الشخصي
+shell.nav.projects,المشاريع
+shell.nav.protocolDocuments,مستندات البروتوكول
+shell.nav.realm,النطاق
+shell.nav.realmSettings,إعدادات النطاق
+shell.nav.recoveryCodes,رموز الاسترداد
+shell.nav.registration,التسجيل
+shell.nav.rolesGrants,الأدوار والمنح
+shell.nav.security,الأمان
+shell.nav.sessions,الجلسات
+shell.nav.sessionsDevices,الجلسات والأجهزة
+shell.nav.signingKeys,مفاتيح التوقيع
+shell.nav.users,المستخدمون
+shell.nav.verifyEmail,التحقق من البريد الإلكتروني
+shell.state.errorDetail,تعذر إعداد الصفحة. حاول مرة أخرى عندما تكون جاهزاً.
+shell.state.inaccessibleDetail,ليس لديك حق الوصول إلى هذه الوجهة في السياق الحالي.
+shell.state.loadingDetail,جارٍ إعداد هذه الصفحة وسياق الأمان الخاص بها.
+shell.state.nothingHere,لا يوجد شيء هنا بعد
+shell.state.pageUnavailable,هذه الصفحة غير متاحة
+shell.state.readyDetail,هذه الصفحة جاهزة لمحتوى الميزة الخاصة بها.
