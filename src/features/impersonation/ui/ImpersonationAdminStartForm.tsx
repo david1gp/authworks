@@ -93,7 +93,13 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
         )}
       </Show>
 
-      <Button disabled={state.pendingId() !== undefined} type="submit" variant="filledAmber">
+      {/* The base amber fill is too light for white text; use the variant's accessible hover shade. */}
+      <Button
+        class="bg-amber-700 hover:bg-amber-800 dark:bg-amber-800 dark:hover:bg-amber-700"
+        disabled={state.pendingId() !== undefined}
+        type="submit"
+        variant="filledAmber"
+      >
         {messageTranslate("admin.impersonation.start")}
       </Button>
     </form>

@@ -1,24 +1,4 @@
 key,ar
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,التطبيقات التي يمكنها الوصول إلى معلومات من حسابك.
@@ -27,10 +7,10 @@ account.access.consentRevokeConfirm,هل تريد إلغاء وصول التطب
 account.access.consentRevoked,تم إلغاء وصول التطبيق.
 account.access.created,مُنح في {date}
 account.access.declined,Invitation declined
-account.access.invitationDeclineConfirm,هل تريد رفض هذه الدعوة؟
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
+account.access.invitationDeclineConfirm,هل تريد رفض هذه الدعوة؟
 account.access.invitationDescription,Review the organization and roles before you respond.
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
@@ -142,6 +122,45 @@ admin.events.show,إظهار الحمولة
 admin.events.systemActor,النظام
 admin.events.title,أحداث التدقيق
 admin.events.type,نوع الحدث
+admin.impersonation.activeTitle,Active impersonation
+admin.impersonation.actor,Administrator
+admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
+admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
+admin.impersonation.auditLink,View the audit events for this impersonation
+admin.impersonation.bannerLabel,Impersonation in progress
+admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
+admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
+admin.impersonation.duration,Duration
+admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
+admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
+admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.end,End impersonation
+admin.impersonation.endConfirm,End the impersonation of {subject} now?
+admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.expires,Ends
+admin.impersonation.expiringSoon,This impersonation ends in under a minute.
+admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
+admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
+admin.impersonation.noOrganization,No organization
+admin.impersonation.organization,Organization
+admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
+admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.reason,Reason
+admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
+admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
+admin.impersonation.remaining,Remaining
+admin.impersonation.remainingValue,{minutes}:{seconds}
+admin.impersonation.selfRejected,You cannot impersonate your own account.
+admin.impersonation.start,Start impersonation
+admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
+admin.impersonation.startedAt,Started
+admin.impersonation.startedNotice,You are now acting as {subject}.
+admin.impersonation.subject,Acting as
+admin.impersonation.target,User to impersonate
+admin.impersonation.targetRequired,Choose the user you want to act as.
+admin.impersonation.title,Impersonation
+admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,تتطلب إدارة مستخدمي الأجهزة وبيانات اعتمادهم تسجيل دخول أقوى وأحدث. سجّل الدخول مرة أخرى للمتابعة.
 admin.machine.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
 admin.machine.created,تاريخ الإنشاء
@@ -162,6 +181,7 @@ admin.machine.credentials.name,الاسم
 admin.machine.credentials.neverExpires,لا تنتهي صلاحيته
 admin.machine.credentials.onceWarning,تظهر القيمة الصادرة مرة واحدة فقط. احفظها قبل إغلاق هذه النافذة؛ لا يمكن استرجاعها مرة أخرى.
 admin.machine.credentials.revoke,إبطال
+admin.machine.credentials.revokeConfirm,هل تريد إبطال بيانات الاعتماد هذه؟ سيتوقف كل ما يستخدمها عن العمل فوراً.
 admin.machine.credentials.revoked,تم إبطال بيانات الاعتماد.
 admin.machine.credentials.scopes,النطاقات
 admin.machine.credentials.scopesHint,افصل بين النطاقات بمسافات أو فواصل. اتركه فارغًا لوراثة نطاقات مستخدم الجهاز.
@@ -177,6 +197,7 @@ admin.machine.lifecycle.activate,تفعيل
 admin.machine.lifecycle.deactivate,تعطيل
 admin.machine.lifecycle.description,يمنع التعطيل جميع بيانات الاعتماد من المصادقة. الإزالة دائمة ولا يمكن التراجع عنها.
 admin.machine.lifecycle.remove,إزالة مستخدم الجهاز
+admin.machine.lifecycle.removeConfirm,هل تريد إزالة هذا المستخدم الآلي؟ ستتوقف جميع بيانات اعتماده عن العمل فوراً ولا يمكن استعادتها.
 admin.machine.lifecycle.title,دورة الحياة
 admin.machine.pageNext,الصفحة التالية
 admin.machine.pagePrevious,الصفحة السابقة
@@ -193,6 +214,7 @@ admin.machine.secret.description,يتيح سر العميل لمستخدم ال�
 admin.machine.secret.once,هذه هي المرة الوحيدة التي تظهر فيها قيمة {name}. احفظها الآن؛ لا يمكن استرجاعها.
 admin.machine.secret.redacted,مخزَّن ومخفي
 admin.machine.secret.rotate,تدوير سر العميل
+admin.machine.secret.rotateConfirm,هل تريد تدوير سر العميل هذا؟ سيتوقف السر الحالي عن العمل فوراً ولا يمكن استرجاعه.
 admin.machine.secret.rotated,تم تدوير سر العميل.
 admin.machine.secret.title,سر العميل
 admin.machine.secret.tokenTitle,رمز وصول شخصي جديد
@@ -204,9 +226,11 @@ admin.machine.users.createDescription,أنشئ هوية غير بشرية لخد
 admin.machine.users.createSecretHint,يُصدَر معرّف عميل وسر عميل على الفور. يظهر السر مرة واحدة فقط ولا يمكن استرجاعه.
 admin.machine.users.created,تم إنشاء مستخدم الجهاز.
 admin.machine.users.description,هويات غير بشرية تُصادق في هذا النطاق باستخدام بيانات اعتماد العميل أو الرموز أو مفاتيح واجهة البرمجة.
+admin.machine.users.detailTitle,تفاصيل مستخدم الآلة
 admin.machine.users.displayName,الاسم المعروض
 admin.machine.users.empty,لا يوجد بعد أي مستخدم جهاز في هذا النطاق.
 admin.machine.users.lifecycleChanged,تم تغيير حالة مستخدم الجهاز.
+admin.machine.users.missingId,يجب اختيار مستخدم آلي لهذه الوجهة.
 admin.machine.users.noScopes,لا توجد نطاقات
 admin.machine.users.scopes,النطاقات
 admin.machine.users.scopesHint,افصل بين النطاقات بمسافات أو فواصل. تُطابَق النطاقات مطابقةً تامة.
@@ -214,6 +238,10 @@ admin.machine.users.search,البحث عن مستخدمي الأجهزة
 admin.machine.users.title,مستخدمو الأجهزة
 admin.machine.users.userName,اسم المستخدم
 admin.machine.users.userNameHint,يُستخدم كمعرّف عميل عند استبدال بيانات اعتماد العميل.
+admin.navigation.description,اختر مورداً إدارياً
+admin.navigation.hide,إخفاء الشريط الجانبي
+admin.navigation.label,الإدارة
+admin.navigation.title,التنقل في الإدارة
 admin.oidc.assuranceRequired,تتطلب إدارة إعدادات OpenID Connect تسجيل دخول أقوى وأحدث. سجّل الدخول مرة أخرى للمتابعة.
 admin.oidc.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
 admin.oidc.clients.consent,الموافقة
@@ -223,12 +251,15 @@ admin.oidc.clients.create,تسجيل عميل
 admin.oidc.clients.createDescription,سجّل تطبيقًا يسجّل دخول الأشخاص عبر OpenID Connect. يحصل العميل السري على سر لمرة واحدة فقط.
 admin.oidc.clients.created,تم تسجيل العميل.
 admin.oidc.clients.description,التطبيقات التي تصادق الأشخاص عبر OpenID Connect في هذا النطاق.
+admin.oidc.clients.detailTitle,تفاصيل عميل OIDC
 admin.oidc.clients.empty,لا يوجد بعد أي عميل OpenID Connect مسجّل في هذا النطاق.
 admin.oidc.clients.exactMatchHint,معرّف URI واحد في كل سطر. تتم مطابقة كل إعادة توجيه بشكل تام، لذا تُرفض أحرف البدل والاختلافات في النهاية.
 admin.oidc.clients.lifecycleChanged,تم تغيير حالة العميل.
+admin.oidc.clients.missingId,يجب اختيار عميل OIDC لهذه الوجهة.
 admin.oidc.clients.name,اسم العميل
 admin.oidc.clients.postLogoutUris,معرّفات URI لإعادة التوجيه بعد تسجيل الخروج
 admin.oidc.clients.redirectUris,معرّفات URI لإعادة التوجيه
+admin.oidc.clients.removeConfirm,هل تريد إزالة عميل OIDC هذا؟ ستتوقف التطبيقات التي تستخدمه عن العمل فوراً.
 admin.oidc.clients.requireConsent,اطلب من الشخص الموافقة على هذا التطبيق
 admin.oidc.clients.saved,تم حفظ العميل.
 admin.oidc.clients.scopes,النطاقات المسموح بها
@@ -246,6 +277,7 @@ admin.oidc.consents.client,التطبيق
 admin.oidc.consents.description,التطبيقات التي وافق عليها الشخص. يؤدي إلغاء الموافقة إلى مطالبته بالموافقة على التطبيق مرة أخرى.
 admin.oidc.consents.empty,لم يوافق هذا الشخص على أي تطبيق بعد.
 admin.oidc.consents.granted,تمت الموافقة
+admin.oidc.consents.revokeConfirm,هل تريد إبطال هذه الموافقة؟ سيُطلب من الشخص الموافقة على التطبيق مرة أخرى.
 admin.oidc.consents.revoked,تم إلغاء الموافقة.
 admin.oidc.consents.title,موافقات التطبيقات
 admin.oidc.consents.user,الشخص
@@ -277,9 +309,11 @@ admin.oidc.keys.empty,لا توجد بعد مفاتيح توقيع لهذا ال
 admin.oidc.keys.keyId,معرّف المفتاح
 admin.oidc.keys.privateNotice,تُعرض بيانات تعريف المفتاح العام فقط. ولا تُرسل مادة المفتاح الخاص إلى المتصفح أبدًا.
 admin.oidc.keys.retire,إحالة إلى التقاعد
+admin.oidc.keys.retireConfirm,هل تريد إيقاف مفتاح التوقيع هذا؟ لن يمكن التحقق من الرموز الموقعة به بعد مغادرته لمجموعة مفاتيح JWKS.
 admin.oidc.keys.retired,تمت إحالة مفتاح التوقيع إلى التقاعد.
 admin.oidc.keys.retiredAt,تاريخ التقاعد
 admin.oidc.keys.rotate,تدوير المفتاح
+admin.oidc.keys.rotateConfirm,هل تريد تدوير مفتاح التوقيع؟ سيتم نشر مفتاح جديد وسينتهي استخدام المفتاح الحالي.
 admin.oidc.keys.rotated,تم تدوير مفتاح التوقيع.
 admin.oidc.keys.title,مفاتيح التوقيع
 admin.oidc.lifecycle.activate,تفعيل
@@ -299,8 +333,10 @@ admin.oidc.secret.once,هذه هي المرة الوحيدة التي يُعرض
 admin.oidc.secret.publicClient,يصادق العميل العام دون سر، لذا لا يوجد ما يمكن تدويره.
 admin.oidc.secret.redacted,محفوظ ومخفي
 admin.oidc.secret.revoke,إلغاء السر
+admin.oidc.secret.revokeConfirm,هل تريد إبطال سر العميل هذا؟ لن يتمكن العميل من المصادقة حتى يصدر سر جديد.
 admin.oidc.secret.revoked,تم إلغاء سر العميل.
 admin.oidc.secret.rotate,تدوير السر
+admin.oidc.secret.rotateConfirm,هل تريد تدوير سر العميل هذا؟ سيتوقف السر الحالي عن العمل فوراً.
 admin.oidc.secret.rotated,تم تدوير سر العميل.
 admin.oidc.secret.rotatedTitle,سر العميل بعد التدوير
 admin.oidc.secret.title,سر العميل
@@ -329,6 +365,7 @@ admin.organizations.detail.realm,النطاق
 admin.organizations.detail.settingsDescription,تحكّم في اسم المؤسسة وحالة دورة حياتها.
 admin.organizations.detail.settingsTitle,إعدادات المؤسسة
 admin.organizations.detail.updated,آخر تحديث
+admin.organizations.detailTitle,تفاصيل المنظمة
 admin.organizations.domains.claim,المطالبة بالنطاق
 admin.organizations.domains.claimed,تمت المطالبة بـ {domain} وهو في انتظار التحقق.
 admin.organizations.domains.description,تتيح النطاقات الموثّقة للأشخاص العثور على هذه المؤسسة من عنوان بريدهم الإلكتروني.
@@ -338,8 +375,10 @@ admin.organizations.domains.discoveryFound,يُحل {domain} إلى {organizatio
 admin.organizations.domains.discoveryMissing,لا يُحل {domain} إلى أي مؤسسة.
 admin.organizations.domains.domain,النطاق
 admin.organizations.domains.empty,لم تطالب هذه المؤسسة بأي نطاق بعد.
+admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,المجال الأساسي
 admin.organizations.domains.remove,إزالة النطاق
+admin.organizations.domains.removeConfirm,هل تريد إزالة النطاق {domain}؟ سيتوقف اكتشاف المؤسسة له فوراً.
 admin.organizations.domains.removed,تمت إزالة النطاق.
 admin.organizations.domains.title,النطاقات والاكتشاف
 admin.organizations.domains.unverified,في انتظار التحقق
@@ -353,6 +392,7 @@ admin.organizations.invitations.email,Email address
 admin.organizations.invitations.empty,لم تُرسل أي دعوة لهذه المؤسسة.
 admin.organizations.invitations.expires,ينتهي في
 admin.organizations.invitations.revoke,إبطال الدعوة
+admin.organizations.invitations.revokeConfirm,هل تريد إبطال الدعوة لـ {email}؟ سيتوقف رابط الدعوة عن العمل فوراً.
 admin.organizations.invitations.revoked,تم إبطال الدعوة.
 admin.organizations.invitations.sent,تم إنشاء الدعوة.
 admin.organizations.invitations.title,الدعوات
@@ -360,9 +400,12 @@ admin.organizations.invitations.tokenDismiss,لقد حفظت هذا الرابط
 admin.organizations.invitations.tokenOnce,يُعرض رابط الدعوة هذا مرة واحدة. شاركه مع الشخص الذي دعوته.
 admin.organizations.invitations.tokenTitle,رابط الدعوة
 admin.organizations.lifecycle.activate,إعادة تفعيل المؤسسة
+admin.organizations.lifecycle.activateConfirm,هل تريد إعادة تنشيط هذه المؤسسة؟ يفقد الأعضاء الوصول طالما أنها غير نشطة.
 admin.organizations.lifecycle.changed,تم تغيير حالة دورة حياة المؤسسة.
 admin.organizations.lifecycle.deactivate,إلغاء تفعيل المؤسسة
+admin.organizations.lifecycle.deactivateConfirm,هل تريد إلغاء تنشيط هذه المؤسسة؟ يفقد الأعضاء الوصول طالما أنها غير نشطة.
 admin.organizations.lifecycle.remove,إزالة المؤسسة
+admin.organizations.lifecycle.removeConfirm,هل تريد إزالة هذه المؤسسة؟ يفقد الأعضاء الوصول طالما أنها غير نشطة.
 admin.organizations.list.create,إنشاء مؤسسة
 admin.organizations.list.description,تجمع المؤسسات الأشخاص والنطاقات والهوية البصرية لهذا النطاق.
 admin.organizations.list.empty,لا توجد مؤسسات في هذا النطاق بعد.
@@ -374,6 +417,7 @@ admin.organizations.memberships.added,تمت إضافة العضو.
 admin.organizations.memberships.description,الأشخاص في هذه المؤسسة والأدوار الثابتة المسندة إليهم.
 admin.organizations.memberships.empty,لا يوجد أعضاء في هذه المؤسسة بعد.
 admin.organizations.memberships.remove,إزالة العضو
+admin.organizations.memberships.removeConfirm,هل تريد إزالة {userId} من هذه المؤسسة؟ سينتهي وصوله إلى المؤسسة فوراً.
 admin.organizations.memberships.removed,تمت إزالة العضو.
 admin.organizations.memberships.roles,الأدوار
 admin.organizations.memberships.rolesFixed,الأدوار ثابتة بواسطة Authworks ولا يمكن إعادة تسميتها.
@@ -403,6 +447,7 @@ admin.organizations.providers.create,إضافة مزوّد
 admin.organizations.providers.created,تمت تهيئة المزوّد.
 admin.organizations.providers.description,مزوّدو Google وGitHub وMicrosoft المهيّئون لهذه المؤسسة.
 admin.organizations.providers.disable,تعطيل المزوّد
+admin.organizations.providers.disableConfirm,هل تريد تعطيل {displayName}؟ لن يتمكن الأشخاص من تسجيل الدخول بهذا الموفر بعد الآن.
 admin.organizations.providers.disabled,تم تعطيل المزوّد.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,لم يتم تهيئة أي مزوّد هوية خارجي بعد.
@@ -429,9 +474,11 @@ admin.projects.applications.create,إضافة تطبيق
 admin.projects.applications.description,التطبيقات التي تصادق على هذا المشروع.
 admin.projects.applications.empty,لا توجد تطبيقات في هذا المشروع بعد.
 admin.projects.applications.name,اسم التطبيق
+admin.projects.applications.removeConfirm,هل تريد إزالة هذا التطبيق؟ لا يمكن التراجع عن هذا الإجراء.
 admin.projects.applications.title,التطبيقات
 admin.projects.applications.type,نوع التطبيق
 admin.projects.crossTenant,ينتمي هذا المورد إلى نطاق آخر وغير متاح هنا.
+admin.projects.deleteConfirm,هل تريد حذف هذا المشروع؟ ستُحذف التطبيقات والأدوار والمنح معه.
 admin.projects.detail.authorizationRequired,التفويض مطلوب
 admin.projects.detail.created,تاريخ الإنشاء
 admin.projects.detail.organization,المؤسسة
@@ -439,25 +486,30 @@ admin.projects.detail.projectAccessRequired,الوصول إلى المشروع �
 admin.projects.detail.settingsDescription,تحكّم في اسم المشروع وكيفية فرض الوصول.
 admin.projects.detail.settingsTitle,إعدادات المشروع
 admin.projects.detail.updated,آخر تحديث
+admin.projects.detailTitle,تفاصيل المشروع
 admin.projects.grants.create,منح وصول المؤسسة
 admin.projects.grants.description,امنح مؤسسة أخرى حق الوصول إلى هذا المشروع واختر الأدوار التي تحصل عليها.
 admin.projects.grants.empty,لم يُمنح أي مؤسسة حق الوصول إلى هذا المشروع.
 admin.projects.grants.grantedOrganization,المؤسسة الممنوحة
+admin.projects.grants.revokeConfirm,هل تريد إبطال منح الوصول لهذه المؤسسة؟ سيخسر الأعضاء الوصول إلى المشروع.
 admin.projects.grants.roleKeys,الأدوار الممنوحة
 admin.projects.grants.title,منح المؤسسة
 admin.projects.lifecycle.activate,تفعيل
 admin.projects.lifecycle.deactivate,إلغاء التفعيل
 admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.removeConfirm,هل تريد إزالة هذا المشروع؟
 admin.projects.list.create,إنشاء مشروع
 admin.projects.list.description,تجمع المشاريع تطبيقات المؤسسة وأدوارها ومنحها.
 admin.projects.list.empty,لا توجد مشاريع في هذا النطاق بعد.
 admin.projects.list.name,اسم المشروع
 admin.projects.list.search,البحث في المشاريع
 admin.projects.list.title,المشاريع
+admin.projects.missingId,يجب اختيار مشروع لهذه الوجهة.
 admin.projects.pageNext,الصفحة التالية
 admin.projects.pagePrevious,الصفحة السابقة
 admin.projects.permissionDenied,ليس لديك إذن لعرض معلومات هذا المشروع أو تغييرها.
 admin.projects.roles.create,إنشاء دور
+admin.projects.roles.deleteConfirm,هل تريد حذف دور المشروع هذا؟ ستفقد المنح التي تشير إليه هذا الدور.
 admin.projects.roles.description,الأدوار التي يمكن لهذا المشروع إسنادها إلى المؤسسات وأعضائها.
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,لا يحدّد هذا المشروع أي أدوار بعد.
@@ -509,6 +561,16 @@ admin.signIn.signedOutTitle,تم تسجيل الخروج
 admin.signIn.subject,الموضوع
 admin.signIn.subjectType,نوع الموضوع
 admin.signIn.title,تسجيل دخول المسؤول
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
 admin.users.count,{count} مستخدماً
 admin.users.create,إنشاء مستخدم
 admin.users.createDescription,أضف مستخدماً بشرياً إلى النطاق الحالي.
@@ -548,6 +610,16 @@ admin.users.profileSaved,تم حفظ الملف الشخصي للمستخدم.
 admin.users.profileTitle,الملف الشخصي
 admin.users.search,البحث في المستخدمين
 admin.users.searchPlaceholder,تصفية حسب اسم المستخدم أو البريد الإلكتروني أو المعرّف
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 admin.users.state,الحالة
 admin.users.title,المستخدمون
 admin.users.unverified,غير موثّق
@@ -559,6 +631,7 @@ admin.users.verificationDescription,تحكّم في ما إذا كان عنوا�
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
+app.tagline,Secure identity services
 common.back,رجوع
 common.cancel,إلغاء
 common.close,إغلاق
@@ -573,7 +646,32 @@ common.save,حفظ
 common.signIn,تسجيل الدخول
 common.signInWithProvider,تسجيل الدخول باستخدام {provider}
 common.signOut,تسجيل الخروج
+common.theme.dark,dark
+common.theme.light,light
+common.theme.system,system
+common.urlPlaceholder,https://
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.account.eyebrow,Self-service identity
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.admin.directoryTitle,Administration directory
+demo.admin.eyebrow,Realm administration
+demo.admin.realmFixtureName,هوية عملاء نورثويند
+demo.fixture.error,خطأ
+demo.fixture.expired,منتهية
+demo.fixture.loading,جارٍ التحميل
+demo.fixture.preview,معاينة بيانات تجريبية مستقلة
+demo.fixture.state,حالة البيانات التجريبية
+demo.fixture.success,نجاح
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
 demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
 demo.nav.account,Account
 demo.nav.admin,Admin
 demo.nav.compact,Compact
@@ -709,73 +807,3 @@ login.verify.submit,تأكيد عنوان البريد الإلكتروني
 login.verify.title,التحقق من عنوان البريد الإلكتروني
 login.verify.verifiedDescription,تم تأكيد {email}. يمكنك تسجيل الدخول الآن.
 login.verify.verifiedTitle,تم تأكيد عنوان البريد الإلكتروني
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
-admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.startedAt,Started
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.userAction,Impersonate this user
-app.tagline,Secure identity services
-demo.account.eyebrow,Self-service identity
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.admin.eyebrow,Realm administration
-demo.admin.directoryTitle,Administration directory
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.admin.realmFixtureName,هوية عملاء نورثويند
-demo.fixture.error,خطأ
-demo.fixture.expired,منتهية
-demo.fixture.loading,جارٍ التحميل
-demo.fixture.preview,معاينة بيانات تجريبية مستقلة
-demo.fixture.state,حالة البيانات التجريبية
-demo.fixture.success,نجاح
-admin.navigation.title,التنقل في الإدارة
-admin.navigation.description,اختر مورداً إدارياً
-admin.navigation.label,الإدارة
-admin.navigation.hide,إخفاء الشريط الجانبي
-common.theme.system,system
-common.theme.light,light
-common.theme.dark,dark
-common.urlPlaceholder,https://
-admin.organizations.domains.placeholder,example.com

@@ -1,24 +1,4 @@
 key,uk
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
@@ -27,10 +7,10 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
-account.access.invitationDeclineConfirm,Відхилити це запрошення?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
+account.access.invitationDeclineConfirm,Відхилити це запрошення?
 account.access.invitationDescription,Review the organization and roles before you respond.
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
@@ -142,6 +122,45 @@ admin.events.show,Показати корисне навантаження
 admin.events.systemActor,Система
 admin.events.title,Події аудиту
 admin.events.type,Тип події
+admin.impersonation.activeTitle,Active impersonation
+admin.impersonation.actor,Administrator
+admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
+admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
+admin.impersonation.auditLink,View the audit events for this impersonation
+admin.impersonation.bannerLabel,Impersonation in progress
+admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
+admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
+admin.impersonation.duration,Duration
+admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
+admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
+admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.end,End impersonation
+admin.impersonation.endConfirm,End the impersonation of {subject} now?
+admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.expires,Ends
+admin.impersonation.expiringSoon,This impersonation ends in under a minute.
+admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
+admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
+admin.impersonation.noOrganization,No organization
+admin.impersonation.organization,Organization
+admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
+admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.reason,Reason
+admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
+admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
+admin.impersonation.remaining,Remaining
+admin.impersonation.remainingValue,{minutes}:{seconds}
+admin.impersonation.selfRejected,You cannot impersonate your own account.
+admin.impersonation.start,Start impersonation
+admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
+admin.impersonation.startedAt,Started
+admin.impersonation.startedNotice,You are now acting as {subject}.
+admin.impersonation.subject,Acting as
+admin.impersonation.target,User to impersonate
+admin.impersonation.targetRequired,Choose the user you want to act as.
+admin.impersonation.title,Impersonation
+admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,"Керування машинними користувачами та їхніми обліковими даними потребує надійнішого й новішого входу. Увійдіть знову, щоб продовжити."
 admin.machine.assuranceRequiredTitle,Потрібен надійніший вхід
 admin.machine.created,Створено
@@ -162,6 +181,7 @@ admin.machine.credentials.name,Назва
 admin.machine.credentials.neverExpires,Не спливає
 admin.machine.credentials.onceWarning,"Видане значення показується один раз. Збережіть його, перш ніж закрити це вікно; отримати його знову буде неможливо."
 admin.machine.credentials.revoke,Відкликати
+admin.machine.credentials.revokeConfirm,"Відкликати ці облікові дані? Усе, що їх використовує, одразу припинить працювати."
 admin.machine.credentials.revoked,Облікові дані відкликано.
 admin.machine.credentials.scopes,Області
 admin.machine.credentials.scopesHint,"Розділяйте області пробілами або комами. Залиште порожнім, щоб успадкувати області машинного користувача."
@@ -177,6 +197,7 @@ admin.machine.lifecycle.activate,Активувати
 admin.machine.lifecycle.deactivate,Деактивувати
 admin.machine.lifecycle.description,Деактивація позбавляє всі облікові дані можливості проходити автентифікацію. Видалення є остаточним і його не можна скасувати.
 admin.machine.lifecycle.remove,Видалити машинного користувача
+admin.machine.lifecycle.removeConfirm,Видалити цього машинного користувача? Усі його облікові дані одразу припинять працювати і їх неможливо буде відновити.
 admin.machine.lifecycle.title,Життєвий цикл
 admin.machine.pageNext,Наступна сторінка
 admin.machine.pagePrevious,Попередня сторінка
@@ -193,6 +214,7 @@ admin.machine.secret.description,Секрет клієнта дозволяє ц
 admin.machine.secret.once,"Це єдиний раз, коли показується значення для {name}. Збережіть його зараз; відновити його неможливо."
 admin.machine.secret.redacted,Збережено та приховано
 admin.machine.secret.rotate,Замінити секрет клієнта
+admin.machine.secret.rotateConfirm,Ротувати клієнтський секрет? Поточний секрет одразу припинить працювати і його неможливо буде відновити.
 admin.machine.secret.rotated,Секрет клієнта замінено.
 admin.machine.secret.title,Секрет клієнта
 admin.machine.secret.tokenTitle,Новий персональний токен доступу
@@ -204,9 +226,11 @@ admin.machine.users.createDescription,Створіть нелюдську іде
 admin.machine.users.createSecretHint,Ідентифікатор клієнта та секрет клієнта видаються негайно. Секрет показується один раз і не може бути відновлений.
 admin.machine.users.created,Машинного користувача створено.
 admin.machine.users.description,"Нелюдські ідентичності, які автентифікуються в цьому realm за допомогою облікових даних клієнта, токенів або ключів API."
+admin.machine.users.detailTitle,Відомості про машинного користувача
 admin.machine.users.displayName,Відображуване ім'я
 admin.machine.users.empty,У цьому realm ще немає машинних користувачів.
 admin.machine.users.lifecycleChanged,Статус машинного користувача змінено.
+admin.machine.users.missingId,Для цього розділу потрібно вибрати машинного користувача.
 admin.machine.users.noScopes,Немає областей
 admin.machine.users.scopes,Області
 admin.machine.users.scopesHint,Розділяйте області пробілами або комами. Області зіставляються точно.
@@ -214,6 +238,10 @@ admin.machine.users.search,Пошук машинних користувачів
 admin.machine.users.title,Машинні користувачі
 admin.machine.users.userName,Ім'я користувача
 admin.machine.users.userNameHint,Використовується як ідентифікатор клієнта під час обміну облікових даних клієнта.
+admin.navigation.description,Choose an administration resource
+admin.navigation.hide,Hide sidebar
+admin.navigation.label,Administration
+admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Керування налаштуваннями OpenID Connect потребує надійнішого та новішого входу. Увійдіть знову, щоб продовжити."
 admin.oidc.assuranceRequiredTitle,Потрібен надійніший вхід
 admin.oidc.clients.consent,Згода
@@ -223,12 +251,15 @@ admin.oidc.clients.create,Зареєструвати клієнта
 admin.oidc.clients.createDescription,"Зареєструйте застосунок, який виконує вхід людей через OpenID Connect. Конфіденційний клієнт отримує секрет один раз."
 admin.oidc.clients.created,Клієнта зареєстровано.
 admin.oidc.clients.description,"Застосунки, які автентифікують людей через OpenID Connect у цій області."
+admin.oidc.clients.detailTitle,Відомості про клієнта OIDC
 admin.oidc.clients.empty,У цій області ще не зареєстровано жодного клієнта OpenID Connect.
 admin.oidc.clients.exactMatchHint,"По одному URI в рядку. Кожне перенаправлення звіряється точно, тому символи підстановки та відмінності в закінченні відхиляються."
 admin.oidc.clients.lifecycleChanged,Стан клієнта змінено.
+admin.oidc.clients.missingId,Для цього розділу потрібно вибрати клієнта OIDC.
 admin.oidc.clients.name,Назва клієнта
 admin.oidc.clients.postLogoutUris,URI перенаправлення після виходу
 admin.oidc.clients.redirectUris,URI перенаправлення
+admin.oidc.clients.removeConfirm,"Видалити цього клієнта OIDC? Застосунки, що його використовують, одразу припинять працювати."
 admin.oidc.clients.requireConsent,Просити людину підтвердити цей застосунок
 admin.oidc.clients.saved,Клієнта збережено.
 admin.oidc.clients.scopes,Дозволені області доступу
@@ -246,6 +277,7 @@ admin.oidc.consents.client,Застосунок
 admin.oidc.consents.description,"Застосунки, які людина підтвердила. Відкликання згоди призведе до повторного запиту підтвердження застосунку."
 admin.oidc.consents.empty,Ця людина ще не підтвердила жодного застосунку.
 admin.oidc.consents.granted,Підтверджено
+admin.oidc.consents.revokeConfirm,Відкликати цю згоду? Особу знову попросять схвалити застосунок.
 admin.oidc.consents.revoked,Згоду відкликано.
 admin.oidc.consents.title,Згоди застосунків
 admin.oidc.consents.user,Людина
@@ -277,9 +309,11 @@ admin.oidc.keys.empty,Для цієї області ще немає ключі�
 admin.oidc.keys.keyId,Ідентифікатор ключа
 admin.oidc.keys.privateNotice,Показуються лише метадані відкритого ключа. Закритий ключ ніколи не надсилається до браузера.
 admin.oidc.keys.retire,Вивести з обігу
+admin.oidc.keys.retireConfirm,"Вивести цей ключ підписування з експлуатації? Токени, підписані ним, неможливо буде перевірити після його видалення з JWKS."
 admin.oidc.keys.retired,Ключ підпису виведено з обігу.
 admin.oidc.keys.retiredAt,Виведено з обігу
 admin.oidc.keys.rotate,Ротувати ключ
+admin.oidc.keys.rotateConfirm,"Ротувати ключ підписування? Новий ключ буде опубліковано, а поточний виведено з обігу."
 admin.oidc.keys.rotated,Ключ підпису ротовано.
 admin.oidc.keys.title,Ключі підпису
 admin.oidc.lifecycle.activate,Активувати
@@ -299,8 +333,10 @@ admin.oidc.secret.once,"Це єдиний раз, коли показуєтьс�
 admin.oidc.secret.publicClient,"Публічний клієнт проходить автентифікацію без секрету, тому ротувати нічого."
 admin.oidc.secret.redacted,Збережено та приховано
 admin.oidc.secret.revoke,Відкликати секрет
+admin.oidc.secret.revokeConfirm,"Відкликати клієнтський секрет? Клієнт не зможе автентифікуватися, доки не буде видано новий."
 admin.oidc.secret.revoked,Секрет клієнта відкликано.
 admin.oidc.secret.rotate,Ротувати секрет
+admin.oidc.secret.rotateConfirm,Ротувати клієнтський секрет? Поточний секрет одразу припинить працювати.
 admin.oidc.secret.rotated,Секрет клієнта ротовано.
 admin.oidc.secret.rotatedTitle,Ротований секрет клієнта
 admin.oidc.secret.title,Секрет клієнта
@@ -329,6 +365,7 @@ admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Керуйте назвою організації та її статусом життєвого циклу.
 admin.organizations.detail.settingsTitle,Налаштування організації
 admin.organizations.detail.updated,Останнє оновлення
+admin.organizations.detailTitle,Відомості про організацію
 admin.organizations.domains.claim,Заявити домен
 admin.organizations.domains.claimed,"{domain} заявлено, і він очікує на перевірку."
 admin.organizations.domains.description,Підтверджені домени дозволяють людям знаходити цю організацію за адресою електронної пошти.
@@ -338,8 +375,10 @@ admin.organizations.domains.discoveryFound,{domain} розв'язується д
 admin.organizations.domains.discoveryMissing,{domain} не розв'язується до жодної організації.
 admin.organizations.domains.domain,Домен
 admin.organizations.domains.empty,Ця організація ще не заявила жодного домену.
+admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Основний домен
 admin.organizations.domains.remove,Видалити домен
+admin.organizations.domains.removeConfirm,Видалити домен {domain}? Виявлення організації для нього одразу припиниться.
 admin.organizations.domains.removed,Домен видалено.
 admin.organizations.domains.title,Домени та визначення
 admin.organizations.domains.unverified,Очікує на перевірку
@@ -353,6 +392,7 @@ admin.organizations.invitations.email,Email address
 admin.organizations.invitations.empty,Для цієї організації не надіслано жодного запрошення.
 admin.organizations.invitations.expires,Спливає
 admin.organizations.invitations.revoke,Відкликати запрошення
+admin.organizations.invitations.revokeConfirm,Відкликати запрошення для {email}? Посилання запрошення одразу припинить працювати.
 admin.organizations.invitations.revoked,Запрошення відкликано.
 admin.organizations.invitations.sent,Запрошення створено.
 admin.organizations.invitations.title,Запрошення
@@ -360,9 +400,12 @@ admin.organizations.invitations.tokenDismiss,Я зберіг це посилан
 admin.organizations.invitations.tokenOnce,Це посилання запрошення показується один раз. Поділіться ним із запрошеною людиною.
 admin.organizations.invitations.tokenTitle,Посилання запрошення
 admin.organizations.lifecycle.activate,Повторно активувати організацію
+admin.organizations.lifecycle.activateConfirm,"Реактивувати цю організацію? Учасники втрачають доступ, доки вона неактивна."
 admin.organizations.lifecycle.changed,Статус життєвого циклу організації змінено.
 admin.organizations.lifecycle.deactivate,Деактивувати організацію
+admin.organizations.lifecycle.deactivateConfirm,"Деактивувати цю організацію? Учасники втрачають доступ, доки вона неактивна."
 admin.organizations.lifecycle.remove,Видалити організацію
+admin.organizations.lifecycle.removeConfirm,"Видалити цю організацію? Учасники втрачають доступ, доки вона неактивна."
 admin.organizations.list.create,Створити організацію
 admin.organizations.list.description,"Організації об'єднують людей, домени та оформлення цього realm."
 admin.organizations.list.empty,У цьому realm ще немає організацій.
@@ -374,6 +417,7 @@ admin.organizations.memberships.added,Учасника додано.
 admin.organizations.memberships.description,Люди в цій організації та призначені їм фіксовані ролі.
 admin.organizations.memberships.empty,У цій організації ще немає учасників.
 admin.organizations.memberships.remove,Видалити учасника
+admin.organizations.memberships.removeConfirm,Видалити {userId} з цієї організації? Доступ до організації буде негайно припинено.
 admin.organizations.memberships.removed,Учасника видалено.
 admin.organizations.memberships.roles,Ролі
 admin.organizations.memberships.rolesFixed,Ролі зафіксовані Authworks і не можуть бути перейменовані.
@@ -403,6 +447,7 @@ admin.organizations.providers.create,Додати провайдера
 admin.organizations.providers.created,Провайдера налаштовано.
 admin.organizations.providers.description,"Налаштовані провайдери Google, GitHub і Microsoft для цієї організації."
 admin.organizations.providers.disable,Вимкнути провайдера
+admin.organizations.providers.disableConfirm,Вимкнути {displayName}? Люди більше не зможуть входити через цього провайдера.
 admin.organizations.providers.disabled,Провайдера вимкнено.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Зовнішнього провайдера ідентифікації ще не налаштовано.
@@ -429,9 +474,11 @@ admin.projects.applications.create,Додати застосунок
 admin.projects.applications.description,"Застосунки, які автентифікуються в цьому проєкті."
 admin.projects.applications.empty,Цей проєкт ще не має застосунків.
 admin.projects.applications.name,Назва застосунку
+admin.projects.applications.removeConfirm,Видалити цей застосунок? Цю дію неможливо скасувати.
 admin.projects.applications.title,Застосунки
 admin.projects.applications.type,Тип застосунку
 admin.projects.crossTenant,Цей ресурс належить до іншого realm і тут недоступний.
+admin.projects.deleteConfirm,"Видалити цей проєкт? Застосунки, ролі та видані права буде видалено разом із ним."
 admin.projects.detail.authorizationRequired,Потрібна авторизація
 admin.projects.detail.created,Створено
 admin.projects.detail.organization,Організація
@@ -439,25 +486,30 @@ admin.projects.detail.projectAccessRequired,Потрібен доступ до �
 admin.projects.detail.settingsDescription,"Керуйте назвою проєкту та тим, як застосовується доступ."
 admin.projects.detail.settingsTitle,Налаштування проєкту
 admin.projects.detail.updated,Останнє оновлення
+admin.projects.detailTitle,Відомості про проєкт
 admin.projects.grants.create,Надати доступ організації
 admin.projects.grants.description,"Надайте іншій організації доступ до цього проєкту та оберіть, які ролі вона отримає."
 admin.projects.grants.empty,Жодній організації не надано доступ до цього проєкту.
 admin.projects.grants.grantedOrganization,Організація-одержувач
+admin.projects.grants.revokeConfirm,Відкликати цю видачу прав організації? Учасники втратять доступ до проєкту.
 admin.projects.grants.roleKeys,Надані ролі
 admin.projects.grants.title,Надання організації
 admin.projects.lifecycle.activate,Активувати
 admin.projects.lifecycle.deactivate,Деактивувати
 admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.removeConfirm,Видалити цей проєкт?
 admin.projects.list.create,Створити проєкт
 admin.projects.list.description,"Проєкти об'єднують застосунки, ролі та надання організації."
 admin.projects.list.empty,У цьому realm ще немає проєктів.
 admin.projects.list.name,Назва проєкту
 admin.projects.list.search,Пошук проєктів
 admin.projects.list.title,Проєкти
+admin.projects.missingId,Для цього розділу потрібно вибрати проєкт.
 admin.projects.pageNext,Наступна сторінка
 admin.projects.pagePrevious,Попередня сторінка
 admin.projects.permissionDenied,Ви не маєте дозволу переглядати або змінювати ці відомості про проєкт.
 admin.projects.roles.create,Створити роль
+admin.projects.roles.deleteConfirm,"Видалити цю роль проєкту? Видані права, що посилаються на неї, втратять цю роль."
 admin.projects.roles.description,"Ролі, які цей проєкт може призначати організаціям та їхнім учасникам."
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,Цей проєкт ще не визначає ролей.
@@ -509,6 +561,16 @@ admin.signIn.signedOutTitle,Ви вийшли
 admin.signIn.subject,Суб'єкт
 admin.signIn.subjectType,Тип суб'єкта
 admin.signIn.title,Вхід адміністратора
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
 admin.users.count,Користувачів: {count}
 admin.users.create,Створити користувача
 admin.users.createDescription,Додайте користувача-людину до поточного realm.
@@ -548,6 +610,16 @@ admin.users.profileSaved,Профіль користувача збережен�
 admin.users.profileTitle,Профіль
 admin.users.search,Пошук користувачів
 admin.users.searchPlaceholder,"Фільтр за іменем користувача, електронною поштою або ідентифікатором"
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 admin.users.state,Статус
 admin.users.title,Користувачі
 admin.users.unverified,Не підтверджено
@@ -559,6 +631,7 @@ admin.users.verificationDescription,"Визначте, чи вважається
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
+app.tagline,Secure identity services
 common.back,Назад
 common.cancel,Скасувати
 common.close,Закрити
@@ -573,7 +646,32 @@ common.save,Зберегти
 common.signIn,Увійти
 common.signInWithProvider,Увійти за допомогою {provider}
 common.signOut,Вийти
+common.theme.dark,dark
+common.theme.light,light
+common.theme.system,system
+common.urlPlaceholder,https://
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.account.eyebrow,Self-service identity
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.admin.directoryTitle,Administration directory
+demo.admin.eyebrow,Realm administration
+demo.admin.realmFixtureName,Northwind customer identity
+demo.fixture.error,error
+demo.fixture.expired,expired
+demo.fixture.loading,loading
+demo.fixture.preview,Stateless fixture preview
+demo.fixture.state,Fixture state
+demo.fixture.success,success
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
 demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
 demo.nav.account,Account
 demo.nav.admin,Admin
 demo.nav.compact,Compact
@@ -709,73 +807,3 @@ login.verify.submit,Підтвердити адресу електронної �
 login.verify.title,Підтвердьте адресу електронної пошти
 login.verify.verifiedDescription,{email} підтверджено. Тепер можна ввійти.
 login.verify.verifiedTitle,Адресу електронної пошти підтверджено
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
-admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.startedAt,Started
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.userAction,Impersonate this user
-app.tagline,Secure identity services
-demo.account.eyebrow,Self-service identity
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.admin.eyebrow,Realm administration
-demo.admin.directoryTitle,Administration directory
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-admin.navigation.title,Administration navigation
-admin.navigation.description,Choose an administration resource
-admin.navigation.label,Administration
-admin.navigation.hide,Hide sidebar
-common.theme.system,system
-common.theme.light,light
-common.theme.dark,dark
-common.urlPlaceholder,https://
-admin.organizations.domains.placeholder,example.com

@@ -53,7 +53,7 @@ export function ProjectAdminEffectiveAccessView(props: { readonly state: Project
         <p class="mt-1 text-sm text-muted-foreground">
           {messageTranslate("admin.projects.access.permissionDescription")}
         </p>
-        <Table class="mt-4">
+        <Table aria-label={messageTranslate("admin.projects.access.permissionTitle")} class="mt-4" tabIndex={0}>
           <TableHeader>
             <TableRow>
               <TableHead>{messageTranslate("admin.projects.roles.displayName")}</TableHead>

@@ -1,24 +1,4 @@
 key,tr
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
@@ -27,10 +7,10 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
-account.access.invitationDeclineConfirm,Bu davet reddedilsin mi?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
+account.access.invitationDeclineConfirm,Bu davet reddedilsin mi?
 account.access.invitationDescription,Review the organization and roles before you respond.
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
@@ -142,6 +122,45 @@ admin.events.show,Yükü göster
 admin.events.systemActor,Sistem
 admin.events.title,Denetim olayları
 admin.events.type,Olay türü
+admin.impersonation.activeTitle,Active impersonation
+admin.impersonation.actor,Administrator
+admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
+admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
+admin.impersonation.auditLink,View the audit events for this impersonation
+admin.impersonation.bannerLabel,Impersonation in progress
+admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
+admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
+admin.impersonation.duration,Duration
+admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
+admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
+admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.end,End impersonation
+admin.impersonation.endConfirm,End the impersonation of {subject} now?
+admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.expires,Ends
+admin.impersonation.expiringSoon,This impersonation ends in under a minute.
+admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
+admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
+admin.impersonation.noOrganization,No organization
+admin.impersonation.organization,Organization
+admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
+admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.reason,Reason
+admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
+admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
+admin.impersonation.remaining,Remaining
+admin.impersonation.remainingValue,{minutes}:{seconds}
+admin.impersonation.selfRejected,You cannot impersonate your own account.
+admin.impersonation.start,Start impersonation
+admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
+admin.impersonation.startedAt,Started
+admin.impersonation.startedNotice,You are now acting as {subject}.
+admin.impersonation.subject,Acting as
+admin.impersonation.target,User to impersonate
+admin.impersonation.targetRequired,Choose the user you want to act as.
+admin.impersonation.title,Impersonation
+admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,Makine kullanıcılarını ve kimlik bilgilerini yönetmek daha güçlü ve daha yeni bir oturum açma gerektirir. Devam etmek için yeniden oturum açın.
 admin.machine.assuranceRequiredTitle,Daha güçlü oturum açma gerekli
 admin.machine.created,Oluşturuldu
@@ -162,6 +181,7 @@ admin.machine.credentials.name,Ad
 admin.machine.credentials.neverExpires,Sona ermez
 admin.machine.credentials.onceWarning,Verilen değer yalnızca bir kez gösterilir. Bu pencereyi kapatmadan önce saklayın; tekrar alınamaz.
 admin.machine.credentials.revoke,İptal et
+admin.machine.credentials.revokeConfirm,Bu kimlik bilgisi iptal edilsin mi? Onu kullanan her şey anında çalışmayı durdurur.
 admin.machine.credentials.revoked,Kimlik bilgisi iptal edildi.
 admin.machine.credentials.scopes,Kapsamlar
 admin.machine.credentials.scopesHint,Kapsamları boşluk veya virgülle ayırın. Makine kullanıcısının kapsamlarını devralmak için boş bırakın.
@@ -177,6 +197,7 @@ admin.machine.lifecycle.activate,Etkinleştir
 admin.machine.lifecycle.deactivate,Devre dışı bırak
 admin.machine.lifecycle.description,Devre dışı bırakmak tüm kimlik bilgilerinin kimlik doğrulamasını durdurur. Kaldırmak kalıcıdır ve geri alınamaz.
 admin.machine.lifecycle.remove,Makine kullanıcısını kaldır
+admin.machine.lifecycle.removeConfirm,Bu makine kullanıcısı kaldırılsın mı? Sahip olduğu tüm kimlik bilgileri anında çalışmayı durdurur ve geri yüklenemez.
 admin.machine.lifecycle.title,Yaşam döngüsü
 admin.machine.pageNext,Sonraki sayfa
 admin.machine.pagePrevious,Önceki sayfa
@@ -193,6 +214,7 @@ admin.machine.secret.description,"İstemci parolası, bu makine kullanıcısın�
 admin.machine.secret.once,{name} için değer yalnızca bu bir kez gösterilir. Şimdi saklayın; kurtarılamaz.
 admin.machine.secret.redacted,Saklandı ve gizlendi
 admin.machine.secret.rotate,İstemci parolasını yenile
+admin.machine.secret.rotateConfirm,Bu istemci sırrı döndürülsün mü? Mevcut sırr anında çalışmayı durdurur ve kurtarılamaz.
 admin.machine.secret.rotated,İstemci parolası yenilendi.
 admin.machine.secret.title,İstemci parolası
 admin.machine.secret.tokenTitle,Yeni kişisel erişim belirteci
@@ -204,9 +226,11 @@ admin.machine.users.createDescription,Bir hizmet veya entegrasyon için insan ol
 admin.machine.users.createSecretHint,Bir istemci kimliği ve istemci parolası hemen verilir. Parola yalnızca bir kez gösterilir ve kurtarılamaz.
 admin.machine.users.created,Makine kullanıcısı oluşturuldu.
 admin.machine.users.description,"Bu realm'de istemci kimlik bilgileri, belirteçler veya API anahtarlarıyla kimlik doğrulayan insan olmayan kimlikler."
+admin.machine.users.detailTitle,Makine kullanıcısı ayrıntısı
 admin.machine.users.displayName,Görünen ad
 admin.machine.users.empty,Bu realm'de henüz makine kullanıcısı yok.
 admin.machine.users.lifecycleChanged,Makine kullanıcısının durumu değiştirildi.
+admin.machine.users.missingId,Bu hedef için bir makine kullanıcısı seçilmiş olmalıdır.
 admin.machine.users.noScopes,Kapsam yok
 admin.machine.users.scopes,Kapsamlar
 admin.machine.users.scopesHint,Kapsamları boşluk veya virgülle ayırın. Kapsamlar tam olarak eşleştirilir.
@@ -214,6 +238,10 @@ admin.machine.users.search,Makine kullanıcılarını ara
 admin.machine.users.title,Makine kullanıcıları
 admin.machine.users.userName,Kullanıcı adı
 admin.machine.users.userNameHint,İstemci kimlik bilgileri değiştirilirken istemci kimliği olarak kullanılır.
+admin.navigation.description,Choose an administration resource
+admin.navigation.hide,Hide sidebar
+admin.navigation.label,Administration
+admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,OpenID Connect ayarlarını yönetmek daha güçlü ve daha yeni bir oturum açma gerektirir. Devam etmek için yeniden oturum açın.
 admin.oidc.assuranceRequiredTitle,Daha güçlü oturum açma gerekli
 admin.oidc.clients.consent,Onay
@@ -223,12 +251,15 @@ admin.oidc.clients.create,İstemci kaydet
 admin.oidc.clients.createDescription,Kişileri OpenID Connect ile oturum açtıran bir uygulama kaydedin. Gizli bir istemci gizli anahtarı yalnızca bir kez alır.
 admin.oidc.clients.created,İstemci kaydedildi.
 admin.oidc.clients.description,Bu alanda kişileri OpenID Connect üzerinden doğrulayan uygulamalar.
+admin.oidc.clients.detailTitle,OIDC istemci ayrıntısı
 admin.oidc.clients.empty,Bu alanda henüz kayıtlı bir OpenID Connect istemcisi yok.
 admin.oidc.clients.exactMatchHint,Satır başına bir URI. Her yönlendirme tam olarak eşleştirilir; bu nedenle joker karakterler ve sondaki farklılıklar reddedilir.
 admin.oidc.clients.lifecycleChanged,İstemcinin durumu değiştirildi.
+admin.oidc.clients.missingId,Bu hedef için bir OIDC istemcisi seçilmiş olmalıdır.
 admin.oidc.clients.name,İstemci adı
 admin.oidc.clients.postLogoutUris,Oturum kapatma sonrası yönlendirme URI'leri
 admin.oidc.clients.redirectUris,Yönlendirme URI'leri
+admin.oidc.clients.removeConfirm,Bu OIDC istemcisi kaldırılsın mı? Onu kullanan uygulamalar anında çalışmayı durdurur.
 admin.oidc.clients.requireConsent,Kişiden bu uygulamayı onaylamasını iste
 admin.oidc.clients.saved,İstemci kaydedildi.
 admin.oidc.clients.scopes,İzin verilen kapsamlar
@@ -246,6 +277,7 @@ admin.oidc.consents.client,Uygulama
 admin.oidc.consents.description,"Bir kişinin onayladığı uygulamalar. Bir onayı geri almak, uygulamayı yeniden onaylamasını gerektirir."
 admin.oidc.consents.empty,Bu kişi henüz hiçbir uygulamayı onaylamadı.
 admin.oidc.consents.granted,Onaylandı
+admin.oidc.consents.revokeConfirm,Bu onay iptal edilsin mi? Kişiden uygulamayı yeniden onaylaması istenecek.
 admin.oidc.consents.revoked,Onay geri alındı.
 admin.oidc.consents.title,Uygulama onayları
 admin.oidc.consents.user,Kişi
@@ -277,9 +309,11 @@ admin.oidc.keys.empty,Bu alan için henüz imzalama anahtarı yok.
 admin.oidc.keys.keyId,Anahtar kimliği
 admin.oidc.keys.privateNotice,Yalnızca açık anahtar meta verileri gösterilir. Özel anahtar materyali tarayıcıya asla gönderilmez.
 admin.oidc.keys.retire,Kullanımdan kaldır
+admin.oidc.keys.retireConfirm,Bu imzalama anahtarı emekliye ayrılsın mı? Anahtar JWKS'ten çıktığında onunla imzalanan tokenlar doğrulanamaz.
 admin.oidc.keys.retired,İmzalama anahtarı kullanımdan kaldırıldı.
 admin.oidc.keys.retiredAt,Kullanımdan kaldırılma
 admin.oidc.keys.rotate,Anahtarı döndür
+admin.oidc.keys.rotateConfirm,İmzalama anahtarı döndürülsün mü? Yeni bir anahtar yayınlanır ve mevcut anahtar emekli edilir.
 admin.oidc.keys.rotated,İmzalama anahtarı döndürüldü.
 admin.oidc.keys.title,İmzalama anahtarları
 admin.oidc.lifecycle.activate,Etkinleştir
@@ -299,8 +333,10 @@ admin.oidc.secret.once,{client} için gizli anahtarın gösterildiği tek an bud
 admin.oidc.secret.publicClient,"Genel bir istemci gizli anahtar olmadan kimlik doğrular, bu nedenle döndürülecek bir şey yoktur."
 admin.oidc.secret.redacted,Saklandı ve gizlendi
 admin.oidc.secret.revoke,Gizli anahtarı iptal et
+admin.oidc.secret.revokeConfirm,Bu istemci sırrı iptal edilsin mi? Yeni bir sır verilene kadar istemci kimlik doğrulayamaz.
 admin.oidc.secret.revoked,İstemci gizli anahtarı iptal edildi.
 admin.oidc.secret.rotate,Gizli anahtarı döndür
+admin.oidc.secret.rotateConfirm,Bu istemci sırrı döndürülsün mü? Mevcut sır anında çalışmayı durdurur.
 admin.oidc.secret.rotated,İstemci gizli anahtarı döndürüldü.
 admin.oidc.secret.rotatedTitle,Döndürülmüş istemci gizli anahtarı
 admin.oidc.secret.title,İstemci gizli anahtarı
@@ -329,6 +365,7 @@ admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Kuruluş adını ve yaşam döngüsü durumunu yönetin.
 admin.organizations.detail.settingsTitle,Kuruluş ayarları
 admin.organizations.detail.updated,Son güncelleme
+admin.organizations.detailTitle,Kuruluş ayrıntısı
 admin.organizations.domains.claim,Alan adı talep et
 admin.organizations.domains.claimed,{domain} talep edildi ve doğrulama bekliyor.
 admin.organizations.domains.description,"Doğrulanmış alan adları, kişilerin bu kuruluşu e-posta adreslerinden bulmasını sağlar."
@@ -338,8 +375,10 @@ admin.organizations.domains.discoveryFound,"{domain}, {organization} kuruluşuna
 admin.organizations.domains.discoveryMissing,{domain} herhangi bir kuruluşa çözümlenmiyor.
 admin.organizations.domains.domain,Alan adı
 admin.organizations.domains.empty,Bu kuruluş henüz bir alan adı talep etmedi.
+admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Birincil etki alanı
 admin.organizations.domains.remove,Alan adını kaldır
+admin.organizations.domains.removeConfirm,{domain} alan adı kaldırılsın mı? Bunun için organizasyon keşfi anında durur.
 admin.organizations.domains.removed,Alan adı kaldırıldı.
 admin.organizations.domains.title,Alan adları ve tanıma
 admin.organizations.domains.unverified,Doğrulama bekleniyor
@@ -353,6 +392,7 @@ admin.organizations.invitations.email,Email address
 admin.organizations.invitations.empty,Bu kuruluş için hiç davet gönderilmedi.
 admin.organizations.invitations.expires,Sona eriyor
 admin.organizations.invitations.revoke,Daveti iptal et
+admin.organizations.invitations.revokeConfirm,{email} için davet iptal edilsin mi? Davet bağlantısı anında çalışmayı durdurur.
 admin.organizations.invitations.revoked,Davet iptal edildi.
 admin.organizations.invitations.sent,Davet oluşturuldu.
 admin.organizations.invitations.title,Davetler
@@ -360,9 +400,12 @@ admin.organizations.invitations.tokenDismiss,Bu bağlantıyı kaydettim
 admin.organizations.invitations.tokenOnce,Bu davet bağlantısı yalnızca bir kez gösterilir. Davet ettiğiniz kişiyle paylaşın.
 admin.organizations.invitations.tokenTitle,Davet bağlantısı
 admin.organizations.lifecycle.activate,Kuruluşu yeniden etkinleştir
+admin.organizations.lifecycle.activateConfirm,Bu organizasyon yeniden etkinleştirilsin mi? Etkin olana kadar üyeler erişimi kaybeder.
 admin.organizations.lifecycle.changed,Kuruluşun yaşam döngüsü durumu değiştirildi.
 admin.organizations.lifecycle.deactivate,Kuruluşu devre dışı bırak
+admin.organizations.lifecycle.deactivateConfirm,Bu organizasyon devre dışı bırakılsın mı? Etkin olana kadar üyeler erişimi kaybeder.
 admin.organizations.lifecycle.remove,Kuruluşu kaldır
+admin.organizations.lifecycle.removeConfirm,Bu organizasyon kaldırılsın mı? Etkin olana kadar üyeler erişimi kaybeder.
 admin.organizations.list.create,Kuruluş oluştur
 admin.organizations.list.description,"Kuruluşlar bu realm'in kişilerini, alan adlarını ve marka görünümünü gruplar."
 admin.organizations.list.empty,Bu realm'de henüz kuruluş yok.
@@ -374,6 +417,7 @@ admin.organizations.memberships.added,Üye eklendi.
 admin.organizations.memberships.description,Bu kuruluştaki kişiler ve kendilerine atanan sabit roller.
 admin.organizations.memberships.empty,Bu kuruluşun henüz üyesi yok.
 admin.organizations.memberships.remove,Üyeyi kaldır
+admin.organizations.memberships.removeConfirm,{userId} bu organizasyondan çıkarılsın mı? Organizasyon erişimi hemen sona erer.
 admin.organizations.memberships.removed,Üye kaldırıldı.
 admin.organizations.memberships.roles,Roller
 admin.organizations.memberships.rolesFixed,Roller Authworks tarafından sabitlenmiştir ve yeniden adlandırılamaz.
@@ -403,6 +447,7 @@ admin.organizations.providers.create,Sağlayıcı ekle
 admin.organizations.providers.created,Sağlayıcı yapılandırıldı.
 admin.organizations.providers.description,"Bu kuruluş için yapılandırılmış Google, GitHub ve Microsoft sağlayıcıları."
 admin.organizations.providers.disable,Sağlayıcıyı devre dışı bırak
+admin.organizations.providers.disableConfirm,{displayName} devre dışı bırakılsın mı? İnsanlar artık bu sağlayıcıyla oturum açamaz.
 admin.organizations.providers.disabled,Sağlayıcı devre dışı bırakıldı.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Henüz harici kimlik sağlayıcısı yapılandırılmadı.
@@ -429,9 +474,11 @@ admin.projects.applications.create,Uygulama ekle
 admin.projects.applications.description,Bu projeye karşı kimlik doğrulayan uygulamalar.
 admin.projects.applications.empty,Bu projenin henüz uygulaması yok.
 admin.projects.applications.name,Uygulama adı
+admin.projects.applications.removeConfirm,Bu uygulama kaldırılsın mı? Bu işlem geri alınamaz.
 admin.projects.applications.title,Uygulamalar
 admin.projects.applications.type,Uygulama türü
 admin.projects.crossTenant,Bu kaynak başka bir realm'e ait ve burada kullanılamıyor.
+admin.projects.deleteConfirm,"Bu proje silinsin mi? Uygulamalar, roller ve hak atamaları onunla birlikte silinir."
 admin.projects.detail.authorizationRequired,Yetkilendirme gerekli
 admin.projects.detail.created,Oluşturulma
 admin.projects.detail.organization,Kuruluş
@@ -439,25 +486,30 @@ admin.projects.detail.projectAccessRequired,Proje erişimi gerekli
 admin.projects.detail.settingsDescription,Proje adını ve erişimin nasıl uygulandığını yönetin.
 admin.projects.detail.settingsTitle,Proje ayarları
 admin.projects.detail.updated,Son güncelleme
+admin.projects.detailTitle,Proje ayrıntısı
 admin.projects.grants.create,Kuruluş erişimi ver
 admin.projects.grants.description,Başka bir kuruluşa bu projeye erişim verin ve hangi rolleri alacağını seçin.
 admin.projects.grants.empty,Bu projeye hiçbir kuruluşa erişim verilmedi.
 admin.projects.grants.grantedOrganization,Yetkilendirilen kuruluş
+admin.projects.grants.revokeConfirm,Bu organizasyon ataması iptal edilsin mi? Üyeler proje erişimini kaybedecek.
 admin.projects.grants.roleKeys,Verilen roller
 admin.projects.grants.title,Kuruluş yetkileri
 admin.projects.lifecycle.activate,Etkinleştir
 admin.projects.lifecycle.deactivate,Devre dışı bırak
 admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.removeConfirm,Bu proje kaldırılsın mı?
 admin.projects.list.create,Proje oluştur
 admin.projects.list.description,"Projeler bir kuruluşun uygulamalarını, rollerini ve yetkilerini gruplar."
 admin.projects.list.empty,Bu realm'de henüz proje yok.
 admin.projects.list.name,Proje adı
 admin.projects.list.search,Projeleri ara
 admin.projects.list.title,Projeler
+admin.projects.missingId,Bu hedef için bir proje seçilmiş olmalıdır.
 admin.projects.pageNext,Sonraki sayfa
 admin.projects.pagePrevious,Önceki sayfa
 admin.projects.permissionDenied,Bu proje bilgilerini görüntüleme veya değiştirme izniniz yok.
 admin.projects.roles.create,Rol oluştur
+admin.projects.roles.deleteConfirm,Bu proje rolü silinsin mi? Ona atıfta bulunan atamalar rolü kaybeder.
 admin.projects.roles.description,Bu projenin kuruluşlara ve üyelerine atayabileceği roller.
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,Bu proje henüz rol tanımlamıyor.
@@ -509,6 +561,16 @@ admin.signIn.signedOutTitle,Oturum kapatıldı
 admin.signIn.subject,Özne
 admin.signIn.subjectType,Özne türü
 admin.signIn.title,Yönetici oturumu açma
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
 admin.users.count,{count} kullanıcı
 admin.users.create,Kullanıcı oluştur
 admin.users.createDescription,Geçerli realm'e bir insan kullanıcı ekleyin.
@@ -548,6 +610,16 @@ admin.users.profileSaved,Kullanıcı profili kaydedildi.
 admin.users.profileTitle,Profil
 admin.users.search,Kullanıcıları ara
 admin.users.searchPlaceholder,"Kullanıcı adına, e-postaya veya tanımlayıcıya göre filtrele"
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 admin.users.state,Durum
 admin.users.title,Kullanıcılar
 admin.users.unverified,Doğrulanmamış
@@ -559,6 +631,7 @@ admin.users.verificationDescription,Bu kullanıcının e-posta adresinin doğrul
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
+app.tagline,Secure identity services
 common.back,Geri
 common.cancel,İptal
 common.close,Kapat
@@ -573,7 +646,32 @@ common.save,Kaydet
 common.signIn,Giriş yap
 common.signInWithProvider,{provider} ile giriş yap
 common.signOut,Çıkış yap
+common.theme.dark,dark
+common.theme.light,light
+common.theme.system,system
+common.urlPlaceholder,https://
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.account.eyebrow,Self-service identity
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.admin.directoryTitle,Administration directory
+demo.admin.eyebrow,Realm administration
+demo.admin.realmFixtureName,Northwind customer identity
+demo.fixture.error,error
+demo.fixture.expired,expired
+demo.fixture.loading,loading
+demo.fixture.preview,Stateless fixture preview
+demo.fixture.state,Fixture state
+demo.fixture.success,success
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
 demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
 demo.nav.account,Account
 demo.nav.admin,Admin
 demo.nav.compact,Compact
@@ -709,73 +807,3 @@ login.verify.submit,E
 login.verify.title,E-posta adresinizi doğrulayın
 login.verify.verifiedDescription,{email} onaylandı. Şimdi oturum açabilirsiniz.
 login.verify.verifiedTitle,E-posta adresi onaylandı
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
-admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.startedAt,Started
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.userAction,Impersonate this user
-app.tagline,Secure identity services
-demo.account.eyebrow,Self-service identity
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.admin.eyebrow,Realm administration
-demo.admin.directoryTitle,Administration directory
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-admin.navigation.title,Administration navigation
-admin.navigation.description,Choose an administration resource
-admin.navigation.label,Administration
-admin.navigation.hide,Hide sidebar
-common.theme.system,system
-common.theme.light,light
-common.theme.dark,dark
-common.urlPlaceholder,https://
-admin.organizations.domains.placeholder,example.com

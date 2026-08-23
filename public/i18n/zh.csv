@@ -1,24 +1,4 @@
 key,zh
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
@@ -27,10 +7,10 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
-account.access.invitationDeclineConfirm,要拒绝此邀请吗？
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
+account.access.invitationDeclineConfirm,要拒绝此邀请吗？
 account.access.invitationDescription,Review the organization and roles before you respond.
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
@@ -142,6 +122,45 @@ admin.events.show,显示载荷
 admin.events.systemActor,系统
 admin.events.title,审计事件
 admin.events.type,事件类型
+admin.impersonation.activeTitle,Active impersonation
+admin.impersonation.actor,Administrator
+admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
+admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
+admin.impersonation.auditLink,View the audit events for this impersonation
+admin.impersonation.bannerLabel,Impersonation in progress
+admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
+admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
+admin.impersonation.duration,Duration
+admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
+admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
+admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.end,End impersonation
+admin.impersonation.endConfirm,End the impersonation of {subject} now?
+admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.expires,Ends
+admin.impersonation.expiringSoon,This impersonation ends in under a minute.
+admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
+admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
+admin.impersonation.noOrganization,No organization
+admin.impersonation.organization,Organization
+admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
+admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.reason,Reason
+admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
+admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
+admin.impersonation.remaining,Remaining
+admin.impersonation.remainingValue,{minutes}:{seconds}
+admin.impersonation.selfRejected,You cannot impersonate your own account.
+admin.impersonation.start,Start impersonation
+admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
+admin.impersonation.startedAt,Started
+admin.impersonation.startedNotice,You are now acting as {subject}.
+admin.impersonation.subject,Acting as
+admin.impersonation.target,User to impersonate
+admin.impersonation.targetRequired,Choose the user you want to act as.
+admin.impersonation.title,Impersonation
+admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,管理机器用户及其凭据需要更强、更近期的登录。请重新登录以继续。
 admin.machine.assuranceRequiredTitle,需要更强的登录
 admin.machine.created,创建时间
@@ -162,6 +181,7 @@ admin.machine.credentials.name,名称
 admin.machine.credentials.neverExpires,不会过期
 admin.machine.credentials.onceWarning,签发的凭据值仅显示一次。请在关闭此对话框前妥善保存；之后无法再次获取。
 admin.machine.credentials.revoke,吊销
+admin.machine.credentials.revokeConfirm,吊销此凭据？使用它的所有内容将立即失效。
 admin.machine.credentials.revoked,该凭据已被吊销。
 admin.machine.credentials.scopes,作用域
 admin.machine.credentials.scopesHint,使用空格或逗号分隔作用域。留空则继承机器用户的作用域。
@@ -177,6 +197,7 @@ admin.machine.lifecycle.activate,启用
 admin.machine.lifecycle.deactivate,停用
 admin.machine.lifecycle.description,停用后所有凭据都无法再进行身份验证。删除是永久性的且无法撤销。
 admin.machine.lifecycle.remove,删除机器用户
+admin.machine.lifecycle.removeConfirm,移除此机器用户？其拥有的所有凭据将立即失效且无法恢复。
 admin.machine.lifecycle.title,生命周期
 admin.machine.pageNext,下一页
 admin.machine.pagePrevious,上一页
@@ -193,6 +214,7 @@ admin.machine.secret.description,客户端密钥使该机器用户能够用其�
 admin.machine.secret.once,这是 {name} 的值唯一一次显示。请立即保存；之后无法恢复。
 admin.machine.secret.redacted,已存储并隐藏
 admin.machine.secret.rotate,轮换客户端密钥
+admin.machine.secret.rotateConfirm,轮换此客户端密钥？当前密钥将立即失效且无法找回。
 admin.machine.secret.rotated,客户端密钥已轮换。
 admin.machine.secret.title,客户端密钥
 admin.machine.secret.tokenTitle,新的个人访问令牌
@@ -204,9 +226,11 @@ admin.machine.users.createDescription,为服务或集成创建非人类身份。
 admin.machine.users.createSecretHint,系统会立即签发客户端 ID 和客户端密钥。该密钥仅显示一次且无法恢复。
 admin.machine.users.created,机器用户已创建。
 admin.machine.users.description,在此 realm 中使用客户端凭据、令牌或 API 密钥进行身份验证的非人类身份。
+admin.machine.users.detailTitle,机器用户详情
 admin.machine.users.displayName,显示名称
 admin.machine.users.empty,此 realm 中尚不存在机器用户。
 admin.machine.users.lifecycleChanged,机器用户的状态已更改。
+admin.machine.users.missingId,此目的地必须选择机器用户。
 admin.machine.users.noScopes,无作用域
 admin.machine.users.scopes,作用域
 admin.machine.users.scopesHint,使用空格或逗号分隔作用域。作用域按完全匹配进行比较。
@@ -214,6 +238,10 @@ admin.machine.users.search,搜索机器用户
 admin.machine.users.title,机器用户
 admin.machine.users.userName,用户名
 admin.machine.users.userNameHint,在交换客户端凭据时用作客户端 ID。
+admin.navigation.description,Choose an administration resource
+admin.navigation.hide,Hide sidebar
+admin.navigation.label,Administration
+admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,管理 OpenID Connect 设置需要更强、更近期的登录。请重新登录以继续。
 admin.oidc.assuranceRequiredTitle,需要更强的登录方式
 admin.oidc.clients.consent,授权
@@ -223,12 +251,15 @@ admin.oidc.clients.create,注册客户端
 admin.oidc.clients.createDescription,注册一个通过 OpenID Connect 让用户登录的应用。机密客户端只会获得一次密钥。
 admin.oidc.clients.created,客户端已注册。
 admin.oidc.clients.description,在此域中通过 OpenID Connect 验证用户身份的应用。
+admin.oidc.clients.detailTitle,OIDC 客户端详情
 admin.oidc.clients.empty,此域中尚未注册任何 OpenID Connect 客户端。
 admin.oidc.clients.exactMatchHint,每行一个 URI。每个重定向都按完全匹配进行校验，因此通配符和结尾差异都会被拒绝。
 admin.oidc.clients.lifecycleChanged,客户端状态已更改。
+admin.oidc.clients.missingId,此目的地必须选择 OIDC 客户端。
 admin.oidc.clients.name,客户端名称
 admin.oidc.clients.postLogoutUris,登出后重定向 URI
 admin.oidc.clients.redirectUris,重定向 URI
+admin.oidc.clients.removeConfirm,移除此 OIDC 客户端？使用它的应用将立即无法工作。
 admin.oidc.clients.requireConsent,要求用户批准此应用
 admin.oidc.clients.saved,客户端已保存。
 admin.oidc.clients.scopes,允许的范围
@@ -246,6 +277,7 @@ admin.oidc.consents.client,应用
 admin.oidc.consents.description,用户已批准的应用。撤销授权后，系统会再次要求其批准该应用。
 admin.oidc.consents.empty,此用户尚未批准任何应用。
 admin.oidc.consents.granted,批准时间
+admin.oidc.consents.revokeConfirm,撤销此同意？将再次请求用户批准该应用。
 admin.oidc.consents.revoked,授权已撤销。
 admin.oidc.consents.title,应用授权
 admin.oidc.consents.user,用户
@@ -277,9 +309,11 @@ admin.oidc.keys.empty,此域尚不存在签名密钥。
 admin.oidc.keys.keyId,密钥 ID
 admin.oidc.keys.privateNotice,仅显示公钥元数据。私钥内容绝不会发送到浏览器。
 admin.oidc.keys.retire,停用
+admin.oidc.keys.retireConfirm,停用此签名密钥？一旦它离开 JWKS，用它签发的令牌将无法再被验证。
 admin.oidc.keys.retired,签名密钥已停用。
 admin.oidc.keys.retiredAt,停用时间
 admin.oidc.keys.rotate,轮换密钥
+admin.oidc.keys.rotateConfirm,轮换签名密钥？将发布新密钥并停用当前密钥。
 admin.oidc.keys.rotated,签名密钥已轮换。
 admin.oidc.keys.title,签名密钥
 admin.oidc.lifecycle.activate,启用
@@ -299,8 +333,10 @@ admin.oidc.secret.once,{client} 的密钥仅在此刻显示这一次。请立即
 admin.oidc.secret.publicClient,公共客户端无需密钥即可完成身份验证，因此没有可轮换的内容。
 admin.oidc.secret.redacted,已保存并隐藏
 admin.oidc.secret.revoke,撤销密钥
+admin.oidc.secret.revokeConfirm,吊销此客户端密钥？在签发新密钥之前，客户端将无法进行身份验证。
 admin.oidc.secret.revoked,客户端密钥已撤销。
 admin.oidc.secret.rotate,轮换密钥
+admin.oidc.secret.rotateConfirm,轮换此客户端密钥？当前密钥将立即失效。
 admin.oidc.secret.rotated,客户端密钥已轮换。
 admin.oidc.secret.rotatedTitle,已轮换的客户端密钥
 admin.oidc.secret.title,客户端密钥
@@ -329,6 +365,7 @@ admin.organizations.detail.realm,领域
 admin.organizations.detail.settingsDescription,管理组织名称及其生命周期状态。
 admin.organizations.detail.settingsTitle,组织设置
 admin.organizations.detail.updated,最近更新
+admin.organizations.detailTitle,组织详情
 admin.organizations.domains.claim,认领域名
 admin.organizations.domains.claimed,{domain} 已认领，正在等待验证。
 admin.organizations.domains.description,已验证的域名可让用户通过其电子邮件地址找到此组织。
@@ -338,8 +375,10 @@ admin.organizations.domains.discoveryFound,{domain} 解析到 {organization}。
 admin.organizations.domains.discoveryMissing,{domain} 未解析到任何组织。
 admin.organizations.domains.domain,域名
 admin.organizations.domains.empty,此组织尚未认领任何域名。
+admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,主域名
 admin.organizations.domains.remove,移除域名
+admin.organizations.domains.removeConfirm,移除域名 {domain}？针对它的组织发现将立即停止。
 admin.organizations.domains.removed,域名已移除。
 admin.organizations.domains.title,域名与识别
 admin.organizations.domains.unverified,等待验证
@@ -353,6 +392,7 @@ admin.organizations.invitations.email,Email address
 admin.organizations.invitations.empty,尚未为此组织发送任何邀请。
 admin.organizations.invitations.expires,过期时间
 admin.organizations.invitations.revoke,撤销邀请
+admin.organizations.invitations.revokeConfirm,撤销 {email} 的邀请？邀请链接将立即失效。
 admin.organizations.invitations.revoked,邀请已撤销。
 admin.organizations.invitations.sent,邀请已创建。
 admin.organizations.invitations.title,邀请
@@ -360,9 +400,12 @@ admin.organizations.invitations.tokenDismiss,我已保存此链接
 admin.organizations.invitations.tokenOnce,此邀请链接仅显示一次。请与您邀请的人分享。
 admin.organizations.invitations.tokenTitle,邀请链接
 admin.organizations.lifecycle.activate,重新激活组织
+admin.organizations.lifecycle.activateConfirm,重新激活此组织？在组织未启用期间成员将失去访问权限。
 admin.organizations.lifecycle.changed,组织的生命周期状态已更改。
 admin.organizations.lifecycle.deactivate,停用组织
+admin.organizations.lifecycle.deactivateConfirm,停用此组织？在组织未启用期间成员将失去访问权限。
 admin.organizations.lifecycle.remove,移除组织
+admin.organizations.lifecycle.removeConfirm,移除此组织？在组织未启用期间成员将失去访问权限。
 admin.organizations.list.create,创建组织
 admin.organizations.list.description,组织将此领域的人员、域名和品牌外观归为一组。
 admin.organizations.list.empty,此领域中尚不存在任何组织。
@@ -374,6 +417,7 @@ admin.organizations.memberships.added,成员已添加。
 admin.organizations.memberships.description,此组织中的人员及分配给他们的固定角色。
 admin.organizations.memberships.empty,此组织尚无成员。
 admin.organizations.memberships.remove,移除成员
+admin.organizations.memberships.removeConfirm,从组织中移除 {userId}？其对组织的访问将立即终止。
 admin.organizations.memberships.removed,成员已移除。
 admin.organizations.memberships.roles,角色
 admin.organizations.memberships.rolesFixed,角色由 Authworks 固定，无法重命名。
@@ -403,6 +447,7 @@ admin.organizations.providers.create,添加提供方
 admin.organizations.providers.created,提供方已配置。
 admin.organizations.providers.description,为此组织配置的 Google、GitHub 和 Microsoft 提供方。
 admin.organizations.providers.disable,禁用提供方
+admin.organizations.providers.disableConfirm,禁用 {displayName}？用户将无法继续使用此提供者登录。
 admin.organizations.providers.disabled,提供方已禁用。
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,尚未配置任何外部身份提供方。
@@ -429,9 +474,11 @@ admin.projects.applications.create,添加应用
 admin.projects.applications.description,针对此项目进行身份验证的应用。
 admin.projects.applications.empty,此项目尚无任何应用。
 admin.projects.applications.name,应用名称
+admin.projects.applications.removeConfirm,移除此应用？此操作无法撤消。
 admin.projects.applications.title,应用
 admin.projects.applications.type,应用类型
 admin.projects.crossTenant,此资源属于其他领域，在此不可用。
+admin.projects.deleteConfirm,删除此项目？应用、角色和授权将一并被删除。
 admin.projects.detail.authorizationRequired,需要授权
 admin.projects.detail.created,创建时间
 admin.projects.detail.organization,组织
@@ -439,25 +486,30 @@ admin.projects.detail.projectAccessRequired,需要项目访问权限
 admin.projects.detail.settingsDescription,管理项目名称以及访问的强制方式。
 admin.projects.detail.settingsTitle,项目设置
 admin.projects.detail.updated,最近更新
+admin.projects.detailTitle,项目详情
 admin.projects.grants.create,授予组织访问权限
 admin.projects.grants.description,授予另一个组织访问此项目的权限，并选择其获得的角色。
 admin.projects.grants.empty,尚未向任何组织授予此项目的访问权限。
 admin.projects.grants.grantedOrganization,获授权组织
+admin.projects.grants.revokeConfirm,撤销此组织授权？成员将失去项目访问权限。
 admin.projects.grants.roleKeys,已授予的角色
 admin.projects.grants.title,组织授权
 admin.projects.lifecycle.activate,启用
 admin.projects.lifecycle.deactivate,停用
 admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.removeConfirm,移除此项目？
 admin.projects.list.create,创建项目
 admin.projects.list.description,项目将一个组织的应用、角色和授权归为一组。
 admin.projects.list.empty,此领域中尚不存在任何项目。
 admin.projects.list.name,项目名称
 admin.projects.list.search,搜索项目
 admin.projects.list.title,项目
+admin.projects.missingId,此目的地必须选择一个项目。
 admin.projects.pageNext,下一页
 admin.projects.pagePrevious,上一页
 admin.projects.permissionDenied,您没有权限查看或更改此项目信息。
 admin.projects.roles.create,创建角色
+admin.projects.roles.deleteConfirm,删除此项目角色？引用它的授权将失去该角色。
 admin.projects.roles.description,此项目可分配给组织及其成员的角色。
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,此项目尚未定义任何角色。
@@ -509,6 +561,16 @@ admin.signIn.signedOutTitle,已退出登录
 admin.signIn.subject,主体
 admin.signIn.subjectType,主体类型
 admin.signIn.title,管理员登录
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
 admin.users.count,{count} 个用户
 admin.users.create,创建用户
 admin.users.createDescription,向当前领域添加一个真人用户。
@@ -548,6 +610,16 @@ admin.users.profileSaved,用户资料已保存。
 admin.users.profileTitle,个人资料
 admin.users.search,搜索用户
 admin.users.searchPlaceholder,按用户名、电子邮件或标识符筛选
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 admin.users.state,状态
 admin.users.title,用户
 admin.users.unverified,未验证
@@ -559,6 +631,7 @@ admin.users.verificationDescription,控制该用户的电子邮件地址是否�
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
+app.tagline,Secure identity services
 common.back,返回
 common.cancel,取消
 common.close,关闭
@@ -573,7 +646,32 @@ common.save,保存
 common.signIn,登录
 common.signInWithProvider,使用 {provider} 登录
 common.signOut,退出登录
+common.theme.dark,dark
+common.theme.light,light
+common.theme.system,system
+common.urlPlaceholder,https://
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.account.eyebrow,Self-service identity
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.admin.directoryTitle,Administration directory
+demo.admin.eyebrow,Realm administration
+demo.admin.realmFixtureName,Northwind customer identity
+demo.fixture.error,error
+demo.fixture.expired,expired
+demo.fixture.loading,loading
+demo.fixture.preview,Stateless fixture preview
+demo.fixture.state,Fixture state
+demo.fixture.success,success
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
 demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
 demo.nav.account,Account
 demo.nav.admin,Admin
 demo.nav.compact,Compact
@@ -709,73 +807,3 @@ login.verify.submit,确认电子邮件地址
 login.verify.title,验证电子邮件地址
 login.verify.verifiedDescription,{email} 已确认。您现在可以登录。
 login.verify.verifiedTitle,电子邮件地址已确认
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
-admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.startedAt,Started
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.userAction,Impersonate this user
-app.tagline,Secure identity services
-demo.account.eyebrow,Self-service identity
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.admin.eyebrow,Realm administration
-demo.admin.directoryTitle,Administration directory
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-admin.navigation.title,Administration navigation
-admin.navigation.description,Choose an administration resource
-admin.navigation.label,Administration
-admin.navigation.hide,Hide sidebar
-common.theme.system,system
-common.theme.light,light
-common.theme.dark,dark
-common.urlPlaceholder,https://
-admin.organizations.domains.placeholder,example.com

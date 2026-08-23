@@ -1,24 +1,4 @@
 key,ja
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
@@ -27,10 +7,10 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
-account.access.invitationDeclineConfirm,この招待を辞退しますか？
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
+account.access.invitationDeclineConfirm,この招待を辞退しますか？
 account.access.invitationDescription,Review the organization and roles before you respond.
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
@@ -142,6 +122,45 @@ admin.events.show,ペイロードを表示
 admin.events.systemActor,システム
 admin.events.title,監査イベント
 admin.events.type,イベントの種類
+admin.impersonation.activeTitle,Active impersonation
+admin.impersonation.actor,Administrator
+admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
+admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
+admin.impersonation.auditLink,View the audit events for this impersonation
+admin.impersonation.bannerLabel,Impersonation in progress
+admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
+admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
+admin.impersonation.duration,Duration
+admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
+admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
+admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.end,End impersonation
+admin.impersonation.endConfirm,End the impersonation of {subject} now?
+admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.expires,Ends
+admin.impersonation.expiringSoon,This impersonation ends in under a minute.
+admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
+admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
+admin.impersonation.noOrganization,No organization
+admin.impersonation.organization,Organization
+admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
+admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.reason,Reason
+admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
+admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
+admin.impersonation.remaining,Remaining
+admin.impersonation.remainingValue,{minutes}:{seconds}
+admin.impersonation.selfRejected,You cannot impersonate your own account.
+admin.impersonation.start,Start impersonation
+admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
+admin.impersonation.startedAt,Started
+admin.impersonation.startedNotice,You are now acting as {subject}.
+admin.impersonation.subject,Acting as
+admin.impersonation.target,User to impersonate
+admin.impersonation.targetRequired,Choose the user you want to act as.
+admin.impersonation.title,Impersonation
+admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,マシンユーザーとその資格情報を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
 admin.machine.assuranceRequiredTitle,より強力なサインインが必要です
 admin.machine.created,作成日時
@@ -162,6 +181,7 @@ admin.machine.credentials.name,名前
 admin.machine.credentials.neverExpires,有効期限なし
 admin.machine.credentials.onceWarning,発行された値は一度だけ表示されます。このダイアログを閉じる前に保存してください。再取得はできません。
 admin.machine.credentials.revoke,取り消す
+admin.machine.credentials.revokeConfirm,この資格情報を取り消しますか？使用中のすべてが即座に動作しなくなります。
 admin.machine.credentials.revoked,資格情報を取り消しました。
 admin.machine.credentials.scopes,スコープ
 admin.machine.credentials.scopesHint,スコープはスペースまたはカンマで区切ります。マシンユーザーのスコープを継承するには空のままにします。
@@ -177,6 +197,7 @@ admin.machine.lifecycle.activate,有効化
 admin.machine.lifecycle.deactivate,無効化
 admin.machine.lifecycle.description,無効化すると、すべての資格情報が認証できなくなります。削除は恒久的で、取り消すことはできません。
 admin.machine.lifecycle.remove,マシンユーザーを削除
+admin.machine.lifecycle.removeConfirm,このマシンユーザーを削除しますか？所有するすべての資格情報が即座に動作しなくなり、復元できません。
 admin.machine.lifecycle.title,ライフサイクル
 admin.machine.pageNext,次のページ
 admin.machine.pagePrevious,前のページ
@@ -193,6 +214,7 @@ admin.machine.secret.description,クライアントシークレットにより�
 admin.machine.secret.once,{name} の値が表示されるのはこの一度だけです。今すぐ保存してください。復元はできません。
 admin.machine.secret.redacted,保存済みで非表示
 admin.machine.secret.rotate,クライアントシークレットをローテーション
+admin.machine.secret.rotateConfirm,このクライアントシークレットをローテーションしますか？現在のシークレットは即座に無効になり、復元できません。
 admin.machine.secret.rotated,クライアントシークレットをローテーションしました。
 admin.machine.secret.title,クライアントシークレット
 admin.machine.secret.tokenTitle,新しい個人アクセストークン
@@ -204,9 +226,11 @@ admin.machine.users.createDescription,サービスまたは連携のための非
 admin.machine.users.createSecretHint,クライアント ID とクライアントシークレットがただちに発行されます。シークレットは一度だけ表示され、復元できません。
 admin.machine.users.created,マシンユーザーを作成しました。
 admin.machine.users.description,このレルムでクライアント資格情報、トークン、または API キーを使って認証する非人間 ID です。
+admin.machine.users.detailTitle,マシンユーザーの詳細
 admin.machine.users.displayName,表示名
 admin.machine.users.empty,このレルムにはまだマシンユーザーが存在しません。
 admin.machine.users.lifecycleChanged,マシンユーザーのステータスを変更しました。
+admin.machine.users.missingId,この宛先にはマシンユーザーの選択が必要です。
 admin.machine.users.noScopes,スコープなし
 admin.machine.users.scopes,スコープ
 admin.machine.users.scopesHint,スコープはスペースまたはカンマで区切ります。スコープは完全一致で照合されます。
@@ -214,6 +238,10 @@ admin.machine.users.search,マシンユーザーを検索
 admin.machine.users.title,マシンユーザー
 admin.machine.users.userName,ユーザー名
 admin.machine.users.userNameHint,クライアント資格情報を交換するときのクライアント ID として使用されます。
+admin.navigation.description,Choose an administration resource
+admin.navigation.hide,Hide sidebar
+admin.navigation.label,Administration
+admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,OpenID Connect の設定を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
 admin.oidc.assuranceRequiredTitle,より強力なサインインが必要です
 admin.oidc.clients.consent,同意
@@ -223,12 +251,15 @@ admin.oidc.clients.create,クライアントを登録
 admin.oidc.clients.createDescription,OpenID Connect でサインインさせるアプリケーションを登録します。機密クライアントにはシークレットが一度だけ発行されます。
 admin.oidc.clients.created,クライアントを登録しました。
 admin.oidc.clients.description,このレルムで OpenID Connect を通じて人を認証するアプリケーション。
+admin.oidc.clients.detailTitle,OIDC クライアントの詳細
 admin.oidc.clients.empty,このレルムにはまだ OpenID Connect クライアントが登録されていません。
 admin.oidc.clients.exactMatchHint,1 行につき 1 つの URI。すべてのリダイレクトは完全一致で照合されるため、ワイルドカードや末尾の差異は拒否されます。
 admin.oidc.clients.lifecycleChanged,クライアントの状態を変更しました。
+admin.oidc.clients.missingId,この宛先にはOIDCクライアントの選択が必要です。
 admin.oidc.clients.name,クライアント名
 admin.oidc.clients.postLogoutUris,サインアウト後のリダイレクト URI
 admin.oidc.clients.redirectUris,リダイレクト URI
+admin.oidc.clients.removeConfirm,このOIDCクライアントを削除しますか？それを使用するアプリケーションは即座に動作しなくなります。
 admin.oidc.clients.requireConsent,このアプリケーションの承認を本人に求める
 admin.oidc.clients.saved,クライアントを保存しました。
 admin.oidc.clients.scopes,許可されたスコープ
@@ -246,6 +277,7 @@ admin.oidc.consents.client,アプリケーション
 admin.oidc.consents.description,本人が承認したアプリケーション。同意を取り消すと、再度アプリケーションの承認を求められます。
 admin.oidc.consents.empty,この人はまだどのアプリケーションも承認していません。
 admin.oidc.consents.granted,承認日時
+admin.oidc.consents.revokeConfirm,この同意を取り消しますか？ユーザーはアプリケーションの承認を再度求められます。
 admin.oidc.consents.revoked,同意を取り消しました。
 admin.oidc.consents.title,アプリケーションの同意
 admin.oidc.consents.user,対象者
@@ -277,9 +309,11 @@ admin.oidc.keys.empty,このレルムにはまだ署名鍵がありません。
 admin.oidc.keys.keyId,鍵 ID
 admin.oidc.keys.privateNotice,表示されるのは公開鍵のメタデータのみです。秘密鍵がブラウザーに送信されることはありません。
 admin.oidc.keys.retire,退役させる
+admin.oidc.keys.retireConfirm,この署名鍵を廃止しますか？JWKS から除外されると、その鍵で署名されたトークンは検証できなくなります。
 admin.oidc.keys.retired,署名鍵を退役させました。
 admin.oidc.keys.retiredAt,退役日時
 admin.oidc.keys.rotate,鍵をローテーション
+admin.oidc.keys.rotateConfirm,署名鍵をローテーションしますか？新しい鍵が公開され、現在の鍵は廃止されます。
 admin.oidc.keys.rotated,署名鍵をローテーションしました。
 admin.oidc.keys.title,署名鍵
 admin.oidc.lifecycle.activate,有効化
@@ -299,8 +333,10 @@ admin.oidc.secret.once,{client} のシークレットが表示されるのはこ
 admin.oidc.secret.publicClient,パブリッククライアントはシークレットなしで認証するため、ローテーションするものはありません。
 admin.oidc.secret.redacted,保存済みで非表示
 admin.oidc.secret.revoke,シークレットを取り消す
+admin.oidc.secret.revokeConfirm,このクライアントシークレットを取り消しますか？新しいシークレットが発行されるまで、クライアントは認証できません。
 admin.oidc.secret.revoked,クライアントシークレットを取り消しました。
 admin.oidc.secret.rotate,シークレットをローテーション
+admin.oidc.secret.rotateConfirm,このクライアントシークレットをローテーションしますか？現在のシークレットは即座に無効になります。
 admin.oidc.secret.rotated,クライアントシークレットをローテーションしました。
 admin.oidc.secret.rotatedTitle,ローテーション済みクライアントシークレット
 admin.oidc.secret.title,クライアントシークレット
@@ -329,6 +365,7 @@ admin.organizations.detail.realm,レルム
 admin.organizations.detail.settingsDescription,組織名とそのライフサイクル状態を管理します。
 admin.organizations.detail.settingsTitle,組織設定
 admin.organizations.detail.updated,最終更新
+admin.organizations.detailTitle,組織の詳細
 admin.organizations.domains.claim,ドメインを申請
 admin.organizations.domains.claimed,{domain} は申請され、検証待ちです。
 admin.organizations.domains.description,検証済みドメインにより、メールアドレスからこの組織を見つけられるようになります。
@@ -338,8 +375,10 @@ admin.organizations.domains.discoveryFound,{domain} は {organization} に解決
 admin.organizations.domains.discoveryMissing,{domain} はどの組織にも解決されません。
 admin.organizations.domains.domain,ドメイン
 admin.organizations.domains.empty,この組織はまだドメインを申請していません。
+admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,主ドメイン
 admin.organizations.domains.remove,ドメインを削除
+admin.organizations.domains.removeConfirm,ドメイン {domain} を削除しますか？このドメインの組織の検出は即座に停止します。
 admin.organizations.domains.removed,ドメインを削除しました。
 admin.organizations.domains.title,ドメインと判別
 admin.organizations.domains.unverified,検証待ち
@@ -353,6 +392,7 @@ admin.organizations.invitations.email,Email address
 admin.organizations.invitations.empty,この組織に対して招待は送信されていません。
 admin.organizations.invitations.expires,有効期限
 admin.organizations.invitations.revoke,招待を取り消す
+admin.organizations.invitations.revokeConfirm,{email} の招待を取り消しますか？招待リンクは即座に無効になります。
 admin.organizations.invitations.revoked,招待を取り消しました。
 admin.organizations.invitations.sent,招待を作成しました。
 admin.organizations.invitations.title,招待
@@ -360,9 +400,12 @@ admin.organizations.invitations.tokenDismiss,このリンクを保存しまし�
 admin.organizations.invitations.tokenOnce,この招待リンクは一度だけ表示されます。招待した相手と共有してください。
 admin.organizations.invitations.tokenTitle,招待リンク
 admin.organizations.lifecycle.activate,組織を再有効化
+admin.organizations.lifecycle.activateConfirm,この組織を再アクティブ化しますか？有効になるまでメンバーはアクセスできません。
 admin.organizations.lifecycle.changed,組織のライフサイクル状態を変更しました。
 admin.organizations.lifecycle.deactivate,組織を無効化
+admin.organizations.lifecycle.deactivateConfirm,この組織を非アクティブ化しますか？有効になるまでメンバーはアクセスできません。
 admin.organizations.lifecycle.remove,組織を削除
+admin.organizations.lifecycle.removeConfirm,この組織を削除しますか？有効になるまでメンバーはアクセスできません。
 admin.organizations.list.create,組織を作成
 admin.organizations.list.description,組織は、このレルムの人、ドメイン、ブランディングをまとめます。
 admin.organizations.list.empty,このレルムにはまだ組織がありません。
@@ -374,6 +417,7 @@ admin.organizations.memberships.added,メンバーを追加しました。
 admin.organizations.memberships.description,この組織の人と、割り当てられた固定ロール。
 admin.organizations.memberships.empty,この組織にはまだメンバーがいません。
 admin.organizations.memberships.remove,メンバーを削除
+admin.organizations.memberships.removeConfirm,{userId} をこの組織から削除しますか？組織へのアクセスは直ちに終了します。
 admin.organizations.memberships.removed,メンバーを削除しました。
 admin.organizations.memberships.roles,ロール
 admin.organizations.memberships.rolesFixed,ロールは Authworks によって固定されており、名前を変更できません。
@@ -403,6 +447,7 @@ admin.organizations.providers.create,プロバイダーを追加
 admin.organizations.providers.created,プロバイダーを構成しました。
 admin.organizations.providers.description,この組織に構成された Google、GitHub、Microsoft のプロバイダー。
 admin.organizations.providers.disable,プロバイダーを無効化
+admin.organizations.providers.disableConfirm,{displayName} を無効化しますか？ユーザーはこのプロバイダーでサインインできなくなります。
 admin.organizations.providers.disabled,プロバイダーを無効化しました。
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,外部 ID プロバイダーはまだ構成されていません。
@@ -429,9 +474,11 @@ admin.projects.applications.create,アプリケーションを追加
 admin.projects.applications.description,このプロジェクトに対して認証するアプリケーション。
 admin.projects.applications.empty,このプロジェクトにはまだアプリケーションがありません。
 admin.projects.applications.name,アプリケーション名
+admin.projects.applications.removeConfirm,このアプリケーションを削除しますか？この操作は元に戻せません。
 admin.projects.applications.title,アプリケーション
 admin.projects.applications.type,アプリケーションの種類
 admin.projects.crossTenant,このリソースは別のレルムに属しており、ここでは利用できません。
+admin.projects.deleteConfirm,このプロジェクトを削除しますか？アプリケーション、ロール、付与も一緒に削除されます。
 admin.projects.detail.authorizationRequired,認可が必要です
 admin.projects.detail.created,作成日時
 admin.projects.detail.organization,組織
@@ -439,25 +486,30 @@ admin.projects.detail.projectAccessRequired,プロジェクトへのアクセス
 admin.projects.detail.settingsDescription,プロジェクト名とアクセスの適用方法を管理します。
 admin.projects.detail.settingsTitle,プロジェクト設定
 admin.projects.detail.updated,最終更新
+admin.projects.detailTitle,プロジェクトの詳細
 admin.projects.grants.create,組織にアクセス権を付与
 admin.projects.grants.description,このプロジェクトへのアクセス権を別の組織に付与し、受け取るロールを選択します。
 admin.projects.grants.empty,このプロジェクトへのアクセス権を付与された組織はありません。
 admin.projects.grants.grantedOrganization,付与先の組織
+admin.projects.grants.revokeConfirm,この組織への付与を取り消しますか？メンバーはプロジェクトへのアクセスを失います。
 admin.projects.grants.roleKeys,付与されたロール
 admin.projects.grants.title,組織への付与
 admin.projects.lifecycle.activate,有効化
 admin.projects.lifecycle.deactivate,無効化
 admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.removeConfirm,このプロジェクトを削除しますか？
 admin.projects.list.create,プロジェクトを作成
 admin.projects.list.description,プロジェクトは、組織のアプリケーション、ロール、付与をまとめます。
 admin.projects.list.empty,このレルムにはまだプロジェクトがありません。
 admin.projects.list.name,プロジェクト名
 admin.projects.list.search,プロジェクトを検索
 admin.projects.list.title,プロジェクト
+admin.projects.missingId,この宛先にはプロジェクトの選択が必要です。
 admin.projects.pageNext,次のページ
 admin.projects.pagePrevious,前のページ
 admin.projects.permissionDenied,このプロジェクト情報を表示または変更する権限がありません。
 admin.projects.roles.create,ロールを作成
+admin.projects.roles.deleteConfirm,このプロジェクトロールを削除しますか？参照している付与はロールを失います。
 admin.projects.roles.description,このプロジェクトが組織とそのメンバーに割り当てられるロール。
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,このプロジェクトにはまだロールが定義されていません。
@@ -509,6 +561,16 @@ admin.signIn.signedOutTitle,サインアウトしました
 admin.signIn.subject,サブジェクト
 admin.signIn.subjectType,サブジェクトの種類
 admin.signIn.title,管理者サインイン
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
 admin.users.count,{count} 人のユーザー
 admin.users.create,ユーザーを作成
 admin.users.createDescription,現在のレルムに人間のユーザーを追加します。
@@ -548,6 +610,16 @@ admin.users.profileSaved,ユーザープロフィールを保存しました。
 admin.users.profileTitle,プロフィール
 admin.users.search,ユーザーを検索
 admin.users.searchPlaceholder,ユーザー名、メール、識別子で絞り込む
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 admin.users.state,状態
 admin.users.title,ユーザー
 admin.users.unverified,未検証
@@ -559,6 +631,7 @@ admin.users.verificationDescription,このユーザーのメールアドレス�
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
+app.tagline,Secure identity services
 common.back,戻る
 common.cancel,キャンセル
 common.close,閉じる
@@ -573,7 +646,32 @@ common.save,保存
 common.signIn,サインイン
 common.signInWithProvider,{provider}でサインイン
 common.signOut,サインアウト
+common.theme.dark,dark
+common.theme.light,light
+common.theme.system,system
+common.urlPlaceholder,https://
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.account.eyebrow,Self-service identity
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.admin.directoryTitle,Administration directory
+demo.admin.eyebrow,Realm administration
+demo.admin.realmFixtureName,Northwind customer identity
+demo.fixture.error,error
+demo.fixture.expired,expired
+demo.fixture.loading,loading
+demo.fixture.preview,Stateless fixture preview
+demo.fixture.state,Fixture state
+demo.fixture.success,success
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
 demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
 demo.nav.account,Account
 demo.nav.admin,Admin
 demo.nav.compact,Compact
@@ -709,73 +807,3 @@ login.verify.submit,メールアドレスを確認
 login.verify.title,メールアドレスを確認
 login.verify.verifiedDescription,{email} を確認しました。これでログインできます。
 login.verify.verifiedTitle,メールアドレスを確認しました
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
-admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.startedAt,Started
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.userAction,Impersonate this user
-app.tagline,Secure identity services
-demo.account.eyebrow,Self-service identity
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.admin.eyebrow,Realm administration
-demo.admin.directoryTitle,Administration directory
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-admin.navigation.title,Administration navigation
-admin.navigation.description,Choose an administration resource
-admin.navigation.label,Administration
-admin.navigation.hide,Hide sidebar
-common.theme.system,system
-common.theme.light,light
-common.theme.dark,dark
-common.urlPlaceholder,https://
-admin.organizations.domains.placeholder,example.com

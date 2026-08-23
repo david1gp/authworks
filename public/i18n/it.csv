@@ -1,24 +1,4 @@
 key,it
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
@@ -27,10 +7,10 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
-account.access.invitationDeclineConfirm,Rifiutare questo invito?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
+account.access.invitationDeclineConfirm,Rifiutare questo invito?
 account.access.invitationDescription,Review the organization and roles before you respond.
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
@@ -142,6 +122,45 @@ admin.events.show,Mostra payload
 admin.events.systemActor,Sistema
 admin.events.title,Eventi di audit
 admin.events.type,Tipo di evento
+admin.impersonation.activeTitle,Active impersonation
+admin.impersonation.actor,Administrator
+admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
+admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
+admin.impersonation.auditLink,View the audit events for this impersonation
+admin.impersonation.bannerLabel,Impersonation in progress
+admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
+admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
+admin.impersonation.duration,Duration
+admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
+admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
+admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.end,End impersonation
+admin.impersonation.endConfirm,End the impersonation of {subject} now?
+admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.expires,Ends
+admin.impersonation.expiringSoon,This impersonation ends in under a minute.
+admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
+admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
+admin.impersonation.noOrganization,No organization
+admin.impersonation.organization,Organization
+admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
+admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.reason,Reason
+admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
+admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
+admin.impersonation.remaining,Remaining
+admin.impersonation.remainingValue,{minutes}:{seconds}
+admin.impersonation.selfRejected,You cannot impersonate your own account.
+admin.impersonation.start,Start impersonation
+admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
+admin.impersonation.startedAt,Started
+admin.impersonation.startedNotice,You are now acting as {subject}.
+admin.impersonation.subject,Acting as
+admin.impersonation.target,User to impersonate
+admin.impersonation.targetRequired,Choose the user you want to act as.
+admin.impersonation.title,Impersonation
+admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,La gestione degli utenti macchina e delle loro credenziali richiede un accesso più forte e più recente. Accedi di nuovo per continuare.
 admin.machine.assuranceRequiredTitle,È richiesto un accesso più forte
 admin.machine.created,Creato
@@ -162,6 +181,7 @@ admin.machine.credentials.name,Nome
 admin.machine.credentials.neverExpires,Non scade
 admin.machine.credentials.onceWarning,Il valore emesso viene mostrato una sola volta. Salvalo prima di chiudere questa finestra; non potrà essere recuperato di nuovo.
 admin.machine.credentials.revoke,Revoca
+admin.machine.credentials.revokeConfirm,Revocare questa credenziale? Tutto ciò che la utilizza smette immediatamente di funzionare.
 admin.machine.credentials.revoked,La credenziale è stata revocata.
 admin.machine.credentials.scopes,Ambiti
 admin.machine.credentials.scopesHint,Separa gli ambiti con spazi o virgole. Lascia vuoto per ereditare gli ambiti dell'utente macchina.
@@ -177,6 +197,7 @@ admin.machine.lifecycle.activate,Attiva
 admin.machine.lifecycle.deactivate,Disattiva
 admin.machine.lifecycle.description,La disattivazione impedisce a ogni credenziale di autenticarsi. La rimozione è definitiva e non può essere annullata.
 admin.machine.lifecycle.remove,Rimuovi utente macchina
+admin.machine.lifecycle.removeConfirm,Rimuovere questo utente macchina? Tutte le sue credenziali smettono immediatamente di funzionare e non possono essere ripristinate.
 admin.machine.lifecycle.title,Ciclo di vita
 admin.machine.pageNext,Pagina successiva
 admin.machine.pagePrevious,Pagina precedente
@@ -193,6 +214,7 @@ admin.machine.secret.description,Il secret del client consente a questo utente m
 admin.machine.secret.once,Questa è l'unica volta in cui il valore per {name} viene mostrato. Salvalo ora; non potrà essere recuperato.
 admin.machine.secret.redacted,Memorizzato e nascosto
 admin.machine.secret.rotate,Ruota il secret del client
+admin.machine.secret.rotateConfirm,Ruotare questo segreto client? Il segreto attuale smette immediatamente di funzionare e non può essere recuperato.
 admin.machine.secret.rotated,Il secret del client è stato ruotato.
 admin.machine.secret.title,Secret del client
 admin.machine.secret.tokenTitle,Nuovo token di accesso personale
@@ -204,9 +226,11 @@ admin.machine.users.createDescription,Crea un'identità non umana per un servizi
 admin.machine.users.createSecretHint,Un ID client e un secret del client vengono emessi immediatamente. Il secret viene mostrato una sola volta e non può essere recuperato.
 admin.machine.users.created,L'utente macchina è stato creato.
 admin.machine.users.description,"Identità non umane che si autenticano con credenziali client, token o chiavi API in questo realm."
+admin.machine.users.detailTitle,Dettagli dell'utente macchina
 admin.machine.users.displayName,Nome visualizzato
 admin.machine.users.empty,In questo realm non esiste ancora alcun utente macchina.
 admin.machine.users.lifecycleChanged,Lo stato dell'utente macchina è stato modificato.
+admin.machine.users.missingId,Per questa destinazione deve essere selezionato un utente macchina.
 admin.machine.users.noScopes,Nessun ambito
 admin.machine.users.scopes,Ambiti
 admin.machine.users.scopesHint,Separa gli ambiti con spazi o virgole. Gli ambiti vengono confrontati esattamente.
@@ -214,6 +238,10 @@ admin.machine.users.search,Cerca utenti macchina
 admin.machine.users.title,Utenti macchina
 admin.machine.users.userName,Nome utente
 admin.machine.users.userNameHint,Usato come ID client durante lo scambio delle credenziali client.
+admin.navigation.description,Choose an administration resource
+admin.navigation.hide,Hide sidebar
+admin.navigation.label,Administration
+admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,La gestione delle impostazioni OpenID Connect richiede un accesso più forte e più recente. Accedi di nuovo per continuare.
 admin.oidc.assuranceRequiredTitle,Accesso più forte richiesto
 admin.oidc.clients.consent,Consenso
@@ -223,12 +251,15 @@ admin.oidc.clients.create,Registra client
 admin.oidc.clients.createDescription,Registra un'applicazione che autentica le persone con OpenID Connect. Un client riservato riceve un secret una sola volta.
 admin.oidc.clients.created,Il client è stato registrato.
 admin.oidc.clients.description,Applicazioni che autenticano le persone tramite OpenID Connect in questo realm.
+admin.oidc.clients.detailTitle,Dettagli del client OIDC
 admin.oidc.clients.empty,In questo realm non è ancora registrato alcun client OpenID Connect.
 admin.oidc.clients.exactMatchHint,"Un URI per riga. Ogni reindirizzamento viene confrontato in modo esatto, quindi i caratteri jolly e le differenze finali vengono rifiutati."
 admin.oidc.clients.lifecycleChanged,Lo stato del client è stato modificato.
+admin.oidc.clients.missingId,Per questa destinazione deve essere selezionato un client OIDC.
 admin.oidc.clients.name,Nome del client
 admin.oidc.clients.postLogoutUris,URI di reindirizzamento dopo la disconnessione
 admin.oidc.clients.redirectUris,URI di reindirizzamento
+admin.oidc.clients.removeConfirm,Rimuovere questo client OIDC? Le applicazioni che lo usano smettono immediatamente di funzionare.
 admin.oidc.clients.requireConsent,Chiedi alla persona di approvare questa applicazione
 admin.oidc.clients.saved,Il client è stato salvato.
 admin.oidc.clients.scopes,Ambiti consentiti
@@ -246,6 +277,7 @@ admin.oidc.consents.client,Applicazione
 admin.oidc.consents.description,Applicazioni che una persona ha approvato. Revocare un consenso le chiede di approvare nuovamente l'applicazione.
 admin.oidc.consents.empty,Questa persona non ha ancora approvato alcuna applicazione.
 admin.oidc.consents.granted,Approvata
+admin.oidc.consents.revokeConfirm,Revocare questo consenso? Alla persona verrà chiesto di approvare nuovamente l'applicazione.
 admin.oidc.consents.revoked,Il consenso è stato revocato.
 admin.oidc.consents.title,Consensi delle applicazioni
 admin.oidc.consents.user,Persona
@@ -277,9 +309,11 @@ admin.oidc.keys.empty,Per questo realm non esiste ancora alcuna chiave di firma.
 admin.oidc.keys.keyId,ID chiave
 admin.oidc.keys.privateNotice,Vengono mostrati solo i metadati della chiave pubblica. Il materiale della chiave privata non viene mai inviato al browser.
 admin.oidc.keys.retire,Ritira
+admin.oidc.keys.retireConfirm,Ritirare questa chiave di firma? I token firmati con essa non potranno più essere verificati una volta che lascia il JWKS.
 admin.oidc.keys.retired,La chiave di firma è stata ritirata.
 admin.oidc.keys.retiredAt,Ritirata
 admin.oidc.keys.rotate,Ruota chiave
+admin.oidc.keys.rotateConfirm,Ruotare la chiave di firma? Viene pubblicata una nuova chiave e quella attuale viene ritirata.
 admin.oidc.keys.rotated,La chiave di firma è stata ruotata.
 admin.oidc.keys.title,Chiavi di firma
 admin.oidc.lifecycle.activate,Attiva
@@ -299,8 +333,10 @@ admin.oidc.secret.once,Questa è l'unica volta in cui il secret di {client} vien
 admin.oidc.secret.publicClient,"Un client pubblico si autentica senza secret, quindi non c'è nulla da ruotare."
 admin.oidc.secret.redacted,Memorizzato e nascosto
 admin.oidc.secret.revoke,Revoca il secret
+admin.oidc.secret.revokeConfirm,Revocare questo segreto client? Il client non può autenticarsi finché non ne viene emesso uno nuovo.
 admin.oidc.secret.revoked,Il secret del client è stato revocato.
 admin.oidc.secret.rotate,Ruota il secret
+admin.oidc.secret.rotateConfirm,Ruotare questo segreto client? Il segreto attuale smette immediatamente di funzionare.
 admin.oidc.secret.rotated,Il secret del client è stato ruotato.
 admin.oidc.secret.rotatedTitle,Secret del client ruotato
 admin.oidc.secret.title,Secret del client
@@ -329,6 +365,7 @@ admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Controlla il nome dell'organizzazione e il suo stato del ciclo di vita.
 admin.organizations.detail.settingsTitle,Impostazioni dell'organizzazione
 admin.organizations.detail.updated,Ultimo aggiornamento
+admin.organizations.detailTitle,Dettagli dell'organizzazione
 admin.organizations.domains.claim,Rivendica dominio
 admin.organizations.domains.claimed,{domain} è stato rivendicato ed è in attesa di verifica.
 admin.organizations.domains.description,I domini verificati permettono alle persone di trovare questa organizzazione dal loro indirizzo email.
@@ -338,8 +375,10 @@ admin.organizations.domains.discoveryFound,{domain} viene risolto in {organizati
 admin.organizations.domains.discoveryMissing,{domain} non viene risolto in un'organizzazione.
 admin.organizations.domains.domain,Dominio
 admin.organizations.domains.empty,Questa organizzazione non ha ancora rivendicato un dominio.
+admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Dominio principale
 admin.organizations.domains.remove,Rimuovi dominio
+admin.organizations.domains.removeConfirm,Rimuovere il dominio {domain}? Il rilevamento dell'organizzazione per esso si interrompe immediatamente.
 admin.organizations.domains.removed,Il dominio è stato rimosso.
 admin.organizations.domains.title,Domini e rilevamento
 admin.organizations.domains.unverified,In attesa di verifica
@@ -353,6 +392,7 @@ admin.organizations.invitations.email,Email address
 admin.organizations.invitations.empty,Non è stato inviato alcun invito per questa organizzazione.
 admin.organizations.invitations.expires,Scade
 admin.organizations.invitations.revoke,Revoca invito
+admin.organizations.invitations.revokeConfirm,Revocare l'invito per {email}? Il link di invito smette immediatamente di funzionare.
 admin.organizations.invitations.revoked,L'invito è stato revocato.
 admin.organizations.invitations.sent,L'invito è stato creato.
 admin.organizations.invitations.title,Inviti
@@ -360,9 +400,12 @@ admin.organizations.invitations.tokenDismiss,Ho salvato questo link
 admin.organizations.invitations.tokenOnce,Questo link di invito viene mostrato una sola volta. Condividilo con la persona che hai invitato.
 admin.organizations.invitations.tokenTitle,Link di invito
 admin.organizations.lifecycle.activate,Riattiva organizzazione
+admin.organizations.lifecycle.activateConfirm,Riattivare questa organizzazione? I membri perdono l'accesso finché non è attiva.
 admin.organizations.lifecycle.changed,Lo stato del ciclo di vita dell'organizzazione è stato modificato.
 admin.organizations.lifecycle.deactivate,Disattiva organizzazione
+admin.organizations.lifecycle.deactivateConfirm,Disattivare questa organizzazione? I membri perdono l'accesso finché non è attiva.
 admin.organizations.lifecycle.remove,Rimuovi organizzazione
+admin.organizations.lifecycle.removeConfirm,Rimuovere questa organizzazione? I membri perdono l'accesso finché non è attiva.
 admin.organizations.list.create,Crea organizzazione
 admin.organizations.list.description,"Le organizzazioni raggruppano le persone, i domini e la personalizzazione di questo realm."
 admin.organizations.list.empty,In questo realm non esiste ancora alcuna organizzazione.
@@ -374,6 +417,7 @@ admin.organizations.memberships.added,Il membro è stato aggiunto.
 admin.organizations.memberships.description,Le persone in questa organizzazione e i ruoli fissi loro assegnati.
 admin.organizations.memberships.empty,Questa organizzazione non ha ancora membri.
 admin.organizations.memberships.remove,Rimuovi membro
+admin.organizations.memberships.removeConfirm,Rimuovere {userId} da questa organizzazione? Il suo accesso all'organizzazione termina immediatamente.
 admin.organizations.memberships.removed,Il membro è stato rimosso.
 admin.organizations.memberships.roles,Ruoli
 admin.organizations.memberships.rolesFixed,I ruoli sono fissati da Authworks e non possono essere rinominati.
@@ -403,6 +447,7 @@ admin.organizations.providers.create,Aggiungi provider
 admin.organizations.providers.created,Il provider è stato configurato.
 admin.organizations.providers.description,"Provider Google, GitHub e Microsoft configurati per questa organizzazione."
 admin.organizations.providers.disable,Disabilita provider
+admin.organizations.providers.disableConfirm,Disattivare {displayName}? Le persone non possono più accedere con questo provider.
 admin.organizations.providers.disabled,Il provider è stato disabilitato.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Nessun provider di identità esterno è ancora configurato.
@@ -429,9 +474,11 @@ admin.projects.applications.create,Aggiungi applicazione
 admin.projects.applications.description,Applicazioni che si autenticano con questo progetto.
 admin.projects.applications.empty,Questo progetto non ha ancora applicazioni.
 admin.projects.applications.name,Nome dell'applicazione
+admin.projects.applications.removeConfirm,Rimuovere questa applicazione? L'operazione non può essere annullata.
 admin.projects.applications.title,Applicazioni
 admin.projects.applications.type,Tipo di applicazione
 admin.projects.crossTenant,Questa risorsa appartiene a un altro realm e non è disponibile qui.
+admin.projects.deleteConfirm,"Eliminare questo progetto? Applicazioni, ruoli e concessioni vengono eliminati con esso."
 admin.projects.detail.authorizationRequired,Autorizzazione richiesta
 admin.projects.detail.created,Creato
 admin.projects.detail.organization,Organizzazione
@@ -439,25 +486,30 @@ admin.projects.detail.projectAccessRequired,Accesso al progetto richiesto
 admin.projects.detail.settingsDescription,Controlla il nome del progetto e come viene applicato l'accesso.
 admin.projects.detail.settingsTitle,Impostazioni del progetto
 admin.projects.detail.updated,Ultimo aggiornamento
+admin.projects.detailTitle,Dettagli del progetto
 admin.projects.grants.create,Concedi accesso all'organizzazione
 admin.projects.grants.description,Concedi a un'altra organizzazione l'accesso a questo progetto e scegli quali ruoli riceve.
 admin.projects.grants.empty,A nessuna organizzazione è stato concesso l'accesso a questo progetto.
 admin.projects.grants.grantedOrganization,Organizzazione beneficiaria
+admin.projects.grants.revokeConfirm,Revocare questa concessione all'organizzazione? I membri perderanno l'accesso al progetto.
 admin.projects.grants.roleKeys,Ruoli concessi
 admin.projects.grants.title,Concessioni all'organizzazione
 admin.projects.lifecycle.activate,Attiva
 admin.projects.lifecycle.deactivate,Disattiva
 admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.removeConfirm,Rimuovere questo progetto?
 admin.projects.list.create,Crea progetto
 admin.projects.list.description,"I progetti raggruppano le applicazioni, i ruoli e le concessioni di un'organizzazione."
 admin.projects.list.empty,In questo realm non esiste ancora alcun progetto.
 admin.projects.list.name,Nome del progetto
 admin.projects.list.search,Cerca progetti
 admin.projects.list.title,Progetti
+admin.projects.missingId,Per questa destinazione deve essere selezionato un progetto.
 admin.projects.pageNext,Pagina successiva
 admin.projects.pagePrevious,Pagina precedente
 admin.projects.permissionDenied,Non hai il permesso di visualizzare o modificare queste informazioni del progetto.
 admin.projects.roles.create,Crea ruolo
+admin.projects.roles.deleteConfirm,Eliminare questo ruolo di progetto? Le concessioni che lo referenziano perdono il ruolo.
 admin.projects.roles.description,I ruoli che questo progetto può assegnare alle organizzazioni e ai loro membri.
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,Questo progetto non definisce ancora ruoli.
@@ -509,6 +561,16 @@ admin.signIn.signedOutTitle,Disconnesso
 admin.signIn.subject,Soggetto
 admin.signIn.subjectType,Tipo di soggetto
 admin.signIn.title,Accesso amministratore
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
 admin.users.count,{count} utenti
 admin.users.create,Crea utente
 admin.users.createDescription,Aggiungi un utente umano al realm corrente.
@@ -548,6 +610,16 @@ admin.users.profileSaved,Il profilo utente è stato salvato.
 admin.users.profileTitle,Profilo
 admin.users.search,Cerca utenti
 admin.users.searchPlaceholder,"Filtra per nome utente, email o identificatore"
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 admin.users.state,Stato
 admin.users.title,Utenti
 admin.users.unverified,Non verificato
@@ -559,6 +631,7 @@ admin.users.verificationDescription,Controlla se l'indirizzo email di questo ute
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
+app.tagline,Secure identity services
 common.back,Indietro
 common.cancel,Annulla
 common.close,Chiudi
@@ -573,7 +646,32 @@ common.save,Salva
 common.signIn,Accedi
 common.signInWithProvider,Accedi con {provider}
 common.signOut,Esci
+common.theme.dark,dark
+common.theme.light,light
+common.theme.system,system
+common.urlPlaceholder,https://
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.account.eyebrow,Self-service identity
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.admin.directoryTitle,Administration directory
+demo.admin.eyebrow,Realm administration
+demo.admin.realmFixtureName,Northwind customer identity
+demo.fixture.error,error
+demo.fixture.expired,expired
+demo.fixture.loading,loading
+demo.fixture.preview,Stateless fixture preview
+demo.fixture.state,Fixture state
+demo.fixture.success,success
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
 demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
 demo.nav.account,Account
 demo.nav.admin,Admin
 demo.nav.compact,Compact
@@ -709,73 +807,3 @@ login.verify.submit,Confirmar indirizzo de e-mail
 login.verify.title,Verificar il suo indirizzo de e-mail
 login.verify.verifiedDescription,{email} está confirmada. Ya puede accedere.
 login.verify.verifiedTitle,Indirizzo de e-mail confirmada
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
-admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.startedAt,Started
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.userAction,Impersonate this user
-app.tagline,Secure identity services
-demo.account.eyebrow,Self-service identity
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.admin.eyebrow,Realm administration
-demo.admin.directoryTitle,Administration directory
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-admin.navigation.title,Administration navigation
-admin.navigation.description,Choose an administration resource
-admin.navigation.label,Administration
-admin.navigation.hide,Hide sidebar
-common.theme.system,system
-common.theme.light,light
-common.theme.dark,dark
-common.urlPlaceholder,https://
-admin.organizations.domains.placeholder,example.com

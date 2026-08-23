@@ -81,7 +81,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
               value={state.search()}
             />
           </div>
-          <Table>
+          <Table aria-label={messageTranslate("admin.projects.list.title")} tabIndex={0}>
             <TableHeader>
               <TableRow>
                 <TableHead>{messageTranslate("admin.projects.list.name")}</TableHead>

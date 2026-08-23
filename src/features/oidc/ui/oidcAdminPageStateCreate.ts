@@ -1,6 +1,7 @@
 import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OidcClientCreateRequest } from "../public/oidcClientCreateRequestSchema.js"
 import type { OidcClientStatus } from "../public/oidcClientStatusSchema.js"
 import type { OidcClientUpdateRequest } from "../public/oidcClientUpdateRequestSchema.js"
@@ -77,7 +78,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
     if (screen === "oidc-client-detail") {
       const currentClientId = options.clientId()
       if (currentClientId === undefined) {
-        error.set("An OIDC client must be selected for this destination.")
+        error.set(messageTranslate("admin.oidc.clients.missingId"))
         return status.set("error")
       }
       const current = await adapter.clientGet(currentClientId)
@@ -162,11 +163,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
       return true
     },
     clientLifecycleSet: async (clientId: string, nextStatus: OidcClientStatus) => {
-      if (
-        nextStatus === "removed" &&
-        !options.confirm("Remove this OIDC client? Applications using it stop working immediately.")
-      )
-        return
+      if (nextStatus === "removed" && !options.confirm(messageTranslate("admin.oidc.clients.removeConfirm"))) return
       const updated = await mutate(`client:${clientId}`, () =>
         adapter.clientLifecycleSet(clientId, { status: nextStatus }),
       )
@@ -178,10 +175,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
     clientName: (clientId: string) => clients.get().find((item) => item.id === clientId)?.name ?? clientId,
     clients: clients.get,
     clientSecretRevoke: async (clientId: string) => {
-      if (
-        !options.confirm("Revoke this client secret? The client can no longer authenticate until a new one is issued.")
-      )
-        return
+      if (!options.confirm(messageTranslate("admin.oidc.secret.revokeConfirm"))) return
       const updated = await mutate(`secret:${clientId}`, () => adapter.clientSecretRevoke(clientId))
       if (updated === undefined) return
       client.set(updated)
@@ -190,7 +184,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
       notice.set("secret-revoked")
     },
     clientSecretRotate: async (clientId: string) => {
-      if (!options.confirm("Rotate this client secret? The current secret stops working immediately.")) return
+      if (!options.confirm(messageTranslate("admin.oidc.secret.rotateConfirm"))) return
       const rotated = await mutate(`secret:${clientId}`, () => adapter.clientSecretRotate(clientId))
       if (rotated === undefined) return
       client.set(rotated.client)
@@ -214,7 +208,7 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
       return true
     },
     consentRevoke: async (userId: string, clientId: string) => {
-      if (!options.confirm("Revoke this consent? The user is asked to approve the application again.")) return
+      if (!options.confirm(messageTranslate("admin.oidc.consents.revokeConfirm"))) return
       const revoked = await mutate(`consent:${clientId}`, () => adapter.consentRevoke(userId, clientId))
       if (revoked === undefined) return
       const remaining = consents.get().filter((item) => item.clientId !== clientId)
@@ -254,19 +248,14 @@ export function oidcAdminPageStateCreate(options: OidcAdminPageStateCreateOption
       notice.set("signing-key-created")
     },
     signingKeyRetire: async (signingKeyId: string) => {
-      if (
-        !options.confirm(
-          "Retire this signing key? Tokens signed with it can no longer be verified once it leaves the JWKS.",
-        )
-      )
-        return
+      if (!options.confirm(messageTranslate("admin.oidc.keys.retireConfirm"))) return
       const updated = await mutate(`signing-key:${signingKeyId}`, () => adapter.signingKeyRetire(signingKeyId))
       if (updated === undefined) return
       signingKeys.set(signingKeys.get().map((item) => (item.id === signingKeyId ? updated : item)))
       notice.set("signing-key-retired")
     },
     signingKeyRotate: async () => {
-      if (!options.confirm("Rotate the signing key? A new key is published and the current key is retired.")) return
+      if (!options.confirm(messageTranslate("admin.oidc.keys.rotateConfirm"))) return
       const created = await mutate("signing-key:rotate", () => adapter.signingKeyRotate())
       if (created === undefined) return
       const listed = await adapter.signingKeyList()

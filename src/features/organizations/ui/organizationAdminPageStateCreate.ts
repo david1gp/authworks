@@ -1,6 +1,7 @@
 import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
@@ -182,7 +183,7 @@ export function organizationAdminPageStateCreate(options: {
       await load()
     },
     domainRemove: async (domain: string) => {
-      if (!confirm(`Remove the domain ${domain}? Organization discovery for it stops immediately.`)) return
+      if (!confirm(messageTranslate("admin.organizations.domains.removeConfirm", { domain }))) return
       const removed = await mutate(`domain:${domain}`, () =>
         options.adapter.domainRemove(options.organizationId(), domain),
       )
@@ -211,7 +212,7 @@ export function organizationAdminPageStateCreate(options: {
       notice.set("invitation-created")
     },
     invitationRevoke: async (invitationId: string, email: string) => {
-      if (!confirm(`Revoke the invitation for ${email}? The invitation link stops working immediately.`)) return
+      if (!confirm(messageTranslate("admin.organizations.invitations.revokeConfirm", { email }))) return
       const revoked = await mutate(`invitation:${invitationId}`, () =>
         options.adapter.invitationRevoke(options.organizationId(), invitationId),
       )
@@ -232,7 +233,7 @@ export function organizationAdminPageStateCreate(options: {
       await load()
     },
     membershipRemove: async (membershipId: string, userId: string) => {
-      if (!confirm(`Remove ${userId} from this organization? Their organization access ends immediately.`)) return
+      if (!confirm(messageTranslate("admin.organizations.memberships.removeConfirm", { userId }))) return
       const removed = await mutate(`membership:${membershipId}`, () =>
         options.adapter.membershipRemove(options.organizationId(), membershipId),
       )
@@ -265,8 +266,13 @@ export function organizationAdminPageStateCreate(options: {
       return created.organization
     },
     organizationLifecycleSet: async (nextStatus: OrganizationStatus) => {
-      const label = nextStatus === "removed" ? "Remove" : nextStatus === "inactive" ? "Deactivate" : "Reactivate"
-      if (!confirm(`${label} this organization? Members lose access while it is not active.`)) return
+      const confirmKey =
+        nextStatus === "removed"
+          ? "admin.organizations.lifecycle.removeConfirm"
+          : nextStatus === "inactive"
+            ? "admin.organizations.lifecycle.deactivateConfirm"
+            : "admin.organizations.lifecycle.activateConfirm"
+      if (!confirm(messageTranslate(confirmKey))) return
       const updated = await mutate("organization:lifecycle", () =>
         options.adapter.organizationLifecycleSet(options.organizationId(), { status: nextStatus }),
       )
@@ -321,7 +327,7 @@ export function organizationAdminPageStateCreate(options: {
       await load()
     },
     providerDisable: async (providerId: string, displayName: string) => {
-      if (!confirm(`Disable ${displayName}? People can no longer sign in with this provider.`)) return
+      if (!confirm(messageTranslate("admin.organizations.providers.disableConfirm", { displayName }))) return
       const disabled = await mutate(`provider:${providerId}`, () => options.adapter.providerDisable(providerId))
       if (disabled === undefined) return
       providers.set(providers.get().map((item) => (item.id === providerId ? disabled.provider : item)))

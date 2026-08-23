@@ -182,8 +182,13 @@ export function OrganizationAdminBrandingView(props: {
                       </p>
                       <p class="mt-3 text-xs opacity-80">{messageTranslate("app.name")}</p>
                       <span
-                        class="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-medium text-white"
-                        style={{ background: themeBranding().primaryColor }}
+                        class="mt-4 inline-block rounded-lg px-4 py-2 text-sm font-medium"
+                        style={{
+                          background: themeBranding().primaryColor,
+                          // Mirror the hosted sign-in button: light primaries take white text,
+                          // dark-theme defaults are lighter and need dark ink to stay readable.
+                          color: theme === "light" ? "#ffffff" : "#1f2937",
+                        }}
                       >
                         {messageTranslate("common.signIn")}
                       </span>

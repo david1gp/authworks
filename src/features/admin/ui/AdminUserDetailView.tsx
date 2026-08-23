@@ -206,7 +206,8 @@ export function AdminUserDetailView(props: {
 
                 <article class="rounded-2xl border border-danger/40 bg-danger/5 p-6 shadow-sm">
                   <h3 class="font-semibold text-danger">{messageTranslate("admin.users.dangerZone")}</h3>
-                  <p class="mt-2 text-sm text-muted-foreground">{messageTranslate("admin.users.deleteWarning")}</p>
+                  {/* Full-strength foreground keeps the warning readable on the danger-tinted card. */}
+                  <p class="mt-2 text-sm">{messageTranslate("admin.users.deleteWarning")}</p>
                   <Button
                     class="mt-5"
                     disabled={props.state.pendingId() !== undefined}

@@ -1,24 +1,4 @@
 key,hu
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
@@ -27,10 +7,10 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
-account.access.invitationDeclineConfirm,Elutasítja ezt a meghívást?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
+account.access.invitationDeclineConfirm,Elutasítja ezt a meghívást?
 account.access.invitationDescription,Review the organization and roles before you respond.
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
@@ -142,6 +122,45 @@ admin.events.show,Hasznos adat megjelenítése
 admin.events.systemActor,Rendszer
 admin.events.title,Naplózott események
 admin.events.type,Esemény típusa
+admin.impersonation.activeTitle,Active impersonation
+admin.impersonation.actor,Administrator
+admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
+admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
+admin.impersonation.auditLink,View the audit events for this impersonation
+admin.impersonation.bannerLabel,Impersonation in progress
+admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
+admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
+admin.impersonation.duration,Duration
+admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
+admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
+admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.end,End impersonation
+admin.impersonation.endConfirm,End the impersonation of {subject} now?
+admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.expires,Ends
+admin.impersonation.expiringSoon,This impersonation ends in under a minute.
+admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
+admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
+admin.impersonation.noOrganization,No organization
+admin.impersonation.organization,Organization
+admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
+admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.reason,Reason
+admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
+admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
+admin.impersonation.remaining,Remaining
+admin.impersonation.remainingValue,{minutes}:{seconds}
+admin.impersonation.selfRejected,You cannot impersonate your own account.
+admin.impersonation.start,Start impersonation
+admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
+admin.impersonation.startedAt,Started
+admin.impersonation.startedNotice,You are now acting as {subject}.
+admin.impersonation.subject,Acting as
+admin.impersonation.target,User to impersonate
+admin.impersonation.targetRequired,Choose the user you want to act as.
+admin.impersonation.title,Impersonation
+admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,"A gépi felhasználók és hitelesítő adataik kezeléséhez erősebb, frissebb bejelentkezés szükséges. A folytatáshoz jelentkezzen be újra."
 admin.machine.assuranceRequiredTitle,Erősebb bejelentkezés szükséges
 admin.machine.created,Létrehozva
@@ -162,6 +181,7 @@ admin.machine.credentials.name,Név
 admin.machine.credentials.neverExpires,Nem jár le
 admin.machine.credentials.onceWarning,"A kiadott érték egyszer jelenik meg. Mentse el, mielőtt bezárja ezt a párbeszédpanelt; később nem kérhető le újra."
 admin.machine.credentials.revoke,Visszavonás
+admin.machine.credentials.revokeConfirm,"Visszavonja ezt a hitelesítő adatot? Minden, ami használja, azonnal leáll."
 admin.machine.credentials.revoked,A hitelesítő adatot visszavonták.
 admin.machine.credentials.scopes,Hatókörök
 admin.machine.credentials.scopesHint,A hatóköröket szóközzel vagy vesszővel válassza el. Hagyja üresen a gépi felhasználó hatóköreinek örökléséhez.
@@ -177,6 +197,7 @@ admin.machine.lifecycle.activate,Aktiválás
 admin.machine.lifecycle.deactivate,Deaktiválás
 admin.machine.lifecycle.description,"A deaktiválás megakadályozza, hogy bármely hitelesítő adat hitelesítsen. Az eltávolítás végleges és nem vonható vissza."
 admin.machine.lifecycle.remove,Gépi felhasználó eltávolítása
+admin.machine.lifecycle.removeConfirm,"Eltávolítja ezt a gépi felhasználót? Minden hitelesítési adata azonnal leáll, és nem állítható helyre."
 admin.machine.lifecycle.title,Életciklus
 admin.machine.pageNext,Következő oldal
 admin.machine.pagePrevious,Előző oldal
@@ -193,6 +214,7 @@ admin.machine.secret.description,"Az ügyfél-titokkal ez a gépi felhasználó 
 admin.machine.secret.once,A(z) {name} értéke csak most az egyszer jelenik meg. Mentse el most; nem állítható helyre.
 admin.machine.secret.redacted,Tárolva és elrejtve
 admin.machine.secret.rotate,Ügyfél-titok cseréje
+admin.machine.secret.rotateConfirm,"Kicseréli ezt az ügyfél-titkot? A jelenlegi titok azonnal leáll, és nem állítható helyre."
 admin.machine.secret.rotated,Az ügyfél-titkot lecserélték.
 admin.machine.secret.title,Ügyfél-titok
 admin.machine.secret.tokenTitle,Új személyes hozzáférési token
@@ -204,9 +226,11 @@ admin.machine.users.createDescription,Hozzon létre nem emberi identitást egy s
 admin.machine.users.createSecretHint,"Az ügyfélazonosító és az ügyfél-titok azonnal kiadásra kerül. A titok egyszer jelenik meg, és nem állítható helyre."
 admin.machine.users.created,A gépi felhasználó létrejött.
 admin.machine.users.description,"Nem emberi identitások, amelyek ügyfél-hitelesítő adatokkal, tokenekkel vagy API-kulcsokkal hitelesítenek ebben a realmben."
+admin.machine.users.detailTitle,Gépi felhasználó részletei
 admin.machine.users.displayName,Megjelenítendő név
 admin.machine.users.empty,Ebben a realmben még nincs gépi felhasználó.
 admin.machine.users.lifecycleChanged,A gépi felhasználó állapota megváltozott.
+admin.machine.users.missingId,Ehhez a célhoz ki kell választani egy gépi felhasználót.
 admin.machine.users.noScopes,Nincsenek hatókörök
 admin.machine.users.scopes,Hatókörök
 admin.machine.users.scopesHint,A hatóköröket szóközzel vagy vesszővel válassza el. A hatókörök pontosan egyeznek.
@@ -214,6 +238,10 @@ admin.machine.users.search,Gépi felhasználók keresése
 admin.machine.users.title,Gépi felhasználók
 admin.machine.users.userName,Felhasználónév
 admin.machine.users.userNameHint,Ügyfélazonosítóként használatos az ügyfél-hitelesítő adatok cseréjekor.
+admin.navigation.description,Choose an administration resource
+admin.navigation.hide,Hide sidebar
+admin.navigation.label,Administration
+admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,Az OpenID Connect beállítások kezeléséhez erősebb és frissebb bejelentkezés szükséges. A folytatáshoz jelentkezzen be újra.
 admin.oidc.assuranceRequiredTitle,Erősebb bejelentkezés szükséges
 admin.oidc.clients.consent,Hozzájárulás
@@ -223,12 +251,15 @@ admin.oidc.clients.create,Kliens regisztrálása
 admin.oidc.clients.createDescription,"Regisztráljon egy alkalmazást, amely OpenID Connect segítségével jelentkeztet be embereket. A bizalmas kliens egyszer kap titkot."
 admin.oidc.clients.created,A kliens regisztrálva lett.
 admin.oidc.clients.description,"Alkalmazások, amelyek OpenID Connect használatával hitelesítik az embereket ebben a tartományban."
+admin.oidc.clients.detailTitle,OIDC-kliens részletei
 admin.oidc.clients.empty,Ebben a tartományban még nincs regisztrált OpenID Connect kliens.
 admin.oidc.clients.exactMatchHint,"Soronként egy URI. Minden átirányítás pontos egyezéssel kerül összehasonlításra, ezért a helyettesítő karakterek és a végződésbeli eltérések elutasításra kerülnek."
 admin.oidc.clients.lifecycleChanged,A kliens állapota megváltozott.
+admin.oidc.clients.missingId,Ehhez a célhoz ki kell választani egy OIDC-ügyfelet.
 admin.oidc.clients.name,Kliens neve
 admin.oidc.clients.postLogoutUris,Kijelentkezés utáni átirányítási URI-k
 admin.oidc.clients.redirectUris,Átirányítási URI-k
+admin.oidc.clients.removeConfirm,Eltávolítja ezt az OIDC-ügyfelet? Az azt használó alkalmazások azonnal leállnak.
 admin.oidc.clients.requireConsent,Kérje meg a személyt az alkalmazás jóváhagyására
 admin.oidc.clients.saved,A kliens mentve lett.
 admin.oidc.clients.scopes,Engedélyezett hatókörök
@@ -246,6 +277,7 @@ admin.oidc.consents.client,Alkalmazás
 admin.oidc.consents.description,Az adott személy által jóváhagyott alkalmazások. A hozzájárulás visszavonása után újra jóvá kell hagynia az alkalmazást.
 admin.oidc.consents.empty,Ez a személy még egyetlen alkalmazást sem hagyott jóvá.
 admin.oidc.consents.granted,Jóváhagyva
+admin.oidc.consents.revokeConfirm,Visszavonja ezt a hozzájárulást? A személyt újra megkérik az alkalmazás jóváhagyására.
 admin.oidc.consents.revoked,A hozzájárulás visszavonásra került.
 admin.oidc.consents.title,Alkalmazás-hozzájárulások
 admin.oidc.consents.user,Személy
@@ -277,9 +309,11 @@ admin.oidc.keys.empty,Ehhez a tartományhoz még nincsenek aláíró kulcsok.
 admin.oidc.keys.keyId,Kulcsazonosító
 admin.oidc.keys.privateNotice,Csak a nyilvános kulcs metaadatai jelennek meg. A privát kulcs anyaga soha nem kerül elküldésre a böngészőnek.
 admin.oidc.keys.retire,Visszavonás
+admin.oidc.keys.retireConfirm,Nyugdíjazza ezt az aláíró kulcsot? A jelenlegi kulcs távozását követően a vele aláírt tokenek nem ellenőrizhetők.
 admin.oidc.keys.retired,Az aláíró kulcs visszavonásra került.
 admin.oidc.keys.retiredAt,Visszavonva
 admin.oidc.keys.rotate,Kulcs rotálása
+admin.oidc.keys.rotateConfirm,"Elforgatja az aláíró kulcsot? Új kulcs kerül közzétételre, a jelenlegi pedig visszavonásra kerül."
 admin.oidc.keys.rotated,Az aláíró kulcs rotálva lett.
 admin.oidc.keys.title,Aláíró kulcsok
 admin.oidc.lifecycle.activate,Aktiválás
@@ -299,8 +333,10 @@ admin.oidc.secret.once,"Ez az egyetlen alkalom, amikor a(z) {client} titka megje
 admin.oidc.secret.publicClient,"A nyilvános kliens titok nélkül hitelesít, így nincs mit rotálni."
 admin.oidc.secret.redacted,Tárolva és elrejtve
 admin.oidc.secret.revoke,Titok visszavonása
+admin.oidc.secret.revokeConfirm,"Visszavonja ezt az ügyfél-titkot? Az ügyfél nem tud hitelesíteni, amíg újat nem adnak ki."
 admin.oidc.secret.revoked,A klienstitok visszavonásra került.
 admin.oidc.secret.rotate,Titok rotálása
+admin.oidc.secret.rotateConfirm,Kicseréli ezt az ügyfél-titkot? A jelenlegi titok azonnal leáll.
 admin.oidc.secret.rotated,A klienstitok rotálva lett.
 admin.oidc.secret.rotatedTitle,Rotált klienstitok
 admin.oidc.secret.title,Klienstitok
@@ -329,6 +365,7 @@ admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Szabályozza a szervezet nevét és életciklus-állapotát.
 admin.organizations.detail.settingsTitle,Szervezeti beállítások
 admin.organizations.detail.updated,Utoljára frissítve
+admin.organizations.detailTitle,Szervezet részletei
 admin.organizations.domains.claim,Tartomány igénylése
 admin.organizations.domains.claimed,"A(z) {domain} igénylése megtörtént, és ellenőrzésre vár."
 admin.organizations.domains.description,"Az ellenőrzött tartományok lehetővé teszik, hogy az emberek e-mail-címük alapján megtalálják ezt a szervezetet."
@@ -338,8 +375,10 @@ admin.organizations.domains.discoveryFound,A(z) {domain} a(z) {organization} sze
 admin.organizations.domains.discoveryMissing,A(z) {domain} nem oldódik fel egyetlen szervezetre sem.
 admin.organizations.domains.domain,Tartomány
 admin.organizations.domains.empty,Ez a szervezet még nem igényelt tartományt.
+admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Elsődleges domain
 admin.organizations.domains.remove,Tartomány eltávolítása
+admin.organizations.domains.removeConfirm,Eltávolítja a(z) {domain} tartományt? A szervezet felismerése azonnal leáll.
 admin.organizations.domains.removed,A tartomány eltávolítva.
 admin.organizations.domains.title,Tartományok és felismerés
 admin.organizations.domains.unverified,Ellenőrzésre vár
@@ -353,6 +392,7 @@ admin.organizations.invitations.email,Email address
 admin.organizations.invitations.empty,Ehhez a szervezethez nem küldtek meghívót.
 admin.organizations.invitations.expires,Lejár
 admin.organizations.invitations.revoke,Meghívó visszavonása
+admin.organizations.invitations.revokeConfirm,Visszavonja a(z) {email} meghívását? A meghívó link azonnal leáll.
 admin.organizations.invitations.revoked,A meghívó visszavonva.
 admin.organizations.invitations.sent,A meghívó létrehozva.
 admin.organizations.invitations.title,Meghívók
@@ -360,9 +400,12 @@ admin.organizations.invitations.tokenDismiss,Elmentettem ezt a hivatkozást
 admin.organizations.invitations.tokenOnce,Ez a meghívó hivatkozás csak egyszer jelenik meg. Ossza meg a meghívott személlyel.
 admin.organizations.invitations.tokenTitle,Meghívó hivatkozás
 admin.organizations.lifecycle.activate,Szervezet újraaktiválása
+admin.organizations.lifecycle.activateConfirm,"Újraaktiválja ezt a szervezetet? A tagok addig nem férnek hozzá, amíg az nem aktív."
 admin.organizations.lifecycle.changed,A szervezet életciklus-állapota megváltozott.
 admin.organizations.lifecycle.deactivate,Szervezet deaktiválása
+admin.organizations.lifecycle.deactivateConfirm,"Inaktiválja ezt a szervezetet? A tagok addig nem férnek hozzá, amíg az nem aktív."
 admin.organizations.lifecycle.remove,Szervezet eltávolítása
+admin.organizations.lifecycle.removeConfirm,"Eltávolítja ezt a szervezetet? A tagok addig nem férnek hozzá, amíg az nem aktív."
 admin.organizations.list.create,Szervezet létrehozása
 admin.organizations.list.description,"A szervezetek csoportosítják ennek a realmnek az embereit, tartományait és arculatát."
 admin.organizations.list.empty,Ebben a realmben még nincs szervezet.
@@ -374,6 +417,7 @@ admin.organizations.memberships.added,A tag hozzáadva.
 admin.organizations.memberships.description,Az ebben a szervezetben lévő emberek és a nekik kiosztott rögzített szerepkörök.
 admin.organizations.memberships.empty,Ennek a szervezetnek még nincsenek tagjai.
 admin.organizations.memberships.remove,Tag eltávolítása
+admin.organizations.memberships.removeConfirm,Eltávolítja a(z) {userId} felhasználót ebből a szervezetből? Szervezeti hozzáférése azonnal megszűnik.
 admin.organizations.memberships.removed,A tag eltávolítva.
 admin.organizations.memberships.roles,Szerepkörök
 admin.organizations.memberships.rolesFixed,"A szerepköröket az Authworks rögzíti, és nem nevezhetők át."
@@ -403,6 +447,7 @@ admin.organizations.providers.create,Szolgáltató hozzáadása
 admin.organizations.providers.created,A szolgáltató beállítva.
 admin.organizations.providers.description,"Ehhez a szervezethez beállított Google, GitHub és Microsoft szolgáltatók."
 admin.organizations.providers.disable,Szolgáltató letiltása
+admin.organizations.providers.disableConfirm,Letiltja a következőt: {displayName}? Az emberek többé nem jelentkezhetnek be ezzel a szolgáltatóval.
 admin.organizations.providers.disabled,A szolgáltató letiltva.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Még nincs beállítva külső identitásszolgáltató.
@@ -429,9 +474,11 @@ admin.projects.applications.create,Alkalmazás hozzáadása
 admin.projects.applications.description,"Alkalmazások, amelyek ezzel a projekttel hitelesítenek."
 admin.projects.applications.empty,Ennek a projektnek még nincsenek alkalmazásai.
 admin.projects.applications.name,Alkalmazás neve
+admin.projects.applications.removeConfirm,Eltávolítja ezt az alkalmazást? Ez nem vonható vissza.
 admin.projects.applications.title,Alkalmazások
 admin.projects.applications.type,Alkalmazás típusa
 admin.projects.crossTenant,"Ez az erőforrás egy másik realmhez tartozik, és itt nem érhető el."
+admin.projects.deleteConfirm,"Törli ezt a projektet? Az alkalmazások, szerepek és hozzárendelések együtt törlődnek."
 admin.projects.detail.authorizationRequired,Engedélyezés szükséges
 admin.projects.detail.created,Létrehozva
 admin.projects.detail.organization,Szervezet
@@ -439,25 +486,30 @@ admin.projects.detail.projectAccessRequired,Projekthozzáférés szükséges
 admin.projects.detail.settingsDescription,Szabályozza a projekt nevét és a hozzáférés érvényesítésének módját.
 admin.projects.detail.settingsTitle,Projektbeállítások
 admin.projects.detail.updated,Utoljára frissítve
+admin.projects.detailTitle,Projekt részletei
 admin.projects.grants.create,Szervezeti hozzáférés megadása
 admin.projects.grants.description,"Adjon hozzáférést egy másik szervezetnek ehhez a projekthez, és válassza ki, mely szerepköröket kapja."
 admin.projects.grants.empty,Egyetlen szervezet sem kapott hozzáférést ehhez a projekthez.
 admin.projects.grants.grantedOrganization,Jogosult szervezet
+admin.projects.grants.revokeConfirm,Visszavonja ezt a szervezeti hozzárendelést? A tagok elveszítik a projekthez való hozzáférést.
 admin.projects.grants.roleKeys,Megadott szerepkörök
 admin.projects.grants.title,Szervezeti hozzáférések
 admin.projects.lifecycle.activate,Aktiválás
 admin.projects.lifecycle.deactivate,Deaktiválás
 admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.removeConfirm,Eltávolítja ezt a projektet?
 admin.projects.list.create,Projekt létrehozása
 admin.projects.list.description,"A projektek csoportosítják egy szervezet alkalmazásait, szerepköreit és hozzáféréseit."
 admin.projects.list.empty,Ebben a realmben még nincs projekt.
 admin.projects.list.name,Projekt neve
 admin.projects.list.search,Projektek keresése
 admin.projects.list.title,Projektek
+admin.projects.missingId,Ehhez a célhoz ki kell választani egy projektet.
 admin.projects.pageNext,Következő oldal
 admin.projects.pagePrevious,Előző oldal
 admin.projects.permissionDenied,Nincs jogosultsága megtekinteni vagy módosítani ezeket a projektinformációkat.
 admin.projects.roles.create,Szerepkör létrehozása
+admin.projects.roles.deleteConfirm,Törli ezt a projekt-szerepet? A rá hivatkozó hozzárendelések elveszítik a szerepet.
 admin.projects.roles.description,"Azok a szerepkörök, amelyeket ez a projekt szervezeteknek és tagjaiknak kioszthat."
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,Ez a projekt még nem határoz meg szerepköröket.
@@ -509,6 +561,16 @@ admin.signIn.signedOutTitle,Kijelentkezve
 admin.signIn.subject,Alany
 admin.signIn.subjectType,Alany típusa
 admin.signIn.title,Rendszergazdai bejelentkezés
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
 admin.users.count,{count} felhasználó
 admin.users.create,Felhasználó létrehozása
 admin.users.createDescription,Adjon hozzá egy emberi felhasználót a jelenlegi realmhez.
@@ -548,6 +610,16 @@ admin.users.profileSaved,A felhasználói profil mentve.
 admin.users.profileTitle,Profil
 admin.users.search,Felhasználók keresése
 admin.users.searchPlaceholder,"Szűrés felhasználónév, e-mail vagy azonosító szerint"
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 admin.users.state,Állapot
 admin.users.title,Felhasználók
 admin.users.unverified,Nem ellenőrzött
@@ -559,6 +631,7 @@ admin.users.verificationDescription,"Szabályozza, hogy a felhasználó e-mail-c
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
+app.tagline,Secure identity services
 common.back,Vissza
 common.cancel,Mégse
 common.close,Bezárás
@@ -573,7 +646,32 @@ common.save,Mentés
 common.signIn,Bejelentkezés
 common.signInWithProvider,Bejelentkezés ezzel: {provider}
 common.signOut,Kijelentkezés
+common.theme.dark,dark
+common.theme.light,light
+common.theme.system,system
+common.urlPlaceholder,https://
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.account.eyebrow,Self-service identity
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.admin.directoryTitle,Administration directory
+demo.admin.eyebrow,Realm administration
+demo.admin.realmFixtureName,Northwind customer identity
+demo.fixture.error,error
+demo.fixture.expired,expired
+demo.fixture.loading,loading
+demo.fixture.preview,Stateless fixture preview
+demo.fixture.state,Fixture state
+demo.fixture.success,success
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
 demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
 demo.nav.account,Account
 demo.nav.admin,Admin
 demo.nav.compact,Compact
@@ -709,73 +807,3 @@ login.verify.submit,Erősítse meg az e-mail címet
 login.verify.title,Igazolja e-mail címét
 login.verify.verifiedDescription,{email} megerősítve. Most már bejelentkezhet.
 login.verify.verifiedTitle,E-mail cím megerősítve
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
-admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.startedAt,Started
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.userAction,Impersonate this user
-app.tagline,Secure identity services
-demo.account.eyebrow,Self-service identity
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.admin.eyebrow,Realm administration
-demo.admin.directoryTitle,Administration directory
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-admin.navigation.title,Administration navigation
-admin.navigation.description,Choose an administration resource
-admin.navigation.label,Administration
-admin.navigation.hide,Hide sidebar
-common.theme.system,system
-common.theme.light,light
-common.theme.dark,dark
-common.urlPlaceholder,https://
-admin.organizations.domains.placeholder,example.com

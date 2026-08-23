@@ -1,24 +1,4 @@
 key,nl
-admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
-admin.users.authentication.empty,No authentication methods are configured.
-admin.users.authentication.generated,Generated {date}
-admin.users.authentication.neverUsed,Never used
-admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
-admin.users.authentication.pending,Pending confirmation
-admin.users.authentication.recoveryCodes,Recovery codes
-admin.users.authentication.recoveryCount,{count} codes remaining
-admin.users.authentication.title,Authentication methods
-admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
-admin.users.sessions.created,Created
-admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
-admin.users.sessions.empty,This user has no active sessions.
-admin.users.sessions.expires,Expires
-admin.users.sessions.ipAddress,IP address
-admin.users.sessions.lastUsed,Last used
-admin.users.sessions.method,Sign-in method
-admin.users.sessions.revokeConfirm,Revoke this session immediately?
-admin.users.sessions.revoked,The session was revoked.
-admin.users.sessions.title,Sessions and devices
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
@@ -27,10 +7,10 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
-account.access.invitationDeclineConfirm,Deze uitnodiging weigeren?
 account.access.email,Email
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
+account.access.invitationDeclineConfirm,Deze uitnodiging weigeren?
 account.access.invitationDescription,Review the organization and roles before you respond.
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
@@ -142,6 +122,45 @@ admin.events.show,Payload tonen
 admin.events.systemActor,Systeem
 admin.events.title,Auditgebeurtenissen
 admin.events.type,Gebeurtenistype
+admin.impersonation.activeTitle,Active impersonation
+admin.impersonation.actor,Administrator
+admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
+admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
+admin.impersonation.auditLink,View the audit events for this impersonation
+admin.impersonation.bannerLabel,Impersonation in progress
+admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
+admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
+admin.impersonation.duration,Duration
+admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
+admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
+admin.impersonation.durationMinutes,{count} minutes
+admin.impersonation.end,End impersonation
+admin.impersonation.endConfirm,End the impersonation of {subject} now?
+admin.impersonation.endedNotice,The impersonation session was ended.
+admin.impersonation.expires,Ends
+admin.impersonation.expiringSoon,This impersonation ends in under a minute.
+admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
+admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
+admin.impersonation.noOrganization,No organization
+admin.impersonation.organization,Organization
+admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
+admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
+admin.impersonation.permissionDeniedTitle,Access unavailable
+admin.impersonation.reason,Reason
+admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
+admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
+admin.impersonation.remaining,Remaining
+admin.impersonation.remainingValue,{minutes}:{seconds}
+admin.impersonation.selfRejected,You cannot impersonate your own account.
+admin.impersonation.start,Start impersonation
+admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
+admin.impersonation.startedAt,Started
+admin.impersonation.startedNotice,You are now acting as {subject}.
+admin.impersonation.subject,Acting as
+admin.impersonation.target,User to impersonate
+admin.impersonation.targetRequired,Choose the user you want to act as.
+admin.impersonation.title,Impersonation
+admin.impersonation.userAction,Impersonate this user
 admin.machine.assuranceRequired,"Het beheren van machinegebruikers en hun referenties vereist een sterkere, recentere aanmelding. Meld u opnieuw aan om door te gaan."
 admin.machine.assuranceRequiredTitle,Sterkere aanmelding vereist
 admin.machine.created,Aangemaakt
@@ -162,6 +181,7 @@ admin.machine.credentials.name,Naam
 admin.machine.credentials.neverExpires,Verloopt niet
 admin.machine.credentials.onceWarning,De uitgegeven waarde wordt eenmalig getoond. Bewaar deze voordat u dit venster sluit; ze kan niet opnieuw worden opgehaald.
 admin.machine.credentials.revoke,Intrekken
+admin.machine.credentials.revokeConfirm,Deze credential intrekken? Alles wat deze gebruikt werkt onmiddellijk niet meer.
 admin.machine.credentials.revoked,De referentie is ingetrokken.
 admin.machine.credentials.scopes,Scopes
 admin.machine.credentials.scopesHint,Scheid scopes met spaties of komma's. Laat leeg om de scopes van de machinegebruiker over te nemen.
@@ -177,6 +197,7 @@ admin.machine.lifecycle.activate,Activeren
 admin.machine.lifecycle.deactivate,Deactiveren
 admin.machine.lifecycle.description,Deactiveren zorgt ervoor dat geen enkele referentie zich nog kan authenticeren. Verwijderen is definitief en kan niet ongedaan worden gemaakt.
 admin.machine.lifecycle.remove,Machinegebruiker verwijderen
+admin.machine.lifecycle.removeConfirm,Deze machinegebruiker verwijderen? Alle credentials ervan werken onmiddellijk niet meer en kunnen niet worden hersteld.
 admin.machine.lifecycle.title,Levenscyclus
 admin.machine.pageNext,Volgende pagina
 admin.machine.pagePrevious,Vorige pagina
@@ -193,6 +214,7 @@ admin.machine.secret.description,Met het clientgeheim kan deze machinegebruiker 
 admin.machine.secret.once,Dit is de enige keer dat de waarde voor {name} wordt getoond. Bewaar deze nu; ze kan niet worden hersteld.
 admin.machine.secret.redacted,Opgeslagen en verborgen
 admin.machine.secret.rotate,Clientgeheim roteren
+admin.machine.secret.rotateConfirm,Dit clientsecret roteren? Het huidige secret werkt onmiddellijk niet meer en kan niet worden hersteld.
 admin.machine.secret.rotated,Het clientgeheim is geroteerd.
 admin.machine.secret.title,Clientgeheim
 admin.machine.secret.tokenTitle,Nieuw persoonlijk toegangstoken
@@ -204,9 +226,11 @@ admin.machine.users.createDescription,Maak een niet-menselijke identiteit voor e
 admin.machine.users.createSecretHint,Een client-ID en clientgeheim worden meteen uitgegeven. Het geheim wordt eenmalig getoond en kan niet worden hersteld.
 admin.machine.users.created,De machinegebruiker is aangemaakt.
 admin.machine.users.description,"Niet-menselijke identiteiten die zich in dit realm authenticeren met clientreferenties, tokens of API-sleutels."
+admin.machine.users.detailTitle,Machinegebruikersdetails
 admin.machine.users.displayName,Weergavenaam
 admin.machine.users.empty,Er bestaat nog geen machinegebruiker in dit realm.
 admin.machine.users.lifecycleChanged,De status van de machinegebruiker is gewijzigd.
+admin.machine.users.missingId,Er moet een machinegebruiker zijn geselecteerd voor deze bestemming.
 admin.machine.users.noScopes,Geen scopes
 admin.machine.users.scopes,Scopes
 admin.machine.users.scopesHint,Scheid scopes met spaties of komma's. Scopes worden exact vergeleken.
@@ -214,6 +238,10 @@ admin.machine.users.search,Machinegebruikers zoeken
 admin.machine.users.title,Machinegebruikers
 admin.machine.users.userName,Gebruikersnaam
 admin.machine.users.userNameHint,Wordt gebruikt als client-ID bij het inwisselen van clientreferenties.
+admin.navigation.description,Choose an administration resource
+admin.navigation.hide,Hide sidebar
+admin.navigation.label,Administration
+admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,"Het beheren van OpenID Connect-instellingen vereist een sterkere, recentere aanmelding. Meld u opnieuw aan om door te gaan."
 admin.oidc.assuranceRequiredTitle,Sterkere aanmelding vereist
 admin.oidc.clients.consent,Toestemming
@@ -223,12 +251,15 @@ admin.oidc.clients.create,Client registreren
 admin.oidc.clients.createDescription,Registreer een toepassing die mensen aanmeldt met OpenID Connect. Een vertrouwelijke client krijgt eenmalig een secret.
 admin.oidc.clients.created,De client is geregistreerd.
 admin.oidc.clients.description,Toepassingen die mensen via OpenID Connect authenticeren in dit realm.
+admin.oidc.clients.detailTitle,OIDC-clientdetails
 admin.oidc.clients.empty,Er zijn nog geen OpenID Connect-clients geregistreerd in dit realm.
 admin.oidc.clients.exactMatchHint,"Eén URI per regel. Elke omleiding wordt exact vergeleken, dus jokertekens en afwijkende einden worden geweigerd."
 admin.oidc.clients.lifecycleChanged,De status van de client is gewijzigd.
+admin.oidc.clients.missingId,Er moet een OIDC-client zijn geselecteerd voor deze bestemming.
 admin.oidc.clients.name,Clientnaam
 admin.oidc.clients.postLogoutUris,Omleidings-URI's na afmelden
 admin.oidc.clients.redirectUris,Omleidings-URI's
+admin.oidc.clients.removeConfirm,Deze OIDC-client verwijderen? Toepassingen die deze gebruiken werken onmiddellijk niet meer.
 admin.oidc.clients.requireConsent,Vraag de persoon om deze toepassing goed te keuren
 admin.oidc.clients.saved,De client is opgeslagen.
 admin.oidc.clients.scopes,Toegestane scopes
@@ -246,6 +277,7 @@ admin.oidc.consents.client,Toepassing
 admin.oidc.consents.description,Toepassingen die een persoon heeft goedgekeurd. Bij het intrekken van een toestemming wordt opnieuw om goedkeuring gevraagd.
 admin.oidc.consents.empty,Deze persoon heeft nog geen enkele toepassing goedgekeurd.
 admin.oidc.consents.granted,Goedgekeurd
+admin.oidc.consents.revokeConfirm,Deze toestemming intrekken? De persoon wordt opnieuw gevraagd de toepassing goed te keuren.
 admin.oidc.consents.revoked,De toestemming is ingetrokken.
 admin.oidc.consents.title,Toepassingstoestemmingen
 admin.oidc.consents.user,Persoon
@@ -277,9 +309,11 @@ admin.oidc.keys.empty,Er bestaan nog geen ondertekeningssleutels voor dit realm.
 admin.oidc.keys.keyId,Sleutel-ID
 admin.oidc.keys.privateNotice,Alleen metagegevens van de openbare sleutel worden getoond. Privésleutelmateriaal wordt nooit naar de browser gestuurd.
 admin.oidc.keys.retire,Buiten gebruik stellen
+admin.oidc.keys.retireConfirm,Deze ondertekeningssleutel terugtrekken? Tokens die ermee zijn ondertekend kunnen niet meer worden geverifieerd zodra deze het JWKS verlaat.
 admin.oidc.keys.retired,De ondertekeningssleutel is buiten gebruik gesteld.
 admin.oidc.keys.retiredAt,Buiten gebruik gesteld
 admin.oidc.keys.rotate,Sleutel roteren
+admin.oidc.keys.rotateConfirm,De ondertekeningssleutel roteren? Er wordt een nieuwe sleutel gepubliceerd en de huidige sleutel wordt teruggetrokken.
 admin.oidc.keys.rotated,De ondertekeningssleutel is geroteerd.
 admin.oidc.keys.title,Ondertekeningssleutels
 admin.oidc.lifecycle.activate,Activeren
@@ -299,8 +333,10 @@ admin.oidc.secret.once,Dit is de enige keer dat het secret voor {client} wordt g
 admin.oidc.secret.publicClient,"Een openbare client authenticeert zich zonder secret, dus er valt niets te roteren."
 admin.oidc.secret.redacted,Opgeslagen en verborgen
 admin.oidc.secret.revoke,Secret intrekken
+admin.oidc.secret.revokeConfirm,Dit clientsecret intrekken? De client kan zich niet meer authenticeren totdat er een nieuw is uitgegeven.
 admin.oidc.secret.revoked,Het clientsecret is ingetrokken.
 admin.oidc.secret.rotate,Secret roteren
+admin.oidc.secret.rotateConfirm,Dit clientsecret roteren? Het huidige secret werkt onmiddellijk niet meer.
 admin.oidc.secret.rotated,Het clientsecret is geroteerd.
 admin.oidc.secret.rotatedTitle,Geroteerd clientsecret
 admin.oidc.secret.title,Clientsecret
@@ -329,6 +365,7 @@ admin.organizations.detail.realm,Realm
 admin.organizations.detail.settingsDescription,Beheer de organisatienaam en de levenscyclusstatus.
 admin.organizations.detail.settingsTitle,Organisatie-instellingen
 admin.organizations.detail.updated,Laatst bijgewerkt
+admin.organizations.detailTitle,Organisatiedetails
 admin.organizations.domains.claim,Domein claimen
 admin.organizations.domains.claimed,{domain} is geclaimd en wacht op verificatie.
 admin.organizations.domains.description,Geverifieerde domeinen laten mensen deze organisatie vinden via hun e-mailadres.
@@ -338,8 +375,10 @@ admin.organizations.domains.discoveryFound,{domain} wordt herleid naar {organiza
 admin.organizations.domains.discoveryMissing,{domain} wordt niet herleid naar een organisatie.
 admin.organizations.domains.domain,Domein
 admin.organizations.domains.empty,Deze organisatie heeft nog geen domein geclaimd.
+admin.organizations.domains.placeholder,example.com
 admin.organizations.domains.primary,Primair domein
 admin.organizations.domains.remove,Domein verwijderen
+admin.organizations.domains.removeConfirm,Het domein {domain} verwijderen? De organisatieontdekking ervoor stopt onmiddellijk.
 admin.organizations.domains.removed,Het domein is verwijderd.
 admin.organizations.domains.title,Domeinen en herkenning
 admin.organizations.domains.unverified,In afwachting van verificatie
@@ -353,6 +392,7 @@ admin.organizations.invitations.email,Email address
 admin.organizations.invitations.empty,Er zijn geen uitnodigingen verstuurd voor deze organisatie.
 admin.organizations.invitations.expires,Verloopt
 admin.organizations.invitations.revoke,Uitnodiging intrekken
+admin.organizations.invitations.revokeConfirm,De uitnodiging voor {email} intrekken? De uitnodigingslink werkt onmiddellijk niet meer.
 admin.organizations.invitations.revoked,De uitnodiging is ingetrokken.
 admin.organizations.invitations.sent,De uitnodiging is aangemaakt.
 admin.organizations.invitations.title,Uitnodigingen
@@ -360,9 +400,12 @@ admin.organizations.invitations.tokenDismiss,Ik heb deze link opgeslagen
 admin.organizations.invitations.tokenOnce,Deze uitnodigingslink wordt één keer getoond. Deel hem met de persoon die u hebt uitgenodigd.
 admin.organizations.invitations.tokenTitle,Uitnodigingslink
 admin.organizations.lifecycle.activate,Organisatie heractiveren
+admin.organizations.lifecycle.activateConfirm,Deze organisatie opnieuw activeren? Leden hebben geen toegang zolang deze niet actief is.
 admin.organizations.lifecycle.changed,De levenscyclusstatus van de organisatie is gewijzigd.
 admin.organizations.lifecycle.deactivate,Organisatie deactiveren
+admin.organizations.lifecycle.deactivateConfirm,Deze organisatie deactiveren? Leden hebben geen toegang zolang deze niet actief is.
 admin.organizations.lifecycle.remove,Organisatie verwijderen
+admin.organizations.lifecycle.removeConfirm,Deze organisatie verwijderen? Leden hebben geen toegang zolang deze niet actief is.
 admin.organizations.list.create,Organisatie aanmaken
 admin.organizations.list.description,"Organisaties groeperen de mensen, domeinen en huisstijl van dit realm."
 admin.organizations.list.empty,Er bestaan nog geen organisaties in dit realm.
@@ -374,6 +417,7 @@ admin.organizations.memberships.added,Het lid is toegevoegd.
 admin.organizations.memberships.description,De mensen in deze organisatie en de vaste rollen die aan hen zijn toegewezen.
 admin.organizations.memberships.empty,Deze organisatie heeft nog geen leden.
 admin.organizations.memberships.remove,Lid verwijderen
+admin.organizations.memberships.removeConfirm,{userId} uit deze organisatie verwijderen? Toegang tot de organisatie eindigt onmiddellijk.
 admin.organizations.memberships.removed,Het lid is verwijderd.
 admin.organizations.memberships.roles,Rollen
 admin.organizations.memberships.rolesFixed,Rollen worden door Authworks vastgesteld en kunnen niet worden hernoemd.
@@ -403,6 +447,7 @@ admin.organizations.providers.create,Provider toevoegen
 admin.organizations.providers.created,De provider is geconfigureerd.
 admin.organizations.providers.description,"Geconfigureerde Google-, GitHub- en Microsoft-providers voor deze organisatie."
 admin.organizations.providers.disable,Provider uitschakelen
+admin.organizations.providers.disableConfirm,{displayName} uitschakelen? Mensen kunnen zich niet langer met deze provider aanmelden.
 admin.organizations.providers.disabled,De provider is uitgeschakeld.
 admin.organizations.providers.displayName,Display name
 admin.organizations.providers.empty,Er is nog geen externe identiteitsprovider geconfigureerd.
@@ -429,9 +474,11 @@ admin.projects.applications.create,Applicatie toevoegen
 admin.projects.applications.description,Applicaties die zich authenticeren bij dit project.
 admin.projects.applications.empty,Dit project heeft nog geen applicaties.
 admin.projects.applications.name,Applicatienaam
+admin.projects.applications.removeConfirm,Deze toepassing verwijderen? Dit kan niet ongedaan worden gemaakt.
 admin.projects.applications.title,Applicaties
 admin.projects.applications.type,Applicatietype
 admin.projects.crossTenant,Deze resource hoort bij een ander realm en is hier niet beschikbaar.
+admin.projects.deleteConfirm,"Dit project verwijderen? Toepassingen, rollen en grants worden ermee verwijderd."
 admin.projects.detail.authorizationRequired,Autorisatie vereist
 admin.projects.detail.created,Aangemaakt
 admin.projects.detail.organization,Organisatie
@@ -439,25 +486,30 @@ admin.projects.detail.projectAccessRequired,Projecttoegang vereist
 admin.projects.detail.settingsDescription,Beheer de projectnaam en hoe toegang wordt afgedwongen.
 admin.projects.detail.settingsTitle,Projectinstellingen
 admin.projects.detail.updated,Laatst bijgewerkt
+admin.projects.detailTitle,Projectdetails
 admin.projects.grants.create,Organisatietoegang verlenen
 admin.projects.grants.description,Geef een andere organisatie toegang tot dit project en kies welke rollen zij krijgt.
 admin.projects.grants.empty,Geen enkele organisatie heeft toegang gekregen tot dit project.
 admin.projects.grants.grantedOrganization,Begunstigde organisatie
+admin.projects.grants.revokeConfirm,Deze organisatiegrant intrekken? Leden verlieren de projecttoegang.
 admin.projects.grants.roleKeys,Toegekende rollen
 admin.projects.grants.title,Organisatietoekenningen
 admin.projects.lifecycle.activate,Activeren
 admin.projects.lifecycle.deactivate,Deactiveren
 admin.projects.lifecycle.remove,Remove
+admin.projects.lifecycle.removeConfirm,Dit project verwijderen?
 admin.projects.list.create,Project aanmaken
 admin.projects.list.description,"Projecten groeperen de applicaties, rollen en toekenningen van een organisatie."
 admin.projects.list.empty,Er bestaan nog geen projecten in dit realm.
 admin.projects.list.name,Projectnaam
 admin.projects.list.search,Projecten zoeken
 admin.projects.list.title,Projecten
+admin.projects.missingId,Er moet een project zijn geselecteerd voor deze bestemming.
 admin.projects.pageNext,Volgende pagina
 admin.projects.pagePrevious,Vorige pagina
 admin.projects.permissionDenied,U hebt geen toestemming om deze projectinformatie te bekijken of te wijzigen.
 admin.projects.roles.create,Rol aanmaken
+admin.projects.roles.deleteConfirm,Deze projectrol verwijderen? Grants die ernaar verwijzen verliezen de rol.
 admin.projects.roles.description,De rollen die dit project aan organisaties en hun leden kan toewijzen.
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,Dit project definieert nog geen rollen.
@@ -509,6 +561,16 @@ admin.signIn.signedOutTitle,Afgemeld
 admin.signIn.subject,Onderwerp
 admin.signIn.subjectType,Onderwerptype
 admin.signIn.title,Beheerdersaanmelding
+admin.users.authentication.description,"Review safe sign-in metadata. Stored credentials, private keys, and recovery-code values are never shown."
+admin.users.authentication.empty,No authentication methods are configured.
+admin.users.authentication.generated,Generated {date}
+admin.users.authentication.neverUsed,Never used
+admin.users.authentication.passkeyMetadata,{deviceType} · created {created} · last used {lastUsed}
+admin.users.authentication.pending,Pending confirmation
+admin.users.authentication.recoveryCodes,Recovery codes
+admin.users.authentication.recoveryCount,{count} codes remaining
+admin.users.authentication.title,Authentication methods
+admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
 admin.users.count,{count} gebruikers
 admin.users.create,Gebruiker aanmaken
 admin.users.createDescription,Voeg een menselijke gebruiker toe aan het huidige realm.
@@ -548,6 +610,16 @@ admin.users.profileSaved,Het gebruikersprofiel is opgeslagen.
 admin.users.profileTitle,Profiel
 admin.users.search,Gebruikers zoeken
 admin.users.searchPlaceholder,"Filter op gebruikersnaam, e-mail of identificatie"
+admin.users.sessions.created,Created
+admin.users.sessions.description,Inspect this user's active sessions and revoke access from a device.
+admin.users.sessions.empty,This user has no active sessions.
+admin.users.sessions.expires,Expires
+admin.users.sessions.ipAddress,IP address
+admin.users.sessions.lastUsed,Last used
+admin.users.sessions.method,Sign-in method
+admin.users.sessions.revokeConfirm,Revoke this session immediately?
+admin.users.sessions.revoked,The session was revoked.
+admin.users.sessions.title,Sessions and devices
 admin.users.state,Status
 admin.users.title,Gebruikers
 admin.users.unverified,Niet geverifieerd
@@ -559,6 +631,7 @@ admin.users.verificationDescription,Bepaal of het e-mailadres van deze gebruiker
 admin.users.verificationTitle,Email verification
 admin.users.verified,Verified
 app.name,Authworks
+app.tagline,Secure identity services
 common.back,Terug
 common.cancel,Annuleren
 common.close,Sluiten
@@ -573,7 +646,32 @@ common.save,Opslaan
 common.signIn,Inloggen
 common.signInWithProvider,Inloggen met {provider}
 common.signOut,Uitloggen
+common.theme.dark,dark
+common.theme.light,light
+common.theme.system,system
+common.urlPlaceholder,https://
+demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
+demo.account.eyebrow,Self-service identity
+demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
+demo.admin.directoryTitle,Administration directory
+demo.admin.eyebrow,Realm administration
+demo.admin.realmFixtureName,Northwind customer identity
+demo.fixture.error,error
+demo.fixture.expired,expired
+demo.fixture.loading,loading
+demo.fixture.preview,Stateless fixture preview
+demo.fixture.state,Fixture state
+demo.fixture.success,success
+demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
+demo.hub.accountOpen,Open account
+demo.hub.adminDescription,Manage identity resources and organization settings.
+demo.hub.adminOpen,Open administration
 demo.hub.description,"Explore the login, account, administration, and transactional email demos."
+demo.hub.loginDescription,Explore the authentication experience for your users.
+demo.hub.loginOpen,Open login
+demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
+demo.login.eyebrow,Hosted authentication
+demo.login.title,Login demo
 demo.nav.account,Account
 demo.nav.admin,Admin
 demo.nav.compact,Compact
@@ -709,73 +807,3 @@ login.verify.submit,Confirmar adres de e-mail
 login.verify.title,Verificar uw adres de e-mail
 login.verify.verifiedDescription,{email} está confirmada. Ya puede inloggen.
 login.verify.verifiedTitle,Adres de e-mail confirmada
-admin.impersonation.actor,Administrator
-admin.impersonation.assuranceRequired,Impersonating a user requires multi-factor authentication. Sign in again with a second factor to continue.
-admin.impersonation.assuranceRequiredTitle,Stronger sign-in required
-admin.impersonation.auditLink,View the audit events for this impersonation
-admin.impersonation.bannerLabel,Impersonation in progress
-admin.impersonation.bannerSummary,{actor} is acting as {subject}. This session ends in {remaining}.
-admin.impersonation.duration,Duration
-admin.impersonation.durationHint,"Impersonation always ends automatically, after at most fifteen minutes."
-admin.impersonation.durationInvalid,Choose a duration between one second and fifteen minutes.
-admin.impersonation.durationMinutes,{count} minutes
-admin.impersonation.end,End impersonation
-admin.impersonation.endConfirm,End the impersonation of {subject} now?
-admin.impersonation.endedNotice,The impersonation session was ended.
-admin.impersonation.expires,Ends
-admin.impersonation.expiringSoon,This impersonation ends in under a minute.
-admin.impersonation.nestedRejected,You are already acting as another user. End the current impersonation before starting a new one.
-admin.impersonation.nestedRejectedTitle,Nested impersonation is not allowed
-admin.impersonation.noOrganization,No organization
-admin.impersonation.organization,Organization
-admin.impersonation.organizationHint,Optional. Restrict the session to the permissions the person holds in one organization.
-admin.impersonation.permissionDenied,You do not have permission to impersonate users in this realm.
-admin.impersonation.permissionDeniedTitle,Access unavailable
-admin.impersonation.reason,Reason
-admin.impersonation.reasonHint,Recorded in the audit trail and shown to the person you act as.
-admin.impersonation.reasonRequired,Enter a reason between 3 and 256 characters.
-admin.impersonation.remaining,Remaining
-admin.impersonation.remainingValue,{minutes}:{seconds}
-admin.impersonation.selfRejected,You cannot impersonate your own account.
-admin.impersonation.start,Start impersonation
-admin.impersonation.startConfirm,Start acting as {subject}? Everything you do will be recorded against your own identity.
-admin.impersonation.startedNotice,You are now acting as {subject}.
-admin.impersonation.startedAt,Started
-admin.impersonation.subject,Acting as
-admin.impersonation.target,User to impersonate
-admin.impersonation.targetRequired,Choose the user you want to act as.
-admin.impersonation.title,Impersonation
-admin.impersonation.description,"Act as another person for a short, recorded support session. A reason and a bounded duration are always required."
-admin.impersonation.activeTitle,Active impersonation
-admin.impersonation.userAction,Impersonate this user
-app.tagline,Secure identity services
-demo.account.eyebrow,Self-service identity
-demo.account.description,"A network-free map of the profile, organization, security, and application access experiences Authworks supports. Every destination has an explicit fixture-state contract."
-demo.admin.eyebrow,Realm administration
-demo.admin.directoryTitle,Administration directory
-demo.admin.description,"Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated."
-demo.login.eyebrow,Hosted authentication
-demo.login.title,Login demo
-demo.login.description,"Explore deterministic sign-in, recovery, and interaction fixtures. Existing flows stay interactive while planned destinations expose their stateless scenario contracts."
-demo.hub.adminDescription,Manage identity resources and organization settings.
-demo.hub.adminOpen,Open administration
-demo.hub.accountDescription,"Explore self-service profile, organization, and security destinations."
-demo.hub.accountOpen,Open account
-demo.hub.loginDescription,Explore the authentication experience for your users.
-demo.hub.loginOpen,Open login
-demo.admin.realmFixtureName,Northwind customer identity
-demo.fixture.error,error
-demo.fixture.expired,expired
-demo.fixture.loading,loading
-demo.fixture.preview,Stateless fixture preview
-demo.fixture.state,Fixture state
-demo.fixture.success,success
-admin.navigation.title,Administration navigation
-admin.navigation.description,Choose an administration resource
-admin.navigation.label,Administration
-admin.navigation.hide,Hide sidebar
-common.theme.system,system
-common.theme.light,light
-common.theme.dark,dark
-common.urlPlaceholder,https://
-admin.organizations.domains.placeholder,example.com

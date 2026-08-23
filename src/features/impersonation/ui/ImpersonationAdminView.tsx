@@ -18,6 +18,8 @@ export function ImpersonationAdminView(props: {
   const state = props.state
   return (
     <section aria-label={messageTranslate("admin.impersonation.title")} class="grid min-w-0 gap-6">
+      {/* The page heading stays outside the guarded boundary, so every fixture state has one h1. */}
+      <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.impersonation.title")}</h1>
       {/* The banner stays visible in every guarded state, so an active session is never hidden. */}
       <Show when={state.active()}>
         {(session) => (
@@ -43,7 +45,7 @@ export function ImpersonationAdminView(props: {
         <Show when={state.active()} fallback={<ImpersonationAdminStartSection state={state} />}>
           {(session) => (
             <CardWrapper>
-              <h1 class="text-xl font-semibold">{messageTranslate("admin.impersonation.activeTitle")}</h1>
+              <h2 class="text-xl font-semibold">{messageTranslate("admin.impersonation.activeTitle")}</h2>
               <dl class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <DetailItem label={messageTranslate("admin.impersonation.actor")} value={session().actorLabel} />
                 <DetailItem label={messageTranslate("admin.impersonation.subject")} value={session().subjectLabel} />
@@ -84,7 +86,7 @@ export function ImpersonationAdminView(props: {
 function ImpersonationAdminStartSection(props: { readonly state: ImpersonationAdminPageState }) {
   return (
     <CardWrapper>
-      <h1 class="text-xl font-semibold">{messageTranslate("admin.impersonation.start")}</h1>
+      <h2 class="text-xl font-semibold">{messageTranslate("admin.impersonation.start")}</h2>
       <p class="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
         {messageTranslate("admin.impersonation.description")}
       </p>

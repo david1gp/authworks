@@ -1,6 +1,7 @@
 import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ProjectApplication } from "../public/projectApplicationSchema.js"
 import type { ProjectGrant } from "../public/projectGrantSchema.js"
 import type { ProjectRole } from "../public/projectRoleSchema.js"
@@ -69,7 +70,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
     }
 
     if (currentProjectId === undefined) {
-      error.set("A project must be selected for this destination.")
+      error.set(messageTranslate("admin.projects.missingId"))
       return status.set("error")
     }
 
@@ -159,7 +160,8 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       applicationId: string,
       nextStatus: "active" | "inactive" | "removed",
     ) => {
-      if (nextStatus === "removed" && !options.confirm("Remove this application? This cannot be undone.")) return
+      if (nextStatus === "removed" && !options.confirm(messageTranslate("admin.projects.applications.removeConfirm")))
+        return
       const updated = await mutate(`application:${applicationId}`, () =>
         adapter.applicationLifecycleSet(projectId, applicationId, { status: nextStatus }),
       )
@@ -180,7 +182,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       return true
     },
     grantDelete: async (projectId: string, grantId: string) => {
-      if (!options.confirm("Revoke this organization grant? Members will lose project access.")) return
+      if (!options.confirm(messageTranslate("admin.projects.grants.revokeConfirm"))) return
       const deleted = await mutate(`grant:${grantId}`, () => adapter.grantDelete(projectId, grantId))
       if (deleted === undefined) return
       const remaining = grants.get().filter((item) => item.id !== grantId)
@@ -220,14 +222,15 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       return true
     },
     projectDelete: async (projectId: string) => {
-      if (!options.confirm("Delete this project? Applications, roles, and grants are removed with it.")) return false
+      if (!options.confirm(messageTranslate("admin.projects.deleteConfirm"))) return false
       const deleted = await mutate(`project:${projectId}`, () => adapter.projectDelete(projectId))
       if (deleted === undefined) return false
       projects.set(projects.get().filter((item) => item.id !== projectId))
       return true
     },
     projectLifecycleSet: async (projectId: string, nextStatus: "active" | "inactive" | "removed") => {
-      if (nextStatus === "removed" && !options.confirm("Remove this project?")) return
+      if (nextStatus === "removed" && !options.confirm(messageTranslate("admin.projects.lifecycle.removeConfirm")))
+        return
       const updated = await mutate(`project:${projectId}`, () =>
         adapter.projectLifecycleSet(projectId, { status: nextStatus }),
       )
@@ -263,7 +266,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       return true
     },
     roleDelete: async (projectId: string, roleId: string) => {
-      if (!options.confirm("Delete this project role? Grants referencing it lose the role.")) return
+      if (!options.confirm(messageTranslate("admin.projects.roles.deleteConfirm"))) return
       const deleted = await mutate(`role:${roleId}`, () => adapter.roleDelete(projectId, roleId))
       if (deleted === undefined) return
       const remaining = roles.get().filter((item) => item.id !== roleId)

@@ -35,6 +35,8 @@ export function OrganizationAdminDetailView(props: {
       <A class="text-sm text-muted-foreground hover:underline" href={props.backHref}>
         ← {messageTranslate("admin.organizations.list.title")}
       </A>
+      {/* The page heading stays outside the data boundary, so every fixture state has one h1. */}
+      <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.organizations.detailTitle")}</h1>
       <OrganizationAdminNotice notice={props.notice} />
       <OrganizationAdminState
         emptyDetail={messageTranslate("admin.organizations.list.empty")}
@@ -47,7 +49,7 @@ export function OrganizationAdminDetailView(props: {
             <div class="grid gap-5">
               <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h1 class="text-2xl font-semibold tracking-tight">{organization().name}</h1>
+                  <h2 class="break-words text-2xl font-semibold tracking-tight">{organization().name}</h2>
                   <p class="mt-1 font-mono text-xs text-muted-foreground">{organization().id}</p>
                 </div>
                 <Badge variant={organizationAdminStatusVariant(organization().status)}>{organization().status}</Badge>

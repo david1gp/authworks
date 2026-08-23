@@ -1,6 +1,7 @@
 import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MachineCredential } from "../public/machineCredentialSchema.js"
 import type { MachineUserCreateRequest } from "../public/machineUserCreateRequestSchema.js"
 import type { MachineUserStatus } from "../public/machineUserStatusSchema.js"
@@ -80,7 +81,7 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
 
     if (screen === "machine-user-detail") {
       if (currentMachineUserId === undefined) {
-        error.set("A machine user must be selected for this destination.")
+        error.set(messageTranslate("admin.machine.users.missingId"))
         return status.set("error")
       }
       const current = await adapter.machineUserGet(currentMachineUserId)
@@ -150,12 +151,7 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
       return true
     },
     clientSecretRotate: async (machineUserId: string) => {
-      if (
-        !options.confirm(
-          "Rotate this client secret? The current secret stops working immediately and cannot be recovered.",
-        )
-      )
-        return
+      if (!options.confirm(messageTranslate("admin.machine.secret.rotateConfirm"))) return
       const rotated = await mutate(`client-secret:${machineUserId}`, () => adapter.clientSecretRotate(machineUserId))
       if (rotated === undefined) return
       machineUser.set(rotated.machineUser)
@@ -171,7 +167,7 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
       })
     },
     credentialRevoke: async (credentialId: string) => {
-      if (!options.confirm("Revoke this credential? Anything using it stops working immediately.")) return
+      if (!options.confirm(messageTranslate("admin.machine.credentials.revokeConfirm"))) return
       const revoked = await mutate(`credential:${credentialId}`, () => adapter.credentialRevoke(credentialId))
       if (revoked === undefined) return
       credentials.set(credentials.get().map((item) => (item.id === credentialId ? revoked : item)))
@@ -213,12 +209,7 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
       return true
     },
     machineUserLifecycleSet: async (machineUserId: string, nextStatus: MachineUserStatus) => {
-      if (
-        nextStatus === "removed" &&
-        !options.confirm(
-          "Remove this machine user? Every credential it owns stops working immediately and cannot be restored.",
-        )
-      )
+      if (nextStatus === "removed" && !options.confirm(messageTranslate("admin.machine.lifecycle.removeConfirm")))
         return
       const updated = await mutate(`machine-user:${machineUserId}`, () =>
         adapter.machineUserLifecycleSet(machineUserId, { status: nextStatus }),
