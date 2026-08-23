@@ -1,4 +1,6 @@
-import { mdiGithub, mdiGoogle, mdiMicrosoft } from "@mdi/js"
+import { mdiGithub } from "@adaptive-ds/mdi/mdiGithub.js"
+import { mdiGoogle } from "@adaptive-ds/mdi/mdiGoogle.js"
+import { mdiMicrosoft } from "@adaptive-ds/mdi/mdiMicrosoft.js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 

@@ -1,4 +1,7 @@
-import { mdiChevronRight, mdiEmailOutline, mdiFingerprint, mdiKeyOutline } from "@mdi/js"
+import { mdiChevronRight } from "@adaptive-ds/mdi/mdiChevronRight.js"
+import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
+import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
+import { mdiKeyOutline } from "@adaptive-ds/mdi/mdiKeyOutline.js"
 import { Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"

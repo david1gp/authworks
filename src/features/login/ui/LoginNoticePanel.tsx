@@ -1,4 +1,6 @@
-import { mdiAlertCircleOutline, mdiCheckCircleOutline, mdiEmailFastOutline } from "@mdi/js"
+import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
+import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
+import { mdiEmailFastOutline } from "@adaptive-ds/mdi/mdiEmailFastOutline.js"
 import { Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"

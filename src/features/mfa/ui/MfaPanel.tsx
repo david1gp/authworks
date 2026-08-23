@@ -1,4 +1,7 @@
-import { mdiCellphoneKey, mdiEmailOutline, mdiFingerprint, mdiLifebuoy } from "@mdi/js"
+import { mdiCellphoneKey } from "@adaptive-ds/mdi/mdiCellphoneKey.js"
+import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
+import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
+import { mdiLifebuoy } from "@adaptive-ds/mdi/mdiLifebuoy.js"
 import { For } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"

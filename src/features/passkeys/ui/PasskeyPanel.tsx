@@ -1,4 +1,4 @@
-import { mdiFingerprint } from "@mdi/js"
+import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
