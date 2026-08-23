@@ -199,10 +199,9 @@ function routeLoadAttemptDescribe(attempt: RouteLoadAttempt): string {
     )
   }
   const readinessError = attempt.readinessError
-  if (readinessError) {
-    const readinessErrorLine = readinessError.split("\n")[0] ?? ""
-    details.push(`readinessError=${readinessErrorLine.slice(0, 300)}`)
-  }
+  if (!readinessError) return details.join(" ")
+  const readinessErrorLine = readinessError.split("\n")[0] ?? ""
+  details.push(`readinessError=${readinessErrorLine.slice(0, 300)}`)
   return details.join(" ")
 }
 
