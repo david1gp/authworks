@@ -116,7 +116,7 @@ export function OrganizationAdminListView(props: {
                     </TableCell>
                     <TableCell>
                       <Badge variant={organizationAdminStatusVariant(organization.status as OrganizationStatus)}>
-                        {organization.status}
+                        {messageTranslate(`admin.organizations.statusValue.${organization.status}`)}
                       </Badge>
                     </TableCell>
                     <TableCell>{localeDateFormat(organization.createdAt, { dateStyle: "medium" })}</TableCell>

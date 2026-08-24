@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,Unieważnić zaproszenie dla {emai
 admin.organizations.invitations.revoked,Zaproszenie zostało unieważnione.
 admin.organizations.invitations.rolesInvalid,Wybierz od jednej do czterech ról.
 admin.organizations.invitations.sent,Zaproszenie zostało utworzone.
+admin.organizations.invitations.statusValue.accepted,Zaakceptowane
+admin.organizations.invitations.statusValue.declined,Odrzucone
+admin.organizations.invitations.statusValue.expired,Wygasłe
+admin.organizations.invitations.statusValue.pending,Oczekujące
+admin.organizations.invitations.statusValue.revoked,Unieważnione
 admin.organizations.invitations.title,Zaproszenia
 admin.organizations.invitations.tokenDismiss,Zapisałem ten link
 admin.organizations.invitations.tokenOnce,Ten link zaproszenia jest pokazywany raz. Udostępnij go zaproszonej osobie.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Dostawca
 admin.organizations.providers.updated,Dostawca został zaktualizowany.
 admin.organizations.renamed,Nazwa organizacji została zmieniona.
 admin.organizations.status,Stan
+admin.organizations.statusValue.active,Aktywny
+admin.organizations.statusValue.inactive,Nieaktywny
+admin.organizations.statusValue.removed,Usunięta
 admin.overview.description,"Tożsamość, domeny i cykl życia obszaru, którym administrujesz."
 admin.overview.sessionTitle,Sesja administratora
 admin.overview.title,Przegląd obszaru
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Podaj pełne poświadczenie administratora począ
 admin.signIn.credentialNotStored,Poświadczenie jest wymieniane na krótką sesję przeglądarki i nigdy nie jest przechowywane w tej przeglądarce.
 admin.signIn.description,Wymień poświadczenie początkowe wydane przez operatora na krótką sesję administratora w przeglądarce.
 admin.signIn.expiresAt,Ta sesja wygasa {date}.
+admin.signIn.signOutConfirm,"Zakończyć tę sesję administratora? Aby kontynuować, trzeba będzie zalogować się ponownie."
 admin.signIn.signedOutDetail,Sesja administratora została zakończona na tym urządzeniu.
 admin.signIn.signedOutTitle,Wylogowano
 admin.signIn.subject,Podmiot
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Wybierz obsługiwane miejsce docelowe z kat
 demo.placeholder.notFoundTitle,Nie znaleziono miejsca docelowego wersji demonstracyjnej
 demo.placeholder.readyDescription,"Trasa, obsługiwane stany oraz granica adaptera demo zostały zdefiniowane. Strona funkcji celowo nie jest jeszcze zaimplementowana."
 demo.placeholder.readyTitle,Kontrakt danych testowych gotowy
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Przeglądaj deterministyczne szablony HTML i tekstowe dla każdej wiadomości transakcyjnej.
+email.directory.eyebrow,Wiadomości transakcyjne
+email.directory.open,Otwórz podgląd
 email.directory.title,Podglądy wiadomości e-mail
 email.hub.description,Przeglądaj wyizolowane dane testowe wiadomości transakcyjnych w formacie HTML i zwykłym tekście.
 email.hub.open,Otwórz podglądy wiadomości e-mail

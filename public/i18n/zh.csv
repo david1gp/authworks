@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,撤销 {email} 的邀请？邀请�
 admin.organizations.invitations.revoked,邀请已撤销。
 admin.organizations.invitations.rolesInvalid,请选择一到四个角色。
 admin.organizations.invitations.sent,邀请已创建。
+admin.organizations.invitations.statusValue.accepted,已接受
+admin.organizations.invitations.statusValue.declined,已拒绝
+admin.organizations.invitations.statusValue.expired,已过期
+admin.organizations.invitations.statusValue.pending,待处理
+admin.organizations.invitations.statusValue.revoked,已吊销
 admin.organizations.invitations.title,邀请
 admin.organizations.invitations.tokenDismiss,我已保存此链接
 admin.organizations.invitations.tokenOnce,此邀请链接仅显示一次。请与您邀请的人分享。
@@ -473,6 +478,9 @@ admin.organizations.providers.type,提供方
 admin.organizations.providers.updated,提供方已更新。
 admin.organizations.renamed,组织已重命名。
 admin.organizations.status,状态
+admin.organizations.statusValue.active,启用中
+admin.organizations.statusValue.inactive,未激活
+admin.organizations.statusValue.removed,已移除
 admin.overview.description,您正在管理的领域的标识、域名和生命周期。
 admin.overview.sessionTitle,管理员会话
 admin.overview.title,领域概览
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,请输入完整的引导管理员凭据。
 admin.signIn.credentialNotStored,该凭据将被换取为一个短期浏览器会话，并且不会存储在此浏览器中。
 admin.signIn.description,使用运维方签发的引导凭据换取一个短期的管理员浏览器会话。
 admin.signIn.expiresAt,此会话将于 {date} 过期。
+admin.signIn.signOutConfirm,结束此管理员会话？您需要重新登录才能继续。
 admin.signIn.signedOutDetail,已在此设备上结束管理员会话。
 admin.signIn.signedOutTitle,已退出登录
 admin.signIn.subject,主体
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,请从目录中选择受支持的目标。
 demo.placeholder.notFoundTitle,未找到演示目标
 demo.placeholder.readyDescription,路由、受支持的状态和演示适配器边界已定义。此增量中有意未实现功能页面。
 demo.placeholder.readyTitle,测试数据契约就绪
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,检查每个事务性电子邮件渲染器契约的确定性 HTML 和纯文本输出。
+email.directory.eyebrow,事务性消息
+email.directory.open,打开预览
 email.directory.title,电子邮件预览
 email.hub.description,查看隔离的 HTML 和纯文本事务性消息测试数据。
 email.hub.open,打开电子邮件预览

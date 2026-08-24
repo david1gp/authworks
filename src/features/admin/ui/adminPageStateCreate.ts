@@ -182,6 +182,8 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       status.set("signed-in")
     },
     adminSignOut: async () => {
+      const confirmed = await confirmAction(messageTranslate("admin.signIn.signOutConfirm"))
+      if (!confirmed) return
       const data = await mutate("session:sign-out", () => options.adapter.adminSignOut())
       if (data === undefined) return
       session.set(undefined)

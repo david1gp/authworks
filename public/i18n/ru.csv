@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,Отозвать приглаше�
 admin.organizations.invitations.revoked,Приглашение отозвано.
 admin.organizations.invitations.rolesInvalid,Выберите от одной до четырёх ролей.
 admin.organizations.invitations.sent,Приглашение создано.
+admin.organizations.invitations.statusValue.accepted,Принято
+admin.organizations.invitations.statusValue.declined,Отклонено
+admin.organizations.invitations.statusValue.expired,Истекли
+admin.organizations.invitations.statusValue.pending,Ожидает
+admin.organizations.invitations.statusValue.revoked,Отозваны
 admin.organizations.invitations.title,Приглашения
 admin.organizations.invitations.tokenDismiss,Я сохранил эту ссылку
 admin.organizations.invitations.tokenOnce,Эта ссылка приглашения показывается один раз. Поделитесь ею с приглашённым человеком.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Провайдер
 admin.organizations.providers.updated,Провайдер обновлён.
 admin.organizations.renamed,Организация переименована.
 admin.organizations.status,Состояние
+admin.organizations.statusValue.active,Активна
+admin.organizations.statusValue.inactive,Неактивен
+admin.organizations.statusValue.removed,Удалена
 admin.overview.description,"Идентификатор, домены и жизненный цикл области, которой вы управляете."
 admin.overview.sessionTitle,Сеанс администратора
 admin.overview.title,Обзор области
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Введите полные начальные у
 admin.signIn.credentialNotStored,Учётные данные обмениваются на короткий сеанс браузера и никогда не сохраняются в этом браузере.
 admin.signIn.description,Обменяйте выданные оператором начальные учётные данные на короткий сеанс администратора в браузере.
 admin.signIn.expiresAt,Срок действия сеанса истекает {date}.
+admin.signIn.signOutConfirm,Завершить этот сеанс администратора? Для продолжения потребуется войти снова.
 admin.signIn.signedOutDetail,Сеанс администратора завершён на этом устройстве.
 admin.signIn.signedOutTitle,Выполнен выход
 admin.signIn.subject,Субъект
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Выберите поддерживаемо
 demo.placeholder.notFoundTitle,Демо-назначение не найдено
 demo.placeholder.readyDescription,"Маршрут, поддерживаемые состояния и граница демо-адаптера определены. Страница функции намеренно не реализована в этом обновлении."
 demo.placeholder.readyTitle,Контракт данных готов
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Просмотр детерминированного HTML- и текстового вывода для каждого шаблона транзакционных писем.
+email.directory.eyebrow,Транзакционные сообщения
+email.directory.open,Открыть предпросмотр
 email.directory.title,Предпросмотр писем
 email.hub.description,Просматривайте изолированные HTML и текстовые данные транзакционных сообщений.
 email.hub.open,Открыть предпросмотр писем

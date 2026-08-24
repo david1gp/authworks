@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,{email} için davet iptal edilsin 
 admin.organizations.invitations.revoked,Davet iptal edildi.
 admin.organizations.invitations.rolesInvalid,Bir ile dört arasında rol seçin.
 admin.organizations.invitations.sent,Davet oluşturuldu.
+admin.organizations.invitations.statusValue.accepted,Kabul edildi
+admin.organizations.invitations.statusValue.declined,Reddedildi
+admin.organizations.invitations.statusValue.expired,Süresi doldu
+admin.organizations.invitations.statusValue.pending,Beklemede
+admin.organizations.invitations.statusValue.revoked,İptal edildi
 admin.organizations.invitations.title,Davetler
 admin.organizations.invitations.tokenDismiss,Bu bağlantıyı kaydettim
 admin.organizations.invitations.tokenOnce,Bu davet bağlantısı yalnızca bir kez gösterilir. Davet ettiğiniz kişiyle paylaşın.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Sağlayıcı
 admin.organizations.providers.updated,Sağlayıcı güncellendi.
 admin.organizations.renamed,Kuruluş yeniden adlandırıldı.
 admin.organizations.status,Durum
+admin.organizations.statusValue.active,Etkin
+admin.organizations.statusValue.inactive,Etkin değil
+admin.organizations.statusValue.removed,Kaldırıldı
 admin.overview.description,"Yönettiğiniz alanın kimliği, etki alanları ve yaşam döngüsü."
 admin.overview.sessionTitle,Yönetici oturumu
 admin.overview.title,Alana genel bakış
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Başlangıç yönetici kimlik bilgisinin tamamın
 admin.signIn.credentialNotStored,Kimlik bilgisi kısa bir tarayıcı oturumuyla değiştirilir ve bu tarayıcıda asla saklanmaz.
 admin.signIn.description,İşletmeci tarafından verilen başlangıç kimlik bilgisini kısa bir yönetici tarayıcı oturumuyla değiştirin.
 admin.signIn.expiresAt,Bu oturumun süresi {date} tarihinde doluyor.
+admin.signIn.signOutConfirm,Bu yönetici oturumu sonlandırılsın mı? Devam etmek için yeniden oturum açmanız gerekir.
 admin.signIn.signedOutDetail,Yönetici oturumu bu cihazda sonlandırıldı.
 admin.signIn.signedOutTitle,Oturum kapatıldı
 admin.signIn.subject,Özne
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Dizinden desteklenen bir hedef seçin.
 demo.placeholder.notFoundTitle,Demo hedefi bulunamadı
 demo.placeholder.readyDescription,"Rota, desteklenen durumlar ve demo bağdaştırıcı sınırı tanımlandı. Özellik sayfası bu aşamada kasıtlı olarak uygulanmamıştır."
 demo.placeholder.readyTitle,Veri sözleşmesi hazır
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Her işlemsel e-posta şablonu için deterministik HTML ve metin çıktılarını inceleyin.
+email.directory.eyebrow,İşlemsel iletiler
+email.directory.open,Önizlemeyi aç
 email.directory.title,E-posta önizlemeleri
 email.hub.description,Ayrılmış HTML ve düz metin işlem mesajı verilerini gözden geçirin.
 email.hub.open,E-posta önizlemelerini aç

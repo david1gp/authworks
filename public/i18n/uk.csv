@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,Відкликати запрош�
 admin.organizations.invitations.revoked,Запрошення відкликано.
 admin.organizations.invitations.rolesInvalid,Виберіть від однієї до чотирьох ролей.
 admin.organizations.invitations.sent,Запрошення створено.
+admin.organizations.invitations.statusValue.accepted,Прийнято
+admin.organizations.invitations.statusValue.declined,Відхилено
+admin.organizations.invitations.statusValue.expired,Прострочені
+admin.organizations.invitations.statusValue.pending,Очікує
+admin.organizations.invitations.statusValue.revoked,Відкликані
 admin.organizations.invitations.title,Запрошення
 admin.organizations.invitations.tokenDismiss,Я зберіг це посилання
 admin.organizations.invitations.tokenOnce,Це посилання запрошення показується один раз. Поділіться ним із запрошеною людиною.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Провайдер
 admin.organizations.providers.updated,Провайдера оновлено.
 admin.organizations.renamed,Організацію перейменовано.
 admin.organizations.status,Стан
+admin.organizations.statusValue.active,Активна
+admin.organizations.statusValue.inactive,Неактивний
+admin.organizations.statusValue.removed,Видалена
 admin.overview.description,"Ідентифікатор, домени та життєвий цикл області, якою ви керуєте."
 admin.overview.sessionTitle,Сеанс адміністратора
 admin.overview.title,Огляд області
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Введіть повні початкові об
 admin.signIn.credentialNotStored,Облікові дані обмінюються на короткий сеанс браузера і ніколи не зберігаються в цьому браузері.
 admin.signIn.description,Обміняйте видані оператором початкові облікові дані на короткий сеанс адміністратора у браузері.
 admin.signIn.expiresAt,Термін дії сеансу спливає {date}.
+admin.signIn.signOutConfirm,"Завершити цей сеанс адміністратора? Щоб продовжити, потрібно буде увійти знову."
 admin.signIn.signedOutDetail,Сеанс адміністратора завершено на цьому пристрої.
 admin.signIn.signedOutTitle,Ви вийшли
 admin.signIn.subject,Суб'єкт
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Виберіть підтримуване �
 demo.placeholder.notFoundTitle,Демо-призначення не знайдено
 demo.placeholder.readyDescription,"Маршрут, підтримувані стани та межі демо-адаптера визначено. Сторінку функції навмисно не реалізовано на цьому етапі."
 demo.placeholder.readyTitle,Контракт тестових даних готовий
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Перегляд детермінованого HTML- та текстового виводу для кожного контракту транзакційних листів.
+email.directory.eyebrow,Транзакційні повідомлення
+email.directory.open,Відкрити перегляд
 email.directory.title,Попередній перегляд листів
 email.hub.description,Переглядайте ізольовані HTML та текстові дані транзакційних повідомлень.
 email.hub.open,Відкрити попередній перегляд листів

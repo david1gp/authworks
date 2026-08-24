@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,Révoquer l'invitation pour {email
 admin.organizations.invitations.revoked,L'invitation a été révoquée.
 admin.organizations.invitations.rolesInvalid,Choisissez entre un et quatre rôles.
 admin.organizations.invitations.sent,L'invitation a été créée.
+admin.organizations.invitations.statusValue.accepted,Acceptée
+admin.organizations.invitations.statusValue.declined,Refusée
+admin.organizations.invitations.statusValue.expired,Expiré
+admin.organizations.invitations.statusValue.pending,En attente
+admin.organizations.invitations.statusValue.revoked,Révoqué
 admin.organizations.invitations.title,Invitations
 admin.organizations.invitations.tokenDismiss,J'ai enregistré ce lien
 admin.organizations.invitations.tokenOnce,Ce lien d'invitation n'est affiché qu'une seule fois. Partagez-le avec la personne invitée.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Fournisseur
 admin.organizations.providers.updated,Le fournisseur a été mis à jour.
 admin.organizations.renamed,L'organisation a été renommée.
 admin.organizations.status,Statut
+admin.organizations.statusValue.active,Actif
+admin.organizations.statusValue.inactive,Inactif
+admin.organizations.statusValue.removed,Supprimée
 admin.overview.description,"Identité, domaines et cycle de vie du domaine de sécurité que vous administrez."
 admin.overview.sessionTitle,Session administrateur
 admin.overview.title,Aperçu du domaine de sécurité
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Saisissez l'identifiant administrateur d'amorçag
 admin.signIn.credentialNotStored,L'identifiant est échangé contre une courte session de navigateur et n'est jamais stocké dans ce navigateur.
 admin.signIn.description,Échangez l'identifiant d'amorçage fourni par l'opérateur contre une courte session administrateur.
 admin.signIn.expiresAt,Cette session expire le {date}.
+admin.signIn.signOutConfirm,Mettre fin à cette session administrateur ? Vous devrez vous reconnecter pour continuer.
 admin.signIn.signedOutDetail,La session administrateur a été terminée sur cet appareil.
 admin.signIn.signedOutTitle,Déconnecté
 admin.signIn.subject,Sujet
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Choisissez une destination prise en charge 
 demo.placeholder.notFoundTitle,Destination de démo introuvable
 demo.placeholder.readyDescription,"La route, les états pris en charge et la limite de l'adaptateur de démo sont définis. La page de fonctionnalité n'est intentionnellement pas implémentée dans cette étape."
 demo.placeholder.readyTitle,Contrat de fixture prêt
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Examinez les rendus HTML et texte déterministes pour chaque modèle d’e-mail transactionnel.
+email.directory.eyebrow,Messages transactionnels
+email.directory.open,Ouvrir l’aperçu
 email.directory.title,Aperçus des e-mails
 email.hub.description,Examiner les fixtures isolées de messages transactionnels en HTML et texte brut.
 email.hub.open,Ouvrir les aperçus d'e-mails

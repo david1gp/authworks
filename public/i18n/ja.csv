@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,{email} の招待を取り消し�
 admin.organizations.invitations.revoked,招待を取り消しました。
 admin.organizations.invitations.rolesInvalid,1 つから 4 つまでのロールを選択してください。
 admin.organizations.invitations.sent,招待を作成しました。
+admin.organizations.invitations.statusValue.accepted,承諾済み
+admin.organizations.invitations.statusValue.declined,辞退済み
+admin.organizations.invitations.statusValue.expired,期限切れ
+admin.organizations.invitations.statusValue.pending,保留中
+admin.organizations.invitations.statusValue.revoked,取り消し済み
 admin.organizations.invitations.title,招待
 admin.organizations.invitations.tokenDismiss,このリンクを保存しました
 admin.organizations.invitations.tokenOnce,この招待リンクは一度だけ表示されます。招待した相手と共有してください。
@@ -473,6 +478,9 @@ admin.organizations.providers.type,プロバイダー
 admin.organizations.providers.updated,プロバイダーを更新しました。
 admin.organizations.renamed,組織の名前を変更しました。
 admin.organizations.status,状態
+admin.organizations.statusValue.active,有効
+admin.organizations.statusValue.inactive,非アクティブ
+admin.organizations.statusValue.removed,削除済み
 admin.overview.description,管理しているレルムの識別情報、ドメイン、ライフサイクルです。
 admin.overview.sessionTitle,管理者セッション
 admin.overview.title,レルムの概要
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,ブートストラップ管理者の資格情報�
 admin.signIn.credentialNotStored,資格情報は短時間のブラウザーセッションと交換され、このブラウザーには保存されません。
 admin.signIn.description,運用担当者が発行したブートストラップ資格情報を、短時間の管理者ブラウザーセッションと交換します。
 admin.signIn.expiresAt,このセッションは {date} に期限切れになります。
+admin.signIn.signOutConfirm,この管理者セッションを終了しますか？続行するには再度サインインが必要です。
 admin.signIn.signedOutDetail,このデバイスの管理者セッションを終了しました。
 admin.signIn.signedOutTitle,サインアウトしました
 admin.signIn.subject,サブジェクト
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,ディレクトリからサポートされ�
 demo.placeholder.notFoundTitle,デモの遷移先が見つかりません
 demo.placeholder.readyDescription,ルート、サポートされている状態、およびデモアダプターの境界が定義されています。この増分では機能ページは意図的に実装されていません。
 demo.placeholder.readyTitle,フィクスチャ契約の準備完了
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,トランザクションメールレンダラーの確定的なHTMLおよびテキスト出力を確認します。
+email.directory.eyebrow,トランザクションメッセージ
+email.directory.open,プレビューを開く
 email.directory.title,メールプレビュー
 email.hub.description,分離されたHTMLおよびプレーンテキストのトランザクションメッセージフィクスチャを確認します。
 email.hub.open,メールプレビューを開く

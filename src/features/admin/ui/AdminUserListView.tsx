@@ -146,7 +146,9 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={adminUserStateVariant(item.state)}>{item.state}</Badge>
+                      <Badge variant={adminUserStateVariant(item.state)}>
+                        {messageTranslate(`admin.users.lifecycle.${item.state}`)}
+                      </Badge>
                     </TableCell>
                     <TableCell>{localeDateFormat(item.createdAt, { dateStyle: "medium" })}</TableCell>
                   </TableRow>

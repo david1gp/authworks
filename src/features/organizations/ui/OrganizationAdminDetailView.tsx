@@ -52,7 +52,9 @@ export function OrganizationAdminDetailView(props: {
                   <h2 class="break-words text-2xl font-semibold tracking-tight">{organization().name}</h2>
                   <p class="mt-1 font-mono text-xs text-muted-foreground">{organization().id}</p>
                 </div>
-                <Badge variant={organizationAdminStatusVariant(organization().status)}>{organization().status}</Badge>
+                <Badge variant={organizationAdminStatusVariant(organization().status)}>
+                  {messageTranslate(`admin.organizations.statusValue.${organization().status}`)}
+                </Badge>
               </div>
               <CardWrapper>
                 <dl class="grid gap-4 sm:grid-cols-3">

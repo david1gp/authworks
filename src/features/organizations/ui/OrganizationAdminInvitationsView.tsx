@@ -128,7 +128,7 @@ export function OrganizationAdminInvitationsView(props: {
                     <TableCell>{invitation.roles.join(", ")}</TableCell>
                     <TableCell>
                       <Badge variant={invitation.status === "pending" ? "filledYellow" : "filledGreen"}>
-                        {invitation.status}
+                        {messageTranslate(`admin.organizations.invitations.statusValue.${invitation.status}`)}
                       </Badge>
                     </TableCell>
                     <TableCell>{localeDateFormat(invitation.expiresAt, { dateStyle: "medium" })}</TableCell>

@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,Die Einladung für {email} widerru
 admin.organizations.invitations.revoked,Die Einladung wurde widerrufen.
 admin.organizations.invitations.rolesInvalid,Wählen Sie zwischen einer und vier Rollen.
 admin.organizations.invitations.sent,Die Einladung wurde erstellt.
+admin.organizations.invitations.statusValue.accepted,Angenommen
+admin.organizations.invitations.statusValue.declined,Abgelehnt
+admin.organizations.invitations.statusValue.expired,Abgelaufen
+admin.organizations.invitations.statusValue.pending,Ausstehend
+admin.organizations.invitations.statusValue.revoked,Widerrufen
 admin.organizations.invitations.title,Einladungen
 admin.organizations.invitations.tokenDismiss,Ich habe diesen Link gespeichert
 admin.organizations.invitations.tokenOnce,Dieser Einladungslink wird nur einmal angezeigt. Teilen Sie ihn mit der eingeladenen Person.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Anbieter
 admin.organizations.providers.updated,Der Anbieter wurde aktualisiert.
 admin.organizations.renamed,Die Organisation wurde umbenannt.
 admin.organizations.status,Status
+admin.organizations.statusValue.active,Aktiv
+admin.organizations.statusValue.inactive,Inaktiv
+admin.organizations.statusValue.removed,Entfernt
 admin.overview.description,"Identität, Domains und Lebenszyklus des Bereichs, den Sie verwalten."
 admin.overview.sessionTitle,Administratorsitzung
 admin.overview.title,Bereichsübersicht
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Geben Sie die vollständigen Bootstrap-Administra
 admin.signIn.credentialNotStored,Die Anmeldedaten werden gegen eine kurze Browsersitzung eingetauscht und niemals in diesem Browser gespeichert.
 admin.signIn.description,Tauschen Sie die vom Betreiber ausgestellten Bootstrap-Anmeldedaten gegen eine kurze Administrator-Browsersitzung.
 admin.signIn.expiresAt,Diese Sitzung läuft am {date} ab.
+admin.signIn.signOutConfirm,"Diese Administratorsitzung beenden? Sie müssen sich erneut anmelden, um fortzufahren."
 admin.signIn.signedOutDetail,Die Administratorsitzung wurde auf diesem Gerät beendet.
 admin.signIn.signedOutTitle,Abgemeldet
 admin.signIn.subject,Subjekt
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Wählen Sie ein unterstütztes Ziel aus dem
 demo.placeholder.notFoundTitle,Demo-Ziel nicht gefunden
 demo.placeholder.readyDescription,"Die Route, unterstützte Zustände und die Demo-Adaptergrenze sind definiert. Die Funktionsseite ist in diesem Schritt absichtlich nicht implementiert."
 demo.placeholder.readyTitle,Fixture-Vertrag bereit
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Deterministische HTML- und Textausgaben für alle Transaktions-E-Mail-Vorlagen prüfen.
+email.directory.eyebrow,Transaktionsnachrichten
+email.directory.open,Vorschau öffnen
 email.directory.title,E-Mail-Vorschauen
 email.hub.description,Isolierte HTML- und Nur-Text-Fixtures für Transaktions-E-Mails prüfen.
 email.hub.open,E-Mail-Vorschau öffnen

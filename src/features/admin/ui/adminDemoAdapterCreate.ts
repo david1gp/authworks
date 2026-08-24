@@ -130,7 +130,10 @@ export function adminDemoAdapterCreate(
     },
     userList: async () => {
       if (fixtureState() === "loading") return pending()
-      const failed = readFailure("adminDemoUserList")
+      const failed =
+        fixtureState() === "permission-denied"
+          ? resultErrorCodedCreate("adminDemoUserList", "You do not have permission to list users.", "realms.forbidden")
+          : readFailure("adminDemoUserList")
       if (failed !== undefined) return failed
       return resultCreate({ items: fixtureState() === "empty" ? [] : users })
     },

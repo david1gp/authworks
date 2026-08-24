@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,De uitnodiging voor {email} intrek
 admin.organizations.invitations.revoked,De uitnodiging is ingetrokken.
 admin.organizations.invitations.rolesInvalid,Kies tussen één en vier rollen.
 admin.organizations.invitations.sent,De uitnodiging is aangemaakt.
+admin.organizations.invitations.statusValue.accepted,Geaccepteerd
+admin.organizations.invitations.statusValue.declined,Geweigerd
+admin.organizations.invitations.statusValue.expired,Verlopen
+admin.organizations.invitations.statusValue.pending,In behandeling
+admin.organizations.invitations.statusValue.revoked,Ingetrokken
 admin.organizations.invitations.title,Uitnodigingen
 admin.organizations.invitations.tokenDismiss,Ik heb deze link opgeslagen
 admin.organizations.invitations.tokenOnce,Deze uitnodigingslink wordt één keer getoond. Deel hem met de persoon die u hebt uitgenodigd.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Provider
 admin.organizations.providers.updated,De provider is bijgewerkt.
 admin.organizations.renamed,De organisatie is hernoemd.
 admin.organizations.status,Status
+admin.organizations.statusValue.active,Actief
+admin.organizations.statusValue.inactive,Inactief
+admin.organizations.statusValue.removed,Verwijderd
 admin.overview.description,"Identiteit, domeinen en levenscyclus van het realm dat u beheert."
 admin.overview.sessionTitle,Beheerderssessie
 admin.overview.title,Realm-overzicht
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Voer de volledige bootstrap-beheerdersreferentie 
 admin.signIn.credentialNotStored,De referentie wordt ingewisseld voor een korte browsersessie en wordt nooit in deze browser opgeslagen.
 admin.signIn.description,Wissel de door de operator uitgegeven bootstrap-referentie in voor een korte beheerderssessie in de browser.
 admin.signIn.expiresAt,Deze sessie verloopt op {date}.
+admin.signIn.signOutConfirm,Deze beheerderssessie beëindigen? U moet opnieuw inloggen om verder te gaan.
 admin.signIn.signedOutDetail,De beheerderssessie is op dit apparaat beëindigd.
 admin.signIn.signedOutTitle,Afgemeld
 admin.signIn.subject,Onderwerp
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Kies een ondersteunde bestemming uit het ov
 demo.placeholder.notFoundTitle,Demobestemming niet gevonden
 demo.placeholder.readyDescription,"De route, ondersteunde statussen en de demo-adaptergrens zijn gedefinieerd. De functiepagina is in deze stap opzettelijk niet geïmplementeerd."
 demo.placeholder.readyTitle,Fixture-contract gereed
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Bekijk deterministische HTML- en tekstberichten voor elk transactioneel e-mailsjabloon.
+email.directory.eyebrow,Transactionele berichten
+email.directory.open,Voorbeeld openen
 email.directory.title,E-mailvoorbeelden
 email.hub.description,Controleer geïsoleerde HTML- en platte-tekst transactionele berichtfixtures.
 email.hub.open,E-mailvoorbeelden openen

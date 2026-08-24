@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,هل تريد إبطال الدع�
 admin.organizations.invitations.revoked,تم إبطال الدعوة.
 admin.organizations.invitations.rolesInvalid,اختر ما بين دور واحد وأربعة أدوار.
 admin.organizations.invitations.sent,تم إنشاء الدعوة.
+admin.organizations.invitations.statusValue.accepted,مقبولة
+admin.organizations.invitations.statusValue.declined,مرفوضة
+admin.organizations.invitations.statusValue.expired,منتهية الصلاحية
+admin.organizations.invitations.statusValue.pending,قيد الانتظار
+admin.organizations.invitations.statusValue.revoked,مُبطَلة
 admin.organizations.invitations.title,الدعوات
 admin.organizations.invitations.tokenDismiss,لقد حفظت هذا الرابط
 admin.organizations.invitations.tokenOnce,يُعرض رابط الدعوة هذا مرة واحدة. شاركه مع الشخص الذي دعوته.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,المزوّد
 admin.organizations.providers.updated,تم تحديث المزوّد.
 admin.organizations.renamed,تمت إعادة تسمية المؤسسة.
 admin.organizations.status,الحالة
+admin.organizations.statusValue.active,نشط
+admin.organizations.statusValue.inactive,غير نشط
+admin.organizations.statusValue.removed,مُزالة
 admin.overview.description,هوية النطاق الذي تديره ومجالاته ودورة حياته.
 admin.overview.sessionTitle,جلسة المسؤول
 admin.overview.title,نظرة عامة على النطاق
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,أدخل بيانات اعتماد المسؤول
 admin.signIn.credentialNotStored,يتم استبدال بيانات الاعتماد بجلسة متصفح قصيرة ولا يتم تخزينها أبدًا في هذا المتصفح.
 admin.signIn.description,استبدل بيانات الاعتماد الأولية الصادرة عن المشغّل بجلسة مسؤول قصيرة في المتصفح.
 admin.signIn.expiresAt,تنتهي هذه الجلسة في {date}.
+admin.signIn.signOutConfirm,هل تريد إنهاء جلسة المسؤول هذه؟ سيتعين عليك تسجيل الدخول مرة أخرى للمتابعة.
 admin.signIn.signedOutDetail,تم إنهاء جلسة المسؤول على هذا الجهاز.
 admin.signIn.signedOutTitle,تم تسجيل الخروج
 admin.signIn.subject,الموضوع
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,اختر وجهة مدعومة من الد�
 demo.placeholder.notFoundTitle,لم يتم العثور على وجهة العرض التجريبي
 demo.placeholder.readyDescription,تم تحديد المسار والحالات المدعومة وحدود محول العرض التجريبي. لم يتم تنفيذ صفحة الميزة عن قصد في هذه المرحلة.
 demo.placeholder.readyTitle,عقد البيانات التجريبية جاهز
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,راجع مخرجات HTML والنصوص الحتمية لكل عقد من عقود رسائل البريد الإلكتروني المعاملاتية.
+email.directory.eyebrow,رسائل المعاملات
+email.directory.open,فتح المعاينة
 email.directory.title,معاينات البريد الإلكتروني
 email.hub.description,مراجعة البيانات التجريبية لرسائل المعاملات بتنسيق HTML والنص العادي المنعزل.
 email.hub.open,فتح معاينات البريد الإلكتروني

@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,Visszavonja a(z) {email} meghívá
 admin.organizations.invitations.revoked,A meghívó visszavonva.
 admin.organizations.invitations.rolesInvalid,Válasszon egy és négy közötti számú szerepkört.
 admin.organizations.invitations.sent,A meghívó létrehozva.
+admin.organizations.invitations.statusValue.accepted,Elfogadva
+admin.organizations.invitations.statusValue.declined,Elutasítva
+admin.organizations.invitations.statusValue.expired,Lejárt
+admin.organizations.invitations.statusValue.pending,Függőben
+admin.organizations.invitations.statusValue.revoked,Visszavont
 admin.organizations.invitations.title,Meghívók
 admin.organizations.invitations.tokenDismiss,Elmentettem ezt a hivatkozást
 admin.organizations.invitations.tokenOnce,Ez a meghívó hivatkozás csak egyszer jelenik meg. Ossza meg a meghívott személlyel.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Szolgáltató
 admin.organizations.providers.updated,A szolgáltató frissítve.
 admin.organizations.renamed,A szervezet átnevezve.
 admin.organizations.status,Állapot
+admin.organizations.statusValue.active,Aktív
+admin.organizations.statusValue.inactive,Inaktív
+admin.organizations.statusValue.removed,Eltávolítva
 admin.overview.description,"Az Ön által felügyelt tartomány azonosítója, domainjei és életciklusa."
 admin.overview.sessionTitle,Rendszergazdai munkamenet
 admin.overview.title,Tartomány áttekintése
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Adja meg a teljes kezdeti rendszergazdai hiteles�
 admin.signIn.credentialNotStored,"A hitelesítő adatot rövid böngésző-munkamenetre cseréljük, és soha nem tároljuk ebben a böngészőben."
 admin.signIn.description,Cserélje az üzemeltető által kiadott kezdeti hitelesítő adatot rövid rendszergazdai böngésző-munkamenetre.
 admin.signIn.expiresAt,Ez a munkamenet ekkor jár le: {date}.
+admin.signIn.signOutConfirm,Lezárja ezt az adminisztrátori munkamenetet? A folytatáshoz újra be kell jelentkeznie.
 admin.signIn.signedOutDetail,A rendszergazdai munkamenet lezárult ezen az eszközön.
 admin.signIn.signedOutTitle,Kijelentkezve
 admin.signIn.subject,Alany
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Válasszon egy támogatott célt a jegyzék
 demo.placeholder.notFoundTitle,A bemutató cél nem található
 demo.placeholder.readyDescription,"Az útvonal, a támogatott állapotok és a bemutató adapter határa meghatározva. A funkcióoldal szándékosan nincs implementálva ebben a lépésben."
 demo.placeholder.readyTitle,Mintaszerződés kész
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Tekintse meg a determinisztikus HTML és szöveges kimenetet minden tranzakciós e-mail sablonhoz.
+email.directory.eyebrow,Tranzakciós üzenetek
+email.directory.open,Előnézet megnyitása
 email.directory.title,E-mail előnézetek
 email.hub.description,Elkülönített HTML és egyszerű szöveges tranzakciós üzenetminták áttekintése.
 email.hub.open,E-mail előnézetek megnyitása

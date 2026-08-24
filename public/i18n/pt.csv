@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,Revogar o convite para {email}? O 
 admin.organizations.invitations.revoked,O convite foi revogado.
 admin.organizations.invitations.rolesInvalid,Escolha entre uma e quatro funções.
 admin.organizations.invitations.sent,O convite foi criado.
+admin.organizations.invitations.statusValue.accepted,Aceite
+admin.organizations.invitations.statusValue.declined,Recusada
+admin.organizations.invitations.statusValue.expired,Expirada
+admin.organizations.invitations.statusValue.pending,Pendente
+admin.organizations.invitations.statusValue.revoked,Revogada
 admin.organizations.invitations.title,Convites
 admin.organizations.invitations.tokenDismiss,Guardei esta ligação
 admin.organizations.invitations.tokenOnce,Esta ligação de convite é mostrada uma única vez. Partilhe-a com a pessoa que convidou.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Fornecedor
 admin.organizations.providers.updated,O fornecedor foi atualizado.
 admin.organizations.renamed,A organização foi renomeada.
 admin.organizations.status,Status
+admin.organizations.statusValue.active,Ativo
+admin.organizations.statusValue.inactive,Inativo
+admin.organizations.statusValue.removed,Removida
 admin.overview.description,"Identidade, domínios e ciclo de vida do domínio de segurança que você administra."
 admin.overview.sessionTitle,Sessão de administrador
 admin.overview.title,Visão geral do domínio de segurança
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Informe a credencial de administrador inicial com
 admin.signIn.credentialNotStored,A credencial é trocada por uma sessão curta do navegador e nunca é armazenada neste navegador.
 admin.signIn.description,Troque a credencial inicial emitida pelo operador por uma sessão curta de administrador no navegador.
 admin.signIn.expiresAt,Esta sessão expira em {date}.
+admin.signIn.signOutConfirm,Terminar esta sessão de administrador? Terá de iniciar sessão novamente para continuar.
 admin.signIn.signedOutDetail,A sessão de administrador foi encerrada neste dispositivo.
 admin.signIn.signedOutTitle,Sessão encerrada
 admin.signIn.subject,Sujeito
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Escolha um destino suportado no diretório.
 demo.placeholder.notFoundTitle,Destino de demonstração não encontrado
 demo.placeholder.readyDescription,"A rota, os estados suportados e o limite do adaptador de demonstração estão definidos. A página do recurso não está intencionalmente implementada neste incremento."
 demo.placeholder.readyTitle,Contrato de fixture pronto
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Inspecione o resultado determinístico de HTML e texto para cada modelo de e-mail transacional.
+email.directory.eyebrow,Mensagens transacionais
+email.directory.open,Abrir pré-visualização
 email.directory.title,Pré-visualizações de e-mail
 email.hub.description,Reveja fixtures isoladas de mensagens transacionais em HTML e texto simples.
 email.hub.open,Abrir pré-visualizações de e-mail

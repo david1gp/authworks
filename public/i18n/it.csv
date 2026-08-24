@@ -405,6 +405,11 @@ admin.organizations.invitations.revokeConfirm,Revocare l'invito per {email}? Il 
 admin.organizations.invitations.revoked,L'invito è stato revocato.
 admin.organizations.invitations.rolesInvalid,Scegli da uno a quattro ruoli.
 admin.organizations.invitations.sent,L'invito è stato creato.
+admin.organizations.invitations.statusValue.accepted,Accettata
+admin.organizations.invitations.statusValue.declined,Rifiutata
+admin.organizations.invitations.statusValue.expired,Scaduta
+admin.organizations.invitations.statusValue.pending,In sospeso
+admin.organizations.invitations.statusValue.revoked,Revocata
 admin.organizations.invitations.title,Inviti
 admin.organizations.invitations.tokenDismiss,Ho salvato questo link
 admin.organizations.invitations.tokenOnce,Questo link di invito viene mostrato una sola volta. Condividilo con la persona che hai invitato.
@@ -473,6 +478,9 @@ admin.organizations.providers.type,Provider
 admin.organizations.providers.updated,Il provider è stato aggiornato.
 admin.organizations.renamed,L'organizzazione è stata rinominata.
 admin.organizations.status,Stato
+admin.organizations.statusValue.active,Attivo
+admin.organizations.statusValue.inactive,Inattivo
+admin.organizations.statusValue.removed,Rimossa
 admin.overview.description,"Identità, domini e ciclo di vita del reame che stai amministrando."
 admin.overview.sessionTitle,Sessione amministratore
 admin.overview.title,Panoramica del reame
@@ -571,6 +579,7 @@ admin.signIn.credentialInvalid,Inserisci la credenziale amministratore iniziale 
 admin.signIn.credentialNotStored,La credenziale viene scambiata con una breve sessione del browser e non viene mai memorizzata in questo browser.
 admin.signIn.description,Scambia la credenziale iniziale emessa dall'operatore con una breve sessione amministratore nel browser.
 admin.signIn.expiresAt,Questa sessione scade il {date}.
+admin.signIn.signOutConfirm,Terminare questa sessione di amministratore? Dovrai accedere di nuovo per continuare.
 admin.signIn.signedOutDetail,La sessione amministratore è stata terminata su questo dispositivo.
 admin.signIn.signedOutTitle,Disconnesso
 admin.signIn.subject,Soggetto
@@ -913,9 +922,9 @@ demo.placeholder.notFoundDescription,Scegli una destinazione supportata dalla di
 demo.placeholder.notFoundTitle,Destinazione demo non trovata
 demo.placeholder.readyDescription,"La route, gli stati supportati e i limiti dell'adattatore demo sono definiti. La pagina della funzionalità non è intenzionalmente implementata in questo incremento."
 demo.placeholder.readyTitle,Contratto fixture pronto
-email.directory.description,Inspect deterministic HTML and text output for every completed transactional email renderer contract.
-email.directory.eyebrow,Transactional messages
-email.directory.open,Open preview
+email.directory.description,Esamina l’output deterministico HTML e di testo per ogni modello di e-mail transazionale.
+email.directory.eyebrow,Messaggi transazionali
+email.directory.open,Apri anteprima
 email.directory.title,Anteprime e-mail
 email.hub.description,Controlla le fixture isolate di messaggi transazionali in HTML e testo normale.
 email.hub.open,Apri anteprime e-mail
