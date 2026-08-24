@@ -154,6 +154,26 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    externalIdentityOAuthTransactionGetByStateHash(
+      stateHash: string,
+    ): Result<ExternalIdentityOAuthTransactionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(externalIdentityOAuthTransactionTable)
+            .where(eq(externalIdentityOAuthTransactionTable.stateHash, stateHash))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "externalIdentityOAuthTransactionGetByStateHash",
+          "The external authentication transaction could not be read.",
+          "external-identities.read-failed",
+        )
+      }
+    },
+
     externalIdentityOAuthTransactionGetByConfirmationToken(
       realmId: string,
       confirmationTokenHash: string,

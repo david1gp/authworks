@@ -59,6 +59,40 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     minimumAssurance: "multi_factor",
     publicOrigin: options.publicOrigin,
   })
+  const externalIdentityCallbackRouteHandle = async (
+    context: ExternalIdentityRouteContext,
+    input: {
+      readonly code: string
+      readonly interactionHandle?: string
+      readonly realmId: string
+      readonly providerId: string
+      readonly state: string
+    },
+  ) => {
+    const callback = await externalIdentityCallback({
+      code: input.code,
+      database: options.database,
+      deviceMetadata: externalIdentityDeviceMetadataGet(context),
+      realmId: input.realmId,
+      providerId: input.providerId,
+      providerPorts,
+      state: input.state,
+    })
+    const browserMode = sessionBrowserModeRequested(context, options.browserMode)
+    if (!browserMode || input.interactionHandle === undefined)
+      return externalIdentityResultResponseCreate(
+        context,
+        browserMode ? sessionBrowserCredentialResponseCreate(context, callback) : callback,
+      )
+    const resumePath = externalIdentityInteractionResumePathCreate(input.interactionHandle, options.publicOrigin)
+    if (!resumePath.success) return externalIdentityErrorResponseCreate(context, resumePath)
+    if (callback.success && callback.data.kind === "authenticated" && callback.data.session !== undefined) {
+      const browser = sessionBrowserCredentialResponseCreate(context, callback)
+      if (!browser.success) return externalIdentityErrorResponseCreate(context, browser)
+      return context.redirect(resumePath.data, 302)
+    }
+    return externalIdentityLoginRedirectCreate(context, input.interactionHandle, resumePath.data, options.publicOrigin)
+  }
 
   app.get(
     "/realms/:realmId/external-identity-providers",
@@ -369,29 +403,35 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       options.database.db,
     ).externalIdentityOAuthTransactionGetByState(context.req.param("realmId"), externalIdentitySecretHashCreate(state))
     const interactionHandle = transaction.success ? (transaction.data?.interactionHandle ?? undefined) : undefined
-    const callback = await externalIdentityCallback({
+    return externalIdentityCallbackRouteHandle(context, {
       code: context.req.query("code") ?? "",
-      database: options.database,
-      deviceMetadata: externalIdentityDeviceMetadataGet(context),
+      interactionHandle,
       realmId: context.req.param("realmId"),
       providerId: context.req.param("providerId"),
-      providerPorts,
       state,
     })
-    const browserMode = sessionBrowserModeRequested(context, options.browserMode)
-    if (!browserMode || interactionHandle === undefined)
-      return externalIdentityResultResponseCreate(
-        context,
-        browserMode ? sessionBrowserCredentialResponseCreate(context, callback) : callback,
-      )
-    const resumePath = externalIdentityInteractionResumePathCreate(interactionHandle, options.publicOrigin)
-    if (!resumePath.success) return externalIdentityErrorResponseCreate(context, resumePath)
-    if (callback.success && callback.data.kind === "authenticated" && callback.data.session !== undefined) {
-      const browser = sessionBrowserCredentialResponseCreate(context, callback)
-      if (!browser.success) return externalIdentityErrorResponseCreate(context, browser)
-      return context.redirect(resumePath.data, 302)
-    }
-    return externalIdentityLoginRedirectCreate(context, interactionHandle, resumePath.data, options.publicOrigin)
+  })
+
+  app.get("/idps/callback", async (context) => {
+    const state = context.req.query("state") ?? ""
+    const transaction = externalIdentityRepositoryCreate(
+      options.database.db,
+    ).externalIdentityOAuthTransactionGetByStateHash(externalIdentitySecretHashCreate(state))
+    if (!transaction.success) return externalIdentityErrorResponseCreate(context, transaction)
+    if (transaction.data === null)
+      return externalIdentityErrorResponseCreate(context, {
+        code: "external-identities.invalid",
+        errorMessage: "The external identity callback is invalid.",
+        op: "externalIdentityCallback",
+        success: false,
+      })
+    return externalIdentityCallbackRouteHandle(context, {
+      code: context.req.query("code") ?? "",
+      interactionHandle: transaction.data.interactionHandle ?? undefined,
+      realmId: transaction.data.realmId,
+      providerId: transaction.data.providerId,
+      state,
+    })
   })
 
   app.post(
