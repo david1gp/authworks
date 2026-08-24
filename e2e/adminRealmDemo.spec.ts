@@ -38,6 +38,10 @@ test("the administrator session demo can be ended", async ({ page }) => {
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
 
   await page.getByRole("button", { name: "Sign out", exact: true }).click()
+  // Ending the session is destructive, so it is guarded by the shared in-app confirmation dialog.
+  const confirmation = page.getByRole("alertdialog")
+  await expect(confirmation).toContainText("End this administrator session?")
+  await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Signed out", exact: true })).toBeVisible()
 })
 

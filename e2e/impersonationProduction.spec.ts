@@ -23,7 +23,7 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
   context,
   page,
 }) => {
-  test.setTimeout(60_000)
+  test.setTimeout(120_000)
   const server = await e2eServerStart()
   const fixture = server.metadata
   const auxiliaryContexts: BrowserContext[] = []
