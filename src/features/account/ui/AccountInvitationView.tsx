@@ -24,18 +24,23 @@ export function AccountInvitationView(props: {
           fallback={
             <ProductionStatePanel
               detail={
+                props.status === "expired" || props.status === "replayed" || props.status === "permission-denied"
+                  ? undefined
+                  : props.error === "missing-token"
+                    ? messageTranslate("account.access.invitationMissing")
+                    : props.error
+              }
+              onRetry={props.status === "error" ? props.onRetry : undefined}
+              state={props.status === "loading" ? "loading" : props.status === "error" ? "error" : "inaccessible"}
+              title={
                 props.status === "expired"
                   ? messageTranslate("account.access.expired")
                   : props.status === "replayed"
                     ? messageTranslate("account.access.invitationReplay")
                     : props.status === "permission-denied"
                       ? messageTranslate("account.access.permission")
-                      : props.error === "missing-token"
-                        ? messageTranslate("account.access.invitationMissing")
-                        : props.error
+                      : undefined
               }
-              onRetry={props.status === "error" ? props.onRetry : undefined}
-              state={props.status === "loading" ? "loading" : props.status === "error" ? "error" : "inaccessible"}
             />
           }
         >
@@ -73,7 +78,12 @@ export function AccountInvitationView(props: {
           <Button disabled={props.pendingId !== undefined} onClick={props.onAccept} variant="filledBlue">
             {messageTranslate("common.continue")}
           </Button>
-          <Button disabled={props.pendingId !== undefined} onClick={props.onDecline} variant="outlineRed">
+          <Button
+            class="text-red-700 dark:text-red-300"
+            disabled={props.pendingId !== undefined}
+            onClick={props.onDecline}
+            variant="outlineRed"
+          >
             {messageTranslate("common.decline")}
           </Button>
         </div>
