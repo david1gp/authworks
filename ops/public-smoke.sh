@@ -100,6 +100,10 @@ fi
 
 request "/api/not-a-route" 404 "$temporary_directory/api-missing" "$temporary_directory/api-missing.headers"
 request "/assets/missing.js" 404 "$temporary_directory/asset-missing" "$temporary_directory/asset-missing.headers"
-request "/demo/login" 404 "$temporary_directory/demo" "$temporary_directory/demo.headers"
+request "/demo/login" 200 "$temporary_directory/demo" "$temporary_directory/demo.headers"
+if ! rg -q '<div id="app"></div>' "$temporary_directory/demo"; then
+	echo "The deployed origin did not serve the demo SPA." >&2
+	exit 1
+fi
 
-echo "Public HTTPS smoke passed for $base_url (production redirect, health, SPA, assets, API precedence, and production demo exclusion)."
+echo "Public HTTPS smoke passed for $base_url (production redirect, health, SPA, assets, API precedence, and shared demos)."
