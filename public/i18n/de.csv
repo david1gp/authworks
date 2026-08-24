@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"Zweitfaktor-Herausforderungen, Authenticator-R
 demo.login.group.mfa.title,Multi-Faktor-Authentifizierung
 demo.login.group.password_email.description,Passwort- und E-Mail-Code-Authentifizierung mit deterministischen lokalen Fixtures.
 demo.login.group.password_email.title,Passwort und E-Mail-Code
-demo.login.group.passwordless.description,"Passkeys und konfigurierte Google-, GitHub- und Microsoft-Anbieter."
+demo.login.group.passwordless.description,"Passkeys und konfigurierte externe Identitätsanbieter."
 demo.login.group.passwordless.title,Passwortlos und extern
 demo.login.group.recovery.description,Passwortwiederherstellung ohne Offenlegung des Kontos anfordern und abschließen.
 demo.login.group.recovery.title,Wiederherstellung
@@ -944,14 +944,18 @@ email.preview.securityVerified,Anmeldebestätigung abgeschlossen
 email.preview.subject,Betreff
 email.preview.text,Textalternative
 email.preview.verification,E-Mail-Verifizierung
+login.chooser.accountOrMethodTitle,Konto oder Methode auswählen
 login.chooser.description,"Wählen Sie aus, wie Sie sich bei {organization} anmelden möchten."
+login.chooser.lastUsed,Zuletzt verwendet
+login.chooser.methodTitle,Methode auswählen
+login.chooser.orChooseMethod,Oder eine Methode auswählen
 login.chooser.emailOtpDetail,Erhalten Sie einen Einmalcode per E-Mail
 login.chooser.emailOtpLabel,E-Mail-Code
 login.chooser.passkeyDetail,Verwenden Sie die Bildschirmsperre Ihres Geräts oder einen Sicherheitsschlüssel
 login.chooser.passkeyLabel,Passkey
 login.chooser.passwordDetail,Verwenden Sie das Passwort Ihres Kontos
 login.chooser.passwordLabel,Passwort
-login.chooser.providerDetail,Mit einem verbundenen Konto fortfahren
+login.chooser.providerDetail,Mit Ihrem bestehenden {provider}-Konto anmelden
 login.chooser.providerLabel,Mit {provider} fortfahren
 login.chooser.register,Konto erstellen
 login.chooser.title,Anmelden
@@ -1015,6 +1019,8 @@ login.provider.description,Sie werden bei {provider} fortfahren und kehren ansch
 login.provider.submit,Mit {provider} fortfahren
 login.provider.title,Mit {provider} fortfahren
 login.recent.description,"Mit einem Konto fortfahren, das Sie auf diesem Gerät verwendet haben."
+login.recent.heading,Zuletzt verwendete Konten
+login.recent.useAnother,Andere Methode oder anderes Konto verwenden
 login.recent.other,Anderes Konto verwenden
 login.recent.title,Konto auswählen
 login.recovery.completeDescription,Mit Ihrem neuen Passwort anmelden
@@ -1050,6 +1056,114 @@ login.verify.submit,E-Mail-Adresse bestätigen
 login.verify.title,E-Mail-Adresse bestätigen
 login.verify.verifiedDescription,{email} ist bestätigt. Sie können sich jetzt anmelden.
 login.verify.verifiedTitle,E-Mail-Adresse bestätigt
+demo.fixture.continuing,fortfahren
+demo.fixture.fatal,schwerwiegend
+demo.fixture.passwordChangeExpired,Passwort abgelaufen
+demo.fixture.recoveryFatal,Wiederherstellung nicht verfügbar
+demo.fixture.recoveryLoading,Wiederherstellung wird geladen
+demo.fixture.resetInvalid,Reset-Link ungültig
+demo.fixture.resetLoading,Reset-Link wird geladen
+login.emailOtp.codeHelp,6 Ziffern eingeben.
+login.emailOtp.back,Zurück zu den Methoden
+login.emailOtp.changeEmail,E-Mail ändern
+login.emailOtp.resendCountdown,Ein neuer Code kann in {seconds} Sekunden gesendet werden.
+login.emailOtp.resent,Ein neuer Code wurde gesendet.
+login.emailOtp.remember,Diese E-Mail-Adresse merken
+login.emailOtp.sending,Wird gesendet...
+login.emailOtp.verifying,Wird überprüft...
+login.error.credentialsInvalid,Benutzername oder Passwort ist falsch.
+login.error.emailRecoveryRequired,Geben Sie die E-Mail-Adresse Ihres Kontos ein.
+login.error.identifierRequired,Geben Sie Ihren Benutzernamen oder Ihre E-Mail-Adresse ein.
+login.error.newPasswordRequired,Geben Sie ein neues Passwort ein.
+login.error.passwordRequired,Geben Sie Ihr Passwort ein.
+login.mfa.backToChoices,Zurück zu den Optionen für die Bestätigung in zwei Schritten
+login.mfa.backToMethods,Zurück zu den Methoden
+login.mfa.continue,Anmeldung fortsetzen
+login.mfa.emailOtpCodeTitle,E-Mail-Bestätigungscode
+login.mfa.emailOtpDetail,Erhalten Sie einen einmaligen Bestätigungscode per E-Mail.
+login.mfa.emailOtpEnroll,E-Mail-Codes einrichten
+login.mfa.emailOtpEnrollDescription,Bestätigungscodes werden an die E-Mail-Adresse Ihres Kontos gesendet.
+login.mfa.emailOtpEnrollNotice,"Richten Sie E-Mail-Codes ein, um die E-Mail-Adresse Ihres Kontos als zweiten Faktor zu verwenden."
+login.mfa.emailOtpEnrollSent,E-Mail-Codes sind eingerichtet. Geben Sie den an Ihre E-Mail-Adresse gesendeten Code ein.
+login.mfa.emailOtpEnrollTitle,E-Mail-Codes einrichten
+login.mfa.emailOtpSend,Code senden
+login.mfa.emailOtpSendDescription,Einen sechsstelligen Bestätigungscode an die E-Mail-Adresse Ihres Kontos senden.
+login.mfa.emailOtpSent,Ein Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet.
+login.mfa.emailOtpResent,Ein neuer Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet.
+login.mfa.emailOtpUnavailableDescription,Die Bestätigung per E-Mail als zweiter Faktor ist in diesem Anmeldevorgang nicht verfügbar.
+login.mfa.emailOtpUnavailableNotice,Der E-Mail-MFA-Transport ist für diese Authworks-Anmeldeanfrage nicht eingerichtet.
+login.mfa.emailOtpUnavailableTitle,E-Mail-Code nicht verfügbar
+login.mfa.enterRecoveryCode,Geben Sie einen gespeicherten Wiederherstellungscode ein.
+login.mfa.enterSixDigits,6 Ziffern eingeben.
+login.mfa.enrollDescription,Wählen Sie eine Methode zur Einrichtung der Bestätigung in zwei Schritten für Ihr Konto.
+login.mfa.enrollTitle,Bestätigung in zwei Schritten einrichten
+login.mfa.factorUnavailable,Dieser Faktor ist im aktuellen Anmeldevertrag nicht verfügbar.
+login.mfa.loadingOptions,Optionen für die Bestätigung in zwei Schritten werden geladen...
+login.mfa.loadingOptionsDescription,Die verfügbaren Optionen für den zweiten Faktor werden abgerufen.
+login.mfa.optionalDescription,Richten Sie zur zusätzlichen Sicherheit die Bestätigung in zwei Schritten ein oder überspringen Sie sie vorerst.
+login.mfa.optionalTitle,Optionale Bestätigung in zwei Schritten
+login.mfa.optionsUnavailableDescription,Die verfügbaren Optionen für den zweiten Faktor konnten nicht geladen werden.
+login.mfa.optionsUnavailableTitle,Bestätigung in zwei Schritten nicht verfügbar
+login.mfa.passkeyDescription,"Bestätigen Sie mit einem Passkey, der Bildschirmsperre Ihres Geräts oder biometrischen Daten."
+login.mfa.passkeyDetail,Mit einem Passkey oder biometrischen Daten des Geräts bestätigen.
+login.mfa.passkeyEnrollmentUnavailableDescription,Die Passkey-Einrichtung wird vom gehosteten Anmeldevertrag nicht bereitgestellt.
+login.mfa.passkeyEnrollmentUnavailableNotice,Schließen Sie die Passkey-Einrichtung in einer authentifizierten Kontosicherheitsseite ab und kehren Sie dann zur Anmeldung zurück.
+login.mfa.passkeyEnrollmentUnavailableTitle,Passkey-Einrichtung nicht verfügbar
+login.mfa.passkeyUnavailableDescription,Die Bestätigung mit einem Passkey als zweitem Faktor ist in diesem Anmeldevorgang nicht verfügbar.
+login.mfa.passkeyUnavailableNotice,Der Passkey-MFA-Transport ist für diese Authworks-Anmeldeanfrage nicht eingerichtet.
+login.mfa.passkeyUnavailableTitle,Passkey nicht verfügbar
+login.mfa.passkeyVerify,Mit Passkey bestätigen
+login.mfa.resend,Code erneut senden
+login.mfa.resendIn,Erneut senden in {seconds} Sekunden
+login.mfa.recoveryCodeDetail,Verwenden Sie einen Ihrer gespeicherten einmaligen Wiederherstellungscodes.
+login.mfa.totpChallengeTitle,Authenticator-Code
+login.mfa.totpDetail,Verwenden Sie einen Code aus Ihrer Authenticator-App.
+login.mfa.retryOptions,Laden der Optionen wiederholen
+login.mfa.setupFactor,{factor} einrichten
+login.mfa.skip,Vorerst überspringen
+login.mfa.skipping,Wird übersprungen...
+login.mfa.satisfiedDescription,Ihre Anmeldung erfüllt bereits die Richtlinie für die Bestätigung in zwei Schritten.
+login.mfa.satisfiedTitle,Bestätigung in zwei Schritten erfüllt
+login.mfa.unavailable,Nicht verfügbar
+login.passkey.unsupportedTitle,Passkey nicht unterstützt
+login.password.changeRequiredDescription,"Ihr Passwort muss geändert werden, bevor Sie fortfahren."
+login.password.changeRequiredTitle,Passwort ändern
+login.password.changeSubmit,Passwort ändern
+login.password.expiredDescription,"Ihr Passwort ist abgelaufen. Legen Sie ein neues Passwort fest, um fortzufahren."
+login.password.currentRequired,Geben Sie Ihr aktuelles Passwort ein.
+login.password.back,Zurück zu den Methoden
+login.password.passwordRequired,Geben Sie Ihr Passwort ein.
+login.password.rememberIdentifier,Diesen Bezeichner merken
+login.password.signInTitle,Mit Passwort anmelden
+login.password.signingIn,Anmeldung läuft...
+login.password.saving,Wird gespeichert...
+login.provider.accountNotFoundDescription,Mit diesem {provider}-Konto ist kein Authworks-Konto verknüpft. Kontoverknüpfung und selbstständige Registrierung sind noch nicht aktiviert.
+login.provider.accountNotFoundTitle,Kein verknüpftes Konto
+login.provider.failureDescription,Die Anmeldung mit {provider} wurde nicht abgeschlossen. Bitte versuchen Sie es erneut.
+login.provider.linkingFailedDescription,Das Verknüpfen des Kontos konnte nicht abgeschlossen werden. Verwenden Sie eine andere Anmeldemethode.
+login.provider.linkingFailedTitle,Konto konnte nicht verknüpft werden
+login.recovery.back,Zurück zur Anmeldung
+login.recovery.checkingLink,Reset-Link wird geprüft...
+login.recovery.choosePasswordTitle,Neues Passwort wählen
+login.recovery.completeDescriptionReference,"Mit Ihrem neuen Passwort anmelden, um fortzufahren."
+login.recovery.completeTitleReference,Ihr Passwort wurde geändert
+login.recovery.invalidLinkTitle,Dieser Reset-Link ist nicht mehr gültig
+login.recovery.invalidLinkError,Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.
+login.recovery.loading,Passwortwiederherstellung wird geladen...
+login.recovery.resetSubmitReference,Neues Passwort festlegen
+login.recovery.saving,Wird gespeichert...
+login.recovery.sending,Wird gesendet...
+login.recovery.submitReference,Reset-Link senden
+login.recovery.unavailableDescription,Die Passwortwiederherstellung ist vorübergehend nicht verfügbar.
+login.recovery.unavailableTitle,Passwortwiederherstellung nicht verfügbar
+login.status.continuing,Anmeldung wird fortgesetzt...
+login.status.fatalTitle,Anmeldung erneut starten
+login.totpEnroll.hideSetupKey,Einrichtungsschlüssel ausblenden
+login.totpEnroll.qrLabel,QR-Code zur Einrichtung der Authenticator-App
+login.totpEnroll.scanDescription,"Scannen Sie den QR-Code mit Ihrer Authenticator-App und geben Sie anschließend den angezeigten sechsstelligen Code ein."
+login.totpEnroll.setupKeyLabel,Einrichtungsschlüssel (wenn Scannen nicht möglich ist)
+login.totpEnroll.showSetupKey,Einrichtungsschlüssel anzeigen
+login.totpEnroll.unavailableDescription,"Die Authenticator-Einrichtung konnte hier nicht vorbereitet werden. Die Einrichtungsdaten können nach einem Neuladen nicht wiederhergestellt werden."
 shell.guard.accessUnavailable,Zugriff nicht verfügbar
 shell.guard.contextRequired,Kontext erforderlich
 shell.guard.contextRequiredDetail,"Wählen Sie den erforderlichen Realm oder die Organisation aus, bevor Sie fortfahren."

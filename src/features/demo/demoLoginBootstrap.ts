@@ -5,6 +5,7 @@ export const demoLoginBootstrap = {
     dark: {
       backgroundColor: "#111827",
       fontColor: "#f9fafb",
+      logoUrl: "/favicon.svg",
       primaryColor: "#60a5fa",
       warnColor: "#f87171",
     },
@@ -16,6 +17,7 @@ export const demoLoginBootstrap = {
     light: {
       backgroundColor: "#f8fafc",
       fontColor: "#111827",
+      logoUrl: "/favicon.svg",
       primaryColor: "#2563eb",
       warnColor: "#dc2626",
     },

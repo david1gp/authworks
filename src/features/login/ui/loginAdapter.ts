@@ -3,6 +3,7 @@ import type { EmailOtpStartResponse } from "../../emailOtp/public/emailOtpStartR
 import type { MfaChallengeResponse } from "../../mfa/public/mfaChallengeResponseSchema.js"
 import type { MfaTotpEnrollmentStartResponse } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
 import type { OrganizationDiscoveryResponse } from "../../organizations/public/organizationDiscoveryResponseSchema.js"
+import type { PasskeyAuthenticationStatus } from "../../passkeys/public/passkeyAuthenticationStatusSchema.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
 
 export type LoginDiscovery = Extract<OrganizationDiscoveryResponse, { found: true }>
@@ -24,9 +25,20 @@ export type LoginAdapter = {
   readonly interactionResume: () => void
   readonly logout: () => Promise<Result<{ readonly revoked: boolean }>>
   readonly mfaComplete: (token: string, code: string) => Promise<Result<LoginAuthenticationOutcome>>
+  /** Optional MFA email transport. Production leaves this absent until the contract exists; demos may fixture it. */
+  readonly mfaEmailOtpEnroll?: () => Promise<Result<EmailOtpStartResponse>>
+  readonly mfaEmailOtpResend?: (challengeId: string) => Promise<Result<EmailOtpStartResponse>>
+  readonly mfaEmailOtpStart?: () => Promise<Result<EmailOtpStartResponse>>
+  readonly mfaEmailOtpVerify?: (challengeId: string, code: string) => Promise<Result<LoginAuthenticationOutcome>>
+  /** Optional login-MFA passkey transport. The existing protected step-up API is not interchangeable with this. */
+  readonly mfaPasskeyAuthenticate?: (options?: {
+    readonly statusSet?: (status: PasskeyAuthenticationStatus) => void
+  }) => Promise<Result<LoginAuthenticationOutcome>>
   readonly mfaTotpEnrollConfirm: (enrollmentId: string, code: string) => Promise<Result<{ readonly confirmed: true }>>
   readonly mfaTotpEnrollStart: () => Promise<Result<MfaTotpEnrollmentStartResponse>>
-  readonly passkeyAuthenticate: () => Promise<Result<LoginAuthenticationOutcome>>
+  readonly passkeyAuthenticate: (options?: {
+    readonly statusSet?: (status: PasskeyAuthenticationStatus) => void
+  }) => Promise<Result<LoginAuthenticationOutcome>>
   readonly passkeySupported: () => boolean
   readonly passwordChange: (currentPassword: string, newPassword: string) => Promise<Result<{ readonly changed: true }>>
   readonly passwordLogin: (identifier: string, password: string) => Promise<Result<LoginAuthenticationOutcome>>

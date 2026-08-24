@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"Défis de deuxième facteur, inscription de l'
 demo.login.group.mfa.title,Authentification multi-facteurs
 demo.login.group.password_email.description,Authentification par mot de passe et code e-mail avec fixtures locales déterministes.
 demo.login.group.password_email.title,Mot de passe et code e-mail
-demo.login.group.passwordless.description,"Clés d'accès et fournisseurs Google, GitHub et Microsoft configurés."
+demo.login.group.passwordless.description,"Clés d'accès et fournisseurs d'identité externes configurés."
 demo.login.group.passwordless.title,Sans mot de passe et externe
 demo.login.group.recovery.description,Demander et effectuer la récupération de mot de passe sans divulgation du compte.
 demo.login.group.recovery.title,Récupération
@@ -944,14 +944,18 @@ email.preview.securityVerified,Vérification de connexion terminée
 email.preview.subject,Objet
 email.preview.text,Version texte
 email.preview.verification,Vérification de l’e-mail
+login.chooser.accountOrMethodTitle,Choisir un compte ou une méthode
 login.chooser.description,Choisissez comment vous connecter à {organization}.
+login.chooser.lastUsed,Dernière utilisation
+login.chooser.methodTitle,Choisir une méthode
+login.chooser.orChooseMethod,Ou choisir une méthode
 login.chooser.emailOtpDetail,Recevoir un code à usage unique par e-mail
 login.chooser.emailOtpLabel,Code e-mail
 login.chooser.passkeyDetail,Utiliser le verrouillage de l’écran de votre appareil ou une clé de sécurité
 login.chooser.passkeyLabel,Clé d’accès
 login.chooser.passwordDetail,Utiliser le mot de passe de votre compte
 login.chooser.passwordLabel,Mot de passe
-login.chooser.providerDetail,Continuer avec un compte connecté
+login.chooser.providerDetail,Utiliser votre compte {provider} existant pour vous connecter
 login.chooser.providerLabel,Continuer avec {provider}
 login.chooser.register,Créer un compte
 login.chooser.title,Se connecter
@@ -1015,6 +1019,8 @@ login.provider.description,"Vous allez continuer sur {provider}, puis revenir ic
 login.provider.submit,Continuer avec {provider}
 login.provider.title,Continuer avec {provider}
 login.recent.description,Continuer avec un compte utilisé sur cet appareil.
+login.recent.heading,Comptes récents
+login.recent.useAnother,Utiliser une autre méthode ou un autre compte
 login.recent.other,Utiliser un autre compte
 login.recent.title,Choisir un compte
 login.recovery.completeDescription,Se connecter avec votre nouveau mot de passe
@@ -1050,6 +1056,114 @@ login.verify.submit,Confirmer l’adresse e-mail
 login.verify.title,Vérifier votre adresse e-mail
 login.verify.verifiedDescription,{email} est confirmée. Vous pouvez maintenant vous connecter.
 login.verify.verifiedTitle,Adresse e-mail confirmée
+demo.fixture.continuing,continuation
+demo.fixture.fatal,erreur critique
+demo.fixture.passwordChangeExpired,mot de passe expiré
+demo.fixture.recoveryFatal,récupération indisponible
+demo.fixture.recoveryLoading,récupération en cours
+demo.fixture.resetInvalid,lien de réinitialisation invalide
+demo.fixture.resetLoading,lien de réinitialisation en cours
+login.emailOtp.codeHelp,Saisissez 6 chiffres.
+login.emailOtp.back,Retour aux méthodes
+login.emailOtp.changeEmail,Modifier l’e-mail
+login.emailOtp.resendCountdown,Un autre code pourra être envoyé dans {seconds} secondes.
+login.emailOtp.resent,Un nouveau code a été envoyé.
+login.emailOtp.remember,Mémoriser cet e-mail
+login.emailOtp.sending,Envoi en cours...
+login.emailOtp.verifying,Vérification en cours...
+login.error.credentialsInvalid,Nom d’utilisateur ou mot de passe incorrect.
+login.error.emailRecoveryRequired,Saisissez l’adresse e-mail de votre compte.
+login.error.identifierRequired,Saisissez votre nom d’utilisateur ou votre adresse e-mail.
+login.error.newPasswordRequired,Saisissez un nouveau mot de passe.
+login.error.passwordRequired,Saisissez votre mot de passe.
+login.mfa.backToChoices,Retour aux choix de validation en deux étapes
+login.mfa.backToMethods,Retour aux méthodes
+login.mfa.continue,Continuer la connexion
+login.mfa.emailOtpCodeTitle,Code de validation par e-mail
+login.mfa.emailOtpDetail,Recevoir un code de validation à usage unique par e-mail.
+login.mfa.emailOtpEnroll,Configurer les codes e-mail
+login.mfa.emailOtpEnrollDescription,Les codes de validation seront envoyés à l’adresse e-mail de votre compte.
+login.mfa.emailOtpEnrollNotice,Configurez les codes e-mail pour utiliser l’adresse de votre compte comme deuxième facteur.
+login.mfa.emailOtpEnrollSent,Les codes e-mail sont configurés. Saisissez le code envoyé à votre adresse.
+login.mfa.emailOtpEnrollTitle,Configurer les codes e-mail
+login.mfa.emailOtpSend,Envoyer le code
+login.mfa.emailOtpSendDescription,Envoyer un code de validation à six chiffres à l’adresse e-mail de votre compte.
+login.mfa.emailOtpSent,Un code de validation a été envoyé à votre adresse e-mail.
+login.mfa.emailOtpResent,Un nouveau code de validation a été envoyé à votre adresse e-mail.
+login.mfa.emailOtpUnavailableDescription,La validation par e-mail comme deuxième facteur n’est pas disponible dans ce parcours de connexion.
+login.mfa.emailOtpUnavailableNotice,Le transport MFA par e-mail n’est pas configuré pour cette demande Authworks.
+login.mfa.emailOtpUnavailableTitle,Code e-mail indisponible
+login.mfa.enterRecoveryCode,Saisissez un code de récupération enregistré.
+login.mfa.enterSixDigits,Saisissez 6 chiffres.
+login.mfa.enrollDescription,Sélectionnez une méthode pour configurer la validation en deux étapes de votre compte.
+login.mfa.enrollTitle,Configurer la validation en deux étapes
+login.mfa.factorUnavailable,Ce facteur n’est pas disponible dans le contrat de connexion actuel.
+login.mfa.loadingOptions,Chargement des options de validation en deux étapes...
+login.mfa.loadingOptionsDescription,Récupération des choix de deuxième facteur disponibles.
+login.mfa.optionalDescription,Configurez la validation en deux étapes pour plus de sécurité ou ignorez-la pour le moment.
+login.mfa.optionalTitle,Validation en deux étapes facultative
+login.mfa.optionsUnavailableDescription,Impossible de charger les choix de deuxième facteur disponibles.
+login.mfa.optionsUnavailableTitle,Validation en deux étapes indisponible
+login.mfa.passkeyDescription,"Confirmez avec une clé d’accès, le verrouillage de l’appareil ou la biométrie."
+login.mfa.passkeyDetail,Vérifier avec une clé d’accès ou la biométrie de l’appareil.
+login.mfa.passkeyEnrollmentUnavailableDescription,Le contrat de connexion hébergé n’expose pas l’inscription des clés d’accès.
+login.mfa.passkeyEnrollmentUnavailableNotice,"Terminez la configuration de la clé d’accès depuis une page de sécurité authentifiée, puis revenez vous connecter."
+login.mfa.passkeyEnrollmentUnavailableTitle,Configuration de clé d’accès indisponible
+login.mfa.passkeyUnavailableDescription,La validation par clé d’accès comme deuxième facteur n’est pas disponible dans ce parcours.
+login.mfa.passkeyUnavailableNotice,Le transport MFA par clé d’accès n’est pas configuré pour cette demande Authworks.
+login.mfa.passkeyUnavailableTitle,Clé d’accès indisponible
+login.mfa.passkeyVerify,Vérifier avec la clé d’accès
+login.mfa.resend,Renvoyer le code
+login.mfa.resendIn,Renvoyer dans {seconds} secondes
+login.mfa.recoveryCodeDetail,Utilisez l’un de vos codes de récupération à usage unique enregistrés.
+login.mfa.totpChallengeTitle,Code d’authentification
+login.mfa.totpDetail,Utilisez un code de votre application d’authentification.
+login.mfa.retryOptions,Réessayer de charger les options
+login.mfa.setupFactor,Configurer {factor}
+login.mfa.skip,Ignorer pour le moment
+login.mfa.skipping,Ignoré...
+login.mfa.satisfiedDescription,Votre connexion respecte déjà la règle de validation en deux étapes.
+login.mfa.satisfiedTitle,Validation en deux étapes satisfaite
+login.mfa.unavailable,Indisponible
+login.passkey.unsupportedTitle,Clé d’accès non prise en charge
+login.password.changeRequiredDescription,"Votre mot de passe doit être modifié avant de continuer."
+login.password.changeRequiredTitle,Modifier votre mot de passe
+login.password.changeSubmit,Modifier le mot de passe
+login.password.expiredDescription,"Votre mot de passe a expiré. Définissez-en un nouveau pour continuer."
+login.password.currentRequired,Saisissez votre mot de passe actuel.
+login.password.back,Retour aux méthodes
+login.password.passwordRequired,Saisissez votre mot de passe.
+login.password.rememberIdentifier,Mémoriser cet identifiant
+login.password.signInTitle,Se connecter avec un mot de passe
+login.password.signingIn,Connexion en cours...
+login.password.saving,Enregistrement en cours...
+login.provider.accountNotFoundDescription,"Aucun compte Authworks n’est associé à ce compte {provider}. L’association de comptes et l’inscription autonome ne sont pas encore activées."
+login.provider.accountNotFoundTitle,Aucun compte associé
+login.provider.failureDescription,La connexion avec {provider} n’a pas abouti. Réessayez.
+login.provider.linkingFailedDescription,L’association du compte n’a pas pu être terminée. Essayez une autre méthode de connexion.
+login.provider.linkingFailedTitle,Impossible d’associer le compte
+login.recovery.back,Retour à la connexion
+login.recovery.checkingLink,Vérification du lien de réinitialisation...
+login.recovery.choosePasswordTitle,Choisir un nouveau mot de passe
+login.recovery.completeDescriptionReference,"Connectez-vous avec votre nouveau mot de passe pour continuer."
+login.recovery.completeTitleReference,Votre mot de passe a été modifié
+login.recovery.invalidLinkTitle,Ce lien de réinitialisation n’est plus valide
+login.recovery.invalidLinkError,Ce lien de réinitialisation du mot de passe est invalide ou expiré.
+login.recovery.loading,Chargement de la récupération du mot de passe...
+login.recovery.resetSubmitReference,Définir le nouveau mot de passe
+login.recovery.saving,Enregistrement en cours...
+login.recovery.sending,Envoi en cours...
+login.recovery.submitReference,Envoyer le lien de réinitialisation
+login.recovery.unavailableDescription,La récupération du mot de passe est temporairement indisponible.
+login.recovery.unavailableTitle,Récupération du mot de passe indisponible
+login.status.continuing,Reprise de la connexion...
+login.status.fatalTitle,Recommencer la connexion
+login.totpEnroll.hideSetupKey,Masquer la clé de configuration
+login.totpEnroll.qrLabel,Code QR pour configurer l’application d’authentification
+login.totpEnroll.scanDescription,"Scannez le code QR avec votre application d’authentification, puis saisissez le code à six chiffres affiché."
+login.totpEnroll.setupKeyLabel,Clé de configuration (si vous ne pouvez pas scanner)
+login.totpEnroll.showSetupKey,Afficher la clé de configuration
+login.totpEnroll.unavailableDescription,"La configuration de l’authentificateur n’a pas pu être préparée ici. Les détails de configuration ne peuvent pas être restaurés après un rechargement."
 shell.guard.accessUnavailable,Accès indisponible
 shell.guard.contextRequired,Contexte requis
 shell.guard.contextRequiredDetail,Choisissez le domaine ou l'organisation requis avant de continuer.

@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"Második tényezős kihívások, hitelesítő 
 demo.login.group.mfa.title,Többtényezős hitelesítés
 demo.login.group.password_email.description,Jelszavas és e-mail kódos hitelesítés determinisztikus helyi mintákkal.
 demo.login.group.password_email.title,Jelszó és e-mail kód
-demo.login.group.passwordless.description,"Passkey-k és konfigurált Google, GitHub és Microsoft szolgáltatók."
+demo.login.group.passwordless.description,"Passkey-k és konfigurált külső identitásszolgáltatók."
 demo.login.group.passwordless.title,Jelszó nélküli és külső
 demo.login.group.recovery.description,Jelszó-helyreállítás kérése és befejezése a fiók adatainak felfedése nélkül.
 demo.login.group.recovery.title,Helyreállítás
@@ -944,14 +944,18 @@ email.preview.securityVerified,A bejelentkezés ellenőrzése befejeződött
 email.preview.subject,Tárgy
 email.preview.text,Szöveges változat
 email.preview.verification,E-mail-ellenőrzés
+login.chooser.accountOrMethodTitle,Válasszon fiókot vagy módot
 login.chooser.description,"Válassza ki, hogyan szeretne bejelentkezni a {organization} szolgáltatásba."
+login.chooser.lastUsed,Legutóbb használva
+login.chooser.methodTitle,Válasszon módot
+login.chooser.orChooseMethod,Vagy válasszon módot
 login.chooser.emailOtpDetail,Kapjon egy egyszeri kódot e-mailben
 login.chooser.emailOtpLabel,E-mail kód
 login.chooser.passkeyDetail,Használja eszköze képernyőzárát vagy biztonsági kulcsát
 login.chooser.passkeyLabel,Passkey
 login.chooser.passwordDetail,Használja fiókja jelszavát
 login.chooser.passwordLabel,Jelszó
-login.chooser.providerDetail,Folytassa egy csatlakoztatott fiókkal
+login.chooser.providerDetail,Jelentkezzen be meglévő {provider}-fiókjával
 login.chooser.providerLabel,Folytatás ezzel: {provider}
 login.chooser.register,Hozzon létre egy fiókot
 login.chooser.title,Jelentkezzen be
@@ -1015,6 +1019,8 @@ login.provider.description,"A következő helyen folytatja: {provider}, és viss
 login.provider.submit,Folytatás ezzel: {provider}
 login.provider.title,Folytatás ezzel: {provider}
 login.recent.description,Folytassa az eszközön használt fiókkal.
+login.recent.heading,Legutóbbi fiókok
+login.recent.useAnother,Másik mód vagy fiók használata
 login.recent.other,Használjon másik fiókot
 login.recent.title,Válasszon egy fiókot
 login.recovery.completeDescription,Jelentkezzen be új jelszavával.
@@ -1050,6 +1056,114 @@ login.verify.submit,Erősítse meg az e-mail címet
 login.verify.title,Igazolja e-mail címét
 login.verify.verifiedDescription,{email} megerősítve. Most már bejelentkezhet.
 login.verify.verifiedTitle,E-mail cím megerősítve
+demo.fixture.continuing,folytatás
+demo.fixture.fatal,végzetes hiba
+demo.fixture.passwordChangeExpired,lejárt jelszó
+demo.fixture.recoveryFatal,a helyreállítás nem érhető el
+demo.fixture.recoveryLoading,helyreállítás betöltése
+demo.fixture.resetInvalid,érvénytelen visszaállítási hivatkozás
+demo.fixture.resetLoading,visszaállítási hivatkozás betöltése
+login.emailOtp.codeHelp,Adjon meg 6 számjegyet.
+login.emailOtp.back,Vissza a módokhoz
+login.emailOtp.changeEmail,E-mail módosítása
+login.emailOtp.resendCountdown,Új kód {seconds} másodperc múlva küldhető.
+login.emailOtp.resent,Új kódot küldtünk.
+login.emailOtp.remember,E-mail megjegyzése
+login.emailOtp.sending,Küldés...
+login.emailOtp.verifying,Ellenőrzés...
+login.error.credentialsInvalid,Helytelen felhasználónév vagy jelszó.
+login.error.emailRecoveryRequired,Adja meg a fiókjához tartozó e-mail-címet.
+login.error.identifierRequired,Adja meg felhasználónevét vagy e-mail-címét.
+login.error.newPasswordRequired,Adjon meg új jelszót.
+login.error.passwordRequired,Adja meg jelszavát.
+login.mfa.backToChoices,Vissza a kétlépcsős ellenőrzés lehetőségeihez
+login.mfa.backToMethods,Vissza a módokhoz
+login.mfa.continue,Bejelentkezés folytatása
+login.mfa.emailOtpCodeTitle,E-mailes ellenőrzőkód
+login.mfa.emailOtpDetail,E-mailben küldött egyszer használatos ellenőrzőkód fogadása.
+login.mfa.emailOtpEnroll,E-mail-kódok beállítása
+login.mfa.emailOtpEnrollDescription,Az ellenőrzőkódokat a fiók e-mail-címére küldjük.
+login.mfa.emailOtpEnrollNotice,Állítson be e-mail-kódokat a fiók e-mail-címének második tényezőként való használatához.
+login.mfa.emailOtpEnrollSent,Az e-mail-kódok be vannak állítva. Adja meg az e-mail-címére küldött kódot.
+login.mfa.emailOtpEnrollTitle,E-mail-kódok beállítása
+login.mfa.emailOtpSend,Kód küldése
+login.mfa.emailOtpSendDescription,Hatszámjegyű ellenőrzőkód küldése a fiók e-mail-címére.
+login.mfa.emailOtpSent,Ellenőrzőkódot küldtünk e-mail-címére.
+login.mfa.emailOtpResent,Új ellenőrzőkódot küldtünk e-mail-címére.
+login.mfa.emailOtpUnavailableDescription,Az e-mailes második tényezős ellenőrzés ebben a bejelentkezési folyamatban nem érhető el.
+login.mfa.emailOtpUnavailableNotice,Az e-mailes MFA-átvitel nincs beállítva ehhez az Authworks-bejelentkezési kéréshez.
+login.mfa.emailOtpUnavailableTitle,Az e-mail-kód nem érhető el
+login.mfa.enterRecoveryCode,Adjon meg egy mentett helyreállítási kódot.
+login.mfa.enterSixDigits,Adjon meg 6 számjegyet.
+login.mfa.enrollDescription,Válasszon módot a kétlépcsős ellenőrzés beállításához.
+login.mfa.enrollTitle,Kétlépcsős ellenőrzés beállítása
+login.mfa.factorUnavailable,Ez a tényező a jelenlegi bejelentkezési szerződésben nem érhető el.
+login.mfa.loadingOptions,A kétlépcsős ellenőrzés lehetőségeinek betöltése...
+login.mfa.loadingOptionsDescription,Az elérhető második tényezők lekérése.
+login.mfa.optionalDescription,"A nagyobb biztonságért állítson be kétlépcsős ellenőrzést, vagy ugorja át most."
+login.mfa.optionalTitle,Opcionális kétlépcsős ellenőrzés
+login.mfa.optionsUnavailableDescription,Az elérhető második tényezők nem tölthetők be.
+login.mfa.optionsUnavailableTitle,A kétlépcsős ellenőrzés nem érhető el
+login.mfa.passkeyDescription,"Erősítse meg passkey-jel, az eszköz képernyőzárával vagy biometrikus adatokkal."
+login.mfa.passkeyDetail,Ellenőrzés passkey-jel vagy az eszköz biometrikus azonosításával.
+login.mfa.passkeyEnrollmentUnavailableDescription,A tárolt bejelentkezési szerződés nem biztosít passkey-regisztrációt.
+login.mfa.passkeyEnrollmentUnavailableNotice,"Fejezze be a passkey beállítását egy hitelesített fiókbiztonsági oldalon, majd térjen vissza a bejelentkezéshez."
+login.mfa.passkeyEnrollmentUnavailableTitle,A passkey beállítása nem érhető el
+login.mfa.passkeyUnavailableDescription,A passkey mint második tényező ebben a bejelentkezési folyamatban nem érhető el.
+login.mfa.passkeyUnavailableNotice,A passkey-MFA-átvitel nincs beállítva ehhez az Authworks-kéréshez.
+login.mfa.passkeyUnavailableTitle,A passkey nem érhető el
+login.mfa.passkeyVerify,Ellenőrzés passkey-jel
+login.mfa.resend,Kód újraküldése
+login.mfa.resendIn,Újraküldés {seconds} másodperc múlva
+login.mfa.recoveryCodeDetail,"Használja egyik elmentett, egyszer használatos helyreállítási kódját."
+login.mfa.totpChallengeTitle,Hitelesítő kód
+login.mfa.totpDetail,Használja a hitelesítő alkalmazás kódját.
+login.mfa.retryOptions,A lehetőségek betöltésének újrapróbálása
+login.mfa.setupFactor,{factor} beállítása
+login.mfa.skip,Átugrás most
+login.mfa.skipping,Átugrás...
+login.mfa.satisfiedDescription,A bejelentkezése már megfelel a kétlépcsős ellenőrzési szabályzatnak.
+login.mfa.satisfiedTitle,A kétlépcsős ellenőrzés teljesítve
+login.mfa.unavailable,Nem érhető el
+login.passkey.unsupportedTitle,A passkey nem támogatott
+login.password.changeRequiredDescription,"A folytatás előtt meg kell változtatnia a jelszavát."
+login.password.changeRequiredTitle,Jelszó módosítása
+login.password.changeSubmit,Jelszó módosítása
+login.password.expiredDescription,"A jelszava lejárt. A folytatáshoz állítson be újat."
+login.password.currentRequired,Adja meg jelenlegi jelszavát.
+login.password.back,Vissza a módokhoz
+login.password.passwordRequired,Adja meg jelszavát.
+login.password.rememberIdentifier,Az azonosító megjegyzése
+login.password.signInTitle,Bejelentkezés jelszóval
+login.password.signingIn,Bejelentkezés...
+login.password.saving,Mentés...
+login.provider.accountNotFoundDescription,"Ehhez a {provider}-fiókhoz nincs Authworks-fiók kapcsolva. A fiók-összekapcsolás és az önálló regisztráció még nincs engedélyezve."
+login.provider.accountNotFoundTitle,Nincs kapcsolt fiók
+login.provider.failureDescription,A {provider} használatával történő bejelentkezés nem fejeződött be. Próbálja újra.
+login.provider.linkingFailedDescription,A fiók összekapcsolása nem sikerült. Próbáljon másik bejelentkezési módot.
+login.provider.linkingFailedTitle,A fiók nem kapcsolható össze
+login.recovery.back,Vissza a bejelentkezéshez
+login.recovery.checkingLink,A visszaállítási hivatkozás ellenőrzése...
+login.recovery.choosePasswordTitle,Válasszon új jelszót
+login.recovery.completeDescriptionReference,"A folytatáshoz jelentkezzen be új jelszavával."
+login.recovery.completeTitleReference,A jelszava megváltozott
+login.recovery.invalidLinkTitle,Ez a visszaállítási hivatkozás már nem érvényes
+login.recovery.invalidLinkError,Ez a jelszó-visszaállítási hivatkozás érvénytelen vagy lejárt.
+login.recovery.loading,Jelszó-helyreállítás betöltése...
+login.recovery.resetSubmitReference,Új jelszó beállítása
+login.recovery.saving,Mentés...
+login.recovery.sending,Küldés...
+login.recovery.submitReference,Visszaállítási hivatkozás küldése
+login.recovery.unavailableDescription,A jelszó-helyreállítás átmenetileg nem érhető el.
+login.recovery.unavailableTitle,A jelszó-helyreállítás nem érhető el
+login.status.continuing,Bejelentkezés folytatása...
+login.status.fatalTitle,Bejelentkezés újrakezdése
+login.totpEnroll.hideSetupKey,A beállítási kulcs elrejtése
+login.totpEnroll.qrLabel,QR-kód a hitelesítő alkalmazás beállításához
+login.totpEnroll.scanDescription,"Olvassa be a QR-kódot a hitelesítő alkalmazással, majd adja meg a megjelenő hatjegyű kódot."
+login.totpEnroll.setupKeyLabel,Beállítási kulcs (ha nem tudja beolvasni)
+login.totpEnroll.showSetupKey,A beállítási kulcs megjelenítése
+login.totpEnroll.unavailableDescription,A hitelesítő beállítása itt nem készíthető elő. Az adatok újratöltés után nem állíthatók helyre.
 shell.guard.accessUnavailable,A hozzáférés nem érhető el
 shell.guard.contextRequired,Kontextus szükséges
 shell.guard.contextRequiredDetail,Válassza ki a szükséges realm-et vagy szervezetet a folytatás előtt.

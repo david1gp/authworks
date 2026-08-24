@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"Tweede-factoruitdagingen, authenticatorregistr
 demo.login.group.mfa.title,Meervoudige authenticatie
 demo.login.group.password_email.description,Wachtwoord- en e-mailcode-authenticatie met deterministische lokale fixtures.
 demo.login.group.password_email.title,Wachtwoord en e-mailcode
-demo.login.group.passwordless.description,"Passkeys en geconfigureerde Google-, GitHub- en Microsoft-providers."
+demo.login.group.passwordless.description,"Passkeys en geconfigureerde externe identiteitsproviders."
 demo.login.group.passwordless.title,Wachtwoordloos en extern
 demo.login.group.recovery.description,Vraag wachtwoordherstel aan en voltooi dit zonder openbaarmaking van het account.
 demo.login.group.recovery.title,Herstel
@@ -944,14 +944,18 @@ email.preview.securityVerified,Verificatie van aanmelding voltooid
 email.preview.subject,Onderwerp
 email.preview.text,Tekstalternatief
 email.preview.verification,E-mailverificatie
+login.chooser.accountOrMethodTitle,Kies een account of methode
 login.chooser.description,Kies cómo inloggen en {organization}.
+login.chooser.lastUsed,Laatst gebruikt
+login.chooser.methodTitle,Kies een methode
+login.chooser.orChooseMethod,Of kies een methode
 login.chooser.emailOtpDetail,Reciba un code de un solo uso por e-mail electrónico
 login.chooser.emailOtpLabel,Code por e-mail
 login.chooser.passkeyDetail,Use el bloqueo de pantalla de uw dispositivo o una llave de seguridad
 login.chooser.passkeyLabel,Clave de acceso
 login.chooser.passwordDetail,Use la contraseña de uw account
 login.chooser.passwordLabel,Wachtwoord
-login.chooser.providerDetail,Continuar con una account conectada
+login.chooser.providerDetail,Gebruik je bestaande {provider}-account om in te loggen
 login.chooser.providerLabel,Continuar con {provider}
 login.chooser.register,Account maken una account
 login.chooser.title,Inloggen
@@ -1015,6 +1019,8 @@ login.provider.description,Continuará en {provider} y volverá aquí cuando ter
 login.provider.submit,Continuar con {provider}
 login.provider.title,Continuar con {provider}
 login.recent.description,Continuar con una account que usó en este dispositivo.
+login.recent.heading,Recente accounts
+login.recent.useAnother,Andere methode of account gebruiken
 login.recent.other,Usar otra account
 login.recent.title,Elegir una account
 login.recovery.completeDescription,Inloggen con uw nueva contraseña
@@ -1050,6 +1056,114 @@ login.verify.submit,Confirmar adres de e-mail
 login.verify.title,Verificar uw adres de e-mail
 login.verify.verifiedDescription,{email} está confirmada. Ya puede inloggen.
 login.verify.verifiedTitle,Adres de e-mail confirmada
+demo.fixture.continuing,doorgaan
+demo.fixture.fatal,ernstige fout
+demo.fixture.passwordChangeExpired,wachtwoord verlopen
+demo.fixture.recoveryFatal,herstel niet beschikbaar
+demo.fixture.recoveryLoading,herstel wordt geladen
+demo.fixture.resetInvalid,ongeldige resetlink
+demo.fixture.resetLoading,resetlink wordt geladen
+login.emailOtp.codeHelp,Voer 6 cijfers in.
+login.emailOtp.back,Terug naar methoden
+login.emailOtp.changeEmail,E-mailadres wijzigen
+login.emailOtp.resendCountdown,Een nieuwe code kan over {seconds} seconden worden verzonden.
+login.emailOtp.resent,Er is een nieuwe code verzonden.
+login.emailOtp.remember,Dit e-mailadres onthouden
+login.emailOtp.sending,Bezig met verzenden...
+login.emailOtp.verifying,Bezig met verifiëren...
+login.error.credentialsInvalid,Onjuiste gebruikersnaam of wachtwoord.
+login.error.emailRecoveryRequired,Voer het e-mailadres van uw account in.
+login.error.identifierRequired,Voer uw gebruikersnaam of e-mailadres in.
+login.error.newPasswordRequired,Voer een nieuw wachtwoord in.
+login.error.passwordRequired,Voer uw wachtwoord in.
+login.mfa.backToChoices,Terug naar opties voor verificatie in twee stappen
+login.mfa.backToMethods,Terug naar methoden
+login.mfa.continue,Doorgaan met aanmelden
+login.mfa.emailOtpCodeTitle,Verificatiecode per e-mail
+login.mfa.emailOtpDetail,Ontvang een eenmalige verificatiecode per e-mail.
+login.mfa.emailOtpEnroll,E-mailcodes instellen
+login.mfa.emailOtpEnrollDescription,Verificatiecodes worden naar het e-mailadres van uw account verzonden.
+login.mfa.emailOtpEnrollNotice,Stel e-mailcodes in om het e-mailadres van uw account als tweede factor te gebruiken.
+login.mfa.emailOtpEnrollSent,E-mailcodes zijn ingesteld. Voer de code in die naar uw e-mailadres is verzonden.
+login.mfa.emailOtpEnrollTitle,E-mailcodes instellen
+login.mfa.emailOtpSend,Code verzenden
+login.mfa.emailOtpSendDescription,Verzend een zescijferige verificatiecode naar het e-mailadres van uw account.
+login.mfa.emailOtpSent,Er is een verificatiecode naar uw e-mailadres verzonden.
+login.mfa.emailOtpResent,Er is een nieuwe verificatiecode naar uw e-mailadres verzonden.
+login.mfa.emailOtpUnavailableDescription,Verificatie via e-mail als tweede factor is niet beschikbaar in deze aanmeldflow.
+login.mfa.emailOtpUnavailableNotice,E-mail-MFA-transport is niet geconfigureerd voor dit Authworks-aanmeldverzoek.
+login.mfa.emailOtpUnavailableTitle,E-mailcode niet beschikbaar
+login.mfa.enterRecoveryCode,Voer een opgeslagen herstelcode in.
+login.mfa.enterSixDigits,Voer 6 cijfers in.
+login.mfa.enrollDescription,Kies een methode om verificatie in twee stappen voor uw account in te stellen.
+login.mfa.enrollTitle,Verificatie in twee stappen instellen
+login.mfa.factorUnavailable,Deze factor is niet beschikbaar in het huidige aanmeldcontract.
+login.mfa.loadingOptions,Opties voor verificatie in twee stappen laden...
+login.mfa.loadingOptionsDescription,De beschikbare tweede factoren ophalen.
+login.mfa.optionalDescription,Stel verificatie in twee stappen in voor extra beveiliging of sla dit voorlopig over.
+login.mfa.optionalTitle,Optionele verificatie in twee stappen
+login.mfa.optionsUnavailableDescription,De beschikbare tweede factoren konden niet worden geladen.
+login.mfa.optionsUnavailableTitle,Verificatie in twee stappen niet beschikbaar
+login.mfa.passkeyDescription,"Bevestig met een passkey, schermvergrendeling of biometrie van uw apparaat."
+login.mfa.passkeyDetail,Verifieer met een passkey of biometrie van uw apparaat.
+login.mfa.passkeyEnrollmentUnavailableDescription,Het gehoste aanmeldcontract biedt geen registratie van passkeys.
+login.mfa.passkeyEnrollmentUnavailableNotice,Voltooi de passkey-instelling op een geauthenticeerde accountbeveiligingspagina en keer daarna terug naar aanmelden.
+login.mfa.passkeyEnrollmentUnavailableTitle,Passkey-instelling niet beschikbaar
+login.mfa.passkeyUnavailableDescription,Verificatie met een passkey als tweede factor is niet beschikbaar in deze aanmeldflow.
+login.mfa.passkeyUnavailableNotice,Passkey-MFA-transport is niet geconfigureerd voor dit Authworks-verzoek.
+login.mfa.passkeyUnavailableTitle,Passkey niet beschikbaar
+login.mfa.passkeyVerify,Verifiëren met passkey
+login.mfa.resend,Code opnieuw verzenden
+login.mfa.resendIn,Opnieuw verzenden over {seconds} seconden
+login.mfa.recoveryCodeDetail,Gebruik een van uw opgeslagen eenmalige herstelcodes.
+login.mfa.totpChallengeTitle,Authenticatorcode
+login.mfa.totpDetail,Gebruik een code uit uw authenticator-app.
+login.mfa.retryOptions,Opties opnieuw laden
+login.mfa.setupFactor,{factor} instellen
+login.mfa.skip,Voorlopig overslaan
+login.mfa.skipping,Bezig met overslaan...
+login.mfa.satisfiedDescription,Uw aanmelding voldoet al aan het beleid voor verificatie in twee stappen.
+login.mfa.satisfiedTitle,Verificatie in twee stappen voldaan
+login.mfa.unavailable,Niet beschikbaar
+login.passkey.unsupportedTitle,Passkey wordt niet ondersteund
+login.password.changeRequiredDescription,"Uw wachtwoord moet worden gewijzigd voordat u doorgaat."
+login.password.changeRequiredTitle,Wachtwoord wijzigen
+login.password.changeSubmit,Wachtwoord wijzigen
+login.password.expiredDescription,"Uw wachtwoord is verlopen. Stel een nieuw wachtwoord in om door te gaan."
+login.password.currentRequired,Voer uw huidige wachtwoord in.
+login.password.back,Terug naar methoden
+login.password.passwordRequired,Voer uw wachtwoord in.
+login.password.rememberIdentifier,Deze identifier onthouden
+login.password.signInTitle,Aanmelden met wachtwoord
+login.password.signingIn,Bezig met aanmelden...
+login.password.saving,Bezig met opslaan...
+login.provider.accountNotFoundDescription,"Er is geen Authworks-account gekoppeld aan dit {provider}-account. Accountkoppeling en zelfregistratie zijn nog niet ingeschakeld."
+login.provider.accountNotFoundTitle,Geen gekoppeld account
+login.provider.failureDescription,Aanmelden met {provider} is niet voltooid. Probeer het opnieuw.
+login.provider.linkingFailedDescription,Het koppelen van het account is niet voltooid. Probeer een andere aanmeldmethode.
+login.provider.linkingFailedTitle,Account kan niet worden gekoppeld
+login.recovery.back,Terug naar aanmelden
+login.recovery.checkingLink,Resetlink controleren...
+login.recovery.choosePasswordTitle,Kies een nieuw wachtwoord
+login.recovery.completeDescriptionReference,"Meld u aan met uw nieuwe wachtwoord om door te gaan."
+login.recovery.completeTitleReference,Uw wachtwoord is gewijzigd
+login.recovery.invalidLinkTitle,Deze resetlink is niet meer geldig
+login.recovery.invalidLinkError,Deze link voor het resetten van uw wachtwoord is ongeldig of verlopen.
+login.recovery.loading,Wachtwoordherstel laden...
+login.recovery.resetSubmitReference,Nieuw wachtwoord instellen
+login.recovery.saving,Bezig met opslaan...
+login.recovery.sending,Bezig met verzenden...
+login.recovery.submitReference,Resetlink verzenden
+login.recovery.unavailableDescription,Wachtwoordherstel is tijdelijk niet beschikbaar.
+login.recovery.unavailableTitle,Wachtwoordherstel niet beschikbaar
+login.status.continuing,Aanmelding wordt voortgezet...
+login.status.fatalTitle,Opnieuw aanmelden
+login.totpEnroll.hideSetupKey,Instelsleutel verbergen
+login.totpEnroll.qrLabel,QR-code voor het instellen van de authenticator-app
+login.totpEnroll.scanDescription,Scan de QR-code met uw authenticator-app en voer daarna de getoonde zescijferige code in.
+login.totpEnroll.setupKeyLabel,Instelsleutel (als u niet kunt scannen)
+login.totpEnroll.showSetupKey,Instelsleutel tonen
+login.totpEnroll.unavailableDescription,De authenticator kon hier niet worden ingesteld. De instelgegevens kunnen na opnieuw laden niet worden hersteld.
 shell.guard.accessUnavailable,Toegang niet beschikbaar
 shell.guard.contextRequired,Context vereist
 shell.guard.contextRequiredDetail,Kies de vereiste realm of organisatie voordat u doorgaat.

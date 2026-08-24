@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"Проверки второго фактора
 demo.login.group.mfa.title,Многофакторная аутентификация
 demo.login.group.password_email.description,Аутентификация по паролю и коду из письма с детерминированными локальными данными.
 demo.login.group.password_email.title,Пароль и код из письма
-demo.login.group.passwordless.description,"Ключи доступа и настроенные провайдеры Google, GitHub и Microsoft."
+demo.login.group.passwordless.description,"Ключи доступа и настроенные внешние поставщики удостоверений."
 demo.login.group.passwordless.title,Беспарольный и внешний вход
 demo.login.group.recovery.description,Запросите и завершите восстановление пароля без раскрытия данных аккаунта.
 demo.login.group.recovery.title,Восстановление
@@ -944,14 +944,18 @@ email.preview.securityVerified,Проверка входа завершена
 email.preview.subject,Тема
 email.preview.text,Текстовая версия
 email.preview.verification,Подтверждение электронной почты
+login.chooser.accountOrMethodTitle,Выберите аккаунт или способ
 login.chooser.description,"Выберите, как вы хотите войти в {organization}."
+login.chooser.lastUsed,Использовалось недавно
+login.chooser.methodTitle,Выберите способ
+login.chooser.orChooseMethod,Или выберите способ
 login.chooser.emailOtpDetail,Получите одноразовый код на электронную почту
 login.chooser.emailOtpLabel,Код электронной почты
 login.chooser.passkeyDetail,Используйте блокировку экрана вашего устройства или ключ безопасности.
 login.chooser.passkeyLabel,Ключ доступа
 login.chooser.passwordDetail,Используйте пароль своей учетной записи
 login.chooser.passwordLabel,Пароль
-login.chooser.providerDetail,Продолжить с подключенной учетной записью
+login.chooser.providerDetail,Войти с помощью существующей учетной записи {provider}
 login.chooser.providerLabel,Продолжить с {provider}
 login.chooser.register,Завести аккаунт
 login.chooser.title,Войти
@@ -1015,6 +1019,8 @@ login.provider.description,"Вы продолжите работу с {provider}
 login.provider.submit,Продолжить с {provider}
 login.provider.title,Продолжить с {provider}
 login.recent.description,"Продолжайте использовать учетную запись, которую вы использовали на этом устройстве."
+login.recent.heading,Недавние аккаунты
+login.recent.useAnother,Использовать другой способ или аккаунт
 login.recent.other,Использовать другую учетную запись
 login.recent.title,Выберите учетную запись
 login.recovery.completeDescription,"Войдите в систему, используя новый пароль."
@@ -1050,6 +1056,114 @@ login.verify.submit,Подтвердите адрес электронной п�
 login.verify.title,Подтвердите свой адрес электронной почты
 login.verify.verifiedDescription,{email} подтвержден. Вы можете войти в систему сейчас.
 login.verify.verifiedTitle,Адрес электронной почты подтвержден
+demo.fixture.continuing,продолжение
+demo.fixture.fatal,критическая ошибка
+demo.fixture.passwordChangeExpired,пароль истёк
+demo.fixture.recoveryFatal,восстановление недоступно
+demo.fixture.recoveryLoading,загрузка восстановления
+demo.fixture.resetInvalid,недействительная ссылка сброса
+demo.fixture.resetLoading,загрузка ссылки сброса
+login.emailOtp.codeHelp,Введите 6 цифр.
+login.emailOtp.back,Вернуться к способам
+login.emailOtp.changeEmail,Изменить электронную почту
+login.emailOtp.resendCountdown,Новый код можно будет отправить через {seconds} секунд.
+login.emailOtp.resent,Новый код отправлен.
+login.emailOtp.remember,Запомнить этот адрес
+login.emailOtp.sending,Отправка...
+login.emailOtp.verifying,Проверка...
+login.error.credentialsInvalid,Неверное имя пользователя или пароль.
+login.error.emailRecoveryRequired,Введите адрес электронной почты аккаунта.
+login.error.identifierRequired,Введите имя пользователя или адрес электронной почты.
+login.error.newPasswordRequired,Введите новый пароль.
+login.error.passwordRequired,Введите пароль.
+login.mfa.backToChoices,Вернуться к вариантам двухэтапной проверки
+login.mfa.backToMethods,Вернуться к способам
+login.mfa.continue,Продолжить вход
+login.mfa.emailOtpCodeTitle,Код подтверждения по электронной почте
+login.mfa.emailOtpDetail,Получить одноразовый код подтверждения по электронной почте.
+login.mfa.emailOtpEnroll,Настроить коды электронной почты
+login.mfa.emailOtpEnrollDescription,Коды подтверждения будут отправляться на адрес электронной почты аккаунта.
+login.mfa.emailOtpEnrollNotice,"Настройте коды электронной почты, чтобы использовать адрес аккаунта как второй фактор."
+login.mfa.emailOtpEnrollSent,"Коды электронной почты настроены. Введите код, отправленный на ваш адрес."
+login.mfa.emailOtpEnrollTitle,Настройка кодов электронной почты
+login.mfa.emailOtpSend,Отправить код
+login.mfa.emailOtpSendDescription,Отправить шестизначный код подтверждения на адрес электронной почты аккаунта.
+login.mfa.emailOtpSent,Код подтверждения отправлен на ваш адрес электронной почты.
+login.mfa.emailOtpResent,Новый код подтверждения отправлен на ваш адрес электронной почты.
+login.mfa.emailOtpUnavailableDescription,Проверка по электронной почте как второй фактор недоступна в этом процессе входа.
+login.mfa.emailOtpUnavailableNotice,Транспорт MFA по электронной почте не настроен для этого запроса Authworks.
+login.mfa.emailOtpUnavailableTitle,Код электронной почты недоступен
+login.mfa.enterRecoveryCode,Введите сохранённый код восстановления.
+login.mfa.enterSixDigits,Введите 6 цифр.
+login.mfa.enrollDescription,Выберите способ настройки двухэтапной проверки для аккаунта.
+login.mfa.enrollTitle,Настроить двухэтапную проверку
+login.mfa.factorUnavailable,Этот фактор недоступен в текущем контракте входа.
+login.mfa.loadingOptions,Загрузка вариантов двухэтапной проверки...
+login.mfa.loadingOptionsDescription,Получение доступных вариантов второго фактора.
+login.mfa.optionalDescription,Настройте двухэтапную проверку для дополнительной защиты или пропустите её сейчас.
+login.mfa.optionalTitle,Необязательная двухэтапная проверка
+login.mfa.optionsUnavailableDescription,Не удалось загрузить доступные варианты второго фактора.
+login.mfa.optionsUnavailableTitle,Двухэтапная проверка недоступна
+login.mfa.passkeyDescription,"Подтвердите с помощью ключа доступа, блокировки экрана устройства или биометрии."
+login.mfa.passkeyDetail,Подтвердите с помощью ключа доступа или биометрии устройства.
+login.mfa.passkeyEnrollmentUnavailableDescription,Размещённый контракт входа не предоставляет регистрацию ключей доступа.
+login.mfa.passkeyEnrollmentUnavailableNotice,"Завершите настройку ключа доступа на аутентифицированной странице безопасности аккаунта, затем вернитесь ко входу."
+login.mfa.passkeyEnrollmentUnavailableTitle,Настройка ключа доступа недоступна
+login.mfa.passkeyUnavailableDescription,Проверка ключом доступа как вторым фактором недоступна в этом процессе входа.
+login.mfa.passkeyUnavailableNotice,Транспорт MFA ключа доступа не настроен для этого запроса Authworks.
+login.mfa.passkeyUnavailableTitle,Ключ доступа недоступен
+login.mfa.passkeyVerify,Подтвердить ключом доступа
+login.mfa.resend,Отправить код повторно
+login.mfa.resendIn,Повторная отправка через {seconds} секунд
+login.mfa.recoveryCodeDetail,Используйте один из сохранённых одноразовых кодов восстановления.
+login.mfa.totpChallengeTitle,Код приложения-аутентификатора
+login.mfa.totpDetail,Используйте код из приложения-аутентификатора.
+login.mfa.retryOptions,Повторить загрузку вариантов
+login.mfa.setupFactor,Настроить {factor}
+login.mfa.skip,Пропустить сейчас
+login.mfa.skipping,Пропуск...
+login.mfa.satisfiedDescription,Ваш вход уже соответствует политике двухэтапной проверки.
+login.mfa.satisfiedTitle,Двухэтапная проверка выполнена
+login.mfa.unavailable,Недоступно
+login.passkey.unsupportedTitle,Ключ доступа не поддерживается
+login.password.changeRequiredDescription,Перед продолжением необходимо изменить пароль.
+login.password.changeRequiredTitle,Изменить пароль
+login.password.changeSubmit,Изменить пароль
+login.password.expiredDescription,"Срок действия пароля истёк. Задайте новый пароль, чтобы продолжить."
+login.password.currentRequired,Введите текущий пароль.
+login.password.back,Вернуться к способам
+login.password.passwordRequired,Введите пароль.
+login.password.rememberIdentifier,Запомнить идентификатор
+login.password.signInTitle,Войти с паролем
+login.password.signingIn,Выполняется вход...
+login.password.saving,Сохранение...
+login.provider.accountNotFoundDescription,"С этим аккаунтом {provider} не связан аккаунт Authworks. Связывание аккаунтов и самостоятельная регистрация пока не включены."
+login.provider.accountNotFoundTitle,Связанный аккаунт не найден
+login.provider.failureDescription,Вход через {provider} не завершён. Попробуйте ещё раз.
+login.provider.linkingFailedDescription,Не удалось завершить связывание аккаунта. Попробуйте другой способ входа.
+login.provider.linkingFailedTitle,Не удалось связать аккаунт
+login.recovery.back,Вернуться ко входу
+login.recovery.checkingLink,Проверка ссылки сброса...
+login.recovery.choosePasswordTitle,Выберите новый пароль
+login.recovery.completeDescriptionReference,"Войдите с новым паролем, чтобы продолжить."
+login.recovery.completeTitleReference,Пароль изменён
+login.recovery.invalidLinkTitle,Эта ссылка сброса больше недействительна
+login.recovery.invalidLinkError,Эта ссылка сброса пароля недействительна или устарела.
+login.recovery.loading,Загрузка восстановления пароля...
+login.recovery.resetSubmitReference,Задать новый пароль
+login.recovery.saving,Сохранение...
+login.recovery.sending,Отправка...
+login.recovery.submitReference,Отправить ссылку сброса
+login.recovery.unavailableDescription,Восстановление пароля временно недоступно.
+login.recovery.unavailableTitle,Восстановление пароля недоступно
+login.status.continuing,Продолжение входа...
+login.status.fatalTitle,Начать вход заново
+login.totpEnroll.hideSetupKey,Скрыть ключ настройки
+login.totpEnroll.qrLabel,QR-код для настройки приложения-аутентификатора
+login.totpEnroll.scanDescription,Отсканируйте QR-код приложением-аутентификатором и введите показанный шестизначный код.
+login.totpEnroll.setupKeyLabel,Ключ настройки (если сканирование невозможно)
+login.totpEnroll.showSetupKey,Показать ключ настройки
+login.totpEnroll.unavailableDescription,Не удалось подготовить настройку аутентификатора. Данные настройки нельзя восстановить после перезагрузки.
 shell.guard.accessUnavailable,Доступ недоступен
 shell.guard.contextRequired,Требуется контекст
 shell.guard.contextRequiredDetail,Выберите необходимый realm или организацию перед продолжением.

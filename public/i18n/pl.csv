@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"Wyzwania drugiego czynnika, rejestracja aplika
 demo.login.group.mfa.title,Uwierzytelnianie wieloskładnikowe
 demo.login.group.password_email.description,Uwierzytelnianie hasłem i kodem e-mail z deterministycznymi lokalnymi danymi testowymi.
 demo.login.group.password_email.title,Hasło i kod e-mail
-demo.login.group.passwordless.description,"Klucze dostępu i skonfigurowani dostawcy Google, GitHub i Microsoft."
+demo.login.group.passwordless.description,"Klucze dostępu i skonfigurowani zewnętrzni dostawcy tożsamości."
 demo.login.group.passwordless.title,Bezhasłowe i zewnętrzne
 demo.login.group.recovery.description,Poproś o odzyskanie hasła i ukończ je bez ujawniania informacji o koncie.
 demo.login.group.recovery.title,Odzyskiwanie
@@ -944,14 +944,18 @@ email.preview.securityVerified,Weryfikacja logowania zakończona
 email.preview.subject,Temat
 email.preview.text,Wersja tekstowa
 email.preview.verification,Weryfikacja adresu e-mail
+login.chooser.accountOrMethodTitle,Wybierz konto lub metodę
 login.chooser.description,Wybierz sposób logowania się do {organization}.
+login.chooser.lastUsed,Ostatnio używane
+login.chooser.methodTitle,Wybierz metodę
+login.chooser.orChooseMethod,Lub wybierz metodę
 login.chooser.emailOtpDetail,Otrzymaj jednorazowy kod e-mailem
 login.chooser.emailOtpLabel,Kod e-mail
 login.chooser.passkeyDetail,Użyj blokady ekranu urządzenia lub klucza bezpieczeństwa
 login.chooser.passkeyLabel,Klucz uniwersalny
 login.chooser.passwordDetail,Użyj hasła do konta
 login.chooser.passwordLabel,Hasło
-login.chooser.providerDetail,Kontynuuj z podłączonym kontem
+login.chooser.providerDetail,Użyj istniejącego konta {provider} aby się zalogować
 login.chooser.providerLabel,Kontynuuj za pomocą {provider}
 login.chooser.register,Utwórz konto
 login.chooser.title,Zalogować się
@@ -1015,6 +1019,8 @@ login.provider.description,"Będziesz kontynuować w {provider} i wrócić tutaj
 login.provider.submit,Kontynuuj za pomocą {provider}
 login.provider.title,Kontynuuj za pomocą {provider}
 login.recent.description,"Kontynuuj, korzystając z konta używanego na tym urządzeniu."
+login.recent.heading,Ostatnie konta
+login.recent.useAnother,Użyj innej metody lub konta
 login.recent.other,Użyj innego konta
 login.recent.title,Wybierz konto
 login.recovery.completeDescription,Zaloguj się przy użyciu nowego hasła.
@@ -1050,6 +1056,114 @@ login.verify.submit,Potwierdź adres e-mail
 login.verify.title,Zweryfikuj swój adres e-mail
 login.verify.verifiedDescription,{email} został potwierdzony. Możesz się już zalogować.
 login.verify.verifiedTitle,Adres e-mail potwierdzony
+demo.fixture.continuing,przetwarzanie
+demo.fixture.fatal,błąd krytyczny
+demo.fixture.passwordChangeExpired,hasło wygasło
+demo.fixture.recoveryFatal,odzyskiwanie niedostępne
+demo.fixture.recoveryLoading,ładowanie odzyskiwania
+demo.fixture.resetInvalid,nieprawidłowy link resetowania
+demo.fixture.resetLoading,ładowanie linku resetowania
+login.emailOtp.codeHelp,Wpisz 6 cyfr.
+login.emailOtp.back,Wróć do metod
+login.emailOtp.changeEmail,Zmień adres e-mail
+login.emailOtp.resendCountdown,Nowy kod będzie można wysłać za {seconds} s.
+login.emailOtp.resent,Wysłano nowy kod.
+login.emailOtp.remember,Zapamiętaj ten adres e-mail
+login.emailOtp.sending,Wysyłanie...
+login.emailOtp.verifying,Weryfikowanie...
+login.error.credentialsInvalid,Nieprawidłowa nazwa użytkownika lub hasło.
+login.error.emailRecoveryRequired,Wpisz adres e-mail swojego konta.
+login.error.identifierRequired,Wpisz nazwę użytkownika lub adres e-mail.
+login.error.newPasswordRequired,Wpisz nowe hasło.
+login.error.passwordRequired,Wpisz hasło.
+login.mfa.backToChoices,Wróć do opcji weryfikacji dwuetapowej
+login.mfa.backToMethods,Wróć do metod
+login.mfa.continue,Kontynuuj logowanie
+login.mfa.emailOtpCodeTitle,Podaj kod weryfikacyjny z e-maila
+login.mfa.emailOtpDetail,Odbierz jednorazowy kod weryfikacyjny e-mailem.
+login.mfa.emailOtpEnroll,Skonfiguruj kody e-mail
+login.mfa.emailOtpEnrollDescription,Kody weryfikacyjne będą wysyłane na adres e-mail konta.
+login.mfa.emailOtpEnrollNotice,"Skonfiguruj kody e-mail, aby używać adresu konta jako drugiego czynnika."
+login.mfa.emailOtpEnrollSent,Kody e-mail są skonfigurowane. Wpisz kod wysłany na Twój adres.
+login.mfa.emailOtpEnrollTitle,Skonfiguruj kody e-mail
+login.mfa.emailOtpSend,Wyślij kod
+login.mfa.emailOtpSendDescription,Wyślij sześciocyfrowy kod weryfikacyjny na adres e-mail konta.
+login.mfa.emailOtpSent,Kod weryfikacyjny został wysłany na Twój adres e-mail.
+login.mfa.emailOtpResent,Nowy kod weryfikacyjny został wysłany na Twój adres e-mail.
+login.mfa.emailOtpUnavailableDescription,Weryfikacja e-mailem jako drugi czynnik nie jest dostępna w tym logowaniu.
+login.mfa.emailOtpUnavailableNotice,Transport MFA przez e-mail nie jest skonfigurowany dla tego żądania logowania Authworks.
+login.mfa.emailOtpUnavailableTitle,Kod e-mail niedostępny
+login.mfa.enterRecoveryCode,Wpisz zapisany kod odzyskiwania.
+login.mfa.enterSixDigits,Wpisz 6 cyfr.
+login.mfa.enrollDescription,Wybierz metodę konfiguracji weryfikacji dwuetapowej dla konta.
+login.mfa.enrollTitle,Skonfiguruj weryfikację dwuetapową
+login.mfa.factorUnavailable,Ten czynnik nie jest dostępny w bieżącym kontrakcie logowania.
+login.mfa.loadingOptions,Ładowanie opcji weryfikacji dwuetapowej...
+login.mfa.loadingOptionsDescription,Pobieranie dostępnych drugich czynników.
+login.mfa.optionalDescription,Skonfiguruj weryfikację dwuetapową dla większego bezpieczeństwa albo pomiń ją na razie.
+login.mfa.optionalTitle,Opcjonalna weryfikacja dwuetapowa
+login.mfa.optionsUnavailableDescription,Nie udało się załadować dostępnych drugich czynników.
+login.mfa.optionsUnavailableTitle,Weryfikacja dwuetapowa niedostępna
+login.mfa.passkeyDescription,"Potwierdź za pomocą klucza dostępu, blokady ekranu urządzenia lub biometrii."
+login.mfa.passkeyDetail,Weryfikuj kluczem dostępu lub biometrią urządzenia.
+login.mfa.passkeyEnrollmentUnavailableDescription,Hostowany kontrakt logowania nie udostępnia rejestracji kluczy dostępu.
+login.mfa.passkeyEnrollmentUnavailableNotice,"Skonfiguruj klucz dostępu na uwierzytelnionej stronie bezpieczeństwa konta, a następnie wróć do logowania."
+login.mfa.passkeyEnrollmentUnavailableTitle,Konfiguracja klucza dostępu niedostępna
+login.mfa.passkeyUnavailableDescription,Weryfikacja kluczem dostępu jako drugim czynnikiem nie jest dostępna w tym logowaniu.
+login.mfa.passkeyUnavailableNotice,Transport MFA klucza dostępu nie jest skonfigurowany dla tego żądania Authworks.
+login.mfa.passkeyUnavailableTitle,Klucz dostępu niedostępny
+login.mfa.passkeyVerify,Weryfikuj kluczem dostępu
+login.mfa.resend,Wyślij kod ponownie
+login.mfa.resendIn,Wyślij ponownie za {seconds} s
+login.mfa.recoveryCodeDetail,"Użyj jednego z zapisanych jednorazowych kodów odzyskiwania."
+login.mfa.totpChallengeTitle,Kod aplikacji uwierzytelniającej
+login.mfa.totpDetail,Użyj kodu z aplikacji uwierzytelniającej.
+login.mfa.retryOptions,Ponów ładowanie opcji
+login.mfa.setupFactor,Skonfiguruj {factor}
+login.mfa.skip,Pomiń na razie
+login.mfa.skipping,Pomijanie...
+login.mfa.satisfiedDescription,Twoje logowanie już spełnia zasady weryfikacji dwuetapowej.
+login.mfa.satisfiedTitle,Weryfikacja dwuetapowa spełniona
+login.mfa.unavailable,Niedostępne
+login.passkey.unsupportedTitle,Klucz dostępu nie jest obsługiwany
+login.password.changeRequiredDescription,Przed kontynuowaniem musisz zmienić hasło.
+login.password.changeRequiredTitle,Zmień hasło
+login.password.changeSubmit,Zmień hasło
+login.password.expiredDescription,"Hasło wygasło. Ustaw nowe hasło, aby kontynuować."
+login.password.currentRequired,Wpisz bieżące hasło.
+login.password.back,Wróć do metod
+login.password.passwordRequired,Wpisz hasło.
+login.password.rememberIdentifier,Zapamiętaj ten identyfikator
+login.password.signInTitle,Zaloguj się hasłem
+login.password.signingIn,Logowanie...
+login.password.saving,Zapisywanie...
+login.provider.accountNotFoundDescription,"Z tym kontem {provider} nie jest powiązane konto Authworks. Powiązanie kont i samodzielna rejestracja nie są jeszcze włączone."
+login.provider.accountNotFoundTitle,Brak powiązanego konta
+login.provider.failureDescription,Logowanie przez {provider} nie zostało ukończone. Spróbuj ponownie.
+login.provider.linkingFailedDescription,Nie udało się ukończyć powiązania konta. Spróbuj innej metody logowania.
+login.provider.linkingFailedTitle,Nie można powiązać konta
+login.recovery.back,Wróć do logowania
+login.recovery.checkingLink,Sprawdzanie linku resetowania...
+login.recovery.choosePasswordTitle,Wybierz nowe hasło
+login.recovery.completeDescriptionReference,"Zaloguj się nowym hasłem, aby kontynuować."
+login.recovery.completeTitleReference,Hasło zostało zmienione
+login.recovery.invalidLinkTitle,Ten link resetowania nie jest już ważny
+login.recovery.invalidLinkError,Ten link resetowania hasła jest nieprawidłowy lub wygasł.
+login.recovery.loading,Ładowanie odzyskiwania hasła...
+login.recovery.resetSubmitReference,Ustaw nowe hasło
+login.recovery.saving,Zapisywanie...
+login.recovery.sending,Wysyłanie...
+login.recovery.submitReference,Wyślij link resetowania
+login.recovery.unavailableDescription,Odzyskiwanie hasła jest tymczasowo niedostępne.
+login.recovery.unavailableTitle,Odzyskiwanie hasła niedostępne
+login.status.continuing,Kontynuowanie logowania...
+login.status.fatalTitle,Zacznij logowanie od nowa
+login.totpEnroll.hideSetupKey,Ukryj klucz konfiguracji
+login.totpEnroll.qrLabel,Kod QR do konfiguracji aplikacji uwierzytelniającej
+login.totpEnroll.scanDescription,"Zeskanuj kod QR aplikacją uwierzytelniającą, a następnie wpisz wyświetlony sześciocyfrowy kod."
+login.totpEnroll.setupKeyLabel,Klucz konfiguracji (jeśli nie możesz zeskanować)
+login.totpEnroll.showSetupKey,Pokaż klucz konfiguracji
+login.totpEnroll.unavailableDescription,Konfiguracji aplikacji uwierzytelniającej nie można tutaj przygotować. Szczegółów konfiguracji nie da się odzyskać po ponownym załadowaniu.
 shell.guard.accessUnavailable,Dostęp niedostępny
 shell.guard.contextRequired,Wymagany kontekst
 shell.guard.contextRequiredDetail,Wybierz wymagany realm lub organizację przed kontynuowaniem.

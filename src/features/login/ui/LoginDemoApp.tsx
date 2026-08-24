@@ -6,7 +6,14 @@ import { loginDemoAppStateCreate } from "./loginDemoAppStateCreate.js"
 export function LoginDemoApp() {
   const state = loginDemoAppStateCreate()
   return (
-    <Show when={!state.isDirectory()} fallback={<DemoLoginDirectory />}>
+    <Show
+      when={!state.isDirectory()}
+      fallback={
+        <main>
+          <DemoLoginDirectory />
+        </main>
+      }
+    >
       <LoginDemoAdapter state={state.demo} />
     </Show>
   )

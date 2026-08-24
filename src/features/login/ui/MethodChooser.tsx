@@ -1,69 +1,88 @@
 import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { RecentAccountChooser } from "../../sessions/ui/RecentAccountChooser.js"
 import type { LoginPrimaryMethod } from "../model/loginPrimaryMethodsGet.js"
+import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
 import { LoginPanelHeader } from "./LoginPanelHeader.js"
 import type { LoginDiscovery } from "./loginAdapter.js"
 import { MethodChoiceButton } from "./MethodChoiceButton.js"
+import { methodChooserStateCreate } from "./methodChooserStateCreate.js"
 
 type MethodChooserProps = {
   readonly discovery: LoginDiscovery
   readonly methods: readonly LoginPrimaryMethod[]
-  readonly onRecentAccounts: () => void
+  readonly onRecentAccount: (account: LoginRecentAccount) => void
   readonly onRegister: () => void
-  readonly onSelect: (method: LoginPrimaryMethod) => void
-  readonly showRecentAccounts: boolean
+  readonly onSelect: (method: LoginPrimaryMethod, providerId?: string) => void
+  readonly pending: boolean
+  readonly recentAccounts: readonly LoginRecentAccount[]
 }
 
 export function MethodChooser(props: MethodChooserProps) {
-  const provider = () => props.discovery.providers[0]
+  const state = methodChooserStateCreate({
+    discovery: () => props.discovery,
+    recentAccounts: () => props.recentAccounts,
+  })
   return (
-    <section>
+    <section aria-labelledby="login-chooser-title">
       <LoginPanelHeader
-        description={messageTranslate("login.chooser.description", {
-          organization: props.discovery.organization.name,
-        })}
-        title={messageTranslate("login.chooser.title")}
+        headingId="login-chooser-title"
+        title={
+          state.hasRecentAccounts()
+            ? messageTranslate("login.chooser.accountOrMethodTitle")
+            : messageTranslate("login.chooser.methodTitle")
+        }
       />
-      <div class="mt-6 grid gap-3">
+      <Show when={state.hasRecentAccounts()}>
+        <RecentAccountChooser
+          accounts={props.recentAccounts}
+          embedded
+          onSelect={props.onRecentAccount}
+          pending={props.pending}
+        />
+        <p class="my-[18px] mb-3 text-xs font-bold uppercase tracking-[0.05em] text-muted-foreground">
+          {messageTranslate("login.chooser.orChooseMethod")}
+        </p>
+      </Show>
+      <ul class="m-0 grid list-none gap-2.5 p-0">
         <For each={props.methods}>
           {(method) => (
-            <MethodChoiceButton
-              detail={
-                method === "external-identity"
-                  ? messageTranslate("login.chooser.providerDetail")
-                  : method === "email-otp"
-                    ? messageTranslate("login.chooser.emailOtpDetail")
-                    : method === "passkey"
-                      ? messageTranslate("login.chooser.passkeyDetail")
-                      : messageTranslate("login.chooser.passwordDetail")
-              }
-              label={
-                method === "external-identity"
-                  ? messageTranslate("login.chooser.providerLabel", {
-                      provider: provider()?.displayName ?? messageTranslate("app.name"),
-                    })
-                  : method === "email-otp"
-                    ? messageTranslate("login.chooser.emailOtpLabel")
-                    : method === "passkey"
-                      ? messageTranslate("login.chooser.passkeyLabel")
-                      : messageTranslate("login.chooser.passwordLabel")
-              }
-              method={method}
-              onClick={() => props.onSelect(method)}
-              providerType={provider()?.type}
-            />
+            <li>
+              <Show
+                when={method === "external-identity"}
+                fallback={
+                  <MethodChoiceButton
+                    detail={state.methodCopy(method).detail}
+                    label={state.methodCopy(method).label}
+                    lastUsed={state.methodIsLastUsed(method)}
+                    method={method}
+                    onClick={() => props.onSelect(method)}
+                    pending={props.pending}
+                    providerType={state.provider()?.type}
+                  />
+                }
+              >
+                <For each={props.discovery.providers}>
+                  {(provider) => (
+                    <MethodChoiceButton
+                      detail={state.methodCopy(method, provider).detail}
+                      label={state.methodCopy(method, provider).label}
+                      method={method}
+                      onClick={() => props.onSelect(method, provider.id)}
+                      pending={props.pending}
+                      providerType={provider.type}
+                    />
+                  )}
+                </For>
+              </Show>
+            </li>
           )}
         </For>
-      </div>
+      </ul>
       <div class="mt-5 grid gap-1">
-        <Show when={props.showRecentAccounts}>
-          <Button onClick={props.onRecentAccounts} type="button" variant="link">
-            {messageTranslate("login.chooser.useRecent")}
-          </Button>
-        </Show>
         <Show when={props.discovery.policy.allowRegistration}>
-          <Button onClick={props.onRegister} type="button" variant="link">
+          <Button disabled={props.pending} onClick={props.onRegister} type="button" variant="link">
             {messageTranslate("login.chooser.register")}
           </Button>
         </Show>

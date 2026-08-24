@@ -7,8 +7,8 @@ export function loginPrimaryMethodsGet(
   providerCount: number,
 ): readonly LoginPrimaryMethod[] {
   const methods: LoginPrimaryMethod[] = []
-  if (policy.allowPassword) methods.push("password")
   if (policy.allowEmailOtp) methods.push("email-otp")
+  if (policy.allowPassword) methods.push("password")
   if (policy.allowPasskey) methods.push("passkey")
   if (policy.allowExternalIdentity && providerCount > 0) methods.push("external-identity")
   return methods

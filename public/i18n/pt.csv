@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"Desafios de segundo fator, registo de autentic
 demo.login.group.mfa.title,Autenticação multifator
 demo.login.group.password_email.description,Autenticação por palavra-passe e código de e-mail com fixtures locais determinísticas.
 demo.login.group.password_email.title,Palavra-passe e código de e-mail
-demo.login.group.passwordless.description,"Passkeys e fornecedores Google, GitHub e Microsoft configurados."
+demo.login.group.passwordless.description,"Passkeys e provedores de identidade externos configurados."
 demo.login.group.passwordless.title,Sem palavra-passe e externo
 demo.login.group.recovery.description,Peça e conclua a recuperação de palavra-passe sem revelação da conta.
 demo.login.group.recovery.title,Recuperação
@@ -944,14 +944,18 @@ email.preview.securityVerified,Verificação do login concluída
 email.preview.subject,Assunto
 email.preview.text,Alternativa de texto
 email.preview.verification,Verificação de e-mail
+login.chooser.accountOrMethodTitle,Escolha uma conta ou método
 login.chooser.description,Escolha como deseja fazer login em {organization}.
+login.chooser.lastUsed,Usado recentemente
+login.chooser.methodTitle,Escolha um método
+login.chooser.orChooseMethod,Ou escolha um método
 login.chooser.emailOtpDetail,Receba um código único por e-mail
 login.chooser.emailOtpLabel,Código de e-mail
 login.chooser.passkeyDetail,Use o bloqueio de tela ou a chave de segurança do seu dispositivo
 login.chooser.passkeyLabel,Chave de acesso
 login.chooser.passwordDetail,Use a senha da sua conta
 login.chooser.passwordLabel,Senha
-login.chooser.providerDetail,Continuar com uma conta conectada
+login.chooser.providerDetail,Use sua conta {provider} existente para entrar
 login.chooser.providerLabel,Continuar com {provider}
 login.chooser.register,Crie uma conta
 login.chooser.title,Entrar
@@ -1015,6 +1019,8 @@ login.provider.description,Você continuará em {provider} e retornará aqui qua
 login.provider.submit,Continuar com {provider}
 login.provider.title,Continuar com {provider}
 login.recent.description,Continue com uma conta que você usou neste dispositivo.
+login.recent.heading,Contas recentes
+login.recent.useAnother,Usar outro método ou conta
 login.recent.other,Usar outra conta
 login.recent.title,Escolha uma conta
 login.recovery.completeDescription,Faça login com sua nova senha.
@@ -1050,6 +1056,114 @@ login.verify.submit,Confirmar endereço de e-mail
 login.verify.title,Verifique seu endereço de e-mail
 login.verify.verifiedDescription,{email} está confirmado. Você pode fazer login agora.
 login.verify.verifiedTitle,Endereço de e-mail confirmado
+demo.fixture.continuing,continuando
+demo.fixture.fatal,erro fatal
+demo.fixture.passwordChangeExpired,senha expirada
+demo.fixture.recoveryFatal,recuperação indisponível
+demo.fixture.recoveryLoading,carregando recuperação
+demo.fixture.resetInvalid,link de redefinição inválido
+demo.fixture.resetLoading,carregando link de redefinição
+login.emailOtp.codeHelp,Insira 6 dígitos.
+login.emailOtp.back,Voltar aos métodos
+login.emailOtp.changeEmail,Alterar e-mail
+login.emailOtp.resendCountdown,Um novo código poderá ser enviado em {seconds} segundos.
+login.emailOtp.resent,Um novo código foi enviado.
+login.emailOtp.remember,Lembrar este e-mail
+login.emailOtp.sending,Enviando...
+login.emailOtp.verifying,Verificando...
+login.error.credentialsInvalid,Nome de usuário ou senha incorretos.
+login.error.emailRecoveryRequired,Insira o endereço de e-mail da sua conta.
+login.error.identifierRequired,Insira seu nome de usuário ou endereço de e-mail.
+login.error.newPasswordRequired,Insira uma nova senha.
+login.error.passwordRequired,Insira sua senha.
+login.mfa.backToChoices,Voltar às opções de verificação em duas etapas
+login.mfa.backToMethods,Voltar aos métodos
+login.mfa.continue,Continuar o login
+login.mfa.emailOtpCodeTitle,Código de verificação por e-mail
+login.mfa.emailOtpDetail,Receba um código de verificação de uso único por e-mail.
+login.mfa.emailOtpEnroll,Configurar códigos por e-mail
+login.mfa.emailOtpEnrollDescription,Os códigos de verificação serão enviados para o e-mail da sua conta.
+login.mfa.emailOtpEnrollNotice,Configure códigos por e-mail para usar o e-mail da sua conta como segundo fator.
+login.mfa.emailOtpEnrollSent,Os códigos por e-mail estão configurados. Insira o código enviado ao seu endereço.
+login.mfa.emailOtpEnrollTitle,Configurar códigos por e-mail
+login.mfa.emailOtpSend,Enviar código
+login.mfa.emailOtpSendDescription,Enviar um código de verificação de seis dígitos para o e-mail da sua conta.
+login.mfa.emailOtpSent,Um código de verificação foi enviado para seu endereço de e-mail.
+login.mfa.emailOtpResent,Um novo código de verificação foi enviado para seu endereço de e-mail.
+login.mfa.emailOtpUnavailableDescription,A verificação por e-mail como segundo fator não está disponível neste fluxo de login.
+login.mfa.emailOtpUnavailableNotice,O transporte de MFA por e-mail não está configurado para esta solicitação de login do Authworks.
+login.mfa.emailOtpUnavailableTitle,Código por e-mail indisponível
+login.mfa.enterRecoveryCode,Insira um código de recuperação salvo.
+login.mfa.enterSixDigits,Insira 6 dígitos.
+login.mfa.enrollDescription,Selecione um método para configurar a verificação em duas etapas da sua conta.
+login.mfa.enrollTitle,Configurar verificação em duas etapas
+login.mfa.factorUnavailable,Este fator não está disponível no contrato de login atual.
+login.mfa.loadingOptions,Carregando opções de verificação em duas etapas...
+login.mfa.loadingOptionsDescription,Buscando as opções disponíveis de segundo fator.
+login.mfa.optionalDescription,Configure a verificação em duas etapas para obter mais segurança ou ignore por enquanto.
+login.mfa.optionalTitle,Verificação em duas etapas opcional
+login.mfa.optionsUnavailableDescription,Não foi possível carregar as opções disponíveis de segundo fator.
+login.mfa.optionsUnavailableTitle,Verificação em duas etapas indisponível
+login.mfa.passkeyDescription,"Confirme com uma passkey, o bloqueio de tela do dispositivo ou biometria."
+login.mfa.passkeyDetail,Verifique com uma passkey ou a biometria do dispositivo.
+login.mfa.passkeyEnrollmentUnavailableDescription,O contrato de login hospedado não expõe o registro de passkeys.
+login.mfa.passkeyEnrollmentUnavailableNotice,Conclua a configuração da passkey em uma página autenticada de segurança da conta e volte ao login.
+login.mfa.passkeyEnrollmentUnavailableTitle,Configuração de passkey indisponível
+login.mfa.passkeyUnavailableDescription,A verificação por passkey como segundo fator não está disponível neste fluxo de login.
+login.mfa.passkeyUnavailableNotice,O transporte de MFA por passkey não está configurado para esta solicitação do Authworks.
+login.mfa.passkeyUnavailableTitle,Passkey indisponível
+login.mfa.passkeyVerify,Verificar com passkey
+login.mfa.resend,Reenviar código
+login.mfa.resendIn,Reenviar em {seconds} segundos
+login.mfa.recoveryCodeDetail,Use um dos seus códigos de recuperação de uso único salvos.
+login.mfa.totpChallengeTitle,Código do autenticador
+login.mfa.totpDetail,Use um código do seu aplicativo autenticador.
+login.mfa.retryOptions,Tentar carregar as opções novamente
+login.mfa.setupFactor,Configurar {factor}
+login.mfa.skip,Ignorar por enquanto
+login.mfa.skipping,Ignorando...
+login.mfa.satisfiedDescription,Seu login já atende à política de verificação em duas etapas.
+login.mfa.satisfiedTitle,Verificação em duas etapas satisfeita
+login.mfa.unavailable,Indisponível
+login.passkey.unsupportedTitle,Passkey não compatível
+login.password.changeRequiredDescription,Sua senha deve ser alterada antes de continuar.
+login.password.changeRequiredTitle,Alterar sua senha
+login.password.changeSubmit,Alterar senha
+login.password.expiredDescription,Sua senha expirou. Defina uma nova senha para continuar.
+login.password.currentRequired,Insira sua senha atual.
+login.password.back,Voltar aos métodos
+login.password.passwordRequired,Insira sua senha.
+login.password.rememberIdentifier,Lembrar este identificador
+login.password.signInTitle,Entrar com senha
+login.password.signingIn,Entrando...
+login.password.saving,Salvando...
+login.provider.accountNotFoundDescription,"Nenhuma conta Authworks está vinculada a esta conta {provider}. A vinculação de contas e o cadastro automático ainda não estão ativados."
+login.provider.accountNotFoundTitle,Nenhuma conta vinculada
+login.provider.failureDescription,O login com {provider} não foi concluído. Tente novamente.
+login.provider.linkingFailedDescription,Não foi possível concluir a vinculação da conta. Tente outro método de login.
+login.provider.linkingFailedTitle,Não foi possível vincular a conta
+login.recovery.back,Voltar ao login
+login.recovery.checkingLink,Verificando o link de redefinição...
+login.recovery.choosePasswordTitle,Escolha uma nova senha
+login.recovery.completeDescriptionReference,Entre com sua nova senha para continuar.
+login.recovery.completeTitleReference,Sua senha foi alterada
+login.recovery.invalidLinkTitle,Este link de redefinição não é mais válido
+login.recovery.invalidLinkError,Este link de redefinição de senha é inválido ou expirou.
+login.recovery.loading,Carregando a recuperação de senha...
+login.recovery.resetSubmitReference,Definir nova senha
+login.recovery.saving,Salvando...
+login.recovery.sending,Enviando...
+login.recovery.submitReference,Enviar link de redefinição
+login.recovery.unavailableDescription,A recuperação de senha está temporariamente indisponível.
+login.recovery.unavailableTitle,Recuperação de senha indisponível
+login.status.continuing,Continuando o login...
+login.status.fatalTitle,Reiniciar o login
+login.totpEnroll.hideSetupKey,Ocultar chave de configuração
+login.totpEnroll.qrLabel,Código QR para configurar o aplicativo autenticador
+login.totpEnroll.scanDescription,Escaneie o código QR com seu aplicativo autenticador e insira o código de seis dígitos exibido.
+login.totpEnroll.setupKeyLabel,Chave de configuração (se não puder escanear)
+login.totpEnroll.showSetupKey,Mostrar chave de configuração
+login.totpEnroll.unavailableDescription,A configuração do autenticador não pôde ser preparada aqui. Os detalhes não podem ser restaurados após recarregar.
 shell.guard.accessUnavailable,Acesso indisponível
 shell.guard.contextRequired,Contexto obrigatório
 shell.guard.contextRequiredDetail,Escolha o realm ou organização necessária antes de continuar.

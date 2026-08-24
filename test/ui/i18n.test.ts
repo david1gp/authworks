@@ -447,6 +447,41 @@ test("administration state validation keys render translated German and Arabic t
   expect(messageTranslate("admin.organizations.list.nameRequired")).toBe("Enter an organization name.")
 })
 
+const intentionalIdenticalLoginTranslations = new Set([
+  "de/demo.login.scenario.passkey.title",
+  "de/login.chooser.passkeyLabel",
+  "de/login.mfa.passkey",
+  "es/demo.fixture.error",
+  "hu/demo.login.scenario.passkey.title",
+  "hu/login.chooser.passkeyLabel",
+  "hu/login.mfa.passkey",
+  "it/demo.fixture.crossTenant",
+  "it/demo.login.scenario.password.title",
+  "it/demo.login.scenario.passkey.title",
+  "it/login.chooser.passwordLabel",
+  "it/login.password.label",
+  "nl/demo.fixture.crossTenant",
+  "nl/demo.login.scenario.passkey.title",
+  "pt/demo.login.scenario.passkey.title",
+])
+
+test("login and demo catalogs do not leak new English source literals", async () => {
+  const loginKeys = Object.keys(englishCatalog).filter(
+    (key) => key.startsWith("login.") || key.startsWith("demo.login.") || key.startsWith("demo.fixture."),
+  )
+  for (const option of languagesSupported.filter((entry) => entry.code !== "en")) {
+    const parsed = translationCsvParse(
+      await Bun.file(new URL(`../../public/i18n/${option.code}.csv`, import.meta.url)).text(),
+    )
+    expect(parsed.success).toBe(true)
+    if (!parsed.success) continue
+    for (const key of loginKeys) {
+      if (intentionalIdenticalLoginTranslations.has(`${option.code}/${key}`)) continue
+      expect(parsed.data[key], `${option.code}/${key}`).not.toBe(englishCatalog[key as keyof typeof englishCatalog])
+    }
+  }
+})
+
 function translationPlaceholdersGet(value: string): string[] {
   return [...value.matchAll(/\{[^}]+\}/g)].map(([placeholder]) => placeholder).sort()
 }

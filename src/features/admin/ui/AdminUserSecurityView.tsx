@@ -18,6 +18,7 @@ const authenticationMethodKeys: Readonly<Record<SessionAuthenticationMethod, Mes
   password: "login.chooser.passwordLabel",
   recovery_code: "login.mfa.recoveryCode",
   totp: "login.mfa.totp",
+  whatsapp_otp: "login.chooser.emailOtpLabel",
 }
 
 export function AdminUserSecurityView(props: { readonly state: ReturnType<typeof adminUserSecurityStateCreate> }) {

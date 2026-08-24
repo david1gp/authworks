@@ -47,6 +47,11 @@ export function loginProductionStateCreate() {
       window.history.replaceState(window.history.state, "", `${next.pathname}${next.search}${next.hash}`)
     },
     navigate: (path) => navigate(`${path}${window.location.search}`),
+    initialProviderId: () => loginPathResolve(location.pathname, loginBasePath)?.providerId,
+    initialProviderSubroute: () => loginPathResolve(location.pathname, loginBasePath)?.providerSubroute,
+    initialMfaSetupUnavailable: () =>
+      loginPathResolve(location.pathname, loginBasePath)?.state === "mfa-setup-unavailable",
+    recoveryResetInitialStep: () => ((search().get("token") ?? "").length === 0 ? "invalid-link" : "ready"),
     recoveryToken: () => search().get("token") ?? "",
     screen: () => loginPathResolve(location.pathname, loginBasePath)?.screen ?? "unsupported",
     verificationToken: () => search().get("token") ?? "",

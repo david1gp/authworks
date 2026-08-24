@@ -19,6 +19,7 @@ export function LoginNoticePanel(props: {
   readonly kind: keyof typeof noticeIcons
   readonly onAction?: () => void
   readonly title: string
+  readonly headingRegister?: (element: HTMLHeadingElement) => void
 }) {
   return (
     <section>
@@ -30,7 +31,7 @@ export function LoginNoticePanel(props: {
         <Icon path={noticeIcons[props.kind]} />
       </span>
       <div role={props.kind === "error" ? "alert" : "status"}>
-        <LoginPanelHeader description={props.description} title={props.title} />
+        <LoginPanelHeader description={props.description} headingRegister={props.headingRegister} title={props.title} />
       </div>
       <Show when={props.onAction !== undefined && props.actionLabel !== undefined}>
         <Button class="mt-6 w-full" onClick={props.onAction} type="button" variant="filledBlue">

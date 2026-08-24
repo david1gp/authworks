@@ -54,6 +54,46 @@ describe("deterministic login demo adapter", () => {
     }
   })
 
+  test("the password error fixture uses source-equivalent credential copy", async () => {
+    const result = await adapterCreate("error").passwordLogin("alex@acme.example", "wrong")
+
+    expect(result.success).toBe(false)
+    if (result.success) return
+    expect(result.errorMessage).toBe("Incorrect username or password.")
+  })
+
+  test("the valid password fixture stays pending before it completes", async () => {
+    const startedAt = Date.now()
+    const result = await adapterCreate("success").passwordLogin("alex@acme.example", "demo-password")
+
+    expect(result.success).toBe(true)
+    expect(Date.now() - startedAt).toBeGreaterThanOrEqual(100)
+  })
+
+  test("recovery requests stay pending before returning the non-disclosing success", async () => {
+    const startedAt = Date.now()
+    const result = await adapterCreate("success").recoveryRequest("alex@acme.example")
+
+    expect(result.success).toBe(true)
+    expect(Date.now() - startedAt).toBeGreaterThanOrEqual(100)
+  })
+
+  test("email code send and verify stay pending and use the reference cooldown", async () => {
+    const adapter = adapterCreate("success")
+    const startedAt = Date.now()
+    const start = await adapter.emailOtpStart("alex@acme.example")
+
+    expect(start.success).toBe(true)
+    expect(Date.now() - startedAt).toBeGreaterThanOrEqual(100)
+    if (!start.success) return
+    expect(start.data.retryAt - startedAt).toBeGreaterThanOrEqual(59_000)
+
+    const verifyStartedAt = Date.now()
+    const verify = await adapter.emailOtpVerify(start.data.challengeId, "123456")
+    expect(verify.success).toBe(true)
+    expect(Date.now() - verifyStartedAt).toBeGreaterThanOrEqual(100)
+  })
+
   test("realm discovery stays available so form errors render in place", async () => {
     const discovered = await adapterCreate("error").discover()
 
@@ -82,8 +122,17 @@ describe("deterministic login demo adapter", () => {
     expect(settled).toBe("pending")
   })
 
+  test("the fatal fixture returns an initialization failure instead of a form failure", async () => {
+    const result = await adapterCreate("fatal").discover()
+
+    expect(result.success).toBe(false)
+    if (result.success) return
+    expect(result.errorMessage).toBe("The sign-in request could not be initialized.")
+  })
+
   test("passkey support reflects the fixture and the provider start never leaves the demo", async () => {
     expect(adapterCreate("permission-denied").passkeySupported()).toBe(false)
+    expect(adapterCreate("passkey-permission-denied").passkeySupported()).toBe(true)
     expect(adapterCreate("success").passkeySupported()).toBe(true)
 
     const started = await adapterCreate("success").providerStart("provider-google")
@@ -106,5 +155,16 @@ describe("deterministic login demo adapter", () => {
     if (!started.success) return
     expect(started.data.secret).toBe("JBSWY3DPEHPK3PXP")
     expect(started.data.enrollment.status).toBe("pending")
+  })
+
+  test("MFA demo fixtures expose email resend, email enrollment, and passkey verification without production endpoints", async () => {
+    const adapter = adapterCreate("success")
+    const sent = await adapter.mfaEmailOtpStart?.()
+    const enrolled = await adapter.mfaEmailOtpEnroll?.()
+    const passkey = await adapter.mfaPasskeyAuthenticate?.()
+
+    expect(sent?.success).toBe(true)
+    expect(enrolled?.success).toBe(true)
+    expect(passkey?.success).toBe(true)
   })
 })

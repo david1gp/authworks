@@ -2,33 +2,45 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { PasskeyAuthenticationCompleteRequest } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
 import type { PasskeyAuthenticationStartResponse } from "../public/passkeyAuthenticationStartResponseSchema.js"
+import type { PasskeyAuthenticationStatus } from "../public/passkeyAuthenticationStatusSchema.js"
 import { passkeyBase64UrlDecode } from "./passkeyBase64UrlDecode.js"
 import { passkeyBase64UrlEncode } from "./passkeyBase64UrlEncode.js"
+import { passkeyCapabilityCheck } from "./passkeyCapabilityCheck.js"
+import { passkeyCeremonyErrorClassify } from "./passkeyCeremonyErrorClassify.js"
 
 /** Runs the browser WebAuthn assertion ceremony for a server-issued authentication challenge. */
-export async function passkeyAuthenticationRun(start: PasskeyAuthenticationStartResponse) {
+export async function passkeyAuthenticationRun(
+  start: PasskeyAuthenticationStartResponse,
+  options?: { readonly statusSet?: (status: PasskeyAuthenticationStatus) => void },
+) {
   const op = "passkeyAuthenticationRun"
-  if (globalThis.navigator?.credentials === undefined)
+  if (!passkeyCapabilityCheck()) {
+    options?.statusSet?.("unsupported")
     return resultErrorCodedCreate(op, "Passkeys are not supported by this browser.", "passkeys.invalid")
+  }
 
   try {
-    const options = start.options
+    const publicKeyOptions = start.options
+    options?.statusSet?.("pending")
     const credential = (await navigator.credentials.get({
       publicKey: {
-        allowCredentials: options.allowCredentials?.map((item) => ({
+        allowCredentials: publicKeyOptions.allowCredentials?.map((item) => ({
           id: passkeyBase64UrlDecode(item.id),
           transports: item.transports?.filter(
             (transport): transport is AuthenticatorTransport => transport !== "cable" && transport !== "smart-card",
           ),
           type: item.type,
         })),
-        challenge: passkeyBase64UrlDecode(options.challenge),
-        rpId: options.rpId,
-        timeout: options.timeout,
-        userVerification: options.userVerification,
+        challenge: passkeyBase64UrlDecode(publicKeyOptions.challenge),
+        rpId: publicKeyOptions.rpId,
+        timeout: publicKeyOptions.timeout,
+        userVerification: publicKeyOptions.userVerification,
       },
     })) as PublicKeyCredential | null
-    if (credential === null) return resultErrorCodedCreate(op, "Passkey sign-in was cancelled.", "passkeys.invalid")
+    if (credential === null) {
+      options?.statusSet?.("permission-denied")
+      return resultErrorCodedCreate(op, "Passkey sign-in was canceled or timed out.", "passkeys.invalid")
+    }
     const response = credential.response as AuthenticatorAssertionResponse
     const input: PasskeyAuthenticationCompleteRequest = {
       response: {
@@ -49,8 +61,11 @@ export async function passkeyAuthenticationRun(start: PasskeyAuthenticationStart
       },
       token: start.token,
     }
+    options?.statusSet?.("ready")
     return resultCreate(input)
-  } catch (_error) {
-    return resultErrorCodedCreate(op, "Passkey sign-in was not completed.", "passkeys.invalid")
+  } catch (error) {
+    const classified = passkeyCeremonyErrorClassify(error)
+    options?.statusSet?.(classified.status)
+    return resultErrorCodedCreate(op, classified.message, "passkeys.invalid")
   }
 }

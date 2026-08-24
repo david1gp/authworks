@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"Перевірки другого фактор
 demo.login.group.mfa.title,Багатофакторна автентифікація
 demo.login.group.password_email.description,Автентифікація за паролем та кодом з листа з детермінованими локальними даними.
 demo.login.group.password_email.title,Пароль та код з листа
-demo.login.group.passwordless.description,"Ключі доступу та налаштовані провайдери Google, GitHub та Microsoft."
+demo.login.group.passwordless.description,"Ключі доступу та налаштовані зовнішні постачальники ідентичності."
 demo.login.group.passwordless.title,Безпарольний та зовнішній вхід
 demo.login.group.recovery.description,Запросіть та завершіть відновлення пароля без розкриття даних облікового запису.
 demo.login.group.recovery.title,Відновлення
@@ -944,14 +944,18 @@ email.preview.securityVerified,Перевірку входу завершено
 email.preview.subject,Тема
 email.preview.text,Текстова версія
 email.preview.verification,Підтвердження електронної пошти
+login.chooser.accountOrMethodTitle,Виберіть обліковий запис або спосіб
 login.chooser.description,Виберіть спосіб входу в {organization}
+login.chooser.lastUsed,Використано востаннє
+login.chooser.methodTitle,Виберіть спосіб
+login.chooser.orChooseMethod,Або виберіть спосіб
 login.chooser.emailOtpDetail,Отримати одноразовий код електронною поштою
 login.chooser.emailOtpLabel,Код із електронної пошти
 login.chooser.passkeyDetail,Використати блокування екрана пристрою або ключ безпеки
 login.chooser.passkeyLabel,Ключ доступу
 login.chooser.passwordDetail,Використати пароль облікового запису
 login.chooser.passwordLabel,Пароль
-login.chooser.providerDetail,Продовжити з підключеним обліковим записом
+login.chooser.providerDetail,Увійдіть за допомогою наявного облікового запису {provider}
 login.chooser.providerLabel,Продовжити з {provider}
 login.chooser.register,Створити обліковий запис
 login.chooser.title,Вхід
@@ -1015,6 +1019,8 @@ login.provider.description,"Ви продовжите на сайті {provider}
 login.provider.submit,Продовжити з {provider}
 login.provider.title,Продовжити з {provider}
 login.recent.description,"Продовжити з обліковим записом, який ви використовували на цьому пристрої."
+login.recent.heading,Нещодавні облікові записи
+login.recent.useAnother,Використати інший спосіб або обліковий запис
 login.recent.other,Використати інший обліковий запис
 login.recent.title,Виберіть обліковий запис
 login.recovery.completeDescription,Увійдіть із новим паролем.
@@ -1050,6 +1056,114 @@ login.verify.submit,Підтвердити адресу електронної �
 login.verify.title,Підтвердьте адресу електронної пошти
 login.verify.verifiedDescription,{email} підтверджено. Тепер можна ввійти.
 login.verify.verifiedTitle,Адресу електронної пошти підтверджено
+demo.fixture.continuing,продовження
+demo.fixture.fatal,критична помилка
+demo.fixture.passwordChangeExpired,пароль минув термін дії
+demo.fixture.recoveryFatal,відновлення недоступне
+demo.fixture.recoveryLoading,завантаження відновлення
+demo.fixture.resetInvalid,недійсне посилання для скидання
+demo.fixture.resetLoading,завантаження посилання для скидання
+login.emailOtp.codeHelp,Введіть 6 цифр.
+login.emailOtp.back,Назад до способів
+login.emailOtp.changeEmail,Змінити електронну адресу
+login.emailOtp.resendCountdown,Новий код можна буде надіслати через {seconds} секунд.
+login.emailOtp.resent,Новий код надіслано.
+login.emailOtp.remember,Запам’ятати цю адресу
+login.emailOtp.sending,Надсилання...
+login.emailOtp.verifying,Перевірка...
+login.error.credentialsInvalid,Неправильне ім’я користувача або пароль.
+login.error.emailRecoveryRequired,Введіть адресу електронної пошти облікового запису.
+login.error.identifierRequired,Введіть ім’я користувача або адресу електронної пошти.
+login.error.newPasswordRequired,Введіть новий пароль.
+login.error.passwordRequired,Введіть пароль.
+login.mfa.backToChoices,Назад до варіантів двоетапної перевірки
+login.mfa.backToMethods,Назад до способів
+login.mfa.continue,Продовжити вхід
+login.mfa.emailOtpCodeTitle,Код підтвердження електронною поштою
+login.mfa.emailOtpDetail,Отримати одноразовий код підтвердження електронною поштою.
+login.mfa.emailOtpEnroll,Налаштувати коди електронної пошти
+login.mfa.emailOtpEnrollDescription,Коди підтвердження надсилатимуться на адресу електронної пошти облікового запису.
+login.mfa.emailOtpEnrollNotice,"Налаштуйте коди електронної пошти, щоб використовувати адресу облікового запису як другий фактор."
+login.mfa.emailOtpEnrollSent,"Коди електронної пошти налаштовано. Введіть код, надісланий на вашу адресу."
+login.mfa.emailOtpEnrollTitle,Налаштувати коди електронної пошти
+login.mfa.emailOtpSend,Надіслати код
+login.mfa.emailOtpSendDescription,Надіслати шестизначний код підтвердження на адресу електронної пошти облікового запису.
+login.mfa.emailOtpSent,Код підтвердження надіслано на вашу адресу електронної пошти.
+login.mfa.emailOtpResent,Новий код підтвердження надіслано на вашу адресу електронної пошти.
+login.mfa.emailOtpUnavailableDescription,Перевірка електронною поштою як другого фактора недоступна в цьому процесі входу.
+login.mfa.emailOtpUnavailableNotice,Транспорт MFA електронною поштою не налаштовано для цього запиту входу Authworks.
+login.mfa.emailOtpUnavailableTitle,Код електронної пошти недоступний
+login.mfa.enterRecoveryCode,Введіть збережений код відновлення.
+login.mfa.enterSixDigits,Введіть 6 цифр.
+login.mfa.enrollDescription,Виберіть спосіб налаштування двоетапної перевірки для облікового запису.
+login.mfa.enrollTitle,Налаштувати двоетапну перевірку
+login.mfa.factorUnavailable,Цей фактор недоступний у поточному контракті входу.
+login.mfa.loadingOptions,Завантаження варіантів двоетапної перевірки...
+login.mfa.loadingOptionsDescription,Отримання доступних варіантів другого фактора.
+login.mfa.optionalDescription,Налаштуйте двоетапну перевірку для додаткової безпеки або пропустіть її зараз.
+login.mfa.optionalTitle,Необов’язкова двоетапна перевірка
+login.mfa.optionsUnavailableDescription,Не вдалося завантажити доступні варіанти другого фактора.
+login.mfa.optionsUnavailableTitle,Двоетапна перевірка недоступна
+login.mfa.passkeyDescription,"Підтвердьте за допомогою ключа доступу, блокування екрана пристрою або біометрії."
+login.mfa.passkeyDetail,Підтвердьте за допомогою ключа доступу або біометрії пристрою.
+login.mfa.passkeyEnrollmentUnavailableDescription,Розміщений контракт входу не підтримує реєстрацію ключів доступу.
+login.mfa.passkeyEnrollmentUnavailableNotice,"Завершіть налаштування ключа доступу на автентифікованій сторінці безпеки облікового запису, а потім поверніться до входу."
+login.mfa.passkeyEnrollmentUnavailableTitle,Налаштування ключа доступу недоступне
+login.mfa.passkeyUnavailableDescription,Перевірка ключем доступу як другим фактором недоступна в цьому процесі входу.
+login.mfa.passkeyUnavailableNotice,Транспорт MFA ключа доступу не налаштовано для цього запиту Authworks.
+login.mfa.passkeyUnavailableTitle,Ключ доступу недоступний
+login.mfa.passkeyVerify,Підтвердити ключем доступу
+login.mfa.resend,Надіслати код повторно
+login.mfa.resendIn,Повторно надіслати через {seconds} секунд
+login.mfa.recoveryCodeDetail,Використайте один зі збережених одноразових кодів відновлення.
+login.mfa.totpChallengeTitle,Код автентифікатора
+login.mfa.totpDetail,Використайте код із програми автентифікатора.
+login.mfa.retryOptions,Повторити завантаження варіантів
+login.mfa.setupFactor,Налаштувати {factor}
+login.mfa.skip,Пропустити зараз
+login.mfa.skipping,Пропуск...
+login.mfa.satisfiedDescription,Ваш вхід уже відповідає політиці двоетапної перевірки.
+login.mfa.satisfiedTitle,Двоетапну перевірку виконано
+login.mfa.unavailable,Недоступно
+login.passkey.unsupportedTitle,Ключ доступу не підтримується
+login.password.changeRequiredDescription,"Перш ніж продовжити, потрібно змінити пароль."
+login.password.changeRequiredTitle,Змініть пароль
+login.password.changeSubmit,Змінити пароль
+login.password.expiredDescription,"Термін дії пароля минув. Установіть новий пароль, щоб продовжити."
+login.password.currentRequired,Введіть поточний пароль.
+login.password.back,Назад до способів
+login.password.passwordRequired,Введіть пароль.
+login.password.rememberIdentifier,Запам’ятати цей ідентифікатор
+login.password.signInTitle,Увійти за допомогою пароля
+login.password.signingIn,Вхід...
+login.password.saving,Збереження...
+login.provider.accountNotFoundDescription,"Для цього облікового запису {provider} немає пов’язаного облікового запису Authworks. Пов’язування облікових записів і самостійна реєстрація ще не ввімкнені."
+login.provider.accountNotFoundTitle,Пов’язаного облікового запису немає
+login.provider.failureDescription,Вхід через {provider} не завершено. Спробуйте ще раз.
+login.provider.linkingFailedDescription,Не вдалося завершити пов’язування облікового запису. Спробуйте інший спосіб входу.
+login.provider.linkingFailedTitle,Не вдалося пов’язати обліковий запис
+login.recovery.back,Назад до входу
+login.recovery.checkingLink,Перевірка посилання для скидання...
+login.recovery.choosePasswordTitle,Виберіть новий пароль
+login.recovery.completeDescriptionReference,"Увійдіть із новим паролем, щоб продовжити."
+login.recovery.completeTitleReference,Пароль змінено
+login.recovery.invalidLinkTitle,Це посилання для скидання більше недійсне
+login.recovery.invalidLinkError,Це посилання для скидання пароля недійсне або застаріле.
+login.recovery.loading,Завантаження відновлення пароля...
+login.recovery.resetSubmitReference,Установити новий пароль
+login.recovery.saving,Збереження...
+login.recovery.sending,Надсилання...
+login.recovery.submitReference,Надіслати посилання для скидання
+login.recovery.unavailableDescription,Відновлення пароля тимчасово недоступне.
+login.recovery.unavailableTitle,Відновлення пароля недоступне
+login.status.continuing,Продовження входу...
+login.status.fatalTitle,Почати вхід знову
+login.totpEnroll.hideSetupKey,Сховати ключ налаштування
+login.totpEnroll.qrLabel,QR-код для налаштування програми автентифікатора
+login.totpEnroll.scanDescription,"Відскануйте QR-код програмою автентифікатора, а потім введіть показаний шестизначний код."
+login.totpEnroll.setupKeyLabel,Ключ налаштування (якщо сканування неможливе)
+login.totpEnroll.showSetupKey,Показати ключ налаштування
+login.totpEnroll.unavailableDescription,Не вдалося підготувати налаштування автентифікатора. Деталі налаштування не можна відновити після перезавантаження.
 shell.guard.accessUnavailable,Доступ недоступний
 shell.guard.contextRequired,Потрібен контекст
 shell.guard.contextRequiredDetail,Виберіть потрібний realm або організацію перед продовженням.

@@ -841,7 +841,7 @@ demo.login.group.mfa.description,تحديات العامل الثاني وتسج
 demo.login.group.mfa.title,المصادقة متعددة العوامل
 demo.login.group.password_email.description,المصادقة بكلمة المرور ورمز البريد الإلكتروني ببيانات تجريبية محلية محددة.
 demo.login.group.password_email.title,كلمة المرور ورمز البريد الإلكتروني
-demo.login.group.passwordless.description,مفاتيح المرور وموفرو Google وGitHub وMicrosoft المكونون.
+demo.login.group.passwordless.description,مفاتيح المرور وموفرو الهوية الخارجيون المكونون.
 demo.login.group.passwordless.title,بدون كلمة مرور والمصادقة الخارجية
 demo.login.group.recovery.description,طلب واستكمال استرداد كلمة المرور دون الكشف عن الحساب.
 demo.login.group.recovery.title,الاسترداد
@@ -944,14 +944,18 @@ email.preview.securityVerified,اكتمل التحقق من تسجيل الدخ�
 email.preview.subject,الموضوع
 email.preview.text,البديل النصي
 email.preview.verification,التحقق من البريد الإلكتروني
+login.chooser.accountOrMethodTitle,اختر حسابًا أو طريقة
 login.chooser.description,اختر طريقة تسجيل الدخول إلى {organization}
+login.chooser.lastUsed,آخر استخدام
+login.chooser.methodTitle,اختر طريقة
+login.chooser.orChooseMethod,أو اختر طريقة
 login.chooser.emailOtpDetail,استلام رمز لمرة واحدة عبر البريد الإلكتروني
 login.chooser.emailOtpLabel,رمز البريد الإلكتروني
 login.chooser.passkeyDetail,استخدام قفل شاشة جهازك أو مفتاح أمان
 login.chooser.passkeyLabel,مفتاح مرور
 login.chooser.passwordDetail,استخدام كلمة مرور حسابك
 login.chooser.passwordLabel,كلمة المرور
-login.chooser.providerDetail,المتابعة باستخدام حساب مرتبط
+login.chooser.providerDetail,استخدم حساب {provider} الحالي لتسجيل الدخول
 login.chooser.providerLabel,المتابعة باستخدام {provider}
 login.chooser.register,إنشاء حساب
 login.chooser.title,تسجيل الدخول
@@ -1015,6 +1019,8 @@ login.provider.description,ستتابع على {provider} وتعود إلى هن
 login.provider.submit,المتابعة باستخدام {provider}
 login.provider.title,المتابعة باستخدام {provider}
 login.recent.description,المتابعة باستخدام حساب استخدمته على هذا الجهاز.
+login.recent.heading,الحسابات الأخيرة
+login.recent.useAnother,استخدام طريقة أو حساب آخر
 login.recent.other,استخدام حساب آخر
 login.recent.title,اختر حسابًا
 login.recovery.completeDescription,سجّل الدخول باستخدام كلمة المرور الجديدة.
@@ -1050,6 +1056,114 @@ login.verify.submit,تأكيد عنوان البريد الإلكتروني
 login.verify.title,التحقق من عنوان البريد الإلكتروني
 login.verify.verifiedDescription,تم تأكيد {email}. يمكنك تسجيل الدخول الآن.
 login.verify.verifiedTitle,تم تأكيد عنوان البريد الإلكتروني
+demo.fixture.continuing,جارٍ المتابعة
+demo.fixture.fatal,خطأ جسيم
+demo.fixture.passwordChangeExpired,انتهت صلاحية كلمة المرور
+demo.fixture.recoveryFatal,الاسترداد غير متاح
+demo.fixture.recoveryLoading,جارٍ تحميل الاسترداد
+demo.fixture.resetInvalid,رابط إعادة التعيين غير صالح
+demo.fixture.resetLoading,جارٍ تحميل رابط إعادة التعيين
+login.emailOtp.codeHelp,أدخل 6 أرقام.
+login.emailOtp.back,العودة إلى الطرق
+login.emailOtp.changeEmail,تغيير البريد الإلكتروني
+login.emailOtp.resendCountdown,يمكن إرسال رمز آخر خلال {seconds} ثانية.
+login.emailOtp.resent,تم إرسال رمز جديد.
+login.emailOtp.remember,تذكر هذا البريد الإلكتروني
+login.emailOtp.sending,جارٍ الإرسال...
+login.emailOtp.verifying,جارٍ التحقق...
+login.error.credentialsInvalid,اسم المستخدم أو كلمة المرور غير صحيحة.
+login.error.emailRecoveryRequired,أدخل عنوان البريد الإلكتروني لحسابك.
+login.error.identifierRequired,أدخل اسم المستخدم أو عنوان بريدك الإلكتروني.
+login.error.newPasswordRequired,أدخل كلمة مرور جديدة.
+login.error.passwordRequired,أدخل كلمة المرور.
+login.mfa.backToChoices,العودة إلى خيارات التحقق بخطوتين
+login.mfa.backToMethods,العودة إلى الطرق
+login.mfa.continue,متابعة تسجيل الدخول
+login.mfa.emailOtpCodeTitle,رمز التحقق عبر البريد الإلكتروني
+login.mfa.emailOtpDetail,استلام رمز تحقق لمرة واحدة عبر البريد الإلكتروني.
+login.mfa.emailOtpEnroll,إعداد رموز البريد الإلكتروني
+login.mfa.emailOtpEnrollDescription,ستُرسل رموز التحقق إلى عنوان البريد الإلكتروني لحسابك.
+login.mfa.emailOtpEnrollNotice,أعد رموز البريد الإلكتروني لاستخدام بريد حسابك كعامل ثانٍ.
+login.mfa.emailOtpEnrollSent,تم إعداد رموز البريد. أدخل الرمز المرسل إلى عنوان بريدك.
+login.mfa.emailOtpEnrollTitle,إعداد رموز البريد الإلكتروني
+login.mfa.emailOtpSend,إرسال الرمز
+login.mfa.emailOtpSendDescription,إرسال رمز تحقق من ستة أرقام إلى بريد حسابك.
+login.mfa.emailOtpSent,تم إرسال رمز تحقق إلى عنوان بريدك الإلكتروني.
+login.mfa.emailOtpResent,تم إرسال رمز تحقق جديد إلى عنوان بريدك الإلكتروني.
+login.mfa.emailOtpUnavailableDescription,التحقق بالبريد الإلكتروني كعامل ثانٍ غير متاح في تسجيل الدخول هذا.
+login.mfa.emailOtpUnavailableNotice,نقل MFA عبر البريد الإلكتروني غير مهيأ لطلب تسجيل الدخول هذا في Authworks.
+login.mfa.emailOtpUnavailableTitle,رمز البريد الإلكتروني غير متاح
+login.mfa.enterRecoveryCode,أدخل رمز استرداد محفوظًا.
+login.mfa.enterSixDigits,أدخل 6 أرقام.
+login.mfa.enrollDescription,اختر طريقة لإعداد التحقق بخطوتين لحسابك.
+login.mfa.enrollTitle,إعداد التحقق بخطوتين
+login.mfa.factorUnavailable,هذا العامل غير متاح في عقد تسجيل الدخول الحالي.
+login.mfa.loadingOptions,جارٍ تحميل خيارات التحقق بخطوتين...
+login.mfa.loadingOptionsDescription,جارٍ جلب خيارات العامل الثاني المتاحة.
+login.mfa.optionalDescription,يمكنك إعداد التحقق بخطوتين لمزيد من الأمان أو تخطيه الآن.
+login.mfa.optionalTitle,التحقق بخطوتين اختياري
+login.mfa.optionsUnavailableDescription,تعذر تحميل خيارات العامل الثاني المتاحة.
+login.mfa.optionsUnavailableTitle,التحقق بخطوتين غير متاح
+login.mfa.passkeyDescription,أكد هويتك بمفتاح مرور أو قفل شاشة الجهاز أو القياسات الحيوية.
+login.mfa.passkeyDetail,تحقق باستخدام مفتاح مرور أو القياسات الحيوية للجهاز.
+login.mfa.passkeyEnrollmentUnavailableDescription,لا يوفّر عقد تسجيل الدخول المستضاف تسجيل مفاتيح المرور.
+login.mfa.passkeyEnrollmentUnavailableNotice,أكمل إعداد مفتاح المرور من صفحة أمان الحساب بعد المصادقة، ثم عد لتسجيل الدخول.
+login.mfa.passkeyEnrollmentUnavailableTitle,إعداد مفتاح المرور غير متاح
+login.mfa.passkeyUnavailableDescription,التحقق بمفتاح المرور كعامل ثانٍ غير متاح في تسجيل الدخول هذا.
+login.mfa.passkeyUnavailableNotice,نقل MFA بمفتاح المرور غير مهيأ لطلب Authworks هذا.
+login.mfa.passkeyUnavailableTitle,مفتاح المرور غير متاح
+login.mfa.passkeyVerify,التحقق باستخدام مفتاح المرور
+login.mfa.resend,إعادة إرسال الرمز
+login.mfa.resendIn,إعادة الإرسال خلال {seconds} ثانية
+login.mfa.recoveryCodeDetail,استخدم أحد رموز الاسترداد المحفوظة لمرة واحدة.
+login.mfa.totpChallengeTitle,رمز تطبيق المصادقة
+login.mfa.totpDetail,استخدم رمزًا من تطبيق المصادقة.
+login.mfa.retryOptions,إعادة محاولة تحميل الخيارات
+login.mfa.setupFactor,إعداد {factor}
+login.mfa.skip,تخطي الآن
+login.mfa.skipping,جارٍ التخطي...
+login.mfa.satisfiedDescription,يلبي تسجيل دخولك بالفعل سياسة التحقق بخطوتين.
+login.mfa.satisfiedTitle,تم استيفاء التحقق بخطوتين
+login.mfa.unavailable,غير متاح
+login.passkey.unsupportedTitle,مفتاح المرور غير مدعوم
+login.password.changeRequiredDescription,يجب تغيير كلمة المرور قبل المتابعة.
+login.password.changeRequiredTitle,غيّر كلمة المرور
+login.password.changeSubmit,تغيير كلمة المرور
+login.password.expiredDescription,انتهت صلاحية كلمة المرور. عيّن كلمة مرور جديدة للمتابعة.
+login.password.currentRequired,أدخل كلمة المرور الحالية.
+login.password.back,العودة إلى الطرق
+login.password.passwordRequired,أدخل كلمة المرور.
+login.password.rememberIdentifier,تذكر هذا المعرّف
+login.password.signInTitle,تسجيل الدخول بكلمة المرور
+login.password.signingIn,جارٍ تسجيل الدخول...
+login.password.saving,جارٍ الحفظ...
+login.provider.accountNotFoundDescription,لا يوجد حساب Authworks مرتبط بحساب {provider} هذا. لم يتم تفعيل ربط الحسابات والتسجيل الذاتي بعد.
+login.provider.accountNotFoundTitle,لا يوجد حساب مرتبط
+login.provider.failureDescription,لم يكتمل تسجيل الدخول باستخدام {provider}. حاول مرة أخرى.
+login.provider.linkingFailedDescription,تعذر إكمال ربط الحساب. جرّب طريقة تسجيل دخول أخرى.
+login.provider.linkingFailedTitle,تعذر ربط الحساب
+login.recovery.back,العودة إلى تسجيل الدخول
+login.recovery.checkingLink,جارٍ التحقق من رابط إعادة التعيين...
+login.recovery.choosePasswordTitle,اختر كلمة مرور جديدة
+login.recovery.completeDescriptionReference,سجّل الدخول بكلمة مرورك الجديدة للمتابعة.
+login.recovery.completeTitleReference,تم تغيير كلمة مرورك
+login.recovery.invalidLinkTitle,لم يعد رابط إعادة التعيين صالحًا
+login.recovery.invalidLinkError,رابط إعادة تعيين كلمة المرور غير صالح أو انتهت صلاحيته.
+login.recovery.loading,جارٍ تحميل استرداد كلمة المرور...
+login.recovery.resetSubmitReference,تعيين كلمة مرور جديدة
+login.recovery.saving,جارٍ الحفظ...
+login.recovery.sending,جارٍ الإرسال...
+login.recovery.submitReference,إرسال رابط إعادة التعيين
+login.recovery.unavailableDescription,استرداد كلمة المرور غير متاح مؤقتًا.
+login.recovery.unavailableTitle,استرداد كلمة المرور غير متاح
+login.status.continuing,جارٍ متابعة تسجيل الدخول...
+login.status.fatalTitle,ابدأ تسجيل الدخول من جديد
+login.totpEnroll.hideSetupKey,إخفاء مفتاح الإعداد
+login.totpEnroll.qrLabel,رمز QR لإعداد تطبيق المصادقة
+login.totpEnroll.scanDescription,امسح رمز QR باستخدام تطبيق المصادقة ثم أدخل الرمز المكون من ستة أرقام الظاهر فيه.
+login.totpEnroll.setupKeyLabel,مفتاح الإعداد (إذا تعذر المسح)
+login.totpEnroll.showSetupKey,إظهار مفتاح الإعداد
+login.totpEnroll.unavailableDescription,تعذر إعداد تطبيق المصادقة هنا. لا يمكن استعادة تفاصيل الإعداد بعد إعادة التحميل.
 shell.guard.accessUnavailable,الوصول غير متاح
 shell.guard.contextRequired,السياق مطلوب
 shell.guard.contextRequiredDetail,اختر النطاق أو المنظمة المطلوبة قبل المتابعة.

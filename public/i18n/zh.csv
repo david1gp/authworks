@@ -841,7 +841,7 @@ demo.login.group.mfa.description,第二因素质询、身份验证器注册和�
 demo.login.group.mfa.title,多因素身份验证
 demo.login.group.password_email.description,使用确定性本地测试数据的密码和电子邮件代码身份验证。
 demo.login.group.password_email.title,密码和电子邮件验证码
-demo.login.group.passwordless.description,通行密钥和已配置的 Google、GitHub 及 Microsoft 提供商。
+demo.login.group.passwordless.description,通行密钥和已配置的外部身份提供商。
 demo.login.group.passwordless.title,无密码和外部认证
 demo.login.group.recovery.description,请求并完成密码恢复，而无需泄露账户信息。
 demo.login.group.recovery.title,恢复
@@ -944,14 +944,18 @@ email.preview.securityVerified,登录验证已完成
 email.preview.subject,主题
 email.preview.text,文本替代内容
 email.preview.verification,电子邮件验证
+login.chooser.accountOrMethodTitle,选择账户或方式
 login.chooser.description,选择登录 {organization} 的方式
+login.chooser.lastUsed,最近使用
+login.chooser.methodTitle,选择方式
+login.chooser.orChooseMethod,或选择一种方式
 login.chooser.emailOtpDetail,通过电子邮件接收一次性代码
 login.chooser.emailOtpLabel,电子邮件代码
 login.chooser.passkeyDetail,使用设备屏幕锁或安全密钥
 login.chooser.passkeyLabel,通行密钥
 login.chooser.passwordDetail,使用帐户密码
 login.chooser.passwordLabel,密码
-login.chooser.providerDetail,使用已关联的帐户继续
+login.chooser.providerDetail,使用现有的 {provider} 帐户登录
 login.chooser.providerLabel,使用 {provider} 继续
 login.chooser.register,创建帐户
 login.chooser.title,登录
@@ -1015,6 +1019,8 @@ login.provider.description,您将前往 {provider}，完成后返回此处。
 login.provider.submit,使用 {provider} 继续
 login.provider.title,使用 {provider} 继续
 login.recent.description,使用您在此设备上使用过的帐户继续。
+login.recent.heading,最近使用的账户
+login.recent.useAnother,使用其他方式或账户
 login.recent.other,使用其他帐户
 login.recent.title,选择帐户
 login.recovery.completeDescription,使用新密码登录。
@@ -1050,6 +1056,114 @@ login.verify.submit,确认电子邮件地址
 login.verify.title,验证电子邮件地址
 login.verify.verifiedDescription,{email} 已确认。您现在可以登录。
 login.verify.verifiedTitle,电子邮件地址已确认
+demo.fixture.continuing,继续中
+demo.fixture.fatal,严重错误
+demo.fixture.passwordChangeExpired,密码已过期
+demo.fixture.recoveryFatal,恢复功能不可用
+demo.fixture.recoveryLoading,正在加载恢复功能
+demo.fixture.resetInvalid,重置链接无效
+demo.fixture.resetLoading,正在加载重置链接
+login.emailOtp.codeHelp,请输入6位数字。
+login.emailOtp.back,返回方式选择
+login.emailOtp.changeEmail,更改电子邮件
+login.emailOtp.resendCountdown,{seconds}秒后可以发送新代码。
+login.emailOtp.resent,新代码已发送。
+login.emailOtp.remember,记住此电子邮件
+login.emailOtp.sending,正在发送...
+login.emailOtp.verifying,正在验证...
+login.error.credentialsInvalid,用户名或密码不正确。
+login.error.emailRecoveryRequired,请输入账户的电子邮件地址。
+login.error.identifierRequired,请输入用户名或电子邮件地址。
+login.error.newPasswordRequired,请输入新密码。
+login.error.passwordRequired,请输入密码。
+login.mfa.backToChoices,返回两步验证选项
+login.mfa.backToMethods,返回方式选择
+login.mfa.continue,继续登录
+login.mfa.emailOtpCodeTitle,电子邮件验证码
+login.mfa.emailOtpDetail,通过电子邮件接收一次性验证码。
+login.mfa.emailOtpEnroll,设置电子邮件验证码
+login.mfa.emailOtpEnrollDescription,验证码将发送到您账户的电子邮件地址。
+login.mfa.emailOtpEnrollNotice,"设置电子邮件验证码，将账户邮箱用作第二因素。"
+login.mfa.emailOtpEnrollSent,电子邮件验证码已设置。请输入发送到您地址的代码。
+login.mfa.emailOtpEnrollTitle,设置电子邮件验证码
+login.mfa.emailOtpSend,发送代码
+login.mfa.emailOtpSendDescription,向您账户的电子邮件地址发送六位验证码。
+login.mfa.emailOtpSent,验证码已发送到您的电子邮件地址。
+login.mfa.emailOtpResent,新的验证码已发送到您的电子邮件地址。
+login.mfa.emailOtpUnavailableDescription,此登录流程不支持通过电子邮件验证第二因素。
+login.mfa.emailOtpUnavailableNotice,此 Authworks 登录请求未配置电子邮件 MFA 传输。
+login.mfa.emailOtpUnavailableTitle,电子邮件代码不可用
+login.mfa.enterRecoveryCode,请输入保存的恢复代码。
+login.mfa.enterSixDigits,请输入6位数字。
+login.mfa.enrollDescription,选择一种方式为您的账户设置两步验证。
+login.mfa.enrollTitle,设置两步验证
+login.mfa.factorUnavailable,当前登录契约中不提供此因素。
+login.mfa.loadingOptions,正在加载两步验证选项...
+login.mfa.loadingOptionsDescription,正在获取可用的第二因素选项。
+login.mfa.optionalDescription,设置两步验证以提高安全性，或暂时跳过。
+login.mfa.optionalTitle,可选两步验证
+login.mfa.optionsUnavailableDescription,无法加载可用的第二因素选项。
+login.mfa.optionsUnavailableTitle,两步验证不可用
+login.mfa.passkeyDescription,"使用通行密钥、设备屏幕锁或生物识别进行确认。"
+login.mfa.passkeyDetail,使用通行密钥或设备生物识别验证。
+login.mfa.passkeyEnrollmentUnavailableDescription,托管登录契约不提供通行密钥注册。
+login.mfa.passkeyEnrollmentUnavailableNotice,请在已验证的账户安全页面完成通行密钥设置，然后返回登录。
+login.mfa.passkeyEnrollmentUnavailableTitle,通行密钥设置不可用
+login.mfa.passkeyUnavailableDescription,此登录流程不支持使用通行密钥验证第二因素。
+login.mfa.passkeyUnavailableNotice,此 Authworks 请求未配置通行密钥 MFA 传输。
+login.mfa.passkeyUnavailableTitle,通行密钥不可用
+login.mfa.passkeyVerify,使用通行密钥验证
+login.mfa.resend,重新发送代码
+login.mfa.resendIn,{seconds}秒后重新发送
+login.mfa.recoveryCodeDetail,使用您保存的一次性恢复代码之一。
+login.mfa.totpChallengeTitle,验证器代码
+login.mfa.totpDetail,使用验证器应用中的代码。
+login.mfa.retryOptions,重试加载选项
+login.mfa.setupFactor,设置{factor}
+login.mfa.skip,暂时跳过
+login.mfa.skipping,正在跳过...
+login.mfa.satisfiedDescription,您的登录已满足两步验证策略。
+login.mfa.satisfiedTitle,两步验证已满足
+login.mfa.unavailable,不可用
+login.passkey.unsupportedTitle,不支持通行密钥
+login.password.changeRequiredDescription,继续之前必须更改密码。
+login.password.changeRequiredTitle,更改密码
+login.password.changeSubmit,更改密码
+login.password.expiredDescription,密码已过期。请设置新密码以继续。
+login.password.currentRequired,请输入当前密码。
+login.password.back,返回方式选择
+login.password.passwordRequired,请输入密码。
+login.password.rememberIdentifier,记住此标识符
+login.password.signInTitle,使用密码登录
+login.password.signingIn,正在登录...
+login.password.saving,正在保存...
+login.provider.accountNotFoundDescription,没有账户与此 {provider} 账户关联。账户关联和自助注册尚未启用。
+login.provider.accountNotFoundTitle,没有关联账户
+login.provider.failureDescription,使用 {provider} 登录未完成。请重试。
+login.provider.linkingFailedDescription,无法完成账户关联。请尝试其他登录方式。
+login.provider.linkingFailedTitle,无法关联账户
+login.recovery.back,返回登录
+login.recovery.checkingLink,正在检查重置链接...
+login.recovery.choosePasswordTitle,选择新密码
+login.recovery.completeDescriptionReference,使用新密码登录以继续。
+login.recovery.completeTitleReference,密码已更改
+login.recovery.invalidLinkTitle,此重置链接已失效
+login.recovery.invalidLinkError,此密码重置链接无效或已过期。
+login.recovery.loading,正在加载密码恢复...
+login.recovery.resetSubmitReference,设置新密码
+login.recovery.saving,正在保存...
+login.recovery.sending,正在发送...
+login.recovery.submitReference,发送重置链接
+login.recovery.unavailableDescription,密码恢复暂时不可用。
+login.recovery.unavailableTitle,密码恢复不可用
+login.status.continuing,正在继续登录...
+login.status.fatalTitle,重新开始登录
+login.totpEnroll.hideSetupKey,隐藏设置密钥
+login.totpEnroll.qrLabel,用于设置验证器应用的二维码
+login.totpEnroll.scanDescription,使用验证器应用扫描二维码，然后输入显示的六位代码。
+login.totpEnroll.setupKeyLabel,设置密钥（无法扫描时使用）
+login.totpEnroll.showSetupKey,显示设置密钥
+login.totpEnroll.unavailableDescription,无法在此准备验证器设置。重新加载后无法恢复设置详情。
 shell.guard.accessUnavailable,无法访问
 shell.guard.contextRequired,需要上下文
 shell.guard.contextRequiredDetail,请在继续前选择所需的领域或组织。

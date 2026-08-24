@@ -13,7 +13,7 @@ describe("loginPrimaryMethodsGet", () => {
       allowRegistration: true,
       providerIds: null,
     }
-    expect(loginPrimaryMethodsGet(policy, 0)).toEqual(["password", "email-otp", "passkey"])
-    expect(loginPrimaryMethodsGet(policy, 1)).toEqual(["password", "email-otp", "passkey", "external-identity"])
+    expect(loginPrimaryMethodsGet(policy, 0)).toEqual(["email-otp", "password", "passkey"])
+    expect(loginPrimaryMethodsGet(policy, 1)).toEqual(["email-otp", "password", "passkey", "external-identity"])
   })
 })

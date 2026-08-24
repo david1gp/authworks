@@ -1,5 +1,6 @@
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { passkeyCapabilityCheck } from "../../passkeys/ui/passkeyCapabilityCheck.js"
 import { passkeyAuthenticationRun } from "../../passkeys/ui/passkeyAuthenticationRun.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
 import type { LoginAdapter, LoginDiscovery } from "./loginAdapter.js"
@@ -73,18 +74,26 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       if (realm === undefined) return notDiscovered("loginMfaTotpEnrollStart")
       return api.mfaTotpEnrollStart(realm)
     },
-    passkeyAuthenticate: async () => {
+    passkeyAuthenticate: async (passkeyOptions) => {
       const realm = realmId()
       if (realm === undefined) return notDiscovered("loginPasskeyAuthenticate")
+      passkeyOptions?.statusSet?.("pending")
       const start = await api.passkeyAuthenticationStart(realm, organizationId())
-      if (!start.success) return start
-      const ceremony = await passkeyAuthenticationRun(start.data)
+      if (!start.success) {
+        passkeyOptions?.statusSet?.("failure")
+        return start
+      }
+      const ceremony = await passkeyAuthenticationRun(start.data, passkeyOptions)
       if (!ceremony.success) return ceremony
       const completed = await api.passkeyAuthenticationComplete(realm, ceremony.data)
-      if (!completed.success) return completed
+      if (!completed.success) {
+        passkeyOptions?.statusSet?.("failure")
+        return completed
+      }
+      passkeyOptions?.statusSet?.("ready")
       return resultCreate({ userId: completed.data.authentication.userId })
     },
-    passkeySupported: () => globalThis.navigator?.credentials !== undefined,
+    passkeySupported: passkeyCapabilityCheck,
     passwordChange: async (currentPassword, newPassword) => {
       const realm = realmId()
       if (realm === undefined) return notDiscovered("loginPasswordChange")
@@ -108,7 +117,15 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
         ...(organizationId() === undefined ? {} : { organizationId: organizationId() as string }),
       })
       if (!result.success) return result
-      globalThis.location.assign(result.data.authorizationUrl)
+      try {
+        globalThis.location.assign(result.data.authorizationUrl)
+      } catch {
+        return resultErrorCodedCreate(
+          "loginProviderStart",
+          "The external identity provider is unavailable.",
+          "external-identities.read-failed",
+        )
+      }
       return resultCreate({ authorizationUrl: result.data.authorizationUrl })
     },
     recentAccounts: async () => {

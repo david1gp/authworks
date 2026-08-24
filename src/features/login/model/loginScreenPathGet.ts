@@ -1,7 +1,7 @@
 import type { LoginScreen } from "./loginScreenSchema.js"
 
 const loginScreenPaths: Readonly<Record<LoginScreen, string>> = {
-  chooser: "",
+  chooser: "/chooser",
   "email-otp": "/email-otp",
   "email-otp-code": "/email-otp/code",
   loading: "/loading",
@@ -9,8 +9,16 @@ const loginScreenPaths: Readonly<Record<LoginScreen, string>> = {
   "logout-done": "/logout/done",
   mfa: "/mfa",
   "mfa-email-otp": "/mfa/email-otp",
+  "mfa-email-otp-enroll": "/mfa/email-otp/enroll",
+  "mfa-email-otp-code": "/mfa/email-otp/code",
+  "mfa-enroll": "/mfa/enroll",
+  "mfa-loading": "/mfa/loading",
+  "mfa-optional": "/mfa/optional",
+  "mfa-options-unavailable": "/mfa/retry",
   "mfa-passkey": "/mfa/passkey",
+  "mfa-passkey-enroll": "/mfa/passkey/enroll",
   "mfa-recovery-code": "/mfa/recovery-code",
+  "mfa-satisfied": "/mfa/satisfied",
   "mfa-totp": "/mfa/totp",
   "mfa-totp-enroll": "/mfa/totp-enroll",
   passkey: "/passkey",

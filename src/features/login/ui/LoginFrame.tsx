@@ -1,66 +1,89 @@
 import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
 import { LinkTextExternal } from "#ui/interactive/link/LinkText.jsx"
-import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
-import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
-import { PageWrapper } from "#ui/static/page/PageWrapper.jsx"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
+import type { LoginScreen } from "../model/loginScreenSchema.js"
 import { BrandHeader } from "./BrandHeader.js"
+import { LoginThemeToggle } from "./LoginThemeToggle.js"
 import type { LoginDiscovery } from "./loginAdapter.js"
+import { loginBackgroundNameGet } from "./loginBackgroundNameGet.js"
 import { loginFrameStateCreate } from "./loginFrameStateCreate.js"
 import { loginLegalSegmentsGet } from "./loginLegalSegmentsGet.js"
 
 type LoginFrameProps = {
   readonly bootstrap: LoginDiscovery
+  readonly busy: boolean
   readonly children: JSX.Element
+  readonly screen: LoginScreen
 }
 
 export function LoginFrame(props: LoginFrameProps) {
-  const state = loginFrameStateCreate(() => props.bootstrap)
+  const state = loginFrameStateCreate(
+    () => props.bootstrap,
+    () => props.screen,
+  )
   return (
-    <PageWrapper innerClass="relative flex min-h-dvh items-center justify-center p-4 py-10 sm:p-6 sm:py-12">
-      <header class="absolute right-3 top-3 flex items-center gap-2 sm:right-4 sm:top-4">
-        <LanguageSelector />
-        <ThemeButton />
-      </header>
-      <main class="w-full max-w-lg">
-        <CardWrapper
-          class="p-5 sm:p-10"
-          style={{ "--login-primary": state.theme().primaryColor, "--login-background": state.theme().backgroundColor }}
-        >
-          <BrandHeader name={state.bootstrap().organization.name} logoUrl={state.theme().logoUrl} />
-          {props.children}
-        </CardWrapper>
-        <Show when={state.legal()?.termsUrl ?? state.legal()?.privacyUrl}>
-          <p class="mt-5 bg-slate-100 text-pretty text-center text-sm text-slate-700 dark:bg-slate-900 dark:text-slate-300">
-            <For each={loginLegalSegmentsGet()}>
-              {(segment) =>
-                segment.kind === "text" ? (
-                  segment.value
-                ) : (
-                  <LegalLink
-                    href={segment.kind === "terms" ? state.legal()?.termsUrl : state.legal()?.privacyUrl}
-                    label={segment.value}
-                  />
-                )
-              }
-            </For>
-          </p>
+    <div
+      class="login-page-shell"
+      data-login-background={loginBackgroundNameGet(props.screen)}
+      data-theme={state.effectiveTheme()}
+      style={{
+        "--brand-background": state.theme().backgroundColor,
+        "--brand-font": state.theme().fontColor,
+        "--brand-primary": state.theme().primaryColor,
+        "--brand-warn": state.theme().warnColor,
+        "--login-background": state.theme().backgroundColor,
+        "--login-primary": state.theme().primaryColor,
+      }}
+    >
+      <main class="login-frame">
+        <header class="login-controls">
+          <LanguageSelector class="login-language-selector" />
+          <LoginThemeToggle disabled={!state.themeSwitchable()} options={state.themeOptions} />
+        </header>
+        <section aria-busy={props.busy} class="login-card">
+          <BrandHeader
+            name={state.bootstrap().organization.name}
+            logoUrl={state.assetUrl()}
+            onLogoError={state.assetFail}
+          />
+          <div class="login-card-content" ref={state.contentRegister}>
+            {props.children}
+          </div>
+        </section>
+        <Show when={state.legal()}>
+          {(legal) => (
+            <p class="login-legal">
+              <For each={loginLegalSegmentsGet()}>
+                {(segment) =>
+                  segment.kind === "text" ? (
+                    segment.value
+                  ) : (
+                    <LegalLink
+                      href={segment.kind === "terms" ? legal().termsUrl : legal().privacyUrl}
+                      label={segment.value}
+                    />
+                  )
+                }
+              </For>
+            </p>
+          )}
         </Show>
       </main>
-    </PageWrapper>
+    </div>
   )
 }
 
 /** Legal links stay underlined so they are distinguishable without relying on colour alone. */
-function LegalLink(props: { readonly href?: string; readonly label: string }) {
+function LegalLink(props: { readonly href: string; readonly label: string }) {
   return (
-    <Show when={props.href} fallback={props.label}>
-      {(href) => (
-        <LinkTextExternal class="whitespace-nowrap underline" href={href()} target="_blank" rel="noreferrer">
-          {props.label}
-        </LinkTextExternal>
-      )}
-    </Show>
+    <LinkTextExternal
+      class="whitespace-nowrap underline underline-offset-3"
+      href={props.href}
+      target="_blank"
+      rel="noreferrer"
+    >
+      {props.label}
+    </LinkTextExternal>
   )
 }

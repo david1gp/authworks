@@ -841,7 +841,7 @@ demo.login.group.mfa.description,"İkinci faktör zorlukları, kimlik doğrulay�
 demo.login.group.mfa.title,Çok faktörlü kimlik doğrulama
 demo.login.group.password_email.description,Belirleyici yerel verilerle şifre ve e-posta koduyla kimlik doğrulama.
 demo.login.group.password_email.title,Şifre ve e-posta kodu
-demo.login.group.passwordless.description,"Geçiş anahtarları ve yapılandırılmış Google, GitHub ve Microsoft sağlayıcıları."
+demo.login.group.passwordless.description,"Geçiş anahtarları ve yapılandırılmış harici kimlik sağlayıcıları."
 demo.login.group.passwordless.title,Şifresiz ve harici
 demo.login.group.recovery.description,Hesap ifşa edilmeden şifre kurtarma isteğinde bulunun ve tamamlayın.
 demo.login.group.recovery.title,Kurtarma
@@ -944,14 +944,18 @@ email.preview.securityVerified,Oturum açma doğrulaması tamamlandı
 email.preview.subject,Konu
 email.preview.text,Metin alternatifi
 email.preview.verification,E-posta doğrulaması
+login.chooser.accountOrMethodTitle,Bir hesap veya yöntem seçin
 login.chooser.description,{organization}'da nasıl oturum açmak istediğinizi seçin.
+login.chooser.lastUsed,Son kullanım
+login.chooser.methodTitle,Bir yöntem seçin
+login.chooser.orChooseMethod,Veya bir yöntem seçin
 login.chooser.emailOtpDetail,E-postayla tek seferlik kod alın
 login.chooser.emailOtpLabel,E-posta kodu
 login.chooser.passkeyDetail,Cihazınızın ekran kilidini veya güvenlik anahtarını kullanın
 login.chooser.passkeyLabel,Geçiş anahtarı
 login.chooser.passwordDetail,Hesap şifrenizi kullanın
 login.chooser.passwordLabel,Şifre
-login.chooser.providerDetail,Bağlı bir hesapla devam edin
+login.chooser.providerDetail,Giriş yapmak için mevcut {provider} hesabınızı kullanın
 login.chooser.providerLabel,{provider} ile devam et
 login.chooser.register,Bir hesap oluşturun
 login.chooser.title,Oturum aç
@@ -1015,6 +1019,8 @@ login.provider.description,{provider} adresinden devam edecek ve işiniz bittiğ
 login.provider.submit,{provider} ile devam et
 login.provider.title,{provider} ile devam et
 login.recent.description,Bu cihazda kullandığınız hesapla devam edin.
+login.recent.heading,Son kullanılan hesaplar
+login.recent.useAnother,Başka bir yöntem veya hesap kullanın
 login.recent.other,Başka bir hesap kullan
 login.recent.title,Bir hesap seçin
 login.recovery.completeDescription,Yeni şifrenizle oturum açın.
@@ -1050,6 +1056,114 @@ login.verify.submit,E
 login.verify.title,E-posta adresinizi doğrulayın
 login.verify.verifiedDescription,{email} onaylandı. Şimdi oturum açabilirsiniz.
 login.verify.verifiedTitle,E-posta adresi onaylandı
+demo.fixture.continuing,devam ediyor
+demo.fixture.fatal,kritik hata
+demo.fixture.passwordChangeExpired,şifre süresi doldu
+demo.fixture.recoveryFatal,kurtarma kullanılamıyor
+demo.fixture.recoveryLoading,kurtarma yükleniyor
+demo.fixture.resetInvalid,sıfırlama bağlantısı geçersiz
+demo.fixture.resetLoading,sıfırlama bağlantısı yükleniyor
+login.emailOtp.codeHelp,6 hane girin.
+login.emailOtp.back,Yöntemlere dön
+login.emailOtp.changeEmail,E-postayı değiştir
+login.emailOtp.resendCountdown,{seconds} saniye içinde yeni bir kod gönderilebilir.
+login.emailOtp.resent,Yeni bir kod gönderildi.
+login.emailOtp.remember,Bu e-postayı hatırla
+login.emailOtp.sending,Gönderiliyor...
+login.emailOtp.verifying,Doğrulanıyor...
+login.error.credentialsInvalid,Kullanıcı adı veya şifre yanlış.
+login.error.emailRecoveryRequired,Hesabınızın e-posta adresini girin.
+login.error.identifierRequired,Kullanıcı adınızı veya e-posta adresinizi girin.
+login.error.newPasswordRequired,Yeni bir şifre girin.
+login.error.passwordRequired,Şifrenizi girin.
+login.mfa.backToChoices,İki adımlı doğrulama seçeneklerine dön
+login.mfa.backToMethods,Yöntemlere dön
+login.mfa.continue,Girişe devam et
+login.mfa.emailOtpCodeTitle,E-posta doğrulama kodu
+login.mfa.emailOtpDetail,E-posta ile tek kullanımlık doğrulama kodu alın.
+login.mfa.emailOtpEnroll,E-posta kodlarını ayarla
+login.mfa.emailOtpEnrollDescription,Doğrulama kodları hesabınızın e-posta adresine gönderilecek.
+login.mfa.emailOtpEnrollNotice,Hesabınızın e-postasını ikinci faktör olarak kullanmak için e-posta kodlarını ayarlayın.
+login.mfa.emailOtpEnrollSent,E-posta kodları ayarlandı. Adresinize gönderilen kodu girin.
+login.mfa.emailOtpEnrollTitle,E-posta kodlarını ayarla
+login.mfa.emailOtpSend,Kod gönder
+login.mfa.emailOtpSendDescription,Hesabınızın e-posta adresine altı haneli doğrulama kodu gönderin.
+login.mfa.emailOtpSent,E-posta adresinize doğrulama kodu gönderildi.
+login.mfa.emailOtpResent,E-posta adresinize yeni bir doğrulama kodu gönderildi.
+login.mfa.emailOtpUnavailableDescription,E-posta ile ikinci faktör doğrulaması bu giriş akışında kullanılamıyor.
+login.mfa.emailOtpUnavailableNotice,E-posta MFA aktarımı bu Authworks giriş isteği için yapılandırılmamış.
+login.mfa.emailOtpUnavailableTitle,E-posta kodu kullanılamıyor
+login.mfa.enterRecoveryCode,Kaydedilmiş bir kurtarma kodu girin.
+login.mfa.enterSixDigits,6 hane girin.
+login.mfa.enrollDescription,Hesabınız için iki adımlı doğrulamayı ayarlamak üzere bir yöntem seçin.
+login.mfa.enrollTitle,İki adımlı doğrulamayı ayarla
+login.mfa.factorUnavailable,Bu faktör mevcut giriş sözleşmesinde kullanılamıyor.
+login.mfa.loadingOptions,İki adımlı doğrulama seçenekleri yükleniyor...
+login.mfa.loadingOptionsDescription,Kullanılabilir ikinci faktör seçenekleri alınıyor.
+login.mfa.optionalDescription,Ek güvenlik için iki adımlı doğrulamayı ayarlayın veya şimdilik atlayın.
+login.mfa.optionalTitle,İsteğe bağlı iki adımlı doğrulama
+login.mfa.optionsUnavailableDescription,Kullanılabilir ikinci faktör seçenekleri yüklenemedi.
+login.mfa.optionsUnavailableTitle,İki adımlı doğrulama kullanılamıyor
+login.mfa.passkeyDescription,"Cihaz ekran kilidi veya biyometriyle bir geçiş anahtarı kullanarak onaylayın."
+login.mfa.passkeyDetail,Geçiş anahtarı veya cihaz biyometrisiyle doğrulayın.
+login.mfa.passkeyEnrollmentUnavailableDescription,Barındırılan giriş sözleşmesi geçiş anahtarı kaydını sunmuyor.
+login.mfa.passkeyEnrollmentUnavailableNotice,Geçiş anahtarı kurulumunu kimliği doğrulanmış hesap güvenliği sayfasından tamamlayıp girişe dönün.
+login.mfa.passkeyEnrollmentUnavailableTitle,Geçiş anahtarı kurulumu kullanılamıyor
+login.mfa.passkeyUnavailableDescription,İkinci faktör olarak geçiş anahtarı doğrulaması bu giriş akışında kullanılamıyor.
+login.mfa.passkeyUnavailableNotice,Geçiş anahtarı MFA aktarımı bu Authworks isteği için yapılandırılmamış.
+login.mfa.passkeyUnavailableTitle,Geçiş anahtarı kullanılamıyor
+login.mfa.passkeyVerify,Geçiş anahtarıyla doğrula
+login.mfa.resend,Kodu yeniden gönder
+login.mfa.resendIn,{seconds} saniye içinde yeniden gönder
+login.mfa.recoveryCodeDetail,Kaydettiğiniz tek kullanımlık kurtarma kodlarından birini kullanın.
+login.mfa.totpChallengeTitle,Kimlik doğrulayıcı kodu
+login.mfa.totpDetail,Kimlik doğrulayıcı uygulamanızdaki kodu kullanın.
+login.mfa.retryOptions,Seçenekleri yüklemeyi yeniden dene
+login.mfa.setupFactor,{factor} ayarla
+login.mfa.skip,Şimdilik atla
+login.mfa.skipping,Atlanıyor...
+login.mfa.satisfiedDescription,Girişiniz zaten iki adımlı doğrulama politikasını karşılıyor.
+login.mfa.satisfiedTitle,İki adımlı doğrulama karşılandı
+login.mfa.unavailable,Kullanılamıyor
+login.passkey.unsupportedTitle,Geçiş anahtarı desteklenmiyor
+login.password.changeRequiredDescription,Devam etmeden önce şifreniz değiştirilmelidir.
+login.password.changeRequiredTitle,Şifrenizi değiştirin
+login.password.changeSubmit,Şifreyi değiştir
+login.password.expiredDescription,Şifrenizin süresi doldu. Devam etmek için yeni bir şifre belirleyin.
+login.password.currentRequired,Mevcut şifrenizi girin.
+login.password.back,Yöntemlere dön
+login.password.passwordRequired,Şifrenizi girin.
+login.password.rememberIdentifier,Bu tanımlayıcıyı hatırla
+login.password.signInTitle,Şifreyle giriş yap
+login.password.signingIn,Giriş yapılıyor...
+login.password.saving,Kaydediliyor...
+login.provider.accountNotFoundDescription,"Bu {provider} hesabına bağlı bir Authworks hesabı yok. Hesap bağlama ve kendi kendine kayıt henüz etkin değil."
+login.provider.accountNotFoundTitle,Bağlı hesap yok
+login.provider.failureDescription,{provider} ile giriş tamamlanamadı. Lütfen tekrar deneyin.
+login.provider.linkingFailedDescription,Hesap bağlama tamamlanamadı. Başka bir giriş yöntemi deneyin.
+login.provider.linkingFailedTitle,Hesap bağlanamadı
+login.recovery.back,Girişe dön
+login.recovery.checkingLink,Sıfırlama bağlantısı kontrol ediliyor...
+login.recovery.choosePasswordTitle,Yeni bir şifre seçin
+login.recovery.completeDescriptionReference,Yeni şifrenizle giriş yaparak devam edin.
+login.recovery.completeTitleReference,Şifreniz değiştirildi
+login.recovery.invalidLinkTitle,Bu sıfırlama bağlantısı artık geçerli değil
+login.recovery.invalidLinkError,Bu şifre sıfırlama bağlantısı geçersiz veya süresi dolmuş.
+login.recovery.loading,Şifre kurtarma yükleniyor...
+login.recovery.resetSubmitReference,Yeni şifre belirle
+login.recovery.saving,Kaydediliyor...
+login.recovery.sending,Gönderiliyor...
+login.recovery.submitReference,Sıfırlama bağlantısı gönder
+login.recovery.unavailableDescription,Şifre kurtarma geçici olarak kullanılamıyor.
+login.recovery.unavailableTitle,Şifre kurtarma kullanılamıyor
+login.status.continuing,Girişe devam ediliyor...
+login.status.fatalTitle,Girişi yeniden başlat
+login.totpEnroll.hideSetupKey,Kurulum anahtarını gizle
+login.totpEnroll.qrLabel,Kimlik doğrulayıcı uygulama kurulumu için QR kodu
+login.totpEnroll.scanDescription,QR kodunu kimlik doğrulayıcı uygulamanızla tarayın ve gösterilen altı haneli kodu girin.
+login.totpEnroll.setupKeyLabel,Kurulum anahtarı (tarayamıyorsanız)
+login.totpEnroll.showSetupKey,Kurulum anahtarını göster
+login.totpEnroll.unavailableDescription,Kimlik doğrulayıcı kurulumu burada hazırlanamadı. Kurulum ayrıntıları yeniden yüklemeden sonra geri yüklenemez.
 shell.guard.accessUnavailable,Erişim kullanılamıyor
 shell.guard.contextRequired,Bağlam gerekli
 shell.guard.contextRequiredDetail,Devam etmeden önce gerekli realm veya organizasyonu seçin.

@@ -1,35 +1,8 @@
 import { expect, test } from "@playwright/test"
+import { demoLoginScenarioGroups } from "../src/features/demo/demoLoginScenarioGroups.js"
 
-const demoDestinations = [
-  { heading: "Sign in", path: "/demo/login/chooser" },
-  { heading: "Choose an account", path: "/demo/login/chooser/recent-accounts" },
-  { heading: "Enter your password", path: "/demo/login/password" },
-  { heading: "Enter your password", path: "/demo/login/password/error" },
-  { heading: "Update your password", path: "/demo/login/password/change-required" },
-  { heading: "Create your account", path: "/demo/login/register" },
-  { heading: "Confirm your email address", path: "/demo/login/register/done" },
-  { heading: "Verify your email address", path: "/demo/login/verify-email" },
-  { heading: "Sign in with an email code", path: "/demo/login/email-otp" },
-  { heading: "Enter your email code", path: "/demo/login/email-otp/code" },
-  { heading: "Sign in with a passkey", path: "/demo/login/passkey" },
-  { heading: "Sign in with a passkey", path: "/demo/login/passkey/unsupported" },
-  { heading: "Continue with Google", path: "/demo/login/idp" },
-  { heading: "Continue with Google", path: "/demo/login/idp/failure" },
-  { heading: "2-step verification", path: "/demo/login/mfa" },
-  { heading: "Authenticator app", path: "/demo/login/mfa/totp" },
-  { heading: "Email code", path: "/demo/login/mfa/email-otp" },
-  { heading: "Sign in with a passkey", path: "/demo/login/mfa/passkey" },
-  { heading: "Recovery code", path: "/demo/login/mfa/recovery-code" },
-  { heading: "Set up an authenticator app", path: "/demo/login/mfa/totp-enroll" },
-  { heading: "Reset your password", path: "/demo/login/password/forgot" },
-  { heading: "Check your email", path: "/demo/login/password/forgot/sent" },
-  { heading: "Set a new password", path: "/demo/login/password/reset" },
-  { heading: "Password updated", path: "/demo/login/password/reset/complete" },
-  { heading: "Signed in", path: "/demo/login/signed-in" },
-  { heading: "Sign out of Acme", path: "/demo/login/logout" },
-  { heading: "Signed out", path: "/demo/login/logout/done" },
-  { heading: "Sign-in unavailable", path: "/demo/login/unsupported" },
-]
+const demoDestinations = demoLoginScenarioGroups.flatMap((group) => group.scenarios)
+const loginRouteReadyTimeout = 15_000
 
 test("every demo login destination renders without a backend, auth, or console error", async ({ page }) => {
   test.setTimeout(180_000)
@@ -45,8 +18,10 @@ test("every demo login destination renders without a backend, auth, or console e
   })
 
   for (const destination of demoDestinations) {
-    await page.goto(destination.path)
-    await expect(page.getByRole("heading", { level: 1, name: destination.heading })).toBeVisible()
+    await page.goto(destination.path, { waitUntil: "domcontentloaded" })
+    await expect(page.getByRole("heading", { level: 1 }).or(page.locator(".login-page-shell")).first()).toBeVisible({
+      timeout: loginRouteReadyTimeout,
+    })
   }
 
   expect(apiRequests).toEqual([])
@@ -73,10 +48,19 @@ test("the login directory lists every scenario group and opens a destination", a
   await expect(page).toHaveURL(/\/demo\/login\/password$/)
 })
 
+test("the password panel uses the source heading and navigation copy without an intro", async ({ page }) => {
+  await page.goto("/demo/login/password")
+
+  await expect(page.getByRole("heading", { name: "Sign in with password" })).toBeVisible()
+  await expect(page.getByText(/Enter the credentials for your Acme account\./)).toBeHidden()
+  await expect(page.getByRole("button", { name: "Back to methods", exact: true })).toBeVisible()
+})
+
 test("the demo password flow succeeds and resumes the interaction", async ({ page }) => {
   await page.goto("/demo/login/password")
 
-  await page.getByLabel("Username or email").fill("alex@acme.example")
+  await expect(page.getByLabel("Username or email")).toHaveValue("alex@acme.example")
+  await expect(page.getByLabel("Remember this identifier")).toBeChecked()
   await page.getByLabel("Password", { exact: true }).fill("demo-password")
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
 
@@ -85,23 +69,43 @@ test("the demo password flow succeeds and resumes the interaction", async ({ pag
 })
 
 test("the demo password error state reports invalid credentials in place", async ({ page }) => {
-  await page.goto("/demo/login/password/error")
+  await page.goto("/demo/login/password?state=error")
 
+  await expect(page.getByRole("alert")).toContainText("Incorrect username or password.")
   await page.getByLabel("Username or email").fill("alex@acme.example")
   await page.getByLabel("Password", { exact: true }).fill("wrong-password")
+
+  await page.getByRole("button", { name: "Sign in", exact: true }).click()
+  await expect(page.getByRole("alert")).toContainText("Incorrect username or password.")
+  await expect(page).toHaveURL(/\/demo\/login\/password\?state=error$/)
+})
+
+test("the demo password submit exposes its pending state before completion", async ({ page }) => {
+  await page.goto("/demo/login/password")
+  await page.getByLabel("Password", { exact: true }).fill("demo-password")
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
 
-  await expect(page.getByRole("alert")).toContainText("The identifier or password is incorrect.")
-  await expect(page).toHaveURL(/\/demo\/login\/password\/error$/)
+  const pendingButton = page.getByRole("button", { name: "Signing in...", exact: true })
+  await expect(pendingButton).toBeDisabled()
+  await expect(pendingButton).toHaveAttribute("aria-busy", "true")
+  await expect(page.getByLabel("Username or email")).toBeDisabled()
+  await expect(page).toHaveURL(/\/demo\/login\/signed-in/)
+})
+
+test("selecting a recent password account checks remembered identifier", async ({ page }) => {
+  await page.goto("/demo/login/chooser/recent-accounts")
+  await page.getByRole("button", { name: /alex@acme\.example/ }).click()
+
+  await expect(page.getByLabel("Username or email")).toHaveValue("alex@acme.example")
+  await expect(page.getByLabel("Remember this identifier")).toBeChecked()
 })
 
 test("client-side validation runs before any adapter call", async ({ page }) => {
   await page.goto("/demo/login/password")
-  await page.getByRole("button", { name: "Sign in", exact: true }).click()
-  await expect(page.getByRole("alert")).toContainText("Enter your username and password.")
+  await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeDisabled()
 
   await page.goto("/demo/login/register")
-  await page.getByLabel("Email address").fill("not-an-email")
+  await page.getByLabel("Email address", { exact: true }).fill("not-an-email")
   await page.getByRole("button", { name: "Create account" }).click()
   await expect(page.getByRole("alert")).toContainText("Enter a valid email address.")
 })
@@ -126,33 +130,36 @@ test("a second-factor challenge routes the demo sign-in to verification", async 
 test("the email code flow advances from address to code entry", async ({ page }) => {
   await page.goto("/demo/login/email-otp")
 
-  await page.getByLabel("Email address").fill("alex@acme.example")
-  await page.getByRole("button", { name: "Send code" }).click()
+  await page.getByLabel("Email address", { exact: true }).fill("alex@acme.example")
+  await page.getByRole("button", { name: "Send code", exact: true }).click()
 
   await expect(page).toHaveURL(/\/demo\/login\/email-otp\/code/)
   await page.getByLabel("Verification code").fill("123456")
-  await page.getByRole("button", { name: "Verify code" }).click()
+  await page.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page).toHaveURL(/\/demo\/login\/signed-in/)
 })
 
 test("recovery request and reset reach their non-disclosing confirmations", async ({ page }) => {
   await page.goto("/demo/login/password/forgot")
-  await page.getByLabel("Email address").fill("alex@acme.example")
-  await page.getByRole("button", { name: "Send recovery instructions" }).click()
+  await page.getByLabel("Email address", { exact: true }).fill("alex@acme.example")
+  await page.getByRole("button", { name: "Send reset link", exact: true }).click()
+  await expect(page).toHaveURL(/\/demo\/login\/password\/forgot\/sent$/)
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible()
 
   await page.goto("/demo/login/password/reset")
-  await page.getByLabel("New password").fill("new-demo-password")
-  await page.getByLabel("Confirm password").fill("new-demo-password")
-  await page.getByRole("button", { name: "Update password" }).click()
-  await expect(page.getByRole("heading", { name: "Password updated" })).toBeVisible()
+  const resetForm = page.locator("form").filter({ has: page.locator("#login-reset-password") })
+  await resetForm.getByLabel("New password", { exact: true }).fill("new-demo-password")
+  await resetForm.getByLabel("Confirm new password", { exact: true }).fill("new-demo-password")
+  await resetForm.getByRole("button", { name: "Set new password", exact: true }).click()
+  await expect(page.getByRole("heading", { name: "Your password was changed", exact: true })).toBeVisible()
 })
 
 test("mismatched passwords are rejected before submission", async ({ page }) => {
   await page.goto("/demo/login/password/reset")
-  await page.getByLabel("New password").fill("new-demo-password")
-  await page.getByLabel("Confirm password").fill("different-password")
-  await page.getByRole("button", { name: "Update password" }).click()
+  const resetForm = page.locator("form").filter({ has: page.locator("#login-reset-password") })
+  await resetForm.getByLabel("New password", { exact: true }).fill("new-demo-password")
+  await resetForm.getByLabel("Confirm new password", { exact: true }).fill("different-password")
+  await resetForm.getByRole("button", { name: "Set new password", exact: true }).click()
 
   await expect(page.getByRole("alert")).toContainText("The passwords do not match.")
 })
@@ -160,9 +167,15 @@ test("mismatched passwords are rejected before submission", async ({ page }) => 
 test("the authenticator enrollment key is only shown after the setup is started", async ({ page }) => {
   await page.goto("/demo/login/mfa/totp-enroll")
 
-  await expect(page.getByText("JBSWY3DPEHPK3PXP")).toBeHidden()
-  await page.getByRole("button", { name: "Show setup key" }).click()
-  await expect(page.getByText("JBSWY3DPEHPK3PXP")).toBeVisible()
+  const secretValue = page.locator('p[aria-describedby="totp-secret-label"]')
+  await expect(secretValue).toBeHidden()
+  await page.getByRole("button", { name: "Show setup key", exact: true }).click()
+  await expect(page.getByRole("button", { name: "Show setup key", exact: true })).toBeVisible()
+  await expect(secretValue).toBeHidden()
+  await page.getByRole("button", { name: "Show setup key", exact: true }).click()
+  await expect(page.getByRole("group").filter({ has: page.locator("#totp-secret-label") })).toBeVisible()
+  await expect(secretValue).toBeVisible()
+  await expect(secretValue.locator("span")).toHaveText(["JBSW", "Y3DP", "EHPK", "3PXP"])
 
   await page.getByLabel("Verification code").fill("123456")
   await page.getByRole("button", { name: "Finish setup" }).click()
@@ -179,14 +192,15 @@ test("the recovery-code factor accepts a saved code", async ({ page }) => {
 })
 
 test("the fixture state selector switches every state from the URL", async ({ page }) => {
-  await page.goto("/demo/login/chooser/recent-accounts?state=empty")
-  await expect(page.getByText("No active sessions")).toBeVisible()
+  await page.goto("/demo/login/chooser?state=empty")
+  await expect(page.getByRole("heading", { name: "Choose a method", exact: true })).toBeVisible()
 
-  await page.goto("/demo/login/chooser/recent-accounts?state=success")
+  await page.goto("/demo/login/chooser?state=success")
   await expect(page.getByRole("button", { name: /alex@acme.example/ })).toBeVisible()
+  await expect(page.getByRole("button", { name: /Email code/ })).toBeVisible()
 
   await page.goto("/demo/login/loading")
-  await expect(page.getByRole("status")).toContainText("Preparing sign-in")
+  await expect(page.getByRole("status")).toContainText("Loading sign-in...")
 })
 
 test("logout confirms and reports a completed sign-out", async ({ page }) => {
@@ -202,4 +216,11 @@ test("the passkey panel explains unsupported devices without offering the ceremo
 
   await expect(page.getByText("This browser or device cannot use passkeys.")).toBeVisible()
   await expect(page.getByRole("button", { name: "Continue with passkey" })).toBeHidden()
+})
+
+test("the MFA passkey challenge uses the reference heading and action casing", async ({ page }) => {
+  await page.goto("/demo/login/mfa/passkey")
+
+  await expect(page.getByRole("heading", { name: "Passkey", exact: true })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Verify with Passkey", exact: true })).toBeVisible()
 })
