@@ -70,6 +70,32 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     database.run(
       "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('initial', 'active', 'inactive', 'locked', 'suspended', 'deleted')), email_verified_at INTEGER CHECK (email_verified_at IS NULL OR email_verified_at >= 0), phone_number TEXT, phone_number_verified_at INTEGER CHECK (phone_number_verified_at IS NULL OR phone_number_verified_at >= 0), registration_verified_at INTEGER CHECK (registration_verified_at IS NULL OR registration_verified_at >= 0), registration_verification_method TEXT CHECK (registration_verification_method IS NULL OR registration_verification_method IN ('email', 'whatsapp')), deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
+    try {
+      database.run("ALTER TABLE users ADD COLUMN phone_number TEXT")
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "phone_number")) throw error
+    }
+    try {
+      database.run(
+        "ALTER TABLE users ADD COLUMN phone_number_verified_at INTEGER CHECK (phone_number_verified_at IS NULL OR phone_number_verified_at >= 0)",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "phone_number_verified_at")) throw error
+    }
+    try {
+      database.run(
+        "ALTER TABLE users ADD COLUMN registration_verified_at INTEGER CHECK (registration_verified_at IS NULL OR registration_verified_at >= 0)",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "registration_verified_at")) throw error
+    }
+    try {
+      database.run(
+        "ALTER TABLE users ADD COLUMN registration_verification_method TEXT CHECK (registration_verification_method IS NULL OR registration_verification_method IN ('email', 'whatsapp'))",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "registration_verification_method")) throw error
+    }
     database.run(
       "CREATE UNIQUE INDEX IF NOT EXISTS users_realm_verified_phone_idx ON users (realm_id, phone_number) WHERE phone_number IS NOT NULL AND phone_number_verified_at IS NOT NULL",
     )

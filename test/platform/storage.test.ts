@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test"
+import { Database } from "bun:sqlite"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -11,6 +12,7 @@ import { storageEventAppend } from "../../src/platform/storage/storageEventAppen
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
 import { storageTransactionRun } from "../../src/platform/storage/storageTransactionRun.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
+import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 
 async function withStorage<T>(operation: (path: string) => Promise<T>): Promise<T> {
   const directory = await mkdtemp(join(tmpdir(), "authworks-storage-"))
@@ -48,6 +50,59 @@ test("storage opens a file-backed WAL database and verifies durability pragmas",
     expect(opened.data.sqlite.query("PRAGMA temp_store").get()).toEqual({ temp_store: 2 })
     expect(opened.data.sqlite.query("PRAGMA busy_timeout").get()).toEqual({ timeout: 5000 })
     opened.data.close()
+  })
+})
+
+test("storage upgrades legacy user columns before user reads and is idempotent", async () => {
+  await withStorage(async (path) => {
+    const legacy = new Database(path)
+    legacy.run("CREATE TABLE realms (id TEXT PRIMARY KEY NOT NULL)")
+    legacy.run(
+      "CREATE TABLE users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL, email_verified_at INTEGER, deleted_at INTEGER, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, version INTEGER NOT NULL, UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id))",
+    )
+    legacy.run(
+      "CREATE TABLE user_profiles (user_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, first_name TEXT, last_name TEXT, nick_name TEXT, display_name TEXT, preferred_language TEXT, gender TEXT, updated_at INTEGER NOT NULL, FOREIGN KEY (user_id) REFERENCES users(id))",
+    )
+    legacy.run("INSERT INTO realms (id) VALUES ('realm-1')")
+    legacy.run(
+      "INSERT INTO users (id, realm_id, user_name, email, state, created_at, updated_at, version) VALUES ('user-1', 'realm-1', 'legacy-user', 'legacy@example.com', 'active', 1, 1, 1)",
+    )
+    legacy.run(
+      "INSERT INTO user_profiles (user_id, realm_id, display_name, updated_at) VALUES ('user-1', 'realm-1', 'Legacy user', 1)",
+    )
+    legacy.close()
+
+    const opened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
+    expect(opened.success).toBe(true)
+    if (!opened.success) return
+
+    const columns = opened.data.sqlite.query("PRAGMA table_info(users)").all() as Array<{ name: string }>
+    expect(columns.map((column) => column.name)).toEqual(
+      expect.arrayContaining([
+        "phone_number",
+        "phone_number_verified_at",
+        "registration_verified_at",
+        "registration_verification_method",
+      ]),
+    )
+
+    const user = userRepositoryCreate(opened.data.db).userGet("realm-1", "user-1")
+    expect(user).toMatchObject({
+      data: {
+        email: "legacy@example.com",
+        id: "user-1",
+        phoneNumber: null,
+        profile: { displayName: "Legacy user" },
+      },
+      success: true,
+    })
+    opened.data.close()
+
+    const reopened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
+    expect(reopened.success).toBe(true)
+    if (!reopened.success) return
+    expect(userRepositoryCreate(reopened.data.db).userGet("realm-1", "user-1").success).toBe(true)
+    reopened.data.close()
   })
 })
 
