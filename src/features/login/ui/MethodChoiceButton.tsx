@@ -43,8 +43,8 @@ export function MethodChoiceButton(props: MethodChoiceButtonProps) {
         {(type) => <ExternalIdentityIcon class="shrink-0" type={type()} />}
       </Show>
       <span class="flex min-w-0 flex-1 flex-col">
-        <span class="truncate font-semibold">{props.label}</span>
-        <small class="truncate text-muted-foreground">{props.detail}</small>
+        <span class="font-semibold">{props.label}</span>
+        <small class="text-pretty text-muted-foreground">{props.detail}</small>
       </span>
       <Icon class="size-5 shrink-0 opacity-50" path={mdiChevronRight} />
     </Button>

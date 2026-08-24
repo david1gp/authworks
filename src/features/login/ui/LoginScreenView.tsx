@@ -33,7 +33,7 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
         <LoginUnavailableFrame>
           <div class="grid justify-items-center gap-4 py-10" role="status">
             <LoaderShuffle4Dots />
-            <p class="font-medium">{messageTranslate("login.status.loading")}</p>
+            <h1 class="text-base font-medium">{messageTranslate("login.status.loading")}</h1>
           </div>
         </LoginUnavailableFrame>
       </Match>
@@ -132,7 +132,11 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
               <Match when={state.screen() === "register-done"}>
                 <LoginNoticePanel
                   actionLabel={messageTranslate("login.chooser.title")}
-                  description={messageTranslate("login.register.doneDescription", { email: state.email.get() })}
+                  description={
+                    state.email.get().trim().length === 0
+                      ? messageTranslate("login.verify.description")
+                      : messageTranslate("login.register.doneDescription", { email: state.email.get() })
+                  }
                   kind="pending"
                   onAction={() => state.go("chooser")}
                   title={messageTranslate("login.register.doneTitle")}
