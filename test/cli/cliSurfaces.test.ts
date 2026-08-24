@@ -25,6 +25,7 @@ const featureRoutes = [
   "projects",
   "sessions",
   "users",
+  "zitadel-migration",
 ]
 
 test("every completed feature command tree has clean subprocess help", async () => {

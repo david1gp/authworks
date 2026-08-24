@@ -1,0 +1,87 @@
+{
+  "organizations": [
+    {
+      "id": "org-source",
+      "name": "Source organization",
+      "state": "ORG_STATE_ACTIVE",
+      "details": {
+        "creationDate": "2023-11-14T22:13:20.000Z",
+        "changeDate": "2023-11-14T22:13:21.000Z"
+      }
+    }
+  ],
+  "users": [
+    {
+      "id": "user-source",
+      "userName": "source-user",
+      "state": "USER_STATE_ACTIVE",
+      "details": {
+        "creationDate": "2023-11-14T22:13:20.000Z",
+        "changeDate": "2023-11-14T22:13:21.000Z"
+      },
+      "human": {
+        "email": {
+          "email": "source@example.com",
+          "isEmailVerified": true
+        },
+        "profile": {
+          "firstName": "Source",
+          "lastName": "User",
+          "displayName": "Source User",
+          "preferredLanguage": "en"
+        },
+        "passwordChanged": "2023-11-14T22:13:21.000Z",
+        "idpLinks": [{ "idpId": "google", "userId": "upstream-subject" }]
+      }
+    }
+  ],
+  "memberships": [
+    {
+      "userId": "user-source",
+      "roles": ["ORG_OWNER"],
+      "details": {
+        "creationDate": "2023-11-14T22:13:20.000Z",
+        "changeDate": "2023-11-14T22:13:21.000Z"
+      }
+    }
+  ],
+  "projects": [
+    {
+      "id": "project-source",
+      "name": "Source project",
+      "state": "PROJECT_STATE_ACTIVE",
+      "projectRoleCheck": true,
+      "hasProjectCheck": true,
+      "details": {
+        "resourceOwner": "org-source",
+        "creationDate": "2023-11-14T22:13:20.000Z",
+        "changeDate": "2023-11-14T22:13:21.000Z"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "key": "viewer",
+      "displayName": "Viewer",
+      "group": "default",
+      "details": {
+        "creationDate": "2023-11-14T22:13:20.000Z",
+        "changeDate": "2023-11-14T22:13:21.000Z"
+      }
+    }
+  ],
+  "grants": [
+    {
+      "grantId": "grant-source",
+      "projectId": "project-source",
+      "projectOwnerId": "org-source",
+      "grantedOrgId": "org-source",
+      "grantedRoleKeys": ["viewer"],
+      "state": "PROJECT_GRANT_STATE_ACTIVE",
+      "details": {
+        "creationDate": "2023-11-14T22:13:20.000Z",
+        "changeDate": "2023-11-14T22:13:21.000Z"
+      }
+    }
+  ]
+}
