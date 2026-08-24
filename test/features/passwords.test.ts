@@ -17,6 +17,8 @@ import { realmSystemContextCreate } from "../../src/features/realms/domain/realm
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
+import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -224,6 +226,214 @@ test("password registration, email verification, login, change, recovery, and lo
     expect(passwordEvents.map((event) => event.aggregateVersion)).toEqual(
       passwordEvents.map((_event, index) => index + 1),
     )
+  })
+})
+
+test("unverified password registration cannot log in", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "passwords-unverified-login.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    expect(passwordRegister({ context, database, input: registrationInput(), realmId: realm.id }).success).toBe(true)
+    expect(
+      passwordLogin({
+        context,
+        database,
+        input: { identifier: "ada", password: "Correct Horse 12" },
+        realmId: realm.id,
+      }).success,
+    ).toBe(false)
+  })
+})
+
+test("password login rejects incomplete, mismatched, and invalid registration verification states", async () => {
+  const states = [
+    {
+      name: "email-only",
+      emailVerifiedAt: 1_700_000_000_000,
+      phoneNumber: null,
+      phoneNumberVerifiedAt: null,
+      registrationVerifiedAt: null,
+      registrationVerificationMethod: null,
+    },
+    {
+      name: "timestamp-only",
+      emailVerifiedAt: null,
+      phoneNumber: null,
+      phoneNumberVerifiedAt: null,
+      registrationVerifiedAt: 1_700_000_000_000,
+      registrationVerificationMethod: null,
+    },
+    {
+      name: "method-only",
+      emailVerifiedAt: null,
+      phoneNumber: null,
+      phoneNumberVerifiedAt: null,
+      registrationVerifiedAt: null,
+      registrationVerificationMethod: "email",
+    },
+    {
+      name: "channel-mismatch",
+      emailVerifiedAt: 1_700_000_000_000,
+      phoneNumber: null,
+      phoneNumberVerifiedAt: null,
+      registrationVerifiedAt: 1_700_000_000_000,
+      registrationVerificationMethod: "whatsapp",
+    },
+    {
+      name: "invalid-method",
+      emailVerifiedAt: null,
+      phoneNumber: null,
+      phoneNumberVerifiedAt: null,
+      registrationVerifiedAt: 1_700_000_000_000,
+      registrationVerificationMethod: "sms",
+    },
+  ] as const
+
+  for (const state of states) {
+    await withDatabase(async (database) => {
+      const realm = await createRealm(database, `passwords-invalid-registration-${state.name}.example.com`)
+      const context = realmTenantContextCreate(realm.id, "anonymous")
+      let verificationToken = ""
+      expect(
+        passwordRegister({
+          context,
+          database,
+          input: registrationInput(),
+          onVerificationToken: ({ token }) => {
+            verificationToken = token
+          },
+          realmId: realm.id,
+        }).success,
+      ).toBe(true)
+      expect(
+        passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
+      ).toBe(true)
+      const user = database.sqlite.query("SELECT id FROM users WHERE realm_id = ?").get(realm.id) as { id: string }
+
+      // Exercise malformed rows without going through repository invariants.
+      const invalidMethod = state.registrationVerificationMethod === "sms"
+      if (invalidMethod) database.sqlite.exec("PRAGMA ignore_check_constraints = ON")
+      try {
+        database.sqlite
+          .query(
+            "UPDATE users SET email_verified_at = ?, phone_number = ?, phone_number_verified_at = ?, registration_verified_at = ?, registration_verification_method = ? WHERE id = ?",
+          )
+          .run(
+            state.emailVerifiedAt,
+            state.phoneNumber,
+            state.phoneNumberVerifiedAt,
+            state.registrationVerifiedAt,
+            state.registrationVerificationMethod,
+            user.id,
+          )
+      } finally {
+        if (invalidMethod) database.sqlite.exec("PRAGMA ignore_check_constraints = OFF")
+      }
+
+      expect(
+        passwordLogin({
+          context,
+          database,
+          input: { identifier: "ada", password: "Correct Horse 12" },
+          realmId: realm.id,
+        }).success,
+      ).toBe(false)
+    })
+  }
+})
+
+test("password email verification emits email and registration user events in order", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "passwords-email-events.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    let verificationToken = ""
+    const registered = passwordRegister({
+      context,
+      database,
+      input: registrationInput(),
+      realmId: realm.id,
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+    })
+    expect(registered.success).toBe(true)
+    expect(
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
+    ).toBe(true)
+
+    const events = database.sqlite
+      .query(
+        "SELECT aggregate_version, command_index, event_type, payload FROM events WHERE aggregate_type = 'user' ORDER BY aggregate_version",
+      )
+      .all() as Array<{ aggregate_version: number; command_index: number; event_type: string; payload: string }>
+    expect(events.map((event) => event.event_type)).toEqual([
+      userEventTypes.created,
+      userEventTypes.emailVerificationChanged,
+      userEventTypes.registrationVerificationChanged,
+      userEventTypes.stateChanged,
+    ])
+    expect(events.map((event) => event.aggregate_version)).toEqual([1, 2, 3, 4])
+    expect(events.map((event) => event.command_index)).toEqual([0, 0, 1, 2])
+    expect(JSON.parse(events[1]?.payload ?? "{}")).toEqual({ state: "verified" })
+    expect(JSON.parse(events[2]?.payload ?? "{}")).toEqual({
+      registrationVerificationMethod: "email",
+      state: "verified",
+    })
+  })
+})
+
+test("password email verification preserves established WhatsApp registration state", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "passwords-email-whatsapp-origin.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    let verificationToken = ""
+    const registered = passwordRegister({
+      context,
+      database,
+      input: registrationInput(),
+      realmId: realm.id,
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+    })
+    expect(registered.success).toBe(true)
+    const user = database.sqlite.query("SELECT id FROM users WHERE realm_id = ?").get(realm.id) as { id: string }
+    const registrationVerifiedAt = database.runtime.now()
+    const whatsappVerified = userRepositoryCreate(database.db).userUpdate(realm.id, user.id, {
+      phoneNumber: "+14155552671",
+      phoneNumberVerifiedAt: registrationVerifiedAt,
+      registrationVerifiedAt,
+      registrationVerificationMethod: "whatsapp",
+      version: 2,
+    })
+    expect(whatsappVerified.success).toBe(true)
+
+    const verified = passwordEmailVerify({
+      context,
+      database,
+      input: { token: verificationToken },
+      realmId: realm.id,
+    })
+    expect(verified.success).toBe(true)
+    if (!verified.success) return
+    expect(verified.data.user).toMatchObject({
+      emailVerified: true,
+      registrationVerifiedAt,
+      registrationVerificationMethod: "whatsapp",
+      verificationState: "verified",
+    })
+
+    const events = database.sqlite
+      .query(
+        "SELECT aggregate_version, event_type FROM events WHERE aggregate_type = 'user' AND aggregate_id = ? ORDER BY aggregate_version",
+      )
+      .all(user.id) as Array<{ aggregate_version: number; event_type: string }>
+    expect(events.map((event) => event.event_type)).toEqual([
+      userEventTypes.created,
+      userEventTypes.emailVerificationChanged,
+      userEventTypes.stateChanged,
+    ])
+    expect(events.map((event) => event.aggregate_version)).toEqual([1, 3, 4])
   })
 })
 

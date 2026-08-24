@@ -23,7 +23,8 @@ export function httpResultResponseCreate<T>(
     const mapped = httpErrorResultCreate({ requestId, result })
     const response = context.json(mapped.body, mapped.status as ContentfulStatusCode)
     response.headers.set("x-request-id", requestId)
-    if (mapped.retryable) response.headers.set("retry-after", "1")
+    if (mapped.retryAfterSeconds !== undefined) response.headers.set("retry-after", String(mapped.retryAfterSeconds))
+    else if (mapped.retryable) response.headers.set("retry-after", "1")
     return response
   }
   if (lastModified === undefined) {

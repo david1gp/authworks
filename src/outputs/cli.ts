@@ -14,6 +14,7 @@ import { projectCliCommands } from "../features/projects/cli/projectCliCommands.
 import { realmCliCommands } from "../features/realms/cli/realmCliCommands.js"
 import { sessionCliCommands } from "../features/sessions/cli/sessionCliCommands.js"
 import { userCliCommands } from "../features/users/cli/userCliCommands.js"
+import { whatsappOtpCliCommands } from "../features/whatsappOtp/cli/whatsappOtpCliCommands.js"
 import { zitadelMigrationCliCommands } from "../features/zitadelMigration/cli/zitadelMigrationCliCommands.js"
 import { packageVersion } from "../packageVersion.js"
 
@@ -45,6 +46,8 @@ const cliApplication = buildApplication(
       sessions: sessionCliCommands,
       user: userCliCommands,
       users: userCliCommands,
+      whatsappOtp: whatsappOtpCliCommands,
+      whatsappOtps: whatsappOtpCliCommands,
       zitadelMigration: zitadelMigrationCliCommands,
     },
     docs: {

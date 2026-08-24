@@ -9,6 +9,7 @@ export const sessionAuthenticationMethodSchema = v.picklist([
   "passkey",
   "recovery_code",
   "totp",
+  "whatsapp_otp",
 ])
 
 export type SessionAuthenticationMethod = v.InferOutput<typeof sessionAuthenticationMethodSchema>

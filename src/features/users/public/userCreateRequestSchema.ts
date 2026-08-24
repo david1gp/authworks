@@ -3,6 +3,7 @@ import { userProfileSchema } from "./userProfileSchema.js"
 
 export const userCreateRequestSchema = v.strictObject({
   email: v.pipe(v.string(), v.minLength(3), v.maxLength(320)),
+  phoneNumber: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(32))),
   profile: userProfileSchema,
   userName: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),
 })

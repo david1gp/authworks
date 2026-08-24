@@ -13,6 +13,7 @@ import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.
 import { userPublicViewCreate } from "../../users/domain/userPublicViewCreate.js"
 import { userEmailVerificationChangedEventPayloadSchema } from "../../users/events/userEmailVerificationChangedEventPayloadSchema.js"
 import { userEventTypes } from "../../users/events/userEventTypes.js"
+import { userRegistrationVerificationChangedEventPayloadSchema } from "../../users/events/userRegistrationVerificationChangedEventPayloadSchema.js"
 import { userStateChangedEventPayloadSchema } from "../../users/events/userStateChangedEventPayloadSchema.js"
 import { userRepositoryCreate } from "../../users/persistence/userRepositoryCreate.js"
 import { passwordTokenHashCreate } from "../domain/passwordTokenHashCreate.js"
@@ -73,11 +74,18 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
     if (!consumed.success || consumed.data === null)
       return resultErrorCreate(op, "The verification token is invalid.", "passwords.invalid")
     const nextState = user.data.state === "initial" ? "active" : user.data.state
+    const registrationVerificationNewlySet =
+      user.data.registrationVerifiedAt === null && user.data.registrationVerificationMethod === null
+    const stateChanged = nextState !== user.data.state
     const updated = userRepositoryCreate(transaction).userUpdate(options.realmId, user.data.id, {
       emailVerifiedAt: now,
+      registrationVerifiedAt: registrationVerificationNewlySet ? now : user.data.registrationVerifiedAt,
+      registrationVerificationMethod: registrationVerificationNewlySet
+        ? "email"
+        : user.data.registrationVerificationMethod,
       state: nextState,
       updatedAt: now,
-      version: user.data.version + (nextState === user.data.state ? 1 : 2),
+      version: user.data.version + 1 + (registrationVerificationNewlySet ? 1 : 0) + (stateChanged ? 1 : 0),
     })
     if (!updated.success || updated.data === null)
       return resultErrorCreate(op, "The verification token is invalid.", "passwords.invalid")
@@ -102,7 +110,37 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
       runtime,
     )
     if (!verificationEvent.success) return verificationEvent
-    if (nextState !== user.data.state) {
+    if (registrationVerificationNewlySet) {
+      const registrationPayload = v.safeParse(userRegistrationVerificationChangedEventPayloadSchema, {
+        registrationVerificationMethod: updated.data.registrationVerificationMethod,
+        state: "verified",
+      })
+      if (!registrationPayload.success)
+        return resultErrorCreate(
+          op,
+          "The registration verification event payload is invalid.",
+          "passwords.event-invalid",
+        )
+      const registrationEvent = storageEventAppend(
+        transaction,
+        {
+          actorId: options.context.actorId,
+          aggregateId: user.data.id,
+          aggregateType: "user",
+          aggregateVersion: user.data.version + 2,
+          commandIndex: 1,
+          correlationId,
+          eventType: userEventTypes.registrationVerificationChanged,
+          realmId: options.realmId,
+          metadata: { auditSafe: true, source: "passwords" },
+          occurredAt: now,
+          payload: registrationPayload.output,
+        },
+        runtime,
+      )
+      if (!registrationEvent.success) return registrationEvent
+    }
+    if (stateChanged) {
       const statePayload = v.safeParse(userStateChangedEventPayloadSchema, { from: user.data.state, to: nextState })
       if (!statePayload.success)
         return resultErrorCreate(op, "The verification state event payload is invalid.", "passwords.event-invalid")
@@ -112,8 +150,8 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
           actorId: options.context.actorId,
           aggregateId: user.data.id,
           aggregateType: "user",
-          aggregateVersion: user.data.version + 2,
-          commandIndex: 1,
+          aggregateVersion: updated.data.version,
+          commandIndex: registrationVerificationNewlySet ? 2 : 1,
           correlationId,
           eventType: userEventTypes.stateChanged,
           realmId: options.realmId,
@@ -138,7 +176,7 @@ export function passwordEmailVerify(options: PasswordEmailVerifyOptions): Result
         aggregateId: user.data.id,
         aggregateType: "password",
         aggregateVersion: eventVersion.data + 1,
-        commandIndex: nextState === user.data.state ? 1 : 2,
+        commandIndex: 1 + (registrationVerificationNewlySet ? 1 : 0) + (stateChanged ? 1 : 0),
         correlationId,
         eventType: passwordEventTypes.emailVerified,
         realmId: options.realmId,

@@ -12,6 +12,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userEmailNormalize } from "../domain/userEmailNormalize.js"
 import { userNameNormalize } from "../domain/userNameNormalize.js"
+import { userPhoneNumberNormalize } from "../domain/userPhoneNumberNormalize.js"
 import { userProfileNormalize } from "../domain/userProfileNormalize.js"
 import { userPublicViewCreate } from "../domain/userPublicViewCreate.js"
 import { userCreatedEventPayloadSchema } from "../events/userCreatedEventPayloadSchema.js"
@@ -41,6 +42,11 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
   if (!userName.success) return userName
   const email = userEmailNormalize(parsed.output.email)
   if (!email.success) return email
+  const phoneNumber =
+    parsed.output.phoneNumber === undefined
+      ? resultCreate<string | null>(null)
+      : userPhoneNumberNormalize(parsed.output.phoneNumber)
+  if (!phoneNumber.success) return phoneNumber
   const profile = userProfileNormalize(parsed.output.profile)
   if (!profile.success) return profile
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
@@ -62,7 +68,11 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
         email: email.data,
         emailVerifiedAt: null,
         id: userId,
+        phoneNumber: phoneNumber.data,
+        phoneNumberVerifiedAt: null,
         realmId: options.realmId,
+        registrationVerifiedAt: null,
+        registrationVerificationMethod: null,
         state: "initial",
         updatedAt: createdAt,
         userName: userName.data,
@@ -89,7 +99,13 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
         )
       return created
     }
-    const payload = v.safeParse(userCreatedEventPayloadSchema, { emailVerified: false, state: "initial" })
+    const payload = v.safeParse(userCreatedEventPayloadSchema, {
+      emailVerified: false,
+      phoneNumberVerified: false,
+      registrationVerified: false,
+      registrationVerificationMethod: null,
+      state: "initial",
+    })
     if (!payload.success) return resultErrorCreate(op, "The user event payload is invalid.", "users.event-invalid")
     const event = storageEventAppend(
       transaction,

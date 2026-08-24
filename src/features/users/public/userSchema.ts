@@ -1,6 +1,8 @@
 import * as v from "valibot"
 import { userProfileSchema } from "./userProfileSchema.js"
+import { userPhoneNumberSchema } from "./userPhoneNumberSchema.js"
 import { userResourceIdSchema } from "./userResourceIdSchema.js"
+import { userRegistrationVerificationMethodSchema } from "./userRegistrationVerificationMethodSchema.js"
 import { userStateSchema } from "./userStateSchema.js"
 import { userVerificationStateSchema } from "./userVerificationStateSchema.js"
 
@@ -11,8 +13,12 @@ export const userSchema = v.strictObject({
   emailVerified: v.boolean(),
   emailVerifiedAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
   id: userResourceIdSchema,
+  phoneNumber: v.optional(userPhoneNumberSchema),
+  phoneNumberVerifiedAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
   realmId: userResourceIdSchema,
   profile: userProfileSchema,
+  registrationVerifiedAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  registrationVerificationMethod: v.optional(userRegistrationVerificationMethodSchema),
   state: userStateSchema,
   updatedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   userName: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),

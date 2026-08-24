@@ -47,12 +47,17 @@ function configurationInputNormalize(input: Record<string, unknown>): Result<Rec
     { internal: "nodeEnv", external: "NODE_ENV" },
     { internal: "port", external: "PORT" },
     { internal: "publicOrigin", external: "PUBLIC_ORIGIN" },
+    { internal: "trustedProxyAddresses", external: "AUTHWORKS_TRUSTED_PROXY_ADDRESSES" },
   ] as const
 
   for (const alias of aliases) {
     const internalValue = normalizeConfigurationValue(alias.internal, input[alias.internal])
     const externalValue = normalizeConfigurationValue(alias.internal, input[alias.external])
-    if (internalValue !== undefined && externalValue !== undefined && internalValue !== externalValue) {
+    if (
+      internalValue !== undefined &&
+      externalValue !== undefined &&
+      !configurationValuesEqual(internalValue, externalValue)
+    ) {
       return resultErrorCreate(
         op,
         `Configuration is invalid. Conflicting values for ${alias.internal} and ${alias.external}.`,
@@ -67,13 +72,25 @@ function configurationInputNormalize(input: Record<string, unknown>): Result<Rec
   normalized.host ??= defaultValues.host
   normalized.nodeEnv ??= defaultValues.nodeEnv
   normalized.port ??= defaultValues.port
+  normalized.trustedProxyAddresses ??= []
 
   return createResult(normalized)
 }
 
 function normalizeConfigurationValue(field: string, value: unknown): unknown {
   if (field === "port" && typeof value === "string" && /^\d+$/.test(value)) return Number(value)
+  if (field === "trustedProxyAddresses" && typeof value === "string")
+    return value
+      .split(",")
+      .map((address) => address.trim())
+      .filter((address) => address.length > 0)
   return value
+}
+
+function configurationValuesEqual(first: unknown, second: unknown): boolean {
+  if (Array.isArray(first) && Array.isArray(second))
+    return first.length === second.length && first.every((value, index) => value === second[index])
+  return first === second
 }
 
 function isPublicOrigin(url: URL, input: string): boolean {

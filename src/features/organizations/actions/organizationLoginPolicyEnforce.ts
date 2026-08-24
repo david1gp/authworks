@@ -2,6 +2,7 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { organizationLoginPolicyProviderIdsParse } from "../domain/organizationLoginPolicyProviderIdsParse.js"
 import { organizationLoginPolicyRepositoryCreate } from "../persistence/organizationLoginPolicyRepositoryCreate.js"
 import type { OrganizationLoginMethod } from "../public/organizationLoginMethod.js"
@@ -10,6 +11,7 @@ import { organizationLoginPolicyResolve } from "./organizationLoginPolicyResolve
 
 type OrganizationLoginPolicyEnforceOptions = {
   readonly database: StorageDatabase
+  readonly executor?: StorageExecutor
   readonly realmId: string
   readonly method: OrganizationLoginMethod
   readonly organizationId?: string
@@ -49,6 +51,7 @@ function organizationLoginPolicyMethodAllowed(
 ): boolean {
   if (method === "password") return policy.allowPassword
   if (method === "email_otp") return policy.allowEmailOtp
+  if (method === "whatsapp_otp") return policy.allowWhatsappOtp ?? true
   if (method === "passkey") return policy.allowPasskey
   return policy.allowExternalIdentity
 }
@@ -56,7 +59,7 @@ function organizationLoginPolicyMethodAllowed(
 function organizationLoginPolicyProviderIdsResolve(
   options: OrganizationLoginPolicyEnforceOptions,
 ): Result<string[] | null> {
-  const repository = organizationLoginPolicyRepositoryCreate(options.database.db)
+  const repository = organizationLoginPolicyRepositoryCreate(options.executor ?? options.database.db)
   const realm = repository.realmLoginPolicyGet(options.realmId)
   if (!realm.success) return realm
   if (options.organizationId === undefined)

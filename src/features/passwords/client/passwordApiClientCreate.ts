@@ -48,6 +48,14 @@ import {
   type PasswordRegistrationResponse,
   passwordRegistrationResponseSchema,
 } from "../public/passwordRegistrationResponseSchema.js"
+import {
+  type PasswordWhatsappVerificationRequest,
+  passwordWhatsappVerificationRequestSchema,
+} from "../public/passwordWhatsappVerificationRequestSchema.js"
+import {
+  type PasswordWhatsappVerificationResponse,
+  passwordWhatsappVerificationResponseSchema,
+} from "../public/passwordWhatsappVerificationResponseSchema.js"
 
 type PasswordApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -103,6 +111,22 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
         `/realms/${encodeURIComponent(realmId)}/password/login`,
         jsonRequest(parsed.data),
         passwordLoginResponseSchema,
+      )
+    },
+    passwordWhatsappVerify(
+      realmId: string,
+      input: PasswordWhatsappVerificationRequest,
+    ): Promise<Result<PasswordWhatsappVerificationResponse>> {
+      const parsed = parsedRequest(
+        passwordWhatsappVerificationRequestSchema,
+        input,
+        "The WhatsApp verification code is invalid.",
+      )
+      if (!parsed.success) return Promise.resolve(parsed)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/password/verify-whatsapp`,
+        jsonRequest(parsed.data),
+        passwordWhatsappVerificationResponseSchema,
       )
     },
     passwordEmailVerify(

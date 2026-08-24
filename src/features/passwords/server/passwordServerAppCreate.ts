@@ -1,10 +1,12 @@
 import { Hono } from "hono"
 import * as v from "valibot"
 import type { Result } from "#result"
+import { resultErrorDetailsParse } from "../../../platform/errors/resultErrorDetailsParse.js"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { trustedProxyIpResolve } from "../../../platform/http/trustedProxyIpResolve.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
@@ -26,7 +28,11 @@ import { passwordPolicySet } from "../actions/passwordPolicySet.js"
 import { passwordRecoveryComplete } from "../actions/passwordRecoveryComplete.js"
 import { passwordRecoveryRequest } from "../actions/passwordRecoveryRequest.js"
 import { passwordRegister } from "../actions/passwordRegister.js"
+import { passwordWhatsappVerify } from "../actions/passwordWhatsappVerify.js"
+import type { PasswordWhatsappDeliveryPort } from "../domain/passwordWhatsappDeliveryPort.js"
+import { passwordWhatsappAvailabilityDenyByDefaultCreate } from "../domain/passwordWhatsappAvailabilityDenyByDefaultCreate.js"
 import type { PasswordSessionCreate } from "../domain/passwordSessionCreate.js"
+import type { PasswordWhatsappAvailabilityPort } from "../domain/passwordWhatsappAvailabilityPort.js"
 import { passwordChangeRequestSchema } from "../public/passwordChangeRequestSchema.js"
 import { passwordEmailVerificationRequestSchema } from "../public/passwordEmailVerificationRequestSchema.js"
 import { passwordLoginRequestSchema } from "../public/passwordLoginRequestSchema.js"
@@ -38,12 +44,18 @@ import type { PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliver
 import { passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
 import type { PasswordRegistrationDelivery } from "../public/passwordRegistrationDeliverySchema.js"
 import { passwordRegistrationRequestSchema } from "../public/passwordRegistrationRequestSchema.js"
+import { passwordWhatsappVerificationRequestSchema } from "../public/passwordWhatsappVerificationRequestSchema.js"
 
 type PasswordServerAppCreateOptions = {
   readonly browserMode?: boolean
   readonly database: StorageDatabase
   readonly publicOrigin?: string
   readonly systemSecret?: Secret | string
+  readonly clientIpResolve?: (context: PasswordRouteContext) => string | undefined
+  readonly rateLimitSecret?: Secret | string
+  readonly trustedProxyAddresses?: readonly string[]
+  readonly whatsappDelivery?: PasswordWhatsappDeliveryPort
+  readonly whatsappAvailability?: PasswordWhatsappAvailabilityPort
   readonly onRecoveryToken?: (delivery: PasswordRecoveryDelivery) => void
   readonly sessionCreate?: PasswordSessionCreate
   readonly onVerificationToken?: (delivery: PasswordRegistrationDelivery) => void
@@ -88,14 +100,67 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         errorMessage: "The registration request is invalid.",
         op: "passwordRegister",
       })
+    if (input.output.verificationMethod === "whatsapp") {
+      const whatsappInput = { ...input.output, verificationMethod: "whatsapp" as const }
+      return passwordResultResponseCreate(
+        context,
+        passwordRegister({
+          clientIp: passwordTrustedClientIpGet(context, options),
+          context: tenant.data,
+          database: options.database,
+          input: whatsappInput,
+          onVerificationToken: options.onVerificationToken,
+          rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
+          realmId: context.req.param("realmId"),
+          whatsappAvailability: options.whatsappAvailability ?? passwordWhatsappAvailabilityDenyByDefaultCreate(),
+          whatsappDelivery: options.whatsappDelivery,
+        }),
+      )
+    }
+    const emailInput = {
+      ...input.output,
+      verificationMethod: input.output.verificationMethod === "email" ? ("email" as const) : undefined,
+    }
     return passwordResultResponseCreate(
       context,
       passwordRegister({
         context: tenant.data,
         database: options.database,
-        input: input.output,
+        input: emailInput,
         realmId: context.req.param("realmId"),
         onVerificationToken: options.onVerificationToken,
+        clientIp: passwordTrustedClientIpGet(context, options),
+        rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
+        whatsappDelivery: options.whatsappDelivery,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/password/verify-whatsapp", async (context) => {
+    const tenant = passwordTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("realmId"),
+    )
+    if (!tenant.success) return passwordErrorResponseCreate(context, tenant)
+    const body = await passwordRequestJsonRead(context)
+    if (!body.success) return passwordErrorResponseCreate(context, body)
+    const input = v.safeParse(passwordWhatsappVerificationRequestSchema, body.data)
+    if (!input.success)
+      return passwordErrorResponseCreate(context, {
+        errorMessage: "The WhatsApp verification code is invalid.",
+        op: "passwordWhatsappVerify",
+      })
+    return passwordResultResponseCreate(
+      context,
+      passwordWhatsappVerify({
+        clientIp: passwordTrustedClientIpGet(context, options),
+        context: tenant.data,
+        database: options.database,
+        input: input.output,
+        rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
+        realmId: context.req.param("realmId"),
       }),
     )
   })
@@ -423,15 +488,37 @@ function passwordDeviceMetadataGet(context: {
   }
 }
 
+function passwordTrustedClientIpGet(
+  context: PasswordRouteContext,
+  options: Pick<PasswordServerAppCreateOptions, "clientIpResolve" | "trustedProxyAddresses">,
+): string {
+  return trustedProxyIpResolve({
+    directAddress: options.clientIpResolve?.(context),
+    forwardedFor: context.req.header("x-forwarded-for"),
+    trustedProxyAddresses: options.trustedProxyAddresses,
+  })
+}
+
 function passwordErrorResponseCreate(
   context: PasswordRouteContext,
-  result: { errorMessage: string; op: string; code?: string; success?: false },
+  result: {
+    errorData?: string | null
+    errorMessage: string
+    op: string
+    code?: string
+    statusCode?: number
+    success?: false
+  },
 ) {
+  const errorData = passwordPublicErrorDataCreate(result)
   return httpResultResponseCreate(context, {
-    ...result,
     code: result.code ?? "passwords.invalid",
+    ...(errorData === undefined ? {} : { errorData }),
+    errorMessage: result.errorMessage,
+    op: result.op,
+    ...(result.statusCode === undefined ? {} : { statusCode: result.statusCode }),
     success: false,
-  } as Result<unknown>)
+  })
 }
 
 function passwordResultResponseCreate<T>(
@@ -442,9 +529,29 @@ function passwordResultResponseCreate<T>(
   if (!result.success)
     return passwordErrorResponseCreate(
       context,
-      result as { errorMessage: string; op: string; code?: string; success: false },
+      result as {
+        errorData?: string | null
+        errorMessage: string
+        op: string
+        code?: string
+        statusCode?: number
+        success: false
+      },
     )
   return httpResultResponseCreate(context, result as Result<T>, status)
+}
+
+function passwordPublicErrorDataCreate(result: {
+  errorData?: string | null
+  errorMessage: string
+  op: string
+  success?: false
+}): string | undefined {
+  const details = resultErrorDetailsParse({ ...result, success: false })
+  const retryAfterSeconds = details?.retryAfterSeconds
+  if (typeof retryAfterSeconds !== "number" || !Number.isSafeInteger(retryAfterSeconds) || retryAfterSeconds <= 0)
+    return undefined
+  return JSON.stringify({ retryAfterSeconds })
 }
 
 function passwordBrowserLoginResponseCreate(context: PasswordRouteContext, result: Result<PasswordLoginResponse>) {
@@ -462,7 +569,10 @@ function passwordBrowserLoginResponseCreate(context: PasswordRouteContext, resul
 type PasswordRouteContext = {
   readonly header: (name: string, value: string) => void
   readonly json: (body: unknown, status?: number) => Response
-  readonly req: { readonly header: (name: string) => string | undefined }
+  readonly req: {
+    readonly header: (name: string) => string | undefined
+    readonly raw: Request
+  }
 }
 
 async function passwordRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

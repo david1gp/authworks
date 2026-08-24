@@ -4,6 +4,9 @@ import type { MailDeliveryPort } from "../features/email/domain/mailDeliveryPort
 import { emailDeliveryCallbacksCreate } from "../features/email/server/emailDeliveryCallbacksCreate.js"
 import type { EmailGeneratorServerConfiguration } from "../features/email/server/emailGeneratorServerConfiguration.js"
 import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpServerAppCreate.js"
+import { whatsappOtpServerAppCreate } from "../features/whatsappOtp/server/whatsappOtpServerAppCreate.js"
+import { whatsappOtpAvailabilityCreate } from "../features/whatsappOtp/server/whatsappOtpAvailabilityCreate.js"
+import type { WhatsappOtpAvailabilityPort } from "../features/whatsappOtp/domain/whatsappOtpAvailabilityPort.js"
 import { eventServerAppCreate } from "../features/events/server/eventServerAppCreate.js"
 import type { ExternalIdentityProviderPorts } from "../features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
@@ -16,12 +19,23 @@ import { organizationServerAppCreate } from "../features/organizations/server/or
 import { passkeyServerAppCreate } from "../features/passkeys/server/passkeyServerAppCreate.js"
 import type { PasswordRecoveryDelivery } from "../features/passwords/public/passwordRecoveryDeliverySchema.js"
 import type { PasswordRegistrationDelivery } from "../features/passwords/public/passwordRegistrationDeliverySchema.js"
+import type { PasswordWhatsappDeliveryPort } from "../features/passwords/domain/passwordWhatsappDeliveryPort.js"
+import { passwordRegistrationRateLimitSecretValidate } from "../features/passwords/domain/passwordRegistrationRateLimitSecretValidate.js"
 import { passwordServerAppCreate } from "../features/passwords/server/passwordServerAppCreate.js"
+import type { WahaDeliveryPort } from "../features/waha/domain/wahaDeliveryPort.js"
 import { projectServerAppCreate } from "../features/projects/server/projectServerAppCreate.js"
 import { realmServerAppCreate } from "../features/realms/server/realmServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/actions/sessionPasswordCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
 import { userServerAppCreate } from "../features/users/server/userServerAppCreate.js"
+import { wahaHealthCandidateRepositoryCreate } from "../features/waha/persistence/wahaHealthCandidateRepositoryCreate.js"
+import { wahaHealthPortCreate } from "../features/waha/server/wahaHealthPortCreate.js"
+import { wahaDeliveryPortCreate } from "../features/waha/server/wahaDeliveryPortCreate.js"
+import type { WahaConfiguration } from "../features/waha/server/wahaConfiguration.js"
+import { wahaHealthCandidateReaderCreate } from "../features/waha/server/wahaHealthCandidateReaderCreate.js"
+import { wahaHealthRefreshLifecycleCreate } from "../features/waha/server/wahaHealthRefreshLifecycleCreate.js"
+import { wahaHealthRegistryCreate } from "../features/waha/server/wahaHealthRegistryCreate.js"
+import { wahaTextDeliveryCreate } from "../features/waha/server/wahaTextDeliveryCreate.js"
 import { resultCreate } from "../platform/errors/resultCreate.js"
 import { healthServerAppCreate } from "../platform/http/healthServerAppCreate.js"
 import { uiStaticServerAppCreate } from "../platform/http/uiStaticServerAppCreate.js"
@@ -40,14 +54,27 @@ type ServerApplicationCreateOptions = {
   readonly passkeyRpId?: string
   readonly passkeyRpName?: string
   readonly publicOrigin?: string
+  readonly clientIpResolve?: (request: Request) => string | undefined
+  readonly trustedProxyAddresses?: readonly string[]
   readonly uiDirectory?: string
+  readonly wahaConfiguration?: WahaConfiguration
+  readonly wahaDeliveryPort?: WahaDeliveryPort
+  readonly whatsappDelivery?: PasswordWhatsappDeliveryPort
+  readonly whatsappAvailability?: WhatsappOtpAvailabilityPort
   readonly organizationDomainVerificationPort?: OrganizationDomainDnsVerificationPort
   readonly onRecoveryToken?: (delivery: PasswordRecoveryDelivery) => void
   readonly onVerificationToken?: (delivery: PasswordRegistrationDelivery) => void
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
 }
 
-export function serverApplicationCreate(options: ServerApplicationCreateOptions): Result<Hono> {
+export function serverApplicationCreate(
+  options: ServerApplicationCreateOptions,
+): Result<Hono & { readonly stop: () => void }> {
+  const whatsappConfigurationEnabled = (options.wahaConfiguration?.endpoints.length ?? 0) > 0
+  if (whatsappConfigurationEnabled) {
+    const rateLimitSecret = passwordRegistrationRateLimitSecretValidate(options.systemSecret)
+    if (!rateLimitSecret.success) return rateLimitSecret
+  }
   const database = storageDatabaseOpen(options.databasePath, options.runtime)
   if (!database.success) return database
   const publicOrigin = options.publicOrigin ?? "http://127.0.0.1:3000"
@@ -61,6 +88,43 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
           publicOrigin,
         })
   const application = new Hono()
+  const wahaRepository = wahaHealthCandidateRepositoryCreate(database.data.db)
+  const wahaCandidateReader = wahaHealthCandidateReaderCreate({ repository: wahaRepository })
+  const whatsappAvailability =
+    options.whatsappAvailability ??
+    whatsappOtpAvailabilityCreate({
+      configuration: options.wahaConfiguration,
+      database: database.data,
+      reader: wahaCandidateReader,
+      runtime: options.runtime,
+    })
+  const wahaRegistry =
+    options.wahaConfiguration === undefined || options.wahaConfiguration.endpoints.length === 0
+      ? undefined
+      : wahaHealthRegistryCreate({
+          configuration: options.wahaConfiguration,
+          healthPort: wahaHealthPortCreate({ configuration: options.wahaConfiguration }),
+          repository: wahaRepository,
+          runtime: options.runtime,
+        })
+  const wahaHealthLifecycle =
+    wahaRegistry === undefined || options.wahaConfiguration === undefined
+      ? undefined
+      : wahaHealthRefreshLifecycleCreate({
+          intervalMs: options.wahaConfiguration.refreshIntervalMs,
+          refresh: wahaRegistry.refresh,
+        })
+  const whatsappDelivery =
+    options.whatsappDelivery ??
+    (wahaRegistry === undefined || options.wahaConfiguration === undefined
+      ? undefined
+      : wahaTextDeliveryCreate({
+          deliveryPort:
+            options.wahaDeliveryPort ?? wahaDeliveryPortCreate({ configuration: options.wahaConfiguration }),
+          healthRegistry: wahaRegistry,
+          repository: wahaRepository,
+          runtime: options.runtime,
+        }))
   application.route("/", healthServerAppCreate())
   application.route(
     "/",
@@ -77,6 +141,19 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
       browserMode: options.browserMode,
       database: database.data,
       onDelivery: emailDeliveryCallbacks?.onOtpDelivery,
+    }),
+  )
+  application.route(
+    "/",
+    whatsappOtpServerAppCreate({
+      browserMode: options.browserMode,
+      clientIpResolve:
+        options.clientIpResolve === undefined ? undefined : (context) => options.clientIpResolve?.(context.req.raw),
+      database: database.data,
+      delivery: whatsappDelivery,
+      rateLimitSecret: options.systemSecret,
+      trustedProxyAddresses: options.trustedProxyAddresses,
+      availability: whatsappAvailability,
     }),
   )
   application.route(
@@ -149,14 +226,34 @@ export function serverApplicationCreate(options: ServerApplicationCreateOptions)
     "/",
     passwordServerAppCreate({
       browserMode: options.browserMode,
+      clientIpResolve:
+        options.clientIpResolve === undefined ? undefined : (context) => options.clientIpResolve?.(context.req.raw),
       database: database.data,
       publicOrigin,
       sessionCreate: sessionPasswordCreate(),
       systemSecret: options.systemSecret,
       onRecoveryToken: options.onRecoveryToken ?? emailDeliveryCallbacks?.onRecoveryToken,
       onVerificationToken: options.onVerificationToken ?? emailDeliveryCallbacks?.onVerificationToken,
+      rateLimitSecret: options.systemSecret,
+      trustedProxyAddresses: options.trustedProxyAddresses,
+      whatsappDelivery,
+      whatsappAvailability,
     }),
   )
   application.route("/", uiStaticServerAppCreate({ production: options.production, uiDirectory: options.uiDirectory }))
-  return resultCreate(application)
+  let stopped = false
+  const stop = (): void => {
+    if (stopped) return
+    stopped = true
+    wahaHealthLifecycle?.stop()
+    database.data.close()
+  }
+  const serverApplication = Object.assign(application, { stop })
+  void wahaHealthLifecycle?.start().then(
+    (started) => {
+      if (!started.success) console.error(started.errorMessage)
+    },
+    () => console.error("The WAHA health refresh failed."),
+  )
+  return resultCreate(serverApplication)
 }

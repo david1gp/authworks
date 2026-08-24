@@ -1,9 +1,9 @@
 import * as v from "valibot"
-import { resultErrorCodeSchema } from "../errors/resultErrorCodeSchema.js"
+import { httpErrorCodeSchema } from "./httpErrorCodeSchema.js"
 
 export const httpErrorResponseSchema = v.object({
   error: v.object({
-    code: resultErrorCodeSchema,
+    code: httpErrorCodeSchema,
     message: v.pipe(v.string(), v.maxLength(1000)),
     op: v.optional(v.string()),
     details: v.optional(v.record(v.string(), v.unknown())),

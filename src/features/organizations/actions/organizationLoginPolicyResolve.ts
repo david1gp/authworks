@@ -3,6 +3,7 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { organizationLoginPolicyViewCreate } from "../domain/organizationLoginPolicyViewCreate.js"
 import { organizationLoginPolicyRepositoryCreate } from "../persistence/organizationLoginPolicyRepositoryCreate.js"
 import { organizationTable } from "../persistence/organizationTable.js"
@@ -10,6 +11,7 @@ import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicyS
 
 type OrganizationLoginPolicyResolveOptions = {
   readonly database: StorageDatabase
+  readonly executor?: StorageExecutor
   readonly realmId: string
   readonly organizationId?: string
 }
@@ -17,11 +19,12 @@ type OrganizationLoginPolicyResolveOptions = {
 export function organizationLoginPolicyResolve(
   options: OrganizationLoginPolicyResolveOptions,
 ): Result<OrganizationLoginPolicy> {
-  const repository = organizationLoginPolicyRepositoryCreate(options.database.db)
+  const executor = options.executor ?? options.database.db
+  const repository = organizationLoginPolicyRepositoryCreate(executor)
   const realm = repository.realmLoginPolicyGet(options.realmId)
   if (!realm.success) return realm
   if (options.organizationId === undefined) return resultCreate(organizationLoginPolicyViewCreate(realm.data, null))
-  const organization = options.database.db
+  const organization = executor
     .select({ id: organizationTable.id, realmId: organizationTable.realmId, status: organizationTable.status })
     .from(organizationTable)
     .where(and(eq(organizationTable.id, options.organizationId), eq(organizationTable.realmId, options.realmId)))

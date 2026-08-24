@@ -13,9 +13,14 @@ export function httpErrorResultCreate(input: {
     statusCode?: number
   }
   requestId: string
-}): { body: HttpErrorResponse; status: number; retryable: boolean } {
+}): { body: HttpErrorResponse; retryAfterSeconds?: number; status: number; retryable: boolean } {
   const catalogEntry = input.result.code === undefined ? undefined : errorCatalogGet(input.result.code)
-  const code = catalogEntry === undefined ? "platform.internal" : (input.result.code ?? "platform.internal")
+  const code =
+    input.result.code === "passwords.rate-limited" || input.result.code === "whatsapp-otp.rate-limited"
+      ? "rate_limited"
+      : catalogEntry === undefined
+        ? "platform.internal"
+        : (input.result.code ?? "platform.internal")
   const status = input.result.statusCode ?? catalogEntry?.httpStatus ?? 500
   const retryable = catalogEntry?.retryable ?? false
   const details = resultErrorDetailsParse(input.result)
@@ -28,5 +33,13 @@ export function httpErrorResultCreate(input: {
     retryable,
     status,
   })
-  return { body, retryable, status }
+  const retryAfter = details?.retryAfterSeconds
+  return {
+    body,
+    ...(typeof retryAfter === "number" && Number.isSafeInteger(retryAfter) && retryAfter > 0
+      ? { retryAfterSeconds: retryAfter }
+      : {}),
+    retryable,
+    status,
+  }
 }

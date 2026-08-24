@@ -44,9 +44,13 @@ bun run test:build # build and test distributable outputs
 bun run test:all  # source and distributable tests
 bun run build     # emit dist/
 bun run format   # biome
+bun run check    # repository checks
 bun run release  # git-cliff changelog + tag
 bun run deploy   # full check plus optional live HTTPS smoke
 ```
+
+`bun run check` runs formatting, UI-literal, type, test, build, and build-output
+checks. Its test commands pass `--max-concurrency=1`.
 
 ## Production deployment
 
@@ -114,6 +118,118 @@ AUTHWORKS_SMOKE_URL=https://auth.example.com bun run smoke:public
 The smoke checks HTTPS, the production root redirect, health, the SPA fallback,
 the packaged favicon, built-asset caching, API/static precedence, and production
 exclusion of `/demo/**`.
+
+## WhatsApp OTP and WAHA
+
+The package currently resolves `@adaptive-ds/waha-client` from the sibling
+`../waha-client` checkout. Local development therefore requires that checkout,
+`bun install`, and a reachable WAHA instance with at least one configured
+session in `WORKING` state (normally `http://localhost:3000`).
+Because `package.json` declares this dependency as `file:../waha-client`, an
+install from npm or a standalone Authworks checkout cannot resolve it without
+that sibling checkout. Deployment must include the sibling checkout, or
+replace the dependency with a published package before deployment.
+
+WAHA is disabled unless `AUTHWORKS_WAHA_ENABLED` is `1`, `true`, or `yes`.
+When enabled, `AUTHWORKS_WAHA_ENDPOINTS` is a required JSON array with one or
+more endpoints. Each endpoint has a stable `id` and an HTTP(S) `baseUrl`
+without credentials; it may also have `apiKey`, `session`, `timeoutMs`, and
+`retries`. `apiKey` and `AUTHWORKS_SYSTEM_SECRET` are server-only secrets and
+must not be exposed to clients or committed. A non-empty
+`AUTHWORKS_SYSTEM_SECRET` is required for WhatsApp registration and OTP rate
+limiting:
+
+```dotenv
+AUTHWORKS_SYSTEM_SECRET=replace-with-a-secret
+AUTHWORKS_WAHA_ENABLED=true
+AUTHWORKS_WAHA_ENDPOINTS='[{"id":"local","baseUrl":"http://localhost:3000","session":"default","apiKey":"replace-with-a-secret"}]'
+# Optional; defaults shown in milliseconds.
+AUTHWORKS_WAHA_REFRESH_INTERVAL_MS=30000
+AUTHWORKS_WAHA_FRESHNESS_TTL_MS=90000
+```
+
+The freshness TTL must be at least the refresh interval. Authworks refreshes
+WAHA health once at startup and then on that interval, without overlapping
+scans. A candidate is healthy only when WAHA server health is `ok` and its
+listed session is `WORKING`. Persisted rows survive restarts but are usable
+only while `expiresAt > now`; requests use this cache and do not synchronously
+scan WAHA. URLs and API keys are not stored in health rows. Candidates are
+selected uniformly from fresh healthy candidates.
+
+WhatsApp is available only when `configured && policyEnabled &&
+freshHealthyCandidate`. The availability route returns only that boolean:
+
+```text
+GET  /realms/:realmId/whatsapp-otp/availability?organizationId=...
+POST /realms/:realmId/whatsapp-otp/start
+POST /realms/:realmId/whatsapp-otp/resend
+POST /realms/:realmId/whatsapp-otp/verify
+POST /realms/:realmId/password/register
+POST /realms/:realmId/password/verify-whatsapp
+```
+
+Availability uses the resolved organization login policy. `allowWhatsappOtp`
+comes from the organization override when present, otherwise the realm policy,
+and defaults to `true`. When supplied, an organization must belong to the
+requested realm and be active; an unavailable organization or disabled policy
+makes WhatsApp unavailable.
+
+Password registration accepts `verificationMethod: "email" | "whatsapp"` and
+defaults to email verification. Set it to `whatsapp` and provide a canonical
+phone number to use WhatsApp; WhatsApp verification activates the account and
+does not verify its email address. Phone numbers use E.164 form matching
+`^\+[1-9]\d{1,14}$` (for example `+14155552671`); WAHA receives
+`14155552671@c.us`.
+Registration is realm-scoped: provide `--realm-id REALM_ID` or set
+`AUTHWORKS_REALM_ID`; an explicit flag takes precedence, and there is no default
+realm ID.
+
+WhatsApp registration delivery and WhatsApp OTP start/resend are limited to one
+delivery per phone and purpose per 60 seconds. WhatsApp registration, OTP
+start, OTP resend, and OTP verify each allow five requests per 60 seconds for
+both their identifier and client-IP scopes. Each challenge allows five code
+attempts. These limits use atomically persisted windows and HMAC-derived keys,
+not raw phone numbers or email addresses. HTTP rate limits return `429`, public
+code `rate_limited`, and `Retry-After`.
+
+Client IP resolution uses the direct peer address first. `X-Forwarded-For` is
+considered only when that peer is in the explicitly supplied
+`trustedProxyAddresses` list; the chain is walked from the nearest proxy to
+the first untrusted address. With no direct address, the result is `unknown`.
+The shipped server reads the optional comma-separated
+`AUTHWORKS_TRUSTED_PROXY_ADDRESSES` environment variable; it defaults to no
+trusted proxies, so forwarded headers are ignored unless the immediate peer is
+listed explicitly.
+
+Challenge and event persistence commits before external delivery. Delivery
+failures do not roll back state or put the OTP in the HTTP response. The WAHA
+delivery adapter marks a failed candidate unhealthy, retries at most once with
+another fresh healthy candidate, and returns the second failure if both sends
+fail. Registration and OTP route delivery is invoked after commit and
+asynchronously, so an accepted response is not changed by a later delivery
+failure.
+
+The CLI uses `AUTHWORKS_URL` or `http://127.0.0.1:3000` by default; realm and
+organization defaults and explicit flag precedence are documented above:
+
+```bash
+authworks whatsapp-otp availability [--realm-id REALM_ID] [--organization-id ID]
+authworks whatsapp-otp start --realm-id REALM_ID --phone-number +14155552671
+authworks whatsapp-otp resend --realm-id REALM_ID --challenge-id ID
+authworks whatsapp-otp verify --realm-id REALM_ID --challenge-id ID --code CODE
+authworks passwords register --verification-method whatsapp --phone-number +14155552671
+authworks passwords verify-whatsapp --realm-id REALM_ID --challenge-id ID --code CODE
+```
+
+The live WAHA health test is skipped unless explicitly gated. Run it only with
+a reachable endpoint and a `WORKING` session:
+
+```bash
+AUTHWORKS_WAHA_LIVE_TEST=true \
+AUTHWORKS_WAHA_ENABLED=true \
+AUTHWORKS_WAHA_ENDPOINTS='[{"id":"local","baseUrl":"http://localhost:3000","session":"default"}]' \
+bun test test/integration/wahaLive.test.ts
+```
 
 ## CLI scope defaults
 

@@ -19,8 +19,9 @@ export function httpApiClientErrorResultCreate(options: HttpApiClientErrorResult
     const requestId = httpRequestIdGet(responseHeaderRequestId ?? parsedError.output.error.requestId, () =>
       crypto.randomUUID(),
     )
-    const retryable =
-      parsedError.output.error.retryable ?? errorCatalogHttpMappingGet(parsedError.output.error.code).retryable
+    const code =
+      parsedError.output.error.code === "rate_limited" ? "platform.rate-limited" : parsedError.output.error.code
+    const retryable = parsedError.output.error.retryable ?? errorCatalogHttpMappingGet(code).retryable
     const retryAfter = options.response.headers.get("retry-after")
     const details = {
       ...(parsedError.output.error.details ?? {}),
@@ -29,12 +30,7 @@ export function httpApiClientErrorResultCreate(options: HttpApiClientErrorResult
       status: options.response.status,
       ...(retryAfter === null ? {} : { retryAfter }),
     }
-    const result = resultErrorCodedCreate(
-      options.op,
-      parsedError.output.error.message,
-      parsedError.output.error.code,
-      details,
-    )
+    const result = resultErrorCodedCreate(options.op, parsedError.output.error.message, code, details)
     result.statusCode = options.response.status
     return result
   }

@@ -3,6 +3,7 @@ import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicyS
 export const organizationLoginPolicyDefaults: OrganizationLoginPolicy = {
   allowDomainDiscovery: true,
   allowEmailOtp: true,
+  allowWhatsappOtp: true,
   allowExternalIdentity: true,
   allowPassword: true,
   allowPasswordRecovery: true,

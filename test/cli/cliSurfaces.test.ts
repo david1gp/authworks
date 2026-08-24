@@ -25,6 +25,7 @@ const featureRoutes = [
   "projects",
   "sessions",
   "users",
+  "whatsapp-otp",
   "zitadel-migration",
 ]
 

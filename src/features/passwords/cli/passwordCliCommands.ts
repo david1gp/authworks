@@ -1,4 +1,4 @@
-import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import { type ApplicationContext, buildChoiceParser, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { passwordApiClientCreate } from "../client/passwordApiClientCreate.js"
 
@@ -68,7 +68,14 @@ const passwordPolicySetCommand = buildCommand({
 const passwordRegisterCommand = buildCommand({
   async func(
     this: ApplicationContext,
-    flags: PasswordCliFlags & { email: string; password: string; realmId?: string; userName: string },
+    flags: PasswordCliFlags & {
+      email: string
+      password: string
+      phoneNumber?: string
+      realmId?: string
+      userName: string
+      verificationMethod: "email" | "whatsapp"
+    },
   ) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
     if (realmId === undefined) return
@@ -77,8 +84,10 @@ const passwordRegisterCommand = buildCommand({
       await passwordCliClientCreate(this, flags).passwordRegister(realmId, {
         email: flags.email,
         password: flags.password,
+        ...(flags.phoneNumber === undefined ? {} : { phoneNumber: flags.phoneNumber }),
         profile: {},
         userName: flags.userName,
+        verificationMethod: flags.verificationMethod,
       }),
     )
   },
@@ -89,6 +98,8 @@ const passwordRegisterCommand = buildCommand({
       userName: passwordTextFlag("User name"),
       email: passwordTextFlag("Email address"),
       password: passwordTextFlag("Password"),
+      phoneNumber: passwordOptionalTextFlag("Phone number"),
+      verificationMethod: passwordVerificationMethodFlag(),
     },
   },
   docs: { brief: "Register a password account" },
@@ -137,6 +148,32 @@ const passwordVerifyCommand = buildCommand({
     },
   },
   docs: { brief: "Verify an email address" },
+})
+
+const passwordWhatsappVerifyCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: PasswordCliFlags & { challengeId: string; code: string; realmId?: string },
+  ) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    if (realmId === undefined) return
+    passwordCliResultWrite(
+      this,
+      await passwordCliClientCreate(this, flags).passwordWhatsappVerify(realmId, {
+        challengeId: flags.challengeId,
+        code: flags.code,
+      }),
+    )
+  },
+  parameters: {
+    flags: {
+      ...passwordCommonFlags(),
+      realmId: passwordRealmIdFlag(),
+      challengeId: passwordTextFlag("WhatsApp challenge ID"),
+      code: passwordTextFlag("WhatsApp verification code"),
+    },
+  },
+  docs: { brief: "Verify a WhatsApp registration" },
 })
 
 const passwordRecoveryRequestCommand = buildCommand({
@@ -219,6 +256,7 @@ export const passwordCliCommands = buildRouteMap({
     }),
     register: passwordRegisterCommand,
     verify: passwordVerifyCommand,
+    "verify-whatsapp": passwordWhatsappVerifyCommand,
   },
   docs: { brief: "Password authentication" },
 })
@@ -277,6 +315,20 @@ function passwordUserIdFlag() {
 
 function passwordTextFlag(brief: string) {
   return { brief, kind: "parsed" as const, parse: (value: string) => value, placeholder: "VALUE" }
+}
+
+function passwordOptionalTextFlag(brief: string) {
+  return { ...passwordTextFlag(brief), optional: true as const }
+}
+
+function passwordVerificationMethodFlag() {
+  return {
+    brief: "Registration verification method",
+    kind: "parsed" as const,
+    default: "email",
+    parse: buildChoiceParser(["email", "whatsapp"] as const),
+    placeholder: "email|whatsapp",
+  }
 }
 
 function passwordNumberFlag(brief: string) {

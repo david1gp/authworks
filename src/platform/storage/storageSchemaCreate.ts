@@ -41,10 +41,10 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE TABLE IF NOT EXISTS organization_branding (organization_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, branding TEXT NOT NULL CHECK (json_valid(branding)), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS realm_login_policies (realm_id TEXT PRIMARY KEY NOT NULL, allow_domain_discovery INTEGER NOT NULL CHECK (allow_domain_discovery IN (0, 1)), allow_email_otp INTEGER NOT NULL CHECK (allow_email_otp IN (0, 1)), allow_external_identity INTEGER NOT NULL CHECK (allow_external_identity IN (0, 1)), allow_password INTEGER NOT NULL CHECK (allow_password IN (0, 1)), allow_password_recovery INTEGER NOT NULL CHECK (allow_password_recovery IN (0, 1)), allow_passkey INTEGER NOT NULL CHECK (allow_passkey IN (0, 1)), allow_registration INTEGER NOT NULL CHECK (allow_registration IN (0, 1)), provider_ids TEXT CHECK (provider_ids IS NULL OR json_valid(provider_ids)), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS realm_login_policies (realm_id TEXT PRIMARY KEY NOT NULL, allow_domain_discovery INTEGER NOT NULL CHECK (allow_domain_discovery IN (0, 1)), allow_email_otp INTEGER NOT NULL CHECK (allow_email_otp IN (0, 1)), allow_whatsapp_otp INTEGER NOT NULL CHECK (allow_whatsapp_otp IN (0, 1)), allow_external_identity INTEGER NOT NULL CHECK (allow_external_identity IN (0, 1)), allow_password INTEGER NOT NULL CHECK (allow_password IN (0, 1)), allow_password_recovery INTEGER NOT NULL CHECK (allow_password_recovery IN (0, 1)), allow_passkey INTEGER NOT NULL CHECK (allow_passkey IN (0, 1)), allow_registration INTEGER NOT NULL CHECK (allow_registration IN (0, 1)), provider_ids TEXT CHECK (provider_ids IS NULL OR json_valid(provider_ids)), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS organization_login_policies (organization_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, allow_domain_discovery INTEGER CHECK (allow_domain_discovery IS NULL OR allow_domain_discovery IN (0, 1)), allow_email_otp INTEGER CHECK (allow_email_otp IS NULL OR allow_email_otp IN (0, 1)), allow_external_identity INTEGER CHECK (allow_external_identity IS NULL OR allow_external_identity IN (0, 1)), allow_password INTEGER CHECK (allow_password IS NULL OR allow_password IN (0, 1)), allow_password_recovery INTEGER CHECK (allow_password_recovery IS NULL OR allow_password_recovery IN (0, 1)), allow_passkey INTEGER CHECK (allow_passkey IS NULL OR allow_passkey IN (0, 1)), allow_registration INTEGER CHECK (allow_registration IS NULL OR allow_registration IN (0, 1)), provider_ids TEXT CHECK (provider_ids IS NULL OR json_valid(provider_ids)), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS organization_login_policies (organization_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, allow_domain_discovery INTEGER CHECK (allow_domain_discovery IS NULL OR allow_domain_discovery IN (0, 1)), allow_email_otp INTEGER CHECK (allow_email_otp IS NULL OR allow_email_otp IN (0, 1)), allow_whatsapp_otp INTEGER CHECK (allow_whatsapp_otp IS NULL OR allow_whatsapp_otp IN (0, 1)), allow_external_identity INTEGER CHECK (allow_external_identity IS NULL OR allow_external_identity IN (0, 1)), allow_password INTEGER CHECK (allow_password IS NULL OR allow_password IN (0, 1)), allow_password_recovery INTEGER CHECK (allow_password_recovery IS NULL OR allow_password_recovery IN (0, 1)), allow_passkey INTEGER CHECK (allow_passkey IS NULL OR allow_passkey IN (0, 1)), allow_registration INTEGER CHECK (allow_registration IS NULL OR allow_registration IN (0, 1)), provider_ids TEXT CHECK (provider_ids IS NULL OR json_valid(provider_ids)), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
     database.run(
       "CREATE TABLE IF NOT EXISTS organization_memberships (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, user_id TEXT NOT NULL, roles TEXT NOT NULL CHECK (json_valid(roles)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (organization_id, user_id), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
@@ -68,7 +68,10 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE UNIQUE INDEX IF NOT EXISTS organization_invitations_pending_email_idx ON organization_invitations (organization_id, email) WHERE status = 'pending'",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('initial', 'active', 'inactive', 'locked', 'suspended', 'deleted')), email_verified_at INTEGER CHECK (email_verified_at IS NULL OR email_verified_at >= 0), deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('initial', 'active', 'inactive', 'locked', 'suspended', 'deleted')), email_verified_at INTEGER CHECK (email_verified_at IS NULL OR email_verified_at >= 0), phone_number TEXT, phone_number_verified_at INTEGER CHECK (phone_number_verified_at IS NULL OR phone_number_verified_at >= 0), registration_verified_at INTEGER CHECK (registration_verified_at IS NULL OR registration_verified_at >= 0), registration_verification_method TEXT CHECK (registration_verification_method IS NULL OR registration_verification_method IN ('email', 'whatsapp')), deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS users_realm_verified_phone_idx ON users (realm_id, phone_number) WHERE phone_number IS NOT NULL AND phone_number_verified_at IS NOT NULL",
     )
     database.run("CREATE INDEX IF NOT EXISTS users_realm_id_idx ON users (realm_id)")
     database.run(
@@ -84,6 +87,37 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     database.run(
       "CREATE INDEX IF NOT EXISTS email_otp_challenges_realm_user_idx ON email_otp_challenges (realm_id, user_id, purpose)",
     )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS whatsapp_otp_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT, user_id TEXT, phone_hash TEXT NOT NULL, purpose TEXT NOT NULL CHECK (purpose IN ('sign_in')), code_hash TEXT NOT NULL, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS whatsapp_otp_challenges_realm_phone_idx ON whatsapp_otp_challenges (realm_id, phone_hash, purpose)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS whatsapp_otp_challenges_realm_user_idx ON whatsapp_otp_challenges (realm_id, user_id, purpose)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS waha_health_candidates (endpoint_id TEXT NOT NULL, session_name TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('unknown', 'healthy', 'unhealthy')), checked_at INTEGER NOT NULL CHECK (checked_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), failure_code TEXT, failure_message TEXT, failure_at INTEGER CHECK (failure_at IS NULL OR failure_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), PRIMARY KEY (endpoint_id, session_name))",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS waha_health_candidates_fresh_idx ON waha_health_candidates (status, expires_at)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS password_registration_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT, identity_hash TEXT, purpose TEXT NOT NULL CHECK (purpose = 'registration'), code_hash TEXT NOT NULL UNIQUE, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS password_registration_challenges_realm_user_idx ON password_registration_challenges (realm_id, user_id, purpose)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS password_registration_challenges_realm_identity_idx ON password_registration_challenges (realm_id, identity_hash, purpose)",
+    )
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS password_registration_challenges_decoy_identity_idx ON password_registration_challenges (realm_id, identity_hash, purpose) WHERE user_id IS NULL AND consumed_at IS NULL",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS rate_limits (scope TEXT NOT NULL, key_hash TEXT NOT NULL, window_started_at INTEGER NOT NULL CHECK (window_started_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), count INTEGER NOT NULL CHECK (count > 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), PRIMARY KEY (scope, key_hash))",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS rate_limits_expires_at_idx ON rate_limits (expires_at, scope, key_hash)")
     database.run(
       "CREATE TABLE IF NOT EXISTS password_credentials (user_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, hash TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), changed_at INTEGER NOT NULL CHECK (changed_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
@@ -101,7 +135,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS password_challenges_user_kind_idx ON password_challenges (realm_id, user_id, kind)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, subject_id TEXT NOT NULL, subject_type TEXT NOT NULL CHECK (subject_type IN ('user', 'bootstrap_admin')), user_id TEXT, token_hash TEXT NOT NULL UNIQUE, assurance TEXT NOT NULL CHECK (assurance IN ('none', 'authenticated', 'multi_factor')), authentication_method TEXT NOT NULL CHECK (authentication_method IN ('bootstrap_admin', 'email_otp', 'external_identity', 'impersonation', 'password', 'passkey', 'recovery_code', 'totp')), mfa_method TEXT CHECK (mfa_method IS NULL OR mfa_method IN ('passkey', 'recovery_code', 'totp')), impersonation_organization_id TEXT, impersonation_permissions TEXT CHECK (impersonation_permissions IS NULL OR json_valid(impersonation_permissions)), impersonation_reason TEXT, impersonator_id TEXT, device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER NOT NULL CHECK (last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), revocation_reason TEXT, version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, subject_id TEXT NOT NULL, subject_type TEXT NOT NULL CHECK (subject_type IN ('user', 'bootstrap_admin')), user_id TEXT, token_hash TEXT NOT NULL UNIQUE, assurance TEXT NOT NULL CHECK (assurance IN ('none', 'authenticated', 'multi_factor')), authentication_method TEXT NOT NULL CHECK (authentication_method IN ('bootstrap_admin', 'email_otp', 'external_identity', 'impersonation', 'password', 'passkey', 'recovery_code', 'totp', 'whatsapp_otp')), mfa_method TEXT CHECK (mfa_method IS NULL OR mfa_method IN ('passkey', 'recovery_code', 'totp')), impersonation_organization_id TEXT, impersonation_permissions TEXT CHECK (impersonation_permissions IS NULL OR json_valid(impersonation_permissions)), impersonation_reason TEXT, impersonator_id TEXT, device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER NOT NULL CHECK (last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), revocation_reason TEXT, version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     database.run(
       "CREATE INDEX IF NOT EXISTS sessions_realm_subject_idx ON sessions (realm_id, subject_type, subject_id)",
@@ -130,7 +164,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS mfa_recovery_codes_realm_user_idx ON mfa_recovery_codes (realm_id, user_id)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS mfa_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT, purpose TEXT NOT NULL CHECK (purpose IN ('login', 'step_up')), token_hash TEXT NOT NULL UNIQUE, primary_authentication_method TEXT NOT NULL CHECK (primary_authentication_method IN ('email_otp', 'external_identity', 'password', 'passkey')), device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, required_assurance TEXT NOT NULL CHECK (required_assurance = 'multi_factor'), attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS mfa_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT, purpose TEXT NOT NULL CHECK (purpose IN ('login', 'step_up')), token_hash TEXT NOT NULL UNIQUE, primary_authentication_method TEXT NOT NULL CHECK (primary_authentication_method IN ('email_otp', 'external_identity', 'password', 'passkey', 'whatsapp_otp')), device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, required_assurance TEXT NOT NULL CHECK (required_assurance = 'multi_factor'), attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE)",
     )
     database.run(
       "CREATE INDEX IF NOT EXISTS mfa_challenges_realm_user_idx ON mfa_challenges (realm_id, user_id, purpose)",
@@ -178,8 +212,8 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     try {
       database.run("ALTER TABLE external_identity_oauth_transactions ADD COLUMN interaction_handle TEXT")
-    } catch (_error) {
-      // Existing installations already have the column.
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "interaction_handle")) throw error
     }
     database.run(
       "CREATE INDEX IF NOT EXISTS external_identity_oauth_transactions_realm_idx ON external_identity_oauth_transactions (realm_id, provider_id)",
@@ -294,4 +328,10 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
   } catch (_error) {
     return resultErrorCreate(op, "The SQLite schema could not be created.")
   }
+}
+
+function storageSchemaDuplicateColumnIsExpected(error: unknown, columnName: string): boolean {
+  if (!(error instanceof Error)) return false
+  if (error.message === `duplicate column name: ${columnName}`) return true
+  return error.cause !== undefined && storageSchemaDuplicateColumnIsExpected(error.cause, columnName)
 }

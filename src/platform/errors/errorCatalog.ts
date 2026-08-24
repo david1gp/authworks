@@ -14,6 +14,8 @@ import { projectsErrorCatalog } from "../../features/projects/errors/projectsErr
 import { realmsErrorCatalog } from "../../features/realms/errors/realmsErrorCatalog.js"
 import { sessionsErrorCatalog } from "../../features/sessions/errors/sessionsErrorCatalog.js"
 import { usersErrorCatalog } from "../../features/users/errors/usersErrorCatalog.js"
+import { wahaErrorCatalog } from "../../features/waha/errors/wahaErrorCatalog.js"
+import { whatsappOtpErrorCatalog } from "../../features/whatsappOtp/errors/whatsappOtpErrorCatalog.js"
 import { zitadelMigrationErrorCatalog } from "../../features/zitadelMigration/errors/zitadelMigrationErrorCatalog.js"
 import { errorCatalogCompose } from "./errorCatalogCompose.js"
 import { platformErrorCatalog } from "./platformErrorCatalog.js"
@@ -36,5 +38,7 @@ export const errorCatalog = errorCatalogCompose(
   eventsErrorCatalog,
   realmsErrorCatalog,
   usersErrorCatalog,
+  wahaErrorCatalog,
+  whatsappOtpErrorCatalog,
   zitadelMigrationErrorCatalog,
 )

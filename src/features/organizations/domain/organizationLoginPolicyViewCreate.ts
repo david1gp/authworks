@@ -16,6 +16,11 @@ export function organizationLoginPolicyViewCreate(
       realm?.allowDomainDiscovery ??
       organizationLoginPolicyDefaults.allowDomainDiscovery,
     allowEmailOtp: organization?.allowEmailOtp ?? realm?.allowEmailOtp ?? organizationLoginPolicyDefaults.allowEmailOtp,
+    allowWhatsappOtp:
+      organization?.allowWhatsappOtp ??
+      realm?.allowWhatsappOtp ??
+      organizationLoginPolicyDefaults.allowWhatsappOtp ??
+      true,
     allowExternalIdentity:
       organization?.allowExternalIdentity ??
       realm?.allowExternalIdentity ??

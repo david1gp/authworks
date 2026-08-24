@@ -5,6 +5,7 @@ const organizationLoginPolicyProviderIdSchema = v.pipe(v.string(), v.minLength(1
 export const organizationLoginPolicyOverrideSchema = v.strictObject({
   allowDomainDiscovery: v.optional(v.nullable(v.boolean())),
   allowEmailOtp: v.optional(v.nullable(v.boolean())),
+  allowWhatsappOtp: v.optional(v.nullable(v.boolean())),
   allowExternalIdentity: v.optional(v.nullable(v.boolean())),
   allowPassword: v.optional(v.nullable(v.boolean())),
   allowPasswordRecovery: v.optional(v.nullable(v.boolean())),

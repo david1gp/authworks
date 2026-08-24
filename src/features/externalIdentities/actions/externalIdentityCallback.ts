@@ -16,7 +16,7 @@ import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
 import { userNameNormalize } from "../../users/domain/userNameNormalize.js"
 import { userCreatedEventPayloadSchema } from "../../users/events/userCreatedEventPayloadSchema.js"
 import { userEventTypes } from "../../users/events/userEventTypes.js"
-import { userProfileTable } from "../../users/persistence/userProfileTable.js"
+import { userRepositoryCreate } from "../../users/persistence/userRepositoryCreate.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
 import type { ExternalIdentityProviderIdentity } from "../domain/externalIdentityProviderIdentity.js"
@@ -290,27 +290,24 @@ function externalIdentitySignInCommit(
     userId = uuidv7Create(options.runtime)
     const userName = externalIdentityUserNameCreate(options.database, options.realmId, options.identity, email.data)
     if (!userName.success) return userName
-    const user = options.database
-      .insert(userTable)
-      .values({
+    const user = userRepositoryCreate(options.database).userCreate(
+      {
         createdAt: options.now,
         deletedAt: null,
         email: email.data,
         emailVerifiedAt: options.now,
         id: userId,
+        phoneNumber: null,
+        phoneNumberVerifiedAt: null,
         realmId: options.realmId,
+        registrationVerifiedAt: options.now,
+        registrationVerificationMethod: "email",
         state: "active",
         updatedAt: options.now,
         userName: userName.data,
         version: 1,
-      })
-      .returning()
-      .get()
-    if (user === undefined)
-      return resultErrorCreate(op, "The external account could not be created.", "external-identities.write-failed")
-    const profile = options.database
-      .insert(userProfileTable)
-      .values({
+      },
+      {
         displayName: options.identity.displayName ?? null,
         firstName: null,
         gender: null,
@@ -320,12 +317,17 @@ function externalIdentitySignInCommit(
         preferredLanguage: null,
         updatedAt: options.now,
         userId,
-      })
-      .returning()
-      .get()
-    if (profile === undefined)
+      },
+    )
+    if (!user.success)
       return resultErrorCreate(op, "The external account could not be created.", "external-identities.write-failed")
-    const userPayload = v.safeParse(userCreatedEventPayloadSchema, { emailVerified: true, state: "active" })
+    const userPayload = v.safeParse(userCreatedEventPayloadSchema, {
+      emailVerified: true,
+      phoneNumberVerified: false,
+      registrationVerified: true,
+      registrationVerificationMethod: "email",
+      state: "active",
+    })
     if (!userPayload.success)
       return resultErrorCreate(op, "The user event payload is invalid.", "external-identities.event-invalid")
     const userEvent = storageEventAppend(

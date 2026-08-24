@@ -9,6 +9,10 @@ import { type PasswordChallengeRow, passwordChallengeTable } from "./passwordCha
 import { type PasswordCredentialRow, passwordCredentialTable } from "./passwordCredentialTable.js"
 import { type PasswordLockoutRow, passwordLockoutTable } from "./passwordLockoutTable.js"
 import { type PasswordPolicyRow, passwordPolicyTable } from "./passwordPolicyTable.js"
+import {
+  type PasswordRegistrationChallengeRow,
+  passwordRegistrationChallengeTable,
+} from "./passwordRegistrationChallengeTable.js"
 
 export function passwordRepositoryCreate(database: StorageExecutor) {
   return {
@@ -100,6 +104,203 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
           "passwordChallengeExpirePrevious",
           "The previous password challenges could not be closed.",
           "passwords.write-failed",
+        )
+      }
+    },
+
+    passwordRegistrationChallengeAttemptRecord(input: {
+      attempts: number
+      consumedAt: number | null
+      expectedVersion: number
+      id: string
+      realmId: string
+      version: number
+    }): Result<PasswordRegistrationChallengeRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(passwordRegistrationChallengeTable)
+            .set({ attempts: input.attempts, consumedAt: input.consumedAt, version: input.version })
+            .where(
+              and(
+                eq(passwordRegistrationChallengeTable.id, input.id),
+                eq(passwordRegistrationChallengeTable.realmId, input.realmId),
+                eq(passwordRegistrationChallengeTable.version, input.expectedVersion),
+                isNull(passwordRegistrationChallengeTable.consumedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordRegistrationChallengeAttemptRecord",
+          "The registration code attempt could not be recorded.",
+          "passwords.write-failed",
+        )
+      }
+    },
+
+    passwordRegistrationChallengeConsume(
+      realmId: string,
+      id: string,
+      expectedVersion: number,
+      consumedAt: number,
+    ): Result<PasswordRegistrationChallengeRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(passwordRegistrationChallengeTable)
+            .set({ consumedAt, version: expectedVersion + 1 })
+            .where(
+              and(
+                eq(passwordRegistrationChallengeTable.id, id),
+                eq(passwordRegistrationChallengeTable.realmId, realmId),
+                eq(passwordRegistrationChallengeTable.version, expectedVersion),
+                isNull(passwordRegistrationChallengeTable.consumedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordRegistrationChallengeConsume",
+          "The registration code could not be consumed.",
+          "passwords.write-failed",
+        )
+      }
+    },
+
+    passwordRegistrationChallengeCreate(
+      input: typeof passwordRegistrationChallengeTable.$inferInsert,
+    ): Result<PasswordRegistrationChallengeRow> {
+      try {
+        const row = database.insert(passwordRegistrationChallengeTable).values(input).returning().get()
+        if (row === undefined)
+          return resultErrorCreate(
+            "passwordRegistrationChallengeCreate",
+            "The registration challenge could not be created.",
+            "passwords.write-failed",
+          )
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordRegistrationChallengeCreate",
+          "The registration challenge could not be created.",
+          "passwords.write-failed",
+        )
+      }
+    },
+
+    passwordRegistrationChallengeExpirePrevious(
+      realmId: string,
+      userId: string,
+      purpose: string,
+      consumedAt: number,
+    ): Result<void> {
+      try {
+        database
+          .update(passwordRegistrationChallengeTable)
+          .set({ consumedAt })
+          .where(
+            and(
+              eq(passwordRegistrationChallengeTable.realmId, realmId),
+              eq(passwordRegistrationChallengeTable.userId, userId),
+              eq(passwordRegistrationChallengeTable.purpose, purpose),
+              isNull(passwordRegistrationChallengeTable.consumedAt),
+            ),
+          )
+          .run()
+        return resultCreate(undefined)
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordRegistrationChallengeExpirePrevious",
+          "The previous registration challenges could not be closed.",
+          "passwords.write-failed",
+        )
+      }
+    },
+
+    passwordRegistrationChallengeExpirePreviousByIdentity(
+      realmId: string,
+      identityHash: string,
+      purpose: string,
+      consumedAt: number,
+    ): Result<void> {
+      try {
+        database
+          .update(passwordRegistrationChallengeTable)
+          .set({ consumedAt })
+          .where(
+            and(
+              eq(passwordRegistrationChallengeTable.realmId, realmId),
+              eq(passwordRegistrationChallengeTable.identityHash, identityHash),
+              eq(passwordRegistrationChallengeTable.purpose, purpose),
+              isNull(passwordRegistrationChallengeTable.userId),
+              isNull(passwordRegistrationChallengeTable.consumedAt),
+            ),
+          )
+          .run()
+        return resultCreate(undefined)
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordRegistrationChallengeExpirePreviousByIdentity",
+          "The previous registration decoy challenges could not be closed.",
+          "passwords.write-failed",
+        )
+      }
+    },
+
+    passwordRegistrationChallengeGet(realmId: string, id: string): Result<PasswordRegistrationChallengeRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(passwordRegistrationChallengeTable)
+            .where(
+              and(
+                eq(passwordRegistrationChallengeTable.realmId, realmId),
+                eq(passwordRegistrationChallengeTable.id, id),
+              ),
+            )
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordRegistrationChallengeGet",
+          "The registration challenge could not be read.",
+          "passwords.read-failed",
+        )
+      }
+    },
+
+    passwordRegistrationChallengeLatestDecoyGet(
+      realmId: string,
+      identityHash: string,
+      purpose: string,
+    ): Result<PasswordRegistrationChallengeRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(passwordRegistrationChallengeTable)
+            .where(
+              and(
+                eq(passwordRegistrationChallengeTable.realmId, realmId),
+                eq(passwordRegistrationChallengeTable.identityHash, identityHash),
+                eq(passwordRegistrationChallengeTable.purpose, purpose),
+                isNull(passwordRegistrationChallengeTable.userId),
+              ),
+            )
+            .orderBy(desc(passwordRegistrationChallengeTable.createdAt), desc(passwordRegistrationChallengeTable.id))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordRegistrationChallengeLatestDecoyGet",
+          "The registration decoy challenge could not be read.",
+          "passwords.read-failed",
         )
       }
     },
@@ -302,6 +503,25 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
         )
       } catch (_error) {
         return resultErrorCreate("passwordUserFindByIdentifier", "The user could not be read.", "passwords.read-failed")
+      }
+    },
+
+    passwordUserFindByPhoneNumber(realmId: string, phoneNumber: string): Result<UserRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(userTable)
+            .where(and(eq(userTable.realmId, realmId), eq(userTable.phoneNumber, phoneNumber)))
+            .orderBy(asc(userTable.createdAt))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordUserFindByPhoneNumber",
+          "The user could not be read.",
+          "passwords.read-failed",
+        )
       }
     },
 

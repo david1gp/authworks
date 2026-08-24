@@ -15,6 +15,9 @@ export function organizationLoginPolicyOverrideViewCreate(
     ...(policy.allowEmailOtp === null || policy.allowEmailOtp === undefined
       ? {}
       : { allowEmailOtp: policy.allowEmailOtp }),
+    ...(policy.allowWhatsappOtp === null || policy.allowWhatsappOtp === undefined
+      ? {}
+      : { allowWhatsappOtp: policy.allowWhatsappOtp }),
     ...(policy.allowExternalIdentity === null || policy.allowExternalIdentity === undefined
       ? {}
       : { allowExternalIdentity: policy.allowExternalIdentity }),

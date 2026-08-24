@@ -1,0 +1,9 @@
+import * as v from "valibot"
+
+export const whatsappOtpRequestedEventPayloadSchema = v.strictObject({
+  challengeId: v.pipe(v.string(), v.minLength(1)),
+  expiresAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  purpose: v.literal("sign_in"),
+})
+
+export type WhatsappOtpRequestedEventPayload = v.InferOutput<typeof whatsappOtpRequestedEventPayloadSchema>

@@ -43,6 +43,10 @@ import { realmTable } from "../../features/realms/persistence/realmTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
+import { wahaHealthCandidateTable } from "../../features/waha/persistence/wahaHealthCandidateTable.js"
+import { whatsappOtpChallengeTable } from "../../features/whatsappOtp/persistence/whatsappOtpChallengeTable.js"
+import { passwordRegistrationChallengeTable } from "../../features/passwords/persistence/passwordRegistrationChallengeTable.js"
+import { rateLimitTable } from "../rateLimit/rateLimitTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
 import { storageEventTable } from "./storageEventTable.js"
 
@@ -62,6 +66,7 @@ export const storageSchema = {
   organizationMembershipTable,
   organizationTable,
   passwordChallengeTable,
+  passwordRegistrationChallengeTable,
   passwordCredentialTable,
   passwordLockoutTable,
   passwordPolicyTable,
@@ -89,6 +94,9 @@ export const storageSchema = {
   mfaTotpEnrollmentTable,
   userProfileTable,
   userTable,
+  wahaHealthCandidateTable,
+  whatsappOtpChallengeTable,
+  rateLimitTable,
   storageCurrentStateTable,
   storageEventTable,
 }

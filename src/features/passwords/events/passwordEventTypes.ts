@@ -9,4 +9,6 @@ export const passwordEventTypes = {
   recovered: "password.recovered",
   recoveryRequested: "password.recovery_requested",
   unlocked: "password.unlocked",
+  whatsappVerificationRequested: "password.whatsapp_verification_requested",
+  whatsappVerified: "password.whatsapp_verified",
 } as const

@@ -112,7 +112,7 @@ function mfaLoginChallengeStartTransaction(
   }
   if (
     primaryAuthenticationMethod === undefined ||
-    !["email_otp", "external_identity", "password", "passkey"].includes(primaryAuthenticationMethod)
+    !["email_otp", "external_identity", "password", "passkey", "whatsapp_otp"].includes(primaryAuthenticationMethod)
   )
     return resultErrorCreate("mfaLoginChallengeStart", "The primary authentication method is invalid.", "mfa.invalid")
   const tokenBytes = options.runtime.randomBytes(32)

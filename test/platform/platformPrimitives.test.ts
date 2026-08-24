@@ -1,4 +1,7 @@
 import { expect, test } from "bun:test"
+import { mkdtemp, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import * as v from "valibot"
 import { configurationParse } from "../../src/platform/configuration/configurationParse.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
@@ -13,6 +16,8 @@ import { uuidv7Create } from "../../src/platform/ids/uuidv7Create.js"
 import { secretCreate } from "../../src/platform/secrets/secretCreate.js"
 import { secretGenerate } from "../../src/platform/secrets/secretGenerate.js"
 import { secretMatches } from "../../src/platform/secrets/secretMatches.js"
+import { rateLimitConsume } from "../../src/platform/rateLimit/rateLimitConsume.js"
+import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
 
 test("uuidv7Create uses injected milliseconds and RFC version/variant bits", () => {
@@ -76,13 +81,29 @@ test("configuration applies safe defaults and rejects insecure production origin
   const parsed = configurationParse({ PUBLIC_ORIGIN: "https://identity.example.test/authworks/" })
   expect(parsed.success).toBe(true)
   if (!parsed.success) return
-  expect(parsed.data).toMatchObject({ databasePath: "authworks.sqlite", host: "127.0.0.1", port: 3000 })
+  expect(parsed.data).toMatchObject({
+    databasePath: "authworks.sqlite",
+    host: "127.0.0.1",
+    port: 3000,
+    trustedProxyAddresses: [],
+  })
   expect(parsed.data.publicOrigin).toBe("https://identity.example.test/authworks")
 
   const rejected = configurationParse({ nodeEnv: "production", publicOrigin: "http://identity.example.test" })
   expect(rejected.success).toBe(false)
   if (rejected.success) return
   expect(rejected.errorMessage).toContain("publicOrigin")
+})
+
+test("configuration parses an explicit trusted proxy address list", () => {
+  const parsed = configurationParse({
+    AUTHWORKS_TRUSTED_PROXY_ADDRESSES: " 203.0.113.10, [2001:db8::10]:443, ,",
+    PUBLIC_ORIGIN: "https://identity.example.test",
+  })
+  expect(parsed).toMatchObject({
+    data: { trustedProxyAddresses: ["203.0.113.10", "[2001:db8::10]:443"] },
+    success: true,
+  })
 })
 
 test("configuration rejects credential-bearing origins without echoing credentials", () => {
@@ -208,4 +229,72 @@ test("HTTP API clients share headers, transport errors, and response validation"
     op: "testRequest",
     success: false,
   })
+})
+
+test("rate-limit cleanup is bounded, keeps active windows, and resets expired abandoned rows", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "authworks-rate-limit-cleanup-"))
+  const testkit = platformTestkitCreate({ now: 1_000 })
+  const opened = storageDatabaseOpen(join(directory, "authworks.sqlite"), testkit.runtime)
+  expect(opened.success).toBe(true)
+  if (!opened.success) {
+    await rm(directory, { force: true, recursive: true })
+    return
+  }
+
+  try {
+    expect(
+      rateLimitConsume(opened.data.db, {
+        keyHash: "expired",
+        limit: 5,
+        now: testkit.runtime.now(),
+        scope: "test",
+        windowMs: 1_000,
+      }),
+    ).toMatchObject({ data: { allowed: true }, success: true })
+    testkit.advance(500)
+    expect(
+      rateLimitConsume(opened.data.db, {
+        keyHash: "active",
+        limit: 5,
+        now: testkit.runtime.now(),
+        scope: "test",
+        windowMs: 1_000,
+      }),
+    ).toMatchObject({ data: { allowed: true }, success: true })
+    testkit.advance(501)
+
+    expect(
+      rateLimitConsume(opened.data.db, {
+        keyHash: "trigger",
+        limit: 5,
+        now: testkit.runtime.now(),
+        scope: "test",
+        windowMs: 1_000,
+      }),
+    ).toMatchObject({ data: { allowed: true }, success: true })
+    expect(
+      opened.data.sqlite.query("SELECT key_hash FROM rate_limits WHERE scope = ? ORDER BY key_hash").all("test"),
+    ).toEqual([{ key_hash: "active" }, { key_hash: "trigger" }])
+    expect(
+      rateLimitConsume(opened.data.db, {
+        keyHash: "active",
+        limit: 5,
+        now: testkit.runtime.now(),
+        scope: "test",
+        windowMs: 1_000,
+      }),
+    ).toMatchObject({ data: { allowed: true, count: 2 }, success: true })
+    expect(
+      rateLimitConsume(opened.data.db, {
+        keyHash: "expired",
+        limit: 5,
+        now: testkit.runtime.now(),
+        scope: "test",
+        windowMs: 1_000,
+      }),
+    ).toMatchObject({ data: { allowed: true, count: 1 }, success: true })
+  } finally {
+    opened.data.close()
+    await rm(directory, { force: true, recursive: true })
+  }
 })

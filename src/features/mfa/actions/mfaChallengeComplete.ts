@@ -242,7 +242,8 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
         | "email_otp"
         | "external_identity"
         | "password"
-        | "passkey",
+        | "passkey"
+        | "whatsapp_otp",
       commandIndex: 1,
       correlationId: options.correlationId,
       deviceMetadata: {

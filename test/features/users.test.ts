@@ -378,11 +378,13 @@ test("user profile and email verification no-ops preserve the aggregate", async 
       .from(storageEventTable)
       .all()
       .filter((event) => event.aggregateId === created.data.user.id)
-    expect(events.map((event) => event.aggregateVersion)).toEqual([1, 2, 3])
+    expect(events.map((event) => event.aggregateVersion)).toEqual([1, 2, 3, 4, 5])
     expect(events.map((event) => event.eventType)).toEqual([
       userEventTypes.created,
       userEventTypes.emailVerificationChanged,
+      userEventTypes.registrationVerificationChanged,
       userEventTypes.emailVerificationChanged,
+      userEventTypes.registrationVerificationChanged,
     ])
   })
 })
@@ -526,8 +528,8 @@ test("user events are audit-safe, versioned, and atomically rolled back", async 
       .from(storageEventTable)
       .all()
       .filter((event) => event.aggregateType === "user")
-    expect(finalEvents.map((event) => event.aggregateVersion)).toEqual([1, 2])
-    expect(finalEvents.map((event) => event.realmId)).toEqual([realm.id, realm.id])
+    expect(finalEvents.map((event) => event.aggregateVersion)).toEqual([1, 2, 3])
+    expect(finalEvents.map((event) => event.realmId)).toEqual([realm.id, realm.id, realm.id])
   })
 })
 

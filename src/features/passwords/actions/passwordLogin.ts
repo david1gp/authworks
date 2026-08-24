@@ -17,7 +17,7 @@ import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
 import { userEventTypes } from "../../users/events/userEventTypes.js"
 import { userStateChangedEventPayloadSchema } from "../../users/events/userStateChangedEventPayloadSchema.js"
-import { userTable } from "../../users/persistence/userTable.js"
+import { type UserRow, userTable } from "../../users/persistence/userTable.js"
 import { passwordHashVerify } from "../domain/passwordHashVerify.js"
 import { passwordIdentifierNormalize } from "../domain/passwordIdentifierNormalize.js"
 import { passwordPolicyDefaults } from "../domain/passwordPolicyDefaults.js"
@@ -149,7 +149,7 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
     }
     if (current.data.state !== "active" && current.data.state !== "locked")
       return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
-    if (current.data.emailVerifiedAt === null)
+    if (!passwordLoginRegistrationVerified(current.data))
       return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
     const lockoutVersion = (currentLockout.data?.version ?? 0) + 1
     const lockout = currentRepository.passwordLockoutSet({
@@ -254,7 +254,7 @@ function passwordLoginFailureRecord(
       return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
     if (current.data.state !== "active" && current.data.state !== "locked")
       return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
-    if (current.data.emailVerifiedAt === null)
+    if (!passwordLoginRegistrationVerified(current.data))
       return resultErrorCreate("passwordLogin", "The credentials are invalid.", "passwords.unauthorized")
     let userVersion = current.data.version
     if (current.data.state === "locked") {
@@ -375,4 +375,11 @@ function passwordDummyHashCreate(): string {
     scryptSync("password-dummy-value", salt, 32, { maxmem: 32 * 1024 * 1024, N: 16_384, p: 1, r: 8 }),
   )
   return `scrypt$16384$8$1$${salt.toString("base64url")}$${hash.toString("base64url")}`
+}
+
+function passwordLoginRegistrationVerified(user: UserRow): boolean {
+  if (user.registrationVerifiedAt === null || user.registrationVerificationMethod === null) return false
+  if (user.registrationVerificationMethod === "email") return user.emailVerifiedAt !== null
+  if (user.registrationVerificationMethod === "whatsapp") return user.phoneNumberVerifiedAt !== null
+  return false
 }

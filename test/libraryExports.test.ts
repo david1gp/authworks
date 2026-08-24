@@ -15,6 +15,7 @@ import * as projects from "../src/outputs/library/projects.js"
 import * as realms from "../src/outputs/library/realms.js"
 import * as sessions from "../src/outputs/library/sessions.js"
 import * as users from "../src/outputs/library/users.js"
+import * as whatsappOtp from "../src/outputs/library/whatsappOtp.js"
 import type { HttpGetOptions, HttpGetResult } from "../src/outputs/library.js"
 
 test("root library publishes HTTP GET contracts", () => {
@@ -36,6 +37,7 @@ test("every completed feature has a public library subpath and client", () => {
   expect(email.imapMailReceivePortCreate).toBeFunction()
   expect(email.smtpMailDeliveryPortCreate).toBeFunction()
   expect(emailOtp.emailOtpApiClientCreate).toBeFunction()
+  expect(whatsappOtp.whatsappOtpApiClientCreate).toBeFunction()
   expect(events.eventApiClientCreate).toBeFunction()
   expect(externalIdentities.externalIdentityApiClientCreate).toBeFunction()
   expect(impersonation.impersonationApiClientCreate).toBeFunction()
@@ -64,6 +66,7 @@ test("public contracts include the previously omitted transport schemas", () => 
   expect(sessions.sessionMeListResponseSchema).toBeDefined()
   expect(sessions.sessionMeSchema).toBeDefined()
   expect(users.userAuthenticationMethodsSchema).toBeDefined()
+  expect(whatsappOtp.whatsappOtpAvailabilityResponseSchema).toBeDefined()
 })
 
 test("every API client publishes its complete method set", () => {
@@ -102,6 +105,7 @@ test("every API client publishes its complete method set", () => {
   expect(Object.keys(passwords.passwordApiClientCreate(options))).toEqual([
     "passwordRegister",
     "passwordLogin",
+    "passwordWhatsappVerify",
     "passwordEmailVerify",
     "passwordRecoveryRequest",
     "passwordRecoveryComplete",
@@ -136,6 +140,12 @@ test("every API client publishes its complete method set", () => {
     "sessionMeRevokeAll",
   ])
   expect(Object.keys(emailOtp.emailOtpApiClientCreate(options))).toHaveLength(2)
+  expect(Object.keys(whatsappOtp.whatsappOtpApiClientCreate(options))).toEqual([
+    "whatsappOtpAvailabilityGet",
+    "whatsappOtpStart",
+    "whatsappOtpResend",
+    "whatsappOtpVerify",
+  ])
   expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(2)
   expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(20)
   expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(38)
@@ -171,6 +181,7 @@ test("package exports name every library feature boundary", async () => {
     "./server",
     "./sessions",
     "./users",
+    "./whatsappOtp",
   ].sort()
   expect(exportKeys).toEqual(expectedKeys)
   expect(exportKeys.some((key) => key.includes("*"))).toBe(false)

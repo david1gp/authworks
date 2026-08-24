@@ -12,6 +12,7 @@ import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.
 import { userPublicViewCreate } from "../domain/userPublicViewCreate.js"
 import { userEmailVerificationChangedEventPayloadSchema } from "../events/userEmailVerificationChangedEventPayloadSchema.js"
 import { userEventTypes } from "../events/userEventTypes.js"
+import { userRegistrationVerificationChangedEventPayloadSchema } from "../events/userRegistrationVerificationChangedEventPayloadSchema.js"
 import { userRepositoryCreate } from "../persistence/userRepositoryCreate.js"
 import type { User } from "../public/userSchema.js"
 import { type UserVerificationRequest, userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
@@ -50,10 +51,32 @@ export function userEmailVerificationSet(options: UserEmailVerificationSetOption
     const requestedVerified = parsed.output.state === "verified"
     if (currentlyVerified === requestedVerified)
       return resultErrorCreate(op, "The user already has that verification state.", "users.conflict")
+    const registrationVerificationNewlySet =
+      requestedVerified &&
+      current.data.registrationVerifiedAt === null &&
+      current.data.registrationVerificationMethod === null
+    const registrationVerificationRevoked =
+      !requestedVerified &&
+      current.data.registrationVerifiedAt !== null &&
+      current.data.registrationVerificationMethod === "email"
     const updated = repository.userUpdate(options.realmId, options.userId, {
       emailVerifiedAt: requestedVerified ? updatedAt : null,
+      registrationVerifiedAt: requestedVerified
+        ? registrationVerificationNewlySet
+          ? updatedAt
+          : current.data.registrationVerifiedAt
+        : registrationVerificationRevoked
+          ? null
+          : current.data.registrationVerifiedAt,
+      registrationVerificationMethod: requestedVerified
+        ? registrationVerificationNewlySet
+          ? "email"
+          : current.data.registrationVerificationMethod
+        : registrationVerificationRevoked
+          ? null
+          : current.data.registrationVerificationMethod,
       updatedAt,
-      version: current.data.version + 1,
+      version: current.data.version + 1 + (registrationVerificationNewlySet || registrationVerificationRevoked ? 1 : 0),
     })
     if (!updated.success) return updated
     if (updated.data === null) return resultErrorCreate(op, "The user was not found.", "users.not-found")
@@ -66,7 +89,8 @@ export function userEmailVerificationSet(options: UserEmailVerificationSetOption
         actorId: options.context.actorId,
         aggregateId: options.userId,
         aggregateType: "user",
-        aggregateVersion: updated.data.version,
+        aggregateVersion:
+          updated.data.version - (registrationVerificationNewlySet || registrationVerificationRevoked ? 1 : 0),
         commandIndex: 0,
         correlationId,
         eventType: userEventTypes.emailVerificationChanged,
@@ -78,6 +102,32 @@ export function userEmailVerificationSet(options: UserEmailVerificationSetOption
       runtime,
     )
     if (!event.success) return event
+    if (registrationVerificationNewlySet || registrationVerificationRevoked) {
+      const registrationPayload = v.safeParse(userRegistrationVerificationChangedEventPayloadSchema, {
+        registrationVerificationMethod: updated.data.registrationVerificationMethod,
+        state: registrationVerificationRevoked ? "unverified" : "verified",
+      })
+      if (!registrationPayload.success)
+        return resultErrorCreate(op, "The registration verification event payload is invalid.", "users.event-invalid")
+      const registrationEvent = storageEventAppend(
+        transaction,
+        {
+          actorId: options.context.actorId,
+          aggregateId: options.userId,
+          aggregateType: "user",
+          aggregateVersion: updated.data.version,
+          commandIndex: 1,
+          correlationId,
+          eventType: userEventTypes.registrationVerificationChanged,
+          realmId: options.realmId,
+          metadata: { auditSafe: true, source: "users" },
+          occurredAt: updatedAt,
+          payload: registrationPayload.output,
+        },
+        runtime,
+      )
+      if (!registrationEvent.success) return registrationEvent
+    }
     return resultCreate({ user: userPublicViewCreate(updated.data) })
   })
 }

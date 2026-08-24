@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { resultErrorCodeSchema } from "../errors/resultErrorCodeSchema.js"
+import { httpErrorCodeSchema } from "./httpErrorCodeSchema.js"
 import type { HttpErrorResponse } from "./httpErrorResponseSchema.js"
 
 const legacyCodeMap: Record<string, string> = {
@@ -8,7 +8,6 @@ const legacyCodeMap: Record<string, string> = {
   unauthorized: "platform.unauthorized",
   forbidden: "platform.forbidden",
   conflict: "platform.conflict",
-  rate_limited: "platform.rate-limited",
   service_unavailable: "platform.unavailable",
   internal_server_error: "platform.internal",
 }
@@ -40,7 +39,7 @@ export function httpErrorResponseCreate(
   const input = typeof codeOrInput === "string" ? undefined : codeOrInput
   const attemptedCode = typeof codeOrInput === "string" ? codeOrInput : codeOrInput.code
   const mappedCode = legacyCodeMap[attemptedCode] ?? attemptedCode
-  const parsedCode = v.safeParse(resultErrorCodeSchema, mappedCode)
+  const parsedCode = v.safeParse(httpErrorCodeSchema, mappedCode)
   const code = parsedCode.success ? parsedCode.output : "platform.invalid-error-code"
   const message = input?.message ?? legacyMessage ?? ""
   const error: HttpErrorResponse["error"] = { code, message }
