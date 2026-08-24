@@ -15,7 +15,14 @@ environment_file="$environment_directory/authworks.env"
 data_directory="$HOME/.local/share/authworks"
 
 install -d -m 700 "$environment_directory" "$data_directory"
-install -m 600 .env "$environment_file"
+if [[ ! -f "$environment_file" ]]; then
+	echo "missing pre-provisioned environment file: $environment_file" >&2
+	exit 1
+fi
+if [[ "$(stat -c '%a' "$environment_file")" != "600" ]]; then
+	echo "environment file must have mode 600: $environment_file" >&2
+	exit 1
+fi
 printf '\nAUTHWORKS_PORT=%s\n' "$PRODCTL_PORT_DEFAULT" >>"$environment_file"
 chmod 600 "$environment_file"
 
