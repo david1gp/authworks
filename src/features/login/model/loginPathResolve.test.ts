@@ -18,7 +18,7 @@ describe("hosted login path resolution", () => {
     })
     expect(loginPathResolve("/demo/login/passkey/unsupported", "/demo/login")).toEqual({
       screen: "passkey",
-      state: "error",
+      state: "permission-denied",
     })
     expect(loginPathResolve("/demo/login/idp/failure", "/demo/login")).toEqual({ screen: "provider", state: "error" })
   })

@@ -29,7 +29,7 @@ const loginPathTable: Readonly<Record<string, LoginPathResolution>> = {
   "/mfa/totp": { screen: "mfa-totp" },
   "/mfa/totp-enroll": { screen: "mfa-totp-enroll" },
   "/passkey": { screen: "passkey" },
-  "/passkey/unsupported": { screen: "passkey", state: "error" },
+  "/passkey/unsupported": { screen: "passkey", state: "permission-denied" },
   "/password": { screen: "password" },
   "/password/change-required": { screen: "password-change-required" },
   "/password/error": { screen: "password", state: "error" },

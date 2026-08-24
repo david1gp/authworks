@@ -12,6 +12,13 @@ import type { AccountSecurityScreen } from "./accountSecurityScreenSchema.js"
 
 const now = Date.UTC(2026, 7, 21, 9, 30)
 
+const emptyDemoMethods: UserAuthenticationMethods = {
+  emailOtp: { available: false },
+  passkeys: { credentials: [] },
+  recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+  totp: { enrolled: false, enrollments: [] },
+}
+
 export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScreen) {
   const location = useLocation()
   const sessions = createSignalObject<SessionMe[]>([
@@ -111,6 +118,20 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       methods.get().recoveryCodes?.generatedAt,
     )
   const oneTimeCodes = createSignalObject<string[]>([])
+  const totpSetup = createSignalObject<
+    | {
+        readonly enrollment: {
+          readonly createdAt: number
+          readonly id: string
+          readonly realmId: string
+          readonly status: "pending"
+          readonly userId: string
+        }
+        readonly otpauthUri: string
+        readonly secret: string
+      }
+    | undefined
+  >(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
   const code = createSignalObject("")
   const selected = () => demoFixtureStateSelect(location.search, ["success", "empty", "loading", "error", "one-time"])
@@ -129,7 +150,13 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       if (!window.confirm(messageTranslate("account.identities.unlinkConfirm"))) return
       identities.set(identities.get().filter((item) => item.providerId !== providerId))
     },
-    methods: methods.get,
+    methods: () =>
+      selected() === "empty"
+        ? emptyDemoMethods
+        : {
+            ...methods.get(),
+            passkeys: { credentials: visible(passkeys.get()) },
+          },
     oneTimeCodes: oneTimeCodes.get,
     oneTimeCodesDismiss: () => {
       accountRecoveryCodeAcknowledgementStore.acknowledge(acknowledgementMarker())
@@ -157,10 +184,32 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
         : selected() === "error"
           ? ("error" as const)
           : ("ready" as const),
-    totpConfirm: () => undefined,
+    totpConfirm: () => {
+      methods.set({
+        ...methods.get(),
+        totp: {
+          enrolled: true,
+          enrollments: [{ confirmedAt: Date.now(), id: "totp-demo", label: "Authenticator app", status: "active" }],
+        },
+      })
+      totpSetup.set(undefined)
+      code.set("")
+    },
     totpRemove: () => methods.set({ ...methods.get(), totp: { enrolled: false, enrollments: [] } }),
-    totpSetup: () => undefined,
-    totpSetupDismiss: () => undefined,
-    totpStart: () => undefined,
+    totpSetup: totpSetup.get,
+    totpSetupDismiss: () => totpSetup.set(undefined),
+    totpStart: () => {
+      totpSetup.set({
+        enrollment: {
+          createdAt: Date.now(),
+          id: "totp-demo-enrollment",
+          realmId: "customer-identity",
+          status: "pending",
+          userId: "demo-user",
+        },
+        otpauthUri: "otpauth://totp/Authworks:demo-user?secret=JBSWY3DPEHPK3PXP&issuer=Authworks",
+        secret: "JBSWY3DPEHPK3PXP",
+      })
+    },
   }
 }

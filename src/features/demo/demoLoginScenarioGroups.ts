@@ -56,7 +56,9 @@ export const demoLoginScenarioGroups: DemoFixtureScenarioGroup[] = [
     key: "passwordless",
     scenarios: [
       scenario("passkey", "Passkey", "Authenticate with a device-bound passkey.", authenticationStates),
-      scenario("passkey/unsupported", "Passkey unavailable", "Explain browser or device incompatibility.", ["error"]),
+      scenario("passkey/unsupported", "Passkey unavailable", "Explain browser or device incompatibility.", [
+        "permission-denied",
+      ]),
       scenario("idp", "External identity", "Continue through a configured external identity provider.", formStates),
       scenario("idp/failure", "Provider failure", "Recover from an external provider start failure.", ["error"]),
     ],
