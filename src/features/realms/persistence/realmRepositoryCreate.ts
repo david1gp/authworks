@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { organizationDomainTable } from "../../organizations/persistence/organizationDomainTable.js"
 import { type RealmBootstrapAdminRow, realmBootstrapAdminTable } from "./realmBootstrapAdminTable.js"
 import { realmDomainTable } from "./realmDomainTable.js"
 import { type RealmRow, realmTable } from "./realmTable.js"
@@ -138,8 +139,14 @@ export function realmRepositoryCreate(database: StorageExecutor) {
     realmFindByDomain(domain: string): Result<RealmRow | null> {
       try {
         const domainRow = database.select().from(realmDomainTable).where(eq(realmDomainTable.domain, domain)).get()
-        if (domainRow === undefined) return resultCreate(null)
-        return this.realmGet(domainRow.realmId)
+        if (domainRow !== undefined) return this.realmGet(domainRow.realmId)
+        const organizationDomainRow = database
+          .select({ realmId: organizationDomainTable.realmId })
+          .from(organizationDomainTable)
+          .where(and(eq(organizationDomainTable.domain, domain), eq(organizationDomainTable.verified, true)))
+          .get()
+        if (organizationDomainRow === undefined) return resultCreate(null)
+        return this.realmGet(organizationDomainRow.realmId)
       } catch (_error) {
         return resultErrorCreate("realmFindByDomain", "The realm could not be resolved.", "realms.read-failed")
       }

@@ -21,6 +21,7 @@ import { organizationServerAppCreate } from "../../src/features/organizations/se
 import { passkeyAuthenticationStart } from "../../src/features/passkeys/actions/passkeyAuthenticationStart.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmTenantContextResolve } from "../../src/features/realms/actions/realmTenantContextResolve.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
@@ -268,6 +269,33 @@ test("organization domains reject realm conflicts, preserve primary invariants, 
       ).success,
     ).toBe(true)
     expect(calls).toBe(1)
+  })
+})
+
+test("verified organization domains resolve the owning realm for tenant requests", async () => {
+  await withDatabase(async (database) => {
+    const { realm, organization } = await createOrganization(database)
+    const claimed = organizationDomainClaim({
+      context: realmSystemContextCreate(),
+      database,
+      input: { domain: "login.example.com" },
+      realmId: realm.id,
+      organizationId: organization.id,
+    })
+    expect(claimed.success).toBe(true)
+    if (!claimed.success) return
+    const token = claimed.data.domain.verification?.recordValue ?? ""
+    const verified = await organizationDomainVerify({
+      context: realmSystemContextCreate(),
+      database,
+      dnsPort: { txtRecordsGet: async () => resultCreate([token]) },
+      domain: "login.example.com",
+      realmId: realm.id,
+      organizationId: organization.id,
+    })
+    expect(verified.success).toBe(true)
+    const resolved = realmTenantContextResolve({ database, host: "login.example.com:443" })
+    expect(resolved).toMatchObject({ data: { realmId: realm.id }, success: true })
   })
 })
 
