@@ -8,8 +8,10 @@ test("the composed server serves UI assets and known browser routes", async () =
   const directory = await mkdtemp(join(tmpdir(), "authworks-server-ui-"))
   const uiDirectory = join(directory, "ui")
   await mkdir(join(uiDirectory, "assets"), { recursive: true })
+  await mkdir(join(uiDirectory, "demo"), { recursive: true })
   await writeFile(join(uiDirectory, "index.html"), "<!doctype html><title>Authworks UI</title>")
   await writeFile(join(uiDirectory, "assets", "index-abc123.js"), "console.log('asset')")
+  await writeFile(join(uiDirectory, "demo", "login"), "demo fixture")
   await writeFile(join(uiDirectory, "favicon.svg"), "<svg></svg>")
 
   try {
@@ -72,6 +74,17 @@ test("the composed server serves UI assets and known browser routes", async () =
     expect(production.success).toBe(true)
     if (!production.success) return
     expect((await production.data.request("https://ui.example/demo/login")).status).toBe(404)
+    for (const pathname of [
+      "/demo%2Flogin",
+      "/%64emo/login",
+      "/demo%2F%ZZ",
+      "/%2Fdemo/login",
+      "//demo/login",
+      "/%2Fdemo/%ZZ",
+      "//demo/%ZZ",
+    ]) {
+      expect((await production.data.request(`https://ui.example${pathname}`)).status, pathname).toBe(404)
+    }
     expect((await production.data.request("https://ui.example/login")).status).toBe(200)
     const productionRoot = await production.data.request("https://ui.example/")
     expect(productionRoot.status).toBe(302)

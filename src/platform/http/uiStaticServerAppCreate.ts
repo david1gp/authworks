@@ -37,6 +37,7 @@ export function uiStaticServerAppCreate(options: UiStaticServerAppCreateOptions 
 
   app.get("*", async (context) => {
     const pathname = new URL(context.req.url).pathname
+    if (options.production === true && uiDemoPathIsExcluded(pathname)) return context.notFound()
     if (options.production === true && pathname === "/") {
       return new Response(null, {
         headers: {
@@ -99,6 +100,17 @@ function uiBrowserPathIsKnown(pathname: string, production: boolean): boolean {
   if (pathname === "/") return true
   if (!production && (pathname === "/demo" || pathname.startsWith("/demo/"))) return true
   return uiRoutePrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+}
+
+function uiDemoPathIsExcluded(pathname: string): boolean {
+  let decodedPathname: string
+  try {
+    decodedPathname = decodeURIComponent(pathname)
+  } catch (_error) {
+    return false
+  }
+  const normalizedPathname = decodedPathname.replace(/^\/{2,}/, "/")
+  return normalizedPathname === "/demo" || normalizedPathname.startsWith("/demo/")
 }
 
 function uiStaticCacheControlResolve(pathname: string): string {
