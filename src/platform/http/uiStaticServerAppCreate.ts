@@ -37,7 +37,6 @@ export function uiStaticServerAppCreate(options: UiStaticServerAppCreateOptions 
 
   app.get("*", async (context) => {
     const pathname = new URL(context.req.url).pathname
-    if (options.production === true && uiDemoPathIsExcluded(pathname)) return context.notFound()
     if (options.production === true && pathname === "/") {
       return new Response(null, {
         headers: {
@@ -49,7 +48,7 @@ export function uiStaticServerAppCreate(options: UiStaticServerAppCreateOptions 
     }
     const staticFile = await uiStaticFileResponseCreate(uiDirectory, pathname, uiStaticCacheControlResolve(pathname))
     if (staticFile !== null) return staticFile
-    if (!uiBrowserPathIsKnown(pathname, options.production === true)) return context.notFound()
+    if (!uiBrowserPathIsKnown(pathname)) return context.notFound()
     return (await uiStaticFileResponseCreate(uiDirectory, "/index.html", uiIndexCacheControl)) ?? context.notFound()
   })
 
@@ -96,21 +95,10 @@ function uiStaticFilePathResolve(uiDirectory: string, pathname: string): string 
   return filePath
 }
 
-function uiBrowserPathIsKnown(pathname: string, production: boolean): boolean {
+function uiBrowserPathIsKnown(pathname: string): boolean {
   if (pathname === "/") return true
-  if (!production && (pathname === "/demo" || pathname.startsWith("/demo/"))) return true
+  if (pathname === "/demo" || pathname.startsWith("/demo/")) return true
   return uiRoutePrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
-}
-
-function uiDemoPathIsExcluded(pathname: string): boolean {
-  let decodedPathname: string
-  try {
-    decodedPathname = decodeURIComponent(pathname)
-  } catch (_error) {
-    return false
-  }
-  const normalizedPathname = decodedPathname.replace(/^\/{2,}/, "/")
-  return normalizedPathname === "/demo" || normalizedPathname.startsWith("/demo/")
 }
 
 function uiStaticCacheControlResolve(pathname: string): string {

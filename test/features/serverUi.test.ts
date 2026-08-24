@@ -73,18 +73,12 @@ test("the composed server serves UI assets and known browser routes", async () =
     })
     expect(production.success).toBe(true)
     if (!production.success) return
-    expect((await production.data.request("https://ui.example/demo/login")).status).toBe(404)
-    for (const pathname of [
-      "/demo%2Flogin",
-      "/%64emo/login",
-      "/demo%2F%ZZ",
-      "/%2Fdemo/login",
-      "//demo/login",
-      "/%2Fdemo/%ZZ",
-      "//demo/%ZZ",
-    ]) {
-      expect((await production.data.request(`https://ui.example${pathname}`)).status, pathname).toBe(404)
-    }
+    const productionDemo = await production.data.request("https://ui.example/demo/login")
+    expect(productionDemo.status).toBe(200)
+    expect(await productionDemo.text()).toBe("demo fixture")
+    const productionDemoFallback = await production.data.request("https://ui.example/demo/admin")
+    expect(productionDemoFallback.status).toBe(200)
+    expect(await productionDemoFallback.text()).toContain("Authworks UI")
     expect((await production.data.request("https://ui.example/login")).status).toBe(200)
     const productionRoot = await production.data.request("https://ui.example/")
     expect(productionRoot.status).toBe(302)

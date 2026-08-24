@@ -156,7 +156,9 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(faviconResponse.headers.get("cache-control")).toBe("public, max-age=3600")
     expect(faviconResponse.headers.get("content-type")).toContain("image/svg+xml")
 
-    expect((await fetch("http://127.0.0.1:3000/demo/login")).status).toBe(404)
+    const demoResponse = await fetch("http://127.0.0.1:3000/demo/login")
+    expect(demoResponse.status).toBe(200)
+    expect(await demoResponse.text()).toContain('<div id="app">')
     expect((await fetch("http://127.0.0.1:3000/assets/missing.js")).status).toBe(404)
     expect((await fetch("http://127.0.0.1:3000/api/not-a-route")).status).toBe(404)
 
