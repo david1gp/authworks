@@ -1,0 +1,22 @@
+[Unit]
+Description=Authworks production server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/current
+EnvironmentFile=%h/.config/authworks/authworks.env
+Environment=PATH=%h/.local/bin:%h/.bun/bin:/usr/local/bin:/usr/bin:/bin
+Environment=NODE_ENV=production
+Environment=AUTHWORKS_HOST=127.0.0.1
+Environment=AUTHWORKS_DATABASE_PATH=%h/.local/share/authworks/authworks.sqlite
+ExecStart=/usr/bin/env bun dist/server/server.js
+Restart=on-failure
+RestartSec=2
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target
