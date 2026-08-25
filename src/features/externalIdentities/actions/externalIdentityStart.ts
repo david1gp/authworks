@@ -15,6 +15,7 @@ import { realmTenantContextCreate } from "../../realms/domain/realmTenantContext
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
 import { externalIdentityPkceChallengeCreate } from "../domain/externalIdentityPkceChallengeCreate.js"
 import { externalIdentityProviderDefaults } from "../domain/externalIdentityProviderDefaults.js"
+import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
 import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityProviderPort.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
@@ -93,19 +94,18 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
   const stateHash = externalIdentitySecretHashCreate(state)
   const nonceHash = nonce === undefined ? null : externalIdentitySecretHashCreate(nonce)
   const pkceChallenge = externalIdentityPkceChallengeCreate(pkceVerifier)
-  let scopes: string[]
-  try {
-    const parsedScopes = JSON.parse(provider.data.scopes) as unknown
-    scopes = Array.isArray(parsedScopes) && parsedScopes.every((scope) => typeof scope === "string") ? parsedScopes : []
-  } catch (_error) {
-    scopes = []
-  }
+  const scopes = externalIdentityProviderScopesValidate(
+    provider.data.type as "github" | "google" | "microsoft",
+    provider.data.scopes,
+  )
+  if (!scopes.success)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   const authorizationUrl = port.authorizationUrlCreate(
     {
       clientId: provider.data.clientId,
       clientSecret: provider.data.clientSecret,
       redirectUri: provider.data.redirectUri,
-      scopes,
+      scopes: scopes.data,
       type: provider.data.type as keyof ExternalIdentityProviderPorts,
     },
     { ...(nonce === undefined ? {} : { nonce }), pkceChallenge, state },

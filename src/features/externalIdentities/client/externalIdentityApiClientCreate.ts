@@ -164,6 +164,16 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
         externalIdentityListResponseSchema,
       )
     },
+    externalIdentityProviderMeList(
+      realmId: string,
+      query?: ListQuery,
+    ): Promise<Result<ExternalIdentityProviderListResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/me/external-identity-providers${listQueryToSearchParams(query)}`,
+        browserRequest({ method: "GET" }),
+        externalIdentityProviderListResponseSchema,
+      )
+    },
     externalIdentityProviderCreate(
       realmId: string,
       input: ExternalIdentityProviderCreateRequest,

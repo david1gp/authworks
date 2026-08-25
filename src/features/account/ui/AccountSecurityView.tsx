@@ -250,6 +250,47 @@ export function AccountSecurityView(props: { readonly state: AccountSecurityView
             <p class="max-w-2xl text-sm leading-6 text-muted-foreground">
               {messageTranslate("account.identities.description")}
             </p>
+            <article class="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+              <h2 class="font-semibold">{messageTranslate("account.identities.linkTitle")}</h2>
+              <p class="mt-2 text-sm text-muted-foreground">{messageTranslate("account.identities.linkDescription")}</p>
+              <div class="mt-4 flex flex-wrap gap-3">
+                <For each={props.state.identityProviders()}>
+                  {(provider) => (
+                    <Button
+                      disabled={
+                        props.state.identityProviderLinked(provider.id) || props.state.pendingId() !== undefined
+                      }
+                      onClick={() => props.state.identityLinkStart(provider.id)}
+                      variant="outline"
+                    >
+                      {provider.displayName}
+                    </Button>
+                  )}
+                </For>
+              </div>
+            </article>
+            <Show when={props.state.identityLinkConfirmation()}>
+              <article class="rounded-2xl border border-accent/40 bg-surface p-5 shadow-sm">
+                <h2 class="font-semibold">{messageTranslate("account.identities.confirmTitle")}</h2>
+                <p class="mt-2 text-sm text-muted-foreground">
+                  {messageTranslate("account.identities.confirmDescription", {
+                    provider:
+                      props.state.identityLinkProvider() ?? messageTranslate("account.identities.externalAccount"),
+                  })}
+                </p>
+                <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+                  <Button
+                    disabled={props.state.pendingId() === "identity:link:confirm"}
+                    onClick={props.state.identityLinkConfirm}
+                  >
+                    {messageTranslate("account.identities.confirm")}
+                  </Button>
+                  <Button onClick={props.state.identityLinkCancel} variant="ghost">
+                    {messageTranslate("common.cancel")}
+                  </Button>
+                </div>
+              </article>
+            </Show>
             <Show
               when={props.state.identities().length > 0}
               fallback={<EmptyState title={messageTranslate("account.identities.empty")} />}

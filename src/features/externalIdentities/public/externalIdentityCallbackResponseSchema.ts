@@ -19,6 +19,8 @@ export const externalIdentityCallbackResponseSchema = v.variant("kind", [
     confirmationToken: v.pipe(v.string(), v.minLength(1)),
     expiresAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
     kind: v.literal("link_confirmation"),
+    messageNonce: v.pipe(v.string(), v.minLength(1), v.maxLength(256)),
+    providerId: v.pipe(v.string(), v.minLength(1)),
   }),
 ])
 

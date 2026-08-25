@@ -2,6 +2,7 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { eq } from "drizzle-orm"
 import { externalIdentityCallback } from "../../src/features/externalIdentities/actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../../src/features/externalIdentities/actions/externalIdentityLinkComplete.js"
 import { externalIdentityLinkStart } from "../../src/features/externalIdentities/actions/externalIdentityLinkStart.js"
@@ -14,15 +15,18 @@ import { externalIdentityApiClientCreate } from "../../src/features/externalIden
 import type { ExternalIdentityProviderPort } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { externalIdentityProviderPortCreate } from "../../src/features/externalIdentities/domain/externalIdentityProviderPortCreate.js"
 import { externalIdentityOAuthTransactionTable } from "../../src/features/externalIdentities/persistence/externalIdentityOAuthTransactionTable.js"
+import { externalIdentityRepositoryCreate } from "../../src/features/externalIdentities/persistence/externalIdentityRepositoryCreate.js"
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
 import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
 import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
 import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { passkeyCredentialTable } from "../../src/features/passkeys/persistence/passkeyCredentialTable.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
+import { passwordCredentialTable } from "../../src/features/passwords/persistence/passwordCredentialTable.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
@@ -31,6 +35,7 @@ import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.j
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
+import { resultErrorCodedCreate as resultErrorCreate } from "../../src/platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -133,6 +138,151 @@ test("external identity provider PATCH rejects an empty patch with a stable code
   })
 })
 
+test("external identity provider scopes are provider-specific, required, unique, and allowlisted", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "external-scopes.example.com")
+    const input = {
+      allowAccountCreation: true,
+      clientId: "client-id",
+      clientSecret: "client-secret",
+      displayName: "Google",
+      redirectUri: "https://app.test/callback",
+      type: "google" as const,
+    }
+    for (const scopes of [["openid"], ["openid", "email", "email"], ["openid", "email", "admin"]]) {
+      expect(
+        externalIdentityProviderCreate({
+          context: realmSystemContextCreate(),
+          database,
+          input: { ...input, scopes },
+          realmId: realm.id,
+        }).success,
+      ).toBe(false)
+    }
+    expect(
+      externalIdentityProviderCreate({
+        context: realmSystemContextCreate(),
+        database,
+        input: { ...input, scopes: ["openid", "email"] },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      externalIdentityProviderCreate({
+        context: realmSystemContextCreate(),
+        database,
+        input: { ...input, displayName: "GitHub", type: "github", scopes: ["openid", "email"] },
+        realmId: realm.id,
+      }).success,
+    ).toBe(false)
+  })
+})
+
+test("an enrolled usable passkey prevents unlinking the last external identity", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "external-passkey-only.example.com")
+    const provider = await createProvider(database, realm.id)
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    let verificationToken = ""
+    const registered = passwordRegister({
+      context,
+      database,
+      input: {
+        email: "passkey-only@example.com",
+        password: "Correct Horse 12",
+        profile: {},
+        userName: "passkey-only",
+      },
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+      realmId: realm.id,
+      runtime: testkit.runtime,
+    })
+    expect(registered.success).toBe(true)
+    if (!registered.success) return
+    expect(
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
+    ).toBe(true)
+    const login = passwordLogin({
+      context,
+      database,
+      input: { identifier: "passkey-only", password: "Correct Horse 12" },
+      realmId: realm.id,
+      runtime: testkit.runtime,
+    })
+    expect(login.success).toBe(true)
+    if (!login.success || login.data.session === undefined) return
+    const userId = login.data.authentication.userId
+    const now = testkit.runtime.now()
+    database.db
+      .insert(passkeyCredentialTable)
+      .values({
+        aaguid: "aaguid",
+        backedUp: 0,
+        counter: 0,
+        createdAt: now,
+        credentialId: "passkey-credential",
+        deviceType: "singleDevice",
+        id: "passkey-credential-id",
+        lastUsedAt: null,
+        publicKey: Buffer.from("public-key"),
+        realmId: realm.id,
+        revokedAt: null,
+        rpId: "example.com",
+        transports: JSON.stringify(["internal"]),
+        userId,
+        version: 1,
+      })
+      .run()
+    expect(
+      externalIdentityRepositoryCreate(database.db).externalIdentityCreate({
+        createdAt: now,
+        displayName: "External",
+        email: "external@example.com",
+        emailVerified: true,
+        externalSubject: "passkey-only-subject",
+        id: "passkey-only-identity",
+        providerId: provider.id,
+        realmId: realm.id,
+        updatedAt: now,
+        userId,
+        username: null,
+        version: 1,
+      }).success,
+    ).toBe(true)
+    database.db.delete(passwordCredentialTable).run()
+
+    expect(
+      externalIdentityUnlink({
+        database,
+        externalSubject: "passkey-only-subject",
+        providerId: provider.id,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        session: login.data.session.session,
+        userId,
+      }),
+    ).toMatchObject({ code: "external-identities.conflict", success: false })
+    database.db
+      .update(passkeyCredentialTable)
+      .set({ revokedAt: now })
+      .where(eq(passkeyCredentialTable.id, "passkey-credential-id"))
+      .run()
+    expect(
+      externalIdentityUnlink({
+        database,
+        externalSubject: "passkey-only-subject",
+        providerId: provider.id,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        session: login.data.session.session,
+        userId,
+      }).success,
+    ).toBe(true)
+  })
+})
+
 test("external identity login validates state and creates a session without exposing provider secrets", async () => {
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "external-login.example.com")
@@ -190,6 +340,93 @@ test("external identity login validates state and creates a session without expo
         })
       ).success,
     ).toBe(false)
+  })
+})
+
+test("external identity callbacks reject altered state, nonce, and provider-enforced PKCE", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "external-callback-security.example.com")
+    const provider = await createProvider(database, realm.id)
+    let mode: "nonce" | "pkce" = "nonce"
+    let callbackPkceVerifier: string | undefined
+    const port: ExternalIdentityProviderPort = {
+      authorizationUrlCreate(_configuration, input) {
+        return resultCreate(`https://provider.test/authorize?state=${encodeURIComponent(input.state)}`)
+      },
+      callbackExchange(_configuration, input) {
+        callbackPkceVerifier = input.pkceVerifier
+        if (mode === "pkce")
+          return Promise.resolve(
+            resultErrorCreate(
+              "externalIdentityCallbackTest",
+              "The provider rejected the PKCE verifier.",
+              "external-identities.invalid",
+            ),
+          )
+        return Promise.resolve(
+          resultCreate({
+            displayName: "Callback security user",
+            email: "callback-security@example.com",
+            emailVerified: true,
+            externalSubject: "callback-security-subject",
+            nonce: "wrong-nonce",
+            providerType: "google",
+          }),
+        )
+      },
+    }
+    const started = externalIdentityStart({
+      database,
+      input: {},
+      realmId: realm.id,
+      providerId: provider.id,
+      providerPorts: { google: port },
+      runtime: testkit.runtime,
+    })
+    expect(started.success).toBe(true)
+    if (!started.success) return
+    const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
+    expect(
+      (
+        await externalIdentityCallback({
+          code: "code",
+          database,
+          providerId: provider.id,
+          providerPorts: { google: port },
+          realmId: realm.id,
+          state: `${state}-altered`,
+          runtime: testkit.runtime,
+        })
+      ).success,
+    ).toBe(false)
+    expect(
+      (
+        await externalIdentityCallback({
+          code: "code",
+          database,
+          providerId: provider.id,
+          providerPorts: { google: port },
+          realmId: realm.id,
+          state,
+          runtime: testkit.runtime,
+        })
+      ).success,
+    ).toBe(false)
+    mode = "pkce"
+    expect(
+      (
+        await externalIdentityCallback({
+          code: "code",
+          database,
+          providerId: provider.id,
+          providerPorts: { google: port },
+          realmId: realm.id,
+          state,
+          runtime: testkit.runtime,
+        })
+      ).success,
+    ).toBe(false)
+    expect(callbackPkceVerifier).toBeString()
   })
 })
 
@@ -816,6 +1053,7 @@ test("subject-bound external identity routes enforce IDOR, tenant, assurance, CS
     if (!login.success || login.data.session === undefined) return
 
     const app = externalIdentityServerAppCreate({
+      accountUiOrigin: "https://external-me-alpha.example.com",
       database,
       providerPorts: { google: testPort() },
       publicOrigin: "https://external-me-alpha.example.com",
@@ -851,6 +1089,8 @@ test("subject-bound external identity routes enforce IDOR, tenant, assurance, CS
     expect(initiallyListed.success).toBe(true)
     if (!initiallyListed.success) return
     expect(initiallyListed.data.items).toHaveLength(0)
+    const realmOnlyProviders = await client.externalIdentityProviderMeList(alpha.id)
+    expect(realmOnlyProviders).toMatchObject({ data: { items: [{ id: provider.id }] }, success: true })
     expect(await link(provider.id)).toBe(true)
     const idorBody = await app.request(
       `https://external-me-alpha.example.com/realms/${alpha.id}/me/external-identities/${provider.id}/link/complete`,

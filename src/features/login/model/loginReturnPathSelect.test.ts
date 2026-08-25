@@ -5,6 +5,9 @@ import { loginReturnPathSelect } from "./loginReturnPathSelect.js"
 describe("hosted login return paths and interaction handles", () => {
   test("accepts same-origin absolute paths", () => {
     expect(loginReturnPathSelect("/account/profile", "/account")).toBe("/account/profile")
+    expect(loginReturnPathSelect("/account/profile?tab=security&mode=edit#password", "/account")).toBe(
+      "/account/profile?tab=security&mode=edit#password",
+    )
     expect(loginReturnPathSelect("/oauth2/authorize?interaction=abc", "/account")).toBe(
       "/oauth2/authorize?interaction=abc",
     )

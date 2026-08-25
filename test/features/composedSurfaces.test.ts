@@ -103,7 +103,7 @@ test("all feature clients round-trip through the composed server", async () => {
           clientSecret: "surface-secret",
           displayName: "Surface provider",
           redirectUri: "https://client.example/callback",
-          scopes: ["openid"],
+          scopes: ["openid", "email"],
           type: "google",
         })
       ).success,

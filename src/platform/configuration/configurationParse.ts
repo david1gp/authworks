@@ -33,9 +33,19 @@ export function configurationParse(input: unknown): Result<Configuration> {
   if (parsed.output.nodeEnv === "production" && publicOrigin.protocol !== "https:") {
     return resultErrorCreate(op, "Configuration is invalid. Invalid fields: publicOrigin.")
   }
+  const accountUiOrigin = new URL(parsed.output.accountUiOrigin)
+  if (!isPublicOrigin(accountUiOrigin, parsed.output.accountUiOrigin))
+    return resultErrorCreate(op, "Configuration is invalid. Invalid fields: accountUiOrigin.")
+  if (parsed.output.nodeEnv === "production" && accountUiOrigin.protocol !== "https:")
+    return resultErrorCreate(op, "Configuration is invalid. Invalid fields: accountUiOrigin.")
 
   const pathname = publicOrigin.pathname === "/" ? "" : publicOrigin.pathname.replace(/\/+$/, "")
-  return createResult({ ...parsed.output, publicOrigin: publicOrigin.origin + pathname })
+  const accountUiPathname = accountUiOrigin.pathname === "/" ? "" : accountUiOrigin.pathname.replace(/\/+$/, "")
+  return createResult({
+    ...parsed.output,
+    accountUiOrigin: accountUiOrigin.origin + accountUiPathname,
+    publicOrigin: publicOrigin.origin + pathname,
+  })
 }
 
 function configurationInputNormalize(input: Record<string, unknown>): Result<Record<string, unknown>> {
@@ -44,6 +54,7 @@ function configurationInputNormalize(input: Record<string, unknown>): Result<Rec
   const aliases = [
     { internal: "databasePath", external: "DATABASE_PATH" },
     { internal: "host", external: "HOST" },
+    { internal: "accountUiOrigin", external: "ACCOUNT_UI_ORIGIN" },
     { internal: "nodeEnv", external: "NODE_ENV" },
     { internal: "port", external: "PORT" },
     { internal: "publicOrigin", external: "PUBLIC_ORIGIN" },
@@ -72,6 +83,7 @@ function configurationInputNormalize(input: Record<string, unknown>): Result<Rec
   normalized.host ??= defaultValues.host
   normalized.nodeEnv ??= defaultValues.nodeEnv
   normalized.port ??= defaultValues.port
+  normalized.accountUiOrigin ??= normalized.publicOrigin
   normalized.trustedProxyAddresses ??= []
 
   return createResult(normalized)

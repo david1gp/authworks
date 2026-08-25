@@ -36,8 +36,10 @@ import { externalIdentityLinkCompleteRequestSchema } from "../public/externalIde
 import { externalIdentityProviderCreateRequestSchema } from "../public/externalIdentityProviderCreateRequestSchema.js"
 import { externalIdentityProviderUpdateRequestSchema } from "../public/externalIdentityProviderUpdateRequestSchema.js"
 import { externalIdentityStartRequestSchema } from "../public/externalIdentityStartRequestSchema.js"
+import { externalIdentityLinkBrowserResponseCreate } from "./externalIdentityLinkBrowserResponseCreate.js"
 
 type ExternalIdentityServerAppCreateOptions = {
+  readonly accountUiOrigin?: string
   readonly browserMode?: boolean
   readonly database: StorageDatabase
   readonly providerPorts?: ExternalIdentityProviderPorts
@@ -78,7 +80,14 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       providerPorts,
       state: input.state,
     })
-    const browserMode = sessionBrowserModeRequested(context, options.browserMode)
+    const browserMode =
+      sessionBrowserModeRequested(context, options.browserMode) ||
+      (options.browserMode === true && context.req.header("accept")?.includes("text/html") === true)
+    if (browserMode && callback.success && callback.data.kind === "link_confirmation") {
+      const targetOrigin = externalIdentityBrowserOriginResolve(options.accountUiOrigin)
+      if (!targetOrigin.success) return externalIdentityErrorResponseCreate(context, targetOrigin)
+      return externalIdentityLinkBrowserResponseCreate({ callback: callback.data, targetOrigin: targetOrigin.data })
+    }
     if (!browserMode || input.interactionHandle === undefined)
       return externalIdentityResultResponseCreate(
         context,
@@ -447,6 +456,8 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
           errorMessage: "The external identity link request is invalid.",
           op: "externalIdentityLinkStart",
         })
+      const callbackOrigin = externalIdentityBrowserOriginResolve(options.accountUiOrigin)
+      if (!callbackOrigin.success) return externalIdentityErrorResponseCreate(context, callbackOrigin)
       return externalIdentityResultResponseCreate(
         context,
         externalIdentityLinkStart({
@@ -455,6 +466,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
           realmId: context.req.param("realmId"),
           providerId: context.req.param("providerId"),
           providerPorts,
+          callbackOrigin: callbackOrigin.data,
           session: context.get("session"),
           userId: context.req.param("userId"),
         }),
@@ -522,6 +534,8 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         errorMessage: "The external identity link request is invalid.",
         op: "externalIdentityLinkStart",
       })
+    const callbackOrigin = externalIdentityBrowserOriginResolve(options.accountUiOrigin)
+    if (!callbackOrigin.success) return externalIdentityErrorResponseCreate(context, callbackOrigin)
     return externalIdentityResultResponseCreate(
       context,
       externalIdentityLinkStart({
@@ -530,6 +544,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         realmId: context.req.param("realmId"),
         providerId: context.req.param("providerId"),
         providerPorts,
+        callbackOrigin: callbackOrigin.data,
         session: context.get("session"),
         userId: subject.data,
       }),
@@ -569,6 +584,21 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     const subject = externalIdentitySubjectIdResolve(context, context.req.param("realmId"))
     if (!subject.success) return externalIdentityErrorResponseCreate(context, subject)
     return externalIdentityListRoute(context, options.database, subject.data)
+  })
+
+  app.get("/realms/:realmId/me/external-identity-providers", protectedMiddleware, (context) => {
+    const subject = externalIdentitySubjectIdResolve(context, context.req.param("realmId"))
+    if (!subject.success) return externalIdentityErrorResponseCreate(context, subject)
+    const query = listQueryFromSearchParams(context.req.query())
+    if (!query.success) return externalIdentityErrorResponseCreate(context, query)
+    return externalIdentityResultResponseCreate(
+      context,
+      externalIdentityProviderList({
+        database: options.database,
+        query: query.data,
+        realmId: context.req.param("realmId"),
+      }),
+    )
   })
 
   app.delete("/realms/:realmId/me/external-identities/:providerId/:externalSubject", protectedMiddleware, (context) => {
@@ -755,11 +785,8 @@ type ExternalIdentityRouteContext = {
   }
 }
 
-function externalIdentityInteractionResumePathCreate(
-  interactionHandle: string,
-  publicOrigin = "http://127.0.0.1:3000",
-) {
-  if (!/^[A-Za-z0-9_-]{43,128}$/.test(interactionHandle))
+function externalIdentityInteractionResumePathCreate(interactionHandle: string, publicOrigin: string | undefined) {
+  if (!/^[A-Za-z0-9_-]{43,128}$/.test(interactionHandle) || publicOrigin === undefined)
     return {
       code: "external-identities.invalid",
       errorMessage: "The external identity callback is invalid.",
@@ -776,10 +803,46 @@ function externalIdentityLoginRedirectCreate(
   context: ExternalIdentityRouteContext,
   interactionHandle: string,
   resumePath: string,
-  publicOrigin = "http://127.0.0.1:3000",
+  publicOrigin: string | undefined,
 ) {
+  if (publicOrigin === undefined)
+    return externalIdentityErrorResponseCreate(context, {
+      code: "external-identities.invalid",
+      errorMessage: "The external identity callback is invalid.",
+      op: "externalIdentityLoginRedirectCreate",
+      success: false,
+    })
   const loginPath = `/login?interaction=${encodeURIComponent(interactionHandle)}&return_to=${encodeURIComponent(resumePath)}`
   const validated = sessionReturnPathValidate(loginPath, publicOrigin)
   if (!validated.success) return externalIdentityErrorResponseCreate(context, validated)
   return context.redirect(validated.data, 302)
+}
+
+function externalIdentityBrowserOriginResolve(value: string | undefined) {
+  if (value === undefined)
+    return {
+      code: "external-identities.invalid",
+      errorMessage: "A trusted account UI origin is required for the browser callback.",
+      op: "externalIdentityBrowserOriginResolve",
+      success: false as const,
+    }
+  try {
+    const origin = new URL(value)
+    if (
+      !["http:", "https:"].includes(origin.protocol) ||
+      origin.username !== "" ||
+      origin.password !== "" ||
+      origin.search !== "" ||
+      origin.hash !== ""
+    )
+      throw new Error("invalid origin")
+    return { data: origin.origin, success: true as const }
+  } catch (_error) {
+    return {
+      code: "external-identities.invalid",
+      errorMessage: "The trusted account UI origin is invalid.",
+      op: "externalIdentityBrowserOriginResolve",
+      success: false as const,
+    }
+  }
 }

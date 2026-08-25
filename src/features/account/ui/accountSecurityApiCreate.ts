@@ -1,5 +1,8 @@
 import type { Result } from "#result"
 import { externalIdentityApiClientCreate } from "../../externalIdentities/client/externalIdentityApiClientCreate.js"
+import type { ExternalIdentityLinkCompleteRequest } from "../../externalIdentities/public/externalIdentityLinkCompleteRequestSchema.js"
+import { externalIdentityLinkCompleteResponseSchema } from "../../externalIdentities/public/externalIdentityLinkCompleteResponseSchema.js"
+import { externalIdentityStartResponseSchema } from "../../externalIdentities/public/externalIdentityStartResponseSchema.js"
 import { externalIdentityUnlinkResponseSchema } from "../../externalIdentities/public/externalIdentityUnlinkResponseSchema.js"
 import { mfaApiClientCreate } from "../../mfa/client/mfaApiClientCreate.js"
 import { mfaRecoveryCodesResponseSchema } from "../../mfa/public/mfaRecoveryCodesResponseSchema.js"
@@ -44,7 +47,23 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
     })
 
   return {
+    identityCallback: identities.externalIdentityCallback,
     identitiesList: identities.externalIdentityMeList,
+    identityLinkComplete: (realmId: string, providerId: string, input: ExternalIdentityLinkCompleteRequest) =>
+      mutate(
+        realmId,
+        `/realms/${encodeURIComponent(realmId)}/me/external-identities/${encodeURIComponent(providerId)}/link/complete`,
+        { body: JSON.stringify(input), method: "POST" },
+        externalIdentityLinkCompleteResponseSchema,
+      ),
+    identityLinkStart: (realmId: string, providerId: string) =>
+      mutate(
+        realmId,
+        `/realms/${encodeURIComponent(realmId)}/me/external-identities/${encodeURIComponent(providerId)}/link/start`,
+        { body: "{}", method: "POST" },
+        externalIdentityStartResponseSchema,
+      ),
+    identityProvidersList: (realmId: string) => identities.externalIdentityProviderMeList(realmId),
     identityUnlink: (realmId: string, providerId: string, externalSubject: string) =>
       mutate(
         realmId,

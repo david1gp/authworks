@@ -11,8 +11,8 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
-import { externalIdentityProviderDefaults } from "../domain/externalIdentityProviderDefaults.js"
 import { externalIdentityProviderViewCreate } from "../domain/externalIdentityProviderViewCreate.js"
+import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
 import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityProviderTable } from "../persistence/externalIdentityProviderTable.js"
@@ -52,14 +52,14 @@ export function externalIdentityProviderCreate(
     if (organization === undefined || organization.realmId !== options.realmId || organization.status !== "active")
       return resultErrorCreate(op, "The organization was not found.", "external-identities.not-found")
   }
+  const scopes = externalIdentityProviderScopesValidate(parsed.output.type, parsed.output.scopes)
+  if (!scopes.success) return scopes
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate(op, "The provider timestamp is invalid.", "external-identities.invalid-timestamp")
   const providerId = uuidv7Create(runtime)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
-  const defaults = externalIdentityProviderDefaults[parsed.output.type]
-  const scopes = parsed.output.scopes ?? [...defaults.scopes]
   return storageTransactionRun(options.database, (transaction) => {
     const repository = externalIdentityRepositoryCreate(transaction)
     const duplicate = transaction
@@ -92,7 +92,7 @@ export function externalIdentityProviderCreate(
       realmId: options.realmId,
       organizationId: parsed.output.organizationId ?? null,
       redirectUri: parsed.output.redirectUri,
-      scopes: JSON.stringify(scopes),
+      scopes: JSON.stringify(scopes.data),
       type: parsed.output.type,
       updatedAt: now,
       version: 1,

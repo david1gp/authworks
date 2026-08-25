@@ -6,16 +6,31 @@ import { oidcAdminScreenSchema } from "../../src/features/oidc/ui/oidcAdminScree
 import { organizationAdminScreenSchema } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
 import { projectAdminScreenSchema } from "../../src/features/projects/ui/projectAdminScreenSchema.js"
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
-import { productionNavigationItemActive } from "../../src/ui/production/productionNavigationItemActive.js"
+import { productionLoginRedirectUrlCreate } from "../../src/ui/production/productionLoginRedirectUrlCreate.js"
 import type { ProductionNavigationGroup } from "../../src/ui/production/productionNavigationGroup.js"
+import { productionNavigationItemActive } from "../../src/ui/production/productionNavigationItemActive.js"
 import { productionRouteContractMap } from "../../src/ui/production/productionRouteContractMap.js"
 import type { ProductionRouteGuardContext } from "../../src/ui/production/productionRouteGuardContext.js"
 import { productionRouteGuardStateCreate } from "../../src/ui/production/productionRouteGuardStateCreate.js"
 import { productionRouteParamGet } from "../../src/ui/production/productionRouteParamGet.js"
 import { productionRouteScreenSelect } from "../../src/ui/production/productionRouteScreenSelect.js"
 import { productionShellNavigationGroups } from "../../src/ui/production/productionShellNavigationGroups.js"
+import { productionShellNavigationLinkVisible } from "../../src/ui/production/productionShellNavigationLinkVisible.js"
 
 describe("production route contracts", () => {
+  test("encodes the exact same-origin path, query, and hash for login continuation", () => {
+    const redirectUrl = productionLoginRedirectUrlCreate({
+      hash: "#password",
+      pathname: "/account/profile",
+      search: "?tab=security&mode=edit",
+    })
+
+    expect(redirectUrl).toBe("/login?return_to=%2Faccount%2Fprofile%3Ftab%3Dsecurity%26mode%3Dedit%23password")
+    expect(new URL(redirectUrl, "https://authworks.example").searchParams.get("return_to")).toBe(
+      "/account/profile?tab=security&mode=edit#password",
+    )
+  })
+
   test("covers every production browser prefix and its screen contracts", () => {
     expect(Object.keys(productionRouteContractMap)).toEqual(["login", "consent", "account", "invitations", "admin"])
 
@@ -204,6 +219,14 @@ describe("production route guard state", () => {
 })
 
 describe("production shell state", () => {
+  const shellGuardCreate = (overrides: Partial<ProductionRouteGuardContext> = {}): ProductionRouteGuardContext => ({
+    authentication: { status: "authenticated", userId: "user-1" },
+    organization: "missing",
+    permission: "granted",
+    realm: { realmId: "realm-1", status: "available" },
+    ...overrides,
+  })
+
   test("selects exact and parameterized screens without falling back for inaccessible paths", () => {
     expect(productionRouteScreenSelect(productionRouteContractMap.account, "/account/sessions")?.key).toBe("sessions")
     expect(productionRouteScreenSelect(productionRouteContractMap.admin, "/admin/users/user-42")?.key).toBe(
@@ -248,6 +271,33 @@ describe("production shell state", () => {
     expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
     expect(productionNavigationItemActive("/admin", "/admin/users")).toBe(false)
     expect(productionNavigationItemActive("/account", "/account/password")).toBe(false)
+  })
+
+  test("shows administration only for an active-realm realm.read decision and always returns to account from admin", () => {
+    const baseGuard = shellGuardCreate()
+    expect(productionShellNavigationLinkVisible({ guard: baseGuard, kind: "account", target: "admin" })).toBe(true)
+    expect(
+      productionShellNavigationLinkVisible({
+        guard: shellGuardCreate({ permission: "denied" }),
+        kind: "account",
+        target: "admin",
+      }),
+    ).toBe(false)
+    expect(
+      productionShellNavigationLinkVisible({
+        guard: shellGuardCreate({ permission: "loading" }),
+        kind: "account",
+        target: "admin",
+      }),
+    ).toBe(false)
+    expect(
+      productionShellNavigationLinkVisible({
+        guard: shellGuardCreate({ realm: "missing" }),
+        kind: "account",
+        target: "admin",
+      }),
+    ).toBe(false)
+    expect(productionShellNavigationLinkVisible({ guard: baseGuard, kind: "admin", target: "account" })).toBe(true)
   })
 
   test("offers an advertised sign-out destination from every authenticated shell", () => {

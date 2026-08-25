@@ -13,6 +13,7 @@ import type { Session } from "../../sessions/public/sessionSchema.js"
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
 import { externalIdentityPkceChallengeCreate } from "../domain/externalIdentityPkceChallengeCreate.js"
 import { externalIdentityProviderDefaults } from "../domain/externalIdentityProviderDefaults.js"
+import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
 import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityProviderPort.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
@@ -31,6 +32,7 @@ type ExternalIdentityLinkStartOptions = {
   readonly realmId: string
   readonly providerId: string
   readonly providerPorts: ExternalIdentityProviderPorts
+  readonly callbackOrigin?: string
   readonly session: Session
   readonly userId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -97,12 +99,18 @@ export function externalIdentityLinkStart(
     : undefined
   const pkceVerifier = externalIdentityOpaqueSecretCreate(runtime, 48)
   const pkceChallenge = externalIdentityPkceChallengeCreate(pkceVerifier)
+  const scopes = externalIdentityProviderScopesValidate(
+    provider.data.type as "github" | "google" | "microsoft",
+    provider.data.scopes,
+  )
+  if (!scopes.success)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   const authorizationUrl = port.authorizationUrlCreate(
     {
       clientId: provider.data.clientId,
       clientSecret: provider.data.clientSecret,
       redirectUri: provider.data.redirectUri,
-      scopes: externalIdentityScopesParse(provider.data.scopes),
+      scopes: scopes.data,
       type: provider.data.type as keyof ExternalIdentityProviderPorts,
     },
     { ...(nonce === undefined ? {} : { nonce }), pkceChallenge, state },
@@ -170,14 +178,12 @@ export function externalIdentityLinkStart(
       runtime,
     )
     if (!event.success) return event
-    return resultCreate({ authorizationUrl: authorizationUrl.data, expiresAt, providerId: options.providerId })
+    return resultCreate({
+      authorizationUrl: authorizationUrl.data,
+      callbackOrigin: options.callbackOrigin,
+      expiresAt,
+      messageNonce: externalIdentitySecretHashCreate(state),
+      providerId: options.providerId,
+    })
   })
-}
-
-function externalIdentityScopesParse(value: string): string[] {
-  try {
-    const parsed = JSON.parse(value) as unknown
-    if (Array.isArray(parsed) && parsed.every((scope) => typeof scope === "string")) return parsed
-  } catch (_error) {}
-  return []
 }

@@ -8,7 +8,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { passwordCredentialTable } from "../../passwords/persistence/passwordCredentialTable.js"
+import { passkeyUsableAuthenticationMethodRead } from "../../passkeys/server/passkeyUsableAuthenticationMethodRead.js"
+import { passwordUsableAuthenticationMethodRead } from "../../passwords/server/passwordUsableAuthenticationMethodRead.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
 import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
@@ -26,6 +27,8 @@ type ExternalIdentityUnlinkOptions = {
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
 }
+
+const externalIdentityRecentAuthenticationMs = 5 * 60 * 1_000
 
 export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): Result<ExternalIdentityUnlinkResponse> {
   const op = "externalIdentityUnlink"
@@ -53,6 +56,12 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate(op, "The external identity timestamp is invalid.", "external-identities.invalid-timestamp")
+  if (now < options.session.createdAt || now - options.session.createdAt > externalIdentityRecentAuthenticationMs)
+    return resultErrorCreate(
+      op,
+      "A recent authentication is required before removing an external identity.",
+      "external-identities.unauthorized",
+    )
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = externalIdentityRepositoryCreate(transaction)
@@ -61,14 +70,19 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
       .from(externalIdentityTable)
       .where(and(eq(externalIdentityTable.realmId, options.realmId), eq(externalIdentityTable.userId, options.userId)))
       .get()
-    const password = transaction
-      .select({ id: passwordCredentialTable.userId })
-      .from(passwordCredentialTable)
-      .where(
-        and(eq(passwordCredentialTable.realmId, options.realmId), eq(passwordCredentialTable.userId, options.userId)),
-      )
-      .get()
-    if ((others?.total ?? 0) <= 1 && password === undefined)
+    const password = passwordUsableAuthenticationMethodRead({
+      executor: transaction,
+      realmId: options.realmId,
+      userId: options.userId,
+    })
+    if (!password.success) return password
+    const passkeys = passkeyUsableAuthenticationMethodRead({
+      executor: transaction,
+      realmId: options.realmId,
+      userId: options.userId,
+    })
+    if (!passkeys.success) return passkeys
+    if ((others?.total ?? 0) <= 1 && !password.data.available && !passkeys.data.available)
       return resultErrorCreate(
         op,
         "The last usable authentication method cannot be removed.",

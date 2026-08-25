@@ -10,6 +10,7 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import { externalIdentityProviderViewCreate } from "../domain/externalIdentityProviderViewCreate.js"
+import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
 import { externalIdentityEventTypes } from "../events/externalIdentityEventTypes.js"
 import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
@@ -51,6 +52,14 @@ export function externalIdentityProviderUpdate(
     if (!current.success) return current
     if (current.data === null)
       return resultErrorCreate(op, "The external identity provider was not found.", "external-identities.not-found")
+    const scopes =
+      parsed.data.scopes === undefined
+        ? undefined
+        : externalIdentityProviderScopesValidate(
+            current.data.type as "github" | "google" | "microsoft",
+            parsed.data.scopes,
+          )
+    if (scopes !== undefined && !scopes.success) return scopes
     const updated = repository.externalIdentityProviderUpdate(options.realmId, options.providerId, {
       ...(parsed.data.allowAccountCreation === undefined
         ? {}
@@ -60,7 +69,7 @@ export function externalIdentityProviderUpdate(
       ...(parsed.data.displayName === undefined ? {} : { displayName: parsed.data.displayName }),
       ...(parsed.data.enabled === undefined ? {} : { enabled: parsed.data.enabled }),
       ...(parsed.data.redirectUri === undefined ? {} : { redirectUri: parsed.data.redirectUri }),
-      ...(parsed.data.scopes === undefined ? {} : { scopes: JSON.stringify(parsed.data.scopes) }),
+      ...(scopes === undefined ? {} : { scopes: JSON.stringify(scopes.data) }),
       updatedAt: now,
       version: current.data.version + 1,
     })

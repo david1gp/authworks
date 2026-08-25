@@ -2,6 +2,7 @@ import { useLocation } from "@solidjs/router"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
+import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentity } from "../../externalIdentities/public/externalIdentitySchema.js"
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
 import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
@@ -110,6 +111,53 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       version: 1,
     },
   ])
+  const identityProviders = createSignalObject<ExternalIdentityProvider[]>([
+    {
+      allowAccountCreation: true,
+      clientId: "demo-github-client",
+      createdAt: now - 5_184_000_000,
+      displayName: "GitHub",
+      enabled: true,
+      id: "github",
+      organizationId: undefined,
+      realmId: "customer-identity",
+      redirectUri: "https://demo.authworks.example/realms/customer-identity/external-identity/github/callback",
+      scopes: ["read:user", "user:email"],
+      type: "github",
+      updatedAt: now - 86_400_000,
+      version: 1,
+    },
+    {
+      allowAccountCreation: true,
+      clientId: "demo-google-client",
+      createdAt: now - 2_592_000_000,
+      displayName: "Google",
+      enabled: true,
+      id: "google",
+      organizationId: undefined,
+      realmId: "customer-identity",
+      redirectUri: "https://demo.authworks.example/realms/customer-identity/external-identity/google/callback",
+      scopes: ["openid", "email", "profile"],
+      type: "google",
+      updatedAt: now - 60_000,
+      version: 1,
+    },
+    {
+      allowAccountCreation: true,
+      clientId: "demo-microsoft-client",
+      createdAt: now - 5_184_000_000,
+      displayName: "Microsoft",
+      enabled: true,
+      id: "microsoft",
+      organizationId: undefined,
+      realmId: "customer-identity",
+      redirectUri: "https://demo.authworks.example/realms/customer-identity/external-identity/microsoft/callback",
+      scopes: ["openid", "email", "profile"],
+      type: "microsoft",
+      updatedAt: now - 172_800_000,
+      version: 1,
+    },
+  ])
   const demoRecoveryCodes = ["AX7K-2QPL", "B9MN-4TRS", "C3VW-8XYZ", "D6EF-1GHJ"]
   // The marker identifies the deterministic issuance, never any code material.
   const acknowledgementMarker = () =>
@@ -133,6 +181,11 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     | undefined
   >(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
+  const identityLinkConfirmation = createSignalObject<
+    { readonly confirmationToken: string; readonly expiresAt: number; readonly kind: "link_confirmation" } | undefined
+  >(undefined)
+  const identityLinkProvider = createSignalObject<string | undefined>(undefined)
+  const identityError = createSignalObject<string | undefined>(undefined)
   const code = createSignalObject("")
   const selected = () => demoFixtureStateSelect(location.search, ["success", "empty", "loading", "error", "one-time"])
   const visible = <T>(values: readonly T[]) => (selected() === "empty" ? [] : [...values])
@@ -144,8 +197,72 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
   return {
     code: code.get,
     codeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => code.set(event.currentTarget.value),
-    error: () => (selected() === "error" ? messageTranslate("demo.fixture.accountError") : undefined),
+    error: () =>
+      identityError.get() ?? (selected() === "error" ? messageTranslate("demo.fixture.accountError") : undefined),
     identities: () => visible(identities.get()),
+    identityLinkCancel: () => {
+      identityLinkConfirmation.set(undefined)
+      identityLinkProvider.set(undefined)
+      pendingId.set(undefined)
+      identityError.set(undefined)
+    },
+    identityLinkConfirm: () => {
+      const providerId = identityLinkProvider.get()
+      const confirmation = identityLinkConfirmation.get()
+      if (providerId === undefined || confirmation === undefined) return
+      const provider = identityProviders.get().find((item) => item.id === providerId)
+      if (provider === undefined) return
+      if (identities.get().some((item) => item.providerId === providerId)) {
+        identityError.set(messageTranslate("account.identities.alreadyLinked"))
+        identityLinkConfirmation.set(undefined)
+        identityLinkProvider.set(undefined)
+        return
+      }
+      const createdAt = Date.now()
+      identities.set([
+        ...identities.get(),
+        {
+          createdAt,
+          displayName: "Demo external account",
+          email: `linked-${provider.type}@example.com`,
+          emailVerified: true,
+          externalSubject: `demo-${provider.id}-subject`,
+          id: `identity-${provider.id}`,
+          providerId: provider.id,
+          providerType: provider.type,
+          realmId: provider.realmId,
+          updatedAt: createdAt,
+          userId: "demo-user",
+          username: `demo-${provider.type}`,
+          version: 1,
+        },
+      ])
+      identityLinkConfirmation.set(undefined)
+      identityLinkProvider.set(undefined)
+      pendingId.set(undefined)
+      identityError.set(undefined)
+    },
+    identityLinkConfirmation: identityLinkConfirmation.get,
+    identityLinkProvider: identityLinkProvider.get,
+    identityLinkStart: (providerId: string) => {
+      if (identities.get().some((item) => item.providerId === providerId)) {
+        return identityError.set(messageTranslate("account.identities.alreadyLinked"))
+      }
+      if (identityProviders.get().every((item) => item.id !== providerId)) return
+      identityError.set(undefined)
+      identityLinkProvider.set(providerId)
+      pendingId.set(`identity:link:${providerId}`)
+      // The demo callback is deterministic but still requires the same explicit confirmation step.
+      identityLinkConfirmation.set({
+        confirmationToken: `demo-${providerId}-confirmation-token`,
+        expiresAt: now + 600_000,
+        kind: "link_confirmation",
+      })
+      pendingId.set(undefined)
+    },
+    identityProviderLinked: (providerId: string) =>
+      identities.get().some((identity) => identity.providerId === providerId),
+    identityProviders: () => identityProviders.get(),
     identityUnlink: (providerId: string) => {
       if (!window.confirm(messageTranslate("account.identities.unlinkConfirm"))) return
       identities.set(identities.get().filter((item) => item.providerId !== providerId))

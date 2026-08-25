@@ -120,7 +120,14 @@ export const productionRouteContractMap = {
         title: "shell.nav.recoveryCodes",
       },
       {
-        contracts: ["external-identities.list", "external-identities.unlink"],
+        contracts: [
+          "external-identities.list",
+          "external-identities.providers",
+          "external-identities.link-start",
+          "external-identities.link-callback",
+          "external-identities.link-complete",
+          "external-identities.unlink",
+        ],
         key: "identities",
         path: "/account/identities",
         title: "shell.nav.linkedIdentities",

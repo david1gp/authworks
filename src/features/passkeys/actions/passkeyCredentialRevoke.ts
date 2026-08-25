@@ -7,6 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { externalIdentityUsableAuthenticationMethodRead } from "../../externalIdentities/server/externalIdentityUsableAuthenticationMethodRead.js"
+import { passwordUsableAuthenticationMethodRead } from "../../passwords/server/passwordUsableAuthenticationMethodRead.js"
 import { passkeyCredentialViewCreate } from "../domain/passkeyCredentialViewCreate.js"
 import { passkeyEventPayloadSchema } from "../events/passkeyEventPayloadSchema.js"
 import { passkeyEventTypes } from "../events/passkeyEventTypes.js"
@@ -42,6 +44,26 @@ export function passkeyCredentialRevoke(
     if (!credential.success) return credential
     if (credential.data === null || credential.data.revokedAt !== null)
       return resultErrorCreate(op, "The passkey credential is invalid.", "passkeys.invalid")
+    const usablePasskeys = repository.passkeyCredentialList(options.realmId, options.userId)
+    if (!usablePasskeys.success) return usablePasskeys
+    const password = passwordUsableAuthenticationMethodRead({
+      executor: transaction,
+      realmId: options.realmId,
+      userId: options.userId,
+    })
+    if (!password.success) return password
+    const externalIdentity = externalIdentityUsableAuthenticationMethodRead({
+      executor: transaction,
+      realmId: options.realmId,
+      userId: options.userId,
+    })
+    if (!externalIdentity.success) return externalIdentity
+    if (
+      usablePasskeys.data.filter((candidate) => candidate.revokedAt === null).length <= 1 &&
+      !password.data.available &&
+      !externalIdentity.data.available
+    )
+      return resultErrorCreate(op, "The last usable authentication method cannot be removed.", "passkeys.conflict")
     const eventVersion = repository.passkeyEventVersionGet(options.realmId, "passkey_credential", credential.data.id)
     if (!eventVersion.success) return eventVersion
     const revoked = repository.passkeyCredentialRevoke(

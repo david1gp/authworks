@@ -5,10 +5,14 @@ import { join } from "node:path"
 import { externalIdentityProviderCreate } from "../../src/features/externalIdentities/actions/externalIdentityProviderCreate.js"
 import { externalIdentityProviderUpdate } from "../../src/features/externalIdentities/actions/externalIdentityProviderUpdate.js"
 import type { ExternalIdentityProviderPort } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
+import { externalIdentityLinkBrowserResponseCreate } from "../../src/features/externalIdentities/server/externalIdentityLinkBrowserResponseCreate.js"
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
+import { userCreate } from "../../src/features/users/actions/userCreate.js"
+import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -102,6 +106,188 @@ test("browser external callbacks issue only a cookie and resume opaque interacti
     expect(callback.headers.get("location")).toBe(`/oauth2/authorize?interaction=${interaction}`)
     expect(callback.headers.get("set-cookie")).toContain("session=")
     expect(await callback.text()).toBe("")
+  })
+})
+
+test("browser link callbacks return a same-origin opener message without a token URL redirect", async () => {
+  const response = externalIdentityLinkBrowserResponseCreate({
+    callback: {
+      confirmationToken: "confirmation-token",
+      expiresAt: 600,
+      kind: "link_confirmation",
+      messageNonce: "message-nonce",
+      providerId: "provider-google",
+    },
+    targetOrigin: "https://account.example.test/ignored-path",
+  })
+
+  expect(response.status).toBe(200)
+  expect(response.headers.get("content-security-policy")).toContain("default-src 'none'")
+  expect(response.headers.get("referrer-policy")).toBe("no-referrer")
+  const body = await response.text()
+  expect(body).toContain("https://account.example.test")
+  expect(body).toContain("confirmation-token")
+  expect(body).not.toContain("location.href")
+})
+
+test("browser link callbacks reject a misconfigured target origin without disclosing the confirmation token", async () => {
+  for (const targetOrigin of ["not-an-origin", "*"]) {
+    const response = externalIdentityLinkBrowserResponseCreate({
+      callback: {
+        confirmationToken: "confirmation-token",
+        expiresAt: 600,
+        kind: "link_confirmation",
+        messageNonce: "message-nonce",
+        providerId: "provider-google",
+      },
+      targetOrigin,
+    })
+
+    expect(response.status).toBe(400)
+    expect(await response.text()).not.toContain("confirmation-token")
+  }
+})
+
+test("authenticated link callbacks use the browser response after server-side state, nonce, and PKCE validation", async () => {
+  await withDatabase(async (database) => {
+    const realm = realmCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { domain: "external-link-browser.example.com", name: "External link browser" },
+    })
+    expect(realm.success).toBe(true)
+    if (!realm.success) return
+    const provider = externalIdentityProviderCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "external-client",
+        clientSecret: "external-secret",
+        displayName: "Google",
+        redirectUri: `https://external-link-browser.example.com/realms/${realm.data.realm.id}/external-identity/callback`,
+        scopes: ["openid", "email"],
+        type: "google",
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(provider.success).toBe(true)
+    if (!provider.success) return
+    const user = userCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        email: "link-browser@example.com",
+        profile: { displayName: "Link browser" },
+        userName: "link-browser",
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(user.success).toBe(true)
+    if (!user.success) return
+    expect(
+      userRepositoryCreate(database.db).userUpdate(realm.data.realm.id, user.data.user.id, {
+        emailVerifiedAt: database.runtime.now(),
+        registrationVerificationMethod: "email",
+        registrationVerifiedAt: database.runtime.now(),
+        state: "active",
+        updatedAt: database.runtime.now(),
+      }).success,
+    ).toBe(true)
+    const session = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: realm.data.realm.id,
+      userId: user.data.user.id,
+    })
+    expect(session.success).toBe(true)
+    if (!session.success) return
+    let authorizationInput:
+      | {
+          readonly nonce?: string
+          readonly pkceChallenge: string
+          readonly scopes: readonly string[]
+          readonly state: string
+        }
+      | undefined
+    let callbackInput: { readonly nonce?: string; readonly pkceVerifier: string } | undefined
+    const linkingProviderPort: ExternalIdentityProviderPort = {
+      authorizationUrlCreate(configuration, input) {
+        authorizationInput = { ...input, scopes: configuration.scopes }
+        return resultCreate(`https://provider.example/authorize?state=${encodeURIComponent(input.state)}`)
+      },
+      callbackExchange(_configuration, input) {
+        callbackInput = input
+        return Promise.resolve(
+          resultCreate({
+            displayName: "Browser linked user",
+            email: "linked@example.com",
+            emailVerified: true,
+            externalSubject: "linked-subject",
+            nonce: input.nonce,
+            providerType: "google",
+          }),
+        )
+      },
+    }
+    const app = externalIdentityServerAppCreate({
+      accountUiOrigin: "https://account.example.com",
+      browserMode: true,
+      database,
+      providerPorts: { google: linkingProviderPort },
+      publicOrigin: "https://api.example.com",
+    })
+    const start = await app.request(
+      `https://external-link-browser.example.com/realms/${realm.data.realm.id}/me/external-identities/${provider.data.provider.id}/link/start`,
+      {
+        body: "{}",
+        headers: { authorization: `Bearer ${session.data.token}`, "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(start.status).toBe(200)
+    const startBody = (await start.json()) as {
+      authorizationUrl: string
+      callbackOrigin?: string
+      messageNonce?: string
+    }
+    const state = new URL(startBody.authorizationUrl).searchParams.get("state") ?? undefined
+    expect(state).toBeString()
+    expect(startBody.callbackOrigin).toBe("https://account.example.com")
+    expect(startBody.messageNonce).toBeString()
+    expect(authorizationInput?.scopes).toEqual(["openid", "email"])
+    expect(authorizationInput?.pkceChallenge).toBeString()
+    expect(authorizationInput?.nonce).toBeString()
+    expect(authorizationInput?.state).toBe(state)
+    const callback = await app.request(
+      `https://external-link-browser.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/callback?code=provider-code&state=${encodeURIComponent(state ?? "")}`,
+      { headers: { accept: "text/html" } },
+    )
+    expect(callback.status).toBe(200)
+    expect(callback.headers.get("content-type")).toContain("text/html")
+    const callbackBody = await callback.text()
+    expect(callbackBody).toContain("confirmationToken")
+    expect(callbackBody).toContain("https://account.example.com")
+    expect(callbackInput?.pkceVerifier).toBeString()
+    expect(callbackInput?.nonce).toBe(authorizationInput?.nonce)
+
+    const missingAccountUiOriginApp = externalIdentityServerAppCreate({
+      browserMode: true,
+      database,
+      providerPorts: { google: linkingProviderPort },
+      publicOrigin: "https://api.example.com",
+    })
+    const missingAccountUiOrigin = await missingAccountUiOriginApp.request(
+      `https://external-link-browser.example.com/realms/${realm.data.realm.id}/me/external-identities/${provider.data.provider.id}/link/start`,
+      {
+        body: "{}",
+        headers: { authorization: `Bearer ${session.data.token}`, "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(missingAccountUiOrigin.status).toBe(400)
+    expect(await missingAccountUiOrigin.text()).not.toContain("https://api.example.com")
   })
 })
 

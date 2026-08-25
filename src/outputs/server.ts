@@ -34,6 +34,7 @@ export function serverListen(): void {
   const created = serverApplicationCreate({
     browserMode: true,
     clientIpResolve: (request) => directPeerAddressByRequest.get(request),
+    accountUiOrigin: parsed.data.accountUiOrigin,
     databasePath: parsed.data.databasePath,
     emailGenerator: mailConfiguration.data?.emailGenerator,
     mailDelivery:

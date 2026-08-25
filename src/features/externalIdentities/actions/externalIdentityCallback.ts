@@ -21,6 +21,7 @@ import { userTable } from "../../users/persistence/userTable.js"
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
 import type { ExternalIdentityProviderIdentity } from "../domain/externalIdentityProviderIdentity.js"
 import type { ExternalIdentityProviderPorts } from "../domain/externalIdentityProviderPort.js"
+import { externalIdentityProviderScopesValidate } from "../domain/externalIdentityProviderScopesValidate.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityViewCreate } from "../domain/externalIdentityViewCreate.js"
 import { externalIdentityEventPayloadSchema } from "../events/externalIdentityEventPayloadSchema.js"
@@ -82,12 +83,18 @@ export async function externalIdentityCallback(
   const port = options.providerPorts[providerRow.type as keyof ExternalIdentityProviderPorts]
   if (port === undefined)
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
+  const scopes = externalIdentityProviderScopesValidate(
+    providerRow.type as "github" | "google" | "microsoft",
+    providerRow.scopes,
+  )
+  if (!scopes.success)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const identity = await port.callbackExchange(
     {
       clientId: providerRow.clientId,
       clientSecret: providerRow.clientSecret,
       redirectUri: transactionRow.redirectUri,
-      scopes: externalIdentityScopesParse(providerRow.scopes),
+      scopes: scopes.data,
       type: providerRow.type as keyof ExternalIdentityProviderPorts,
     },
     {
@@ -117,7 +124,13 @@ export async function externalIdentityCallback(
       }),
     )
     if (!committed.success) return committed
-    return resultCreate({ confirmationToken, expiresAt: transactionRow.expiresAt, kind: "link_confirmation" })
+    return resultCreate({
+      confirmationToken,
+      expiresAt: transactionRow.expiresAt,
+      kind: "link_confirmation",
+      messageNonce: transactionRow.stateHash,
+      providerId: options.providerId,
+    })
   }
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
@@ -481,14 +494,6 @@ function externalIdentityClaimsValidate(
   if (identity.providerType !== providerType || identity.externalSubject.length === 0) return false
   if (nonceHash === null) return identity.nonce === undefined
   return identity.nonce !== undefined && externalIdentitySecretHashCreate(identity.nonce) === nonceHash
-}
-
-function externalIdentityScopesParse(value: string): string[] {
-  try {
-    const parsed = JSON.parse(value) as unknown
-    if (Array.isArray(parsed) && parsed.every((scope) => typeof scope === "string")) return parsed
-  } catch (_error) {}
-  return []
 }
 
 function externalIdentityUserNameCreate(
