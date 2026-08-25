@@ -392,7 +392,26 @@ function pageQueryCreate(pageToken: string | undefined): ListQuery {
 }
 
 function productionApiResultStage<T>(result: Result<T>, stage: ProductionApiStage): Result<T> {
-  if (result.success || result.code !== "platform.invalid-response") return result
+  if (result.success) return result
+  if (
+    result.statusCode !== undefined &&
+    result.statusCode >= 400 &&
+    result.statusCode < 500 &&
+    result.statusCode !== 401 &&
+    result.statusCode !== 403 &&
+    result.statusCode !== 429 &&
+    result.code !== "platform.unreachable" &&
+    result.code !== "platform.unavailable" &&
+    result.code !== "platform.unauthorized" &&
+    result.code !== "platform.forbidden" &&
+    result.code !== "platform.rate-limited"
+  )
+    return resultErrorCodedCreate(
+      result.op,
+      "The server rejected the request.",
+      `passwords.contentoren-ssotest-ensure.api-rejected.${stage}`,
+    )
+  if (result.code !== "platform.invalid-response") return result
   if (stage === "membership-list") {
     const field = membershipListInvalidFieldGet(result)
     return resultErrorCodedCreate(

@@ -31,6 +31,7 @@ const apiInvalidResponseStages = [
   "membership-create",
   "membership-update",
 ] as const
+const apiRejectedStages = apiInvalidResponseStages
 const membershipListInvalidFields = [
   "envelope",
   "items",
@@ -267,6 +268,61 @@ test("Contentoren ssotest ensure identifies every invalid API response boundary 
         expect(JSON.stringify(result)).not.toContain(privatePassword)
         expect(JSON.stringify(result)).not.toContain(replacementPassword)
         expect(JSON.stringify(result)).not.toContain(systemSecret)
+      }
+    } finally {
+      await fixture.close()
+    }
+  }
+})
+
+test("Contentoren ssotest ensure identifies every rejected API boundary without disclosure", async () => {
+  const secretStatus = "409"
+  const secretUrl = "https://private.example.invalid/secret-url"
+  const secretBody = "private-api-body"
+  const secretId = "private-request-id"
+  const secretMessage = "private raw API message"
+  for (const stage of apiRejectedStages) {
+    const fixture = await productionFixtureCreate()
+    try {
+      await invalidResponseStageFixturePrepare(fixture, stage)
+      const fetch = async (input: string | URL | Request, init?: RequestInit) => {
+        const request = new Request(input, init)
+        if (invalidResponseStageMatches(stage, request))
+          return Response.json(
+            {
+              error: {
+                code: "platform.http",
+                details: { body: secretBody, id: secretId, url: secretUrl },
+                message: secretMessage,
+                requestId: secretId,
+              },
+            },
+            { headers: { "x-request-id": secretId }, status: Number(secretStatus) },
+          )
+        return await fixture.fetch(request)
+      }
+      const result = await passwordContentorenSsoTestProductionEnsure({
+        email: privateEmail,
+        fetch,
+        password: replacementPassword,
+        token: systemSecret,
+      })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        const expectedCode = `passwords.contentoren-ssotest-ensure.api-rejected.${stage}`
+        expect(result.code).toBe(expectedCode)
+        const output = passwordContentorenSsoTestProductionEnsureFailureOutputCreate(result)
+        expect(output).toBe(`{"error":{"code":"${expectedCode}"}}\n`)
+        const diagnostic = `${JSON.stringify(result)}${output}`
+        expect(diagnostic).not.toContain(secretStatus)
+        expect(diagnostic).not.toContain(secretUrl)
+        expect(diagnostic).not.toContain(secretBody)
+        expect(diagnostic).not.toContain(secretId)
+        expect(diagnostic).not.toContain(secretMessage)
+        expect(diagnostic).not.toContain(privateEmail)
+        expect(diagnostic).not.toContain(privatePassword)
+        expect(diagnostic).not.toContain(replacementPassword)
+        expect(diagnostic).not.toContain(systemSecret)
       }
     } finally {
       await fixture.close()
@@ -544,8 +600,13 @@ test("Contentoren ssotest command normalizes every failure category to an allowl
       failure: { code: "platform.invalid-response", errorMessage: secretText, op: "api", success: false },
     },
     {
-      code: "passwords.contentoren-ssotest-ensure.api-rejected",
-      failure: { code: "platform.http", errorMessage: secretText, op: "api", statusCode: 409, success: false },
+      code: "passwords.contentoren-ssotest-ensure.api-rejected.realm-list",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.api-rejected.realm-list",
+        errorMessage: secretText,
+        op: "api",
+        success: false,
+      },
     },
     {
       code: "passwords.contentoren-ssotest-ensure.api-failed",
@@ -574,6 +635,26 @@ test("Contentoren ssotest command normalizes every failure category to an allowl
       }),
     ).toBe(`{"error":{"code":"${code}"}}\n`)
   }
+  for (const stage of apiRejectedStages) {
+    const code = `passwords.contentoren-ssotest-ensure.api-rejected.${stage}`
+    expect(
+      passwordContentorenSsoTestProductionEnsureFailureOutputCreate({
+        code,
+        errorMessage: secretText,
+        op: "api",
+        success: false,
+      }),
+    ).toBe(`{"error":{"code":"${code}"}}\n`)
+  }
+  expect(
+    passwordContentorenSsoTestProductionEnsureFailureOutputCreate({
+      code: "platform.http",
+      errorMessage: secretText,
+      op: "api",
+      statusCode: 409,
+      success: false,
+    }),
+  ).toBe('{"error":{"code":"passwords.contentoren-ssotest-ensure.internal-failed"}}\n')
   expect(passwordContentorenSsoTestProductionEnsureFailureOutputCreate("not-allowlisted")).toBe(
     '{"error":{"code":"passwords.contentoren-ssotest-ensure.internal-failed"}}\n',
   )

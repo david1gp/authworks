@@ -46,7 +46,20 @@ const apiInvalidResponseMembershipListFieldCodes = new Set([
   `${apiInvalidResponseCode}.membership-list.next-page-token`,
   `${apiInvalidResponseCode}.membership-list.unknown`,
 ])
-const apiRejectedCode = "passwords.contentoren-ssotest-ensure.api-rejected"
+const apiRejectedStageCodes = new Set([
+  "passwords.contentoren-ssotest-ensure.api-rejected.realm-list",
+  "passwords.contentoren-ssotest-ensure.api-rejected.organization-list",
+  "passwords.contentoren-ssotest-ensure.api-rejected.password-policy-get",
+  "passwords.contentoren-ssotest-ensure.api-rejected.user-list",
+  "passwords.contentoren-ssotest-ensure.api-rejected.machine-user-list",
+  "passwords.contentoren-ssotest-ensure.api-rejected.membership-list",
+  "passwords.contentoren-ssotest-ensure.api-rejected.user-create",
+  "passwords.contentoren-ssotest-ensure.api-rejected.user-email-verification-set",
+  "passwords.contentoren-ssotest-ensure.api-rejected.user-lifecycle-set",
+  "passwords.contentoren-ssotest-ensure.api-rejected.password-credential-replace",
+  "passwords.contentoren-ssotest-ensure.api-rejected.membership-create",
+  "passwords.contentoren-ssotest-ensure.api-rejected.membership-update",
+])
 const apiFailedCode = "passwords.contentoren-ssotest-ensure.api-failed"
 const internalFailedCode = "passwords.contentoren-ssotest-ensure.internal-failed"
 
@@ -73,7 +86,7 @@ const failureCodes = new Set([
   apiInvalidResponseCode,
   ...apiInvalidResponseStageCodes,
   ...apiInvalidResponseMembershipListFieldCodes,
-  apiRejectedCode,
+  ...apiRejectedStageCodes,
   apiFailedCode,
   internalFailedCode,
 ])
@@ -86,6 +99,7 @@ export function passwordContentorenSsoTestProductionEnsureFailureOutputCreate(fa
 function failureCodeGet(result: ResultErr): string {
   if (result.code !== undefined && apiInvalidResponseStageCodes.has(result.code)) return result.code
   if (result.code !== undefined && apiInvalidResponseMembershipListFieldCodes.has(result.code)) return result.code
+  if (result.code !== undefined && apiRejectedStageCodes.has(result.code)) return result.code
   switch (result.code) {
     case inputInvalidCode:
     case realmNotFoundCode:
@@ -117,7 +131,7 @@ function failureCodeGet(result: ResultErr): string {
   if (result.statusCode === 401) return apiUnauthorizedCode
   if (result.statusCode === 403) return apiForbiddenCode
   if (result.statusCode === 429) return apiRateLimitedCode
-  if (result.statusCode !== undefined && result.statusCode >= 400 && result.statusCode < 500) return apiRejectedCode
+  if (result.statusCode !== undefined && result.statusCode >= 400 && result.statusCode < 500) return internalFailedCode
   if (result.op === "passwordPolicyCheck") return passwordPolicyRejectedCode
   return apiFailedCode
 }

@@ -70,7 +70,15 @@ The closed reason-code set is:
 - `membership-elevated`, `membership-ambiguous`
 - `password-policy-rejected`
 - `api-unreachable`, `api-unauthorized`, `api-forbidden`,
-  `api-rate-limited`, `api-rejected`, `api-failed`
+  `api-rate-limited`, `api-failed`
+- `api-rejected.realm-list`, `api-rejected.organization-list`,
+  `api-rejected.password-policy-get`, `api-rejected.user-list`,
+  `api-rejected.machine-user-list`, `api-rejected.membership-list`,
+  `api-rejected.user-create`,
+  `api-rejected.user-email-verification-set`,
+  `api-rejected.user-lifecycle-set`,
+  `api-rejected.password-credential-replace`,
+  `api-rejected.membership-create`, `api-rejected.membership-update`
 - `api-invalid-response.realm-list`, `api-invalid-response.organization-list`,
   `api-invalid-response.password-policy-get`,
   `api-invalid-response.user-list`,
@@ -97,9 +105,12 @@ The closed reason-code set is:
 The command never writes an error message, API body, request ID, identifier,
 email, password, token, hash, or other failure detail. Remote HTTP and
 transport failures are normalized to the closed `api-*` set; unexpected
-exceptions use `internal-failed`. Invalid successful API responses include
-only the closed operation stage suffix shown above; they never include a URL,
-ID, status, response body, credential or account data, or raw message.
+exceptions use `internal-failed`. A remote response normalized as
+`api-rejected` uses the closed operation stage suffix for the API boundary that
+rejected it; the dedicated unauthorized, forbidden, and rate-limited
+diagnostics remain unchanged. Invalid successful API responses include only
+the closed operation stage suffix shown above. These diagnostics never include
+a URL, ID, status, response body, credential or account data, or raw message.
 
 For `membership-list`, the response-schema diagnostic uses exactly one field
 category. `envelope` means the top-level value is not the strict list envelope
