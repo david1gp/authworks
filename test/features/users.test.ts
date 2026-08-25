@@ -25,6 +25,7 @@ import { userList } from "../../src/features/users/actions/userList.js"
 import { userProfileUpdate } from "../../src/features/users/actions/userProfileUpdate.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
 import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
+import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 import { userCurrentResponseSchema } from "../../src/features/users/public/userCurrentResponseSchema.js"
 import { userResponseSchema } from "../../src/features/users/public/userResponseSchema.js"
 import { userAccountSummaryResolve } from "../../src/features/users/server/userAccountSummaryResolve.js"
@@ -394,6 +395,100 @@ test("user profile and email verification no-ops preserve the aggregate", async 
   })
 })
 
+test("system verification repairs migrated registration state without weakening tenant conflicts", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "migrated-verification.example.com")
+    const created = userCreate({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: createInput("migrated-user", "migrated@example.com"),
+      realmId: realm.id,
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+
+    const initialVerification = userEmailVerificationSet({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { state: "verified" },
+      realmId: realm.id,
+      userId: created.data.user.id,
+    })
+    expect(initialVerification.success).toBe(true)
+    if (!initialVerification.success) return
+    const emailVerifiedAt = initialVerification.data.user.emailVerifiedAt
+    if (emailVerifiedAt === undefined) return
+
+    const repository = userRepositoryCreate(database.db)
+    const cleared = repository.userUpdate(realm.id, created.data.user.id, {
+      registrationVerifiedAt: null,
+      registrationVerificationMethod: null,
+    })
+    expect(cleared.success).toBe(true)
+
+    const tenantAttempt = userEmailVerificationSet({
+      context: realmTenantContextCreate(realm.id, "operator"),
+      database,
+      input: { state: "verified" },
+      realmId: realm.id,
+      userId: created.data.user.id,
+    })
+    expect(tenantAttempt).toEqual({
+      code: "users.conflict",
+      errorMessage: "The user already has that verification state.",
+      op: "userEmailVerificationSet",
+      success: false,
+    })
+
+    testkit.advance(10)
+    const repaired = userEmailVerificationSet({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { state: "verified" },
+      realmId: realm.id,
+      userId: created.data.user.id,
+    })
+    expect(repaired).toMatchObject({
+      data: {
+        user: {
+          emailVerifiedAt,
+          registrationVerificationMethod: "email",
+          registrationVerifiedAt: testkit.runtime.now(),
+          verificationState: "verified",
+        },
+      },
+      success: true,
+    })
+    const events = database.db
+      .select()
+      .from(storageEventTable)
+      .all()
+      .filter((event) => event.aggregateId === created.data.user.id)
+    expect(events.map((event) => event.eventType)).toEqual([
+      userEventTypes.created,
+      userEventTypes.emailVerificationChanged,
+      userEventTypes.registrationVerificationChanged,
+      userEventTypes.registrationVerificationChanged,
+    ])
+
+    const duplicateRepair = userEmailVerificationSet({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { state: "verified" },
+      realmId: realm.id,
+      userId: created.data.user.id,
+    })
+    expect(duplicateRepair).toMatchObject({ code: "users.conflict", success: false })
+    expect(
+      database.db
+        .select()
+        .from(storageEventTable)
+        .all()
+        .filter((event) => event.aggregateId === created.data.user.id),
+    ).toHaveLength(events.length)
+  })
+})
+
 test("user lifecycle rejects same-state changes and supports suspended users", async () => {
   await withDatabase(async (database) => {
     const realm = await createRealm(database, "lifecycle-users.example.com")
@@ -562,6 +657,29 @@ test("user routes and API client enforce public schemas and authorization", asyn
     expect(listed.data.items).toHaveLength(1)
     const profile = await client.userProfileUpdate(realm.id, created.data.user.id, { displayName: "API User" })
     expect(profile.success).toBe(true)
+
+    const verified = await client.userEmailVerificationSet(realm.id, created.data.user.id, { state: "verified" })
+    expect(verified.success).toBe(true)
+    if (!verified.success) return
+    const emailVerifiedAt = verified.data.user.emailVerifiedAt
+    if (emailVerifiedAt === undefined) return
+    const repository = userRepositoryCreate(database.db)
+    const current = repository.userGet(realm.id, created.data.user.id)
+    expect(current.success).toBe(true)
+    if (!current.success || current.data === null) return
+    const migrated = repository.userUpdate(realm.id, created.data.user.id, {
+      registrationVerifiedAt: null,
+      registrationVerificationMethod: null,
+      version: current.data.version + 1,
+    })
+    expect(migrated.success).toBe(true)
+    const repaired = await client.userEmailVerificationSet(realm.id, created.data.user.id, { state: "verified" })
+    expect(repaired).toMatchObject({
+      data: {
+        user: { emailVerifiedAt, registrationVerificationMethod: "email", registrationVerifiedAt: expect.any(Number) },
+      },
+      success: true,
+    })
     const unauthorized = await userApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),

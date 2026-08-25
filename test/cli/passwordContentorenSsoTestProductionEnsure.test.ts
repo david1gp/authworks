@@ -11,6 +11,8 @@ import { passwordContentorenSsoTestProductionEnsureFailureOutputCreate } from ".
 import { passwordApiClientCreate } from "../../src/features/passwords/client/passwordApiClientCreate.js"
 import { realmApiClientCreate } from "../../src/features/realms/client/realmApiClientCreate.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
+import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
+import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 
 const productionOrigin = "https://authworks.contentoren.de"
 const systemSecret = "production-system-secret-ssotest-0001"
@@ -76,6 +78,55 @@ test("Contentoren ssotest ensure creates and reuses an active verified member ac
       password: privatePassword,
     })
     expect(login.success).toBe(true)
+    expect(await fixture.ensure(privatePassword)).toEqual({ data: { status: "reused" }, success: true })
+  } finally {
+    await fixture.close()
+  }
+})
+
+test("Contentoren ssotest ensure repairs migrated registration fields and remains reusable", async () => {
+  const fixture = await productionFixtureCreate()
+  try {
+    const created = await fixture.ensure(privatePassword)
+    expect(created).toEqual({ data: { status: "created" }, success: true })
+    const users = await fixture.users.userList(fixture.realmId)
+    expect(users.success).toBe(true)
+    if (!users.success || users.data.items[0] === undefined) return
+    const originalEmailVerifiedAt = users.data.items[0].emailVerifiedAt
+    if (originalEmailVerifiedAt === undefined) return
+
+    const opened = storageDatabaseOpen(fixture.databasePath)
+    expect(opened.success).toBe(true)
+    if (!opened.success) return
+    try {
+      const repository = userRepositoryCreate(opened.data.db)
+      const current = repository.userGet(fixture.realmId, users.data.items[0].id)
+      expect(current.success).toBe(true)
+      if (!current.success || current.data === null) return
+      const migrated = repository.userUpdate(fixture.realmId, current.data.id, {
+        registrationVerifiedAt: null,
+        registrationVerificationMethod: null,
+        version: current.data.version + 1,
+      })
+      expect(migrated.success).toBe(true)
+    } finally {
+      opened.data.close()
+    }
+
+    expect(await fixture.ensure(privatePassword)).toEqual({ data: { status: "updated" }, success: true })
+    const repairedUsers = await fixture.users.userList(fixture.realmId)
+    expect(repairedUsers).toMatchObject({
+      data: {
+        items: [
+          {
+            emailVerifiedAt: originalEmailVerifiedAt,
+            registrationVerificationMethod: "email",
+            registrationVerifiedAt: expect.any(Number),
+          },
+        ],
+      },
+      success: true,
+    })
     expect(await fixture.ensure(privatePassword)).toEqual({ data: { status: "reused" }, success: true })
   } finally {
     await fixture.close()
@@ -753,6 +804,7 @@ async function productionFixtureCreate() {
     ensure: (password: string) =>
       passwordContentorenSsoTestProductionEnsure({ email: privateEmail, fetch, password, token: systemSecret }),
     fetch,
+    databasePath: join(directory, "authworks.sqlite"),
     organizationId: organization.data.organization.id,
     organizations,
     passwords,

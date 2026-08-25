@@ -49,18 +49,23 @@ export function userEmailVerificationSet(options: UserEmailVerificationSetOption
       return resultErrorCreate(op, "The user was not found.", "users.not-found")
     const currentlyVerified = current.data.emailVerifiedAt !== null
     const requestedVerified = parsed.output.state === "verified"
-    if (currentlyVerified === requestedVerified)
-      return resultErrorCreate(op, "The user already has that verification state.", "users.conflict")
-    const registrationVerificationNewlySet =
+    const registrationVerificationMissing =
       requestedVerified &&
       current.data.registrationVerifiedAt === null &&
       current.data.registrationVerificationMethod === null
+    const registrationVerificationRepair =
+      options.context.kind === "system" && currentlyVerified && registrationVerificationMissing
+    if (currentlyVerified === requestedVerified && !registrationVerificationRepair)
+      return resultErrorCreate(op, "The user already has that verification state.", "users.conflict")
+    const registrationVerificationNewlySet = registrationVerificationMissing
     const registrationVerificationRevoked =
       !requestedVerified &&
       current.data.registrationVerifiedAt !== null &&
       current.data.registrationVerificationMethod === "email"
+    const emailVerificationChanged = currentlyVerified !== requestedVerified
+    const registrationVerificationChanged = registrationVerificationNewlySet || registrationVerificationRevoked
     const updated = repository.userUpdate(options.realmId, options.userId, {
-      emailVerifiedAt: requestedVerified ? updatedAt : null,
+      emailVerifiedAt: requestedVerified ? (currentlyVerified ? current.data.emailVerifiedAt : updatedAt) : null,
       registrationVerifiedAt: requestedVerified
         ? registrationVerificationNewlySet
           ? updatedAt
@@ -76,33 +81,34 @@ export function userEmailVerificationSet(options: UserEmailVerificationSetOption
           ? null
           : current.data.registrationVerificationMethod,
       updatedAt,
-      version: current.data.version + 1 + (registrationVerificationNewlySet || registrationVerificationRevoked ? 1 : 0),
+      version: current.data.version + 1 + (emailVerificationChanged && registrationVerificationChanged ? 1 : 0),
     })
     if (!updated.success) return updated
     if (updated.data === null) return resultErrorCreate(op, "The user was not found.", "users.not-found")
-    const payload = v.safeParse(userEmailVerificationChangedEventPayloadSchema, { state: parsed.output.state })
-    if (!payload.success)
-      return resultErrorCreate(op, "The user verification event payload is invalid.", "users.event-invalid")
-    const event = storageEventAppend(
-      transaction,
-      {
-        actorId: options.context.actorId,
-        aggregateId: options.userId,
-        aggregateType: "user",
-        aggregateVersion:
-          updated.data.version - (registrationVerificationNewlySet || registrationVerificationRevoked ? 1 : 0),
-        commandIndex: 0,
-        correlationId,
-        eventType: userEventTypes.emailVerificationChanged,
-        realmId: options.realmId,
-        metadata: { auditSafe: true, source: "users" },
-        occurredAt: updatedAt,
-        payload: payload.output,
-      },
-      runtime,
-    )
-    if (!event.success) return event
-    if (registrationVerificationNewlySet || registrationVerificationRevoked) {
+    if (emailVerificationChanged) {
+      const payload = v.safeParse(userEmailVerificationChangedEventPayloadSchema, { state: parsed.output.state })
+      if (!payload.success)
+        return resultErrorCreate(op, "The user verification event payload is invalid.", "users.event-invalid")
+      const event = storageEventAppend(
+        transaction,
+        {
+          actorId: options.context.actorId,
+          aggregateId: options.userId,
+          aggregateType: "user",
+          aggregateVersion: updated.data.version - (registrationVerificationChanged ? 1 : 0),
+          commandIndex: 0,
+          correlationId,
+          eventType: userEventTypes.emailVerificationChanged,
+          realmId: options.realmId,
+          metadata: { auditSafe: true, source: "users" },
+          occurredAt: updatedAt,
+          payload: payload.output,
+        },
+        runtime,
+      )
+      if (!event.success) return event
+    }
+    if (registrationVerificationChanged) {
       const registrationPayload = v.safeParse(userRegistrationVerificationChangedEventPayloadSchema, {
         registrationVerificationMethod: updated.data.registrationVerificationMethod,
         state: registrationVerificationRevoked ? "unverified" : "verified",
@@ -116,7 +122,7 @@ export function userEmailVerificationSet(options: UserEmailVerificationSetOption
           aggregateId: options.userId,
           aggregateType: "user",
           aggregateVersion: updated.data.version,
-          commandIndex: 1,
+          commandIndex: emailVerificationChanged ? 1 : 0,
           correlationId,
           eventType: userEventTypes.registrationVerificationChanged,
           realmId: options.realmId,
