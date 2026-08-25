@@ -80,3 +80,31 @@ new confidential client produces a single one-time JSON credential envelope:
 This stdout is a machine handoff protocol, not human output. The dedicated
 prodctl client captures it internally and never prints it. Existing secrets
 remain write-only and never produce an envelope.
+
+## Fixed production secret rotation
+
+Use the separate zero-argument operation only to recover a proven confidential
+client authentication failure such as `token_exchange_invalid_client`:
+
+```text
+authworks oidc codeline-production-secret-rotate
+```
+
+The operation uses the same fixed production origin, owner-only system-secret
+file, and unique active primary realm resolution as the ensure bridge. It does
+not create, update, reactivate, or otherwise converge a client. Before the only
+mutation, it lists every client page and requires exactly one identity candidate
+matching the fixed `Codeline preview` name or callback. That candidate must be
+active and confidential, with the exact name and the sole redirect URI
+`https://preview.codeline.work/api/auth/callback`. Missing, ambiguous, public,
+inactive, differently named, extra-callback, and wrong-callback clients fail
+without rotation.
+
+Success calls only the existing authenticated client-secret rotation API and
+writes exactly one version-1 `authworks.codeline-oidc-credential` envelope to
+stdout. The command writes no human logs; operational failures have empty stdout
+and stderr and are represented only by a nonzero exit status. The envelope is a
+one-time machine protocol and must be captured by the dedicated prodctl rotation
+command, never invoked in a terminal or through generic execution. Rotation is
+irreversible: if the downstream handoff fails after the API accepts rotation,
+the operation fails closed and must be rerun through the same workflow.

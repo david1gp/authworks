@@ -7,6 +7,7 @@ import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/co
 import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 import { oidcCodelineClientEnsure } from "./oidcCodelineClientEnsure.js"
 import { oidcCodelineProductionClientEnsure } from "./oidcCodelineProductionClientEnsure.js"
+import { oidcCodelineProductionSecretRotate } from "./oidcCodelineProductionSecretRotate.js"
 
 type OidcCliFlags = {
   readonly profile?: string
@@ -189,6 +190,19 @@ const oidcCodelineProductionClientEnsureCommand = buildCommand({
   docs: { brief: "Ensure the fixed production Codeline client with a one-time machine credential handoff" },
 })
 
+const oidcCodelineProductionSecretRotateCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    const result = await oidcCodelineProductionSecretRotate({
+      credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+      homeDirectory: "/home/authworks",
+    })
+    if (result.success) return
+    this.process.exitCode = 1
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Rotate only the exact fixed production Codeline client secret for machine handoff" },
+})
+
 const oidcClientSecretRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcClientFlags) {
     const connection = await oidcCliConnectionResolve(this, flags)
@@ -365,6 +379,7 @@ export const oidcCliCommands = buildRouteMap({
     clientCreate: oidcClientCreateCommand,
     clientEnsure: oidcCodelineClientEnsureCommand,
     codelineProductionEnsure: oidcCodelineProductionClientEnsureCommand,
+    codelineProductionSecretRotate: oidcCodelineProductionSecretRotateCommand,
     clientGet: oidcClientGetCommand,
     clientList: oidcClientListCommand,
     clientSecretRotate: oidcClientSecretRotateCommand,
