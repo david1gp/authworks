@@ -1,10 +1,11 @@
 import * as v from "valibot"
+import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
 import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
 
 export const organizationDomainSchema = v.strictObject({
   createdAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   domain: v.pipe(v.string(), v.minLength(1), v.maxLength(253)),
-  realmId: organizationResourceIdSchema,
+  realmId: realmResourceIdSchema,
   isPrimary: v.boolean(),
   organizationId: organizationResourceIdSchema,
   updatedAt: v.pipe(v.number(), v.integer(), v.minValue(0)),

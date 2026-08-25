@@ -73,7 +73,10 @@ test("migration imports relationships, preserves IDs, and is idempotent", async 
     const organizations = organizationRepositoryCreate(database.db).organizationList(realmId)
     expect(organizations.success).toBe(true)
     if (!organizations.success) return
-    expect(organizations.data.map((organization) => organization.id)).toEqual(["org-owner", "org-target"])
+    expect(organizations.data.map((organization) => organization.id)).toEqual([
+      "123456789012345678",
+      "223456789012345678",
+    ])
 
     const membership = organizationRepositoryCreate(database.db).organizationMembershipGet("membership-1")
     expect(membership.success).toBe(true)
@@ -87,11 +90,11 @@ test("migration imports relationships, preserves IDs, and is idempotent", async 
     expect(role.success).toBe(true)
     expect(grant.success).toBe(true)
     if (!project.success || !role.success || !grant.success) return
-    expect(project.data?.organizationId).toBe("org-owner")
+    expect(project.data?.organizationId).toBe("123456789012345678")
     expect(role.data?.projectId).toBe(project.data?.id)
     expect(grant.data).toMatchObject({
-      grantedOrganizationId: "org-target",
-      organizationId: "org-owner",
+      grantedOrganizationId: "223456789012345678",
+      organizationId: "123456789012345678",
       projectId: "project-1",
     })
 
@@ -101,6 +104,23 @@ test("migration imports relationships, preserves IDs, and is idempotent", async 
     expect(second.data.counts.users).toMatchObject({ created: 0, imported: 1, unchanged: 1, updated: 0 })
     expect(second.data.counts.organizations).toMatchObject({ created: 0, imported: 2, unchanged: 2, updated: 0 })
     expect(second.data.counts.projectGrants).toMatchObject({ created: 0, imported: 1, unchanged: 1, updated: 0 })
+  })
+})
+
+test("migration rejects unsupported organization IDs before opening the import transaction", async () => {
+  const snapshot = (await fixture("zitadel-migration-snapshot.json")) as {
+    organizations: Array<{ id: string }>
+  }
+  const organization = snapshot.organizations[0]
+  expect(organization).toBeDefined()
+  if (organization === undefined) return
+  organization.id = "legacy/organization"
+
+  await withDatabase(async (database, realmId) => {
+    const imported = zitadelMigrationImport({ database, realmId, snapshot })
+    expect(imported).toMatchObject({ code: "zitadel-migration.snapshot-invalid", success: false })
+    const organizations = organizationRepositoryCreate(database.db).organizationList(realmId)
+    expect(organizations).toEqual({ data: [], success: true })
   })
 })
 
@@ -133,7 +153,7 @@ test("migration reconciles same-name organizations and translates relationships"
     if (!membership.success || !project.success || !grant.success) return
     expect(membership.data?.organizationId).toBe("target-owner")
     expect(project.data?.organizationId).toBe("target-owner")
-    expect(grant.data).toMatchObject({ organizationId: "target-owner", grantedOrganizationId: "org-target" })
+    expect(grant.data).toMatchObject({ organizationId: "target-owner", grantedOrganizationId: "223456789012345678" })
 
     const second = zitadelMigrationImport({ database, realmId, snapshot })
     expect(second.success).toBe(true)
@@ -156,9 +176,9 @@ test("exporter uses API records without exporting password or federated material
         creationDate: "2023-11-14T22:13:20.000Z",
       },
       grantId: "grant-empty-roles",
-      grantedOrgId: "org-target",
+      grantedOrgId: "223456789012345678",
       projectId: "project-source",
-      projectOwnerId: "org-source",
+      projectOwnerId: "323456789012345678",
       state: "PROJECT_GRANT_STATE_ACTIVE",
     },
   ]
@@ -178,7 +198,7 @@ test("exporter uses API records without exporting password or federated material
   expect(result.data.snapshot.unsupported.map((item) => item.entity)).toEqual(["userPassword", "federatedIdentity"])
   expect(result.data.snapshot.projects[0]).toMatchObject({
     authorizationRequired: true,
-    organizationId: "org-source",
+    organizationId: "323456789012345678",
     projectAccessRequired: true,
   })
   expect(result.data.snapshot.projectRoles[0]?.id).toBe("zitadel-role-project-source-viewer")

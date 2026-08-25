@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
 import { organizationInvitationStatusSchema } from "./organizationInvitationStatusSchema.js"
 import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
 import { organizationRolesSchema } from "./organizationRolesSchema.js"
@@ -9,7 +10,7 @@ export const organizationInvitationSchema = v.strictObject({
   email: v.pipe(v.string(), v.minLength(3), v.maxLength(320)),
   expiresAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   id: organizationResourceIdSchema,
-  realmId: organizationResourceIdSchema,
+  realmId: realmResourceIdSchema,
   organizationId: organizationResourceIdSchema,
   roles: organizationRolesSchema,
   status: organizationInvitationStatusSchema,

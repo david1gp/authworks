@@ -1,7 +1,7 @@
 {
   "organizations": [
     {
-      "id": "org-source",
+      "id": "323456789012345678",
       "name": "Source organization",
       "state": "ORG_STATE_ACTIVE",
       "details": {
@@ -53,7 +53,7 @@
       "projectRoleCheck": true,
       "hasProjectCheck": true,
       "details": {
-        "resourceOwner": "org-source",
+        "resourceOwner": "323456789012345678",
         "creationDate": "2023-11-14T22:13:20.000Z",
         "changeDate": "2023-11-14T22:13:21.000Z"
       }
@@ -74,8 +74,8 @@
     {
       "grantId": "grant-source",
       "projectId": "project-source",
-      "projectOwnerId": "org-source",
-      "grantedOrgId": "org-source",
+      "projectOwnerId": "323456789012345678",
+      "grantedOrgId": "323456789012345678",
       "grantedRoleKeys": ["viewer"],
       "state": "PROJECT_GRANT_STATE_ACTIVE",
       "details": {

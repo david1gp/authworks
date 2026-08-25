@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { organizationResourceIdSchema } from "../../organizations/public/organizationResourceIdSchema.js"
 
 const timestampSchema = v.pipe(v.number(), v.integer(), v.minValue(0))
 const nullableTimestampSchema = v.nullable(timestampSchema)
@@ -30,7 +31,7 @@ const userSchema = v.strictObject({
 
 const organizationSchema = v.strictObject({
   createdAt: timestampSchema,
-  id: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+  id: organizationResourceIdSchema,
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),
   status: v.picklist(["active", "inactive", "removed"]),
   updatedAt: timestampSchema,
@@ -39,7 +40,7 @@ const organizationSchema = v.strictObject({
 const organizationMembershipSchema = v.strictObject({
   createdAt: timestampSchema,
   id: v.pipe(v.string(), v.minLength(1), v.maxLength(640)),
-  organizationId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+  organizationId: organizationResourceIdSchema,
   roles: v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(320))),
   updatedAt: timestampSchema,
   userId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
@@ -50,7 +51,7 @@ const projectSchema = v.strictObject({
   createdAt: timestampSchema,
   id: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
-  organizationId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+  organizationId: organizationResourceIdSchema,
   projectAccessRequired: v.boolean(),
   status: v.picklist(["active", "inactive", "removed"]),
   updatedAt: timestampSchema,
@@ -68,9 +69,9 @@ const projectRoleSchema = v.strictObject({
 
 const projectGrantSchema = v.strictObject({
   createdAt: timestampSchema,
-  grantedOrganizationId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+  grantedOrganizationId: organizationResourceIdSchema,
   id: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
-  organizationId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+  organizationId: organizationResourceIdSchema,
   projectId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
   roleKeys: v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(200))),
   status: v.picklist(["active", "inactive", "removed"]),

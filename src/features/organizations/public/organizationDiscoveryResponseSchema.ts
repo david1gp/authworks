@@ -1,12 +1,13 @@
 import * as v from "valibot"
 import { externalIdentityProviderTypeSchema } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
+import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
 import { organizationBrandingSchema } from "./organizationBrandingSchema.js"
 import { organizationLoginPolicySchema } from "./organizationLoginPolicySchema.js"
 import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
 
 const organizationDiscoveryOrganizationSchema = v.strictObject({
   id: organizationResourceIdSchema,
-  realmId: organizationResourceIdSchema,
+  realmId: realmResourceIdSchema,
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(128)),
 })
 

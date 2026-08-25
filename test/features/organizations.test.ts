@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test"
+import * as v from "valibot"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -17,10 +18,15 @@ import { organizationSwitch } from "../../src/features/organizations/actions/org
 import { organizationUpdate } from "../../src/features/organizations/actions/organizationUpdate.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
 import { organizationEventTypes } from "../../src/features/organizations/events/organizationEventTypes.js"
+import { organizationRepositoryCreate } from "../../src/features/organizations/persistence/organizationRepositoryCreate.js"
+import { organizationListResponseSchema } from "../../src/features/organizations/public/organizationListResponseSchema.js"
+import { organizationResourceIdSchema } from "../../src/features/organizations/public/organizationResourceIdSchema.js"
+import { organizationSchema } from "../../src/features/organizations/public/organizationSchema.js"
 import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
+import { realmResourceIdSchema } from "../../src/features/realms/public/realmResourceIdSchema.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import { userCreate } from "../../src/features/users/actions/userCreate.js"
@@ -413,6 +419,34 @@ test("organization lists paginate and PATCH rejects empty input", async () => {
       organizationId: "missing",
     })
     expect(emptyPatch).toMatchObject({ code: "organizations.empty-patch", success: false })
+  })
+})
+
+test("organization lists accept legacy Zitadel IDs without accepting path-like IDs", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "legacy-id.example.com")
+    const imported = organizationRepositoryCreate(database.db).organizationCreate({
+      createdAt: 1700000000000,
+      id: "323456789012345678",
+      name: "Imported organization",
+      realmId: realm.id,
+      status: "active",
+      updatedAt: 1700000000000,
+      version: 1,
+    })
+    expect(imported.success).toBe(true)
+
+    const listed = organizationList({ context: realmSystemContextCreate("system"), database, realmId: realm.id })
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(listed.data.items[0]?.id).toBe("323456789012345678")
+    expect(v.safeParse(organizationListResponseSchema, listed.data).success).toBe(true)
+
+    expect(v.safeParse(organizationResourceIdSchema, "323456789012345678").success).toBe(true)
+    expect(v.safeParse(organizationResourceIdSchema, "018f0f7b-7e3a-7b5c-8c6a-123456789abc").success).toBe(true)
+    expect(v.safeParse(organizationResourceIdSchema, "legacy/org").success).toBe(false)
+    expect(v.safeParse(organizationResourceIdSchema, "organization-id").success).toBe(false)
+    expect(v.safeParse(realmResourceIdSchema, "323456789012345678").success).toBe(false)
   })
 })
 
