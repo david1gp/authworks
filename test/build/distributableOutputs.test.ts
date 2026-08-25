@@ -71,6 +71,7 @@ test("built library, server, and CLI outputs are executable", async () => {
   expect(cliHelp.stdout).toContain("realms")
   expect(cliHelp.stdout).not.toContain("instances")
   for (const route of [
+    "profile",
     "realms",
     "email-otp",
     "external-identities",
@@ -90,6 +91,11 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(routeHelp.stderr, route).toBe("")
     expect(routeHelp.stdout.length, route).toBeGreaterThan(0)
   }
+
+  const cliProfileHelp = await processRun(["bun", "dist/cli/cli.js", "profile", "--help"])
+  expect(cliProfileHelp.exitCode).toBe(0)
+  expect(cliProfileHelp.stderr).toBe("")
+  for (const command of ["set", "list", "show", "delete"]) expect(cliProfileHelp.stdout).toContain(command)
 
   const cliRealmHelp = await processRun(["bun", "dist/cli/cli.js", "users", "create", "--help"])
   expect(cliRealmHelp.exitCode).toBe(0)
