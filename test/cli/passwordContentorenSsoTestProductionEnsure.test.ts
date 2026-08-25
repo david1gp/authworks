@@ -2,10 +2,12 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import type { ResultErr } from "#result"
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
-import { passwordApiClientCreate } from "../../src/features/passwords/client/passwordApiClientCreate.js"
 import { passwordContentorenSsoTestProductionEnsure } from "../../src/features/passwords/cli/passwordContentorenSsoTestProductionEnsure.js"
+import { passwordContentorenSsoTestProductionEnsureFailureOutputCreate } from "../../src/features/passwords/cli/passwordContentorenSsoTestProductionEnsureFailureOutputCreate.js"
+import { passwordApiClientCreate } from "../../src/features/passwords/client/passwordApiClientCreate.js"
 import { realmApiClientCreate } from "../../src/features/realms/client/realmApiClientCreate.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
 
@@ -123,7 +125,7 @@ test("Contentoren ssotest ensure converges a non-elevated membership and refuses
     ).toBe(true)
     const ambiguous = await fixture.ensure(replacementPassword)
     expect(ambiguous.success).toBe(false)
-    if (!ambiguous.success) expect(ambiguous.errorMessage).toContain("ambiguous organization memberships")
+    if (!ambiguous.success) expect(ambiguous.code).toBe("passwords.contentoren-ssotest-ensure.membership-ambiguous")
   } finally {
     await fixture.close()
   }
@@ -148,7 +150,7 @@ test("Contentoren ssotest ensure refuses elevated, ambiguous, and cross-realm id
     ).toBe(true)
     const elevated = await fixture.ensure(replacementPassword)
     expect(elevated.success).toBe(false)
-    if (!elevated.success) expect(elevated.errorMessage).toContain("elevated access")
+    if (!elevated.success) expect(elevated.code).toBe("passwords.contentoren-ssotest-ensure.membership-elevated")
     expect(
       (
         await fixture.passwords.passwordLogin(fixture.realmId, {
@@ -170,7 +172,7 @@ test("Contentoren ssotest ensure refuses elevated, ambiguous, and cross-realm id
     expect(crossRealm.success).toBe(true)
     const ambiguous = await fixture.ensure(privatePassword)
     expect(ambiguous.success).toBe(false)
-    if (!ambiguous.success) expect(ambiguous.errorMessage).toContain("More than one human")
+    if (!ambiguous.success) expect(ambiguous.code).toBe("passwords.contentoren-ssotest-ensure.human-ambiguous")
   } finally {
     await fixture.close()
   }
@@ -201,7 +203,7 @@ test("Contentoren ssotest ensure refuses ambiguous Contentoren organizations wit
       token: systemSecret,
     })
     expect(ambiguous.success).toBe(false)
-    if (!ambiguous.success) expect(ambiguous.errorMessage).toContain("More than one Contentoren organization")
+    if (!ambiguous.success) expect(ambiguous.code).toBe("passwords.contentoren-ssotest-ensure.organization-ambiguous")
     const users = await fixture.users.userList(fixture.realmId)
     expect(users.success).toBe(true)
     if (users.success) expect(users.data.items).toHaveLength(0)
@@ -227,12 +229,209 @@ test("Contentoren ssotest command rejects malformed private input without disclo
     new Response(child.stderr).text(),
     new Response(child.stdout).text(),
   ])
-  expect(exitCode).not.toBe(0)
+  expect(exitCode).toBe(1)
   expect(stdout).toBe("")
-  expect(stderr).toContain("malformed")
+  expect(stderr).toBe('{"error":{"code":"passwords.contentoren-ssotest-ensure.input-invalid"}}\n')
   expect(stderr).not.toContain(privateEmail)
   expect(stderr).not.toContain(malformedPassword)
   expect(stderr).not.toContain(systemSecret)
+})
+
+test("Contentoren ssotest command rejects unavailable authorization without disclosure", async () => {
+  const secretToken = "short-token-secret"
+  const child = Bun.spawn(["bun", "src/outputs/cli.ts", "passwords", "contentoren-ssotest-production-ensure"], {
+    env: {
+      ...process.env,
+      AUTHWORKS_CONTENTOREN_SSOTEST_EMAIL: privateEmail,
+      AUTHWORKS_CONTENTOREN_SSOTEST_PASSWORD: privatePassword,
+      AUTHWORKS_TOKEN: secretToken,
+    },
+    stderr: "pipe",
+    stdout: "pipe",
+  })
+  const [exitCode, stderr, stdout] = await Promise.all([
+    child.exited,
+    new Response(child.stderr).text(),
+    new Response(child.stdout).text(),
+  ])
+  expect(exitCode).toBe(1)
+  expect(stdout).toBe("")
+  expect(stderr).toBe('{"error":{"code":"passwords.contentoren-ssotest-ensure.authorization-unavailable"}}\n')
+  expect(stderr).not.toContain(privateEmail)
+  expect(stderr).not.toContain(privatePassword)
+  expect(stderr).not.toContain(secretToken)
+})
+
+test("Contentoren ssotest command normalizes every failure category to an allowlisted code", () => {
+  const secretText = `${privateEmail} ${privatePassword} ${systemSecret} user-id organization-id password-hash`
+  const cases: readonly { readonly code: string; readonly failure: ResultErr | string }[] = [
+    {
+      code: "passwords.contentoren-ssotest-ensure.authorization-unavailable",
+      failure: "passwords.contentoren-ssotest-ensure.authorization-unavailable",
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.input-invalid",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.input-invalid",
+        errorMessage: secretText,
+        op: "fixtureInputParse",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.realm-not-found",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.realm-not-found",
+        errorMessage: secretText,
+        op: "realm",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.realm-ambiguous",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.realm-ambiguous",
+        errorMessage: secretText,
+        op: "realm",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.realm-inactive",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.realm-inactive",
+        errorMessage: secretText,
+        op: "realm",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.organization-not-found",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.organization-not-found",
+        errorMessage: secretText,
+        op: "organization",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.organization-ambiguous",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.organization-ambiguous",
+        errorMessage: secretText,
+        op: "organization",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.organization-inactive",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.organization-inactive",
+        errorMessage: secretText,
+        op: "organization",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.human-ambiguous",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.human-ambiguous",
+        errorMessage: secretText,
+        op: "user",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.human-conflict",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.human-conflict",
+        errorMessage: secretText,
+        op: "user",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.human-deleted",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.human-deleted",
+        errorMessage: secretText,
+        op: "user",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.machine-conflict",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.machine-conflict",
+        errorMessage: secretText,
+        op: "machine",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.membership-elevated",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.membership-elevated",
+        errorMessage: secretText,
+        op: "membership",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.membership-ambiguous",
+      failure: {
+        code: "passwords.contentoren-ssotest-ensure.membership-ambiguous",
+        errorMessage: secretText,
+        op: "membership",
+        success: false,
+      },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.password-policy-rejected",
+      failure: { errorMessage: secretText, op: "passwordPolicyCheck", success: false },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.api-unreachable",
+      failure: { code: "platform.unreachable", errorMessage: secretText, op: "api", success: false },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.api-unauthorized",
+      failure: { code: "platform.http", errorMessage: secretText, op: "api", statusCode: 401, success: false },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.api-forbidden",
+      failure: { code: "platform.http", errorMessage: secretText, op: "api", statusCode: 403, success: false },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.api-rate-limited",
+      failure: { code: "platform.http", errorMessage: secretText, op: "api", statusCode: 429, success: false },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.api-invalid-response",
+      failure: { code: "platform.invalid-response", errorMessage: secretText, op: "api", success: false },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.api-rejected",
+      failure: { code: "platform.http", errorMessage: secretText, op: "api", statusCode: 409, success: false },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.api-failed",
+      failure: { code: "unknown.remote-code", errorMessage: secretText, op: "api", statusCode: 500, success: false },
+    },
+    {
+      code: "passwords.contentoren-ssotest-ensure.internal-failed",
+      failure: "passwords.contentoren-ssotest-ensure.internal-failed",
+    },
+  ]
+  for (const { code, failure } of cases) {
+    expect(passwordContentorenSsoTestProductionEnsureFailureOutputCreate(failure)).toBe(
+      `{"error":{"code":"${code}"}}\n`,
+    )
+    expect(passwordContentorenSsoTestProductionEnsureFailureOutputCreate(failure)).not.toContain(secretText)
+  }
+  expect(passwordContentorenSsoTestProductionEnsureFailureOutputCreate("not-allowlisted")).toBe(
+    '{"error":{"code":"passwords.contentoren-ssotest-ensure.internal-failed"}}\n',
+  )
 })
 
 async function productionFixtureCreate() {

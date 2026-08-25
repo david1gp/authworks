@@ -5,8 +5,8 @@ import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { machineUserApiClientCreate } from "../../machineUsers/client/machineUserApiClientCreate.js"
 import { organizationApiClientCreate } from "../../organizations/client/organizationApiClientCreate.js"
-import type { Organization } from "../../organizations/public/organizationSchema.js"
 import type { OrganizationMembership } from "../../organizations/public/organizationMembershipSchema.js"
+import type { Organization } from "../../organizations/public/organizationSchema.js"
 import { realmApiClientCreate } from "../../realms/client/realmApiClientCreate.js"
 import type { Realm } from "../../realms/public/realmSchema.js"
 import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
@@ -46,7 +46,12 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
   const policy = await passwordApi.passwordPolicyGet(realm.data.id)
   if (!policy.success) return policy
   const policyChecked = passwordPolicyCheck(input.data.password.valueGet(), policy.data.policy)
-  if (!policyChecked.success) return policyChecked
+  if (!policyChecked.success)
+    return resultErrorCodedCreate(
+      op,
+      "The password does not meet the production password policy; no changes were made.",
+      "passwords.contentoren-ssotest-ensure.password-policy-rejected",
+    )
   const userApi = userApiClientCreate(clientOptions)
   const users = await fixtureUsersFind(userApi, realms.data, input.data.email)
   if (!users.success) return users
@@ -77,7 +82,7 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
     return resultErrorCodedCreate(
       op,
       "The fixture user belongs to another realm; no changes were made.",
-      "users.conflict",
+      "passwords.contentoren-ssotest-ensure.human-conflict",
     )
   if (!user.emailVerified || user.registrationVerifiedAt === undefined) {
     const verified = await userApi.userEmailVerificationSet(realm.data.id, user.id, { state: "verified" })
@@ -87,7 +92,11 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
   }
   if (user.state !== "active") {
     if (user.state === "deleted")
-      return resultErrorCodedCreate(op, "The fixture user is deleted; no changes were made.", "users.conflict")
+      return resultErrorCodedCreate(
+        op,
+        "The fixture user is deleted; no changes were made.",
+        "passwords.contentoren-ssotest-ensure.human-deleted",
+      )
     const activated = await userApi.userLifecycleSet(realm.data.id, user.id, { state: "active" })
     if (!activated.success) return activated
     user = activated.data.user
@@ -124,13 +133,13 @@ function fixtureInputParse(emailInput: string, passwordInput: string): Result<{ 
     return resultErrorCodedCreate(
       "fixtureInputParse",
       "The private fixture input is malformed; no changes were made.",
-      "passwords.invalid",
+      "passwords.contentoren-ssotest-ensure.input-invalid",
     )
   if (passwordInput.length < 1 || passwordInput.length > 1024 || /[\0\r\n]/.test(passwordInput))
     return resultErrorCodedCreate(
       "fixtureInputParse",
       "The private fixture input is malformed; no changes were made.",
-      "passwords.invalid",
+      "passwords.contentoren-ssotest-ensure.input-invalid",
     )
   return resultCreate({ email, password: new Secret(passwordInput) })
 }
@@ -155,14 +164,16 @@ function productionRealmResolve(realms: readonly Realm[]): Result<Realm> {
       matches.length === 0
         ? "No realm owns the production Authworks domain; no changes were made."
         : "More than one realm owns the production Authworks domain; no changes were made.",
-      "realms.conflict",
+      matches.length === 0
+        ? "passwords.contentoren-ssotest-ensure.realm-not-found"
+        : "passwords.contentoren-ssotest-ensure.realm-ambiguous",
     )
   const realm = matches[0]
   if (realm === undefined || realm.domain !== productionRealmDomain || realm.status !== "active")
     return resultErrorCodedCreate(
       "productionRealmResolve",
       "The production Authworks realm is not active and primary; no changes were made.",
-      "realms.conflict",
+      "passwords.contentoren-ssotest-ensure.realm-inactive",
     )
   return resultCreate(realm)
 }
@@ -190,14 +201,16 @@ function productionOrganizationResolve(organizations: readonly Organization[], r
       matches.length === 0
         ? "No Contentoren organization exists in the production realm; no changes were made."
         : "More than one Contentoren organization exists in the production realm; no changes were made.",
-      "organizations.conflict",
+      matches.length === 0
+        ? "passwords.contentoren-ssotest-ensure.organization-not-found"
+        : "passwords.contentoren-ssotest-ensure.organization-ambiguous",
     )
   const organization = matches[0]
   if (organization === undefined || organization.realmId !== realmId || organization.status !== "active")
     return resultErrorCodedCreate(
       "productionOrganizationResolve",
       "The Contentoren organization is not active in the production realm; no changes were made.",
-      "organizations.conflict",
+      "passwords.contentoren-ssotest-ensure.organization-inactive",
     )
   return resultCreate(organization)
 }
@@ -230,7 +243,7 @@ function fixtureUserResolve(users: readonly User[], realmId: string, email: stri
     return resultErrorCodedCreate(
       "fixtureUserResolve",
       "More than one human matches the fixture identity; no changes were made.",
-      "users.conflict",
+      "passwords.contentoren-ssotest-ensure.human-ambiguous",
     )
   const user = users[0]
   if (
@@ -242,13 +255,13 @@ function fixtureUserResolve(users: readonly User[], realmId: string, email: stri
     return resultErrorCodedCreate(
       "fixtureUserResolve",
       "The fixture identity conflicts with an existing or cross-realm human; no changes were made.",
-      "users.conflict",
+      "passwords.contentoren-ssotest-ensure.human-conflict",
     )
   if (user.state === "deleted")
     return resultErrorCodedCreate(
       "fixtureUserResolve",
       "The fixture identity belongs to a deleted human; no changes were made.",
-      "users.conflict",
+      "passwords.contentoren-ssotest-ensure.human-deleted",
     )
   return resultCreate(user)
 }
@@ -266,7 +279,7 @@ async function fixtureMachineUsersRefuse(
         return resultErrorCodedCreate(
           "fixtureMachineUsersRefuse",
           "The fixture identity belongs to a machine user; no changes were made.",
-          "users.conflict",
+          "passwords.contentoren-ssotest-ensure.machine-conflict",
         )
       pageToken = listed.data.nextPageToken
     } while (pageToken !== undefined)
@@ -301,14 +314,14 @@ function fixtureMembershipResolve(
     return resultErrorCodedCreate(
       "fixtureMembershipResolve",
       "The fixture human has elevated access; no changes were made.",
-      "organizations.forbidden",
+      "passwords.contentoren-ssotest-ensure.membership-elevated",
     )
   if (memberships.length === 0) return resultCreate(null)
   if (memberships.length !== 1 || memberships[0]?.organizationId !== organizationId)
     return resultErrorCodedCreate(
       "fixtureMembershipResolve",
       "The fixture human has ambiguous organization memberships; no changes were made.",
-      "organizations.conflict",
+      "passwords.contentoren-ssotest-ensure.membership-ambiguous",
     )
   return resultCreate(memberships[0] ?? null)
 }

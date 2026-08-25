@@ -4,6 +4,7 @@ import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { passwordApiClientCreate } from "../client/passwordApiClientCreate.js"
 import { passwordContentorenSsoTestProductionEnsure } from "./passwordContentorenSsoTestProductionEnsure.js"
+import { passwordContentorenSsoTestProductionEnsureFailureOutputCreate } from "./passwordContentorenSsoTestProductionEnsureFailureOutputCreate.js"
 
 type PasswordCliFlags = {
   readonly server?: string
@@ -224,27 +225,45 @@ const passwordContentorenSsoTestProductionEnsureCommand = buildCommand({
   async func(this: ApplicationContext) {
     const token = this.process.env?.AUTHWORKS_TOKEN
     if (token === undefined || !/^[A-Za-z0-9_-]{32,512}$/.test(token)) {
-      this.process.stderr.write("The production operator authorization is unavailable.\n")
+      this.process.stderr.write(
+        passwordContentorenSsoTestProductionEnsureFailureOutputCreate(
+          "passwords.contentoren-ssotest-ensure.authorization-unavailable",
+        ),
+      )
       this.process.exitCode = 1
       return
     }
     const input = await passwordContentorenSsoTestInputRead(this.process.env)
     if (!input.success) {
-      this.process.stderr.write("The private fixture input is malformed; no changes were made.\n")
+      this.process.stderr.write(
+        passwordContentorenSsoTestProductionEnsureFailureOutputCreate(
+          "passwords.contentoren-ssotest-ensure.input-invalid",
+        ),
+      )
       this.process.exitCode = 1
       return
     }
-    const result = await passwordContentorenSsoTestProductionEnsure({
-      email: input.data.email,
-      password: input.data.password,
-      token: new Secret(token),
-    })
-    if (!result.success) {
-      this.process.stderr.write(`${result.errorMessage ?? "The production fixture ensure failed."}\n`)
+    try {
+      const result = await passwordContentorenSsoTestProductionEnsure({
+        email: input.data.email,
+        password: input.data.password,
+        token: new Secret(token),
+      })
+      if (!result.success) {
+        this.process.stderr.write(passwordContentorenSsoTestProductionEnsureFailureOutputCreate(result))
+        this.process.exitCode = 1
+        return
+      }
+      this.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+    } catch (_error) {
+      this.process.stderr.write(
+        passwordContentorenSsoTestProductionEnsureFailureOutputCreate(
+          "passwords.contentoren-ssotest-ensure.internal-failed",
+        ),
+      )
       this.process.exitCode = 1
       return
     }
-    this.process.stdout.write(`${JSON.stringify(result.data)}\n`)
   },
   parameters: { flags: {} },
   docs: { brief: "Ensure the fixed Contentoren ssotest production human from private input" },

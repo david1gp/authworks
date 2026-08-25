@@ -49,6 +49,35 @@ command emits only one redacted JSON status:
 The other possible statuses are `updated` and `reused`. It never emits the
 email, password, system token, user ID, organization ID, or password hash.
 
+## Failure output contract
+
+Successful output is unchanged. Every failed command exits with status `1`,
+writes no stdout, and writes exactly one JSON object to stderr followed by a
+newline:
+
+```json
+{"error":{"code":"passwords.contentoren-ssotest-ensure.<reason>"}}
+```
+
+The closed reason-code set is:
+
+- `authorization-unavailable`
+- `input-invalid`
+- `realm-not-found`, `realm-ambiguous`, `realm-inactive`
+- `organization-not-found`, `organization-ambiguous`,
+  `organization-inactive`
+- `human-ambiguous`, `human-conflict`, `human-deleted`, `machine-conflict`
+- `membership-elevated`, `membership-ambiguous`
+- `password-policy-rejected`
+- `api-unreachable`, `api-unauthorized`, `api-forbidden`,
+  `api-rate-limited`, `api-invalid-response`, `api-rejected`, `api-failed`
+- `internal-failed`
+
+The command never writes an error message, API body, request ID, identifier,
+email, password, token, hash, or other failure detail. Remote HTTP and
+transport failures are normalized to the closed `api-*` set; unexpected
+exceptions use `internal-failed`.
+
 ## Operator password API
 
 The command uses the system-token-only endpoint
