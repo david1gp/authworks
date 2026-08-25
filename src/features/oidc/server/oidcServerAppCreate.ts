@@ -1544,12 +1544,22 @@ function oidcTokenClientCredentialsResolve(
     const separator = decoded.indexOf(":")
     if (separator < 1 || bodyClientSecret !== undefined)
       return { errorMessage: "Client authentication failed.", success: false }
-    const clientId = decoded.slice(0, separator)
-    const clientSecret = decoded.slice(separator + 1)
+    const clientId = oidcTokenClientCredentialDecode(decoded.slice(0, separator))
+    const clientSecret = oidcTokenClientCredentialDecode(decoded.slice(separator + 1))
+    if (clientId === null || clientSecret === null)
+      return { errorMessage: "Client authentication failed.", success: false }
     if (bodyClientId !== undefined && bodyClientId !== clientId)
       return { errorMessage: "Client authentication failed.", success: false }
     return { clientId, clientSecret, success: true }
   } catch (_error) {
     return { errorMessage: "Client authentication failed.", success: false }
+  }
+}
+
+function oidcTokenClientCredentialDecode(value: string): string | null {
+  try {
+    return decodeURIComponent(value.replaceAll("+", " "))
+  } catch (_error) {
+    return null
   }
 }
