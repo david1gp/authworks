@@ -19,6 +19,10 @@ export function storageDatabaseReset(database: StorageDatabase): Result<void> {
     return database.db.transaction((transaction) => {
       transaction.run("DROP TRIGGER IF EXISTS events_append_only_update")
       transaction.run("DROP TRIGGER IF EXISTS events_append_only_delete")
+      transaction.run("DROP TRIGGER IF EXISTS users_user_name_verified_email_collision_insert")
+      transaction.run("DROP TRIGGER IF EXISTS users_user_name_verified_email_collision_update")
+      transaction.run("DROP TRIGGER IF EXISTS user_emails_verified_user_name_collision_insert")
+      transaction.run("DROP TRIGGER IF EXISTS user_emails_verified_user_name_collision_update")
       transaction.run("DROP INDEX IF EXISTS events_aggregate_version_idx")
       transaction.run("DROP INDEX IF EXISTS email_otp_challenges_realm_email_idx")
       transaction.run("DROP INDEX IF EXISTS email_otp_challenges_realm_user_idx")
@@ -79,6 +83,7 @@ export function storageDatabaseReset(database: StorageDatabase): Result<void> {
       transaction.run("DROP INDEX IF EXISTS oidc_access_tokens_realm_user_idx")
       transaction.run("DROP INDEX IF EXISTS oidc_access_tokens_refresh_family_idx")
       transaction.run("DROP INDEX IF EXISTS oidc_refresh_tokens_realm_user_idx")
+      transaction.run("DROP INDEX IF EXISTS oidc_refresh_tokens_realm_user_family_idx")
       transaction.run("DROP INDEX IF EXISTS oidc_refresh_tokens_family_idx")
       transaction.run("DROP INDEX IF EXISTS oidc_consents_realm_idx")
       transaction.run("DROP TABLE IF EXISTS events")

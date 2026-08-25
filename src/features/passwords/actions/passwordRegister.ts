@@ -495,6 +495,9 @@ function passwordRegisterDuplicateFind(
   const existingName = repository.passwordUserFindByIdentifier(options.realmId, options.userName)
   if (!existingName.success) return existingName
   if (existingName.data !== null) return resultCreate(true)
+  const existingVerifiedEmail = repository.passwordUserFindByVerifiedIdentifier(options.realmId, options.userName)
+  if (!existingVerifiedEmail.success) return existingVerifiedEmail
+  if (existingVerifiedEmail.data !== null) return resultCreate(true)
   if (options.method !== "whatsapp") return resultCreate(false)
   const existingPhone = repository.passwordUserFindByPhoneNumber(options.realmId, options.phoneNumber ?? "")
   if (!existingPhone.success) return existingPhone

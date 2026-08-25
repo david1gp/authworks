@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import type { UserRecord } from "../persistence/userRepositoryCreate.js"
-import type { User } from "../public/userSchema.js"
 import { userPictureAssetSchema } from "../public/userPictureAssetSchema.js"
+import type { User } from "../public/userSchema.js"
 
 function userProfileStringValueGet(value: string | null, maxLength: number): string | undefined {
   return value !== null && value.length >= 1 && value.length <= maxLength ? value : undefined

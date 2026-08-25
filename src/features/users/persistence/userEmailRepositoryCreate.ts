@@ -50,7 +50,12 @@ export function userEmailRepositoryCreate(database: StorageExecutor) {
     try {
       const updated = database
         .update(userTable)
-        .set({ email: row.email, emailVerifiedAt: row.verifiedAt })
+        .set({
+          email: row.email,
+          emailVerifiedAt: row.verifiedAt,
+          updatedAt: row.updatedAt,
+          version: sql`${userTable.version} + 1`,
+        })
         .where(and(eq(userTable.id, row.userId), eq(userTable.realmId, row.realmId)))
         .returning({ id: userTable.id })
         .get()
@@ -61,7 +66,13 @@ export function userEmailRepositoryCreate(database: StorageExecutor) {
           "users.write-failed",
         )
       return resultCreate(undefined)
-    } catch (_error) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.toLowerCase().includes("identifier collision"))
+        return resultErrorCreate(
+          "userEmailProjectionSet",
+          "The user email is already used by another account.",
+          "users.conflict",
+        )
       return resultErrorCreate(
         "userEmailProjectionSet",
         "The user email projection could not be updated.",
@@ -76,7 +87,7 @@ export function userEmailRepositoryCreate(database: StorageExecutor) {
       if (!email.success) return email
       try {
         const user = database
-          .select({ id: userTable.id })
+          .select({ email: userTable.email, emailVerifiedAt: userTable.emailVerifiedAt, id: userTable.id })
           .from(userTable)
           .where(and(eq(userTable.id, input.userId), eq(userTable.realmId, input.realmId)))
           .get()
@@ -110,13 +121,17 @@ export function userEmailRepositoryCreate(database: StorageExecutor) {
           .get()
         if (row === undefined)
           return resultErrorCreate("userEmailCreate", "The user email could not be created.", "users.write-failed")
-        if (row.isPrimary) {
+        if (row.isPrimary && (user.email !== row.email || user.emailVerifiedAt !== row.verifiedAt)) {
           const projection = userEmailProjectionSet(row)
           if (!projection.success) return projection
         }
         return resultCreate(row)
       } catch (error: unknown) {
-        if (error instanceof Error && error.message.toLowerCase().includes("unique"))
+        if (
+          error instanceof Error &&
+          (error.message.toLowerCase().includes("unique") ||
+            error.message.toLowerCase().includes("identifier collision"))
+        )
           return resultErrorCreate(
             "userEmailCreate",
             "The user email is already used by another account.",
@@ -162,7 +177,7 @@ export function userEmailRepositoryCreate(database: StorageExecutor) {
       return userEmailGet(realmId, userId, emailId)
     },
 
-    userEmailGetByAddress(realmId: string, address: string): Result<UserEmailRow | null> {
+    userEmailGetByUserAddress(realmId: string, userId: string, address: string): Result<UserEmailRow | null> {
       const email = userEmailNormalize(address)
       if (!email.success) return email
       try {
@@ -170,11 +185,17 @@ export function userEmailRepositoryCreate(database: StorageExecutor) {
           database
             .select()
             .from(userEmailTable)
-            .where(and(eq(userEmailTable.realmId, realmId), eq(userEmailTable.email, email.data)))
+            .where(
+              and(
+                eq(userEmailTable.realmId, realmId),
+                eq(userEmailTable.userId, userId),
+                eq(userEmailTable.email, email.data),
+              ),
+            )
             .get() ?? null,
         )
       } catch (_error) {
-        return resultErrorCreate("userEmailGetByAddress", "The user email could not be read.", "users.read-failed")
+        return resultErrorCreate("userEmailGetByUserAddress", "The user email could not be read.", "users.read-failed")
       }
     },
 
@@ -240,6 +261,7 @@ export function userEmailRepositoryCreate(database: StorageExecutor) {
           "Only a verified user email can become primary.",
           "users.invalid-transition",
         )
+      if (current.data.version !== input.expectedVersion) return resultCreate(null)
       if (current.data.isPrimary) return resultCreate(current.data)
       try {
         const primary = userEmailPrimaryGet(input.realmId, input.userId)
@@ -311,7 +333,17 @@ export function userEmailRepositoryCreate(database: StorageExecutor) {
           if (!projection.success) return projection
         }
         return resultCreate(updated)
-      } catch (_error) {
+      } catch (error: unknown) {
+        if (
+          error instanceof Error &&
+          (error.message.toLowerCase().includes("unique") ||
+            error.message.toLowerCase().includes("identifier collision"))
+        )
+          return resultErrorCreate(
+            "userEmailVerificationSet",
+            "The user email is already used by another account.",
+            "users.conflict",
+          )
         return resultErrorCreate(
           "userEmailVerificationSet",
           "The user email verification could not be changed.",

@@ -1,9 +1,9 @@
-import { type Result } from "#result"
 import * as v from "valibot"
+import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { UserProfile } from "../public/userProfileSchema.js"
 import { userPictureAssetSchema } from "../public/userPictureAssetSchema.js"
+import type { UserProfile } from "../public/userProfileSchema.js"
 
 type UserProfileNormalizeInput = {
   readonly [K in keyof UserProfile]?: UserProfile[K] | null

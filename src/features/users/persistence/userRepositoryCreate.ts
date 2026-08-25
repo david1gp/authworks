@@ -4,9 +4,10 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { userEmailNormalize } from "../domain/userEmailNormalize.js"
+import { userNameNormalize } from "../domain/userNameNormalize.js"
 import { userStateInvariantValidate } from "../domain/userStateInvariantValidate.js"
-import { userEmailTable } from "./userEmailTable.js"
 import { userEmailRepositoryCreate } from "./userEmailRepositoryCreate.js"
+import { userEmailTable } from "./userEmailTable.js"
 import { type UserProfileRow, userProfileTable } from "./userProfileTable.js"
 import { type UserRow, userTable } from "./userTable.js"
 
@@ -83,7 +84,9 @@ export function userRepositoryCreate(database: StorageExecutor) {
     userCreate(user: UserInsert, profile: UserProfileInsert): Result<UserRecord> {
       const email = userEmailNormalize(user.email)
       if (!email.success) return email
-      const normalizedUser = { ...user, email: email.data }
+      const userName = userNameNormalize(user.userName)
+      if (!userName.success) return userName
+      const normalizedUser = { ...user, email: email.data, userName: userName.data }
       const invariant = userStateInvariantValidate({
         emailVerifiedAt: normalizedUser.emailVerifiedAt ?? null,
         phoneNumber: normalizedUser.phoneNumber ?? null,
@@ -182,7 +185,11 @@ export function userRepositoryCreate(database: StorageExecutor) {
           return resultErrorCreate("userPhoneNumberChange", "The user profile could not be read.", "users.read-failed")
         return resultCreate({ ...updated, profile })
       } catch (error: unknown) {
-        if (error instanceof Error && error.message.toLowerCase().includes("unique"))
+        if (
+          error instanceof Error &&
+          (error.message.toLowerCase().includes("unique") ||
+            error.message.toLowerCase().includes("identifier collision"))
+        )
           return resultErrorCreate(
             "userPhoneNumberChange",
             "The user phone number is already verified by another user.",
@@ -299,8 +306,14 @@ export function userRepositoryCreate(database: StorageExecutor) {
         const normalizedEmail =
           input.email === undefined ? resultCreate<string | undefined>(undefined) : userEmailNormalize(input.email)
         if (!normalizedEmail.success) return normalizedEmail
-        const normalizedInput: UserUpdate =
-          normalizedEmail.data === undefined ? input : { ...input, email: normalizedEmail.data }
+        const normalizedUserName =
+          input.userName === undefined ? resultCreate<string | undefined>(undefined) : userNameNormalize(input.userName)
+        if (!normalizedUserName.success) return normalizedUserName
+        const normalizedInput: UserUpdate = {
+          ...input,
+          ...(normalizedEmail.data === undefined ? {} : { email: normalizedEmail.data }),
+          ...(normalizedUserName.data === undefined ? {} : { userName: normalizedUserName.data }),
+        }
         const emailChanged = normalizedInput.email !== undefined && normalizedInput.email !== current.email
         const phoneNumberChanged = input.phoneNumber !== undefined && input.phoneNumber !== current.phoneNumber
         if (
@@ -378,7 +391,13 @@ export function userRepositoryCreate(database: StorageExecutor) {
         if (profile === undefined)
           return resultErrorCreate("userUpdate", "The user profile could not be read.", "users.read-failed")
         return resultCreate({ ...updated, profile })
-      } catch (_error) {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.message.toLowerCase().includes("identifier collision"))
+          return resultErrorCreate(
+            "userUpdate",
+            "The user identifier is already used by another account.",
+            "users.conflict",
+          )
         return resultErrorCreate("userUpdate", "The user could not be updated.", "users.write-failed")
       }
     },

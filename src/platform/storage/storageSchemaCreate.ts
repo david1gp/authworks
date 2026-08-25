@@ -118,14 +118,27 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE TABLE IF NOT EXISTS user_emails (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, email TEXT NOT NULL, verified_at INTEGER CHECK (verified_at IS NULL OR verified_at >= 0), is_primary INTEGER NOT NULL CHECK (is_primary IN (0, 1)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
     )
     database.run("CREATE INDEX IF NOT EXISTS user_emails_realm_user_idx ON user_emails (realm_id, user_id)")
+    database.run("DROP INDEX IF EXISTS user_emails_realm_email_idx")
     database.run(
-      "CREATE UNIQUE INDEX IF NOT EXISTS user_emails_realm_email_idx ON user_emails (realm_id, lower(trim(email)))",
+      "CREATE UNIQUE INDEX IF NOT EXISTS user_emails_realm_email_idx ON user_emails (realm_id, lower(trim(email))) WHERE verified_at IS NOT NULL",
     )
     database.run(
       "CREATE UNIQUE INDEX IF NOT EXISTS user_emails_one_primary_idx ON user_emails (realm_id, user_id) WHERE is_primary = 1",
     )
     database.run(
       "INSERT INTO user_emails (id, realm_id, user_id, email, verified_at, is_primary, created_at, updated_at, version) SELECT users.id, users.realm_id, users.id, lower(trim(users.email)), users.email_verified_at, 1, users.created_at, users.updated_at, 1 FROM users WHERE NOT EXISTS (SELECT 1 FROM user_emails WHERE user_emails.realm_id = users.realm_id AND user_emails.user_id = users.id AND user_emails.is_primary = 1)",
+    )
+    database.run(
+      "CREATE TRIGGER IF NOT EXISTS users_user_name_verified_email_collision_insert BEFORE INSERT ON users WHEN EXISTS (SELECT 1 FROM user_emails WHERE user_emails.realm_id = NEW.realm_id AND user_emails.user_id <> NEW.id AND user_emails.verified_at IS NOT NULL AND lower(trim(user_emails.email)) = lower(trim(NEW.user_name))) OR (NEW.email_verified_at IS NOT NULL AND EXISTS (SELECT 1 FROM users AS other_user WHERE other_user.realm_id = NEW.realm_id AND other_user.id <> NEW.id AND lower(trim(other_user.user_name)) = lower(trim(NEW.email)))) BEGIN SELECT RAISE(ABORT, 'users username/email identifier collision'); END",
+    )
+    database.run(
+      "CREATE TRIGGER IF NOT EXISTS users_user_name_verified_email_collision_update BEFORE UPDATE OF realm_id, user_name, email, email_verified_at ON users WHEN EXISTS (SELECT 1 FROM user_emails WHERE user_emails.realm_id = NEW.realm_id AND user_emails.user_id <> NEW.id AND user_emails.verified_at IS NOT NULL AND lower(trim(user_emails.email)) = lower(trim(NEW.user_name))) OR (NEW.email_verified_at IS NOT NULL AND EXISTS (SELECT 1 FROM users AS other_user WHERE other_user.realm_id = NEW.realm_id AND other_user.id <> NEW.id AND lower(trim(other_user.user_name)) = lower(trim(NEW.email)))) BEGIN SELECT RAISE(ABORT, 'users username/email identifier collision'); END",
+    )
+    database.run(
+      "CREATE TRIGGER IF NOT EXISTS user_emails_verified_user_name_collision_insert BEFORE INSERT ON user_emails WHEN NEW.verified_at IS NOT NULL AND EXISTS (SELECT 1 FROM users WHERE users.realm_id = NEW.realm_id AND users.id <> NEW.user_id AND lower(trim(users.user_name)) = lower(trim(NEW.email))) BEGIN SELECT RAISE(ABORT, 'users username/email identifier collision'); END",
+    )
+    database.run(
+      "CREATE TRIGGER IF NOT EXISTS user_emails_verified_user_name_collision_update BEFORE UPDATE OF realm_id, user_id, email, verified_at ON user_emails WHEN NEW.verified_at IS NOT NULL AND EXISTS (SELECT 1 FROM users WHERE users.realm_id = NEW.realm_id AND users.id <> NEW.user_id AND lower(trim(users.user_name)) = lower(trim(NEW.email))) BEGIN SELECT RAISE(ABORT, 'users username/email identifier collision'); END",
     )
     database.run(
       "CREATE TABLE IF NOT EXISTS user_profiles (user_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, first_name TEXT, last_name TEXT, nick_name TEXT, display_name TEXT, preferred_language TEXT, gender TEXT, picture_url TEXT, picture_content_type TEXT, updated_at INTEGER NOT NULL CHECK (updated_at >= 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
@@ -385,10 +398,20 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS oidc_access_tokens_refresh_family_idx ON oidc_access_tokens (refresh_family_id)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS oidc_refresh_tokens (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, client_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, family_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, nonce_encrypted TEXT, scope TEXT NOT NULL CHECK (json_valid(scope)), created_at INTEGER NOT NULL CHECK (created_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), replaced_by_hash TEXT, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS oidc_refresh_tokens (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, client_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, family_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, nonce_encrypted TEXT, scope TEXT NOT NULL CHECK (json_valid(scope)), created_at INTEGER NOT NULL CHECK (created_at >= 0), last_used_at INTEGER CHECK (last_used_at IS NULL OR last_used_at >= 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), replaced_by_hash TEXT, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (client_id) REFERENCES oidc_clients(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
     )
+    try {
+      database.run(
+        "ALTER TABLE oidc_refresh_tokens ADD COLUMN last_used_at INTEGER CHECK (last_used_at IS NULL OR last_used_at >= 0)",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "last_used_at")) throw error
+    }
     database.run(
       "CREATE INDEX IF NOT EXISTS oidc_refresh_tokens_realm_user_idx ON oidc_refresh_tokens (realm_id, user_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS oidc_refresh_tokens_realm_user_family_idx ON oidc_refresh_tokens (realm_id, user_id, family_id)",
     )
     database.run("CREATE INDEX IF NOT EXISTS oidc_refresh_tokens_family_idx ON oidc_refresh_tokens (family_id)")
     database.run(

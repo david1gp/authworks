@@ -368,6 +368,20 @@ test("email OTP resolves verified secondary addresses and rejects unverified or 
     const alpha = await createVerifiedUser(database, "email-otp-secondary-alpha.example.com")
     const beta = await createVerifiedUser(database, "email-otp-secondary-beta.example.com")
     const emails = userEmailRepositoryCreate(database.db)
+    const primary = emails.userEmailPrimaryGet(alpha.realm.id, alpha.userId)
+    expect(primary.success).toBe(true)
+    if (!primary.success || primary.data === null) return
+    expect(
+      emails.userEmailVerificationSet({
+        emailId: primary.data.id,
+        expectedVersion: primary.data.version,
+        realmId: alpha.realm.id,
+        updatedAt: testkit.runtime.now(),
+        userId: alpha.userId,
+        verifiedAt: null,
+        version: primary.data.version + 1,
+      }).success,
+    ).toBe(true)
     const pending = emails.userEmailCreate({
       createdAt: testkit.runtime.now(),
       email: "pending-secondary@example.com",

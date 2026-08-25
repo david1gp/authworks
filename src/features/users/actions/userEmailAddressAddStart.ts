@@ -134,14 +134,8 @@ function userEmailAddressAddStartTransaction(
     return resultErrorCreate("userEmailAddressAddStart", "The authenticated user is not available.", "users.not-found")
 
   const emails = userEmailRepositoryCreate(options.database)
-  const existing = emails.userEmailGetByAddress(options.realmId, options.email)
+  const existing = emails.userEmailGetByUserAddress(options.realmId, options.userId, options.email)
   if (!existing.success) return existing
-  if (existing.data !== null && existing.data.userId !== options.userId)
-    return resultErrorCreate(
-      "userEmailAddressAddStart",
-      "The email address is already used by another account.",
-      "users.conflict",
-    )
   if (existing.data !== null && existing.data.verifiedAt !== null)
     return resultErrorCreate(
       "userEmailAddressAddStart",
@@ -157,6 +151,17 @@ function userEmailAddressAddStartTransaction(
     "email_address",
   )
   if (!latest.success) return latest
+  let pendingEmail = existing.data
+  if (
+    pendingEmail !== null &&
+    pendingEmail.verifiedAt === null &&
+    latest.data !== null &&
+    (latest.data.consumedAt !== null || latest.data.expiresAt <= options.now)
+  ) {
+    const deleted = emails.userEmailDelete(options.realmId, options.userId, pendingEmail.id, pendingEmail.version)
+    if (!deleted.success) return deleted
+    pendingEmail = null
+  }
   if (latest.data !== null && latest.data.consumedAt === null && latest.data.cooldownUntil > options.now)
     return resultCreate({
       response: {
@@ -168,7 +173,7 @@ function userEmailAddressAddStartTransaction(
     })
 
   const email =
-    existing.data === null
+    pendingEmail === null
       ? emails.userEmailCreate({
           createdAt: options.now,
           email: options.email,
@@ -180,7 +185,7 @@ function userEmailAddressAddStartTransaction(
           verifiedAt: null,
           version: 1,
         })
-      : resultCreate(existing.data)
+      : resultCreate(pendingEmail)
   if (!email.success) return email
 
   const previous = challenges.userEmailChangeChallengeExpireForEmail(
@@ -211,7 +216,7 @@ function userEmailAddressAddStartTransaction(
   if (!challenge.success) return challenge
 
   let commandIndex = 0
-  if (existing.data === null) {
+  if (pendingEmail === null) {
     const addedPayload = v.safeParse(userEmailAddressAddedEventPayloadSchema, { added: true })
     if (!addedPayload.success)
       return resultErrorCreate(

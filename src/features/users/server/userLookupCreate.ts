@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import { userRepositoryCreate, type UserRecord } from "../persistence/userRepositoryCreate.js"
+import { type UserRecord, userRepositoryCreate } from "../persistence/userRepositoryCreate.js"
 
 type UserLookup = {
   readonly deletedAt: number | null

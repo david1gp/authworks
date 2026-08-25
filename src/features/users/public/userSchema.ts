@@ -1,9 +1,9 @@
 import * as v from "valibot"
 import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
-import { userProfileSchema } from "./userProfileSchema.js"
 import { userPhoneNumberSchema } from "./userPhoneNumberSchema.js"
-import { userResourceIdSchema } from "./userResourceIdSchema.js"
+import { userProfileSchema } from "./userProfileSchema.js"
 import { userRegistrationVerificationMethodSchema } from "./userRegistrationVerificationMethodSchema.js"
+import { userResourceIdSchema } from "./userResourceIdSchema.js"
 import { userStateSchema } from "./userStateSchema.js"
 import { userVerificationStateSchema } from "./userVerificationStateSchema.js"
 

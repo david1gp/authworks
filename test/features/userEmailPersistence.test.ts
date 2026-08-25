@@ -99,19 +99,18 @@ test("email repository enforces normalized realm uniqueness and primary invarian
     expect(created).toMatchObject({ data: { email: "secondary@example.com", isPrimary: false }, success: true })
     if (!created.success) return
 
-    expect(
-      repository.userEmailCreate({
-        createdAt: 2,
-        email: "SECONDARY@example.com",
-        id: "duplicate-secondary",
-        isPrimary: false,
-        realmId: realm.id,
-        updatedAt: 2,
-        userId: otherUser.id,
-        verifiedAt: null,
-        version: 1,
-      }),
-    ).toMatchObject({ code: "users.conflict", success: false })
+    const duplicate = repository.userEmailCreate({
+      createdAt: 2,
+      email: "SECONDARY@example.com",
+      id: "duplicate-secondary",
+      isPrimary: false,
+      realmId: realm.id,
+      updatedAt: 2,
+      userId: otherUser.id,
+      verifiedAt: null,
+      version: 1,
+    })
+    expect(duplicate).toMatchObject({ data: { email: "secondary@example.com", verifiedAt: null }, success: true })
     expect(
       repository.userEmailCreate({
         createdAt: 2,
@@ -148,6 +147,33 @@ test("email repository enforces normalized realm uniqueness and primary invarian
     })
     expect(verified.success).toBe(true)
     if (!verified.success || verified.data === null) return
+    if (!duplicate.success) return
+    expect(
+      repository.userEmailVerificationSet({
+        emailId: duplicate.data.id,
+        expectedVersion: duplicate.data.version,
+        realmId: realm.id,
+        updatedAt: 3,
+        userId: otherUser.id,
+        verifiedAt: 3,
+        version: duplicate.data.version + 1,
+      }),
+    ).toMatchObject({ code: "users.conflict", success: false })
+
+    expect(
+      repository.userEmailPrimarySet({
+        emailId: verified.data.id,
+        expectedVersion: verified.data.version - 1,
+        realmId: realm.id,
+        updatedAt: 4,
+        userId: user.id,
+        version: verified.data.version,
+      }),
+    ).toEqual({ data: null, success: true })
+    expect(repository.userEmailPrimaryGet(realm.id, user.id)).toMatchObject({
+      data: { email: "primary@example.com", isPrimary: true },
+      success: true,
+    })
 
     const promoted = repository.userEmailPrimarySet({
       emailId: verified.data.id,
@@ -161,6 +187,10 @@ test("email repository enforces normalized realm uniqueness and primary invarian
     expect(database.sqlite.query("SELECT email, email_verified_at FROM users WHERE id = ?").get(user.id)).toEqual({
       email: "secondary@example.com",
       email_verified_at: 3,
+    })
+    expect(database.sqlite.query("SELECT updated_at, version FROM users WHERE id = ?").get(user.id)).toEqual({
+      updated_at: 4,
+      version: 2,
     })
 
     const emails = repository.userEmailList(realm.id, user.id)
@@ -177,5 +207,84 @@ test("email repository enforces normalized realm uniqueness and primary invarian
       code: "users.conflict",
       success: false,
     })
+  })
+})
+
+test("verified email and username identifiers cannot be taken over across users in one realm", async () => {
+  await withDatabase(async (database) => {
+    const realm = await realmCreateForTest(database, "user-identifier-collision.example.com")
+    const otherRealm = await realmCreateForTest(database, "user-identifier-collision-other.example.com")
+    const usernameOwner = userCreateForTest(database, realm.id, "reserved@example.com", "reserved-owner@example.com")
+    const emailOwner = userCreateForTest(database, realm.id, "email-owner", "verified@example.com")
+    const emails = userEmailRepositoryCreate(database.db)
+    const primary = emails.userEmailPrimaryGet(realm.id, emailOwner.id)
+    expect(primary).toMatchObject({ data: { email: "verified@example.com", version: 1 }, success: true })
+    if (!primary.success || primary.data === null) return
+    expect(
+      emails.userEmailVerificationSet({
+        emailId: primary.data.id,
+        expectedVersion: primary.data.version,
+        realmId: realm.id,
+        updatedAt: 3,
+        userId: emailOwner.id,
+        verifiedAt: 3,
+        version: primary.data.version + 1,
+      }),
+    ).toMatchObject({ data: { verifiedAt: 3 }, success: true })
+
+    const usernameTakeover = userCreate({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: {
+        email: "new-user@example.com",
+        profile: { displayName: "Blocked User" },
+        userName: " VERIFIED@example.com ",
+      },
+      realmId: realm.id,
+    })
+    expect(usernameTakeover).toMatchObject({ code: "users.already-exists", success: false })
+
+    const pending = emails.userEmailCreate({
+      createdAt: 4,
+      email: " RESERVED@example.com ",
+      id: "reserved-secondary",
+      isPrimary: false,
+      realmId: realm.id,
+      updatedAt: 4,
+      userId: emailOwner.id,
+      verifiedAt: null,
+      version: 1,
+    })
+    expect(pending).toMatchObject({ data: { email: "reserved@example.com", verifiedAt: null }, success: true })
+    if (!pending.success) return
+    expect(
+      emails.userEmailVerificationSet({
+        emailId: pending.data.id,
+        expectedVersion: pending.data.version,
+        realmId: realm.id,
+        updatedAt: 5,
+        userId: emailOwner.id,
+        verifiedAt: 5,
+        version: pending.data.version + 1,
+      }),
+    ).toMatchObject({ code: "users.conflict", success: false })
+    expect(emails.userEmailGet(realm.id, emailOwner.id, pending.data.id)).toMatchObject({
+      data: { email: "reserved@example.com", verifiedAt: null },
+      success: true,
+    })
+
+    expect(
+      userCreate({
+        context: realmSystemContextCreate("system"),
+        database,
+        input: {
+          email: "other-realm@example.com",
+          profile: { displayName: "Other Realm User" },
+          userName: "verified@example.com",
+        },
+        realmId: otherRealm.id,
+      }).success,
+    ).toBe(true)
+    expect(usernameOwner.userName).toBe("reserved@example.com")
   })
 })

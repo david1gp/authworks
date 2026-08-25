@@ -9,11 +9,12 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { userEmailNormalize } from "../domain/userEmailNormalize.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
 import { userEmailChangeRateLimitConsume } from "../domain/userEmailChangeRateLimitConsume.js"
 import { userEmailChangeRecentAuthenticationValidate } from "../domain/userEmailChangeRecentAuthenticationValidate.js"
 import { userEmailChangeTokenCreate } from "../domain/userEmailChangeTokenCreate.js"
 import { userEmailChangeTokenHashCreate } from "../domain/userEmailChangeTokenHashCreate.js"
+import { userEmailNormalize } from "../domain/userEmailNormalize.js"
 import { userEmailChangeRequestedEventPayloadSchema } from "../events/userEmailChangeRequestedEventPayloadSchema.js"
 import { userEventTypes } from "../events/userEventTypes.js"
 import { userEmailChangeRepositoryCreate } from "../persistence/userEmailChangeRepositoryCreate.js"
@@ -22,7 +23,6 @@ import type { UserEmailChangeDelivery } from "../public/userEmailChangeDeliveryS
 import type { UserEmailChangeStartRequest } from "../public/userEmailChangeStartRequestSchema.js"
 import { userEmailChangeStartRequestSchema } from "../public/userEmailChangeStartRequestSchema.js"
 import type { UserEmailChangeStartResponse } from "../public/userEmailChangeStartResponseSchema.js"
-import type { Session } from "../../sessions/public/sessionSchema.js"
 
 const userEmailChangeCooldownMs = 60 * 1_000
 const userEmailChangeExpiryMs = 10 * 60 * 1_000

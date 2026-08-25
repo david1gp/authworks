@@ -1,9 +1,10 @@
-import { and, asc, desc, eq, isNull, or } from "drizzle-orm"
+import { and, asc, desc, eq, isNull, or, sql } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
 import { userEmailRepositoryCreate } from "../../users/persistence/userEmailRepositoryCreate.js"
 import { type UserRow, userTable } from "../../users/persistence/userTable.js"
 import { type PasswordChallengeRow, passwordChallengeTable } from "./passwordChallengeTable.js"
@@ -496,7 +497,7 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
             .where(
               and(
                 eq(userTable.realmId, realmId),
-                or(eq(userTable.email, identifier), eq(userTable.userName, identifier)),
+                or(eq(userTable.email, identifier), sql`lower(trim(${userTable.userName})) = ${identifier}`),
               ),
             )
             .orderBy(asc(userTable.createdAt))
@@ -509,29 +510,32 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
 
     passwordUserFindByVerifiedIdentifier(realmId: string, identifier: string): Result<UserRow | null> {
       try {
-        const byUserName = database
-          .select()
-          .from(userTable)
-          .where(and(eq(userTable.realmId, realmId), eq(userTable.userName, identifier)))
-          .orderBy(asc(userTable.createdAt))
-          .get()
-        if (byUserName !== undefined) return resultCreate(byUserName)
-
-        const email = userEmailRepositoryCreate(database).userEmailGetByVerifiedAddress(realmId, identifier)
+        const emailForm = userEmailNormalize(identifier).success
+        const email = emailForm
+          ? userEmailRepositoryCreate(database).userEmailGetByVerifiedAddress(realmId, identifier)
+          : resultCreate(null)
         if (!email.success)
           return resultErrorCreate(
             "passwordUserFindByVerifiedIdentifier",
             "The user could not be read.",
             "passwords.read-failed",
           )
-        if (email.data === null) return resultCreate(null)
-        return resultCreate(
-          database
-            .select()
-            .from(userTable)
-            .where(and(eq(userTable.realmId, realmId), eq(userTable.id, email.data.userId)))
-            .get() ?? null,
-        )
+        if (email.data !== null)
+          return resultCreate(
+            database
+              .select()
+              .from(userTable)
+              .where(and(eq(userTable.realmId, realmId), eq(userTable.id, email.data.userId)))
+              .get() ?? null,
+          )
+        const byUserName = database
+          .select()
+          .from(userTable)
+          .where(and(eq(userTable.realmId, realmId), sql`lower(trim(${userTable.userName})) = ${identifier}`))
+          .orderBy(asc(userTable.createdAt))
+          .get()
+        if (byUserName !== undefined) return resultCreate(byUserName)
+        return resultCreate(null)
       } catch (_error) {
         return resultErrorCreate(
           "passwordUserFindByVerifiedIdentifier",

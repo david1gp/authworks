@@ -642,6 +642,93 @@ test("verified secondary email addresses support password login and recovery wit
   })
 })
 
+test("verified email-form identifiers take precedence over colliding usernames", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "passwords-identifier-priority.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    let firstToken = ""
+    const firstRegistered = passwordRegister({
+      context,
+      database,
+      input: registrationInput("first@example.com", "verified-email@example.com", "First Password 12"),
+      onVerificationToken: ({ token }) => {
+        firstToken = token
+      },
+      realmId: realm.id,
+    })
+    expect(firstRegistered.success).toBe(true)
+    const firstVerified = passwordEmailVerify({
+      context,
+      database,
+      input: { token: firstToken },
+      realmId: realm.id,
+    })
+    expect(firstVerified.success).toBe(true)
+    if (!firstVerified.success) return
+
+    let secondToken = ""
+    const secondRegistered = passwordRegister({
+      context,
+      database,
+      input: registrationInput("second@example.com", "second-user", "Second Password 12"),
+      onVerificationToken: ({ token }) => {
+        secondToken = token
+      },
+      realmId: realm.id,
+    })
+    expect(secondRegistered.success).toBe(true)
+    const secondVerified = passwordEmailVerify({
+      context,
+      database,
+      input: { token: secondToken },
+      realmId: realm.id,
+    })
+    expect(secondVerified.success).toBe(true)
+    if (!secondVerified.success) return
+
+    database.sqlite.exec("DROP TRIGGER user_emails_verified_user_name_collision_insert")
+    try {
+      database.sqlite
+        .query(
+          "INSERT INTO user_emails (created_at, email, id, is_primary, realm_id, updated_at, user_id, verified_at, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        )
+        .run(
+          testkit.runtime.now(),
+          "verified-email@example.com",
+          "identifier-priority-secondary",
+          0,
+          realm.id,
+          testkit.runtime.now(),
+          secondVerified.data.user.id,
+          testkit.runtime.now(),
+          1,
+        )
+    } finally {
+      database.sqlite.exec(
+        "CREATE TRIGGER user_emails_verified_user_name_collision_insert BEFORE INSERT ON user_emails WHEN NEW.verified_at IS NOT NULL AND EXISTS (SELECT 1 FROM users WHERE users.realm_id = NEW.realm_id AND users.id <> NEW.user_id AND lower(trim(users.user_name)) = lower(trim(NEW.email))) BEGIN SELECT RAISE(ABORT, 'users username/email identifier collision'); END",
+      )
+    }
+    const emailLogin = passwordLogin({
+      context,
+      database,
+      input: { identifier: "verified-email@example.com", password: "Second Password 12" },
+      realmId: realm.id,
+    })
+    expect(emailLogin).toMatchObject({
+      data: { authentication: { userId: secondVerified.data.user.id } },
+      success: true,
+    })
+    expect(
+      passwordLogin({
+        context,
+        database,
+        input: { identifier: "second-user", password: "Second Password 12" },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({ data: { authentication: { userId: secondVerified.data.user.id } }, success: true })
+  })
+})
+
 test("password registration treats normalized duplicate identifiers as accepted without delivery", async () => {
   await withDatabase(async (database) => {
     const realm = await createRealm(database, "passwords-duplicates.example.com")

@@ -32,7 +32,7 @@ Fix the reported account navigation and page issues, clarify profile fields and 
 - [x] 6. Add address lifecycle actions, public contracts, routes, client methods, events, and tests.
 - [x] 7. Resolve every verified address for password login, email OTP, and account recovery; retain primary OIDC claims.
 - [x] 8. Build the account email address list/add/verify/promote/remove UI.
-- [ ] 9. Run focused tests, browser verification, and `bun run check`.
+- [x] 9. Run focused tests, browser verification, and `bun run check`.
 
 ## Paths
 

@@ -157,7 +157,11 @@ function userEmailAddressAddResendTransaction(
   if (!user.success) return user
   if (user.data === null || user.data.state !== "active" || user.data.deletedAt !== null)
     return resultErrorCreate("userEmailAddressAddResend", "The authenticated user is not available.", "users.not-found")
-  const email = userEmailRepositoryCreate(options.database).userEmailGetByAddress(options.realmId, options.email)
+  const email = userEmailRepositoryCreate(options.database).userEmailGetByUserAddress(
+    options.realmId,
+    options.userId,
+    options.email,
+  )
   if (!email.success) return email
   if (email.data === null || email.data.userId !== options.userId || email.data.verifiedAt !== null)
     return resultErrorCreate(

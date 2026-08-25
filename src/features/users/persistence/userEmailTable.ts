@@ -16,7 +16,9 @@ export const userEmailTable = sqliteTable(
   },
   (table) => [
     index("user_emails_realm_user_idx").on(table.realmId, table.userId),
-    uniqueIndex("user_emails_realm_email_idx").on(table.realmId, sql`lower(trim(${table.email}))`),
+    uniqueIndex("user_emails_realm_email_idx")
+      .on(table.realmId, sql`lower(trim(${table.email}))`)
+      .where(sql`${table.verifiedAt} IS NOT NULL`),
     uniqueIndex("user_emails_one_primary_idx").on(table.realmId, table.userId).where(sql`${table.isPrimary} = 1`),
   ],
 )

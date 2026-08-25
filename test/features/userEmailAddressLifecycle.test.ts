@@ -16,6 +16,7 @@ import { userEmailAddressRemove } from "../../src/features/users/actions/userEma
 import { userLifecycleSet } from "../../src/features/users/actions/userLifecycleSet.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
 import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
+import { userEmailRepositoryCreate } from "../../src/features/users/persistence/userEmailRepositoryCreate.js"
 import { userServerAppCreate } from "../../src/features/users/server/userServerAppCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -193,6 +194,9 @@ test("current-user email addresses support verified secondary lifecycle and safe
       : undefined
     expect(secondary).toBeDefined()
     if (secondary === undefined) return
+    const beforePromotion = database.sqlite
+      .query("SELECT updated_at, version FROM users WHERE id = ?")
+      .get(user.id) as { updated_at: number; version: number }
     const promoted = userEmailAddressPrimarySet({
       context,
       database,
@@ -206,6 +210,10 @@ test("current-user email addresses support verified secondary lifecycle and safe
     expect(promoted).toMatchObject({
       data: { email: { email: "secondary@example.com", isPrimary: true } },
       success: true,
+    })
+    expect(database.sqlite.query("SELECT updated_at, version FROM users WHERE id = ?").get(user.id)).toEqual({
+      updated_at: testkit.runtime.now(),
+      version: beforePromotion.version + 1,
     })
     expect(database.sqlite.query("SELECT email FROM users WHERE id = ?").get(user.id)).toEqual({
       email: "secondary@example.com",
@@ -257,6 +265,176 @@ test("current-user email addresses support verified secondary lifecycle and safe
     const serialized = JSON.stringify(database.db.select().from(storageEventTable).all())
     expect(serialized).not.toContain("secondary@example.com")
     expect(serialized).not.toContain(deliveries[1]?.token ?? "")
+  })
+})
+
+test("pending email addresses do not reserve verified addresses and expire cleanly", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { realm, session, user } = await fixture(database, testkit)
+    const secondCreated = userCreate({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { email: "second-primary@example.com", profile: { displayName: "Second User" }, userName: "second-user" },
+      realmId: realm.id,
+    })
+    expect(secondCreated.success).toBe(true)
+    if (!secondCreated.success) return
+    expect(
+      userLifecycleSet({
+        context: realmSystemContextCreate("system"),
+        database,
+        input: { state: "active" },
+        realmId: realm.id,
+        userId: secondCreated.data.user.id,
+      }).success,
+    ).toBe(true)
+    const secondSession = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId: secondCreated.data.user.id,
+    })
+    expect(secondSession.success).toBe(true)
+    if (!secondSession.success) return
+
+    let firstToken = ""
+    const firstStarted = userEmailAddressAddStart({
+      context: realmTenantContextCreate(realm.id, user.id),
+      database,
+      input: { email: "shared@example.com" },
+      onDelivery: ({ token }) => {
+        firstToken = token
+      },
+      rateLimitSecret: secret,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      session: session.session,
+      userId: user.id,
+    })
+    expect(firstStarted).toMatchObject({ data: { accepted: true }, success: true })
+
+    let secondToken = ""
+    const secondStarted = userEmailAddressAddStart({
+      context: realmTenantContextCreate(realm.id, secondCreated.data.user.id),
+      database,
+      input: { email: "shared@example.com" },
+      onDelivery: ({ token }) => {
+        secondToken = token
+      },
+      rateLimitSecret: secret,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      session: secondSession.data.session,
+      userId: secondCreated.data.user.id,
+    })
+    expect(secondStarted).toMatchObject({ data: { accepted: true }, success: true })
+    if (!secondStarted.success) return
+    expect(
+      userEmailAddressAddVerify({
+        context: realmTenantContextCreate(realm.id, secondCreated.data.user.id),
+        database,
+        input: { challengeId: secondStarted.data.challengeId, token: secondToken },
+        rateLimitSecret: secret,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        session: secondSession.data.session,
+        userId: secondCreated.data.user.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      userEmailAddressAddVerify({
+        context: realmTenantContextCreate(realm.id, user.id),
+        database,
+        input: { challengeId: firstStarted.success ? firstStarted.data.challengeId : "", token: firstToken },
+        rateLimitSecret: secret,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        session: session.session,
+        userId: user.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      userEmailRepositoryCreate(database.db).userEmailGetByUserAddress(realm.id, user.id, "shared@example.com"),
+    ).toEqual({ data: null, success: true })
+    expect(
+      userEmailAddressAddStart({
+        context: realmTenantContextCreate(realm.id, user.id),
+        database,
+        input: { email: "shared@example.com" },
+        rateLimitSecret: secret,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        session: session.session,
+        userId: user.id,
+      }),
+    ).toMatchObject({ data: { accepted: true }, success: true })
+
+    let expiringToken = ""
+    const expiring = userEmailAddressAddStart({
+      context: realmTenantContextCreate(realm.id, user.id),
+      database,
+      input: { email: "expiring@example.com" },
+      onDelivery: ({ token }) => {
+        expiringToken = token
+      },
+      rateLimitSecret: secret,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      session: session.session,
+      userId: user.id,
+    })
+    expect(expiring.success).toBe(true)
+    if (!expiring.success) return
+    testkit.advance(10 * 60 * 1_000)
+    const refreshedSession = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId: user.id,
+    })
+    expect(refreshedSession.success).toBe(true)
+    if (!refreshedSession.success) return
+    expect(
+      userEmailAddressAddVerify({
+        context: realmTenantContextCreate(realm.id, user.id),
+        database,
+        input: { challengeId: expiring.data.challengeId, token: expiringToken },
+        rateLimitSecret: secret,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        session: refreshedSession.data.session,
+        userId: user.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      userEmailRepositoryCreate(database.db).userEmailGetByUserAddress(realm.id, user.id, "expiring@example.com"),
+    ).toEqual({ data: null, success: true })
+    const refreshedSecondSession = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId: secondCreated.data.user.id,
+    })
+    expect(refreshedSecondSession.success).toBe(true)
+    if (!refreshedSecondSession.success) return
+    expect(
+      userEmailAddressAddStart({
+        context: realmTenantContextCreate(realm.id, secondCreated.data.user.id),
+        database,
+        input: { email: "expiring@example.com" },
+        rateLimitSecret: secret,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        session: refreshedSecondSession.data.session,
+        userId: secondCreated.data.user.id,
+      }).success,
+    ).toBe(true)
   })
 })
 

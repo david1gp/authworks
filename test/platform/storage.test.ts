@@ -339,6 +339,13 @@ test("event rows are append-only and reset reconstructs an empty current schema"
     if (!reopened.success) return
     expect(reopened.data.sqlite.query("SELECT COUNT(*) AS count FROM events").get()).toEqual({ count: 0 })
     expect(reopened.data.sqlite.query("SELECT COUNT(*) AS count FROM current_state").get()).toEqual({ count: 0 })
+    expect(
+      reopened.data.sqlite
+        .query(
+          "SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'trigger' AND name IN ('users_user_name_verified_email_collision_insert', 'users_user_name_verified_email_collision_update', 'user_emails_verified_user_name_collision_insert', 'user_emails_verified_user_name_collision_update')",
+        )
+        .get(),
+    ).toEqual({ count: 4 })
     expect(storageEventAppend(reopened.data.db, eventInput(), reopened.data.runtime).success).toBe(true)
     reopened.data.close()
   })

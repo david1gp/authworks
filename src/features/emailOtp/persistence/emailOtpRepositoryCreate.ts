@@ -4,6 +4,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { userEmailRepositoryCreate } from "../../users/persistence/userEmailRepositoryCreate.js"
+import type { UserEmailRow } from "../../users/persistence/userEmailTable.js"
 import { type UserRow, userTable } from "../../users/persistence/userTable.js"
 import { type EmailOtpChallengeRow, emailOtpChallengeTable } from "./emailOtpChallengeTable.js"
 
@@ -168,7 +169,7 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    emailOtpUserFindByEmail(realmId: string, email: string): Result<UserRow | null> {
+    emailOtpUserFindByEmail(realmId: string, email: string): Result<{ address: UserEmailRow; user: UserRow } | null> {
       try {
         const address = userEmailRepositoryCreate(database).userEmailGetByVerifiedAddress(realmId, email)
         if (!address.success)
@@ -178,14 +179,14 @@ export function emailOtpRepositoryCreate(database: StorageExecutor) {
             "email-otp.read-failed",
           )
         if (address.data === null) return resultCreate(null)
-        return resultCreate(
+        const user =
           database
             .select()
             .from(userTable)
             .where(and(eq(userTable.realmId, realmId), eq(userTable.id, address.data.userId)))
             .orderBy(asc(userTable.createdAt))
-            .get() ?? null,
-        )
+            .get() ?? null
+        return resultCreate(user === null ? null : { address: address.data, user })
       } catch (_error) {
         return resultErrorCreate(
           "emailOtpUserFindByEmail",

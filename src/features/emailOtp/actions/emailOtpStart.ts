@@ -100,11 +100,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
     if (!previous.success) return previous
     const user = repository.emailOtpUserFindByEmail(options.realmId, email.data)
     if (!user.success) return user
-    const eligible =
-      user.data !== null &&
-      user.data.state === "active" &&
-      user.data.deletedAt === null &&
-      user.data.emailVerifiedAt !== null
+    const eligible = user.data !== null && user.data.user.state === "active" && user.data.user.deletedAt === null
     const expiresAt = now + emailOtpExpiryMs
     const cooldownUntil = now + emailOtpCooldownMs
     const created = repository.emailOtpChallengeCreate({
@@ -120,7 +116,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
       maxAttempts: emailOtpMaxAttempts,
       organizationId: options.organizationId ?? parsed.output.organizationId ?? null,
       purpose: "sign_in",
-      userId: eligible && user.data !== null ? user.data.id : null,
+      userId: eligible && user.data !== null ? user.data.user.id : null,
       version: 1,
     })
     if (!created.success) return created
@@ -161,9 +157,9 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
         expiresAt,
         realmId: options.realmId,
         purpose: "sign_in",
-        userId: user.data.id,
+        userId: user.data.user.id,
       },
-      notification: { challengeId, realmId: options.realmId, kind: "requested", userId: user.data.id },
+      notification: { challengeId, realmId: options.realmId, kind: "requested", userId: user.data.user.id },
       response: { accepted: true, challengeId, expiresAt, retryAt: cooldownUntil },
     })
   })

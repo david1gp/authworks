@@ -124,7 +124,8 @@ function userEmailAddressAddVerifyTransaction(
   )
     return resultCreate({ failure: true })
   const current = challenge.data
-  if (current.expiresAt <= options.now) return userEmailAddressVerificationExpiredRecord(options, current.version)
+  if (current.expiresAt <= options.now)
+    return userEmailAddressVerificationExpiredRecord(options, current.version, current.pendingEmail)
   if (current.tokenHash !== userEmailChangeTokenHashCreate(options.input.token)) {
     const attempts = current.attempts + 1
     const updated = challenges.userEmailChangeChallengeAttemptRecord({
@@ -137,21 +138,29 @@ function userEmailAddressAddVerifyTransaction(
     })
     if (!updated.success) return updated
     if (updated.data === null) return resultCreate({ failure: true })
+    if (attempts >= current.maxAttempts) {
+      const pending = userEmailAddressPendingDelete(options, current.pendingEmail)
+      if (!pending.success) return pending
+    }
     const event = userEmailAddressVerificationFailedEventAppend(options, updated.data.version, "invalid_token")
     if (!event.success) return event
     return resultCreate({ failure: true })
   }
 
   const emails = userEmailRepositoryCreate(options.database)
-  const email = emails.userEmailGetByAddress(options.realmId, current.pendingEmail)
+  const email = emails.userEmailGetByUserAddress(options.realmId, options.userId, current.pendingEmail)
   if (!email.success) return email
+  const verifiedAddress = emails.userEmailGetByVerifiedAddress(options.realmId, current.pendingEmail)
+  if (!verifiedAddress.success) return verifiedAddress
+  if (verifiedAddress.data !== null)
+    return userEmailAddressVerificationInvalidRecord(options, current.version, current.pendingEmail)
   if (
     email.data === null ||
     email.data.userId !== options.userId ||
     email.data.verifiedAt !== null ||
     email.data.isPrimary
   )
-    return userEmailAddressVerificationInvalidRecord(options, current.version)
+    return userEmailAddressVerificationInvalidRecord(options, current.version, current.pendingEmail)
   const verified = emails.userEmailVerificationSet({
     emailId: email.data.id,
     expectedVersion: email.data.version,
@@ -203,7 +212,10 @@ function userEmailAddressAddVerifyTransaction(
 function userEmailAddressVerificationExpiredRecord(
   options: UserEmailAddressAddVerifyTransactionOptions,
   expectedVersion: number,
+  pendingEmail: string,
 ): Result<UserEmailAddressAddVerifyCommit> {
+  const pending = userEmailAddressPendingDelete(options, pendingEmail)
+  if (!pending.success) return pending
   const challenges = userEmailChangeRepositoryCreate(options.database)
   const consumed = challenges.userEmailChangeChallengeConsume(
     options.realmId,
@@ -221,7 +233,10 @@ function userEmailAddressVerificationExpiredRecord(
 function userEmailAddressVerificationInvalidRecord(
   options: UserEmailAddressAddVerifyTransactionOptions,
   expectedVersion: number,
+  pendingEmail: string,
 ): Result<UserEmailAddressAddVerifyCommit> {
+  const pending = userEmailAddressPendingDelete(options, pendingEmail)
+  if (!pending.success) return pending
   const challenges = userEmailChangeRepositoryCreate(options.database)
   const consumed = challenges.userEmailChangeChallengeConsume(
     options.realmId,
@@ -234,6 +249,19 @@ function userEmailAddressVerificationInvalidRecord(
   const event = userEmailAddressVerificationFailedEventAppend(options, consumed.data.version, "invalid_token")
   if (!event.success) return event
   return resultCreate({ failure: true })
+}
+
+function userEmailAddressPendingDelete(
+  options: UserEmailAddressAddVerifyTransactionOptions,
+  pendingEmail: string,
+): Result<void> {
+  const emails = userEmailRepositoryCreate(options.database)
+  const email = emails.userEmailGetByUserAddress(options.realmId, options.userId, pendingEmail)
+  if (!email.success) return email
+  if (email.data === null || email.data.verifiedAt !== null) return resultCreate(undefined)
+  const deleted = emails.userEmailDelete(options.realmId, options.userId, email.data.id, email.data.version)
+  if (!deleted.success) return deleted
+  return resultCreate(undefined)
 }
 
 function userEmailAddressVerificationFailedEventAppend(
