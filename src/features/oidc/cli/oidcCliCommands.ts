@@ -2,6 +2,7 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
+import { oidcCodelineClientEnsure } from "./oidcCodelineClientEnsure.js"
 
 type OidcCliFlags = {
   readonly server?: string
@@ -19,6 +20,11 @@ type OidcClientFlags = OidcRealmFlags & { readonly clientId: string }
 type OidcClientGetFlags = OidcClientFlags & { readonly ifModifiedSince?: string }
 type OidcConsentFlags = OidcRealmFlags & { readonly userId: string }
 type OidcConsentListFlags = OidcListRealmFlags & { readonly userId: string }
+type OidcCodelineClientEnsureFlags = OidcRealmFlags & {
+  readonly clientId?: string
+  readonly envFile?: string
+  readonly name?: string
+}
 
 const oidcClientCreateCommand = buildCommand({
   async func(
@@ -101,6 +107,40 @@ const oidcClientGetCommand = buildCommand({
     },
   },
   docs: { brief: "Get an OIDC client" },
+})
+
+const oidcCodelineClientEnsureCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcCodelineClientEnsureFlags) {
+    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const envFile = flags.envFile ?? this.process.env?.CODELINE_ENV_FILE
+    if (realmId === undefined || envFile === undefined || envFile.length === 0) {
+      if (envFile === undefined || envFile.length === 0) {
+        this.process.stderr.write("Expected input for --env-file or CODELINE_ENV_FILE\n")
+        this.process.exitCode = 1
+      }
+      return
+    }
+    oidcCliResultWrite(
+      this,
+      await oidcCodelineClientEnsure({
+        api: oidcCliClientCreate(this, flags),
+        clientId: flags.clientId,
+        envFilePath: envFile,
+        name: flags.name ?? "Codeline preview",
+        realmId,
+      }),
+    )
+  },
+  parameters: {
+    flags: {
+      ...oidcCommonFlags(),
+      realmId: oidcRealmIdFlag(),
+      clientId: { ...oidcIdFlag("Existing Codeline client UUID"), optional: true as const },
+      envFile: { ...oidcTextFlag("Existing ignored Codeline environment file"), optional: true as const },
+      name: { ...oidcTextFlag("Codeline client display name"), optional: true as const },
+    },
+  },
+  docs: { brief: "Ensure the confidential Codeline OIDC client without exposing its secret" },
 })
 
 const oidcClientSecretRotateCommand = buildCommand({
@@ -231,6 +271,7 @@ const oidcLogoutCommand = buildCommand({
 export const oidcCliCommands = buildRouteMap({
   routes: {
     clientCreate: oidcClientCreateCommand,
+    clientEnsure: oidcCodelineClientEnsureCommand,
     clientGet: oidcClientGetCommand,
     clientList: oidcClientListCommand,
     clientSecretRotate: oidcClientSecretRotateCommand,
