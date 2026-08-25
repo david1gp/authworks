@@ -1282,7 +1282,7 @@ login.whatsappOtp.description,سنرسل إليك رمزاً للاستخدام 
 login.whatsappOtp.differentNumber,استخدم رقمًا مختلفًا
 login.whatsappOtp.phoneHint,استخدم تنسيق E.164 الدولي، مثل +14155552671.
 login.whatsappOtp.phoneNumber,رقم هاتف واتساب
-login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.phonePlaceholder,+2010123456789
 login.whatsappOtp.resend,إعادة إرسال الرمز
 login.whatsappOtp.send,إرسال رمز واتساب
 login.whatsappOtp.sendError,تعذر إرسال رمز واتساب.

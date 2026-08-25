@@ -1282,7 +1282,7 @@ login.whatsappOtp.description,我们将通过 WhatsApp 向您发送一次性代�
 login.whatsappOtp.differentNumber,使用其他号码
 login.whatsappOtp.phoneHint,请使用国际 E.164 格式，例如 +14155552671。
 login.whatsappOtp.phoneNumber,WhatsApp 手机号码
-login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.phonePlaceholder,+8613812345678
 login.whatsappOtp.resend,重新发送代码
 login.whatsappOtp.send,发送 WhatsApp 代码
 login.whatsappOtp.sendError,无法发送 WhatsApp 代码。

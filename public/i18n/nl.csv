@@ -1282,7 +1282,7 @@ login.whatsappOtp.description,"We sturen u een eenmalige code via WhatsApp, in p
 login.whatsappOtp.differentNumber,Een ander nummer gebruiken
 login.whatsappOtp.phoneHint,"Gebruik de internationale E.164-notatie, bijvoorbeeld +14155552671."
 login.whatsappOtp.phoneNumber,WhatsApp-telefoonnummer
-login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.phonePlaceholder,+31612345678
 login.whatsappOtp.resend,Code opnieuw verzenden
 login.whatsappOtp.send,WhatsApp-code verzenden
 login.whatsappOtp.sendError,De WhatsApp-code kon niet worden verzonden.

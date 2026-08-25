@@ -1282,7 +1282,7 @@ login.whatsappOtp.description,"Замість пароля ми надішлем
 login.whatsappOtp.differentNumber,Використати інший номер
 login.whatsappOtp.phoneHint,"Використовуйте міжнародний формат E.164, наприклад +14155552671."
 login.whatsappOtp.phoneNumber,Номер телефону WhatsApp
-login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.phonePlaceholder,+380501234567
 login.whatsappOtp.resend,Надіслати код повторно
 login.whatsappOtp.send,Надіслати код WhatsApp
 login.whatsappOtp.sendError,Не вдалося надіслати код WhatsApp.

@@ -1282,7 +1282,7 @@ login.whatsappOtp.description,"Jelszó kérése helyett egyszer használatos kó
 login.whatsappOtp.differentNumber,Másik szám használata
 login.whatsappOtp.phoneHint,"Használja a nemzetközi E.164 formátumot, például: +14155552671."
 login.whatsappOtp.phoneNumber,WhatsApp-telefonszám
-login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.phonePlaceholder,+36301234567
 login.whatsappOtp.resend,Kód újraküldése
 login.whatsappOtp.send,WhatsApp-kód küldése
 login.whatsappOtp.sendError,A WhatsApp-kódot nem sikerült elküldeni.

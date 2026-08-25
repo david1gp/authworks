@@ -1282,7 +1282,7 @@ login.whatsappOtp.description,"Parola istemek yerine WhatsApp üzerinden tek kul
 login.whatsappOtp.differentNumber,Farklı bir numara kullan
 login.whatsappOtp.phoneHint,"Uluslararası E.164 biçimini kullanın, örneğin +14155552671."
 login.whatsappOtp.phoneNumber,WhatsApp telefon numarası
-login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.phonePlaceholder,+905321234567
 login.whatsappOtp.resend,Kodu yeniden gönder
 login.whatsappOtp.send,WhatsApp kodu gönder
 login.whatsappOtp.sendError,WhatsApp kodu gönderilemedi.

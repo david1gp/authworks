@@ -1282,7 +1282,7 @@ login.whatsappOtp.description,パスワードを入力する代わりにWhatsApp
 login.whatsappOtp.differentNumber,別の番号を使用
 login.whatsappOtp.phoneHint,国際E.164形式を使用してください（例：+14155552671）。
 login.whatsappOtp.phoneNumber,WhatsApp電話番号
-login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.phonePlaceholder,+819012345678
 login.whatsappOtp.resend,コードを再送信
 login.whatsappOtp.send,WhatsAppコードを送信
 login.whatsappOtp.sendError,WhatsAppコードを送信できませんでした。

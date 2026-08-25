@@ -1282,7 +1282,7 @@ login.whatsappOtp.description,"Wir senden Ihnen über WhatsApp einen Einmalcode,
 login.whatsappOtp.differentNumber,Andere Nummer verwenden
 login.whatsappOtp.phoneHint,"Verwenden Sie das internationale E.164-Format, zum Beispiel +14155552671."
 login.whatsappOtp.phoneNumber,WhatsApp-Telefonnummer
-login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.phonePlaceholder,+4915123456789
 login.whatsappOtp.resend,Code erneut senden
 login.whatsappOtp.send,WhatsApp-Code senden
 login.whatsappOtp.sendError,Der WhatsApp-Code konnte nicht gesendet werden.
