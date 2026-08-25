@@ -75,7 +75,7 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
     return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   }
   const repository = passwordRepositoryCreate(options.database.db)
-  const user = repository.passwordUserFindByIdentifier(options.realmId, identifier.data)
+  const user = repository.passwordUserFindByVerifiedIdentifier(options.realmId, identifier.data)
   if (!user.success) return resultErrorCreate(op, "The credentials are invalid.", "passwords.unauthorized")
   if (user.data === null) {
     passwordHashVerify(parsed.output.password, passwordDummyHash)
@@ -382,7 +382,7 @@ function passwordDummyHashCreate(): string {
 
 function passwordLoginRegistrationVerified(user: UserRow): boolean {
   if (user.registrationVerifiedAt === null || user.registrationVerificationMethod === null) return false
-  if (user.registrationVerificationMethod === "email") return user.emailVerifiedAt !== null
+  if (user.registrationVerificationMethod === "email") return true
   if (user.registrationVerificationMethod === "whatsapp") return user.phoneNumberVerifiedAt !== null
   return false
 }

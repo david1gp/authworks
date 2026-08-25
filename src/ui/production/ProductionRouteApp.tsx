@@ -85,9 +85,11 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
                 title={screen().title}
               >
                 <header class="mb-7">
-                  <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    {messageTranslate("app.name")}
-                  </p>
+                  <Show when={screen().path !== "/account/email"}>
+                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      {messageTranslate("app.name")}
+                    </p>
+                  </Show>
                   <h1 class="mt-2 text-3xl font-semibold tracking-tight">{messageTranslate(screen().title)}</h1>
                 </header>
                 <ProductionRouteContent state={state} />

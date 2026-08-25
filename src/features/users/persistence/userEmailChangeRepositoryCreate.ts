@@ -92,7 +92,12 @@ export function userEmailChangeRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    userEmailChangeChallengeExpirePrevious(realmId: string, userId: string, consumedAt: number): Result<void> {
+    userEmailChangeChallengeExpirePrevious(
+      realmId: string,
+      userId: string,
+      consumedAt: number,
+      purpose: "email_change" | "email_address" = "email_change",
+    ): Result<void> {
       try {
         database
           .update(userEmailChangeChallengeTable)
@@ -101,6 +106,7 @@ export function userEmailChangeRepositoryCreate(database: StorageExecutor) {
             and(
               eq(userEmailChangeChallengeTable.realmId, realmId),
               eq(userEmailChangeChallengeTable.userId, userId),
+              eq(userEmailChangeChallengeTable.purpose, purpose),
               isNull(userEmailChangeChallengeTable.consumedAt),
             ),
           )
@@ -115,10 +121,42 @@ export function userEmailChangeRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    userEmailChangeChallengeExpireForEmail(
+      realmId: string,
+      userId: string,
+      pendingEmail: string,
+      consumedAt: number,
+      purpose: "email_change" | "email_address" = "email_change",
+    ): Result<void> {
+      try {
+        database
+          .update(userEmailChangeChallengeTable)
+          .set({ consumedAt, version: sql`${userEmailChangeChallengeTable.version} + 1` })
+          .where(
+            and(
+              eq(userEmailChangeChallengeTable.realmId, realmId),
+              eq(userEmailChangeChallengeTable.userId, userId),
+              eq(userEmailChangeChallengeTable.pendingEmail, pendingEmail),
+              eq(userEmailChangeChallengeTable.purpose, purpose),
+              isNull(userEmailChangeChallengeTable.consumedAt),
+            ),
+          )
+          .run()
+        return resultCreate(undefined)
+      } catch (_error) {
+        return resultErrorCreate(
+          "userEmailChangeChallengeExpireForEmail",
+          "The email verification challenges could not be closed.",
+          "users.write-failed",
+        )
+      }
+    },
+
     userEmailChangeChallengeGet(
       realmId: string,
       userId: string,
       id: string,
+      purpose: "email_change" | "email_address" = "email_change",
     ): Result<UserEmailChangeChallengeRow | null> {
       try {
         return resultCreate(
@@ -130,6 +168,7 @@ export function userEmailChangeRepositoryCreate(database: StorageExecutor) {
                 eq(userEmailChangeChallengeTable.realmId, realmId),
                 eq(userEmailChangeChallengeTable.userId, userId),
                 eq(userEmailChangeChallengeTable.id, id),
+                eq(userEmailChangeChallengeTable.purpose, purpose),
               ),
             )
             .get() ?? null,
@@ -147,6 +186,7 @@ export function userEmailChangeRepositoryCreate(database: StorageExecutor) {
       realmId: string,
       userId: string,
       pendingEmail: string,
+      purpose: "email_change" | "email_address" = "email_change",
     ): Result<UserEmailChangeChallengeRow | null> {
       try {
         return resultCreate(
@@ -158,6 +198,7 @@ export function userEmailChangeRepositoryCreate(database: StorageExecutor) {
                 eq(userEmailChangeChallengeTable.realmId, realmId),
                 eq(userEmailChangeChallengeTable.userId, userId),
                 eq(userEmailChangeChallengeTable.pendingEmail, pendingEmail),
+                eq(userEmailChangeChallengeTable.purpose, purpose),
               ),
             )
             .orderBy(desc(userEmailChangeChallengeTable.createdAt), desc(userEmailChangeChallengeTable.id))

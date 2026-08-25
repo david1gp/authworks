@@ -115,6 +115,19 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS users_realm_id_idx ON users (realm_id)")
     database.run(
+      "CREATE TABLE IF NOT EXISTS user_emails (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, email TEXT NOT NULL, verified_at INTEGER CHECK (verified_at IS NULL OR verified_at >= 0), is_primary INTEGER NOT NULL CHECK (is_primary IN (0, 1)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+    )
+    database.run("CREATE INDEX IF NOT EXISTS user_emails_realm_user_idx ON user_emails (realm_id, user_id)")
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS user_emails_realm_email_idx ON user_emails (realm_id, lower(trim(email)))",
+    )
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS user_emails_one_primary_idx ON user_emails (realm_id, user_id) WHERE is_primary = 1",
+    )
+    database.run(
+      "INSERT INTO user_emails (id, realm_id, user_id, email, verified_at, is_primary, created_at, updated_at, version) SELECT users.id, users.realm_id, users.id, lower(trim(users.email)), users.email_verified_at, 1, users.created_at, users.updated_at, 1 FROM users WHERE NOT EXISTS (SELECT 1 FROM user_emails WHERE user_emails.realm_id = users.realm_id AND user_emails.user_id = users.id AND user_emails.is_primary = 1)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS user_profiles (user_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, first_name TEXT, last_name TEXT, nick_name TEXT, display_name TEXT, preferred_language TEXT, gender TEXT, picture_url TEXT, picture_content_type TEXT, updated_at INTEGER NOT NULL CHECK (updated_at >= 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     try {
@@ -129,8 +142,15 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     }
     database.run("CREATE INDEX IF NOT EXISTS user_profiles_realm_id_idx ON user_profiles (realm_id)")
     database.run(
-      "CREATE TABLE IF NOT EXISTS user_email_change_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, pending_email TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS user_email_change_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, pending_email TEXT NOT NULL, purpose TEXT NOT NULL DEFAULT 'email_change' CHECK (purpose IN ('email_change', 'email_address')), token_hash TEXT NOT NULL UNIQUE, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
+    try {
+      database.run(
+        "ALTER TABLE user_email_change_challenges ADD COLUMN purpose TEXT NOT NULL DEFAULT 'email_change' CHECK (purpose IN ('email_change', 'email_address'))",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "purpose")) throw error
+    }
     database.run(
       "CREATE INDEX IF NOT EXISTS user_email_change_challenges_realm_user_email_idx ON user_email_change_challenges (realm_id, user_id, pending_email)",
     )

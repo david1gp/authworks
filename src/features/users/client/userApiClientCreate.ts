@@ -14,6 +14,27 @@ import {
   userAuthenticationMethodsSchema,
 } from "../public/userAuthenticationMethodsSchema.js"
 import { type UserCreateRequest, userCreateRequestSchema } from "../public/userCreateRequestSchema.js"
+import { type UserCurrentResponse, userCurrentResponseSchema } from "../public/userCurrentResponseSchema.js"
+import type { UserEmailAddressAddResendRequest } from "../public/userEmailAddressAddResendRequestSchema.js"
+import { userEmailAddressAddResendRequestSchema } from "../public/userEmailAddressAddResendRequestSchema.js"
+import type { UserEmailAddressAddResendResponse } from "../public/userEmailAddressAddResendResponseSchema.js"
+import { userEmailAddressAddResendResponseSchema } from "../public/userEmailAddressAddResendResponseSchema.js"
+import type { UserEmailAddressAddStartRequest } from "../public/userEmailAddressAddStartRequestSchema.js"
+import { userEmailAddressAddStartRequestSchema } from "../public/userEmailAddressAddStartRequestSchema.js"
+import type { UserEmailAddressAddStartResponse } from "../public/userEmailAddressAddStartResponseSchema.js"
+import { userEmailAddressAddStartResponseSchema } from "../public/userEmailAddressAddStartResponseSchema.js"
+import type { UserEmailAddressAddVerifyRequest } from "../public/userEmailAddressAddVerifyRequestSchema.js"
+import { userEmailAddressAddVerifyRequestSchema } from "../public/userEmailAddressAddVerifyRequestSchema.js"
+import type { UserEmailAddressAddVerifyResponse } from "../public/userEmailAddressAddVerifyResponseSchema.js"
+import { userEmailAddressAddVerifyResponseSchema } from "../public/userEmailAddressAddVerifyResponseSchema.js"
+import type { UserEmailAddressListResponse } from "../public/userEmailAddressListResponseSchema.js"
+import { userEmailAddressListResponseSchema } from "../public/userEmailAddressListResponseSchema.js"
+import type { UserEmailAddressPrimarySetRequest } from "../public/userEmailAddressPrimarySetRequestSchema.js"
+import { userEmailAddressPrimarySetRequestSchema } from "../public/userEmailAddressPrimarySetRequestSchema.js"
+import type { UserEmailAddressPrimarySetResponse } from "../public/userEmailAddressPrimarySetResponseSchema.js"
+import { userEmailAddressPrimarySetResponseSchema } from "../public/userEmailAddressPrimarySetResponseSchema.js"
+import type { UserEmailAddressRemoveResponse } from "../public/userEmailAddressRemoveResponseSchema.js"
+import { userEmailAddressRemoveResponseSchema } from "../public/userEmailAddressRemoveResponseSchema.js"
 import type { UserEmailChangeResendRequest } from "../public/userEmailChangeResendRequestSchema.js"
 import { userEmailChangeResendRequestSchema } from "../public/userEmailChangeResendRequestSchema.js"
 import type { UserEmailChangeResendResponse } from "../public/userEmailChangeResendResponseSchema.js"
@@ -136,8 +157,8 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         userListResponseSchema,
       )
     },
-    userMeGet(realmId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<UserResponse>> {
-      return getRequest(`/realms/${encodeURIComponent(realmId)}/me`, userResponseSchema, getOptions)
+    userMeGet(realmId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<UserCurrentResponse>> {
+      return getRequest(`/realms/${encodeURIComponent(realmId)}/me`, userCurrentResponseSchema, getOptions)
     },
     userMeAuthenticationMethodsGet(
       realmId: string,
@@ -148,6 +169,82 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         userAuthenticationMethodsSchema,
         getOptions,
       )
+    },
+    userMeEmailAddressList(
+      realmId: string,
+      getOptions?: HttpGetOptions,
+    ): Promise<HttpGetResult<UserEmailAddressListResponse>> {
+      return getRequest(
+        `/realms/${encodeURIComponent(realmId)}/me/emails`,
+        userEmailAddressListResponseSchema,
+        getOptions,
+      )
+    },
+    userMeEmailAddressAddStart(
+      realmId: string,
+      input: UserEmailAddressAddStartRequest,
+    ): Promise<Result<UserEmailAddressAddStartResponse>> {
+      return meMutate(
+        realmId,
+        "userMeEmailAddressAddStart",
+        `/realms/${encodeURIComponent(realmId)}/me/emails/add/start`,
+        input,
+        userEmailAddressAddStartRequestSchema,
+        userEmailAddressAddStartResponseSchema,
+      )
+    },
+    userMeEmailAddressAddResend(
+      realmId: string,
+      input: UserEmailAddressAddResendRequest,
+    ): Promise<Result<UserEmailAddressAddResendResponse>> {
+      return meMutate(
+        realmId,
+        "userMeEmailAddressAddResend",
+        `/realms/${encodeURIComponent(realmId)}/me/emails/add/resend`,
+        input,
+        userEmailAddressAddResendRequestSchema,
+        userEmailAddressAddResendResponseSchema,
+      )
+    },
+    userMeEmailAddressAddVerify(
+      realmId: string,
+      input: UserEmailAddressAddVerifyRequest,
+    ): Promise<Result<UserEmailAddressAddVerifyResponse>> {
+      return meMutate(
+        realmId,
+        "userMeEmailAddressAddVerify",
+        `/realms/${encodeURIComponent(realmId)}/me/emails/add/verify`,
+        input,
+        userEmailAddressAddVerifyRequestSchema,
+        userEmailAddressAddVerifyResponseSchema,
+      )
+    },
+    userMeEmailAddressPrimarySet(
+      realmId: string,
+      emailId: string,
+      input: UserEmailAddressPrimarySetRequest = {},
+    ): Promise<Result<UserEmailAddressPrimarySetResponse>> {
+      return meMutate(
+        realmId,
+        "userMeEmailAddressPrimarySet",
+        `/realms/${encodeURIComponent(realmId)}/me/emails/${encodeURIComponent(emailId)}/primary`,
+        input,
+        userEmailAddressPrimarySetRequestSchema,
+        userEmailAddressPrimarySetResponseSchema,
+      )
+    },
+    userMeEmailAddressRemove(realmId: string, emailId: string): Promise<Result<UserEmailAddressRemoveResponse>> {
+      const path = `/realms/${encodeURIComponent(realmId)}/me/emails/${encodeURIComponent(emailId)}`
+      if (options.token !== undefined) return request(path, { method: "DELETE" }, userEmailAddressRemoveResponseSchema)
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "DELETE" },
+        op: "userMeEmailAddressRemove",
+        path,
+        realmId,
+        schema: userEmailAddressRemoveResponseSchema,
+      })
     },
     userMeEmailChangeResend(
       realmId: string,

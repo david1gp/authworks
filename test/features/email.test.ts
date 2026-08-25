@@ -4,6 +4,7 @@ import { emailOtpPreviewFixture } from "../../src/features/email/fixtures/emailO
 import { emailOtpSecurityFailedPreviewFixture } from "../../src/features/email/fixtures/emailOtpSecurityFailedPreviewFixture.js"
 import { emailOtpSecurityRequestedPreviewFixture } from "../../src/features/email/fixtures/emailOtpSecurityRequestedPreviewFixture.js"
 import { emailOtpSecurityVerifiedPreviewFixture } from "../../src/features/email/fixtures/emailOtpSecurityVerifiedPreviewFixture.js"
+import { emailPreviewFooterFixture } from "../../src/features/email/fixtures/emailPreviewFooterFixture.js"
 import { emailRecoveryPreviewFixture } from "../../src/features/email/fixtures/emailRecoveryPreviewFixture.js"
 import { emailVerificationPreviewFixture } from "../../src/features/email/fixtures/emailVerificationPreviewFixture.js"
 import { impersonationEndedPreviewFixture } from "../../src/features/email/fixtures/impersonationEndedPreviewFixture.js"
@@ -143,4 +144,30 @@ test("email generator adapter returns invalid-response for malformed renderer ou
   expect(result.success).toBe(false)
   if (result.success) return
   expect(result.code).toBe("platform.invalid-response")
+})
+
+test("email generator adapter renders email-change notification without exposing the old address", async () => {
+  const requests: CapturedRequest[] = []
+  const client = emailGeneratorApiClientCreate({
+    baseUrl: "https://email-generator.example.test",
+    fetch: fakeEmailGeneratorFetchCreate(requests),
+  })
+
+  const result = await client.emailChangeNotificationRender({
+    footer: emailPreviewFooterFixture,
+    notification: {
+      email: "old@example.test",
+      newEmail: "new@example.test",
+      realmId: "realm-email-change",
+      userId: "user-email-change",
+    },
+  })
+
+  expect(result.success).toBe(true)
+  expect(requests[0]?.path).toBe("/renderEmailTemplate/securityNotificationV1")
+  expect(requests[0]?.body).toMatchObject({
+    details: [{ label: "New email address", value: "new@example.test" }],
+    event: "emailChanged",
+  })
+  expect(JSON.stringify(requests[0]?.body)).not.toContain("old@example.test")
 })

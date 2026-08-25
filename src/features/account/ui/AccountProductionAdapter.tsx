@@ -41,6 +41,8 @@ export function AccountProductionAdapter(props: {
         <AccountProfileView
           displayName={state.displayName.get()}
           email={state.user.get()?.email ?? ""}
+          emailActionId={state.emailActionId.get()}
+          emailAddresses={state.emailAddresses.get()}
           emailCandidate={state.emailCandidate.get()}
           emailChallengeActive={state.emailChallengeId.get() !== undefined}
           emailErrorMessage={state.emailErrorMessage.get()}
@@ -50,19 +52,20 @@ export function AccountProductionAdapter(props: {
           emailVerified={state.user.get()?.emailVerified ?? false}
           errorMessage={state.errorMessage.get()}
           firstName={state.firstName.get()}
-          gender={state.gender.get()}
+          genderSignal={state.gender}
           kind={props.kind as "email" | "overview" | "profile"}
           lastName={state.lastName.get()}
           nickName={state.nickName.get()}
           onDisplayNameInput={state.displayName.set}
-          onEmailCancel={state.emailChangeCancel}
+          onEmailCancel={state.emailAddressAddCancel}
           onEmailInput={state.emailCandidate.set}
-          onEmailResend={state.emailChangeResend}
-          onEmailStart={state.emailChangeStart}
+          onEmailPrimarySet={state.emailAddressPrimarySet}
+          onEmailRemove={state.emailAddressRemove}
+          onEmailResend={state.emailAddressAddResend}
+          onEmailStart={state.emailAddressAddStart}
           onEmailTokenInput={state.emailToken.set}
-          onEmailVerify={state.emailChangeVerify}
+          onEmailVerify={state.emailAddressAddVerify}
           onFirstNameInput={state.firstName.set}
-          onGenderInput={state.gender.set}
           onLastNameInput={state.lastName.set}
           onNickNameInput={state.nickName.set}
           onPreferredLanguageInput={state.preferredLanguage.set}

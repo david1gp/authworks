@@ -41,6 +41,7 @@ import { realmBootstrapAdminTable } from "../../features/realms/persistence/real
 import { realmDomainTable } from "../../features/realms/persistence/realmDomainTable.js"
 import { realmTable } from "../../features/realms/persistence/realmTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
+import { userEmailTable } from "../../features/users/persistence/userEmailTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
 import { wahaHealthCandidateTable } from "../../features/waha/persistence/wahaHealthCandidateTable.js"
@@ -92,6 +93,7 @@ export const storageSchema = {
   mfaPolicyTable,
   mfaRecoveryCodeTable,
   mfaTotpEnrollmentTable,
+  userEmailTable,
   userProfileTable,
   userTable,
   wahaHealthCandidateTable,

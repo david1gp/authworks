@@ -18,6 +18,7 @@ import { realmSystemContextCreate } from "../../src/features/realms/domain/realm
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
+import { userEmailRepositoryCreate } from "../../src/features/users/persistence/userEmailRepositoryCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -359,6 +360,132 @@ test("email OTP resists enumeration, tenant crossover, expiry, and attempts", as
       kind: "failed",
       userId: alpha.userId,
     })
+  })
+})
+
+test("email OTP resolves verified secondary addresses and rejects unverified or removed addresses", async () => {
+  await withDatabase(async (database, testkit) => {
+    const alpha = await createVerifiedUser(database, "email-otp-secondary-alpha.example.com")
+    const beta = await createVerifiedUser(database, "email-otp-secondary-beta.example.com")
+    const emails = userEmailRepositoryCreate(database.db)
+    const pending = emails.userEmailCreate({
+      createdAt: testkit.runtime.now(),
+      email: "pending-secondary@example.com",
+      id: "otp-pending-secondary",
+      isPrimary: false,
+      realmId: alpha.realm.id,
+      updatedAt: testkit.runtime.now(),
+      userId: alpha.userId,
+      verifiedAt: null,
+      version: 1,
+    })
+    expect(pending.success).toBe(true)
+    const secondary = emails.userEmailCreate({
+      createdAt: testkit.runtime.now(),
+      email: "otp-secondary@example.com",
+      id: "otp-verified-secondary",
+      isPrimary: false,
+      realmId: alpha.realm.id,
+      updatedAt: testkit.runtime.now(),
+      userId: alpha.userId,
+      verifiedAt: testkit.runtime.now(),
+      version: 1,
+    })
+    expect(secondary.success).toBe(true)
+    if (!secondary.success) return
+
+    let pendingDelivery = false
+    expect(
+      emailOtpStart({
+        context: alpha.context,
+        database,
+        input: { email: "pending-secondary@example.com" },
+        onDelivery: () => {
+          pendingDelivery = true
+        },
+        realmId: alpha.realm.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+    expect(pendingDelivery).toBe(false)
+    expect(
+      emailOtpStart({
+        context: beta.context,
+        database,
+        input: { email: "otp-secondary@example.com" },
+        onDelivery: () => {
+          throw new Error("cross-realm addresses must not receive OTP")
+        },
+        realmId: beta.realm.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+
+    testkit.advance(60_000)
+    let delivery: { challengeId: string; code: string; email: string } | undefined
+    const started = emailOtpStart({
+      context: alpha.context,
+      database,
+      input: { email: " OTP-secondary@example.com " },
+      onDelivery: (value) => {
+        delivery = value
+      },
+      realmId: alpha.realm.id,
+      runtime: testkit.runtime,
+    })
+    expect(started.success).toBe(true)
+    expect(delivery?.email).toBe("otp-secondary@example.com")
+    if (!started.success || delivery === undefined) return
+    expect(
+      emailOtpVerify({
+        context: alpha.context,
+        database,
+        input: { challengeId: delivery.challengeId, code: delivery.code },
+        realmId: alpha.realm.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+
+    testkit.advance(60_000)
+    let removedDelivery: { challengeId: string; code: string } | undefined
+    const removedStart = emailOtpStart({
+      context: alpha.context,
+      database,
+      input: { email: "otp-secondary@example.com" },
+      onDelivery: (value) => {
+        removedDelivery = value
+      },
+      realmId: alpha.realm.id,
+      runtime: testkit.runtime,
+    })
+    expect(removedStart.success).toBe(true)
+    expect(removedDelivery).toBeDefined()
+    expect(emails.userEmailDelete(alpha.realm.id, alpha.userId, secondary.data.id)).toMatchObject({
+      data: { email: "otp-secondary@example.com" },
+      success: true,
+    })
+    if (removedDelivery === undefined) return
+    expect(
+      emailOtpVerify({
+        context: alpha.context,
+        database,
+        input: { challengeId: removedDelivery.challengeId, code: removedDelivery.code },
+        realmId: alpha.realm.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(false)
+    expect(
+      emailOtpStart({
+        context: alpha.context,
+        database,
+        input: { email: "otp-secondary@example.com" },
+        onDelivery: () => {
+          throw new Error("removed addresses must not receive OTP")
+        },
+        realmId: alpha.realm.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
   })
 })
 

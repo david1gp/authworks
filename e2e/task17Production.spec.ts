@@ -106,7 +106,7 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     await page.getByRole("button", { name: "Sign out", exact: true }).click()
     await expect(page.getByRole("heading", { name: "Signed out", exact: true })).toBeVisible()
     await page.goto("/account/profile")
-    await expect(page.locator("[data-content-state='inaccessible']")).toBeVisible()
+    await expect(page).toHaveURL("/login?return_to=%2Faccount%2Fprofile")
 
     const adminDiscoveryPromise = page.waitForResponse(
       (response) => new URL(response.url()).pathname === "/organization-discovery",

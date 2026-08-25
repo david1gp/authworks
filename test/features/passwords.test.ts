@@ -18,6 +18,7 @@ import { realmTenantContextCreate } from "../../src/features/realms/domain/realm
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
+import { userEmailRepositoryCreate } from "../../src/features/users/persistence/userEmailRepositoryCreate.js"
 import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -489,6 +490,155 @@ test("password identifiers and tokens stay tenant scoped and registration resist
         realmId: beta.id,
       }),
     ).toEqual({ data: { accepted: true }, success: true })
+  })
+})
+
+test("verified secondary email addresses support password login and recovery without changing the primary projection", async () => {
+  await withDatabase(async (database, testkit) => {
+    const alpha = await createRealm(database, "passwords-secondary-alpha.example.com")
+    const beta = await createRealm(database, "passwords-secondary-beta.example.com")
+    const alphaContext = realmTenantContextCreate(alpha.id, "anonymous")
+    const betaContext = realmTenantContextCreate(beta.id, "anonymous")
+    let verificationToken = ""
+    expect(
+      passwordRegister({
+        context: alphaContext,
+        database,
+        input: registrationInput("primary@example.com", "secondary-user"),
+        onVerificationToken: ({ token }) => {
+          verificationToken = token
+        },
+        realmId: alpha.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordEmailVerify({ context: alphaContext, database, input: { token: verificationToken }, realmId: alpha.id })
+        .success,
+    ).toBe(true)
+    const user = database.sqlite.query("SELECT id FROM users WHERE realm_id = ?").get(alpha.id) as { id: string }
+    const emails = userEmailRepositoryCreate(database.db)
+    const pending = emails.userEmailCreate({
+      createdAt: testkit.runtime.now(),
+      email: "pending@example.com",
+      id: "pending-secondary",
+      isPrimary: false,
+      realmId: alpha.id,
+      updatedAt: testkit.runtime.now(),
+      userId: user.id,
+      verifiedAt: null,
+      version: 1,
+    })
+    expect(pending.success).toBe(true)
+    const secondary = emails.userEmailCreate({
+      createdAt: testkit.runtime.now(),
+      email: "secondary@example.com",
+      id: "verified-secondary",
+      isPrimary: false,
+      realmId: alpha.id,
+      updatedAt: testkit.runtime.now(),
+      userId: user.id,
+      verifiedAt: testkit.runtime.now(),
+      version: 1,
+    })
+    expect(secondary.success).toBe(true)
+    if (!secondary.success) return
+
+    expect(
+      passwordLogin({
+        context: alphaContext,
+        database,
+        input: { identifier: "secondary@example.com", password: "Correct Horse 12" },
+        realmId: alpha.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordLogin({
+        context: alphaContext,
+        database,
+        input: { identifier: "pending@example.com", password: "Correct Horse 12" },
+        realmId: alpha.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      passwordLogin({
+        context: betaContext,
+        database,
+        input: { identifier: "secondary@example.com", password: "Correct Horse 12" },
+        realmId: beta.id,
+      }).success,
+    ).toBe(false)
+
+    const deliveries: Array<{ email: string; token: string }> = []
+    expect(
+      passwordRecoveryRequest({
+        context: alphaContext,
+        database,
+        input: { email: "secondary@example.com" },
+        onRecoveryToken: ({ email, token }) => {
+          deliveries.push({ email, token })
+        },
+        realmId: alpha.id,
+      }),
+    ).toEqual({ data: { accepted: true }, success: true })
+    expect(deliveries).toHaveLength(1)
+    expect(deliveries[0]?.email).toBe("secondary@example.com")
+    expect(
+      passwordRecoveryRequest({
+        context: alphaContext,
+        database,
+        input: { email: "pending@example.com" },
+        onRecoveryToken: () => {
+          throw new Error("unverified addresses must not receive recovery")
+        },
+        realmId: alpha.id,
+      }),
+    ).toEqual({ data: { accepted: true }, success: true })
+    expect(
+      passwordRecoveryRequest({
+        context: betaContext,
+        database,
+        input: { email: "secondary@example.com" },
+        onRecoveryToken: () => {
+          throw new Error("cross-realm addresses must not receive recovery")
+        },
+        realmId: beta.id,
+      }),
+    ).toEqual({ data: { accepted: true }, success: true })
+    expect(
+      passwordRecoveryComplete({
+        context: alphaContext,
+        database,
+        input: { newPassword: "Secondary Recovery 12", token: deliveries[0]?.token ?? "" },
+        realmId: alpha.id,
+      }),
+    ).toEqual({ data: { changed: true }, success: true })
+
+    expect(emails.userEmailDelete(alpha.id, user.id, secondary.data.id)).toMatchObject({
+      data: { email: "secondary@example.com" },
+      success: true,
+    })
+    expect(
+      passwordLogin({
+        context: alphaContext,
+        database,
+        input: { identifier: "secondary@example.com", password: "Secondary Recovery 12" },
+        realmId: alpha.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      passwordRecoveryRequest({
+        context: alphaContext,
+        database,
+        input: { email: "secondary@example.com" },
+        onRecoveryToken: () => {
+          throw new Error("removed addresses must not receive recovery")
+        },
+        realmId: alpha.id,
+      }),
+    ).toEqual({ data: { accepted: true }, success: true })
+    expect(database.sqlite.query("SELECT email FROM users WHERE id = ?").get(user.id)).toEqual({
+      email: "primary@example.com",
+    })
   })
 })
 

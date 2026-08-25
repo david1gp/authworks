@@ -16,7 +16,9 @@ export function httpErrorResultCreate(input: {
 }): { body: HttpErrorResponse; retryAfterSeconds?: number; status: number; retryable: boolean } {
   const catalogEntry = input.result.code === undefined ? undefined : errorCatalogGet(input.result.code)
   const code =
-    input.result.code === "passwords.rate-limited" || input.result.code === "whatsapp-otp.rate-limited"
+    input.result.code === "passwords.rate-limited" ||
+    input.result.code === "users.rate-limited" ||
+    input.result.code === "whatsapp-otp.rate-limited"
       ? "rate_limited"
       : catalogEntry === undefined
         ? "platform.internal"

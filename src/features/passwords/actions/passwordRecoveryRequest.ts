@@ -12,6 +12,7 @@ import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
+import { userEmailRepositoryCreate } from "../../users/persistence/userEmailRepositoryCreate.js"
 import { passwordTokenCreate } from "../domain/passwordTokenCreate.js"
 import { passwordTokenHashCreate } from "../domain/passwordTokenHashCreate.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
@@ -51,9 +52,13 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   })
   if (!policy.success || !policy.data.allowPasswordRecovery) return resultCreate({ accepted: true })
   const repository = passwordRepositoryCreate(options.database.db)
-  const user = repository.passwordUserFindByIdentifier(options.realmId, email.data)
-  if (!user.success || user.data === null || user.data.state === "deleted" || user.data.emailVerifiedAt === null)
-    return resultCreate({ accepted: true })
+  const address = userEmailRepositoryCreate(options.database.db).userEmailGetByVerifiedAddress(
+    options.realmId,
+    email.data,
+  )
+  if (!address.success || address.data === null) return resultCreate({ accepted: true })
+  const user = repository.passwordUserGet(options.realmId, address.data.userId)
+  if (!user.success || user.data === null || user.data.state === "deleted") return resultCreate({ accepted: true })
   const userRow = user.data
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
@@ -106,7 +111,7 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
   if (!created.success) return created
   try {
     options.onRecoveryToken?.({
-      email: userRow.email,
+      email: address.data.email,
       realmId: options.realmId,
       token: token.valueGet(),
       userId: userRow.id,

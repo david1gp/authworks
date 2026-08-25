@@ -8,6 +8,7 @@ import { mfaRecoveryCodeVerify } from "../../src/features/mfa/actions/mfaRecover
 import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
 import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { passkeyRepositoryCreate } from "../../src/features/passkeys/persistence/passkeyRepositoryCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -24,6 +25,7 @@ import { userList } from "../../src/features/users/actions/userList.js"
 import { userProfileUpdate } from "../../src/features/users/actions/userProfileUpdate.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
 import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
+import { userCurrentResponseSchema } from "../../src/features/users/public/userCurrentResponseSchema.js"
 import { userResponseSchema } from "../../src/features/users/public/userResponseSchema.js"
 import { userAccountSummaryResolve } from "../../src/features/users/server/userAccountSummaryResolve.js"
 import { userServerAppCreate } from "../../src/features/users/server/userServerAppCreate.js"
@@ -684,7 +686,22 @@ test("subject-bound user routes use the session actor and enforce realm, status,
     expect(current.success).toBe(true)
     if (!current.success || current.status !== "current") return
     expect(current.data.user.id).toBe(alphaCreated.data.user.id)
+    expect(current.data.capabilities).toEqual({ realmRead: false })
     expect(JSON.stringify(current.data)).not.toMatch(/password|secret|token|hash/i)
+
+    const administrationOrganization = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Alpha administration", ownerUserId: alphaCreated.data.user.id },
+      realmId: alpha.id,
+    })
+    expect(administrationOrganization.success).toBe(true)
+    const permitted = await client.userMeGet(alpha.id)
+    expect(permitted).toMatchObject({
+      data: { capabilities: { realmRead: true }, user: { id: alphaCreated.data.user.id } },
+      status: "current",
+      success: true,
+    })
 
     const updated = await client.userMeProfileUpdate(alpha.id, { displayName: "Alpha Self-Service" })
     expect(updated).toMatchObject({ success: true, data: { user: { id: alphaCreated.data.user.id } } })
@@ -810,7 +827,7 @@ test("the current-user response omits legacy empty profile values", async () => 
       headers: { authorization: `Bearer ${issued.data.token}` },
     })
     expect(response.status).toBe(200)
-    const parsed = v.safeParse(userResponseSchema, await response.json())
+    const parsed = v.safeParse(userCurrentResponseSchema, await response.json())
     expect(parsed.success).toBe(true)
     if (parsed.success) expect(parsed.output.user.profile).toEqual({ displayName: "Legacy user" })
   })

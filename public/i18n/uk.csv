@@ -47,7 +47,15 @@ account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
 account.factors.verificationCode,Verification code
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
+account.identities.alreadyLinked,This external account is already linked.
+account.identities.confirm,Confirm link
+account.identities.confirmDescription,Confirm linking your {provider} account to continue.
+account.identities.confirmTitle,Confirm external account
 account.identities.empty,No external identities are linked
+account.identities.externalAccount,external account
+account.identities.linkDescription,Connect another provider to use it as an authentication method.
+account.identities.linkTitle,Link an external account
+account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Від’єднати цей зовнішній обліковий запис?
 account.passkeys.add,Add passkey
@@ -69,6 +77,20 @@ account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
+account.profile.emailAdd,Add email address
+account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
+account.profile.emailAddTitle,Add email address
+account.profile.emailAddressDescription,Verified addresses can be used for sign-in and account recovery. Account communication uses the primary address.
+account.profile.emailAddresses,Email addresses
+account.profile.emailAddressesEmpty,No email addresses are available.
+account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailMakePrimary,Make primary
+account.profile.emailPrimary,Primary
+account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
+account.profile.emailRefresh,Refresh addresses
+account.profile.emailRemove,Remove
+account.profile.emailRemoving,Removing…
+account.profile.emailUpdating,Updating…
 account.profile.emailDescription,Review the verified address used for sign-in and account communication.
 account.profile.emailTitle,Email address and verification
 account.profile.emailChange,Change email address
@@ -88,6 +110,10 @@ account.profile.emailVerify,Verify email address
 account.profile.emailVerifying,Verifying…
 account.profile.firstName,First name
 account.profile.gender,Gender
+account.profile.gender.man,Man
+account.profile.gender.nonBinary,Non-binary
+account.profile.gender.unspecified,Unspecified
+account.profile.gender.woman,Woman
 account.profile.pictureContentType,Picture content type
 account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
 account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
@@ -95,6 +121,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureUrl,Picture URL
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
+account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number

@@ -3,6 +3,7 @@ import * as v from "valibot"
 import { realmResourceIdSchema } from "../../src/features/realms/public/realmResourceIdSchema.js"
 import { userListResponseSchema } from "../../src/features/users/public/userListResponseSchema.js"
 import { userResourceIdSchema } from "../../src/features/users/public/userResourceIdSchema.js"
+import { userCurrentResponseSchema } from "../../src/features/users/public/userCurrentResponseSchema.js"
 import { userResponseSchema } from "../../src/features/users/public/userResponseSchema.js"
 import { userSchema } from "../../src/features/users/public/userSchema.js"
 
@@ -28,6 +29,10 @@ test("public user response and list schemas accept Authworks and migrated user I
     const user = userCreate(id)
     expect(v.safeParse(userSchema, user).success).toBe(true)
     expect(v.safeParse(userResponseSchema, { user }).success).toBe(true)
+    expect(v.safeParse(userCurrentResponseSchema, { capabilities: { realmRead: true }, user }).success).toBe(true)
+    expect(
+      v.safeParse(userCurrentResponseSchema, { capabilities: { permissions: ["realm.read"] }, user }).success,
+    ).toBe(false)
     expect(v.safeParse(userListResponseSchema, { items: [user] }).success).toBe(true)
   }
 })

@@ -4,6 +4,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { userEmailRepositoryCreate } from "../../users/persistence/userEmailRepositoryCreate.js"
 import { type UserRow, userTable } from "../../users/persistence/userTable.js"
 import { type PasswordChallengeRow, passwordChallengeTable } from "./passwordChallengeTable.js"
 import { type PasswordCredentialRow, passwordCredentialTable } from "./passwordCredentialTable.js"
@@ -503,6 +504,40 @@ export function passwordRepositoryCreate(database: StorageExecutor) {
         )
       } catch (_error) {
         return resultErrorCreate("passwordUserFindByIdentifier", "The user could not be read.", "passwords.read-failed")
+      }
+    },
+
+    passwordUserFindByVerifiedIdentifier(realmId: string, identifier: string): Result<UserRow | null> {
+      try {
+        const byUserName = database
+          .select()
+          .from(userTable)
+          .where(and(eq(userTable.realmId, realmId), eq(userTable.userName, identifier)))
+          .orderBy(asc(userTable.createdAt))
+          .get()
+        if (byUserName !== undefined) return resultCreate(byUserName)
+
+        const email = userEmailRepositoryCreate(database).userEmailGetByVerifiedAddress(realmId, identifier)
+        if (!email.success)
+          return resultErrorCreate(
+            "passwordUserFindByVerifiedIdentifier",
+            "The user could not be read.",
+            "passwords.read-failed",
+          )
+        if (email.data === null) return resultCreate(null)
+        return resultCreate(
+          database
+            .select()
+            .from(userTable)
+            .where(and(eq(userTable.realmId, realmId), eq(userTable.id, email.data.userId)))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "passwordUserFindByVerifiedIdentifier",
+          "The user could not be read.",
+          "passwords.read-failed",
+        )
       }
     },
 

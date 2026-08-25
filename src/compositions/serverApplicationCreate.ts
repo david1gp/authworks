@@ -43,6 +43,7 @@ import { runtimeCreate } from "../platform/runtime/runtimeCreate.js"
 import { storageDatabaseOpen } from "../platform/storage/storageDatabaseOpen.js"
 
 type ServerApplicationCreateOptions = {
+  readonly accountUiOrigin?: string
   readonly browserMode?: boolean
   readonly databasePath: string
   readonly emailGenerator?: EmailGeneratorServerConfiguration
@@ -78,6 +79,7 @@ export function serverApplicationCreate(
   const database = storageDatabaseOpen(options.databasePath, options.runtime)
   if (!database.success) return database
   const publicOrigin = options.publicOrigin ?? "http://127.0.0.1:3000"
+  const accountUiOrigin = options.accountUiOrigin ?? (options.production === true ? undefined : publicOrigin)
   const passkeyRpId = options.passkeyRpId ?? new URL(publicOrigin).hostname
   const emailDeliveryCallbacks =
     options.emailGenerator === undefined || options.mailDelivery === undefined
@@ -160,6 +162,7 @@ export function serverApplicationCreate(
   application.route(
     "/",
     externalIdentityServerAppCreate({
+      accountUiOrigin,
       browserMode: options.browserMode,
       database: database.data,
       providerPorts: options.externalIdentityProviderPorts,
@@ -217,6 +220,7 @@ export function serverApplicationCreate(
       clientIpResolve:
         options.clientIpResolve === undefined ? undefined : (context) => options.clientIpResolve?.(context.req.raw),
       database: database.data,
+      onEmailAddressVerificationDelivery: emailDeliveryCallbacks?.onEmailAddressVerificationDelivery,
       onEmailChangeDelivery: emailDeliveryCallbacks?.onEmailChangeDelivery,
       onEmailChangeNotification: emailDeliveryCallbacks?.onEmailChangeNotification,
       publicOrigin,

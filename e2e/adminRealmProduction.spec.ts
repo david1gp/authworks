@@ -174,5 +174,5 @@ test("production realm settings render an expired administrator session", async 
   })
 
   await page.goto("/admin/realm")
-  await expect(page.locator("[data-content-state='inaccessible']")).toBeVisible()
+  await expect(page).toHaveURL("/login?return_to=%2Fadmin%2Frealm")
 })

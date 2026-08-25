@@ -15,7 +15,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
-import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
+import { userEmailRepositoryCreate } from "../../users/persistence/userEmailRepositoryCreate.js"
 import { emailOtpCodeMatches } from "../domain/emailOtpCodeMatches.js"
 import { emailOtpEmailHashCreate } from "../domain/emailOtpEmailHashCreate.js"
 import { emailOtpEventTypes } from "../events/emailOtpEventTypes.js"
@@ -167,17 +167,13 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
   const userId = current.userId
   const user = repository.emailOtpUserGet(options.realmId, userId)
   if (!user.success) return user
-  const normalizedEmail =
-    user.data === null
-      ? resultErrorCreate("emailOtpVerify", "The email OTP code is invalid.", "email-otp.invalid")
-      : userEmailNormalize(user.data.email)
+  const emails = userEmailRepositoryCreate(options.database).userEmailList(options.realmId, userId)
+  if (!emails.success) return resultErrorCreate(op, "The email OTP code is invalid.", "email-otp.read-failed")
   const eligible =
     user.data !== null &&
-    normalizedEmail.success &&
-    emailOtpEmailHashCreate(normalizedEmail.data) === current.emailHash &&
     user.data.state === "active" &&
     user.data.deletedAt === null &&
-    user.data.emailVerifiedAt !== null
+    emails.data.some((email) => email.verifiedAt !== null && emailOtpEmailHashCreate(email.email) === current.emailHash)
   if (!eligible) {
     const consumed = repository.emailOtpChallengeConsume(options.realmId, current.id, current.version, options.now)
     if (!consumed.success) return consumed

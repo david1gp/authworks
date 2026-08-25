@@ -1,13 +1,15 @@
 import { mdiAccountCheckOutline } from "@adaptive-ds/mdi/mdiAccountCheckOutline.js"
+import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
 import { mdiDomain } from "@adaptive-ds/mdi/mdiDomain.js"
-import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
+import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
+import { mdiShieldLockOutline } from "@adaptive-ds/mdi/mdiShieldLockOutline.js"
 import { A } from "@solidjs/router"
 import { For, type JSX, Show } from "solid-js"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
@@ -33,6 +35,30 @@ export function ProductionAuthenticatedShell(props: {
         <SidebarToggle {...state.sidebar} variant="ghost" />
       </div>
       <nav aria-label={title()} class="flex-1 overflow-y-auto px-2 py-2">
+        <Show when={state.showAdminNavigation()}>
+          <A
+            aria-current={state.isActive("/admin") ? "page" : undefined}
+            class={`mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
+              state.isActive("/admin") ? "bg-accent text-accent-contrast shadow-sm" : "text-foreground hover:bg-muted"
+            }`}
+            href="/admin"
+          >
+            <Icon path={mdiShieldLockOutline} />
+            {messageTranslate("admin.navigation.label")}
+          </A>
+        </Show>
+        <Show when={state.showAccountNavigation()}>
+          <A
+            aria-current={state.isActive("/account") ? "page" : undefined}
+            class={`mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
+              state.isActive("/account") ? "bg-accent text-accent-contrast shadow-sm" : "text-foreground hover:bg-muted"
+            }`}
+            href="/account"
+          >
+            <Icon path={mdiAccountCircleOutline} />
+            {messageTranslate("shell.nav.account")}
+          </A>
+        </Show>
         <For each={state.groups()}>
           {(group) => (
             <section class="mb-3">

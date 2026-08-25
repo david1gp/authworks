@@ -1,6 +1,7 @@
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
+import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
 import type { UserProfileUpdateRequest } from "../../users/public/userProfileUpdateRequestSchema.js"
 import { accountDemoUserFixture } from "./accountDemoUserFixture.js"
 
@@ -11,17 +12,41 @@ const demoPhoneChallenge = {
   expiresAt: 1_800_000_300_000,
   retryAt: 1_800_000_060_000,
 }
-const demoEmailChallenge = {
+const demoEmailAddressChallenge = {
   accepted: true as const,
-  challengeId: "account-demo-email-change",
+  challengeId: "account-demo-email-address-add",
   expiresAt: 1_800_000_300_000,
   retryAt: 1_800_000_060_000,
 }
-const demoEmailTokenLength = 32
+const demoEmailAddressToken = "demo-email-address-token-000000000000000000000"
+
+const demoEmailAddresses: UserEmailAddress[] = [
+  {
+    createdAt: accountDemoUserFixture.createdAt,
+    email: accountDemoUserFixture.email,
+    id: "account-demo-email-primary",
+    isPrimary: true,
+    updatedAt: accountDemoUserFixture.updatedAt,
+    verified: true,
+    verifiedAt: accountDemoUserFixture.emailVerifiedAt ?? null,
+    version: 1,
+  },
+  {
+    createdAt: accountDemoUserFixture.createdAt + 30_000,
+    email: "avery.secondary@example.com",
+    id: "account-demo-email-secondary",
+    isPrimary: false,
+    updatedAt: accountDemoUserFixture.updatedAt,
+    verified: true,
+    verifiedAt: accountDemoUserFixture.emailVerifiedAt ?? null,
+    version: 1,
+  },
+]
 
 export function accountDemoAdapterCreate(fixtureState: () => DemoFixtureState) {
   let fixtureUser = structuredClone(accountDemoUserFixture)
   let emailChallenge: { consumed: boolean; email: string } | undefined
+  let emailAddresses = structuredClone(demoEmailAddresses)
   const error = () =>
     resultErrorCodedCreate(
       "accountDemoFixture",
@@ -35,60 +60,99 @@ export function accountDemoAdapterCreate(fixtureState: () => DemoFixtureState) {
       fixtureUser = { ...fixtureUser, deletedAt: demoMutationTimestamp, state: "deleted" }
       return resultCreate({ user: fixtureUser })
     },
-    emailChangeResend: async (input: { readonly challengeId: string; readonly email: string }) => {
+    emailAddressAddDemoToken: demoEmailAddressToken,
+    emailAddressAddResend: async (input: { readonly challengeId: string; readonly email: string }) => {
       if (fixtureState() === "error") return error()
       if (
         emailChallenge === undefined ||
         emailChallenge.consumed ||
-        input.challengeId !== demoEmailChallenge.challengeId ||
+        input.challengeId !== demoEmailAddressChallenge.challengeId ||
         input.email.toLowerCase() !== emailChallenge.email
       )
         return resultErrorCodedCreate(
-          "accountDemoEmailChange",
-          "The account email-change challenge is invalid.",
+          "accountDemoEmailAddressAdd",
+          "The account email-address challenge is invalid.",
           "users.invalid",
         )
-      return resultCreate(demoEmailChallenge)
+      return resultCreate(demoEmailAddressChallenge)
     },
-    emailChangeStart: async (input: { readonly email: string }) => {
+    emailAddressAddStart: async (input: { readonly email: string }) => {
       if (fixtureState() === "error") return error()
-      if (input.email.toLowerCase() === fixtureUser.email.toLowerCase())
+      if (emailAddresses.some((address) => address.email.toLowerCase() === input.email.toLowerCase()))
         return resultErrorCodedCreate(
-          "accountDemoEmailChange",
-          "The account already uses this email address.",
+          "accountDemoEmailAddressAdd",
+          "The account already has this email address.",
           "users.conflict",
         )
       emailChallenge = { consumed: false, email: input.email.toLowerCase() }
-      return resultCreate(demoEmailChallenge)
+      return resultCreate(demoEmailAddressChallenge)
     },
-    emailChangeVerify: async (input: { readonly challengeId: string; readonly token: string }) => {
+    emailAddressAddVerify: async (input: { readonly challengeId: string; readonly token: string }) => {
       if (fixtureState() === "error") return error()
       if (
         emailChallenge === undefined ||
         emailChallenge.consumed ||
-        input.challengeId !== demoEmailChallenge.challengeId ||
-        input.token.length < demoEmailTokenLength
+        input.challengeId !== demoEmailAddressChallenge.challengeId ||
+        input.token !== demoEmailAddressToken
       )
         return resultErrorCodedCreate(
-          "accountDemoEmailChange",
-          "The account email-change token is invalid.",
+          "accountDemoEmailAddressAdd",
+          "The account email-address token is invalid.",
           "users.invalid",
         )
-      if (emailChallenge.email === fixtureUser.email.toLowerCase())
+      if (emailAddresses.some((address) => address.email.toLowerCase() === emailChallenge?.email))
         return resultErrorCodedCreate(
-          "accountDemoEmailChange",
-          "The account already uses this email address.",
+          "accountDemoEmailAddressAdd",
+          "The account already has this email address.",
           "users.conflict",
         )
       emailChallenge = { ...emailChallenge, consumed: true }
+      const email: UserEmailAddress = {
+        createdAt: demoMutationTimestamp,
+        email: emailChallenge.email,
+        id: `account-demo-email-${emailAddresses.length + 1}`,
+        isPrimary: false,
+        updatedAt: demoMutationTimestamp,
+        verified: true,
+        verifiedAt: demoMutationTimestamp,
+        version: 1,
+      }
+      emailAddresses = [...emailAddresses, email]
+      return resultCreate({ email })
+    },
+    emailAddressList: async () =>
+      fixtureState() === "error" ? error() : resultCreate({ items: structuredClone(emailAddresses) }),
+    emailAddressPrimarySet: async (emailId: string) => {
+      if (fixtureState() === "error") return error()
+      const email = emailAddresses.find((address) => address.id === emailId)
+      if (email === undefined || !email.verified || email.isPrimary)
+        return resultErrorCodedCreate(
+          "accountDemoEmailAddressPrimarySet",
+          "Only a verified secondary email address can become primary.",
+          "users.invalid",
+        )
+      emailAddresses = emailAddresses.map((address) => ({ ...address, isPrimary: address.id === emailId }))
+      const primary = emailAddresses.find((address) => address.id === emailId) as UserEmailAddress
       fixtureUser = {
         ...fixtureUser,
-        email: emailChallenge.email,
-        emailVerified: true,
-        emailVerifiedAt: demoMutationTimestamp,
+        email: primary.email,
+        emailVerified: primary.verified,
+        emailVerifiedAt: primary.verifiedAt ?? undefined,
         updatedAt: demoMutationTimestamp,
       }
-      return resultCreate({ user: fixtureUser })
+      return resultCreate({ email: primary })
+    },
+    emailAddressRemove: async (emailId: string) => {
+      if (fixtureState() === "error") return error()
+      const email = emailAddresses.find((address) => address.id === emailId)
+      if (email === undefined || email.isPrimary)
+        return resultErrorCodedCreate(
+          "accountDemoEmailAddressRemove",
+          "The primary email address cannot be removed.",
+          "users.invalid",
+        )
+      emailAddresses = emailAddresses.filter((address) => address.id !== emailId)
+      return resultCreate({ removed: true as const })
     },
     loadUser: async () => {
       if (fixtureState() === "error") return error()

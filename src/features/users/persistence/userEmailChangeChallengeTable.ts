@@ -11,6 +11,9 @@ export const userEmailChangeChallengeTable = sqliteTable(
     id: text("id").primaryKey(),
     maxAttempts: integer("max_attempts").notNull(),
     pendingEmail: text("pending_email").notNull(),
+    purpose: text("purpose", { enum: ["email_change", "email_address"] })
+      .notNull()
+      .default("email_change"),
     realmId: text("realm_id").notNull(),
     tokenHash: text("token_hash").notNull(),
     userId: text("user_id").notNull(),

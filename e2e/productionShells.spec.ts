@@ -56,6 +56,24 @@ const realm = {
 test.beforeEach(async ({ page }) => {
   await page.route("**/organization-discovery", (route) => route.fulfill({ json: discovery }))
   await page.route(`**/realms/${realmId}/sessions/current`, (route) => route.fulfill({ json: session }))
+  await page.route(`**/realms/${realmId}/me/emails`, (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            createdAt: 1_700_000_000_000,
+            email: "user@customer.example",
+            id: "production-shell-primary-email",
+            isPrimary: true,
+            updatedAt: 1_700_000_000_000,
+            verified: true,
+            verifiedAt: 1_700_000_000_000,
+            version: 1,
+          },
+        ],
+      },
+    }),
+  )
   await page.route(`**/realms/${realmId}/me`, (route) =>
     route.fulfill({
       json: {
@@ -124,10 +142,15 @@ test("production focus and authenticated shells render without network adapters"
   await page.goto("/admin/users/user-42")
   await expect(page.getByRole("heading", { name: "User detail", exact: true })).toBeVisible()
   await expect(page.getByRole("link", { name: "Users", exact: true })).toHaveAttribute("aria-current", "page")
+})
 
-  await page.goto("/admin/not-a-screen")
-  await expect(page.getByRole("heading", { name: "Page not found", exact: true })).toBeVisible()
-  await expect(page.locator('[data-content-state="inaccessible"]')).toBeVisible()
+test("unauthenticated protected routes redirect to login with their destination preserved", async ({ page }) => {
+  await page.route(`**/realms/${realmId}/sessions/current`, (route) => route.fulfill({ body: "", status: 401 }))
+
+  await page.goto("/admin/not-a-screen?from=bookmark#details")
+
+  await expect(page).toHaveURL("/login?return_to=%2Fadmin%2Fnot-a-screen%3Ffrom%3Dbookmark%23details")
+  expect(new URL(page.url()).searchParams.get("return_to")).toBe("/admin/not-a-screen?from=bookmark#details")
 })
 
 test("authenticated navigation becomes a mobile drawer", async ({ page }) => {
@@ -139,6 +162,23 @@ test("authenticated navigation becomes a mobile drawer", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeVisible()
   await expect(page.getByRole("navigation", { name: "Account" })).toBeVisible()
   await expect(page.getByRole("link", { name: "Sessions and devices", exact: true })).toBeVisible()
+})
+
+test("account email keeps sidebar branding while matching active icon and work-area headings", async ({ page }) => {
+  await page.goto("/account/email")
+
+  const activeEmailLink = page.getByRole("link", { name: "Email address", exact: true })
+  const activeLinkColor = await activeEmailLink.evaluate((element) => getComputedStyle(element).color)
+
+  await expect(activeEmailLink).toHaveAttribute("aria-current", "page")
+  await expect(activeEmailLink.locator("svg")).toHaveCSS("fill", activeLinkColor)
+  await expect(page.locator("main").getByText("Authworks", { exact: true })).toHaveCount(0)
+  await expect(page.locator("aside").getByRole("link", { name: "Authworks", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Email address and verification", exact: true })).toBeVisible()
+
+  await page.goto("/account/sessions")
+  await expect(page.locator("main").getByText("Authworks", { exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
 })
 
 test("desktop sidebar collapse releases production content space", async ({ page }) => {

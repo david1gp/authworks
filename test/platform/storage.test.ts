@@ -12,6 +12,7 @@ import { storageEventAppend } from "../../src/platform/storage/storageEventAppen
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
 import { storageTransactionRun } from "../../src/platform/storage/storageTransactionRun.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
+import { userEmailTable } from "../../src/features/users/persistence/userEmailTable.js"
 import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 
 async function withStorage<T>(operation: (path: string) => Promise<T>): Promise<T> {
@@ -96,12 +97,22 @@ test("storage upgrades legacy user columns before user reads and is idempotent",
       },
       success: true,
     })
+    expect(opened.data.db.select().from(userEmailTable).all()).toMatchObject([
+      {
+        email: "legacy@example.com",
+        isPrimary: true,
+        realmId: "realm-1",
+        userId: "user-1",
+        verifiedAt: null,
+      },
+    ])
     opened.data.close()
 
     const reopened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
     expect(reopened.success).toBe(true)
     if (!reopened.success) return
     expect(userRepositoryCreate(reopened.data.db).userGet("realm-1", "user-1").success).toBe(true)
+    expect(reopened.data.db.select().from(userEmailTable).all()).toHaveLength(1)
     reopened.data.close()
   })
 })
@@ -320,6 +331,7 @@ test("event rows are append-only and reset reconstructs an empty current schema"
     expect(reset).toEqual({ data: undefined, success: true })
     expect(opened.data.sqlite.query("SELECT COUNT(*) AS count FROM events").get()).toEqual({ count: 0 })
     expect(opened.data.sqlite.query("SELECT COUNT(*) AS count FROM current_state").get()).toEqual({ count: 0 })
+    expect(opened.data.sqlite.query("SELECT COUNT(*) AS count FROM user_emails").get()).toEqual({ count: 0 })
     opened.data.close()
 
     const reopened = storageDatabaseOpen(path, platformTestkitCreate().runtime)

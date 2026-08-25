@@ -13,6 +13,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userEventTypes } from "../../users/events/userEventTypes.js"
 import { userStateChangedEventPayloadSchema } from "../../users/events/userStateChangedEventPayloadSchema.js"
+import { userEmailRepositoryCreate } from "../../users/persistence/userEmailRepositoryCreate.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { passwordHashCreate } from "../domain/passwordHashCreate.js"
 import { passwordPolicyCheck } from "../domain/passwordPolicyCheck.js"
@@ -80,7 +81,10 @@ export function passwordRecoveryComplete(
     )
       return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
     const user = txRepository.passwordUserGet(options.realmId, challenge.data.userId)
-    if (!user.success || user.data === null || user.data.state === "deleted" || user.data.emailVerifiedAt === null)
+    if (!user.success || user.data === null || user.data.state === "deleted")
+      return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
+    const emails = userEmailRepositoryCreate(transaction).userEmailList(options.realmId, user.data.id)
+    if (!emails.success || !emails.data.some((email) => email.verifiedAt !== null))
       return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
     const credential = txRepository.passwordCredentialGet(options.realmId, user.data.id)
     if (!credential.success || credential.data === null)

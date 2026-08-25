@@ -119,7 +119,7 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     expect(expiredSession.status).toBe(401)
     expect(expiredSession.body).not.toContain(recoveryPassword)
     await page.reload()
-    await expect(page.locator("[data-content-state='inaccessible']")).toBeVisible()
+    await expect(page).toHaveURL("/login?return_to=%2Faccount%2Fprofile")
   } finally {
     await e2eServerStop(server.process)
   }

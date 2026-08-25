@@ -3,11 +3,12 @@ import type { EmailOtpDelivery } from "../../emailOtp/public/emailOtpDeliverySch
 import type { OrganizationInvitationDelivery } from "../../organizations/public/organizationInvitationDeliverySchema.js"
 import type { PasswordRecoveryDelivery } from "../../passwords/public/passwordRecoveryDeliverySchema.js"
 import type { PasswordRegistrationDelivery } from "../../passwords/public/passwordRegistrationDeliverySchema.js"
+import type { UserEmailAddressVerificationDelivery } from "../../users/public/userEmailAddressVerificationDeliverySchema.js"
+import type { UserEmailChangeDelivery } from "../../users/public/userEmailChangeDeliverySchema.js"
+import type { UserEmailChangeNotification } from "../../users/public/userEmailChangeNotificationSchema.js"
 import { emailGeneratorApiClientCreate } from "../client/emailGeneratorApiClientCreate.js"
 import type { MailDeliveryPort } from "../domain/mailDeliveryPort.js"
 import type { EmailRenderedMessage } from "../public/emailRenderedMessageSchema.js"
-import type { UserEmailChangeDelivery } from "../../users/public/userEmailChangeDeliverySchema.js"
-import type { UserEmailChangeNotification } from "../../users/public/userEmailChangeNotificationSchema.js"
 import type { EmailGeneratorServerConfiguration } from "./emailGeneratorServerConfiguration.js"
 
 type EmailDeliveryCallbacksCreateOptions = {
@@ -43,6 +44,21 @@ export function emailDeliveryCallbacksCreate(options: EmailDeliveryCallbacksCrea
       emailDeliverySend(
         notification.email,
         renderer.emailChangeNotificationRender({ footer, notification }),
+        options.mailDelivery,
+      )
+    },
+    onEmailAddressVerificationDelivery(delivery: UserEmailAddressVerificationDelivery): void {
+      emailDeliverySend(
+        delivery.email,
+        renderer.emailChangeRender({
+          delivery,
+          footer,
+          url: emailDeliveryUrlCreate(options.publicOrigin, "/account/emails", {
+            challengeId: delivery.challengeId,
+            realmId: delivery.realmId,
+            token: delivery.token,
+          }),
+        }),
         options.mailDelivery,
       )
     },

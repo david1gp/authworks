@@ -47,7 +47,15 @@ account.factors.totp,Authenticator-App
 account.factors.totpSecretOnce,Fügen Sie dieses Geheimnis Ihrem Authenticator hinzu und geben Sie den sechsstelligen Code ein. Dieses Einrichtungsgeheimnis wird nur jetzt angezeigt.
 account.factors.verificationCode,Bestätigungscode
 account.identities.description,"Externe Konten, die mit Ihrer Authworks-Identität verknüpft sind. Trennen Sie Konten, die Sie nicht mehr nutzen."
+account.identities.alreadyLinked,This external account is already linked.
+account.identities.confirm,Confirm link
+account.identities.confirmDescription,Confirm linking your {provider} account to continue.
+account.identities.confirmTitle,Confirm external account
 account.identities.empty,Es sind keine externen Identitäten verknüpft
+account.identities.externalAccount,external account
+account.identities.linkDescription,Connect another provider to use it as an authentication method.
+account.identities.linkTitle,Link an external account
+account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Trennen
 account.identities.unlinkConfirm,Dieses externe Konto trennen?
 account.passkeys.add,Passkey hinzufügen
@@ -69,6 +77,20 @@ account.password.tooShort,Das neue Passwort muss mindestens 8 Zeichen enthalten.
 account.profile.displayName,Anzeigename
 account.profile.displayNameRequired,Geben Sie einen Anzeigenamen ein.
 account.profile.email,E-Mail-Adresse
+account.profile.emailAdd,Add email address
+account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
+account.profile.emailAddTitle,Add email address
+account.profile.emailAddressDescription,Verified addresses can be used for sign-in and account recovery. Account communication uses the primary address.
+account.profile.emailAddresses,Email addresses
+account.profile.emailAddressesEmpty,No email addresses are available.
+account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailMakePrimary,Make primary
+account.profile.emailPrimary,Primary
+account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
+account.profile.emailRefresh,Refresh addresses
+account.profile.emailRemove,Remove
+account.profile.emailRemoving,Removing…
+account.profile.emailUpdating,Updating…
 account.profile.emailDescription,Prüfen Sie die verifizierte Adresse für Anmeldung und Kontokommunikation.
 account.profile.emailTitle,E-Mail-Adresse und Verifizierung
 account.profile.emailChange,Change email address
@@ -88,6 +110,10 @@ account.profile.emailVerify,Verify email address
 account.profile.emailVerifying,Verifying…
 account.profile.firstName,Vorname
 account.profile.gender,Gender
+account.profile.gender.man,Man
+account.profile.gender.nonBinary,Non-binary
+account.profile.gender.unspecified,Unspecified
+account.profile.gender.woman,Woman
 account.profile.pictureContentType,Picture content type
 account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
 account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
@@ -95,6 +121,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureUrl,Picture URL
 account.profile.lastName,Nachname
 account.profile.nickName,Spitzname
+account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
 account.profile.personalDescription,"Halten Sie das Profil aktuell, das Anwendungen und Administratoren angezeigt wird."
 account.profile.personalInformation,Persönliche Angaben
 account.profile.phoneAdd,Add phone number

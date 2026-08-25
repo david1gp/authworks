@@ -4,7 +4,7 @@ import { organizationMeListResponseSchema } from "../../features/organizations/p
 import { organizationResourceIdSchema } from "../../features/organizations/public/organizationResourceIdSchema.js"
 import { realmResponseSchema } from "../../features/realms/public/realmResponseSchema.js"
 import { sessionSchema } from "../../features/sessions/public/sessionSchema.js"
-import { userResponseSchema } from "../../features/users/public/userResponseSchema.js"
+import { userCurrentResponseSchema } from "../../features/users/public/userCurrentResponseSchema.js"
 import type { ProductionApiContextValue } from "./productionApiContextValue.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
 
@@ -32,7 +32,7 @@ export async function productionApplicationContextsCreate(): Promise<{
   const session = current.session
   const user =
     session.subjectType === "user"
-      ? await productionJsonGet(`/realms/${encodeURIComponent(realmId)}/me`, userResponseSchema)
+      ? await productionJsonGet(`/realms/${encodeURIComponent(realmId)}/me`, userCurrentResponseSchema)
       : undefined
   const memberships =
     session.subjectType === "user"
@@ -65,7 +65,14 @@ export async function productionApplicationContextsCreate(): Promise<{
           selectedOrganization === undefined
             ? "missing"
             : { organizationId: selectedOrganization.id, status: "available" },
-        permission: realm === undefined ? "denied" : "granted",
+        permission:
+          session.subjectType === "user"
+            ? user?.capabilities?.realmRead === true
+              ? "granted"
+              : "denied"
+            : realm === undefined
+              ? "denied"
+              : "granted",
         realm: { realmId, status: "available" },
       },
       impersonation:

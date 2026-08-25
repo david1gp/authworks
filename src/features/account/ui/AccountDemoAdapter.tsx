@@ -55,6 +55,8 @@ export function AccountDemoAdapter(props: {
           <AccountProfileView
             displayName={page.displayName.get()}
             email={page.user.get()?.email ?? ""}
+            emailActionId={page.emailActionId.get()}
+            emailAddresses={page.emailAddresses.get()}
             emailCandidate={page.emailCandidate.get()}
             emailChallengeActive={page.emailChallengeId.get() !== undefined}
             emailErrorMessage={page.emailErrorMessage.get()}
@@ -64,19 +66,20 @@ export function AccountDemoAdapter(props: {
             emailVerified={page.user.get()?.emailVerified ?? false}
             errorMessage={page.errorMessage.get()}
             firstName={page.firstName.get()}
-            gender={page.gender.get()}
+            genderSignal={page.gender}
             kind={props.kind as "email" | "overview" | "profile"}
             lastName={page.lastName.get()}
             nickName={page.nickName.get()}
             onDisplayNameInput={page.displayName.set}
-            onEmailCancel={page.emailChangeCancel}
+            onEmailCancel={page.emailAddressAddCancel}
             onEmailInput={page.emailCandidate.set}
-            onEmailResend={page.emailChangeResend}
-            onEmailStart={page.emailChangeStart}
+            onEmailPrimarySet={page.emailAddressPrimarySet}
+            onEmailRemove={page.emailAddressRemove}
+            onEmailResend={page.emailAddressAddResend}
+            onEmailStart={page.emailAddressAddStart}
             onEmailTokenInput={page.emailToken.set}
-            onEmailVerify={page.emailChangeVerify}
+            onEmailVerify={page.emailAddressAddVerify}
             onFirstNameInput={page.firstName.set}
-            onGenderInput={page.gender.set}
             onLastNameInput={page.lastName.set}
             onNickNameInput={page.nickName.set}
             onPreferredLanguageInput={page.preferredLanguage.set}

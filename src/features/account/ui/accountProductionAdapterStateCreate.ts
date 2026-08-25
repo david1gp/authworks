@@ -32,9 +32,22 @@ export function accountProductionAdapterStateCreate(
   return accountPageStateCreate({
     adapter: {
       deleteAccount: async () => users.userMeDelete(await realmIdResolve()),
-      emailChangeResend: async (input) => users.userMeEmailChangeResend(await realmIdResolve(), input),
-      emailChangeStart: async (input) => users.userMeEmailChangeStart(await realmIdResolve(), input),
-      emailChangeVerify: async (input) => users.userMeEmailChangeVerify(await realmIdResolve(), input),
+      emailAddressAddResend: async (input) => users.userMeEmailAddressAddResend(await realmIdResolve(), input),
+      emailAddressAddStart: async (input) => users.userMeEmailAddressAddStart(await realmIdResolve(), input),
+      emailAddressAddVerify: async (input) => users.userMeEmailAddressAddVerify(await realmIdResolve(), input),
+      emailAddressList: async () => {
+        const result = await users.userMeEmailAddressList(await realmIdResolve())
+        if (!result.success) return result
+        if (result.status === "unchanged")
+          return resultErrorCodedCreate(
+            "accountEmailAddressList",
+            "The account email-address response was unchanged.",
+            "platform.invalid-response",
+          )
+        return resultCreate(result.data)
+      },
+      emailAddressPrimarySet: async (emailId) => users.userMeEmailAddressPrimarySet(await realmIdResolve(), emailId),
+      emailAddressRemove: async (emailId) => users.userMeEmailAddressRemove(await realmIdResolve(), emailId),
       loadUser: async () => {
         const result = await users.userMeGet(await realmIdResolve())
         if (!result.success) return result

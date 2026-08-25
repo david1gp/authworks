@@ -47,7 +47,15 @@ account.factors.totp,تطبيق المصادقة
 account.factors.totpSecretOnce,أضف هذا المفتاح السري إلى تطبيق المصادقة الخاص بك، ثم أدخل الرمز المكون من ستة أرقام. يتم عرض مفتاح الإعداد هذا الآن فقط.
 account.factors.verificationCode,رمز التحقق
 account.identities.description,الحسابات الخارجية المرتبطة بهويتك في Authworks. قم بإلغاء ربط الحسابات التي لم تعد تستخدمها.
+account.identities.alreadyLinked,This external account is already linked.
+account.identities.confirm,Confirm link
+account.identities.confirmDescription,Confirm linking your {provider} account to continue.
+account.identities.confirmTitle,Confirm external account
 account.identities.empty,لا توجد هويات خارجية مرتبطة
+account.identities.externalAccount,external account
+account.identities.linkDescription,Connect another provider to use it as an authentication method.
+account.identities.linkTitle,Link an external account
+account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,إلغاء الربط
 account.identities.unlinkConfirm,هل تريد إلغاء ربط هذا الحساب الخارجي؟
 account.passkeys.add,إضافة مفتاح مرور
@@ -69,6 +77,20 @@ account.password.tooShort,يجب أن تحتوي كلمة المرور الجد�
 account.profile.displayName,الاسم المعروض
 account.profile.displayNameRequired,أدخل اسمًا معروضًا.
 account.profile.email,عنوان البريد الإلكتروني
+account.profile.emailAdd,Add email address
+account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
+account.profile.emailAddTitle,Add email address
+account.profile.emailAddressDescription,Verified addresses can be used for sign-in and account recovery. Account communication uses the primary address.
+account.profile.emailAddresses,Email addresses
+account.profile.emailAddressesEmpty,No email addresses are available.
+account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailMakePrimary,Make primary
+account.profile.emailPrimary,Primary
+account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
+account.profile.emailRefresh,Refresh addresses
+account.profile.emailRemove,Remove
+account.profile.emailRemoving,Removing…
+account.profile.emailUpdating,Updating…
 account.profile.emailDescription,راجع العنوان المؤكد المستخدم لتسجيل الدخول والتواصل بشأن الحساب.
 account.profile.emailTitle,عنوان البريد الإلكتروني والتحقق
 account.profile.emailChange,Change email address
@@ -88,6 +110,10 @@ account.profile.emailVerify,Verify email address
 account.profile.emailVerifying,Verifying…
 account.profile.firstName,الاسم الأول
 account.profile.gender,Gender
+account.profile.gender.man,Man
+account.profile.gender.nonBinary,Non-binary
+account.profile.gender.unspecified,Unspecified
+account.profile.gender.woman,Woman
 account.profile.pictureContentType,Picture content type
 account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
 account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
@@ -95,6 +121,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureUrl,Picture URL
 account.profile.lastName,اسم العائلة
 account.profile.nickName,الاسم المستعار
+account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
 account.profile.personalDescription,حافظ على تحديث الملف الشخصي المعروض للتطبيقات والمسؤولين.
 account.profile.personalInformation,المعلومات الشخصية
 account.profile.phoneAdd,Add phone number

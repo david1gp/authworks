@@ -75,7 +75,7 @@ export function emailGeneratorApiClientCreate(options: EmailGeneratorApiClientCr
         "The email-change notification render request is invalid.",
       )
       if (!parsed.success) return Promise.resolve(parsed)
-      return securityNotificationRender(request, "emailOtpRequested", {
+      return securityNotificationRender(request, "emailChanged", {
         details: [{ label: "New email address", value: parsed.data.notification.newEmail }],
         message:
           "Your Authworks account email address was changed. If you did not request this change, secure your account.",

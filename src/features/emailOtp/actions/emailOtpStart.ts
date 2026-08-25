@@ -157,7 +157,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
       delivery: {
         challengeId,
         code: code.data,
-        email: user.data.email,
+        email: email.data,
         expiresAt,
         realmId: options.realmId,
         purpose: "sign_in",

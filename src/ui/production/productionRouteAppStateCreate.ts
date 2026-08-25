@@ -1,6 +1,8 @@
 import { useLocation } from "@solidjs/router"
 import type { Accessor } from "solid-js"
+import { createEffect } from "solid-js"
 import { productionApiContextGet } from "./productionApiContextGet.js"
+import { productionLoginRedirectUrlCreate } from "./productionLoginRedirectUrlCreate.js"
 import type { ProductionRouteContract } from "./productionRouteContract.js"
 import { productionRouteGuardStateCreate } from "./productionRouteGuardStateCreate.js"
 import { productionRouteParamGet } from "./productionRouteParamGet.js"
@@ -14,6 +16,11 @@ export function productionRouteAppStateCreate(route: Accessor<ProductionRouteCon
   const session = productionSessionContextGet()
   const screen = () => productionRouteScreenSelect(route(), location.pathname)
   const guardState = () => productionRouteGuardStateCreate(screen()?.guard ?? route().guard, session.guard)
+
+  createEffect(() => {
+    if (guardState().status !== "anonymous") return
+    window.location.assign(productionLoginRedirectUrlCreate(window.location))
+  })
 
   return {
     api,

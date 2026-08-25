@@ -21,27 +21,40 @@ import { userAuthenticationMethodsAdministratorGet } from "../actions/userAuthen
 import { userAuthenticationMethodsGet } from "../actions/userAuthenticationMethodsGet.js"
 import { userCreate } from "../actions/userCreate.js"
 import { userDelete } from "../actions/userDelete.js"
-import { userEmailVerificationSet } from "../actions/userEmailVerificationSet.js"
+import { userEmailAddressAddResend } from "../actions/userEmailAddressAddResend.js"
+import { userEmailAddressAddStart } from "../actions/userEmailAddressAddStart.js"
+import { userEmailAddressAddVerify } from "../actions/userEmailAddressAddVerify.js"
+import { userEmailAddressList } from "../actions/userEmailAddressList.js"
+import { userEmailAddressPrimarySet } from "../actions/userEmailAddressPrimarySet.js"
+import { userEmailAddressRemove } from "../actions/userEmailAddressRemove.js"
 import { userEmailChangeResend } from "../actions/userEmailChangeResend.js"
 import { userEmailChangeStart } from "../actions/userEmailChangeStart.js"
 import { userEmailChangeVerify } from "../actions/userEmailChangeVerify.js"
+import { userEmailVerificationSet } from "../actions/userEmailVerificationSet.js"
 import { userGet } from "../actions/userGet.js"
 import { userLifecycleSet } from "../actions/userLifecycleSet.js"
 import { userList } from "../actions/userList.js"
 import { userProfileUpdate } from "../actions/userProfileUpdate.js"
+import { userRealmReadCapabilityResolve } from "../actions/userRealmReadCapabilityResolve.js"
 import { userCreateRequestSchema } from "../public/userCreateRequestSchema.js"
+import { userEmailAddressAddResendRequestSchema } from "../public/userEmailAddressAddResendRequestSchema.js"
+import { userEmailAddressAddStartRequestSchema } from "../public/userEmailAddressAddStartRequestSchema.js"
+import { userEmailAddressAddVerifyRequestSchema } from "../public/userEmailAddressAddVerifyRequestSchema.js"
+import { userEmailAddressPrimarySetRequestSchema } from "../public/userEmailAddressPrimarySetRequestSchema.js"
+import type { UserEmailAddressVerificationDelivery } from "../public/userEmailAddressVerificationDeliverySchema.js"
+import type { UserEmailChangeDelivery } from "../public/userEmailChangeDeliverySchema.js"
+import type { UserEmailChangeNotification } from "../public/userEmailChangeNotificationSchema.js"
+import { userEmailChangeResendRequestSchema } from "../public/userEmailChangeResendRequestSchema.js"
+import { userEmailChangeStartRequestSchema } from "../public/userEmailChangeStartRequestSchema.js"
+import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVerifyRequestSchema.js"
 import { userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
 import { userProfileUpdateRequestSchema } from "../public/userProfileUpdateRequestSchema.js"
 import { userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
-import type { UserEmailChangeDelivery } from "../public/userEmailChangeDeliverySchema.js"
-import { userEmailChangeResendRequestSchema } from "../public/userEmailChangeResendRequestSchema.js"
-import type { UserEmailChangeNotification } from "../public/userEmailChangeNotificationSchema.js"
-import { userEmailChangeStartRequestSchema } from "../public/userEmailChangeStartRequestSchema.js"
-import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVerifyRequestSchema.js"
 
 type UserServerAppCreateOptions = {
   readonly clientIpResolve?: (context: { readonly req: { readonly raw: Request } }) => string | undefined
   readonly database: StorageDatabase
+  readonly onEmailAddressVerificationDelivery?: (delivery: UserEmailAddressVerificationDelivery) => void | Promise<void>
   readonly onEmailChangeDelivery?: (delivery: UserEmailChangeDelivery) => void | Promise<void>
   readonly onEmailChangeNotification?: (notification: UserEmailChangeNotification) => void | Promise<void>
   readonly publicOrigin?: string
@@ -232,11 +245,18 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       realmId: context.req.param("realmId"),
       userId: subject.data.actorId,
     })
+    if (!result.success) return userResultResponseCreate(context, result)
+    const capabilities = userRealmReadCapabilityResolve({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      realmId: context.req.param("realmId"),
+    })
+    if (!capabilities.success) return userResultResponseCreate(context, capabilities)
     return userResultResponseCreate(
       context,
-      result,
+      { data: { ...result.data, capabilities: capabilities.data }, success: true },
       200,
-      result.success ? new Date(result.data.user.updatedAt) : undefined,
+      new Date(result.data.user.updatedAt),
     )
   })
 
@@ -249,6 +269,146 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: subject.data,
         database: options.database,
         realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.get("/realms/:realmId/me/emails", authenticatedMiddleware, (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    return userResultResponseCreate(
+      context,
+      userEmailAddressList({
+        context: subject.data,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/emails/add/start", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userEmailAddressAddStartRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The email address request is invalid.",
+        op: "userEmailAddressAddStart",
+      })
+    return userResultResponseCreate(
+      context,
+      userEmailAddressAddStart({
+        clientIp: options.clientIpResolve?.(context),
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        onDelivery: options.onEmailAddressVerificationDelivery,
+        rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
+        realmId: context.req.param("realmId"),
+        session: context.get("session"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/emails/add/resend", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userEmailAddressAddResendRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The email verification request is invalid.",
+        op: "userEmailAddressAddResend",
+      })
+    return userResultResponseCreate(
+      context,
+      userEmailAddressAddResend({
+        clientIp: options.clientIpResolve?.(context),
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        onDelivery: options.onEmailAddressVerificationDelivery,
+        rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
+        realmId: context.req.param("realmId"),
+        session: context.get("session"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/emails/add/verify", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userEmailAddressAddVerifyRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The email verification token is invalid.",
+        op: "userEmailAddressAddVerify",
+      })
+    return userResultResponseCreate(
+      context,
+      userEmailAddressAddVerify({
+        clientIp: options.clientIpResolve?.(context),
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        rateLimitSecret: options.rateLimitSecret ?? options.systemSecret,
+        realmId: context.req.param("realmId"),
+        runtime: options.database.runtime,
+        session: context.get("session"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/emails/:emailId/primary", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userEmailAddressPrimarySetRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The primary email address request is invalid.",
+        op: "userEmailAddressPrimarySet",
+      })
+    return userResultResponseCreate(
+      context,
+      userEmailAddressPrimarySet({
+        context: subject.data,
+        database: options.database,
+        emailId: context.req.param("emailId"),
+        input: input.output,
+        realmId: context.req.param("realmId"),
+        session: context.get("session"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/me/emails/:emailId", authenticatedMiddleware, (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    return userResultResponseCreate(
+      context,
+      userEmailAddressRemove({
+        context: subject.data,
+        database: options.database,
+        emailId: context.req.param("emailId"),
+        realmId: context.req.param("realmId"),
+        session: context.get("session"),
         userId: subject.data.actorId,
       }),
     )

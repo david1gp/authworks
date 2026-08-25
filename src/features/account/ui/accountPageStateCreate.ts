@@ -4,12 +4,17 @@ import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { PasswordMeChangeResponse } from "../../passwords/public/passwordMeChangeResponseSchema.js"
-import type { UserEmailChangeResendRequest } from "../../users/public/userEmailChangeResendRequestSchema.js"
-import type { UserEmailChangeResendResponse } from "../../users/public/userEmailChangeResendResponseSchema.js"
-import type { UserEmailChangeStartResponse } from "../../users/public/userEmailChangeStartResponseSchema.js"
-import type { UserEmailChangeVerifyRequest } from "../../users/public/userEmailChangeVerifyRequestSchema.js"
-import { userEmailChangeStartRequestSchema } from "../../users/public/userEmailChangeStartRequestSchema.js"
-import { userEmailChangeVerifyRequestSchema } from "../../users/public/userEmailChangeVerifyRequestSchema.js"
+import type { UserEmailAddressAddResendRequest } from "../../users/public/userEmailAddressAddResendRequestSchema.js"
+import type { UserEmailAddressAddResendResponse } from "../../users/public/userEmailAddressAddResendResponseSchema.js"
+import { userEmailAddressAddStartRequestSchema } from "../../users/public/userEmailAddressAddStartRequestSchema.js"
+import type { UserEmailAddressAddStartResponse } from "../../users/public/userEmailAddressAddStartResponseSchema.js"
+import type { UserEmailAddressAddVerifyRequest } from "../../users/public/userEmailAddressAddVerifyRequestSchema.js"
+import { userEmailAddressAddVerifyRequestSchema } from "../../users/public/userEmailAddressAddVerifyRequestSchema.js"
+import type { UserEmailAddressAddVerifyResponse } from "../../users/public/userEmailAddressAddVerifyResponseSchema.js"
+import type { UserEmailAddressListResponse } from "../../users/public/userEmailAddressListResponseSchema.js"
+import type { UserEmailAddressPrimarySetResponse } from "../../users/public/userEmailAddressPrimarySetResponseSchema.js"
+import type { UserEmailAddressRemoveResponse } from "../../users/public/userEmailAddressRemoveResponseSchema.js"
+import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
 import {
   type UserProfileUpdateRequest,
   userProfileUpdateRequestSchema,
@@ -19,15 +24,23 @@ import type { User } from "../../users/public/userSchema.js"
 import { whatsappOtpPhoneChangeStartRequestSchema } from "../../whatsappOtp/public/whatsappOtpPhoneChangeStartRequestSchema.js"
 import type { WhatsappOtpPhoneChangeStartResponse } from "../../whatsappOtp/public/whatsappOtpPhoneChangeStartResponseSchema.js"
 import { whatsappOtpPhoneChangeVerifyRequestSchema } from "../../whatsappOtp/public/whatsappOtpPhoneChangeVerifyRequestSchema.js"
-import type { AccountViewStatus } from "./accountViewStatusSchema.js"
-import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
 import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
+import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
+import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 
 type AccountPageAdapter = {
   readonly deleteAccount: () => Promise<Result<UserResponse>>
-  readonly emailChangeResend: (input: UserEmailChangeResendRequest) => Promise<Result<UserEmailChangeResendResponse>>
-  readonly emailChangeStart: (input: { email: string }) => Promise<Result<UserEmailChangeStartResponse>>
-  readonly emailChangeVerify: (input: UserEmailChangeVerifyRequest) => Promise<Result<UserResponse>>
+  readonly emailAddressAddDemoToken?: string
+  readonly emailAddressAddResend: (
+    input: UserEmailAddressAddResendRequest,
+  ) => Promise<Result<UserEmailAddressAddResendResponse>>
+  readonly emailAddressAddStart: (input: { email: string }) => Promise<Result<UserEmailAddressAddStartResponse>>
+  readonly emailAddressAddVerify: (
+    input: UserEmailAddressAddVerifyRequest,
+  ) => Promise<Result<UserEmailAddressAddVerifyResponse>>
+  readonly emailAddressList: () => Promise<Result<UserEmailAddressListResponse>>
+  readonly emailAddressPrimarySet: (emailId: string) => Promise<Result<UserEmailAddressPrimarySetResponse>>
+  readonly emailAddressRemove: (emailId: string) => Promise<Result<UserEmailAddressRemoveResponse>>
   readonly loadUser: () => Promise<Result<UserResponse>>
   readonly phoneChangeResend: (input: {
     challengeId: string
@@ -79,6 +92,8 @@ export function accountPageStateCreate(options: {
   const emailErrorMessage = createSignalObject<string | undefined>(undefined)
   const emailStatus = createSignalObject<AccountEmailViewStatus>("idle")
   const emailValidationMessage = createSignalObject<string | undefined>(undefined)
+  const emailAddresses = createSignalObject<readonly UserEmailAddress[]>([])
+  const emailActionId = createSignalObject<string | undefined>(undefined)
 
   const resultIsExpired = (result: {
     readonly code?: string
@@ -115,9 +130,14 @@ export function accountPageStateCreate(options: {
     if (options.initialStatus === "loading" && !force) return
     status.set("loading")
     errorMessage.set(undefined)
-    const result = await options.adapter.loadUser()
-    if (!result.success) return resultFail(result)
-    userApply(result.data.user)
+    const userResult = await options.adapter.loadUser()
+    if (!userResult.success) return resultFail(userResult)
+    userApply(userResult.data.user)
+    if (options.kind === "email") {
+      const addressResult = await options.adapter.emailAddressList()
+      if (!addressResult.success) return resultFail(addressResult)
+      emailAddresses.set(addressResult.data.items)
+    }
     phoneCandidate.set("")
     phoneChallengeId.set(undefined)
     phoneCode.set("")
@@ -130,6 +150,7 @@ export function accountPageStateCreate(options: {
     emailErrorMessage.set(undefined)
     emailValidationMessage.set(undefined)
     emailStatus.set("idle")
+    emailActionId.set(undefined)
     status.set("ready")
   }
   const profileSubmit = async (event: SubmitEvent) => {
@@ -282,43 +303,47 @@ export function accountPageStateCreate(options: {
     emailErrorMessage.set(undefined)
     emailValidationMessage.set(undefined)
   }
-  const emailChangeStart = async (event: SubmitEvent) => {
+  const emailAddressAddStart = async (event: SubmitEvent) => {
     event.preventDefault()
     emailOperationPrepare()
-    const parsed = v.safeParse(userEmailChangeStartRequestSchema, { email: emailCandidate.get().trim() })
+    const parsed = v.safeParse(userEmailAddressAddStartRequestSchema, { email: emailCandidate.get().trim() })
     if (!parsed.success) {
       emailValidationMessage.set(messageTranslate("account.profile.emailInvalid"))
       return
     }
     emailCandidate.set(parsed.output.email)
     emailStatus.set("sending")
-    const result = await options.adapter.emailChangeStart(parsed.output)
+    const result = await options.adapter.emailAddressAddStart(parsed.output)
     if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
       emailErrorMessage.set(result.errorMessage)
       emailStatus.set("error")
       return
     }
     emailChallengeId.set(result.data.challengeId)
+    emailToken.set(options.adapter.emailAddressAddDemoToken ?? "")
     emailStatus.set("code")
   }
-  const emailChangeResend = async () => {
+  const emailAddressAddResend = async () => {
     const challengeId = emailChallengeId.get()
     if (challengeId === undefined) return
     emailOperationPrepare()
     emailStatus.set("sending")
-    const result = await options.adapter.emailChangeResend({ challengeId, email: emailCandidate.get() })
+    const result = await options.adapter.emailAddressAddResend({ challengeId, email: emailCandidate.get() })
     if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
       emailErrorMessage.set(result.errorMessage)
       emailStatus.set("error")
       return
     }
     emailChallengeId.set(result.data.challengeId)
+    emailToken.set(options.adapter.emailAddressAddDemoToken ?? emailToken.get())
     emailStatus.set("code")
   }
-  const emailChangeVerify = async (event: SubmitEvent) => {
+  const emailAddressAddVerify = async (event: SubmitEvent) => {
     event.preventDefault()
     emailOperationPrepare()
-    const parsed = v.safeParse(userEmailChangeVerifyRequestSchema, {
+    const parsed = v.safeParse(userEmailAddressAddVerifyRequestSchema, {
       challengeId: emailChallengeId.get(),
       token: emailToken.get().trim(),
     })
@@ -327,24 +352,78 @@ export function accountPageStateCreate(options: {
       return
     }
     emailStatus.set("verifying")
-    const result = await options.adapter.emailChangeVerify(parsed.output)
+    const result = await options.adapter.emailAddressAddVerify(parsed.output)
     if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
       emailErrorMessage.set(result.errorMessage)
       emailStatus.set("error")
       return
     }
-    userApply(result.data.user)
+    emailAddresses.set([
+      ...emailAddresses.get().filter((address) => address.id !== result.data.email.id),
+      result.data.email,
+    ])
     emailCandidate.set("")
     emailChallengeId.set(undefined)
     emailToken.set("")
     emailStatus.set("success")
   }
-  const emailChangeCancel = () => {
+  const emailAddressAddCancel = () => {
     emailCandidate.set("")
     emailChallengeId.set(undefined)
     emailToken.set("")
     emailOperationPrepare()
     emailStatus.set("idle")
+  }
+  const emailAddressPrimarySet = async (emailId: string) => {
+    const address = emailAddresses.get().find((candidate) => candidate.id === emailId)
+    if (address === undefined || address.isPrimary || !address.verified) return
+    emailOperationPrepare()
+    emailActionId.set(emailId)
+    emailStatus.set("sending")
+    const result = await options.adapter.emailAddressPrimarySet(emailId)
+    if (!result.success) {
+      emailActionId.set(undefined)
+      if (resultIsExpired(result)) return resultFail(result)
+      emailErrorMessage.set(result.errorMessage)
+      emailStatus.set("error")
+      return
+    }
+    emailAddresses.set(
+      emailAddresses
+        .get()
+        .map((candidate) =>
+          candidate.id === result.data.email.id ? result.data.email : { ...candidate, isPrimary: false },
+        ),
+    )
+    const currentUser = user.get()
+    if (currentUser !== undefined)
+      userApply({
+        ...currentUser,
+        email: result.data.email.email,
+        emailVerified: result.data.email.verified,
+        ...(result.data.email.verifiedAt === null ? {} : { emailVerifiedAt: result.data.email.verifiedAt }),
+      })
+    emailActionId.set(undefined)
+    emailStatus.set("success")
+  }
+  const emailAddressRemove = async (emailId: string) => {
+    const address = emailAddresses.get().find((candidate) => candidate.id === emailId)
+    if (address === undefined || address.isPrimary) return
+    emailOperationPrepare()
+    emailActionId.set(emailId)
+    emailStatus.set("sending")
+    const result = await options.adapter.emailAddressRemove(emailId)
+    if (!result.success) {
+      emailActionId.set(undefined)
+      if (resultIsExpired(result)) return resultFail(result)
+      emailErrorMessage.set(result.errorMessage)
+      emailStatus.set("error")
+      return
+    }
+    emailAddresses.set(emailAddresses.get().filter((candidate) => candidate.id !== emailId))
+    emailActionId.set(undefined)
+    emailStatus.set("success")
   }
 
   onMount(() => {
@@ -355,7 +434,7 @@ export function accountPageStateCreate(options: {
       const token = query.get("token")
       const challengeId = query.get("challengeId")
       if (token === null || challengeId === null) return
-      const parsed = v.safeParse(userEmailChangeVerifyRequestSchema, { challengeId, token })
+      const parsed = v.safeParse(userEmailAddressAddVerifyRequestSchema, { challengeId, token })
       if (!parsed.success) return
       emailChallengeId.set(parsed.output.challengeId)
       emailToken.set(parsed.output.token)
@@ -377,10 +456,14 @@ export function accountPageStateCreate(options: {
     displayName,
     emailCandidate,
     emailChallengeId,
-    emailChangeCancel,
-    emailChangeResend,
-    emailChangeStart,
-    emailChangeVerify,
+    emailActionId,
+    emailAddressAddCancel,
+    emailAddressAddResend,
+    emailAddressAddStart,
+    emailAddressAddVerify,
+    emailAddressPrimarySet,
+    emailAddressRemove,
+    emailAddresses,
     emailErrorMessage,
     emailStatus,
     emailToken,
