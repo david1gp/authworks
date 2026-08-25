@@ -1,5 +1,8 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { machineUserApiClientCreate } from "../client/machineUserApiClientCreate.js"
 
 type MachineListFlags = {
@@ -8,7 +11,7 @@ type MachineListFlags = {
   readonly sortBy?: string
   readonly sortDirection?: "asc" | "desc"
 }
-type MachineCliFlags = { readonly server?: string; readonly token?: string }
+type MachineCliFlags = { readonly profile?: string; readonly server?: string; readonly token?: string }
 type MachineRealmFlags = MachineCliFlags & { readonly realmId?: string }
 type MachineUserFlags = MachineRealmFlags & { readonly machineUserId: string }
 
@@ -17,15 +20,18 @@ const machineUserCreateCommand = buildCommand({
     this: ApplicationContext,
     flags: MachineRealmFlags & { displayName: string; scopes?: string; userName: string },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machineUserCreate(realmId, {
+      await machineCliClientCreate(connection.data).machineUserCreate(realmId, {
         displayName: flags.displayName,
         scopes: machineScopesSplit(flags.scopes),
         userName: flags.userName,
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -42,11 +48,14 @@ const machineUserCreateCommand = buildCommand({
 
 const machineUserListCommand = buildCommand({
   async func(this: ApplicationContext, flags: MachineRealmFlags & MachineListFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machineUserList(realmId, machineListQueryCreate(flags)),
+      await machineCliClientCreate(connection.data).machineUserList(realmId, machineListQueryCreate(flags)),
+      [connection.data.token],
     )
   },
   parameters: { flags: { ...machineCommonFlags(), ...machineListFlags(), realmId: machineRealmIdFlag() } },
@@ -55,9 +64,15 @@ const machineUserListCommand = buildCommand({
 
 const machineUserGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: MachineUserFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
-    machineCliResultWrite(this, await machineCliClientCreate(this, flags).machineUserGet(realmId, flags.machineUserId))
+    machineCliResultWrite(
+      this,
+      await machineCliClientCreate(connection.data).machineUserGet(realmId, flags.machineUserId),
+      [connection.data.token],
+    )
   },
   parameters: {
     flags: {
@@ -71,11 +86,14 @@ const machineUserGetCommand = buildCommand({
 
 const machineUserSecretRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: MachineUserFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machineUserClientSecretRotate(realmId, flags.machineUserId),
+      await machineCliClientCreate(connection.data).machineUserClientSecretRotate(realmId, flags.machineUserId),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -90,13 +108,16 @@ const machineUserSecretRotateCommand = buildCommand({
 
 const machineUserLifecycleCommand = buildCommand({
   async func(this: ApplicationContext, flags: MachineUserFlags & { status: "active" | "inactive" | "removed" }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machineUserLifecycleSet(realmId, flags.machineUserId, {
+      await machineCliClientCreate(connection.data).machineUserLifecycleSet(realmId, flags.machineUserId, {
         status: flags.status,
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -117,16 +138,19 @@ const machineUserLifecycleCommand = buildCommand({
 
 const machinePersonalAccessTokenCommand = buildCommand({
   async func(this: ApplicationContext, flags: MachineUserFlags & { expiresAt?: number; name: string; scopes: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machinePersonalAccessTokenCreate(realmId, flags.machineUserId, {
+      await machineCliClientCreate(connection.data).machinePersonalAccessTokenCreate(realmId, flags.machineUserId, {
         expiresAt: flags.expiresAt,
         machineUserId: flags.machineUserId,
         name: flags.name,
         scopes: machineScopesSplit(flags.scopes),
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -144,16 +168,19 @@ const machinePersonalAccessTokenCommand = buildCommand({
 
 const machineApiKeyCommand = buildCommand({
   async func(this: ApplicationContext, flags: MachineUserFlags & { expiresAt?: number; name: string; scopes: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machineApiKeyCreate(realmId, flags.machineUserId, {
+      await machineCliClientCreate(connection.data).machineApiKeyCreate(realmId, flags.machineUserId, {
         expiresAt: flags.expiresAt,
         machineUserId: flags.machineUserId,
         name: flags.name,
         scopes: machineScopesSplit(flags.scopes),
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -171,15 +198,18 @@ const machineApiKeyCommand = buildCommand({
 
 const machineCredentialListCommand = buildCommand({
   async func(this: ApplicationContext, flags: MachineUserFlags & MachineListFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machineCredentialList(
+      await machineCliClientCreate(connection.data).machineCredentialList(
         realmId,
         flags.machineUserId,
         machineListQueryCreate(flags),
       ),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -195,13 +225,16 @@ const machineCredentialListCommand = buildCommand({
 
 const machineCredentialRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: MachineRealmFlags & { credentialId: string; reason?: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await machineCliConnectionResolve(this, flags)
+    if (!connection.success) return machineCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(this, flags).machineCredentialRevoke(realmId, flags.credentialId, {
+      await machineCliClientCreate(connection.data).machineCredentialRevoke(realmId, flags.credentialId, {
         reason: flags.reason,
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -230,27 +263,38 @@ export const machineUserCliCommands = buildRouteMap({
   docs: { brief: "Machine users and credentials" },
 })
 
-function machineCliClientCreate(context: ApplicationContext, flags: MachineCliFlags) {
+async function machineCliConnectionResolve(
+  context: ApplicationContext,
+  flags: MachineCliFlags & { readonly realmId?: string },
+) {
+  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+}
+
+function machineCliClientCreate(flags: { readonly server: string; readonly token?: string }) {
   return machineUserApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
+    baseUrl: flags.server,
+    token: flags.token,
   })
 }
 
 function machineCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(`${connectionProfileCliOutputRedact(JSON.stringify(result.data), secrets)}\n`)
 }
 
 function machineCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

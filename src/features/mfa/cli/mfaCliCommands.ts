@@ -1,15 +1,32 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { mfaApiClientCreate } from "../client/mfaApiClientCreate.js"
 
-type MfaCliFlags = { readonly server?: string; readonly token?: string; readonly systemToken?: string }
+type MfaCliFlags = {
+  readonly profile?: string
+  readonly server?: string
+  readonly token?: string
+  readonly systemToken?: string
+}
 type MfaRealmFlags = MfaCliFlags & { readonly realmId?: string }
 
 const mfaPolicyGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: MfaRealmFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
-    mfaCliResultWrite(this, await mfaCliClientCreate(this, flags).mfaPolicyGet(realmId))
+    mfaCliResultWrite(this, await mfaCliClientCreate(connection.data, this, flags).mfaPolicyGet(realmId), [
+      connection.data.token,
+      flags.systemToken,
+      this.process.env?.AUTHWORKS_SYSTEM_SECRET,
+    ])
   },
   parameters: { flags: { ...mfaCommonFlags(), realmId: mfaRealmIdFlag() } },
   docs: { brief: "Read the MFA policy" },
@@ -25,16 +42,22 @@ const mfaPolicySetCommand = buildCommand({
       totpWindow: number
     },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     mfaCliResultWrite(
       this,
-      await mfaCliClientCreate(this, flags).mfaPolicySet(realmId, {
+      await mfaCliClientCreate(connection.data, this, flags).mfaPolicySet(realmId, {
         lockoutDurationMs: flags.lockoutDurationMs,
         maxAttempts: flags.maxAttempts,
         mode: flags.mode,
         totpWindow: flags.totpWindow,
       }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET],
     )
   },
   parameters: {
@@ -52,11 +75,17 @@ const mfaPolicySetCommand = buildCommand({
 
 const mfaEnrollCommand = buildCommand({
   async func(this: ApplicationContext, flags: MfaRealmFlags & { label?: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     mfaCliResultWrite(
       this,
-      await mfaCliClientCreate(this, flags).mfaTotpEnrollmentStart(realmId, { label: flags.label }),
+      await mfaCliClientCreate(connection.data, this, flags).mfaTotpEnrollmentStart(realmId, { label: flags.label }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET],
     )
   },
   parameters: {
@@ -71,14 +100,20 @@ const mfaEnrollCommand = buildCommand({
 
 const mfaConfirmCommand = buildCommand({
   async func(this: ApplicationContext, flags: MfaRealmFlags & { code: string; enrollmentId: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     mfaCliResultWrite(
       this,
-      await mfaCliClientCreate(this, flags).mfaTotpEnrollmentConfirm(realmId, {
+      await mfaCliClientCreate(connection.data, this, flags).mfaTotpEnrollmentConfirm(realmId, {
         code: flags.code,
         enrollmentId: flags.enrollmentId,
       }),
+      [connection.data.token, flags.systemToken, this.process.env?.AUTHWORKS_SYSTEM_SECRET],
     )
   },
   parameters: {
@@ -94,9 +129,18 @@ const mfaConfirmCommand = buildCommand({
 
 const mfaRecoveryCommand = buildCommand({
   async func(this: ApplicationContext, flags: MfaRealmFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await mfaCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      mfaCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
-    mfaCliResultWrite(this, await mfaCliClientCreate(this, flags).mfaRecoveryCodesGenerate(realmId))
+    mfaCliResultWrite(this, await mfaCliClientCreate(connection.data, this, flags).mfaRecoveryCodesGenerate(realmId), [
+      connection.data.token,
+      flags.systemToken,
+      this.process.env?.AUTHWORKS_SYSTEM_SECRET,
+    ])
   },
   parameters: { flags: { ...mfaCommonFlags(), realmId: mfaRealmIdFlag() } },
   docs: { brief: "Generate single-use recovery codes" },
@@ -115,28 +159,42 @@ export const mfaCliCommands = buildRouteMap({
   docs: { brief: "Manage multi-factor authentication" },
 })
 
-function mfaCliClientCreate(context: ApplicationContext, flags: MfaCliFlags) {
+async function mfaCliConnectionResolve(context: ApplicationContext, flags: MfaCliFlags) {
+  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+}
+
+function mfaCliClientCreate(
+  connection: { readonly server: string; readonly token?: string },
+  context: ApplicationContext,
+  flags: MfaCliFlags,
+) {
   return mfaApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
+    baseUrl: connection.server,
     systemToken: flags.systemToken ?? context.process.env?.AUTHWORKS_SYSTEM_SECRET,
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
+    token: connection.token,
   })
 }
 
 function mfaCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function mfaCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

@@ -1,8 +1,12 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { whatsappOtpApiClientCreate } from "../client/whatsappOtpApiClientCreate.js"
 
 type WhatsappOtpCliFlags = {
+  readonly profile?: string
   readonly server?: string
   readonly realmId?: string
 }
@@ -13,12 +17,15 @@ type WhatsappOtpAvailabilityCliFlags = WhatsappOtpCliFlags & {
 
 const whatsappOtpAvailabilityCommand = buildCommand({
   async func(this: ApplicationContext, flags: WhatsappOtpAvailabilityCliFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await whatsappOtpCliConnectionResolve(this, flags)
+    if (!connection.success) return whatsappOtpCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
-    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization", false)
     whatsappOtpCliResultWrite(
       this,
-      await whatsappOtpCliClientCreate(this, flags).whatsappOtpAvailabilityGet(realmId, organizationId),
+      await whatsappOtpCliClientCreate(connection.data).whatsappOtpAvailabilityGet(realmId, organizationId),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -32,11 +39,14 @@ const whatsappOtpAvailabilityCommand = buildCommand({
 
 const whatsappOtpStartCommand = buildCommand({
   async func(this: ApplicationContext, flags: WhatsappOtpCliFlags & { phoneNumber: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await whatsappOtpCliConnectionResolve(this, flags)
+    if (!connection.success) return whatsappOtpCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     whatsappOtpCliResultWrite(
       this,
-      await whatsappOtpCliClientCreate(this, flags).whatsappOtpStart(realmId, { phoneNumber: flags.phoneNumber }),
+      await whatsappOtpCliClientCreate(connection.data).whatsappOtpStart(realmId, { phoneNumber: flags.phoneNumber }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -50,11 +60,14 @@ const whatsappOtpStartCommand = buildCommand({
 
 const whatsappOtpResendCommand = buildCommand({
   async func(this: ApplicationContext, flags: WhatsappOtpCliFlags & { challengeId: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await whatsappOtpCliConnectionResolve(this, flags)
+    if (!connection.success) return whatsappOtpCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     whatsappOtpCliResultWrite(
       this,
-      await whatsappOtpCliClientCreate(this, flags).whatsappOtpResend(realmId, { challengeId: flags.challengeId }),
+      await whatsappOtpCliClientCreate(connection.data).whatsappOtpResend(realmId, { challengeId: flags.challengeId }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -68,14 +81,17 @@ const whatsappOtpResendCommand = buildCommand({
 
 const whatsappOtpVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: WhatsappOtpCliFlags & { challengeId: string; code: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await whatsappOtpCliConnectionResolve(this, flags)
+    if (!connection.success) return whatsappOtpCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     whatsappOtpCliResultWrite(
       this,
-      await whatsappOtpCliClientCreate(this, flags).whatsappOtpVerify(realmId, {
+      await whatsappOtpCliClientCreate(connection.data).whatsappOtpVerify(realmId, {
         challengeId: flags.challengeId,
         code: flags.code,
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -98,26 +114,36 @@ export const whatsappOtpCliCommands = buildRouteMap({
   docs: { brief: "WhatsApp OTP authentication" },
 })
 
-function whatsappOtpCliClientCreate(context: ApplicationContext, flags: Pick<WhatsappOtpCliFlags, "server">) {
+async function whatsappOtpCliConnectionResolve(context: ApplicationContext, flags: WhatsappOtpCliFlags) {
+  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+}
+
+function whatsappOtpCliClientCreate(flags: { readonly server: string }) {
   return whatsappOtpApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
+    baseUrl: flags.server,
   })
 }
 
 function whatsappOtpCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function whatsappOtpCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

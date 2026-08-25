@@ -1,5 +1,7 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { sessionApiClientCreate } from "../client/sessionApiClientCreate.js"
 
 type SessionListFlags = {
@@ -9,6 +11,7 @@ type SessionListFlags = {
   readonly sortDirection?: "asc" | "desc"
 }
 type SessionCliFlags = {
+  readonly profile?: string
   readonly realmId?: string
   readonly server?: string
   readonly token?: string
@@ -16,9 +19,9 @@ type SessionCliFlags = {
 
 const sessionCurrentCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionCurrent(realmId))
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(this, await sessionCliClientCreate(resolved.connection).sessionCurrent(resolved.realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "Read the current session" },
@@ -26,11 +29,11 @@ const sessionCurrentCommand = buildCommand({
 
 const sessionListCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags & SessionListFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     sessionCliResultWrite(
       this,
-      await sessionCliClientCreate(this, flags).sessionList(realmId, sessionListQueryCreate(flags)),
+      await sessionCliClientCreate(resolved.connection).sessionList(resolved.realmId, sessionListQueryCreate(flags)),
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), ...sessionListFlags() } },
@@ -39,11 +42,14 @@ const sessionListCommand = buildCommand({
 
 const sessionRecentCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags & SessionListFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     sessionCliResultWrite(
       this,
-      await sessionCliClientCreate(this, flags).sessionRecentList(realmId, sessionListQueryCreate(flags)),
+      await sessionCliClientCreate(resolved.connection).sessionRecentList(
+        resolved.realmId,
+        sessionListQueryCreate(flags),
+      ),
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), ...sessionListFlags() } },
@@ -52,9 +58,9 @@ const sessionRecentCommand = buildCommand({
 
 const sessionRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRotate(realmId))
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(this, await sessionCliClientCreate(resolved.connection).sessionRotate(resolved.realmId))
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "Rotate the current session credential" },
@@ -62,9 +68,12 @@ const sessionRotateCommand = buildCommand({
 
 const sessionRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags & { sessionId: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
-    sessionCliResultWrite(this, await sessionCliClientCreate(this, flags).sessionRevoke(realmId, flags.sessionId))
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    sessionCliResultWrite(
+      this,
+      await sessionCliClientCreate(resolved.connection).sessionRevoke(resolved.realmId, flags.sessionId),
+    )
   },
   parameters: { flags: { ...sessionCommonFlags(), sessionId: sessionIdFlag() } },
   docs: { brief: "Revoke a session" },
@@ -72,11 +81,13 @@ const sessionRevokeCommand = buildCommand({
 
 const sessionRevokeAllCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags & { keepCurrent: boolean }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await sessionCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     sessionCliResultWrite(
       this,
-      await sessionCliClientCreate(this, flags).sessionRevokeAll(realmId, { keepCurrent: flags.keepCurrent }),
+      await sessionCliClientCreate(resolved.connection).sessionRevokeAll(resolved.realmId, {
+        keepCurrent: flags.keepCurrent,
+      }),
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), keepCurrent: booleanFlag() } },
@@ -95,10 +106,21 @@ export const sessionCliCommands = buildRouteMap({
   docs: { brief: "Manage sessions" },
 })
 
-function sessionCliClientCreate(context: ApplicationContext, flags: SessionCliFlags) {
+async function sessionCliConnectionResolve(context: ApplicationContext, flags: SessionCliFlags) {
+  const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!result.success) {
+    sessionCliResultWrite(context, result)
+    return undefined
+  }
+  const realmId = scopeIdResolve(context, result.data.realmId, "realm")
+  if (realmId === undefined) return undefined
+  return { connection: result.data, realmId }
+}
+
+function sessionCliClientCreate(connection: { readonly server: string; readonly token?: string }) {
   return sessionApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
+    baseUrl: connection.server,
+    token: connection.token,
   })
 }
 
@@ -117,6 +139,7 @@ function sessionCliResultWrite(
 function sessionCommonFlags() {
   return {
     realmId: realmIdFlag(),
+    profile: connectionProfileCliProfileFlag(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

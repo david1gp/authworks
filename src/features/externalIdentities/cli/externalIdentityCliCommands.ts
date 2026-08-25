@@ -1,5 +1,7 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { externalIdentityApiClientCreate } from "../client/externalIdentityApiClientCreate.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 
@@ -10,6 +12,7 @@ type ExternalIdentityListFlags = {
   readonly sortDirection?: "asc" | "desc"
 }
 type ExternalIdentityCliFlags = {
+  readonly profile?: string
   readonly server?: string
   readonly token?: string
   readonly realmId?: string
@@ -29,19 +32,21 @@ const externalIdentityProviderCreateCommand = buildCommand({
       scopes?: string
     },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
-    if (realmId === undefined) return
-    const result = await externalIdentityCliClientCreate(this, flags).externalIdentityProviderCreate(realmId, {
-      allowAccountCreation: flags.allowAccountCreation ?? false,
-      clientId: flags.clientId,
-      clientSecret: flags.clientSecret,
-      displayName: flags.displayName,
-      organizationId,
-      redirectUri: flags.redirectUri,
-      scopes: flags.scopes?.split(" "),
-      type: flags.type as ExternalIdentityProviderType,
-    })
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    const result = await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderCreate(
+      resolved.realmId,
+      {
+        allowAccountCreation: flags.allowAccountCreation ?? false,
+        clientId: flags.clientId,
+        clientSecret: flags.clientSecret,
+        displayName: flags.displayName,
+        organizationId: resolved.organizationId,
+        redirectUri: flags.redirectUri,
+        scopes: flags.scopes?.split(" "),
+        type: flags.type as ExternalIdentityProviderType,
+      },
+    )
     externalIdentityCliResultWrite(this, result)
   },
   parameters: {
@@ -65,14 +70,13 @@ const externalIdentityProviderListCommand = buildCommand({
     this: ApplicationContext,
     flags: ExternalIdentityCliFlags & ExternalIdentityListFlags & { organizationId?: string },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
-    if (realmId === undefined) return
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     externalIdentityCliResultWrite(
       this,
-      await externalIdentityCliClientCreate(this, flags).externalIdentityProviderList(
-        realmId,
-        organizationId,
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderList(
+        resolved.realmId,
+        resolved.organizationId,
         externalIdentityListQueryCreate(flags),
       ),
     )
@@ -89,11 +93,14 @@ const externalIdentityProviderListCommand = buildCommand({
 
 const externalIdentityProviderDisableCommand = buildCommand({
   async func(this: ApplicationContext, flags: ExternalIdentityCliFlags & { providerId: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     externalIdentityCliResultWrite(
       this,
-      await externalIdentityCliClientCreate(this, flags).externalIdentityProviderDisable(realmId, flags.providerId),
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityProviderDisable(
+        resolved.realmId,
+        flags.providerId,
+      ),
     )
   },
   parameters: { flags: { ...externalIdentityCommonFlags(), providerId: externalIdentityTextFlag("Provider UUID") } },
@@ -105,14 +112,17 @@ const externalIdentityStartCommand = buildCommand({
     this: ApplicationContext,
     flags: ExternalIdentityCliFlags & { providerId: string; organizationId?: string },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
-    if (realmId === undefined) return
+    const resolved = await externalIdentityCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     externalIdentityCliResultWrite(
       this,
-      await externalIdentityCliClientCreate(this, flags).externalIdentityStart(realmId, flags.providerId, {
-        organizationId,
-      }),
+      await externalIdentityCliClientCreate(resolved.connection).externalIdentityStart(
+        resolved.realmId,
+        flags.providerId,
+        {
+          organizationId: resolved.organizationId,
+        },
+      ),
     )
   },
   parameters: {
@@ -135,13 +145,25 @@ export const externalIdentityCliCommands = buildRouteMap({
   docs: { brief: "External identities and provider configuration" },
 })
 
-function externalIdentityCliClientCreate(
+async function externalIdentityCliConnectionResolve(
   context: ApplicationContext,
-  flags: Pick<ExternalIdentityCliFlags, "server" | "token">,
+  flags: ExternalIdentityCliFlags & { readonly organizationId?: string },
 ) {
+  const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!result.success) {
+    externalIdentityCliResultWrite(context, result)
+    return undefined
+  }
+  const realmId = scopeIdResolve(context, result.data.realmId, "realm")
+  if (realmId === undefined) return undefined
+  const organizationId = scopeIdResolve(context, result.data.organizationId, "organization", false)
+  return { connection: result.data, organizationId, realmId }
+}
+
+function externalIdentityCliClientCreate(connection: { readonly server: string; readonly token?: string }) {
   return externalIdentityApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
+    baseUrl: connection.server,
+    token: connection.token,
   })
 }
 
@@ -159,6 +181,7 @@ function externalIdentityCliResultWrite(
 
 function externalIdentityCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     realmId: { ...externalIdentityTextFlag("Realm UUID"), optional: true as const },
     server: {
       brief: "Authworks server URL",

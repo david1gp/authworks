@@ -1,10 +1,13 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { realmApiClientCreate } from "../client/realmApiClientCreate.js"
 import type { RealmCreateRequest } from "../public/realmCreateRequestSchema.js"
 
 type RealmCliFlags = {
+  readonly profile?: string
   readonly server?: string
   readonly token?: string
 }
@@ -26,7 +29,9 @@ type RealmBootstrapCliFlags = RealmCliFlags & {
 
 const realmCreateCommand = buildCommand({
   async func(this: ApplicationContext, flags: RealmCreateCliFlags) {
-    const client = realmCliClientCreate(this, flags)
+    const connection = await realmCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const client = realmCliClientCreate(connection)
     const result = await client.realmCreate({
       domain: flags.domain,
       name: flags.name,
@@ -35,6 +40,7 @@ const realmCreateCommand = buildCommand({
   },
   parameters: {
     flags: {
+      profile: connectionProfileCliProfileFlag(),
       domain: {
         brief: "Primary realm domain",
         kind: "parsed",
@@ -63,11 +69,14 @@ const realmCreateCommand = buildCommand({
 
 const realmListCommand = buildCommand({
   async func(this: ApplicationContext, flags: RealmListCliFlags) {
-    const result = await realmCliClientCreate(this, flags).realmList(realmListQueryCreate(flags))
+    const connection = await realmCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const result = await realmCliClientCreate(connection).realmList(realmListQueryCreate(flags))
     realmCliResultWrite(this, result)
   },
   parameters: {
     flags: {
+      profile: connectionProfileCliProfileFlag(),
       server: {
         brief: "Authworks server URL",
         kind: "parsed",
@@ -90,13 +99,16 @@ const realmListCommand = buildCommand({
 
 const realmBootstrapCommand = buildCommand({
   async func(this: ApplicationContext, flags: RealmBootstrapCliFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await realmCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
-    const result = await realmCliClientCreate(this, flags).realmBootstrapAdminCreate(realmId)
+    const result = await realmCliClientCreate(connection).realmBootstrapAdminCreate(realmId)
     realmCliResultWrite(this, result)
   },
   parameters: {
     flags: {
+      profile: connectionProfileCliProfileFlag(),
       realmId: {
         brief: "Realm UUID",
         kind: "parsed",
@@ -132,10 +144,20 @@ export const realmCliCommands = buildRouteMap({
   docs: { brief: "Realm administration" },
 })
 
-function realmCliClientCreate(context: ApplicationContext, flags: RealmCliFlags) {
-  const baseUrl = flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000"
-  const token = flags.token ?? context.process.env?.AUTHWORKS_TOKEN
-  return realmApiClientCreate({ baseUrl, token })
+function realmCliClientCreate(connection: { readonly server: string; readonly token?: string }) {
+  return realmApiClientCreate({ baseUrl: connection.server, token: connection.token })
+}
+
+async function realmCliConnectionResolve(
+  context: ApplicationContext,
+  flags: RealmCliFlags & { readonly realmId?: string },
+) {
+  const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!result.success) {
+    realmCliResultWrite(context, result)
+    return undefined
+  }
+  return result.data
 }
 
 function realmListFlags() {

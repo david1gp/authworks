@@ -1,5 +1,8 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { passkeyApiClientCreate } from "../client/passkeyApiClientCreate.js"
 
 type PasskeyListFlags = {
@@ -9,6 +12,7 @@ type PasskeyListFlags = {
   readonly sortDirection?: "asc" | "desc"
 }
 type PasskeyCliFlags = {
+  readonly profile?: string
   readonly server?: string
   readonly token?: string
   readonly realmId?: string
@@ -16,11 +20,17 @@ type PasskeyCliFlags = {
 
 const passkeyListCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasskeyCliFlags & PasskeyListFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await passkeyCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      passkeyResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     passkeyResultWrite(
       this,
-      await passkeyClientCreate(this, flags).passkeyCredentialList(realmId, passkeyListQueryCreate(flags)),
+      await passkeyClientCreate(connection.data).passkeyCredentialList(realmId, passkeyListQueryCreate(flags)),
+      [connection.data.token],
     )
   },
   parameters: { flags: { ...passkeyCommonFlags(), ...passkeyListFlags(), realmId: passkeyRealmIdFlag() } },
@@ -29,13 +39,19 @@ const passkeyListCommand = buildCommand({
 
 const passkeyRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasskeyCliFlags & { credentialId: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await passkeyCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      passkeyResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     passkeyResultWrite(
       this,
-      await passkeyClientCreate(this, flags).passkeyCredentialRevoke(realmId, {
+      await passkeyClientCreate(connection.data).passkeyCredentialRevoke(realmId, {
         credentialId: flags.credentialId,
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -53,27 +69,37 @@ export const passkeyCliCommands = buildRouteMap({
   docs: { brief: "Manage passkey credentials" },
 })
 
-function passkeyClientCreate(context: ApplicationContext, flags: PasskeyCliFlags) {
+async function passkeyCliConnectionResolve(context: ApplicationContext, flags: PasskeyCliFlags) {
+  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+}
+
+function passkeyClientCreate(flags: { readonly server: string; readonly token?: string }) {
   return passkeyApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
+    baseUrl: flags.server,
+    token: flags.token,
   })
 }
 
 function passkeyResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function passkeyCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

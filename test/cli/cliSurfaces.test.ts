@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
+import { connectionProfilesStoreCreate } from "../../src/features/connectionProfiles/persistence/connectionProfilesStoreCreate.js"
 import { httpDateFormat } from "../../src/platform/http/httpDateFormat.js"
 
 type CliRun = {
@@ -53,6 +54,31 @@ test("CLI realm identifiers use the realm flag and vocabulary", async () => {
   expect(result.stdout).toContain("Realm UUID")
   expect(result.stdout).not.toContain("--instance-id")
   expect(result.stdout).not.toContain("Instance UUID")
+})
+
+test("CLI realm, organization, and user commands expose the profile flag", async () => {
+  for (const args of [
+    ["realms", "list"],
+    ["organizations", "get"],
+    ["users", "list"],
+  ]) {
+    const result = await cliRun(...args, "--help")
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain("--profile NAME")
+  }
+})
+
+test("CLI password, session, email OTP, and external identity commands expose the profile flag", async () => {
+  for (const args of [
+    ["passwords", "policy", "get"],
+    ["sessions", "list"],
+    ["email-otp", "start"],
+    ["external-identities", "list"],
+  ]) {
+    const result = await cliRun(...args, "--help")
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain("--profile NAME")
+  }
 })
 
 test("CLI scoped commands use environment defaults and explicit flags take precedence", async () => {
@@ -160,6 +186,232 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
     expect(organizationFlagPrecedence.exitCode).toBe(0)
     expect(organizationFlagPrecedence.stderr).toBe("")
     expect(JSON.parse(organizationFlagPrecedence.stdout)).toMatchObject({ organization: { id: organizationId } })
+  } finally {
+    server.stop(true)
+    await rm(directory, { force: true, recursive: true })
+  }
+})
+
+test("CLI profile resolution supplies server, token, realm, and organization values", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "authworks-cli-profile-integration-"))
+  const configHome = join(directory, "config")
+  const created = serverApplicationCreate({
+    databasePath: join(directory, "authworks.sqlite"),
+    systemSecret: "cli-profile-secret",
+  })
+  expect(created.success).toBe(true)
+  if (!created.success) {
+    await rm(directory, { force: true, recursive: true })
+    return
+  }
+  const server = Bun.serve({
+    fetch: created.data.fetch,
+    port: 0,
+  })
+
+  try {
+    const realmCreate = await cliRun(
+      "realms",
+      "create",
+      "--server",
+      server.url.toString(),
+      "--token",
+      "cli-profile-secret",
+      "--domain",
+      "profile.example.com",
+      "--name",
+      "Profile realm",
+    )
+    expect(realmCreate.exitCode).toBe(0)
+    const realmId = (JSON.parse(realmCreate.stdout) as { realm: { id: string } }).realm.id
+
+    const organizationCreate = await cliRun(
+      "organizations",
+      "create",
+      "--server",
+      server.url.toString(),
+      "--token",
+      "cli-profile-secret",
+      "--realm-id",
+      realmId,
+      "--name",
+      "Profile organization",
+    )
+    expect(organizationCreate.exitCode).toBe(0)
+    const organizationId = (JSON.parse(organizationCreate.stdout) as { organization: { id: string } }).organization.id
+
+    const profile = await connectionProfilesStoreCreate({
+      environment: { XDG_CONFIG_HOME: configHome },
+    }).connectionProfileSet("integration", {
+      organizationId,
+      realmId,
+      server: server.url.toString(),
+      token: "cli-profile-secret",
+    })
+    expect(profile.success).toBe(true)
+
+    const realms = await cliRunWithEnvironment(
+      {
+        AUTHWORKS_ORGANIZATION_ID: undefined,
+        AUTHWORKS_REALM_ID: undefined,
+        AUTHWORKS_TOKEN: undefined,
+        AUTHWORKS_URL: undefined,
+        XDG_CONFIG_HOME: configHome,
+      },
+      "realms",
+      "list",
+      "--profile",
+      "integration",
+    )
+    expect(realms.exitCode).toBe(0)
+    expect(JSON.parse(realms.stdout)).toMatchObject({ items: [{ id: realmId }] })
+
+    const users = await cliRunWithEnvironment(
+      {
+        AUTHWORKS_ORGANIZATION_ID: undefined,
+        AUTHWORKS_REALM_ID: undefined,
+        AUTHWORKS_TOKEN: undefined,
+        AUTHWORKS_URL: undefined,
+        XDG_CONFIG_HOME: configHome,
+      },
+      "users",
+      "list",
+      "--profile",
+      "integration",
+    )
+    expect(users.exitCode).toBe(0)
+    expect(JSON.parse(users.stdout)).toMatchObject({ items: [] })
+
+    const organization = await cliRunWithEnvironment(
+      {
+        AUTHWORKS_ORGANIZATION_ID: undefined,
+        AUTHWORKS_REALM_ID: undefined,
+        AUTHWORKS_TOKEN: undefined,
+        AUTHWORKS_URL: undefined,
+        XDG_CONFIG_HOME: configHome,
+      },
+      "organizations",
+      "get",
+      "--profile",
+      "integration",
+    )
+    expect(organization.exitCode).toBe(0)
+    expect(JSON.parse(organization.stdout)).toMatchObject({ organization: { id: organizationId } })
+  } finally {
+    server.stop(true)
+    await rm(directory, { force: true, recursive: true })
+  }
+})
+
+test("CLI integrated commands use profile-sourced server, token, realm, and organization values", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "authworks-cli-profile-command-integration-"))
+  const configHome = join(directory, "config")
+  const realmId = "profile-realm"
+  const organizationId = "profile-organization"
+  const requests: Array<{
+    readonly authorization?: string
+    readonly organizationId?: string
+    readonly pathname: string
+  }> = []
+  const server = Bun.serve({
+    fetch(request) {
+      const url = new URL(request.url)
+      requests.push({
+        authorization: request.headers.get("authorization") ?? undefined,
+        organizationId: url.searchParams.get("organizationId") ?? undefined,
+        pathname: url.pathname,
+      })
+      if (url.pathname.endsWith("/password-policy"))
+        return Response.json({
+          policy: {
+            lockoutDurationMs: 60_000,
+            maximumAttempts: 5,
+            minimumLength: 12,
+            requireLowercase: true,
+            requireNumber: true,
+            requireSymbol: true,
+            requireUppercase: true,
+          },
+        })
+      if (url.pathname.endsWith("/sessions")) return Response.json({ items: [] })
+      if (url.pathname.endsWith("/email-otp/start"))
+        return Response.json({ accepted: true, challengeId: "challenge", expiresAt: 1, retryAt: 1 })
+      if (url.pathname.endsWith("/external-identity-providers")) return Response.json({ items: [] })
+      return Response.json({})
+    },
+    port: 0,
+  })
+
+  try {
+    const profile = await connectionProfilesStoreCreate({
+      environment: { XDG_CONFIG_HOME: configHome },
+    }).connectionProfileSet("integration", {
+      organizationId,
+      realmId,
+      server: server.url.toString(),
+      token: "profile-token",
+    })
+    expect(profile.success).toBe(true)
+
+    const environment = {
+      AUTHWORKS_ORGANIZATION_ID: undefined,
+      AUTHWORKS_REALM_ID: undefined,
+      AUTHWORKS_TOKEN: undefined,
+      AUTHWORKS_URL: undefined,
+      XDG_CONFIG_HOME: configHome,
+    }
+    const passwordPolicy = await cliRunWithEnvironment(
+      environment,
+      "passwords",
+      "policy",
+      "get",
+      "--profile",
+      "integration",
+    )
+    expect(passwordPolicy.exitCode).toBe(0)
+    const sessions = await cliRunWithEnvironment(environment, "sessions", "list", "--profile", "integration")
+    expect(sessions.exitCode).toBe(0)
+    const emailOtp = await cliRunWithEnvironment(
+      environment,
+      "email-otp",
+      "start",
+      "--profile",
+      "integration",
+      "--email",
+      "profile@example.com",
+    )
+    expect(emailOtp.exitCode).toBe(0)
+    const externalIdentities = await cliRunWithEnvironment(
+      environment,
+      "external-identities",
+      "list",
+      "--profile",
+      "integration",
+    )
+    expect(externalIdentities.exitCode).toBe(0)
+
+    expect(requests).toEqual([
+      {
+        authorization: "Bearer profile-token",
+        organizationId: undefined,
+        pathname: `/realms/${realmId}/password-policy`,
+      },
+      {
+        authorization: "Bearer profile-token",
+        organizationId: undefined,
+        pathname: `/realms/${realmId}/sessions`,
+      },
+      {
+        authorization: undefined,
+        organizationId: undefined,
+        pathname: `/realms/${realmId}/email-otp/start`,
+      },
+      {
+        authorization: "Bearer profile-token",
+        organizationId,
+        pathname: `/system/realms/${realmId}/external-identity-providers`,
+      },
+    ])
   } finally {
     server.stop(true)
     await rm(directory, { force: true, recursive: true })

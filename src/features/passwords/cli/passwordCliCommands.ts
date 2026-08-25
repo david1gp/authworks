@@ -2,12 +2,15 @@ import { type ApplicationContext, buildChoiceParser, buildCommand, buildRouteMap
 import * as v from "valibot"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { passwordApiClientCreate } from "../client/passwordApiClientCreate.js"
 import { passwordContentorenSsoTestProductionEnsure } from "./passwordContentorenSsoTestProductionEnsure.js"
 import { passwordContentorenSsoTestProductionEnsureExitCodeGet } from "./passwordContentorenSsoTestProductionEnsureExitCodeGet.js"
 import { passwordContentorenSsoTestProductionEnsureFailureOutputCreate } from "./passwordContentorenSsoTestProductionEnsureFailureOutputCreate.js"
 
 type PasswordCliFlags = {
+  readonly profile?: string
   readonly server?: string
   readonly token?: string
 }
@@ -18,9 +21,9 @@ type PasswordPolicyCliFlags = PasswordCliFlags & {
 
 const passwordPolicyGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasswordPolicyCliFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
-    passwordCliResultWrite(this, await passwordCliClientCreate(this, flags).passwordPolicyGet(realmId))
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
+    passwordCliResultWrite(this, await passwordCliClientCreate(resolved.connection).passwordPolicyGet(resolved.realmId))
   },
   parameters: { flags: { ...passwordCommonFlags(), realmId: passwordRealmIdFlag() } },
   docs: { brief: "Read the password policy" },
@@ -39,11 +42,11 @@ const passwordPolicySetCommand = buildCommand({
       requireUppercase: boolean
     },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordPolicySet(realmId, {
+      await passwordCliClientCreate(resolved.connection).passwordPolicySet(resolved.realmId, {
         lockoutDurationMs: flags.lockoutDurationMs,
         maximumAttempts: flags.maximumAttempts,
         minimumLength: flags.minimumLength,
@@ -82,11 +85,11 @@ const passwordRegisterCommand = buildCommand({
       verificationMethod: "email" | "whatsapp"
     },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordRegister(realmId, {
+      await passwordCliClientCreate(resolved.connection).passwordRegister(resolved.realmId, {
         email: flags.email,
         password: flags.password,
         ...(flags.phoneNumber === undefined ? {} : { phoneNumber: flags.phoneNumber }),
@@ -115,11 +118,11 @@ const passwordLoginCommand = buildCommand({
     this: ApplicationContext,
     flags: PasswordCliFlags & { identifier: string; password: string; realmId?: string },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordLogin(realmId, {
+      await passwordCliClientCreate(resolved.connection).passwordLogin(resolved.realmId, {
         identifier: flags.identifier,
         password: flags.password,
       }),
@@ -138,11 +141,11 @@ const passwordLoginCommand = buildCommand({
 
 const passwordVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasswordCliFlags & { realmId?: string; token: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordEmailVerify(realmId, { token: flags.token }),
+      await passwordCliClientCreate(resolved.connection).passwordEmailVerify(resolved.realmId, { token: flags.token }),
     )
   },
   parameters: {
@@ -160,11 +163,11 @@ const passwordWhatsappVerifyCommand = buildCommand({
     this: ApplicationContext,
     flags: PasswordCliFlags & { challengeId: string; code: string; realmId?: string },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordWhatsappVerify(realmId, {
+      await passwordCliClientCreate(resolved.connection).passwordWhatsappVerify(resolved.realmId, {
         challengeId: flags.challengeId,
         code: flags.code,
       }),
@@ -183,11 +186,13 @@ const passwordWhatsappVerifyCommand = buildCommand({
 
 const passwordRecoveryRequestCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasswordCliFlags & { email: string; realmId?: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordRecoveryRequest(realmId, { email: flags.email }),
+      await passwordCliClientCreate(resolved.connection).passwordRecoveryRequest(resolved.realmId, {
+        email: flags.email,
+      }),
     )
   },
   parameters: {
@@ -201,11 +206,11 @@ const passwordRecoveryCompleteCommand = buildCommand({
     this: ApplicationContext,
     flags: PasswordCliFlags & { newPassword: string; realmId?: string; token: string },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await passwordCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     passwordCliResultWrite(
       this,
-      await passwordCliClientCreate(this, flags).passwordRecoveryComplete(realmId, {
+      await passwordCliClientCreate(resolved.connection).passwordRecoveryComplete(resolved.realmId, {
         newPassword: flags.newPassword,
         token: flags.token,
       }),
@@ -283,11 +288,11 @@ export const passwordCliCommands = buildRouteMap({
         this: ApplicationContext,
         flags: PasswordCliFlags & { currentPassword: string; newPassword: string; realmId?: string; userId: string },
       ) {
-        const realmId = scopeIdResolve(this, flags.realmId, "realm")
-        if (realmId === undefined) return
+        const resolved = await passwordCliConnectionResolve(this, flags)
+        if (resolved === undefined) return
         passwordCliResultWrite(
           this,
-          await passwordCliClientCreate(this, flags).passwordChange(realmId, flags.userId, {
+          await passwordCliClientCreate(resolved.connection).passwordChange(resolved.realmId, flags.userId, {
             currentPassword: flags.currentPassword,
             newPassword: flags.newPassword,
           }),
@@ -351,10 +356,24 @@ async function passwordContentorenSsoTestInputRead(
   }
 }
 
-function passwordCliClientCreate(context: ApplicationContext, flags: PasswordCliFlags) {
+async function passwordCliConnectionResolve(
+  context: ApplicationContext,
+  flags: PasswordCliFlags & { readonly realmId?: string },
+) {
+  const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!result.success) {
+    passwordCliResultWrite(context, result)
+    return undefined
+  }
+  const realmId = scopeIdResolve(context, result.data.realmId, "realm")
+  if (realmId === undefined) return undefined
+  return { connection: result.data, realmId }
+}
+
+function passwordCliClientCreate(connection: { readonly server: string; readonly token?: string }) {
   return passwordApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
+    baseUrl: connection.server,
+    token: connection.token,
   })
 }
 
@@ -379,6 +398,7 @@ function passwordCommonFlags() {
       parse: (value: string) => value,
       placeholder: "URL",
     },
+    profile: connectionProfileCliProfileFlag(),
     token: {
       brief: "Bearer token",
       kind: "parsed" as const,

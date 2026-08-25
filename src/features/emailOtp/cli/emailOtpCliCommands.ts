@@ -1,19 +1,22 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { emailOtpApiClientCreate } from "../client/emailOtpApiClientCreate.js"
 
 type EmailOtpCliFlags = {
+  readonly profile?: string
   readonly server?: string
   readonly realmId?: string
 }
 
 const emailOtpStartCommand = buildCommand({
   async func(this: ApplicationContext, flags: EmailOtpCliFlags & { email: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await emailOtpCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     emailOtpCliResultWrite(
       this,
-      await emailOtpCliClientCreate(this, flags).emailOtpStart(realmId, { email: flags.email }),
+      await emailOtpCliClientCreate(resolved.connection).emailOtpStart(resolved.realmId, { email: flags.email }),
     )
   },
   parameters: {
@@ -27,11 +30,11 @@ const emailOtpStartCommand = buildCommand({
 
 const emailOtpVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: EmailOtpCliFlags & { challengeId: string; code: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    if (realmId === undefined) return
+    const resolved = await emailOtpCliConnectionResolve(this, flags)
+    if (resolved === undefined) return
     emailOtpCliResultWrite(
       this,
-      await emailOtpCliClientCreate(this, flags).emailOtpVerify(realmId, {
+      await emailOtpCliClientCreate(resolved.connection).emailOtpVerify(resolved.realmId, {
         challengeId: flags.challengeId,
         code: flags.code,
       }),
@@ -52,9 +55,20 @@ export const emailOtpCliCommands = buildRouteMap({
   docs: { brief: "Email OTP authentication" },
 })
 
-function emailOtpCliClientCreate(context: ApplicationContext, flags: Pick<EmailOtpCliFlags, "server">) {
+async function emailOtpCliConnectionResolve(context: ApplicationContext, flags: EmailOtpCliFlags) {
+  const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!result.success) {
+    emailOtpCliResultWrite(context, result)
+    return undefined
+  }
+  const realmId = scopeIdResolve(context, result.data.realmId, "realm")
+  if (realmId === undefined) return undefined
+  return { connection: result.data, realmId }
+}
+
+function emailOtpCliClientCreate(connection: { readonly server: string }) {
   return emailOtpApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
+    baseUrl: connection.server,
   })
 }
 
@@ -72,6 +86,7 @@ function emailOtpCliResultWrite(
 
 function emailOtpCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

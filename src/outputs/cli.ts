@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
+import { connectionProfilesCliCommands } from "../features/connectionProfiles/cli/connectionProfilesCliCommands.js"
 import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommands.js"
 import { externalIdentityCliCommands } from "../features/externalIdentities/cli/externalIdentityCliCommands.js"
 import { impersonationCliCommands } from "../features/impersonation/cli/impersonationCliCommands.js"
@@ -21,6 +22,7 @@ import { packageVersion } from "../packageVersion.js"
 const cliApplication = buildApplication(
   buildRouteMap({
     routes: {
+      profile: connectionProfilesCliCommands,
       realms: realmCliCommands,
       emailOtp: emailOtpCliCommands,
       externalIdentities: externalIdentityCliCommands,

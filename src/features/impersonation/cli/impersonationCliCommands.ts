@@ -1,8 +1,12 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { impersonationApiClientCreate } from "../client/impersonationApiClientCreate.js"
 
 type ImpersonationCliFlags = {
+  readonly profile?: string
   readonly realmId?: string
   readonly server?: string
   readonly token?: string
@@ -18,16 +22,21 @@ const impersonationStartCommand = buildCommand({
       targetUserId: string
     },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
-    const organizationId = scopeIdResolve(this, flags.organizationId, "organization", false)
+    const connection = await impersonationCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      impersonationCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization", false)
     if (realmId === undefined) return
-    const result = await impersonationCliClientCreate(this, flags).impersonationStart(realmId, {
+    const result = await impersonationCliClientCreate(connection.data).impersonationStart(realmId, {
       durationSeconds: flags.durationSeconds,
       ...(organizationId === undefined ? {} : { organizationId }),
       reason: flags.reason,
       targetUserId: flags.targetUserId,
     })
-    impersonationCliResultWrite(this, result)
+    impersonationCliResultWrite(this, result, [connection.data.token])
   },
   parameters: {
     flags: {
@@ -43,11 +52,17 @@ const impersonationStartCommand = buildCommand({
 
 const impersonationEndCommand = buildCommand({
   async func(this: ApplicationContext, flags: ImpersonationCliFlags & { sessionId: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await impersonationCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      impersonationCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     impersonationCliResultWrite(
       this,
-      await impersonationCliClientCreate(this, flags).impersonationEnd(realmId, flags.sessionId),
+      await impersonationCliClientCreate(connection.data).impersonationEnd(realmId, flags.sessionId),
+      [connection.data.token],
     )
   },
   parameters: { flags: { ...impersonationCommonFlags(), sessionId: textFlag("Impersonation session UUID") } },
@@ -59,27 +74,37 @@ export const impersonationCliCommands = buildRouteMap({
   docs: { brief: "Manage administrator impersonation" },
 })
 
-function impersonationCliClientCreate(context: ApplicationContext, flags: ImpersonationCliFlags) {
+async function impersonationCliConnectionResolve(context: ApplicationContext, flags: ImpersonationCliFlags) {
+  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+}
+
+function impersonationCliClientCreate(flags: { readonly server: string; readonly token?: string }) {
   return impersonationApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
+    baseUrl: flags.server,
+    token: flags.token,
   })
 }
 
 function impersonationCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function impersonationCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     realmId: { ...textFlag("Realm UUID"), optional: true as const },
     server: optionalTextFlag("Authworks server URL"),
     token: optionalTextFlag("Bearer token"),

@@ -1,9 +1,12 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { userApiClientCreate } from "../client/userApiClientCreate.js"
 
 type UserCliFlags = {
+  readonly profile?: string
   readonly server?: string
   readonly token?: string
 }
@@ -25,11 +28,13 @@ const userCreateCommand = buildCommand({
     this: ApplicationContext,
     flags: UserCliFlags & { displayName?: string; email: string; realmId?: string; userName: string },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userCreate(realmId, {
+      await userCliClientCreate(connection).userCreate(realmId, {
         email: flags.email,
         profile: { displayName: flags.displayName },
         userName: flags.userName,
@@ -50,9 +55,11 @@ const userCreateCommand = buildCommand({
 
 const userListCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserListCliFlags & { realmId?: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userList(realmId, userListQueryCreate(flags)))
+    userCliResultWrite(this, await userCliClientCreate(connection).userList(realmId, userListQueryCreate(flags)))
   },
   parameters: { flags: { ...userCommonFlags(), ...userListFlags(), realmId: userRealmIdFlag() } },
   docs: { brief: "List users" },
@@ -60,11 +67,13 @@ const userListCommand = buildCommand({
 
 const userGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserGetCliFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userGet(
+      await userCliClientCreate(connection).userGet(
         realmId,
         flags.userId,
         flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
@@ -84,11 +93,13 @@ const userGetCommand = buildCommand({
 
 const userProfileCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags & { displayName?: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userProfileUpdate(realmId, flags.userId, {
+      await userCliClientCreate(connection).userProfileUpdate(realmId, flags.userId, {
         displayName: flags.displayName,
       }),
     )
@@ -109,11 +120,13 @@ const userLifecycleCommand = buildCommand({
     this: ApplicationContext,
     flags: UserIdCliFlags & { state: "active" | "inactive" | "initial" | "locked" | "suspended" },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userLifecycleSet(realmId, flags.userId, { state: flags.state }),
+      await userCliClientCreate(connection).userLifecycleSet(realmId, flags.userId, { state: flags.state }),
     )
   },
   parameters: {
@@ -129,11 +142,13 @@ const userLifecycleCommand = buildCommand({
 
 const userVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags & { state: "unverified" | "verified" }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
     userCliResultWrite(
       this,
-      await userCliClientCreate(this, flags).userEmailVerificationSet(realmId, flags.userId, {
+      await userCliClientCreate(connection).userEmailVerificationSet(realmId, flags.userId, {
         state: flags.state,
       }),
     )
@@ -151,9 +166,11 @@ const userVerifyCommand = buildCommand({
 
 const userDeleteCommand = buildCommand({
   async func(this: ApplicationContext, flags: UserIdCliFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await userCliConnectionResolve(this, flags)
+    if (connection === undefined) return
+    const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
-    userCliResultWrite(this, await userCliClientCreate(this, flags).userDelete(realmId, flags.userId))
+    userCliResultWrite(this, await userCliClientCreate(connection).userDelete(realmId, flags.userId))
   },
   parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
   docs: { brief: "Delete a user account" },
@@ -172,11 +189,20 @@ export const userCliCommands = buildRouteMap({
   docs: { brief: "User administration" },
 })
 
-function userCliClientCreate(context: ApplicationContext, flags: UserCliFlags) {
-  return userApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
-  })
+function userCliClientCreate(connection: { readonly server: string; readonly token?: string }) {
+  return userApiClientCreate({ baseUrl: connection.server, token: connection.token })
+}
+
+async function userCliConnectionResolve(
+  context: ApplicationContext,
+  flags: UserCliFlags & { readonly realmId?: string },
+) {
+  const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!result.success) {
+    userCliResultWrite(context, result)
+    return undefined
+  }
+  return result.data
 }
 
 function userCliResultWrite(
@@ -197,6 +223,7 @@ function userCliResultWrite(
 
 function userCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

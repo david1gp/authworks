@@ -1,11 +1,15 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 import { oidcCodelineClientEnsure } from "./oidcCodelineClientEnsure.js"
 import { oidcCodelineProductionClientEnsure } from "./oidcCodelineProductionClientEnsure.js"
 
 type OidcCliFlags = {
+  readonly profile?: string
   readonly server?: string
   readonly token?: string
 }
@@ -40,11 +44,16 @@ const oidcClientCreateCommand = buildCommand({
       requireConsent?: boolean
     },
   ) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcClientCreate(realmId, {
+      await oidcCliClientCreate(connection.data).oidcClientCreate(realmId, {
         allowedScopes: splitValues(flags.allowedScopes, ["openid"]),
         clientType: flags.clientType,
         name: flags.name,
@@ -53,6 +62,7 @@ const oidcClientCreateCommand = buildCommand({
         requireConsent: flags.requireConsent,
         trusted: flags.trusted,
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -78,9 +88,18 @@ const oidcClientCreateCommand = buildCommand({
 
 const oidcClientListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcListRealmFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientList(realmId, oidcListQueryCreate(flags)))
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcClientList(realmId, oidcListQueryCreate(flags)),
+      [connection.data.token],
+    )
   },
   parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
   docs: { brief: "List OIDC clients" },
@@ -88,15 +107,21 @@ const oidcClientListCommand = buildCommand({
 
 const oidcClientGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcClientGetFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcClientGet(
+      await oidcCliClientCreate(connection.data).oidcClientGet(
         realmId,
         flags.clientId,
         flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
       ),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -112,7 +137,12 @@ const oidcClientGetCommand = buildCommand({
 
 const oidcCodelineClientEnsureCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcCodelineClientEnsureFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     const envFile = flags.envFile ?? this.process.env?.CODELINE_ENV_FILE
     if (realmId === undefined || envFile === undefined || envFile.length === 0) {
       if (envFile === undefined || envFile.length === 0) {
@@ -124,12 +154,13 @@ const oidcCodelineClientEnsureCommand = buildCommand({
     oidcCliResultWrite(
       this,
       await oidcCodelineClientEnsure({
-        api: oidcCliClientCreate(this, flags),
+        api: oidcCliClientCreate(connection.data),
         clientId: flags.clientId,
         envFilePath: envFile,
         name: flags.name ?? "Codeline preview",
         realmId,
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -160,9 +191,18 @@ const oidcCodelineProductionClientEnsureCommand = buildCommand({
 
 const oidcClientSecretRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcClientFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcClientSecretRotate(realmId, flags.clientId))
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcClientSecretRotate(realmId, flags.clientId),
+      [connection.data.token],
+    )
   },
   parameters: {
     flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag(), clientId: oidcIdFlag("Client UUID") },
@@ -172,9 +212,16 @@ const oidcClientSecretRotateCommand = buildCommand({
 
 const oidcSigningKeyCreateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcRealmFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
-    oidcCliResultWrite(this, await oidcCliClientCreate(this, flags).oidcSigningKeyCreate(realmId))
+    oidcCliResultWrite(this, await oidcCliClientCreate(connection.data).oidcSigningKeyCreate(realmId), [
+      connection.data.token,
+    ])
   },
   parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
   docs: { brief: "Create and activate an OIDC signing key" },
@@ -182,11 +229,17 @@ const oidcSigningKeyCreateCommand = buildCommand({
 
 const oidcSigningKeyListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcListRealmFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcSigningKeyList(realmId, oidcListQueryCreate(flags)),
+      await oidcCliClientCreate(connection.data).oidcSigningKeyList(realmId, oidcListQueryCreate(flags)),
+      [connection.data.token],
     )
   },
   parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
@@ -195,13 +248,19 @@ const oidcSigningKeyListCommand = buildCommand({
 
 const oidcSigningKeyRetireCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcRealmFlags & { signingKeyId: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcSigningKeyLifecycleSet(realmId, flags.signingKeyId, {
+      await oidcCliClientCreate(connection.data).oidcSigningKeyLifecycleSet(realmId, flags.signingKeyId, {
         status: "retired",
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -216,11 +275,17 @@ const oidcSigningKeyRetireCommand = buildCommand({
 
 const oidcConsentListCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcConsentListFlags) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcConsentList(realmId, flags.userId, oidcListQueryCreate(flags)),
+      await oidcCliClientCreate(connection.data).oidcConsentList(realmId, flags.userId, oidcListQueryCreate(flags)),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -231,13 +296,19 @@ const oidcConsentListCommand = buildCommand({
 
 const oidcConsentRevokeCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcConsentFlags & { clientId: string }) {
-    const realmId = scopeIdResolve(this, flags.realmId, "realm")
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcConsentRevoke(realmId, flags.userId, {
+      await oidcCliClientCreate(connection.data).oidcConsentRevoke(realmId, flags.userId, {
         client_id: flags.clientId,
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -261,14 +332,20 @@ const oidcLogoutCommand = buildCommand({
       state?: string
     },
   ) {
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
     oidcCliResultWrite(
       this,
-      await oidcCliClientCreate(this, flags).oidcLogout({
+      await oidcCliClientCreate(connection.data).oidcLogout({
         ...(flags.clientId === undefined ? {} : { client_id: flags.clientId }),
         ...(flags.idTokenHint === undefined ? {} : { id_token_hint: flags.idTokenHint }),
         ...(flags.postLogoutRedirectUri === undefined ? {} : { post_logout_redirect_uri: flags.postLogoutRedirectUri }),
         ...(flags.state === undefined ? {} : { state: flags.state }),
       }),
+      [connection.data.token],
     )
   },
   parameters: {
@@ -301,19 +378,26 @@ export const oidcCliCommands = buildRouteMap({
   docs: { brief: "OIDC client and signing-key administration" },
 })
 
-function oidcCliClientCreate(context: ApplicationContext, flags: OidcCliFlags) {
+async function oidcCliConnectionResolve(context: ApplicationContext, flags: OidcCliFlags) {
+  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+}
+
+function oidcCliClientCreate(flags: OidcCliFlags) {
   return oidcApiClientCreate({
-    baseUrl: flags.server ?? context.process.env?.AUTHWORKS_URL ?? "http://127.0.0.1:3000",
-    token: flags.token ?? context.process.env?.AUTHWORKS_TOKEN,
+    baseUrl: flags.server ?? "http://127.0.0.1:3000",
+    token: flags.token,
   })
 }
 
 function oidcCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; status?: "current" | "unchanged"; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
@@ -321,11 +405,14 @@ function oidcCliResultWrite(
     context.process.stderr.write("304 Not Modified\n")
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function oidcCommonFlags() {
   return {
+    profile: connectionProfileCliProfileFlag(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

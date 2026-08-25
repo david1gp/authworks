@@ -1,27 +1,34 @@
-import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { chmod, readFile, writeFile } from "node:fs/promises"
-import { zitadelApiClientCreate } from "../client/zitadelApiClientCreate.js"
+import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import * as v from "valibot"
+import { storageDatabaseOpen } from "../../../platform/storage/storageDatabaseOpen.js"
+import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
+import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { zitadelMigrationExport } from "../actions/zitadelMigrationExport.js"
 import { zitadelMigrationImport } from "../actions/zitadelMigrationImport.js"
-import { storageDatabaseOpen } from "../../../platform/storage/storageDatabaseOpen.js"
+import { zitadelApiClientCreate } from "../client/zitadelApiClientCreate.js"
 import { zitadelMigrationSnapshotSchema } from "../public/zitadelMigrationSnapshotSchema.js"
-import * as v from "valibot"
 
 type ExportCliFlags = {
   readonly apiUrl?: string
   readonly output?: string
   readonly pageSize?: number
+  readonly profile?: string
   readonly token?: string
 }
 
 type ImportCliFlags = {
   readonly database?: string
   readonly input?: string
+  readonly profile?: string
   readonly realmId?: string
 }
 
 const exportCommand = buildCommand({
   async func(this: ApplicationContext, flags: ExportCliFlags) {
+    const connection = await zitadelMigrationConnectionResolve(this, flags)
+    if (!connection.success) return cliErrorWrite(this, connection.errorMessage)
     const apiUrl = requiredValue(this, flags.apiUrl, "ZITADEL_API_URL", "ZITADEL API URL")
     const token = requiredValue(this, flags.token, "ZITADEL_SERVICE_ACCOUNT_TOKEN", "ZITADEL service account token")
     const output = requiredValue(this, flags.output, "AUTHWORKS_MIGRATION_SNAPSHOT_PATH", "migration snapshot path")
@@ -30,16 +37,17 @@ const exportCommand = buildCommand({
     const result = await zitadelMigrationExport({
       api: zitadelApiClientCreate({ baseUrl: apiUrl, pageSize, token }),
     })
-    if (!result.success) return cliErrorWrite(this, result.errorMessage)
+    if (!result.success) return cliErrorWrite(this, result.errorMessage, [token])
     const written = await snapshotWrite(output, result.data.snapshot)
-    if (!written.success) return cliErrorWrite(this, written.errorMessage)
-    this.process.stdout.write(`${JSON.stringify(result.data.report)}\n`)
+    if (!written.success) return cliErrorWrite(this, written.errorMessage, [token])
+    this.process.stdout.write(`${connectionProfileCliOutputRedact(JSON.stringify(result.data.report), [token])}\n`)
   },
   parameters: {
     flags: {
       apiUrl: optionalTextFlag("ZITADEL API URL"),
       output: optionalTextFlag("Output migration snapshot path"),
       pageSize: optionalNumberFlag("ZITADEL search page size"),
+      profile: connectionProfileCliProfileFlag(),
       token: optionalTextFlag("ZITADEL service account token"),
     },
   },
@@ -48,8 +56,10 @@ const exportCommand = buildCommand({
 
 const importCommand = buildCommand({
   async func(this: ApplicationContext, flags: ImportCliFlags) {
+    const connection = await zitadelMigrationConnectionResolve(this, flags)
+    if (!connection.success) return cliErrorWrite(this, connection.errorMessage)
     const databasePath = requiredValue(this, flags.database, "AUTHWORKS_DATABASE_PATH", "Authworks database path")
-    const realmId = requiredValue(this, flags.realmId, "AUTHWORKS_REALM_ID", "Authworks realm ID")
+    const realmId = requiredValue(this, connection.data.realmId, "AUTHWORKS_REALM_ID", "Authworks realm ID")
     const input = requiredValue(this, flags.input, "AUTHWORKS_MIGRATION_SNAPSHOT_PATH", "migration snapshot path")
     if (databasePath === undefined || realmId === undefined || input === undefined) return
     const snapshot = await snapshotRead(input)
@@ -68,6 +78,7 @@ const importCommand = buildCommand({
     flags: {
       database: optionalTextFlag("Authworks SQLite database path"),
       input: optionalTextFlag("Input migration snapshot path"),
+      profile: connectionProfileCliProfileFlag(),
       realmId: optionalTextFlag("Authworks realm ID"),
     },
   },
@@ -81,6 +92,10 @@ export const zitadelMigrationCliCommands = buildRouteMap({
   },
   docs: { brief: "ZITADEL migration" },
 })
+
+async function zitadelMigrationConnectionResolve(context: ApplicationContext, flags: ExportCliFlags | ImportCliFlags) {
+  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+}
 
 function requiredValue(
   context: ApplicationContext,
@@ -123,8 +138,8 @@ async function snapshotWrite(path: string, snapshot: unknown) {
   }
 }
 
-function cliErrorWrite(context: ApplicationContext, message: string) {
-  context.process.stderr.write(`${message}\n`)
+function cliErrorWrite(context: ApplicationContext, message: string, secrets: readonly (string | undefined)[] = []) {
+  context.process.stderr.write(`${connectionProfileCliOutputRedact(message, secrets)}\n`)
   context.process.exitCode = 1
 }
 
