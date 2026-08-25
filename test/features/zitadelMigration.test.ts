@@ -2,12 +2,16 @@ import { expect, test } from "bun:test"
 import { mkdtemp, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import * as v from "valibot"
 import { organizationRolesDecode } from "../../src/features/organizations/domain/organizationRolesDecode.js"
 import { organizationRepositoryCreate } from "../../src/features/organizations/persistence/organizationRepositoryCreate.js"
 import { projectRepositoryCreate } from "../../src/features/projects/persistence/projectRepositoryCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { userList } from "../../src/features/users/actions/userList.js"
 import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
+import { userListResponseSchema } from "../../src/features/users/public/userListResponseSchema.js"
+import { userResponseSchema } from "../../src/features/users/public/userResponseSchema.js"
 import { zitadelMigrationExport } from "../../src/features/zitadelMigration/actions/zitadelMigrationExport.js"
 import { zitadelMigrationImport } from "../../src/features/zitadelMigration/actions/zitadelMigrationImport.js"
 import { zitadelApiClientCreate } from "../../src/features/zitadelMigration/client/zitadelApiClientCreate.js"
@@ -66,10 +70,15 @@ test("migration imports relationships, preserves IDs, and is idempotent", async 
     expect(first.data.counts.projectGrants).toMatchObject({ created: 1, imported: 1 })
     expect(first.data.unsupported).toHaveLength(3)
 
-    const user = userRepositoryCreate(database.db).userGet(realmId, "user-1")
+    const user = userRepositoryCreate(database.db).userGet(realmId, "98765432109876543210")
     expect(user.success).toBe(true)
     if (!user.success) return
     expect(user.data?.email).toBe("alice@example.com")
+    const listed = userList({ context: realmSystemContextCreate(), database, realmId })
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(v.safeParse(userListResponseSchema, listed.data).success).toBe(true)
+    expect(v.safeParse(userResponseSchema, { user: listed.data.items[0] }).success).toBe(true)
     const organizations = organizationRepositoryCreate(database.db).organizationList(realmId)
     expect(organizations.success).toBe(true)
     if (!organizations.success) return
@@ -105,6 +114,25 @@ test("migration imports relationships, preserves IDs, and is idempotent", async 
     expect(second.data.counts.organizations).toMatchObject({ created: 0, imported: 2, unchanged: 2, updated: 0 })
     expect(second.data.counts.projectGrants).toMatchObject({ created: 0, imported: 1, unchanged: 1, updated: 0 })
   })
+})
+
+test("migration rejects malformed or path-dangerous user IDs and references before writing", async () => {
+  const snapshot = (await fixture("zitadel-migration-snapshot.json")) as {
+    users: Array<{ id: string }>
+    organizationMemberships: Array<{ userId: string }>
+  }
+  const invalidUserIdSnapshot = structuredClone(snapshot)
+  const invalidUserReferenceSnapshot = structuredClone(snapshot)
+  invalidUserIdSnapshot.users[0]!.id = "../user"
+  invalidUserReferenceSnapshot.organizationMemberships[0]!.userId = "user/../reference"
+
+  for (const invalidSnapshot of [invalidUserIdSnapshot, invalidUserReferenceSnapshot]) {
+    await withDatabase(async (database, realmId) => {
+      const imported = zitadelMigrationImport({ database, realmId, snapshot: invalidSnapshot })
+      expect(imported).toMatchObject({ code: "zitadel-migration.snapshot-invalid", success: false })
+      expect(userRepositoryCreate(database.db).userList(realmId)).toEqual({ data: [], success: true })
+    })
+  }
 })
 
 test("migration rejects unsupported organization IDs before opening the import transaction", async () => {

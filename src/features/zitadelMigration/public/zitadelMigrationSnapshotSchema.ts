@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import { organizationResourceIdSchema } from "../../organizations/public/organizationResourceIdSchema.js"
+import { userResourceIdSchema } from "../../users/public/userResourceIdSchema.js"
 
 const timestampSchema = v.pipe(v.number(), v.integer(), v.minValue(0))
 const nullableTimestampSchema = v.nullable(timestampSchema)
@@ -22,7 +23,7 @@ const userSchema = v.strictObject({
   email: v.pipe(v.string(), v.minLength(3), v.maxLength(320)),
   emailVerified: v.boolean(),
   emailVerifiedAt: nullableTimestampSchema,
-  id: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+  id: userResourceIdSchema,
   profile: userProfileSchema,
   state: v.picklist(["initial", "active", "inactive", "locked", "suspended", "deleted"]),
   updatedAt: timestampSchema,
@@ -43,7 +44,7 @@ const organizationMembershipSchema = v.strictObject({
   organizationId: organizationResourceIdSchema,
   roles: v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(320))),
   updatedAt: timestampSchema,
-  userId: v.pipe(v.string(), v.minLength(1), v.maxLength(320)),
+  userId: userResourceIdSchema,
 })
 
 const projectSchema = v.strictObject({

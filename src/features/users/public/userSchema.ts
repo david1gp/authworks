@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
 import { userProfileSchema } from "./userProfileSchema.js"
 import { userPhoneNumberSchema } from "./userPhoneNumberSchema.js"
 import { userResourceIdSchema } from "./userResourceIdSchema.js"
@@ -15,7 +16,7 @@ export const userSchema = v.strictObject({
   id: userResourceIdSchema,
   phoneNumber: v.optional(userPhoneNumberSchema),
   phoneNumberVerifiedAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
-  realmId: userResourceIdSchema,
+  realmId: realmResourceIdSchema,
   profile: userProfileSchema,
   registrationVerifiedAt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
   registrationVerificationMethod: v.optional(userRegistrationVerificationMethodSchema),

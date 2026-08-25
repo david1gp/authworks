@@ -2,7 +2,7 @@
   "version": 1,
   "users": [
     {
-      "id": "user-1",
+      "id": "98765432109876543210",
       "userName": "alice",
       "email": "alice@example.com",
       "emailVerified": true,
@@ -41,7 +41,7 @@
     {
       "id": "membership-1",
       "organizationId": "123456789012345678",
-      "userId": "user-1",
+      "userId": "98765432109876543210",
       "roles": ["ORG_OWNER", "ORG_USER_VIEWER", "CUSTOM_ROLE"],
       "createdAt": 1700000000000,
       "updatedAt": 1700000001000
@@ -85,12 +85,12 @@
   "unsupported": [
     {
       "entity": "userPassword",
-      "sourceId": "user-1",
+      "sourceId": "98765432109876543210",
       "reason": "password-credentials-not-portable"
     },
     {
       "entity": "federatedIdentity",
-      "sourceId": "user-1",
+      "sourceId": "98765432109876543210",
       "reason": "federated-links-require-upstream-subject-mapping"
     }
   ]
