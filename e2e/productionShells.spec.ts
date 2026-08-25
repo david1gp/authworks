@@ -77,6 +77,7 @@ test.beforeEach(async ({ page }) => {
   await page.route(`**/realms/${realmId}/me`, (route) =>
     route.fulfill({
       json: {
+        capabilities: { realmRead: true },
         user: {
           createdAt: 1_700_000_000_000,
           email: "user@customer.example",

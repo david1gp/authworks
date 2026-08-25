@@ -81,7 +81,7 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
       await route.fulfill({ json: { user: currentUser } })
       return
     }
-    await route.fulfill({ json: { user: currentUser } })
+    await route.fulfill({ json: { capabilities: { realmRead: true }, user: currentUser } })
   })
 
   await page.goto("/account/profile")
@@ -190,7 +190,7 @@ test("production profile adds, verifies, and changes its WhatsApp phone number",
       await route.fulfill({ json: { user: currentUser } })
       return
     }
-    await route.fulfill({ json: { user: currentUser } })
+    await route.fulfill({ json: { capabilities: { realmRead: true }, user: currentUser } })
   })
 
   await page.goto("/account/profile")
@@ -292,7 +292,7 @@ test("production email addresses use the lifecycle APIs and protect the primary 
   await accountApiRoutesInstall(page, async (route, method) => {
     const path = new URL(route.request().url()).pathname
     if (path === `/realms/${realmId}/me`) {
-      await route.fulfill({ json: { user } })
+      await route.fulfill({ json: { capabilities: { realmRead: true }, user } })
       return
     }
     if (path === `/realms/${realmId}/me/emails` && method === "GET") {
@@ -407,7 +407,7 @@ test("production password presents an API rejection", async ({ page }) => {
       })
       return
     }
-    await route.fulfill({ json: { user } })
+    await route.fulfill({ json: { capabilities: { realmRead: true }, user } })
   })
 
   await page.goto("/account/password")
