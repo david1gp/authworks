@@ -5,6 +5,7 @@ import { join } from "node:path"
 import type { ResultErr } from "#result"
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
+import { organizationMembershipListResponseInvalidFieldClassify } from "../../src/features/organizations/client/organizationMembershipListResponseInvalidFieldClassify.js"
 import { passwordContentorenSsoTestProductionEnsure } from "../../src/features/passwords/cli/passwordContentorenSsoTestProductionEnsure.js"
 import { passwordContentorenSsoTestProductionEnsureFailureOutputCreate } from "../../src/features/passwords/cli/passwordContentorenSsoTestProductionEnsureFailureOutputCreate.js"
 import { passwordApiClientCreate } from "../../src/features/passwords/client/passwordApiClientCreate.js"
@@ -29,6 +30,19 @@ const apiInvalidResponseStages = [
   "password-credential-replace",
   "membership-create",
   "membership-update",
+] as const
+const membershipListInvalidFields = [
+  "envelope",
+  "items",
+  "id",
+  "realm-id",
+  "organization-id",
+  "user-id",
+  "created-at",
+  "updated-at",
+  "roles",
+  "next-page-token",
+  "unknown",
 ] as const
 
 test("Contentoren ssotest ensure creates and reuses an active verified member account", async () => {
@@ -244,7 +258,11 @@ test("Contentoren ssotest ensure identifies every invalid API response boundary 
       })
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.code).toBe(`passwords.contentoren-ssotest-ensure.api-invalid-response.${stage}`)
+        const expectedCode =
+          stage === "membership-list"
+            ? "passwords.contentoren-ssotest-ensure.api-invalid-response.membership-list.envelope"
+            : `passwords.contentoren-ssotest-ensure.api-invalid-response.${stage}`
+        expect(result.code).toBe(expectedCode)
         expect(JSON.stringify(result)).not.toContain(privateEmail)
         expect(JSON.stringify(result)).not.toContain(privatePassword)
         expect(JSON.stringify(result)).not.toContain(replacementPassword)
@@ -253,6 +271,42 @@ test("Contentoren ssotest ensure identifies every invalid API response boundary 
     } finally {
       await fixture.close()
     }
+  }
+})
+
+test("Contentoren membership-list diagnostics use only the closed field categories", () => {
+  const secretValue = "sensitive-membership-value"
+  const validItem = {
+    createdAt: 1,
+    id: "018f0000-0000-7000-8000-000000000001",
+    organizationId: "018f0000-0000-7000-8000-000000000002",
+    realmId: "018f0000-0000-7000-8000-000000000003",
+    roles: ["member"],
+    updatedAt: 2,
+    userId: "user-1",
+  }
+  const cases: readonly { readonly body: unknown; readonly field: (typeof membershipListInvalidFields)[number] }[] = [
+    { body: { items: [], leaked: secretValue }, field: "envelope" },
+    { body: { items: secretValue }, field: "items" },
+    { body: { items: [{ ...validItem, id: secretValue }] }, field: "id" },
+    { body: { items: [{ ...validItem, realmId: secretValue }] }, field: "realm-id" },
+    { body: { items: [{ ...validItem, organizationId: secretValue }] }, field: "organization-id" },
+    { body: { items: [{ ...validItem, userId: { secret: secretValue } }] }, field: "user-id" },
+    { body: { items: [{ ...validItem, createdAt: secretValue }] }, field: "created-at" },
+    { body: { items: [{ ...validItem, updatedAt: secretValue }] }, field: "updated-at" },
+    { body: { items: [{ ...validItem, roles: [secretValue] }] }, field: "roles" },
+    { body: { items: [validItem], nextPageToken: { secret: secretValue } }, field: "next-page-token" },
+    { body: { items: [{ ...validItem, secret: secretValue }] }, field: "unknown" },
+  ]
+  for (const { body, field } of cases) {
+    expect(organizationMembershipListResponseInvalidFieldClassify(body)).toBe(field)
+    const output = passwordContentorenSsoTestProductionEnsureFailureOutputCreate(
+      `passwords.contentoren-ssotest-ensure.api-invalid-response.membership-list.${field}`,
+    )
+    expect(output).toBe(
+      `{"error":{"code":"passwords.contentoren-ssotest-ensure.api-invalid-response.membership-list.${field}"}}\n`,
+    )
+    expect(output).not.toContain(secretValue)
   }
 })
 
@@ -474,6 +528,7 @@ test("Contentoren ssotest command normalizes every failure category to an allowl
     expect(passwordContentorenSsoTestProductionEnsureFailureOutputCreate(failure)).not.toContain(secretText)
   }
   for (const stage of apiInvalidResponseStages) {
+    if (stage === "membership-list") continue
     const code = `passwords.contentoren-ssotest-ensure.api-invalid-response.${stage}`
     expect(
       passwordContentorenSsoTestProductionEnsureFailureOutputCreate({

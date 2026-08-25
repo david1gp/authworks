@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { type Result } from "#result"
+import { type Result, type ResultErr } from "#result"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { HttpGetOptions } from "../../../platform/http/HttpGetOptions.js"
 import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
@@ -152,20 +152,28 @@ import {
 } from "../public/organizationUpdateRequestSchema.js"
 
 type OrganizationApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
+type OrganizationMembershipListInvalidResponseErrorGet = (body: unknown) => ResultErr | undefined
 
 type OrganizationApiClientCreateOptions = {
   readonly baseUrl: string
   readonly csrfToken?: string
   readonly fetch?: OrganizationApiFetch
+  readonly organizationMembershipListInvalidResponseErrorGet?: OrganizationMembershipListInvalidResponseErrorGet
   readonly token?: Secret | string
 }
 
 export function organizationApiClientCreate(options: OrganizationApiClientCreateOptions) {
-  const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+  const request = <T>(
+    path: string,
+    init: RequestInit,
+    schema: v.GenericSchema<T>,
+    invalidResponseErrorGet?: OrganizationMembershipListInvalidResponseErrorGet,
+  ): Promise<Result<T>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
       fetch: options.fetch,
       init,
+      invalidResponseErrorGet,
       op: "organizationApiClientRequest",
       path,
       schema,
@@ -821,6 +829,7 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         ),
         { method: "GET" },
         organizationMembershipListResponseSchema,
+        options.organizationMembershipListInvalidResponseErrorGet,
       )
     },
     organizationMembershipUpdate(

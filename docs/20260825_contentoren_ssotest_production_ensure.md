@@ -74,8 +74,18 @@ The closed reason-code set is:
 - `api-invalid-response.realm-list`, `api-invalid-response.organization-list`,
   `api-invalid-response.password-policy-get`,
   `api-invalid-response.user-list`,
-  `api-invalid-response.machine-user-list`,
-  `api-invalid-response.membership-list`
+  `api-invalid-response.machine-user-list`
+- `api-invalid-response.membership-list.envelope`,
+  `api-invalid-response.membership-list.items`,
+  `api-invalid-response.membership-list.id`,
+  `api-invalid-response.membership-list.realm-id`,
+  `api-invalid-response.membership-list.organization-id`,
+  `api-invalid-response.membership-list.user-id`,
+  `api-invalid-response.membership-list.created-at`,
+  `api-invalid-response.membership-list.updated-at`,
+  `api-invalid-response.membership-list.roles`,
+  `api-invalid-response.membership-list.next-page-token`,
+  `api-invalid-response.membership-list.unknown`
 - `api-invalid-response.user-create`,
   `api-invalid-response.user-email-verification-set`,
   `api-invalid-response.user-lifecycle-set`,
@@ -90,6 +100,16 @@ transport failures are normalized to the closed `api-*` set; unexpected
 exceptions use `internal-failed`. Invalid successful API responses include
 only the closed operation stage suffix shown above; they never include a URL,
 ID, status, response body, credential or account data, or raw message.
+
+For `membership-list`, the response-schema diagnostic uses exactly one field
+category. `envelope` means the top-level value is not the strict list envelope
+or has an extra top-level field; `items` means `items` is not an array or an
+item is not an object; the remaining categories identify the corresponding
+strict membership field, and `unknown` covers an extra membership field or a
+failure not attributable to an allowlisted field. Missing `items` is `items`,
+and the optional `nextPageToken` is checked only when present. No category
+contains a value, array index, path, status, URL, ID, or raw validation
+message.
 
 ## Operator password API
 

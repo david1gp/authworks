@@ -1,10 +1,11 @@
-import { type Result } from "#result"
+import { type Result, type ResultErr } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { machineUserApiClientCreate } from "../../machineUsers/client/machineUserApiClientCreate.js"
 import { organizationApiClientCreate } from "../../organizations/client/organizationApiClientCreate.js"
+import { organizationMembershipListResponseInvalidFieldClassify } from "../../organizations/client/organizationMembershipListResponseInvalidFieldClassify.js"
 import type { OrganizationMembership } from "../../organizations/public/organizationMembershipSchema.js"
 import type { Organization } from "../../organizations/public/organizationSchema.js"
 import { realmApiClientCreate } from "../../realms/client/realmApiClientCreate.js"
@@ -21,6 +22,22 @@ const fixtureUserName = "ssotest"
 
 type ProductionFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 type ProductionStatus = { readonly status: "created" | "updated" | "reused" }
+const membershipListInvalidFields = [
+  "envelope",
+  "items",
+  "id",
+  "realm-id",
+  "organization-id",
+  "user-id",
+  "created-at",
+  "updated-at",
+  "roles",
+  "next-page-token",
+  "unknown",
+] as const
+const membershipListInvalidFieldDetails = new Map(
+  membershipListInvalidFields.map((field) => [JSON.stringify({ field }), field]),
+)
 const productionApiStages = [
   "realm-list",
   "organization-list",
@@ -46,7 +63,12 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
   const op = "passwordContentorenSsoTestProductionEnsure"
   const input = fixtureInputParse(options.email, options.password)
   if (!input.success) return input
-  const clientOptions = { baseUrl: productionOrigin, fetch: options.fetch, token: options.token }
+  const clientOptions = {
+    baseUrl: productionOrigin,
+    fetch: options.fetch,
+    organizationMembershipListInvalidResponseErrorGet: membershipListInvalidResponseErrorGetCreate,
+    token: options.token,
+  }
   const realmApi = realmApiClientCreate(clientOptions)
   const realms = await realmListAll(realmApi)
   if (!realms.success) return realms
@@ -371,9 +393,30 @@ function pageQueryCreate(pageToken: string | undefined): ListQuery {
 
 function productionApiResultStage<T>(result: Result<T>, stage: ProductionApiStage): Result<T> {
   if (result.success || result.code !== "platform.invalid-response") return result
+  if (stage === "membership-list") {
+    const field = membershipListInvalidFieldGet(result)
+    return resultErrorCodedCreate(
+      result.op,
+      "The server returned an invalid response.",
+      `passwords.contentoren-ssotest-ensure.api-invalid-response.membership-list.${field}`,
+    )
+  }
   return resultErrorCodedCreate(
     result.op,
     "The server returned an invalid response.",
     `passwords.contentoren-ssotest-ensure.api-invalid-response.${stage}`,
   )
+}
+
+function membershipListInvalidResponseErrorGetCreate(body: unknown): ResultErr {
+  return resultErrorCodedCreate(
+    "organizationApiClientMembershipList",
+    "The server returned an invalid response.",
+    "platform.invalid-response",
+    { field: organizationMembershipListResponseInvalidFieldClassify(body) },
+  )
+}
+
+function membershipListInvalidFieldGet(result: ResultErr): (typeof membershipListInvalidFields)[number] {
+  return membershipListInvalidFieldDetails.get(result.errorData ?? "") ?? "unknown"
 }

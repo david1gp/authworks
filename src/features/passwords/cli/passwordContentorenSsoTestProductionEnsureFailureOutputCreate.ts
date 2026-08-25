@@ -26,13 +26,25 @@ const apiInvalidResponseStageCodes = new Set([
   `${apiInvalidResponseCode}.password-policy-get`,
   `${apiInvalidResponseCode}.user-list`,
   `${apiInvalidResponseCode}.machine-user-list`,
-  `${apiInvalidResponseCode}.membership-list`,
   `${apiInvalidResponseCode}.user-create`,
   `${apiInvalidResponseCode}.user-email-verification-set`,
   `${apiInvalidResponseCode}.user-lifecycle-set`,
   `${apiInvalidResponseCode}.password-credential-replace`,
   `${apiInvalidResponseCode}.membership-create`,
   `${apiInvalidResponseCode}.membership-update`,
+])
+const apiInvalidResponseMembershipListFieldCodes = new Set([
+  `${apiInvalidResponseCode}.membership-list.envelope`,
+  `${apiInvalidResponseCode}.membership-list.items`,
+  `${apiInvalidResponseCode}.membership-list.id`,
+  `${apiInvalidResponseCode}.membership-list.realm-id`,
+  `${apiInvalidResponseCode}.membership-list.organization-id`,
+  `${apiInvalidResponseCode}.membership-list.user-id`,
+  `${apiInvalidResponseCode}.membership-list.created-at`,
+  `${apiInvalidResponseCode}.membership-list.updated-at`,
+  `${apiInvalidResponseCode}.membership-list.roles`,
+  `${apiInvalidResponseCode}.membership-list.next-page-token`,
+  `${apiInvalidResponseCode}.membership-list.unknown`,
 ])
 const apiRejectedCode = "passwords.contentoren-ssotest-ensure.api-rejected"
 const apiFailedCode = "passwords.contentoren-ssotest-ensure.api-failed"
@@ -60,6 +72,7 @@ const failureCodes = new Set([
   apiRateLimitedCode,
   apiInvalidResponseCode,
   ...apiInvalidResponseStageCodes,
+  ...apiInvalidResponseMembershipListFieldCodes,
   apiRejectedCode,
   apiFailedCode,
   internalFailedCode,
@@ -72,6 +85,7 @@ export function passwordContentorenSsoTestProductionEnsureFailureOutputCreate(fa
 
 function failureCodeGet(result: ResultErr): string {
   if (result.code !== undefined && apiInvalidResponseStageCodes.has(result.code)) return result.code
+  if (result.code !== undefined && apiInvalidResponseMembershipListFieldCodes.has(result.code)) return result.code
   switch (result.code) {
     case inputInvalidCode:
     case realmNotFoundCode:
