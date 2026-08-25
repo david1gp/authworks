@@ -18,7 +18,9 @@ import { sessionRotate } from "../actions/sessionRotate.js"
 import { sessionBrowserCookieSerialize } from "../domain/sessionBrowserCookieSerialize.js"
 import { sessionBrowserCookieTokenGet } from "../domain/sessionBrowserCookieTokenGet.js"
 import { sessionCsrfTokenCreate } from "../domain/sessionCsrfTokenCreate.js"
+import { sessionPublicViewCreate } from "../domain/sessionPublicViewCreate.js"
 import { sessionRequestOriginValidate } from "../domain/sessionRequestOriginValidate.js"
+import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
 import { sessionBootstrapAdminSignInRequestSchema } from "../public/sessionBootstrapAdminSignInRequestSchema.js"
 import type { SessionDeviceMetadata } from "../public/sessionDeviceMetadataSchema.js"
 import { sessionRevokeAllRequestSchema } from "../public/sessionRevokeAllRequestSchema.js"
@@ -93,10 +95,7 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
   })
 
   app.get("/realms/:realmId/sessions/current", protectedMiddleware, (context) =>
-    sessionResultResponseCreate(context, {
-      data: { session: context.get("session") },
-      success: true,
-    }),
+    sessionCurrentRoute(context, options.database),
   )
 
   app.get("/realms/:realmId/sessions", protectedMiddleware, (context) => sessionListRoute(context, options.database))
@@ -242,6 +241,25 @@ function sessionListRoute(context: SessionRouteContext, database: StorageDatabas
       userId: context.get("authorizationActor").actorId,
     }),
   )
+}
+
+function sessionCurrentRoute(context: SessionRouteContext, database: StorageDatabase) {
+  const session = sessionRepositoryCreate(database.db).sessionGet(
+    context.req.param("realmId"),
+    context.get("session").id,
+  )
+  if (!session.success) return sessionErrorResponseCreate(context, session)
+  if (session.data === null)
+    return sessionErrorResponseCreate(context, {
+      code: "sessions.unauthorized",
+      errorMessage: "The current session could not be found.",
+      op: "sessionCurrent",
+      success: false,
+    })
+  return sessionResultResponseCreate(context, {
+    data: { session: sessionPublicViewCreate(session.data, true) },
+    success: true,
+  })
 }
 
 function sessionAdministratorListRoute(context: SessionRouteContext, database: StorageDatabase) {

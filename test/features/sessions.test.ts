@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { Hono } from "hono"
+import * as v from "valibot"
 import { authorizationPolicyEvaluate } from "../../src/features/authorization/actions/authorizationPolicyEvaluate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
@@ -22,6 +23,7 @@ import { sessionRotate } from "../../src/features/sessions/actions/sessionRotate
 import { sessionApiClientCreate } from "../../src/features/sessions/client/sessionApiClientCreate.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
+import { sessionResponseSchema } from "../../src/features/sessions/public/sessionResponseSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../src/features/sessions/server/sessionProtectedMiddlewareCreate.js"
 import { sessionServerAppCreate } from "../../src/features/sessions/server/sessionServerAppCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -612,6 +614,14 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
     })
     const current = await client.sessionCurrent(alpha.realm.id)
     expect(current.success).toBe(true)
+    const currentResponse = await app.request(`http://server.test/realms/${alpha.realm.id}/sessions/current`, {
+      headers: { authorization: `Bearer ${token}` },
+    })
+    expect(currentResponse.status).toBe(200)
+    const currentResponseBody = await currentResponse.json()
+    const currentResponseParsed = v.safeParse(sessionResponseSchema, currentResponseBody)
+    expect(currentResponseParsed.success).toBe(true)
+    if (currentResponseParsed.success) expect(currentResponseParsed.output.session.current).toBe(true)
     const listed = await client.sessionList(alpha.realm.id)
     expect(listed.success).toBe(true)
     if (listed.success) {
