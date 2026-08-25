@@ -4,16 +4,21 @@ import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 import { oidcCodelineClientEnsure } from "./oidcCodelineClientEnsure.js"
 import { oidcCodelineProductionClientEnsure } from "./oidcCodelineProductionClientEnsure.js"
 import { oidcCodelineProductionSecretRotate } from "./oidcCodelineProductionSecretRotate.js"
 import { oidcCodelineSecretRotateExitCodeGet } from "./oidcCodelineSecretRotateExitCodeGet.js"
 import { oidcCodelineSecretRotateFailureOutputCreate } from "./oidcCodelineSecretRotateFailureOutputCreate.js"
+import { oidcProductionSigningKeyEnsure } from "./oidcProductionSigningKeyEnsure.js"
+import { oidcProductionSigningKeyEnsureExitCodeGet } from "./oidcProductionSigningKeyEnsureExitCodeGet.js"
+import { oidcProductionSigningKeyEnsureFailureOutputCreate } from "./oidcProductionSigningKeyEnsureFailureOutputCreate.js"
 
 type OidcCliFlags = {
   readonly profile?: string
   readonly server?: string
+  readonly systemToken?: string
   readonly token?: string
 }
 type OidcListCliFlags = OidcCliFlags & {
@@ -65,7 +70,7 @@ const oidcClientCreateCommand = buildCommand({
         requireConsent: flags.requireConsent,
         trusted: flags.trusted,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -101,7 +106,7 @@ const oidcClientListCommand = buildCommand({
     oidcCliResultWrite(
       this,
       await oidcCliClientCreate(connection.data).oidcClientList(realmId, oidcListQueryCreate(flags)),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
@@ -124,7 +129,7 @@ const oidcClientGetCommand = buildCommand({
         flags.clientId,
         flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
       ),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -163,7 +168,7 @@ const oidcCodelineClientEnsureCommand = buildCommand({
         name: flags.name ?? "Codeline preview",
         realmId,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -212,6 +217,26 @@ const oidcCodelineProductionSecretRotateCommand = buildCommand({
   docs: { brief: "Rotate only the exact fixed production Codeline client secret for machine handoff" },
 })
 
+const oidcProductionSigningKeyEnsureCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcProductionSigningKeyEnsure({ homeDirectory: "/home/authworks" })
+      if (result.success) {
+        this.process.stdout.write(`${result.data}\n`)
+        return
+      }
+      this.process.stderr.write(oidcProductionSigningKeyEnsureFailureOutputCreate(result))
+      this.process.exitCode = oidcProductionSigningKeyEnsureExitCodeGet(result)
+    } catch (_error) {
+      const code = "oidc.production-signing-key-ensure.internal-failed"
+      this.process.stderr.write(oidcProductionSigningKeyEnsureFailureOutputCreate(code))
+      this.process.exitCode = oidcProductionSigningKeyEnsureExitCodeGet(code)
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Ensure one active RS256 signing key for the fixed production realm without rotating" },
+})
+
 const oidcClientSecretRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcClientFlags) {
     const connection = await oidcCliConnectionResolve(this, flags)
@@ -224,7 +249,7 @@ const oidcClientSecretRotateCommand = buildCommand({
     oidcCliResultWrite(
       this,
       await oidcCliClientCreate(connection.data).oidcClientSecretRotate(realmId, flags.clientId),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -244,6 +269,7 @@ const oidcSigningKeyCreateCommand = buildCommand({
     if (realmId === undefined) return
     oidcCliResultWrite(this, await oidcCliClientCreate(connection.data).oidcSigningKeyCreate(realmId), [
       connection.data.token,
+      connection.data.systemToken,
     ])
   },
   parameters: { flags: { ...oidcCommonFlags(), realmId: oidcRealmIdFlag() } },
@@ -262,7 +288,7 @@ const oidcSigningKeyListCommand = buildCommand({
     oidcCliResultWrite(
       this,
       await oidcCliClientCreate(connection.data).oidcSigningKeyList(realmId, oidcListQueryCreate(flags)),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: { flags: { ...oidcCommonFlags(), ...oidcListFlags(), realmId: oidcRealmIdFlag() } },
@@ -283,7 +309,7 @@ const oidcSigningKeyRetireCommand = buildCommand({
       await oidcCliClientCreate(connection.data).oidcSigningKeyLifecycleSet(realmId, flags.signingKeyId, {
         status: "retired",
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -308,7 +334,7 @@ const oidcConsentListCommand = buildCommand({
     oidcCliResultWrite(
       this,
       await oidcCliClientCreate(connection.data).oidcConsentList(realmId, flags.userId, oidcListQueryCreate(flags)),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -331,7 +357,7 @@ const oidcConsentRevokeCommand = buildCommand({
       await oidcCliClientCreate(connection.data).oidcConsentRevoke(realmId, flags.userId, {
         client_id: flags.clientId,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -395,6 +421,7 @@ export const oidcCliCommands = buildRouteMap({
     keyCreate: oidcSigningKeyCreateCommand,
     keyList: oidcSigningKeyListCommand,
     keyRetire: oidcSigningKeyRetireCommand,
+    productionSigningKeyEnsure: oidcProductionSigningKeyEnsureCommand,
     consentList: oidcConsentListCommand,
     consentRevoke: oidcConsentRevokeCommand,
     logout: oidcLogoutCommand,
@@ -403,12 +430,21 @@ export const oidcCliCommands = buildRouteMap({
 })
 
 async function oidcCliConnectionResolve(context: ApplicationContext, flags: OidcCliFlags) {
-  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  const connection = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!connection.success) return connection
+  return {
+    data: {
+      ...connection.data,
+      systemToken: connectionProfileCliSystemTokenResolve(flags.systemToken ?? flags.token, context.process.env),
+    },
+    success: true as const,
+  }
 }
 
 function oidcCliClientCreate(flags: OidcCliFlags) {
   return oidcApiClientCreate({
     baseUrl: flags.server ?? "http://127.0.0.1:3000",
+    systemToken: flags.systemToken,
     token: flags.token,
   })
 }
@@ -446,6 +482,13 @@ function oidcCommonFlags() {
     },
     token: {
       brief: "Bearer token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    systemToken: {
+      brief: "System bearer token",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

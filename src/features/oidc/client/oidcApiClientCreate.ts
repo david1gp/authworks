@@ -70,6 +70,10 @@ import {
   oidcRefreshTokenRevokeResponseSchema,
 } from "../public/oidcRefreshTokenRevokeResponseSchema.js"
 import {
+  type OidcSigningKeyEnsureResponse,
+  oidcSigningKeyEnsureResponseSchema,
+} from "../public/oidcSigningKeyEnsureResponseSchema.js"
+import {
   type OidcSigningKeyLifecycleRequest,
   oidcSigningKeyLifecycleRequestSchema,
 } from "../public/oidcSigningKeyLifecycleRequestSchema.js"
@@ -91,11 +95,20 @@ type OidcApiClientCreateOptions = {
   readonly baseUrl: string
   readonly csrfToken?: string
   readonly fetch?: OidcApiFetch
+  readonly systemToken?: Secret | string
   readonly token?: Secret | string
 }
 
 export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
-  const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+  const systemRequestToken = "systemToken" in options ? options.systemToken : options.token
+  const tokenFallback = Symbol("tokenFallback")
+  const tokenNoFallback = Symbol("tokenNoFallback")
+  const request = <T>(
+    path: string,
+    init: RequestInit,
+    schema: v.GenericSchema<T>,
+    token: Secret | string | undefined | typeof tokenFallback | typeof tokenNoFallback = tokenFallback,
+  ): Promise<Result<T>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
       fetch: options.fetch,
@@ -114,12 +127,13 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       op: "oidcApiClientRequest",
       path,
       schema,
-      token: options.token,
+      token: token === tokenFallback ? options.token : token === tokenNoFallback ? undefined : token,
     })
   const getRequest = <T>(
     path: string,
     schema: v.GenericSchema<T>,
     getOptions?: HttpGetOptions,
+    token: Secret | string | undefined | typeof tokenFallback | typeof tokenNoFallback = tokenFallback,
   ): Promise<HttpGetResult<T>> =>
     httpApiClientGetRequest({
       baseUrl: options.baseUrl,
@@ -140,8 +154,15 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       op: "oidcApiClientRequest",
       path,
       schema,
-      token: options.token,
+      token: token === tokenFallback ? options.token : token === tokenNoFallback ? undefined : token,
     })
+  const managementRequest = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    request(path, init, schema, systemRequestToken ?? tokenNoFallback)
+  const managementGetRequest = <T>(
+    path: string,
+    schema: v.GenericSchema<T>,
+    getOptions?: HttpGetOptions,
+  ): Promise<HttpGetResult<T>> => getRequest(path, schema, getOptions, systemRequestToken ?? tokenNoFallback)
   const browserRequestInit = (init: RequestInit): RequestInit => {
     const headers = new Headers(init.headers)
     if (options.csrfToken !== undefined) headers.set("x-csrf-token", options.csrfToken)
@@ -346,7 +367,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     },
 
     oidcConsentList(realmId: string, userId: string, query?: ListQuery): Promise<Result<OidcConsentListResponse>> {
-      return request(
+      return managementRequest(
         oidcListPath(managementPath(realmId, `/consents/${encodeURIComponent(userId)}`), query),
         { method: "GET" },
         oidcConsentListResponseSchema,
@@ -375,7 +396,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
             "oidc.invalid-request",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(
           realmId,
           `/consents/${encodeURIComponent(userId)}/${encodeURIComponent(parsed.output.client_id)}/revoke`,
@@ -608,7 +629,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
         return Promise.resolve(
           resultErrorCodedCreate("oidcApiClientClientCreate", "The OIDC client request is invalid.", "oidc.invalid"),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, "/clients"),
         { body: JSON.stringify(parsed.output), method: "POST" },
         oidcClientCreateResponseSchema,
@@ -620,7 +641,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       clientId: string,
       getOptions?: HttpGetOptions,
     ): Promise<HttpGetResult<OidcClientResponse>> {
-      return getRequest(
+      return managementGetRequest(
         managementPath(realmId, `/clients/${encodeURIComponent(clientId)}`),
         oidcClientResponseSchema,
         getOptions,
@@ -628,7 +649,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     },
 
     oidcClientList(realmId: string, query?: ListQuery): Promise<Result<OidcClientListResponse>> {
-      return request(
+      return managementRequest(
         oidcListPath(managementPath(realmId, "/clients"), query),
         { method: "GET" },
         oidcClientListResponseSchema,
@@ -645,7 +666,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
         return Promise.resolve(
           resultErrorCodedCreate("oidcApiClientClientUpdate", "The OIDC client update is invalid.", "oidc.invalid"),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, `/clients/${encodeURIComponent(clientId)}`),
         { body: JSON.stringify(parsed.output), method: "PATCH" },
         oidcClientResponseSchema,
@@ -666,7 +687,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
             "oidc.invalid",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, `/clients/${encodeURIComponent(clientId)}/lifecycle`),
         { body: JSON.stringify(parsed.output), method: "POST" },
         oidcClientResponseSchema,
@@ -674,7 +695,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     },
 
     oidcClientSecretRotate(realmId: string, clientId: string): Promise<Result<OidcClientSecretRotateResponse>> {
-      return request(
+      return managementRequest(
         managementPath(realmId, `/clients/${encodeURIComponent(clientId)}/secret/rotate`),
         { method: "POST" },
         oidcClientSecretRotateResponseSchema,
@@ -682,7 +703,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     },
 
     oidcClientSecretRevoke(realmId: string, clientId: string): Promise<Result<OidcClientResponse>> {
-      return request(
+      return managementRequest(
         managementPath(realmId, `/clients/${encodeURIComponent(clientId)}/secret/revoke`),
         { method: "POST" },
         oidcClientResponseSchema,
@@ -690,15 +711,31 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
     },
 
     oidcSigningKeyCreate(realmId: string): Promise<Result<OidcSigningKeyResponse>> {
-      return request(managementPath(realmId, "/signing-keys"), { method: "POST" }, oidcSigningKeyResponseSchema)
+      return managementRequest(
+        managementPath(realmId, "/signing-keys"),
+        { method: "POST" },
+        oidcSigningKeyResponseSchema,
+      )
+    },
+
+    oidcSigningKeyEnsureActive(realmId: string): Promise<Result<OidcSigningKeyEnsureResponse>> {
+      return managementRequest(
+        managementPath(realmId, "/signing-keys/ensure-active"),
+        { method: "POST" },
+        oidcSigningKeyEnsureResponseSchema,
+      )
     },
 
     oidcSigningKeyRotate(realmId: string): Promise<Result<OidcSigningKeyResponse>> {
-      return request(managementPath(realmId, "/signing-keys/rotate"), { method: "POST" }, oidcSigningKeyResponseSchema)
+      return managementRequest(
+        managementPath(realmId, "/signing-keys/rotate"),
+        { method: "POST" },
+        oidcSigningKeyResponseSchema,
+      )
     },
 
     oidcSigningKeyList(realmId: string, query?: ListQuery): Promise<Result<OidcSigningKeyListResponse>> {
-      return request(
+      return managementRequest(
         oidcListPath(managementPath(realmId, "/signing-keys"), query),
         { method: "GET" },
         oidcSigningKeyListResponseSchema,
@@ -719,7 +756,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
             "oidc.invalid",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, `/signing-keys/${encodeURIComponent(signingKeyId)}/lifecycle`),
         { body: JSON.stringify(parsed.output), method: "POST" },
         oidcSigningKeyResponseSchema,

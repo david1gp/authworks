@@ -46,6 +46,7 @@ import { oidcRefreshTokenFamiliesMeRevokeAll } from "../actions/oidcRefreshToken
 import { oidcRefreshTokenFamilyMeRevoke } from "../actions/oidcRefreshTokenFamilyMeRevoke.js"
 import { oidcRefreshTokenMeList } from "../actions/oidcRefreshTokenMeList.js"
 import { oidcSigningKeyCreate } from "../actions/oidcSigningKeyCreate.js"
+import { oidcSigningKeyEnsureActive } from "../actions/oidcSigningKeyEnsureActive.js"
 import { oidcSigningKeyLifecycleSet } from "../actions/oidcSigningKeyLifecycleSet.js"
 import { oidcSigningKeyList } from "../actions/oidcSigningKeyList.js"
 import { oidcTokenIssue } from "../actions/oidcTokenIssue.js"
@@ -1192,6 +1193,24 @@ function oidcManagementRoutesRegister(
         realmId: oidcParamGet(context, "realmId"),
       }),
       201,
+    )
+  })
+
+  app.post(`${prefix}/signing-keys/ensure-active`, (context) => {
+    const authenticated = routeAuthenticate(
+      context,
+      authorizationPermissionDefinitions.oidcWrite,
+      administrator ? "multi_factor" : undefined,
+    )
+    if (!authenticated.success) return oidcManagementErrorResponseCreate(context, authenticated)
+    return oidcManagementResultResponseCreate(
+      context,
+      oidcSigningKeyEnsureActive({
+        context: authenticated.data,
+        database: options.database,
+        encryptionSecret: options.systemSecret,
+        realmId: oidcParamGet(context, "realmId"),
+      }),
     )
   })
 
