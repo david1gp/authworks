@@ -231,9 +231,45 @@ AUTHWORKS_WAHA_ENDPOINTS='[{"id":"local","baseUrl":"http://localhost:3000","sess
 bun test test/integration/wahaLive.test.ts
 ```
 
+## CLI connection profiles
+
+The CLI can keep local connection profiles for switching between Authworks servers, identities, realms, and
+organizations. A profile may contain `server`, `token`, `realmId`, and `organizationId`; partial profiles are valid.
+
+Manage profiles with:
+
+```bash
+authworks profile set default --server https://auth.example.com --token TOKEN --realm-id REALM_ID \
+  --organization-id ORGANIZATION_ID
+authworks profile list
+authworks profile show default
+authworks profile delete default
+```
+
+`profile set` creates or updates a profile and only changes fields supplied by the command. `list`, `show`, and `set`
+redact token values in their output; `delete` removes the named profile. Profile names are 1–64 characters, start with
+an alphanumeric character, and contain only letters, numbers, `.`, `_`, or `-`.
+
+Commands that accept connection values also accept `--profile NAME`. When `--profile` is omitted, the CLI uses the
+implicit `default` profile when it exists. If it does not exist, the current environment-only behavior remains. An
+explicitly selected profile that does not exist is an error.
+
+Each connection field is resolved independently in this order: explicit command flag, existing environment variable,
+selected profile, then the existing default. The environment names are `AUTHWORKS_URL`, `AUTHWORKS_TOKEN`,
+`AUTHWORKS_REALM_ID`, and `AUTHWORKS_ORGANIZATION_ID`. The existing server default is
+`http://127.0.0.1:3000`; realm and organization IDs and tokens have no additional default.
+
+Profiles are stored as plaintext JSON at `${XDG_CONFIG_HOME}/authworks/profiles.json`, falling back to
+`~/.config/authworks/profiles.json`. The CLI creates the directory for the current user and keeps the profile file
+owner-only (`0700` directory and `0600` file). Plaintext storage means profile tokens are not encrypted: protect the
+machine, config directory, and backups accordingly. Keyring integration and encryption are not provided by the CLI.
+
+`AUTHWORKS_SYSTEM_SECRET` is never stored in or resolved from a profile. System-secret inputs remain flag- or
+environment-only, including `AUTHWORKS_SYSTEM_SECRET` and applicable system-token flags.
+
 ## CLI scope defaults
 
-Realm- and organization-scoped commands can use `AUTHWORKS_REALM_ID` and `AUTHWORKS_ORGANIZATION_ID` as default
+Realm- and organization-scoped commands can still use `AUTHWORKS_REALM_ID` and `AUTHWORKS_ORGANIZATION_ID` as default
 scope IDs:
 
 ```bash
@@ -243,7 +279,8 @@ authworks organizations get
 ```
 
 Explicit `--realm-id` and `--organization-id` flags take precedence over their corresponding environment values. If a
-required ID is missing from both, the CLI exits with a validation error before making the request.
+required ID is missing from both the environment and the selected profile, the CLI exits with a validation error before
+making the request.
 
 ## Layout
 
