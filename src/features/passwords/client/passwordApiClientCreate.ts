@@ -8,6 +8,14 @@ import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserReque
 import { type PasswordChangeRequest, passwordChangeRequestSchema } from "../public/passwordChangeRequestSchema.js"
 import { type PasswordChangeResponse, passwordChangeResponseSchema } from "../public/passwordChangeResponseSchema.js"
 import {
+  type PasswordCredentialReplaceRequest,
+  passwordCredentialReplaceRequestSchema,
+} from "../public/passwordCredentialReplaceRequestSchema.js"
+import {
+  type PasswordCredentialReplaceResponse,
+  passwordCredentialReplaceResponseSchema,
+} from "../public/passwordCredentialReplaceResponseSchema.js"
+import {
   type PasswordEmailVerificationRequest,
   passwordEmailVerificationRequestSchema,
 } from "../public/passwordEmailVerificationRequestSchema.js"
@@ -92,6 +100,23 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
   }
 
   return {
+    passwordCredentialReplace(
+      realmId: string,
+      userId: string,
+      input: PasswordCredentialReplaceRequest,
+    ): Promise<Result<PasswordCredentialReplaceResponse>> {
+      const parsed = parsedRequest(
+        passwordCredentialReplaceRequestSchema,
+        input,
+        "The password replacement request is invalid.",
+      )
+      if (!parsed.success) return Promise.resolve(parsed)
+      return request(
+        `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/password`,
+        jsonRequest(parsed.data),
+        passwordCredentialReplaceResponseSchema,
+      )
+    },
     passwordRegister(
       realmId: string,
       input: PasswordRegistrationRequest,

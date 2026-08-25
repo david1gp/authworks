@@ -1,6 +1,9 @@
 import { type ApplicationContext, buildChoiceParser, buildCommand, buildRouteMap } from "@stricli/core"
+import * as v from "valibot"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { Secret } from "../../../platform/secrets/Secret.js"
 import { passwordApiClientCreate } from "../client/passwordApiClientCreate.js"
+import { passwordContentorenSsoTestProductionEnsure } from "./passwordContentorenSsoTestProductionEnsure.js"
 
 type PasswordCliFlags = {
   readonly server?: string
@@ -217,6 +220,36 @@ const passwordRecoveryCompleteCommand = buildCommand({
   docs: { brief: "Complete password recovery" },
 })
 
+const passwordContentorenSsoTestProductionEnsureCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    const token = this.process.env?.AUTHWORKS_TOKEN
+    if (token === undefined || !/^[A-Za-z0-9_-]{32,512}$/.test(token)) {
+      this.process.stderr.write("The production operator authorization is unavailable.\n")
+      this.process.exitCode = 1
+      return
+    }
+    const input = await passwordContentorenSsoTestInputRead(this.process.env)
+    if (!input.success) {
+      this.process.stderr.write("The private fixture input is malformed; no changes were made.\n")
+      this.process.exitCode = 1
+      return
+    }
+    const result = await passwordContentorenSsoTestProductionEnsure({
+      email: input.data.email,
+      password: input.data.password,
+      token: new Secret(token),
+    })
+    if (!result.success) {
+      this.process.stderr.write(`${result.errorMessage ?? "The production fixture ensure failed."}\n`)
+      this.process.exitCode = 1
+      return
+    }
+    this.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Ensure the fixed Contentoren ssotest production human from private input" },
+})
+
 export const passwordCliCommands = buildRouteMap({
   routes: {
     change: buildCommand({
@@ -245,6 +278,7 @@ export const passwordCliCommands = buildRouteMap({
       },
       docs: { brief: "Change a password" },
     }),
+    contentorenSsotestProductionEnsure: passwordContentorenSsoTestProductionEnsureCommand,
     login: passwordLoginCommand,
     policy: buildRouteMap({
       routes: { get: passwordPolicyGetCommand, set: passwordPolicySetCommand },
@@ -260,6 +294,36 @@ export const passwordCliCommands = buildRouteMap({
   },
   docs: { brief: "Password authentication" },
 })
+
+async function passwordContentorenSsoTestInputRead(
+  environment: Readonly<Record<string, string | undefined>> | undefined,
+): Promise<
+  | { readonly data: { readonly email: string; readonly password: string }; readonly success: true }
+  | { readonly success: false }
+> {
+  const email = environment?.AUTHWORKS_CONTENTOREN_SSOTEST_EMAIL
+  const password = environment?.AUTHWORKS_CONTENTOREN_SSOTEST_PASSWORD
+  if (email !== undefined || password !== undefined) {
+    if (email === undefined || password === undefined) return { success: false }
+    return { data: { email, password }, success: true }
+  }
+  try {
+    const text = await Bun.stdin.text()
+    if (text.length > 4096) return { success: false }
+    const parsedJson: unknown = JSON.parse(text)
+    const parsed = v.safeParse(
+      v.strictObject({
+        email: v.string(),
+        password: v.string(),
+      }),
+      parsedJson,
+    )
+    if (!parsed.success) return { success: false }
+    return { data: parsed.output, success: true }
+  } catch (_error) {
+    return { success: false }
+  }
+}
 
 function passwordCliClientCreate(context: ApplicationContext, flags: PasswordCliFlags) {
   return passwordApiClientCreate({

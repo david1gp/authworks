@@ -3,7 +3,7 @@ import * as v from "valibot"
 import type { Result } from "#result"
 import { resultErrorDetailsParse } from "../../../platform/errors/resultErrorDetailsParse.js"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
-import type { Secret } from "../../../platform/secrets/Secret.js"
+import { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { trustedProxyIpResolve } from "../../../platform/http/trustedProxyIpResolve.js"
@@ -21,6 +21,7 @@ import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/se
 import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { passwordChange } from "../actions/passwordChange.js"
+import { passwordCredentialReplace } from "../actions/passwordCredentialReplace.js"
 import { passwordEmailVerify } from "../actions/passwordEmailVerify.js"
 import { passwordLogin } from "../actions/passwordLogin.js"
 import { passwordPolicyGet } from "../actions/passwordPolicyGet.js"
@@ -34,6 +35,7 @@ import { passwordWhatsappAvailabilityDenyByDefaultCreate } from "../domain/passw
 import type { PasswordSessionCreate } from "../domain/passwordSessionCreate.js"
 import type { PasswordWhatsappAvailabilityPort } from "../domain/passwordWhatsappAvailabilityPort.js"
 import { passwordChangeRequestSchema } from "../public/passwordChangeRequestSchema.js"
+import { passwordCredentialReplaceRequestSchema } from "../public/passwordCredentialReplaceRequestSchema.js"
 import { passwordEmailVerificationRequestSchema } from "../public/passwordEmailVerificationRequestSchema.js"
 import { passwordLoginRequestSchema } from "../public/passwordLoginRequestSchema.js"
 import type { PasswordLoginResponse } from "../public/passwordLoginResponseSchema.js"
@@ -296,6 +298,29 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: tenant.data,
         database: options.database,
         input: input.output,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
+  app.post("/system/realms/:realmId/users/:userId/password", async (context) => {
+    const authorization = passwordSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return passwordErrorResponseCreate(context, authorization)
+    const body = await passwordRequestJsonRead(context)
+    if (!body.success) return passwordErrorResponseCreate(context, body)
+    const input = v.safeParse(passwordCredentialReplaceRequestSchema, body.data)
+    if (!input.success)
+      return passwordErrorResponseCreate(context, {
+        errorMessage: "The password replacement request is invalid.",
+        op: "passwordCredentialReplace",
+      })
+    return passwordResultResponseCreate(
+      context,
+      passwordCredentialReplace({
+        context: systemContext,
+        database: options.database,
+        password: new Secret(input.output.password),
         realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),

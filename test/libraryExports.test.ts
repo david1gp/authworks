@@ -103,6 +103,7 @@ test("every API client publishes its complete method set", () => {
     "userMeDelete",
   ])
   expect(Object.keys(passwords.passwordApiClientCreate(options))).toEqual([
+    "passwordCredentialReplace",
     "passwordRegister",
     "passwordLogin",
     "passwordWhatsappVerify",

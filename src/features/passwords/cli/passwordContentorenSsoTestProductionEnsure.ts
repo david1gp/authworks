@@ -1,0 +1,318 @@
+import { type Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { Secret } from "../../../platform/secrets/Secret.js"
+import { machineUserApiClientCreate } from "../../machineUsers/client/machineUserApiClientCreate.js"
+import { organizationApiClientCreate } from "../../organizations/client/organizationApiClientCreate.js"
+import type { Organization } from "../../organizations/public/organizationSchema.js"
+import type { OrganizationMembership } from "../../organizations/public/organizationMembershipSchema.js"
+import { realmApiClientCreate } from "../../realms/client/realmApiClientCreate.js"
+import type { Realm } from "../../realms/public/realmSchema.js"
+import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
+import type { User } from "../../users/public/userSchema.js"
+import { passwordApiClientCreate } from "../client/passwordApiClientCreate.js"
+import { passwordPolicyCheck } from "../domain/passwordPolicyCheck.js"
+
+const productionOrigin = "https://authworks.contentoren.de"
+const productionRealmDomain = "authworks.contentoren.de"
+const productionOrganizationName = "Contentoren"
+const fixtureUserName = "ssotest"
+
+type ProductionFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
+type ProductionStatus = { readonly status: "created" | "updated" | "reused" }
+
+export async function passwordContentorenSsoTestProductionEnsure(options: {
+  readonly email: string
+  readonly fetch?: ProductionFetch
+  readonly password: string
+  readonly token: Secret | string
+}): Promise<Result<ProductionStatus>> {
+  const op = "passwordContentorenSsoTestProductionEnsure"
+  const input = fixtureInputParse(options.email, options.password)
+  if (!input.success) return input
+  const clientOptions = { baseUrl: productionOrigin, fetch: options.fetch, token: options.token }
+  const realmApi = realmApiClientCreate(clientOptions)
+  const realms = await realmListAll(realmApi)
+  if (!realms.success) return realms
+  const realm = productionRealmResolve(realms.data)
+  if (!realm.success) return realm
+  const organizationApi = organizationApiClientCreate(clientOptions)
+  const organizations = await organizationListAll(organizationApi, realm.data.id)
+  if (!organizations.success) return organizations
+  const organization = productionOrganizationResolve(organizations.data, realm.data.id)
+  if (!organization.success) return organization
+  const passwordApi = passwordApiClientCreate(clientOptions)
+  const policy = await passwordApi.passwordPolicyGet(realm.data.id)
+  if (!policy.success) return policy
+  const policyChecked = passwordPolicyCheck(input.data.password.valueGet(), policy.data.policy)
+  if (!policyChecked.success) return policyChecked
+  const userApi = userApiClientCreate(clientOptions)
+  const users = await fixtureUsersFind(userApi, realms.data, input.data.email)
+  if (!users.success) return users
+  const machines = await fixtureMachineUsersRefuse(machineUserApiClientCreate(clientOptions), realms.data)
+  if (!machines.success) return machines
+  const current = fixtureUserResolve(users.data, realm.data.id, input.data.email)
+  if (!current.success) return current
+  const memberships =
+    current.data === null
+      ? resultCreate<OrganizationMembership[]>([])
+      : await fixtureMembershipsFind(organizationApi, realm.data.id, organizations.data, current.data.id)
+  if (!memberships.success) return memberships
+  const membership = fixtureMembershipResolve(memberships.data, organization.data.id)
+  if (!membership.success) return membership
+
+  let changed = false
+  let user = current.data
+  if (user === null) {
+    const created = await userApi.userCreate(realm.data.id, {
+      email: input.data.email,
+      profile: {},
+      userName: fixtureUserName,
+    })
+    if (!created.success) return created
+    user = created.data.user
+  }
+  if (user.realmId !== realm.data.id)
+    return resultErrorCodedCreate(
+      op,
+      "The fixture user belongs to another realm; no changes were made.",
+      "users.conflict",
+    )
+  if (!user.emailVerified || user.registrationVerifiedAt === undefined) {
+    const verified = await userApi.userEmailVerificationSet(realm.data.id, user.id, { state: "verified" })
+    if (!verified.success) return verified
+    user = verified.data.user
+    changed = true
+  }
+  if (user.state !== "active") {
+    if (user.state === "deleted")
+      return resultErrorCodedCreate(op, "The fixture user is deleted; no changes were made.", "users.conflict")
+    const activated = await userApi.userLifecycleSet(realm.data.id, user.id, { state: "active" })
+    if (!activated.success) return activated
+    user = activated.data.user
+    changed = true
+  }
+  const replaced = await passwordApi.passwordCredentialReplace(realm.data.id, user.id, {
+    password: input.data.password.valueGet(),
+  })
+  if (!replaced.success) return replaced
+  changed ||= replaced.data.changed
+  if (membership.data === null) {
+    const created = await organizationApi.organizationMembershipCreate(realm.data.id, organization.data.id, {
+      roles: ["member"],
+      userId: user.id,
+    })
+    if (!created.success) return created
+    changed = true
+  } else if (membership.data.roles.length !== 1 || membership.data.roles[0] !== "member") {
+    const updated = await organizationApi.organizationMembershipUpdate(
+      realm.data.id,
+      organization.data.id,
+      membership.data.id,
+      { roles: ["member"] },
+    )
+    if (!updated.success) return updated
+    changed = true
+  }
+  return resultCreate({ status: current.data === null ? "created" : changed ? "updated" : "reused" })
+}
+
+function fixtureInputParse(emailInput: string, passwordInput: string): Result<{ email: string; password: Secret }> {
+  const email = emailInput.trim().toLowerCase()
+  if (email.length < 3 || email.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return resultErrorCodedCreate(
+      "fixtureInputParse",
+      "The private fixture input is malformed; no changes were made.",
+      "passwords.invalid",
+    )
+  if (passwordInput.length < 1 || passwordInput.length > 1024 || /[\0\r\n]/.test(passwordInput))
+    return resultErrorCodedCreate(
+      "fixtureInputParse",
+      "The private fixture input is malformed; no changes were made.",
+      "passwords.invalid",
+    )
+  return resultCreate({ email, password: new Secret(passwordInput) })
+}
+
+async function realmListAll(api: ReturnType<typeof realmApiClientCreate>): Promise<Result<Realm[]>> {
+  const items: Realm[] = []
+  let pageToken: string | undefined
+  do {
+    const listed = await api.realmList(pageQueryCreate(pageToken))
+    if (!listed.success) return listed
+    items.push(...listed.data.items)
+    pageToken = listed.data.nextPageToken
+  } while (pageToken !== undefined)
+  return resultCreate(items)
+}
+
+function productionRealmResolve(realms: readonly Realm[]): Result<Realm> {
+  const matches = realms.filter((realm) => realm.domains.includes(productionRealmDomain))
+  if (matches.length !== 1)
+    return resultErrorCodedCreate(
+      "productionRealmResolve",
+      matches.length === 0
+        ? "No realm owns the production Authworks domain; no changes were made."
+        : "More than one realm owns the production Authworks domain; no changes were made.",
+      "realms.conflict",
+    )
+  const realm = matches[0]
+  if (realm === undefined || realm.domain !== productionRealmDomain || realm.status !== "active")
+    return resultErrorCodedCreate(
+      "productionRealmResolve",
+      "The production Authworks realm is not active and primary; no changes were made.",
+      "realms.conflict",
+    )
+  return resultCreate(realm)
+}
+
+async function organizationListAll(
+  api: ReturnType<typeof organizationApiClientCreate>,
+  realmId: string,
+): Promise<Result<Organization[]>> {
+  const items: Organization[] = []
+  let pageToken: string | undefined
+  do {
+    const listed = await api.organizationList(realmId, pageQueryCreate(pageToken))
+    if (!listed.success) return listed
+    items.push(...listed.data.items)
+    pageToken = listed.data.nextPageToken
+  } while (pageToken !== undefined)
+  return resultCreate(items)
+}
+
+function productionOrganizationResolve(organizations: readonly Organization[], realmId: string): Result<Organization> {
+  const matches = organizations.filter((organization) => organization.name === productionOrganizationName)
+  if (matches.length !== 1)
+    return resultErrorCodedCreate(
+      "productionOrganizationResolve",
+      matches.length === 0
+        ? "No Contentoren organization exists in the production realm; no changes were made."
+        : "More than one Contentoren organization exists in the production realm; no changes were made.",
+      "organizations.conflict",
+    )
+  const organization = matches[0]
+  if (organization === undefined || organization.realmId !== realmId || organization.status !== "active")
+    return resultErrorCodedCreate(
+      "productionOrganizationResolve",
+      "The Contentoren organization is not active in the production realm; no changes were made.",
+      "organizations.conflict",
+    )
+  return resultCreate(organization)
+}
+
+async function fixtureUsersFind(
+  api: ReturnType<typeof userApiClientCreate>,
+  realms: readonly Realm[],
+  email: string,
+): Promise<Result<User[]>> {
+  const matches: User[] = []
+  for (const realm of realms) {
+    let pageToken: string | undefined
+    do {
+      const listed = await api.userList(realm.id, pageQueryCreate(pageToken))
+      if (!listed.success) return listed
+      matches.push(
+        ...listed.data.items.filter(
+          (user) => user.userName.trim().toLowerCase() === fixtureUserName || user.email.trim().toLowerCase() === email,
+        ),
+      )
+      pageToken = listed.data.nextPageToken
+    } while (pageToken !== undefined)
+  }
+  return resultCreate(matches)
+}
+
+function fixtureUserResolve(users: readonly User[], realmId: string, email: string): Result<User | null> {
+  if (users.length === 0) return resultCreate(null)
+  if (users.length !== 1)
+    return resultErrorCodedCreate(
+      "fixtureUserResolve",
+      "More than one human matches the fixture identity; no changes were made.",
+      "users.conflict",
+    )
+  const user = users[0]
+  if (
+    user === undefined ||
+    user.realmId !== realmId ||
+    user.userName.trim().toLowerCase() !== fixtureUserName ||
+    user.email.trim().toLowerCase() !== email
+  )
+    return resultErrorCodedCreate(
+      "fixtureUserResolve",
+      "The fixture identity conflicts with an existing or cross-realm human; no changes were made.",
+      "users.conflict",
+    )
+  if (user.state === "deleted")
+    return resultErrorCodedCreate(
+      "fixtureUserResolve",
+      "The fixture identity belongs to a deleted human; no changes were made.",
+      "users.conflict",
+    )
+  return resultCreate(user)
+}
+
+async function fixtureMachineUsersRefuse(
+  api: ReturnType<typeof machineUserApiClientCreate>,
+  realms: readonly Realm[],
+): Promise<Result<void>> {
+  for (const realm of realms) {
+    let pageToken: string | undefined
+    do {
+      const listed = await api.machineUserList(realm.id, pageQueryCreate(pageToken))
+      if (!listed.success) return listed
+      if (listed.data.items.some((user) => user.userName.trim().toLowerCase() === fixtureUserName))
+        return resultErrorCodedCreate(
+          "fixtureMachineUsersRefuse",
+          "The fixture identity belongs to a machine user; no changes were made.",
+          "users.conflict",
+        )
+      pageToken = listed.data.nextPageToken
+    } while (pageToken !== undefined)
+  }
+  return resultCreate(undefined)
+}
+
+async function fixtureMembershipsFind(
+  api: ReturnType<typeof organizationApiClientCreate>,
+  realmId: string,
+  organizations: readonly Organization[],
+  userId: string,
+): Promise<Result<OrganizationMembership[]>> {
+  const matches: OrganizationMembership[] = []
+  for (const organization of organizations.filter((candidate) => candidate.status === "active")) {
+    let pageToken: string | undefined
+    do {
+      const listed = await api.organizationMembershipList(realmId, organization.id, pageQueryCreate(pageToken))
+      if (!listed.success) return listed
+      matches.push(...listed.data.items.filter((membership) => membership.userId === userId))
+      pageToken = listed.data.nextPageToken
+    } while (pageToken !== undefined)
+  }
+  return resultCreate(matches)
+}
+
+function fixtureMembershipResolve(
+  memberships: readonly OrganizationMembership[],
+  organizationId: string,
+): Result<OrganizationMembership | null> {
+  if (memberships.some((membership) => membership.roles.includes("owner") || membership.roles.includes("admin")))
+    return resultErrorCodedCreate(
+      "fixtureMembershipResolve",
+      "The fixture human has elevated access; no changes were made.",
+      "organizations.forbidden",
+    )
+  if (memberships.length === 0) return resultCreate(null)
+  if (memberships.length !== 1 || memberships[0]?.organizationId !== organizationId)
+    return resultErrorCodedCreate(
+      "fixtureMembershipResolve",
+      "The fixture human has ambiguous organization memberships; no changes were made.",
+      "organizations.conflict",
+    )
+  return resultCreate(memberships[0] ?? null)
+}
+
+function pageQueryCreate(pageToken: string | undefined): ListQuery {
+  return { pageSize: 100, ...(pageToken === undefined ? {} : { pageToken }) }
+}
