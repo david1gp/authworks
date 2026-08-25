@@ -1,5 +1,7 @@
 export * from "./applicationRoleSchema.js"
 export * from "./projectAccessResponseSchema.js"
+export * from "./projectAccountAccessListResponseSchema.js"
+export * from "./projectAccountAccessSchema.js"
 export * from "./projectApplicationCreateRequestSchema.js"
 export * from "./projectApplicationDeleteResponseSchema.js"
 export * from "./projectApplicationLifecycleRequestSchema.js"

@@ -4,6 +4,7 @@ import type { MailDeliveryPort } from "../features/email/domain/mailDeliveryPort
 import { emailDeliveryCallbacksCreate } from "../features/email/server/emailDeliveryCallbacksCreate.js"
 import type { EmailGeneratorServerConfiguration } from "../features/email/server/emailGeneratorServerConfiguration.js"
 import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpServerAppCreate.js"
+import { accountServerAppCreate } from "../features/account/server/accountServerAppCreate.js"
 import { eventServerAppCreate } from "../features/events/server/eventServerAppCreate.js"
 import type { ExternalIdentityProviderPorts } from "../features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
@@ -137,6 +138,7 @@ export function serverApplicationCreate(
     }),
   )
   application.route("/", sessionServerAppCreate({ database: database.data, publicOrigin }))
+  application.route("/", accountServerAppCreate({ database: database.data, publicOrigin }))
   application.route(
     "/",
     emailOtpServerAppCreate({

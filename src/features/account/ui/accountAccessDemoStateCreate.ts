@@ -9,6 +9,8 @@ import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.j
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
 import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
+import { accountEffectiveAccessGroupsCreate } from "../model/accountEffectiveAccessGroupsCreate.js"
+import type { AccountEffectiveAccessEntry } from "../public/accountEffectiveAccessEntrySchema.js"
 import type { AccountAccessScreen } from "./accountAccessScreenSchema.js"
 import type { AccountAccessStatus } from "./accountAccessStatusSchema.js"
 
@@ -83,6 +85,33 @@ const invitationFixture: OrganizationInvitation = {
   status: "pending",
   updatedAt: now - 86_400_000,
 }
+const effectiveAccessFixtures: AccountEffectiveAccessEntry[] = [
+  {
+    id: "organization:northwind",
+    organization: organizationFixtures[0]!,
+    permissions: ["organization.read", "organization.switch", "project.read"],
+    roleKeys: ["admin", "owner"],
+    source: "membership",
+  },
+  {
+    id: "project:customer-portal:organization:northwind",
+    organization: organizationFixtures[0]!,
+    permissions: ["organization.read", "organization.switch", "project.read"],
+    project: {
+      authorizationRequired: true,
+      createdAt: now - 30_000_000,
+      id: "customer-portal",
+      name: "Customer portal",
+      organizationId: "northwind",
+      projectAccessRequired: true,
+      realmId: "customer-identity",
+      status: "active",
+      updatedAt: now - 86_400_000,
+    },
+    roleKeys: ["admin", "owner"],
+    source: "project-owner",
+  },
+]
 
 export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) {
   const location = useLocation()
@@ -91,6 +120,7 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
   const organizations = createSignalObject([...organizationFixtures])
   const consents = createSignalObject([...consentFixtures])
   const invitations = createSignalObject([invitationFixture])
+  const effectiveAccess = createSignalObject([...effectiveAccessFixtures])
   const activeOrganizationId = createSignalObject("northwind")
   const notice = createSignalObject<string | undefined>(undefined)
   const outcome = createSignalObject<AccountAccessStatus | undefined>(undefined)
@@ -103,7 +133,9 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
           ? organizations.get()
           : screen() === "consents"
             ? consents.get()
-            : invitations.get()
+            : screen() === "effective-access"
+              ? effectiveAccess.get()
+              : invitations.get()
       return collection.length === 0 ? "empty" : "ready"
     }
     // States that only affect how a value is presented, and states owned by other features,
@@ -128,6 +160,11 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
       notice.set("revoked")
     },
     consents: () => (selected() === "empty" ? [] : consents.get()),
+    effectiveAccess: () => (selected() === "empty" ? [] : effectiveAccess.get()),
+    effectiveAccessGroups: () =>
+      accountEffectiveAccessGroupsCreate(selected() === "empty" ? [] : effectiveAccess.get()),
+    effectiveAccessLoadMore: () => undefined,
+    effectiveAccessNextPageToken: () => undefined,
     error: () => (selected() === "error" ? messageTranslate("demo.fixture.accountError") : undefined),
     invitation: () => invitationFixture,
     invitationAccept: () => outcome.set("accepted"),

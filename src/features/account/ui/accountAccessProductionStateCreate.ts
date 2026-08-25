@@ -6,6 +6,8 @@ import { productionSessionContextGet } from "../../../ui/production/productionSe
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
 import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
+import { accountEffectiveAccessGroupsCreate } from "../model/accountEffectiveAccessGroupsCreate.js"
+import type { AccountEffectiveAccessEntry } from "../public/accountEffectiveAccessEntrySchema.js"
 import { accountAccessApiCreate } from "./accountAccessApiCreate.js"
 import type { AccountAccessScreen } from "./accountAccessScreenSchema.js"
 import type { AccountAccessStatus } from "./accountAccessStatusSchema.js"
@@ -23,6 +25,8 @@ export function accountAccessProductionStateCreate(screen: () => AccountAccessSc
   const consents = createSignalObject<OidcConsent[]>([])
   const invitations = createSignalObject<OrganizationInvitation[]>([])
   const invitation = createSignalObject<OrganizationInvitation | undefined>(undefined)
+  const effectiveAccess = createSignalObject<AccountEffectiveAccessEntry[]>([])
+  const effectiveAccessNextPageToken = createSignalObject<string | undefined>(undefined)
   const initialOrganization = session.guard.organization
   const activeOrganizationId = createSignalObject(
     typeof initialOrganization === "object" ? initialOrganization.organizationId : undefined,
@@ -49,6 +53,13 @@ export function accountAccessProductionStateCreate(screen: () => AccountAccessSc
       const result = await api.organizationList(realmId())
       if (!result.success) return fail(result)
       organizations.set(result.data.items)
+      return status.set(result.data.items.length === 0 ? "empty" : "ready")
+    }
+    if (screen() === "effective-access") {
+      const result = await api.effectiveAccessList(realmId(), { pageSize: 25 })
+      if (!result.success) return fail(result)
+      effectiveAccess.set(result.data.items)
+      effectiveAccessNextPageToken.set(result.data.nextPageToken)
       return status.set(result.data.items.length === 0 ? "empty" : "ready")
     }
     if (screen() === "consents") {
@@ -96,6 +107,19 @@ export function accountAccessProductionStateCreate(screen: () => AccountAccessSc
       status.set(consents.get().length === 0 ? "empty" : "ready")
     },
     consents: consents.get,
+    effectiveAccess: effectiveAccess.get,
+    effectiveAccessGroups: () => accountEffectiveAccessGroupsCreate(effectiveAccess.get()),
+    effectiveAccessLoadMore: async () => {
+      const pageToken = effectiveAccessNextPageToken.get()
+      if (pageToken === undefined) return
+      pendingId.set("effective-access:next")
+      const result = await api.effectiveAccessList(realmId(), { pageSize: 25, pageToken })
+      pendingId.set(undefined)
+      if (!result.success) return fail(result)
+      effectiveAccess.set([...effectiveAccess.get(), ...result.data.items])
+      effectiveAccessNextPageToken.set(result.data.nextPageToken)
+    },
+    effectiveAccessNextPageToken: effectiveAccessNextPageToken.get,
     error: error.get,
     invitation: invitation.get,
     invitationAccept: async () => {

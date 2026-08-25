@@ -18,6 +18,7 @@ export function accountDemoAppStateCreate() {
   }
   const accessScreen = (): AccountAccessScreen | undefined => {
     if (location.pathname === "/demo/account/organizations") return "organizations"
+    if (location.pathname === "/demo/account/effective-access") return "effective-access"
     if (location.pathname === "/demo/account/consents") return "consents"
     if (location.pathname === "/demo/invitations") return "invitations"
     if (location.pathname === "/demo/invitations/accept") return "invitation"
