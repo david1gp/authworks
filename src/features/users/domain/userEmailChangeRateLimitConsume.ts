@@ -60,10 +60,7 @@ function userEmailChangeRateLimitKeyConsume(
   secret: string,
 ) {
   return rateLimitConsume(database, {
-    keyHash: rateLimitKeyHashCreate(
-      secret,
-      `${options.realmId}:email_change:${options.operation}:${kind}:${value}`,
-    ),
+    keyHash: rateLimitKeyHashCreate(secret, `${options.realmId}:email_change:${options.operation}:${kind}:${value}`),
     limit: 5,
     now: options.now,
     scope: `users.email_change.${options.operation}.${kind}`,

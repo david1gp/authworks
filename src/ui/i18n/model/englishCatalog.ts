@@ -78,7 +78,8 @@ export const englishCatalog = {
     "Your current address stays active until the new address is verified. We will email a secure verification link.",
   "account.profile.emailChangeTitle": "Change email address",
   "account.profile.emailCodeSent": "Open the verification link sent to {email}, or paste its token below.",
-  "account.profile.emailCodeSentGeneric": "Open the verification link sent to your new address, or paste its token below.",
+  "account.profile.emailCodeSentGeneric":
+    "Open the verification link sent to your new address, or paste its token below.",
   "account.profile.emailDifferent": "Use a different address",
   "account.profile.emailDescription": "Review the verified address used for sign-in and account communication.",
   "account.profile.emailInvalid": "Enter a valid email address.",

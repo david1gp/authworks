@@ -362,7 +362,11 @@ export function accountPageStateCreate(options: {
       emailStatus.set("code")
       query.delete("challengeId")
       query.delete("token")
-      window.history.replaceState(window.history.state, "", `${window.location.pathname}${query}${window.location.hash}`)
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${query}${window.location.hash}`,
+      )
     })()
   })
   return {

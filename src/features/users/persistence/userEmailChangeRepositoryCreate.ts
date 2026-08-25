@@ -96,7 +96,7 @@ export function userEmailChangeRepositoryCreate(database: StorageExecutor) {
       try {
         database
           .update(userEmailChangeChallengeTable)
-            .set({ consumedAt, version: sql`${userEmailChangeChallengeTable.version} + 1` })
+          .set({ consumedAt, version: sql`${userEmailChangeChallengeTable.version} + 1` })
           .where(
             and(
               eq(userEmailChangeChallengeTable.realmId, realmId),

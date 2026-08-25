@@ -98,15 +98,15 @@ type UserEmailChangeVerifyTransactionOptions = {
 function userEmailChangeVerifyTransaction(
   options: UserEmailChangeVerifyTransactionOptions,
 ): Result<UserEmailChangeVerifyCommit> {
-    const limited = userEmailChangeRateLimitConsume(options.database, {
+  const limited = userEmailChangeRateLimitConsume(options.database, {
     clientIp: options.clientIp,
     identifier: options.input.challengeId,
     now: options.now,
-      operation: "verify",
-      rateLimitSecret: options.rateLimitSecret,
-      realmId: options.realmId,
-      userId: options.userId,
-    })
+    operation: "verify",
+    rateLimitSecret: options.rateLimitSecret,
+    realmId: options.realmId,
+    userId: options.userId,
+  })
   if (!limited.success) return limited
   if (!limited.data.allowed) return resultCreate({ rateLimited: true, retryAt: limited.data.retryAt })
   const repository = userEmailChangeRepositoryCreate(options.database)
@@ -146,15 +146,11 @@ function userEmailChangeVerifyTransaction(
   const users = userRepositoryCreate(options.database)
   const user = users.userGet(options.realmId, options.userId)
   if (!user.success) return user
-    if (user.data === null || user.data.state !== "active" || user.data.deletedAt !== null)
-      return resultErrorCreate("userEmailChangeVerify", "The authenticated user is not available.", "users.not-found")
-    if (user.data.email === current.pendingEmail)
-      return resultErrorCreate(
-        "userEmailChangeVerify",
-        "The account already uses this email address.",
-        "users.conflict",
-      )
-    const conflict = users.userGetByEmail(options.realmId, current.pendingEmail)
+  if (user.data === null || user.data.state !== "active" || user.data.deletedAt !== null)
+    return resultErrorCreate("userEmailChangeVerify", "The authenticated user is not available.", "users.not-found")
+  if (user.data.email === current.pendingEmail)
+    return resultErrorCreate("userEmailChangeVerify", "The account already uses this email address.", "users.conflict")
+  const conflict = users.userGetByEmail(options.realmId, current.pendingEmail)
   if (!conflict.success) return conflict
   if (conflict.data !== null && conflict.data.id !== options.userId)
     return resultErrorCreate(
