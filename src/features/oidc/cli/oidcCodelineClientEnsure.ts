@@ -26,23 +26,32 @@ type OidcCodelineClientEnsureApi = {
 export async function oidcCodelineClientEnsure(options: {
   readonly api: OidcCodelineClientEnsureApi
   readonly clientId?: string
-  readonly envFilePath: string
   readonly name: string
   readonly realmId: string
+  readonly credentialHandoff?: (credentials: {
+    readonly clientId: string
+    readonly clientSecret: string
+  }) => Promise<Result<unknown>>
+  readonly envFilePath?: string
 }): Promise<
   Result<{
     readonly action: "created" | "updated" | "unchanged"
     readonly client: OidcClient
     readonly credentials: {
       readonly aliases: readonly string[]
-      readonly envFilePath: string
-      readonly status: "preserved" | "stored"
+      readonly envFilePath?: string
+      readonly status: "handed-off" | "preserved" | "stored"
     }
     readonly pkce: "S256"
   }>
 > {
   const op = "oidcCodelineClientEnsure"
-  const envClientId = await oidcCodelineCredentialsEnvFileClientIdGet(options.envFilePath)
+  if (options.envFilePath === undefined && options.credentialHandoff === undefined)
+    return resultErrorCodedCreate(op, "A credential destination is required.", "platform.internal")
+  const envClientId =
+    options.envFilePath === undefined
+      ? resultCreate({ clientId: undefined })
+      : await oidcCodelineCredentialsEnvFileClientIdGet(options.envFilePath)
   if (!envClientId.success) return envClientId
   const target = await codelineClientFind({
     api: options.api,
@@ -66,11 +75,19 @@ export async function oidcCodelineClientEnsure(options: {
     if (!created.success) return created
     if (created.data.clientSecret === undefined)
       return resultErrorCodedCreate(op, "Authworks did not return the new client secret.", "oidc.invalid")
-    const stored = await oidcCodelineCredentialsEnvFileUpdate({
-      clientId: created.data.client.id,
-      clientSecret: created.data.clientSecret,
-      path: options.envFilePath,
-    })
+    const stored =
+      options.envFilePath === undefined
+        ? await options.credentialHandoff?.({
+            clientId: created.data.client.id,
+            clientSecret: created.data.clientSecret,
+          })
+        : await oidcCodelineCredentialsEnvFileUpdate({
+            clientId: created.data.client.id,
+            clientSecret: created.data.clientSecret,
+            path: options.envFilePath,
+          })
+    if (stored === undefined)
+      return resultErrorCodedCreate(op, "The new Codeline credentials had no handoff destination.", "platform.internal")
     if (!stored.success)
       return resultErrorCodedCreate(
         op,
@@ -80,7 +97,11 @@ export async function oidcCodelineClientEnsure(options: {
     return resultCreate({
       action: "created",
       client: created.data.client,
-      credentials: { aliases: oidcCodelineCredentialAliases, envFilePath: options.envFilePath, status: "stored" },
+      credentials: {
+        aliases: oidcCodelineCredentialAliases,
+        ...(options.envFilePath === undefined ? {} : { envFilePath: options.envFilePath }),
+        status: options.envFilePath === undefined ? ("handed-off" as const) : ("stored" as const),
+      },
       pkce: "S256",
     })
   }
@@ -124,8 +145,7 @@ async function codelineClientFind(options: {
   if (options.clientId !== undefined) {
     const byId = await options.api.oidcClientGet(options.realmId, options.clientId)
     if (byId.success && byId.status === "current") {
-      if (options.clientIdExplicit || oidcCodelineClientIdentityMatches(byId.data.client, options.name))
-        return resultCreate(byId.data.client)
+      if (options.clientIdExplicit || byId.data.client.name === options.name) return resultCreate(byId.data.client)
     } else if (byId.success)
       return resultErrorCodedCreate(
         "oidcCodelineClientFind",
@@ -143,14 +163,20 @@ async function codelineClientFind(options: {
       ...(pageToken === undefined ? {} : { pageToken }),
     })
     if (!listed.success) return listed
-    matches.push(...listed.data.items.filter((client) => client.name === options.name))
+    matches.push(...listed.data.items.filter((client) => oidcCodelineClientIdentityMatches(client, options.name)))
     pageToken = listed.data.nextPageToken
   } while (pageToken !== undefined)
 
   if (matches.length > 1)
     return resultErrorCodedCreate(
       "oidcCodelineClientFind",
-      "More than one OIDC client has the Codeline client name; no changes were made.",
+      "More than one OIDC client matches the Codeline name or redirect URI; no changes were made.",
+      "oidc.conflict",
+    )
+  if (matches[0] !== undefined && matches[0].name !== options.name)
+    return resultErrorCodedCreate(
+      "oidcCodelineClientFind",
+      "The Codeline redirect URI belongs to a differently named OIDC client; no changes were made.",
       "oidc.conflict",
     )
   return resultCreate(matches[0])

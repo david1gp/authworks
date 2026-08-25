@@ -3,6 +3,7 @@ import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 import { oidcCodelineClientEnsure } from "./oidcCodelineClientEnsure.js"
+import { oidcCodelineProductionClientEnsure } from "./oidcCodelineProductionClientEnsure.js"
 
 type OidcCliFlags = {
   readonly server?: string
@@ -143,6 +144,20 @@ const oidcCodelineClientEnsureCommand = buildCommand({
   docs: { brief: "Ensure the confidential Codeline OIDC client without exposing its secret" },
 })
 
+const oidcCodelineProductionClientEnsureCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    const result = await oidcCodelineProductionClientEnsure({
+      credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+      homeDirectory: "/home/authworks",
+    })
+    if (result.success) return
+    this.process.stderr.write(`${result.errorMessage ?? "The production Codeline client ensure failed."}\n`)
+    this.process.exitCode = 1
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Ensure the fixed production Codeline client with a one-time machine credential handoff" },
+})
+
 const oidcClientSecretRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcClientFlags) {
     const realmId = scopeIdResolve(this, flags.realmId, "realm")
@@ -272,6 +287,7 @@ export const oidcCliCommands = buildRouteMap({
   routes: {
     clientCreate: oidcClientCreateCommand,
     clientEnsure: oidcCodelineClientEnsureCommand,
+    codelineProductionEnsure: oidcCodelineProductionClientEnsureCommand,
     clientGet: oidcClientGetCommand,
     clientList: oidcClientListCommand,
     clientSecretRotate: oidcClientSecretRotateCommand,

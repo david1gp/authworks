@@ -52,3 +52,31 @@ Codeline client already uses that Authorization Code + PKCE flow.
 The command never rotates a secret automatically. If a pre-existing client
 secret is missing, use the separately protected secret-rotation workflow and
 an approved one-time handoff rather than rerunning creation.
+
+## Fixed production bridge
+
+Production automation uses the narrower, zero-argument command below rather
+than supplying tokens, realm IDs, server URLs, paths, or names as CLI flags:
+
+```text
+authworks oidc codeline-production-ensure
+```
+
+It reads `AUTHWORKS_SYSTEM_SECRET` from the managed app user's fixed existing
+owner-only `/home/authworks/.config/authworks/authworks.env`, calls the fixed
+`https://authworks.contentoren.de` management API, and resolves the realm by
+the existing domain model. Exactly one active realm must own
+`authworks.contentoren.de`, and that domain must be primary. Zero/multiple
+matches, an alias-only match, an inactive realm, or multiple clients matching
+the exact name or callback URI are refused without mutation.
+
+The command has no stdout on unchanged or configuration-only update. Only a
+new confidential client produces a single one-time JSON credential envelope:
+
+```json
+{"clientId":"<uuid>","clientSecret":"<one-time-secret>","kind":"authworks.codeline-oidc-credential","version":1}
+```
+
+This stdout is a machine handoff protocol, not human output. The dedicated
+prodctl client captures it internally and never prints it. Existing secrets
+remain write-only and never produce an envelope.
