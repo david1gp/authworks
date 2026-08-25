@@ -6,7 +6,9 @@ import { machineClientCredentialsSupported } from "../../machineUsers/actions/ma
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
+import { oidcResourceOwnerScope } from "../domain/oidcResourceOwnerScope.js"
 import type { OidcDiscovery } from "../public/oidcDiscoverySchema.js"
+import { oidcResourceOwnerClaim } from "../public/oidcResourceOwnerClaim.js"
 
 type OidcDiscoveryGetOptions = {
   readonly database: StorageDatabase
@@ -48,6 +50,7 @@ export function oidcDiscoveryGet(options: OidcDiscoveryGetOptions): Result<OidcD
       "nickname",
       "nonce",
       "preferred_username",
+      oidcResourceOwnerClaim,
       "sid",
       "sub",
     ],
@@ -60,7 +63,7 @@ export function oidcDiscoveryGet(options: OidcDiscoveryGetOptions): Result<OidcD
     response_types_supported: ["code"],
     revocation_endpoint: `${issuer}/oauth2/revoke`,
     revocation_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post", "none"],
-    scopes_supported: ["openid", "profile", "email"],
+    scopes_supported: ["openid", "profile", "email", oidcResourceOwnerScope],
     subject_types_supported: ["public"],
     token_endpoint: `${issuer}/oauth2/token`,
     token_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post", "none"],

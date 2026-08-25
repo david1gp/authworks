@@ -11,8 +11,11 @@ import { sessionTable } from "../../sessions/persistence/sessionTable.js"
 import { userProfileTable } from "../../users/persistence/userProfileTable.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
+import { oidcResourceOwnerOrganizationIdResolve } from "../domain/oidcResourceOwnerOrganizationIdResolve.js"
+import { oidcResourceOwnerScope } from "../domain/oidcResourceOwnerScope.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
+import { oidcResourceOwnerClaim } from "../public/oidcResourceOwnerClaim.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 import type { OidcUserInfo } from "../public/oidcUserInfoSchema.js"
 
@@ -25,6 +28,7 @@ type OidcUserInfoGetOptions = {
 
 type OidcUserInfoSubject = {
   readonly profile: typeof userProfileTable.$inferSelect | null
+  readonly resourceOwnerOrganizationId: string | undefined
   readonly session: typeof sessionTable.$inferSelect
   readonly user: typeof userTable.$inferSelect
 }
@@ -83,7 +87,21 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
         .get() ?? null
     const scope = oidcUserInfoScopeParse(access.data.scope)
     if (!scope.success) return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")
-    return resultCreate(oidcUserInfoClaimsCreate({ profile, session, user }, scope.data))
+    const resourceOwnerOrganizationId = scope.data.includes(oidcResourceOwnerScope)
+      ? oidcResourceOwnerOrganizationIdResolve({
+          executor: transaction,
+          realmId: options.realmId,
+          session,
+          userId: user.id,
+        })
+      : resultCreate<string | undefined>(undefined)
+    if (!resourceOwnerOrganizationId.success) return resourceOwnerOrganizationId
+    return resultCreate(
+      oidcUserInfoClaimsCreate(
+        { profile, resourceOwnerOrganizationId: resourceOwnerOrganizationId.data, session, user },
+        scope.data,
+      ),
+    )
   })
 }
 
@@ -118,6 +136,8 @@ function oidcUserInfoClaimsCreate(subject: OidcUserInfoSubject, scope: readonly 
     if (subject.profile?.preferredLanguage !== null && subject.profile?.preferredLanguage !== undefined)
       claims.locale = subject.profile.preferredLanguage
   }
+  if (scope.includes(oidcResourceOwnerScope) && subject.resourceOwnerOrganizationId !== undefined)
+    claims[oidcResourceOwnerClaim] = subject.resourceOwnerOrganizationId
   return claims
 }
 

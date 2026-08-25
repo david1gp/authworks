@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { oidcResourceOwnerClaim } from "./oidcResourceOwnerClaim.js"
 
 const oidcUserInfoStringSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(512))
 const oidcUserInfoActorSchema = v.strictObject({ sub: oidcUserInfoStringSchema })
@@ -16,6 +17,7 @@ export const oidcUserInfoSchema = v.strictObject({
   name: v.optional(oidcUserInfoStringSchema),
   nickname: v.optional(oidcUserInfoStringSchema),
   preferred_username: v.optional(oidcUserInfoStringSchema),
+  [oidcResourceOwnerClaim]: v.optional(oidcUserInfoStringSchema),
   sub: oidcUserInfoStringSchema,
 })
 

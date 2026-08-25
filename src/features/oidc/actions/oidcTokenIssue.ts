@@ -22,9 +22,12 @@ import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
 import { oidcJwtSign } from "../domain/oidcJwtSign.js"
 import { oidcPkceVerify } from "../domain/oidcPkceVerify.js"
 import { oidcRefreshTokenCreate } from "../domain/oidcRefreshTokenCreate.js"
+import { oidcResourceOwnerOrganizationIdResolve } from "../domain/oidcResourceOwnerOrganizationIdResolve.js"
+import { oidcResourceOwnerScope } from "../domain/oidcResourceOwnerScope.js"
 import { oidcValueDecrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcAccessTokenIssuedEventPayloadSchema } from "../events/oidcAccessTokenIssuedEventPayloadSchema.js"
+import { oidcResourceOwnerClaim } from "../public/oidcResourceOwnerClaim.js"
 import { oidcAuthorizationCodeConsumedEventPayloadSchema } from "../events/oidcAuthorizationCodeConsumedEventPayloadSchema.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcRefreshTokenIssuedEventPayloadSchema } from "../events/oidcRefreshTokenIssuedEventPayloadSchema.js"
@@ -52,6 +55,7 @@ type OidcTokenIssueOptions = {
 
 type OidcTokenSubject = {
   readonly profile: UserProfileRow | null
+  readonly resourceOwnerOrganizationId: string | undefined
   readonly session: SessionRow
   readonly user: UserRow
 }
@@ -261,6 +265,7 @@ function oidcTokenAuthorizationCodeExchange(options: OidcTokenExchangeOptions): 
     code.data.userId,
     code.data.sessionId,
     options.now,
+    scope.data,
   )
   if (!subject.success) return subject
   const consumed = options.repository.authorizationCodeConsume(
@@ -378,6 +383,7 @@ function oidcTokenRefreshExchange(options: OidcTokenExchangeOptions): Result<Oid
     refresh.data.userId,
     refresh.data.sessionId,
     options.now,
+    scope.data,
   )
   if (!subject.success) return subject
   const nextRefresh = oidcRefreshTokenCreate(options.runtime)
@@ -603,6 +609,7 @@ function oidcTokenSubjectGet(
   userId: string,
   sessionId: string,
   now: number,
+  scope: readonly string[],
 ): Result<OidcTokenSubject> {
   const session = transaction
     .select()
@@ -619,7 +626,11 @@ function oidcTokenSubjectGet(
   if (user === undefined || user.state !== "active" || user.deletedAt !== null)
     return resultErrorCreate("oidcTokenInvalidGrant", "The authenticated user is no longer valid.")
   const profile = transaction.select().from(userProfileTable).where(eq(userProfileTable.userId, userId)).get() ?? null
-  return resultCreate({ profile, session, user })
+  const resourceOwnerOrganizationId = scope.includes(oidcResourceOwnerScope)
+    ? oidcResourceOwnerOrganizationIdResolve({ executor: transaction, realmId, session, userId })
+    : resultCreate<string | undefined>(undefined)
+  if (!resourceOwnerOrganizationId.success) return resourceOwnerOrganizationId
+  return resultCreate({ profile, resourceOwnerOrganizationId: resourceOwnerOrganizationId.data, session, user })
 }
 
 function oidcTokenClaimsCreate(
@@ -664,6 +675,8 @@ function oidcTokenClaimsCreate(
     if (subject.profile?.preferredLanguage !== null && subject.profile?.preferredLanguage !== undefined)
       claims.locale = subject.profile.preferredLanguage
   }
+  if (scope.includes(oidcResourceOwnerScope) && subject.resourceOwnerOrganizationId !== undefined)
+    claims[oidcResourceOwnerClaim] = subject.resourceOwnerOrganizationId
   return claims
 }
 
