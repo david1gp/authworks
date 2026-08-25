@@ -26,13 +26,22 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
   const api = options.api
   const realmId = () => options.discovery()?.organization.realmId
   const organizationId = () => options.discovery()?.organization.id
+  let whatsappAvailable = false
 
   return {
     discover: async () => {
+      whatsappAvailable = false
       const result = await api.discover(options.domain)
       if (!result.success) return result
       if (!result.data.found) return notDiscovered("loginDiscover")
       options.discoverySet(result.data)
+      if (result.data.policy.allowWhatsappOtp === true) {
+        const availability = await api.whatsappOtpAvailabilityGet(
+          result.data.organization.realmId,
+          result.data.organization.id,
+        )
+        whatsappAvailable = availability.success && availability.data.available
+      }
       return resultCreate(result.data)
     },
     emailOtpStart: async (email) => {
@@ -184,6 +193,24 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       const result = await api.verifyEmail(realm, token)
       if (!result.success) return result
       return resultCreate({ email: result.data.user.email })
+    },
+    whatsappOtpAvailable: () => whatsappAvailable,
+    whatsappOtpResend: async (challengeId) => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginWhatsappOtpResend")
+      return api.whatsappOtpResend(realm, challengeId, organizationId())
+    },
+    whatsappOtpStart: async (phoneNumber) => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginWhatsappOtpStart")
+      return api.whatsappOtpStart(realm, phoneNumber, organizationId())
+    },
+    whatsappOtpVerify: async (challengeId, code) => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginWhatsappOtpVerify")
+      const result = await api.whatsappOtpVerify(realm, challengeId, code, organizationId())
+      if (!result.success) return result
+      return resultCreate({ challenge: result.data.challenge, userId: result.data.authentication.userId })
     },
   }
 }

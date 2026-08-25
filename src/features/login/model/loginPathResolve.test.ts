@@ -13,6 +13,10 @@ describe("hosted login path resolution", () => {
     })
     expect(loginPathResolve("/login/chooser/recent-accounts", "/login")).toEqual({ screen: "recent-accounts" })
     expect(loginPathResolve("/login/password", "/login")).toEqual({ screen: "password" })
+    expect(loginPathResolve("/login/whatsapp-otp", "/login")).toEqual({ screen: "whatsapp-otp" })
+    expect(loginPathResolve("/demo/login/whatsapp-otp/code", "/demo/login")).toEqual({
+      screen: "whatsapp-otp-code",
+    })
     expect(loginPathResolve("/demo/login/mfa/recovery-code", "/demo/login")).toEqual({ screen: "mfa-recovery-code" })
     expect(loginPathResolve("/demo/login/mfa/passkey", "/demo/login")).toEqual({ screen: "mfa-passkey" })
     expect(loginPathResolve("/demo/login/mfa/email-otp/code", "/demo/login")).toEqual({

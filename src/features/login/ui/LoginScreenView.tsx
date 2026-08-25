@@ -23,6 +23,7 @@ import { LoginNoticePanel } from "./LoginNoticePanel.js"
 import { LoginUnavailableFrame } from "./LoginUnavailableFrame.js"
 import type { LoginPageState } from "./loginPageStateCreate.js"
 import { MethodChooser } from "./MethodChooser.js"
+import { WhatsAppOtpPanel } from "./WhatsAppOtpPanel.js"
 
 /** Renders any hosted login screen purely from the shared page state; no adapter knowledge here. */
 export function LoginScreenView(props: { readonly state: LoginPageState }) {
@@ -81,9 +82,11 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
                         ? "provider"
                         : method === "email-otp"
                           ? "email-otp"
-                          : method === "passkey"
-                            ? "passkey"
-                            : "password",
+                          : method === "whatsapp-otp"
+                            ? "whatsapp-otp"
+                            : method === "passkey"
+                              ? "passkey"
+                              : "password",
                     )
                   }}
                   pending={state.pending()}
@@ -199,6 +202,28 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
                   resendAllowed={state.emailOtpResendAllowed()}
                   resendCountdown={state.emailOtpResendCountdown()}
                   step={state.screen() === "email-otp" ? "email" : "code"}
+                  validationMessage={state.validationMessage()}
+                />
+              </Match>
+              <Match when={state.screen() === "whatsapp-otp" || state.screen() === "whatsapp-otp-code"}>
+                <WhatsAppOtpPanel
+                  code={state.code.get()}
+                  codeInputRegister={state.whatsappOtpCodeInputRegister}
+                  codeValid={state.whatsappOtpCodeValid()}
+                  errorMessage={state.errorMessage()}
+                  onBack={() => state.go("chooser")}
+                  onChangePhone={state.whatsappOtpChangePhone}
+                  onCode={state.whatsappOtpCodeSet}
+                  onPhoneNumber={state.phoneNumber.set}
+                  onResend={state.whatsappOtpResend}
+                  onSubmit={state.whatsappOtpSubmit}
+                  pending={state.pending()}
+                  phoneInputRegister={state.whatsappOtpPhoneInputRegister}
+                  phoneNumber={state.phoneNumber.get()}
+                  phoneNumberValid={state.whatsappOtpPhoneNumberValid()}
+                  resendAllowed={state.whatsappOtpResendAllowed()}
+                  resendCountdown={state.whatsappOtpResendCountdown()}
+                  step={state.screen() === "whatsapp-otp" ? "phone" : "code"}
                   validationMessage={state.validationMessage()}
                 />
               </Match>

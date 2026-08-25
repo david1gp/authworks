@@ -33,6 +33,7 @@ export const demoLoginBootstrap = {
   policy: {
     allowDomainDiscovery: true,
     allowEmailOtp: true,
+    allowWhatsappOtp: true,
     allowExternalIdentity: true,
     allowPassword: true,
     allowPasswordRecovery: true,

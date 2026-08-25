@@ -164,4 +164,84 @@ describe("hosted login browser API", () => {
 
     expect(paths).toEqual([`/realms/${realmId}/password/recovery/request`, `/realms/${realmId}/email-otp/start`])
   })
+
+  test("WhatsApp availability and OTP paths use the typed client contracts", async () => {
+    const { api, requests } = loginApiFixtureCreate((url) => {
+      if (url.endsWith("/whatsapp-otp/availability?organizationId=org-1")) return { available: true }
+      if (url.endsWith("/whatsapp-otp/start"))
+        return { accepted: true, challengeId: "wa-challenge", expiresAt: 10, retryAt: 5 }
+      if (url.endsWith("/whatsapp-otp/resend"))
+        return { accepted: true, challengeId: "wa-challenge-2", expiresAt: 20, retryAt: 15 }
+      return { authentication: { authenticatedAt: 1, realmId, userId: "user-1" } }
+    })
+
+    const availability = await api.whatsappOtpAvailabilityGet(realmId, "org-1")
+    const started = await api.whatsappOtpStart(realmId, "+15551234567", "org-1")
+    const resent = await api.whatsappOtpResend(realmId, "wa-challenge", "org-1")
+    const verified = await api.whatsappOtpVerify(realmId, "wa-challenge-2", "123456", "org-1")
+
+    expect(availability).toEqual({ data: { available: true }, success: true })
+    expect(started.success).toBe(true)
+    expect(resent.success).toBe(true)
+    expect(verified.success).toBe(true)
+    if (!verified.success) return
+    expect(verified.data.session).toBeUndefined()
+    expect(JSON.stringify(verified.data)).not.toContain("token")
+    expect(requests.map((request) => request.url)).toEqual([
+      `${baseUrl}/realms/${realmId}/whatsapp-otp/availability?organizationId=org-1`,
+      `${baseUrl}/realms/${realmId}/whatsapp-otp/start`,
+      `${baseUrl}/realms/${realmId}/whatsapp-otp/resend`,
+      `${baseUrl}/realms/${realmId}/whatsapp-otp/verify`,
+    ])
+    for (const request of requests.slice(1)) {
+      expect(request.init?.credentials).toBe("include")
+      const headers = new Headers(request.init?.headers)
+      expect(headers.get(sessionBrowserModeHeaderName)).toBe("true")
+      expect(headers.get("authorization")).toBeNull()
+    }
+    expect(JSON.parse(String(requests[1]?.init?.body))).toEqual({
+      organizationId: "org-1",
+      phoneNumber: "+15551234567",
+    })
+    expect(JSON.parse(String(requests[2]?.init?.body))).toEqual({
+      challengeId: "wa-challenge",
+      organizationId: "org-1",
+    })
+    expect(JSON.parse(String(requests[3]?.init?.body))).toEqual({
+      challengeId: "wa-challenge-2",
+      code: "123456",
+      organizationId: "org-1",
+    })
+  })
+
+  test("preserves WhatsApp resend retry metadata and Retry-After for login state", async () => {
+    const api = loginApiCreate({
+      baseUrl,
+      fetch: async () =>
+        Response.json(
+          {
+            error: {
+              code: "rate_limited",
+              details: { retryAfterSeconds: 19 },
+              message: "Too many requests.",
+              requestId: "wa-resend-request",
+              retryable: true,
+              status: 429,
+            },
+          },
+          { headers: { "retry-after": "19" }, status: 429 },
+        ),
+    })
+
+    const result = await api.whatsappOtpResend(realmId, "wa-challenge", "org-1")
+
+    expect(result).toMatchObject({ code: "platform.rate-limited", statusCode: 429, success: false })
+    if (!result.success) {
+      expect(JSON.parse(result.errorData ?? "{}")).toMatchObject({
+        retryAfter: "19",
+        retryAfterSeconds: 19,
+        status: 429,
+      })
+    }
+  })
 })

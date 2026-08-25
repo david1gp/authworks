@@ -92,12 +92,12 @@ test("the demo password submit exposes its pending state before completion", asy
   await expect(page).toHaveURL(/\/demo\/login\/signed-in/)
 })
 
-test("selecting a recent password account checks remembered identifier", async ({ page }) => {
+test("selecting a recent password account resumes the remembered session", async ({ page }) => {
   await page.goto("/demo/login/chooser/recent-accounts")
   await page.getByRole("button", { name: /alex@acme\.example/ }).click()
 
-  await expect(page.getByLabel("Username or email")).toHaveValue("alex@acme.example")
-  await expect(page.getByLabel("Remember this identifier")).toBeChecked()
+  await expect(page).toHaveURL(/\/demo\/login\/signed-in$/)
+  await expect(page.getByRole("heading", { name: "Signed in" })).toBeVisible()
 })
 
 test("client-side validation runs before any adapter call", async ({ page }) => {
@@ -137,6 +137,35 @@ test("the email code flow advances from address to code entry", async ({ page })
   await page.getByLabel("Verification code").fill("123456")
   await page.getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page).toHaveURL(/\/demo\/login\/signed-in/)
+})
+
+test("the demo WhatsApp scenario is deterministic, supports resend, and completes sign-in without the network", async ({
+  page,
+}) => {
+  const apiRequests: string[] = []
+  await page.route(/^https?:\/\/[^/]+\/(?:realms\/|organization-discovery|oauth2\/)/, async (route) => {
+    apiRequests.push(route.request().url())
+    await route.abort()
+  })
+
+  await page.goto("/demo/login/whatsapp-otp")
+  const phoneInput = page.getByLabel("WhatsApp phone number")
+  await expect(phoneInput).toHaveAttribute("pattern", "\\+[1-9][0-9]{1,14}")
+  await phoneInput.fill("+15551234567")
+  await page.getByRole("button", { name: "Send WhatsApp code", exact: true }).click()
+
+  await expect(page.getByRole("heading", { name: "WhatsApp verification code" })).toBeVisible()
+  await expect(page.getByText("Enter the code sent to +15551234567 on WhatsApp.", { exact: true })).toBeVisible()
+  const resend = page.getByRole("button", { name: "Resend code", exact: true })
+  await expect(resend).toBeEnabled()
+  await resend.click()
+
+  await page.locator("#whatsapp-otp-code").fill("123456")
+  await page.getByRole("button", { name: "Continue", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/demo\/login\/signed-in/)
+  await expect(page.getByRole("heading", { name: "Signed in" })).toBeVisible()
+  expect(apiRequests).toEqual([])
 })
 
 test("recovery request and reset reach their non-disclosing confirmations", async ({ page }) => {

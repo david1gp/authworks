@@ -20,7 +20,7 @@ export const demoLoginScenarioGroups: DemoFixtureScenarioGroup[] = [
     title: "Start sign-in",
   },
   {
-    description: "Password and email-code authentication with deterministic local fixtures.",
+    description: "Password, email-code, and WhatsApp authentication with deterministic local fixtures.",
     key: "password-email",
     scenarios: [
       scenario("password", "Password", "Sign in with an email address or username and password.", authenticationStates),
@@ -44,6 +44,13 @@ export const demoLoginScenarioGroups: DemoFixtureScenarioGroup[] = [
         "Enter the six-digit email verification code.",
         authenticationStates,
       ),
+      scenario(
+        "whatsapp-otp",
+        "Sign in with WhatsApp",
+        "We will send you a single-use code on WhatsApp instead of asking for a password.",
+        formStates,
+      ),
+      scenario("whatsapp-otp/code", "WhatsApp verification code", "Enter 6 digits.", authenticationStates),
     ],
     title: "Password and email code",
   },

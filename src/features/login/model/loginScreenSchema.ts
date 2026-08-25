@@ -11,6 +11,8 @@ export const loginScreenSchema = v.picklist([
   "verify-email",
   "email-otp",
   "email-otp-code",
+  "whatsapp-otp",
+  "whatsapp-otp-code",
   "passkey",
   "provider",
   "mfa",

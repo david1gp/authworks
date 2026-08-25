@@ -1,5 +1,6 @@
 import type { Page, Route } from "@playwright/test"
 import { expect, test } from "@playwright/test"
+import { sessionBrowserModeHeaderName } from "../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const organizationId = "018f0000-0000-7000-8000-000000000002"
@@ -43,15 +44,19 @@ const discovery = {
 }
 
 const authentication = { authenticatedAt: 1, realmId, userId: "user-1" }
+const whatsappDiscovery = {
+  ...discovery,
+  policy: { ...discovery.policy, allowWhatsappOtp: true },
+}
 
 type LoginRouteHandler = (route: Route, pathname: string) => Promise<unknown> | unknown
 
-async function loginBackendMock(page: Page, handler: LoginRouteHandler) {
-  const requests: { body: string; pathname: string }[] = []
+async function loginBackendMock(page: Page, handler: LoginRouteHandler, discovered = discovery) {
+  const requests: { body: string; headers: Record<string, string>; pathname: string }[] = []
   await page.route(/^https?:\/\/[^/]+\/(?:realms\/|organization-discovery|oauth2\/)/, async (route) => {
     const pathname = new URL(route.request().url()).pathname
-    requests.push({ body: route.request().postData() ?? "", pathname })
-    if (pathname === "/organization-discovery") return route.fulfill({ json: discovery })
+    requests.push({ body: route.request().postData() ?? "", headers: route.request().headers(), pathname })
+    if (pathname === "/organization-discovery") return route.fulfill({ json: discovered })
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     if (pathname.endsWith("/sessions/recent")) return route.fulfill({ json: { items: [] } })
     return handler(route, pathname)
@@ -64,9 +69,195 @@ test("production sign-in discovers the realm at runtime and never hardcodes an i
 
   await page.goto("/login")
 
-  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
-  await expect(page.getByText("Choose how you want to sign in to Northwind Labs.")).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Choose a method" })).toBeVisible()
   expect(requests[0]?.pathname).toBe("/organization-discovery")
+})
+
+test("production chooser shows WhatsApp only when policy and availability allow it", async ({ page }) => {
+  const requests = await loginBackendMock(
+    page,
+    (route, pathname) =>
+      pathname.endsWith("/whatsapp-otp/availability")
+        ? route.fulfill({ json: { available: true } })
+        : route.fulfill({ json: { authentication } }),
+    whatsappDiscovery,
+  )
+
+  await page.goto("/login")
+
+  await expect(page.getByRole("button", { name: /WhatsApp code/ })).toBeVisible()
+  await expect(page.getByText("Receive a one-time code on WhatsApp")).toBeVisible()
+  expect(requests.map((request) => request.pathname)).toContain(`/realms/${realmId}/whatsapp-otp/availability`)
+})
+
+test("production chooser omits WhatsApp when production availability is unhealthy", async ({ page }) => {
+  await loginBackendMock(
+    page,
+    (route, pathname) =>
+      pathname.endsWith("/whatsapp-otp/availability")
+        ? route.fulfill({ json: { available: false } })
+        : route.fulfill({ json: { authentication } }),
+    whatsappDiscovery,
+  )
+
+  await page.goto("/login")
+
+  await expect(page.getByRole("heading", { name: "Choose a method" })).toBeVisible()
+  await expect(page.getByRole("button", { name: /WhatsApp code/ })).toHaveCount(0)
+})
+
+test("a production WhatsApp sign-in starts, resends, verifies, and continues authenticated", async ({ page }) => {
+  const requests = await loginBackendMock(
+    page,
+    (route, pathname) => {
+      if (pathname.endsWith("/whatsapp-otp/availability")) return route.fulfill({ json: { available: true } })
+      if (pathname.endsWith("/whatsapp-otp/start"))
+        return route.fulfill({
+          json: { accepted: true, challengeId: "wa-challenge-1", expiresAt: 600_000, retryAt: 0 },
+        })
+      if (pathname.endsWith("/whatsapp-otp/resend"))
+        return route.fulfill({
+          json: { accepted: true, challengeId: "wa-challenge-2", expiresAt: 600_000, retryAt: 0 },
+        })
+      if (pathname.endsWith("/whatsapp-otp/verify"))
+        return route.fulfill({
+          headers: { "set-cookie": "session=e2e-session; Path=/; HttpOnly; Secure; SameSite=Lax" },
+          json: { authentication },
+        })
+      return route.fulfill({ json: { authentication } })
+    },
+    whatsappDiscovery,
+  )
+
+  await page.goto("/login/whatsapp-otp")
+  await expect(page.getByRole("heading", { name: "Sign in with WhatsApp" })).toBeVisible()
+  await page.getByLabel("WhatsApp phone number").fill("+15551234567")
+  await page.getByRole("button", { name: "Send WhatsApp code", exact: true }).click()
+
+  await expect(page.getByRole("heading", { name: "WhatsApp verification code" })).toBeVisible()
+  await expect(page.getByText("Enter the code sent to +15551234567 on WhatsApp.", { exact: true })).toBeVisible()
+  const start = requests.find((request) => request.pathname.endsWith("/whatsapp-otp/start"))
+  expect(JSON.parse(start?.body ?? "{}")).toMatchObject({ organizationId, phoneNumber: "+15551234567" })
+
+  await page.getByRole("button", { name: "Resend code", exact: true }).click()
+  await expect
+    .poll(() => requests.filter((request) => request.pathname.endsWith("/whatsapp-otp/resend")).length)
+    .toBe(1)
+
+  await page.locator("#whatsapp-otp-code").fill("123456")
+  await page.getByRole("button", { name: "Continue", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/account$/)
+  const verify = requests.find((request) => request.pathname.endsWith("/whatsapp-otp/verify"))
+  expect(JSON.parse(verify?.body ?? "{}")).toMatchObject({
+    challengeId: "wa-challenge-2",
+    code: "123456",
+    organizationId,
+  })
+  for (const path of ["/whatsapp-otp/start", "/whatsapp-otp/resend", "/whatsapp-otp/verify"]) {
+    const request = requests.find((candidate) => candidate.pathname.endsWith(path))
+    expect(request?.headers[sessionBrowserModeHeaderName]).toBe("true")
+    expect(request?.headers.authorization).toBeUndefined()
+  }
+  const sessionCookie = (await page.context().cookies()).find((cookie) => cookie.name === "session")
+  expect(sessionCookie?.value).toBe("e2e-session")
+  expect(sessionCookie?.httpOnly).toBe(true)
+  expect(await page.evaluate(() => document.cookie)).not.toContain("session=")
+})
+
+test("production WhatsApp errors remain inline during phone start and code verification", async ({ page }) => {
+  let startAttempts = 0
+  await loginBackendMock(
+    page,
+    (route, pathname) => {
+      if (pathname.endsWith("/whatsapp-otp/availability")) return route.fulfill({ json: { available: true } })
+      if (pathname.endsWith("/whatsapp-otp/start")) {
+        startAttempts += 1
+        return startAttempts === 1
+          ? route.fulfill({
+              json: {
+                error: {
+                  code: "whatsapp-otp.invalid",
+                  message: "The WhatsApp code could not be sent.",
+                  op: "whatsappOtpStart",
+                  status: 422,
+                },
+              },
+              status: 422,
+            })
+          : route.fulfill({ json: { accepted: true, challengeId: "wa-challenge", expiresAt: 600_000, retryAt: 0 } })
+      }
+      if (pathname.endsWith("/whatsapp-otp/verify"))
+        return route.fulfill({
+          json: {
+            error: {
+              code: "whatsapp-otp.invalid",
+              message: "The WhatsApp code is incorrect.",
+              op: "whatsappOtpVerify",
+              status: 401,
+            },
+          },
+          status: 401,
+        })
+      return route.fulfill({ json: { authentication } })
+    },
+    whatsappDiscovery,
+  )
+
+  await page.goto("/login/whatsapp-otp")
+  await page.getByLabel("WhatsApp phone number").fill("+15551234567")
+  await page.getByRole("button", { name: "Send WhatsApp code", exact: true }).click()
+  await expect(page.getByRole("alert")).toContainText("The WhatsApp code could not be sent.")
+  await expect(page.getByRole("heading", { name: "Sign in with WhatsApp" })).toBeVisible()
+
+  await page.getByRole("button", { name: "Send WhatsApp code", exact: true }).click()
+  await page.locator("#whatsapp-otp-code").fill("000000")
+  await page.getByRole("button", { name: "Continue", exact: true }).click()
+  await expect(page.getByRole("alert")).toContainText("The WhatsApp code is incorrect.")
+  await expect(page.getByRole("heading", { name: "WhatsApp verification code" })).toBeVisible()
+})
+
+test("a production WhatsApp authentication can continue through MFA", async ({ page }) => {
+  const requests = await loginBackendMock(
+    page,
+    (route, pathname) => {
+      if (pathname.endsWith("/whatsapp-otp/availability")) return route.fulfill({ json: { available: true } })
+      if (pathname.endsWith("/whatsapp-otp/start"))
+        return route.fulfill({ json: { accepted: true, challengeId: "wa-challenge", expiresAt: 600_000, retryAt: 0 } })
+      if (pathname.endsWith("/whatsapp-otp/verify"))
+        return route.fulfill({
+          json: {
+            authentication,
+            challenge: {
+              challenge: {
+                expiresAt: 600_000,
+                id: "mfa-challenge",
+                purpose: "login",
+                requiredAssurance: "multi_factor",
+              },
+              token: "t".repeat(43),
+            },
+          },
+        })
+      if (pathname.endsWith("/mfa/challenge/complete")) return route.fulfill({ json: { authentication } })
+      return route.fulfill({ json: { authentication } })
+    },
+    whatsappDiscovery,
+  )
+
+  await page.goto("/login/whatsapp-otp")
+  await page.getByLabel("WhatsApp phone number").fill("+15551234567")
+  await page.getByRole("button", { name: "Send WhatsApp code", exact: true }).click()
+  await page.locator("#whatsapp-otp-code").fill("123456")
+  await page.getByRole("button", { name: "Continue", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/login\/mfa$/)
+  await page.getByRole("button", { name: "Authenticator app" }).click()
+  await page.getByLabel("Verification code").fill("123456")
+  await page.getByRole("button", { name: "Verify", exact: true }).click()
+
+  await expect(page).toHaveURL(/\/account$/)
+  expect(requests.some((request) => request.pathname.endsWith("/mfa/challenge/complete"))).toBe(true)
 })
 
 test("production login renders the discovered branding logo instead of the fallback", async ({ page }) => {
@@ -223,7 +414,7 @@ test("a failed realm discovery renders the unavailable state instead of a broken
 
   await page.goto("/login")
 
-  await expect(page.getByRole("heading", { name: "Sign-in unavailable" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Start sign-in again" })).toBeVisible()
 })
 
 test("production registration and recovery post to realm-scoped endpoints", async ({ page }) => {
@@ -244,7 +435,7 @@ test("production registration and recovery post to realm-scoped endpoints", asyn
 
   await page.goto("/login/password/forgot")
   await page.getByLabel("Email address").fill("alex@acme.example")
-  await page.getByRole("button", { name: "Send recovery instructions" }).click()
+  await page.getByRole("button", { name: "Send reset link", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible()
 
   expect(requests.map((request) => request.pathname)).toContain(`/realms/${realmId}/password/register`)
@@ -268,7 +459,7 @@ test("an external provider start redirects the browser to the provider authoriza
   )
 
   await page.goto("/login/idp")
-  await expect(page.getByRole("heading", { name: "Continue with GitHub" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Sign in with GitHub" })).toBeVisible()
   await page.getByRole("button", { name: "Continue with GitHub" }).click()
 
   await expect(page).toHaveURL(/github\.example/)
@@ -284,6 +475,6 @@ test("the registration entry point is hidden when the login policy forbids it", 
 
   await page.goto("/login")
 
-  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Choose a method" })).toBeVisible()
   await expect(page.getByRole("button", { name: "Create an account" })).toBeHidden()
 })

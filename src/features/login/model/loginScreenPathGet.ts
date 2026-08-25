@@ -35,6 +35,8 @@ const loginScreenPaths: Readonly<Record<LoginScreen, string>> = {
   "signed-in": "/signed-in",
   unsupported: "/unsupported",
   "verify-email": "/verify-email",
+  "whatsapp-otp": "/whatsapp-otp",
+  "whatsapp-otp-code": "/whatsapp-otp/code",
 }
 
 /** Builds the absolute href for a login screen under the active production or demo base path. */

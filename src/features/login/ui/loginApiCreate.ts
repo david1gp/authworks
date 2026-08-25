@@ -22,6 +22,10 @@ import { sessionApiClientCreate } from "../../sessions/client/sessionApiClientCr
 import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserRequest.js"
 import { sessionBrowserModeHeaderName } from "../../sessions/public/sessionBrowserModeHeaderName.js"
 import { sessionRevocationResponseSchema } from "../../sessions/public/sessionRevocationResponseSchema.js"
+import { whatsappOtpApiClientCreate } from "../../whatsappOtp/client/whatsappOtpApiClientCreate.js"
+import { whatsappOtpResendResponseSchema } from "../../whatsappOtp/public/whatsappOtpResendResponseSchema.js"
+import { whatsappOtpStartResponseSchema } from "../../whatsappOtp/public/whatsappOtpStartResponseSchema.js"
+import { whatsappOtpVerifyResponseSchema } from "../../whatsappOtp/public/whatsappOtpVerifyResponseSchema.js"
 
 type LoginFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -35,6 +39,7 @@ export function loginApiCreate(options: { readonly baseUrl: string; readonly fet
   const browserFetch: LoginFetch = (input, init) => (options.fetch ?? fetch)(input, { ...init, credentials: "include" })
   const organizations = organizationApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const sessions = sessionApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
+  const whatsappOtp = whatsappOtpApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
 
   const post = <T>(path: string, body: unknown, schema: v.GenericSchema<T>): Promise<Result<T>> =>
     httpApiClientRequest({
@@ -142,5 +147,25 @@ export function loginApiCreate(options: { readonly baseUrl: string; readonly fet
       post(`${realmPath(realmId)}/password/register`, input, passwordRegistrationResponseSchema),
     verifyEmail: (realmId: string, token: string) =>
       post(`${realmPath(realmId)}/password/verify-email`, { token }, passwordEmailVerificationResponseSchema),
+    whatsappOtpAvailabilityGet: (realmId: string, organizationId?: string) =>
+      whatsappOtp.whatsappOtpAvailabilityGet(realmId, organizationId),
+    whatsappOtpResend: (realmId: string, challengeId: string, organizationId?: string) =>
+      post(
+        `${realmPath(realmId)}/whatsapp-otp/resend`,
+        { challengeId, ...(organizationId === undefined ? {} : { organizationId }) },
+        whatsappOtpResendResponseSchema,
+      ),
+    whatsappOtpStart: (realmId: string, phoneNumber: string, organizationId?: string) =>
+      post(
+        `${realmPath(realmId)}/whatsapp-otp/start`,
+        { phoneNumber, ...(organizationId === undefined ? {} : { organizationId }) },
+        whatsappOtpStartResponseSchema,
+      ),
+    whatsappOtpVerify: (realmId: string, challengeId: string, code: string, organizationId?: string) =>
+      post(
+        `${realmPath(realmId)}/whatsapp-otp/verify`,
+        { challengeId, code, ...(organizationId === undefined ? {} : { organizationId }) },
+        whatsappOtpVerifyResponseSchema,
+      ),
   }
 }

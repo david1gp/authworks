@@ -225,5 +225,34 @@ export function loginDemoAdapterCreate(options: {
         return fail("loginDemoVerifyEmail", "This confirmation link is no longer valid.", "passwords.invalid")
       return resultCreate({ email: "alex@acme.example" })
     },
+    whatsappOtpAvailable: () => true,
+    whatsappOtpResend: async () => {
+      await emailOtpWait()
+      if (failing())
+        return fail("loginDemoWhatsappOtpResend", "The WhatsApp code could not be sent.", "whatsapp-otp.invalid")
+      return resultCreate({
+        accepted: true as const,
+        challengeId: "demo-whatsapp-challenge",
+        expiresAt: fixtureNow + 600_000,
+        retryAt: fixtureNow + 60_000,
+      })
+    },
+    whatsappOtpStart: async () => {
+      await emailOtpWait()
+      if (failing())
+        return fail("loginDemoWhatsappOtpStart", "The WhatsApp code could not be sent.", "whatsapp-otp.invalid")
+      return resultCreate({
+        accepted: true as const,
+        challengeId: "demo-whatsapp-challenge",
+        expiresAt: fixtureNow + 600_000,
+        retryAt: fixtureNow + 60_000,
+      })
+    },
+    whatsappOtpVerify: async () => {
+      await emailOtpWait()
+      if (failing())
+        return fail("loginDemoWhatsappOtpVerify", "The WhatsApp code is incorrect.", "whatsapp-otp.invalid")
+      return authenticated(options.fixtureState() === "expired")
+    },
   }
 }

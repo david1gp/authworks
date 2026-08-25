@@ -1,8 +1,11 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test"
 import { Window } from "happy-dom"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoLoginBootstrap } from "../../demo/demoLoginBootstrap.js"
 import type { LoginScreen } from "../model/loginScreenSchema.js"
+import type { LoginAdapter } from "./loginAdapter.js"
 import { loginDemoAdapterCreate } from "./loginDemoAdapterCreate.js"
 
 type LoginPageStateCreate = typeof import("./loginPageStateCreate.js")["loginPageStateCreate"]
@@ -39,6 +42,7 @@ const stateCreate = (
   initialStatus?: "loading" | "ready",
   onResume: () => void = () => {},
   fixtureState: DemoFixtureState = "success",
+  adapterOverrides: Partial<LoginAdapter> = {},
 ) => {
   const browserWindow = new Window()
   previousGlobals.set("document", globalValues.document)
@@ -50,7 +54,10 @@ const stateCreate = (
   const state = createRoot((rootDispose) => {
     dispose = rootDispose
     return loginPageStateCreate({
-      adapter: loginDemoAdapterCreate({ fixtureState: () => fixtureState, onResume }),
+      adapter: {
+        ...loginDemoAdapterCreate({ fixtureState: () => fixtureState, onResume }),
+        ...adapterOverrides,
+      },
       basePath: "/demo/login",
       initialDiscovery: initialStatus === "loading" ? undefined : () => demoLoginBootstrap,
       initialStatus: initialStatus === undefined ? () => "ready" : () => initialStatus,
@@ -205,5 +212,110 @@ describe("loginPageStateCreate lifecycle focus", () => {
     expect(state.identifier.get()).toBe("alex@acme.example")
     expect(state.screen()).toBe("password")
     expect(state.pending()).toBe(false)
+  })
+
+  test("starts, resends, validates, and verifies a WhatsApp code through the adapter", async () => {
+    const [route, routeSet] = createSignal<LoginScreen>("whatsapp-otp")
+    let startedPhoneNumber = ""
+    let resentChallengeId = ""
+    let verifiedCode = ""
+    let resumed = 0
+    const state = stateCreate(
+      route,
+      "ready",
+      () => {
+        resumed += 1
+      },
+      "success",
+      {
+        whatsappOtpAvailable: () => true,
+        whatsappOtpResend: async (challengeId) => {
+          resentChallengeId = challengeId
+          return resultCreate({ accepted: true, challengeId: "wa-challenge-2", expiresAt: 0, retryAt: 0 })
+        },
+        whatsappOtpStart: async (phoneNumber) => {
+          startedPhoneNumber = phoneNumber
+          return resultCreate({ accepted: true, challengeId: "wa-challenge-1", expiresAt: 0, retryAt: 0 })
+        },
+        whatsappOtpVerify: async (challengeId, code) => {
+          expect(challengeId).toBe("wa-challenge-2")
+          verifiedCode = code
+          return resultCreate({ userId: "wa-user" })
+        },
+      },
+    )
+    await flushEffects()
+
+    state.phoneNumber.set("14155552671")
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    expect(state.whatsappOtpPhoneNumberValid()).toBe(false)
+    expect(state.validationMessage()).toBeDefined()
+    expect(startedPhoneNumber).toBe("")
+
+    state.phoneNumber.set(" +14155552671 ")
+    expect(state.whatsappOtpPhoneNumberValid()).toBe(true)
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    expect(startedPhoneNumber).toBe("+14155552671")
+    expect(state.screen()).toBe("whatsapp-otp-code")
+    routeSet("whatsapp-otp-code")
+
+    state.whatsappOtpCodeSet("654321")
+    await state.whatsappOtpResend()
+    expect(resentChallengeId).toBe("wa-challenge-1")
+    expect(state.code.get()).toBe("")
+    state.whatsappOtpCodeSet("12x3456")
+    expect(state.code.get()).toBe("123456")
+    expect(state.whatsappOtpCodeValid()).toBe(true)
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    expect(verifiedCode).toBe("123456")
+    expect(resumed).toBe(1)
+  })
+
+  test("starts a WhatsApp resend cooldown from a rate-limit retry header", async () => {
+    const [route] = createSignal<LoginScreen>("whatsapp-otp")
+    const rateLimited = resultErrorCodedCreate("whatsappOtpResend", "Too many requests.", "platform.rate-limited", {
+      retryAfter: "23",
+    })
+    rateLimited.statusCode = 429
+    const state = stateCreate(route, "ready", undefined, "success", {
+      whatsappOtpResend: async () => rateLimited,
+      whatsappOtpStart: async () =>
+        resultCreate({ accepted: true, challengeId: "wa-challenge-1", expiresAt: 0, retryAt: 0 }),
+    })
+    await flushEffects()
+
+    state.phoneNumber.set("+14155552671")
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    state.whatsappOtpCodeSet("654321")
+    await state.whatsappOtpResend()
+
+    expect(state.whatsappOtpResendCountdown()).toBeGreaterThan(0)
+    expect(state.whatsappOtpResendAllowed()).toBe(false)
+    expect(state.code.get()).toBe("654321")
+    expect(state.errorMessage()).toBe("Too many requests.")
+  })
+
+  test("refreshes WhatsApp availability when returning to the method chooser", async () => {
+    const [route] = createSignal<LoginScreen>("password")
+    let available = true
+    let discoveryCount = 0
+    const state = stateCreate(route, "ready", undefined, "success", {
+      discover: async () => {
+        discoveryCount += 1
+        available = discoveryCount !== 1
+        return resultCreate(demoLoginBootstrap)
+      },
+      whatsappOtpAvailable: () => available,
+    })
+    await flushEffects()
+
+    expect(state.methods()).toContain("whatsapp-otp")
+    state.go("chooser")
+    await flushEffects()
+    expect(state.methods()).not.toContain("whatsapp-otp")
+    state.go("password")
+    state.go("chooser")
+    await flushEffects()
+    expect(state.methods()).toContain("whatsapp-otp")
   })
 })

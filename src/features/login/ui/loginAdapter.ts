@@ -4,6 +4,8 @@ import type { MfaChallengeResponse } from "../../mfa/public/mfaChallengeResponse
 import type { MfaTotpEnrollmentStartResponse } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
 import type { OrganizationDiscoveryResponse } from "../../organizations/public/organizationDiscoveryResponseSchema.js"
 import type { PasskeyAuthenticationStatus } from "../../passkeys/public/passkeyAuthenticationStatusSchema.js"
+import type { WhatsappOtpResendResponse } from "../../whatsappOtp/public/whatsappOtpResendResponseSchema.js"
+import type { WhatsappOtpStartResponse } from "../../whatsappOtp/public/whatsappOtpStartResponseSchema.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
 
 export type LoginDiscovery = Extract<OrganizationDiscoveryResponse, { found: true }>
@@ -54,4 +56,9 @@ export type LoginAdapter = {
     readonly userName: string
   }) => Promise<Result<{ readonly verificationRequired: true }>>
   readonly verifyEmail: (token: string) => Promise<Result<{ readonly email: string }>>
+  /** WhatsApp remains optional until production and demo adapters bind its transport. */
+  readonly whatsappOtpAvailable?: () => boolean
+  readonly whatsappOtpResend?: (challengeId: string) => Promise<Result<WhatsappOtpResendResponse>>
+  readonly whatsappOtpStart?: (phoneNumber: string) => Promise<Result<WhatsappOtpStartResponse>>
+  readonly whatsappOtpVerify?: (challengeId: string, code: string) => Promise<Result<LoginAuthenticationOutcome>>
 }

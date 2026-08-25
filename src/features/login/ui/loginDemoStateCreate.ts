@@ -37,7 +37,11 @@ export function loginDemoStateCreate() {
             ? "The email code could not be sent."
             : resolved()?.screen === "email-otp-code"
               ? "The email code is incorrect."
-              : undefined,
+              : resolved()?.screen === "whatsapp-otp"
+                ? messageTranslate("login.whatsappOtp.sendError")
+                : resolved()?.screen === "whatsapp-otp-code"
+                  ? messageTranslate("login.whatsappOtp.codeError")
+                  : undefined,
     initialPasskeyStatus: () => (resolved()?.screen === "passkey" ? initialState.passkeyStatus : undefined),
     initialMfaSetupUnavailable: () => fixtureState() === "mfa-setup-unavailable",
     initialProviderId: () => {

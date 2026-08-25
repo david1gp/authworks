@@ -12,6 +12,7 @@ describe("deterministic login demo adapter", () => {
     for (const outcome of [
       await adapter.passwordLogin("alex@acme.example", "demo-password"),
       await adapter.emailOtpVerify("demo-email-challenge", "123456"),
+      await adapter.whatsappOtpVerify!("demo-whatsapp-challenge", "123456"),
       await adapter.passkeyAuthenticate(),
     ]) {
       expect(outcome.success).toBe(true)
@@ -36,6 +37,9 @@ describe("deterministic login demo adapter", () => {
     for (const result of [
       await adapter.passwordLogin("alex@acme.example", "wrong"),
       await adapter.emailOtpVerify("demo-email-challenge", "000000"),
+      await adapter.whatsappOtpStart!("+15551234567"),
+      await adapter.whatsappOtpResend!("demo-whatsapp-challenge"),
+      await adapter.whatsappOtpVerify!("demo-whatsapp-challenge", "000000"),
       await adapter.mfaComplete("t".repeat(43), "000000"),
       await adapter.register({
         displayName: "Alex",
@@ -92,6 +96,24 @@ describe("deterministic login demo adapter", () => {
     const verify = await adapter.emailOtpVerify(start.data.challengeId, "123456")
     expect(verify.success).toBe(true)
     expect(Date.now() - verifyStartedAt).toBeGreaterThanOrEqual(100)
+  })
+
+  test("WhatsApp demo availability and OTP responses are deterministic and network-free", async () => {
+    const adapter = adapterCreate("success")
+    const started = await adapter.whatsappOtpStart?.("+15551234567")
+    const resent = await adapter.whatsappOtpResend?.("demo-whatsapp-challenge")
+
+    expect(adapter.whatsappOtpAvailable?.()).toBe(true)
+    expect(started).toEqual({
+      data: {
+        accepted: true,
+        challengeId: "demo-whatsapp-challenge",
+        expiresAt: Date.UTC(2026, 7, 21, 9, 40),
+        retryAt: Date.UTC(2026, 7, 21, 9, 31),
+      },
+      success: true,
+    })
+    expect(resent).toEqual(started)
   })
 
   test("realm discovery stays available so form errors render in place", async () => {

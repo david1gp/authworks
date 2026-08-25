@@ -27,6 +27,7 @@ describe("production login adapter", () => {
     expect(adapter.mfaEmailOtpResend).toBeUndefined()
     expect(adapter.mfaEmailOtpVerify).toBeUndefined()
     expect(adapter.mfaPasskeyAuthenticate).toBeUndefined()
+    expect(adapter.whatsappOtpAvailable?.()).toBe(false)
     expect(calls).toEqual([])
   })
 
@@ -51,6 +52,82 @@ describe("production login adapter", () => {
     const authenticated = await adapter.passwordLogin("alex@acme.example", "secret")
     expect(authenticated).toEqual({ data: { userId: "demo-user" }, success: true })
     expect(calls).toContain("passwordLogin:realm-acme:alex@acme.example:secret:org-acme")
+  })
+
+  test("binds WhatsApp availability and OTP operations to discovered realm and organization", async () => {
+    const calls: string[] = []
+    const adapter = loginProductionAdapterCreate({
+      api: apiCreate(calls),
+      discovery: () => demoLoginBootstrap,
+      discoverySet: () => undefined,
+      domain: "acme.example",
+      interactionHandle: () => undefined,
+      interactionResume: () => undefined,
+    })
+
+    await adapter.discover()
+    const started = await adapter.whatsappOtpStart?.("+15551234567")
+    const resent = await adapter.whatsappOtpResend?.("wa-challenge")
+    const verified = await adapter.whatsappOtpVerify?.("wa-challenge", "123456")
+
+    expect(adapter.whatsappOtpAvailable?.()).toBe(true)
+    expect(started?.success).toBe(true)
+    expect(resent?.success).toBe(true)
+    expect(verified).toEqual({
+      data: {
+        challenge: {
+          challenge: { expiresAt: 20, id: "mfa-challenge", purpose: "login", requiredAssurance: "multi_factor" },
+          token: "t".repeat(43),
+        },
+        userId: "demo-user",
+      },
+      success: true,
+    })
+    expect(calls).toContain("whatsappAvailability:realm-acme:org-acme")
+    expect(calls).toContain("whatsappStart:realm-acme:+15551234567:org-acme")
+    expect(calls).toContain("whatsappResend:realm-acme:wa-challenge:org-acme")
+    expect(calls).toContain("whatsappVerify:realm-acme:wa-challenge:123456:org-acme")
+  })
+
+  test("refreshes cached WhatsApp availability across later outages and recovery", async () => {
+    const api = apiCreate([])
+    const availability = [
+      resultCreate({ available: true }),
+      resultErrorCodedCreate("whatsappAvailability", "unavailable", "whatsapp-otp.invalid"),
+      resultCreate({ available: true }),
+    ]
+    api.whatsappOtpAvailabilityGet = async () => availability.shift() ?? resultCreate({ available: false })
+    const adapter = loginProductionAdapterCreate({
+      api,
+      discovery: () => demoLoginBootstrap,
+      discoverySet: () => undefined,
+      domain: "acme.example",
+      interactionHandle: () => undefined,
+      interactionResume: () => undefined,
+    })
+
+    await adapter.discover()
+    expect(adapter.whatsappOtpAvailable?.()).toBe(true)
+    await adapter.discover()
+    expect(adapter.whatsappOtpAvailable?.()).toBe(false)
+    await adapter.discover()
+    expect(adapter.whatsappOtpAvailable?.()).toBe(true)
+  })
+
+  test("passes a browser WhatsApp authentication outcome through without a bearer response", async () => {
+    const adapter = loginProductionAdapterCreate({
+      api: apiCreate([], [], false),
+      discovery: () => demoLoginBootstrap,
+      discoverySet: () => undefined,
+      domain: "acme.example",
+      interactionHandle: () => undefined,
+      interactionResume: () => undefined,
+    })
+
+    await adapter.discover()
+    const verified = await adapter.whatsappOtpVerify?.("wa-challenge", "123456")
+
+    expect(verified).toEqual({ data: { userId: "demo-user" }, success: true })
   })
 
   test("turns recent-session failures into an empty remembered-account list", async () => {
@@ -177,7 +254,11 @@ describe("production login adapter", () => {
   })
 })
 
-function apiCreate(calls: string[], recentItems: readonly unknown[] = []): ReturnType<typeof loginApiCreate> {
+function apiCreate(
+  calls: string[],
+  recentItems: readonly unknown[] = [],
+  whatsappChallenge = true,
+): ReturnType<typeof loginApiCreate> {
   return {
     discover: async (domain: string) => {
       calls.push(`discover:${domain}`)
@@ -187,6 +268,37 @@ function apiCreate(calls: string[], recentItems: readonly unknown[] = []): Retur
       calls.push(`passwordLogin:${realmId}:${identifier}:${password}:${organizationId}`)
       return resultCreate({
         authentication: { userId: "demo-user" },
+      })
+    },
+    whatsappOtpAvailabilityGet: async (realmId: string, organizationId?: string) => {
+      calls.push(`whatsappAvailability:${realmId}:${organizationId}`)
+      return resultCreate({ available: true })
+    },
+    whatsappOtpResend: async (realmId: string, challengeId: string, organizationId?: string) => {
+      calls.push(`whatsappResend:${realmId}:${challengeId}:${organizationId}`)
+      return resultCreate({ accepted: true as const, challengeId, expiresAt: 20, retryAt: 15 })
+    },
+    whatsappOtpStart: async (realmId: string, phoneNumber: string, organizationId?: string) => {
+      calls.push(`whatsappStart:${realmId}:${phoneNumber}:${organizationId}`)
+      return resultCreate({ accepted: true as const, challengeId: "wa-challenge", expiresAt: 20, retryAt: 15 })
+    },
+    whatsappOtpVerify: async (realmId: string, challengeId: string, code: string, organizationId?: string) => {
+      calls.push(`whatsappVerify:${realmId}:${challengeId}:${code}:${organizationId}`)
+      return resultCreate({
+        authentication: { userId: "demo-user" },
+        ...(whatsappChallenge
+          ? {
+              challenge: {
+                challenge: {
+                  expiresAt: 20,
+                  id: "mfa-challenge",
+                  purpose: "login",
+                  requiredAssurance: "multi_factor",
+                },
+                token: "t".repeat(43),
+              },
+            }
+          : {}),
       })
     },
     recentList: async (_realmId: string) =>

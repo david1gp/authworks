@@ -70,6 +70,8 @@ const loginPathTable: Readonly<Record<string, LoginPathResolution>> = {
   "/signed-in": { screen: "signed-in" },
   "/unsupported": { screen: "unsupported" },
   "/verify-email": { screen: "verify-email" },
+  "/whatsapp-otp": { screen: "whatsapp-otp" },
+  "/whatsapp-otp/code": { screen: "whatsapp-otp-code" },
 }
 
 export function loginPathResolve(pathname: string, basePath: string): LoginPathResolution | undefined {

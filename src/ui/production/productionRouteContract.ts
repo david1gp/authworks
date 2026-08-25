@@ -19,6 +19,7 @@ type ProductionFeatureContractFeature =
   | "realms"
   | "sessions"
   | "users"
+  | "whatsapp-otp"
 type ProductionFeatureContract = `${ProductionFeatureContractFeature}.${string}`
 
 export type ProductionRouteContract = {

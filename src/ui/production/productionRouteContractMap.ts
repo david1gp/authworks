@@ -20,6 +20,18 @@ export const productionRouteContractMap = {
         title: "shell.nav.emailOtpSignIn",
       },
       {
+        contracts: ["whatsapp-otp.availability", "whatsapp-otp.start"],
+        key: "whatsapp-otp",
+        path: "/login/whatsapp-otp",
+        title: "login.whatsappOtp.title",
+      },
+      {
+        contracts: ["whatsapp-otp.resend", "whatsapp-otp.verify"],
+        key: "whatsapp-otp-code",
+        path: "/login/whatsapp-otp/code",
+        title: "login.whatsappOtp.codeTitle",
+      },
+      {
         contracts: ["passkeys.authenticate"],
         key: "passkey",
         path: "/login/passkey",

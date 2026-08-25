@@ -1,4 +1,6 @@
 import { createEffect, onCleanup, onMount } from "solid-js"
+import * as v from "valibot"
+import type { Result, ResultErr } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { emailOtpCodeNormalize } from "../../emailOtp/model/emailOtpCodeNormalize.js"
@@ -9,6 +11,7 @@ import { mfaCodeNormalize } from "../../mfa/model/mfaCodeNormalize.js"
 import type { MfaFactor } from "../../mfa/model/mfaFactorSchema.js"
 import type { MfaEmailOtpStage } from "../../mfa/ui/mfaEmailOtpStageSchema.js"
 import type { PasskeyAuthenticationStatus } from "../../passkeys/public/passkeyAuthenticationStatusSchema.js"
+import { userPhoneNumberSchema } from "../../users/public/userPhoneNumberSchema.js"
 import { loginIdentifierNormalize } from "../model/loginIdentifierNormalize.js"
 import { loginPreferenceLoad } from "../model/loginPreferenceLoad.js"
 import { loginPreferenceSave } from "../model/loginPreferenceSave.js"
@@ -16,6 +19,7 @@ import type { LoginPreference } from "../model/loginPreferenceSchema.js"
 import { loginPrimaryMethodsGet } from "../model/loginPrimaryMethodsGet.js"
 import { loginProviderPathGet } from "../model/loginProviderPathGet.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
+import { loginRetryAfterSecondsGet } from "../model/loginRetryAfterSecondsGet.js"
 import { loginScreenPathGet } from "../model/loginScreenPathGet.js"
 import type { LoginScreen } from "../model/loginScreenSchema.js"
 import type { LoginAdapter, LoginAuthenticationOutcome, LoginDiscovery } from "./loginAdapter.js"
@@ -62,6 +66,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   const revealPassword = createSignalObject(false)
   const rememberIdentifier = createSignalObject(false)
   const email = createSignalObject("")
+  const phoneNumber = createSignalObject("")
   const code = createSignalObject("")
   const newPassword = createSignalObject("")
   const confirmPassword = createSignalObject("")
@@ -91,16 +96,22 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   const mfaEmailOtpResendAt = createSignalObject(0)
   const mfaEmailOtpResendCountdown = createSignalObject(0)
   const mfaEmailOtpNotice = createSignalObject<string | undefined>(undefined)
+  const whatsappOtpChallengeId = createSignalObject("")
+  const whatsappOtpResendAt = createSignalObject(0)
+  const whatsappOtpResendCountdown = createSignalObject(0)
   const mfaSetupUnavailable = () => options.initialMfaSetupUnavailable?.() ?? false
   let identifierInput: HTMLInputElement | undefined
   let passwordInput: HTMLInputElement | undefined
   let emailOtpEmailInput: HTMLInputElement | undefined
   let emailOtpCodeInput: HTMLInputElement | undefined
+  let whatsappOtpPhoneInput: HTMLInputElement | undefined
+  let whatsappOtpCodeInput: HTMLInputElement | undefined
   let preferenceOrganizationId: string | undefined
   let preferenceTimer: ReturnType<typeof setTimeout> | undefined
   let preferenceIdleCallback: number | undefined
   let resendTimer: ReturnType<typeof setTimeout> | undefined
   let mfaEmailOtpResendTimer: ReturnType<typeof setTimeout> | undefined
+  let whatsappOtpResendTimer: ReturnType<typeof setTimeout> | undefined
   let lifecycleHeading: HTMLHeadingElement | undefined
   let requestedScreen: LoginScreen | undefined
   let synchronizedRouteScreen = activeScreen.get()
@@ -210,7 +221,24 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     mfaEmailOtpResendCountdownUpdate()
   }
 
+  const whatsappOtpResendTimerStop = () => {
+    if (whatsappOtpResendTimer === undefined) return
+    clearTimeout(whatsappOtpResendTimer)
+    whatsappOtpResendTimer = undefined
+  }
+  const whatsappOtpResendCountdownUpdate = () => {
+    whatsappOtpResendTimerStop()
+    const remaining = emailOtpResendCountdownGet(whatsappOtpResendAt.get())
+    whatsappOtpResendCountdown.set(remaining)
+    if (remaining > 0) whatsappOtpResendTimer = setTimeout(whatsappOtpResendCountdownUpdate, 1_000)
+  }
+  const whatsappOtpResendAtSet = (nextRetryAt: number) => {
+    whatsappOtpResendAt.set(nextRetryAt)
+    whatsappOtpResendCountdownUpdate()
+  }
+
   const go = (screen: LoginScreen) => {
+    const previousScreen = activeScreen.get()
     requestedScreen = screen === synchronizedRouteScreen ? undefined : screen
     activeScreen.set(screen)
     errorMessage.set(undefined)
@@ -227,6 +255,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
         ? loginProviderPathGet(selectedProvider, options.basePath)
         : loginScreenPathGet(screen, options.basePath),
     )
+    if (screen === "chooser" && previousScreen !== "chooser") void load(true)
   }
   const fail = (message: string) => {
     errorMessage.set(message)
@@ -238,12 +267,8 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     pending.set(false)
   }
   const run = async <T>(
-    operation: () => Promise<{ success: boolean; data?: T; errorMessage?: string; code?: string; statusCode?: number }>,
-    failureMessage?: (result: {
-      readonly errorMessage?: string
-      readonly code?: string
-      readonly statusCode?: number
-    }) => string | undefined,
+    operation: () => Promise<Result<T>>,
+    failureMessage?: (result: ResultErr) => string | undefined,
   ) => {
     pending.set(true)
     errorMessage.set(undefined)
@@ -271,9 +296,9 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     interactionContinue()
   }
 
-  const load = async () => {
+  const load = async (force = false) => {
     const alreadyDiscovered = discovery.get()
-    if (alreadyDiscovered !== undefined) {
+    if (alreadyDiscovered !== undefined && !force) {
       status.set("ready")
       preferenceLoad(alreadyDiscovered.organization.id)
       errorMessage.set(options.initialErrorMessage?.())
@@ -282,10 +307,14 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
       if (recent.success) recentAccounts.set(recent.data)
       return
     }
-    status.set("loading")
+    if (alreadyDiscovered === undefined) status.set("loading")
     errorMessage.set(undefined)
     const result = await options.adapter.discover()
     if (!result.success) {
+      if (alreadyDiscovered !== undefined) {
+        status.set("ready")
+        return
+      }
       errorMessage.set(result.errorMessage)
       status.set("fatal")
       return
@@ -427,6 +456,94 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     queueMicrotask(() => emailOtpCodeInput?.focus())
   }
   const emailOtpResendAllowed = () => challengeId.get().length > 0 && resendCountdown.get() === 0 && !pending.get()
+  const whatsappOtpPhoneNumberValid = () => v.safeParse(userPhoneNumberSchema, phoneNumber.get().trim()).success
+  const whatsappOtpCodeValid = () => /^\d{6}$/.test(code.get())
+  const whatsappOtpSubmit = async (event: SubmitEvent) => {
+    event.preventDefault()
+    errorMessage.set(undefined)
+    validationMessage.set(undefined)
+    if (options.screen() === "whatsapp-otp") {
+      const parsedPhoneNumber = v.safeParse(userPhoneNumberSchema, phoneNumber.get().trim())
+      if (!parsedPhoneNumber.success) {
+        invalid(messageTranslate("account.profile.phoneInvalid"))
+        queueMicrotask(() => whatsappOtpPhoneInput?.focus())
+        return
+      }
+      phoneNumber.set(parsedPhoneNumber.output)
+      const start = options.adapter.whatsappOtpStart
+      if (start === undefined) {
+        fail(messageTranslate("common.error"))
+        return
+      }
+      const started = await run(() => start(parsedPhoneNumber.output))
+      if (started === undefined) {
+        queueMicrotask(() => whatsappOtpPhoneInput?.focus())
+        return
+      }
+      whatsappOtpChallengeId.set(started.challengeId)
+      whatsappOtpResendAtSet(started.retryAt)
+      go("whatsapp-otp-code")
+      queueMicrotask(() => whatsappOtpCodeInput?.focus())
+      return
+    }
+    if (whatsappOtpChallengeId.get().length === 0) {
+      go("whatsapp-otp")
+      return
+    }
+    code.set(code.get().replace(/\D/g, "").slice(0, 6))
+    if (!whatsappOtpCodeValid()) {
+      invalid(messageTranslate("login.error.codeRequired"))
+      queueMicrotask(() => whatsappOtpCodeInput?.focus())
+      return
+    }
+    const verify = options.adapter.whatsappOtpVerify
+    if (verify === undefined) {
+      fail(messageTranslate("common.error"))
+      return
+    }
+    const submittedCode = code.get()
+    code.set("")
+    const outcome = await run(() => verify(whatsappOtpChallengeId.get(), submittedCode))
+    if (outcome === undefined) {
+      queueMicrotask(() => whatsappOtpCodeInput?.focus())
+      return
+    }
+    authenticationApply(outcome)
+  }
+  const whatsappOtpResendAllowed = () =>
+    whatsappOtpChallengeId.get().length > 0 && whatsappOtpResendCountdown.get() === 0 && !pending.get()
+  const whatsappOtpResend = async () => {
+    if (!whatsappOtpResendAllowed()) return
+    errorMessage.set(undefined)
+    validationMessage.set(undefined)
+    const resend = options.adapter.whatsappOtpResend
+    if (resend === undefined) {
+      fail(messageTranslate("common.error"))
+      return
+    }
+    const started = await run(
+      () => resend(whatsappOtpChallengeId.get()),
+      (result) => {
+        const rateLimited =
+          result.statusCode === 429 ||
+          result.code === "platform.rate-limited" ||
+          result.code === "whatsapp-otp.rate-limited"
+        if (rateLimited) {
+          const retryAfterSeconds = loginRetryAfterSecondsGet(result)
+          if (retryAfterSeconds !== undefined) whatsappOtpResendAtSet(Date.now() + retryAfterSeconds * 1_000)
+        }
+        return undefined
+      },
+    )
+    if (started === undefined) {
+      queueMicrotask(() => whatsappOtpCodeInput?.focus())
+      return
+    }
+    code.set("")
+    whatsappOtpChallengeId.set(started.challengeId)
+    whatsappOtpResendAtSet(started.retryAt)
+    queueMicrotask(() => whatsappOtpCodeInput?.focus())
+  }
   const mfaSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
     if (options.screen() === "mfa-email-otp-code") return mfaEmailOtpSubmit(event)
@@ -652,11 +769,19 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   createEffect(() => {
     const screen = activeScreen.get()
     const focusRequest = ++screenFocusRequest
-    if (screen !== "email-otp" && screen !== "email-otp-code") return
+    if (
+      screen !== "email-otp" &&
+      screen !== "email-otp-code" &&
+      screen !== "whatsapp-otp" &&
+      screen !== "whatsapp-otp-code"
+    )
+      return
     queueMicrotask(() => {
       if (focusRequest !== screenFocusRequest || activeScreen.get() !== screen) return
       if (screen === "email-otp") emailOtpEmailInput?.focus()
       if (screen === "email-otp-code") emailOtpCodeInput?.focus()
+      if (screen === "whatsapp-otp") whatsappOtpPhoneInput?.focus()
+      if (screen === "whatsapp-otp-code") whatsappOtpCodeInput?.focus()
     })
   })
   createEffect(() => {
@@ -670,6 +795,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   })
   onCleanup(resendTimerStop)
   onCleanup(mfaEmailOtpResendTimerStop)
+  onCleanup(whatsappOtpResendTimerStop)
 
   return {
     challengeToken,
@@ -692,11 +818,17 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     lifecycleHeadingRegister: (element: HTMLHeadingElement) => {
       lifecycleHeading = element
     },
-    load: () => void load(),
+    load: () => void load(true),
     logout,
     methods: () => {
       const found = discovery.get()
-      return found === undefined ? [] : loginPrimaryMethodsGet(found.policy, found.providers.length)
+      return found === undefined
+        ? []
+        : loginPrimaryMethodsGet(
+            found.policy,
+            found.providers.length,
+            options.adapter.whatsappOtpAvailable?.() ?? false,
+          )
     },
     mfaSubmit,
     mfaCodeInputMode: () => (options.screen() === "mfa-recovery-code" ? "text" : "numeric"),
@@ -739,6 +871,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     passwordChangeExpired: () => options.passwordChangeExpired?.() ?? false,
     passwordSubmit,
     pending: pending.get,
+    phoneNumber,
     providerStart,
     provider: () => {
       const found = discovery.get()
@@ -789,6 +922,32 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
       validationMessage.set(undefined)
       options.navigate(loginScreenPathGet("email-otp", options.basePath))
       queueMicrotask(() => emailOtpEmailInput?.focus())
+    },
+    whatsappOtpAvailable: () => {
+      const found = discovery.get()
+      return found?.policy.allowWhatsappOtp === true && options.adapter.whatsappOtpAvailable?.() === true
+    },
+    whatsappOtpCodeInputRegister: (element: HTMLInputElement) => {
+      whatsappOtpCodeInput = element
+    },
+    whatsappOtpCodeSet: (value: string) => code.set(value.replace(/\D/g, "").slice(0, 6)),
+    whatsappOtpCodeValid,
+    whatsappOtpPhoneInputRegister: (element: HTMLInputElement) => {
+      whatsappOtpPhoneInput = element
+    },
+    whatsappOtpPhoneNumberValid,
+    whatsappOtpResend,
+    whatsappOtpResendAllowed,
+    whatsappOtpResendCountdown: whatsappOtpResendCountdown.get,
+    whatsappOtpSubmit,
+    whatsappOtpChangePhone: () => {
+      code.set("")
+      whatsappOtpChallengeId.set("")
+      whatsappOtpResendAtSet(0)
+      errorMessage.set(undefined)
+      validationMessage.set(undefined)
+      options.navigate(loginScreenPathGet("whatsapp-otp", options.basePath))
+      queueMicrotask(() => whatsappOtpPhoneInput?.focus())
     },
   }
 }

@@ -29,6 +29,22 @@ describe("production route contracts", () => {
     }
 
     expect(productionRouteContractMap.login.screens.map((screen) => screen.path)).toContain("/login/password")
+    expect(productionRouteContractMap.login.screens).toEqual(
+      expect.arrayContaining([
+        {
+          contracts: ["whatsapp-otp.availability", "whatsapp-otp.start"],
+          key: "whatsapp-otp",
+          path: "/login/whatsapp-otp",
+          title: "login.whatsappOtp.title",
+        },
+        {
+          contracts: ["whatsapp-otp.resend", "whatsapp-otp.verify"],
+          key: "whatsapp-otp-code",
+          path: "/login/whatsapp-otp/code",
+          title: "login.whatsappOtp.codeTitle",
+        },
+      ]),
+    )
     expect(productionRouteContractMap.consent.screens[0]?.contracts).toContain("oidc.consent")
     expect(productionRouteContractMap.account.screens.map((screen) => screen.path)).toContain("/account/sessions")
     expect(productionRouteContractMap.invitations.screens.map((screen) => screen.path)).toContain("/invitations/accept")

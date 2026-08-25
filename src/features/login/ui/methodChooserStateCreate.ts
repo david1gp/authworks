@@ -31,6 +31,12 @@ export function methodChooserStateCreate(options: MethodChooserStateOptions) {
         label: messageTranslate("login.chooser.emailOtpLabel"),
       }
     }
+    if (method === "whatsapp-otp") {
+      return {
+        detail: messageTranslate("login.chooser.whatsappOtpDetail"),
+        label: messageTranslate("login.chooser.whatsappOtpLabel"),
+      }
+    }
     if (method === "passkey") {
       return {
         detail: messageTranslate("login.chooser.passkeyDetail"),
