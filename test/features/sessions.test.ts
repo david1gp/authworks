@@ -153,6 +153,7 @@ test("password success issues an opaque session and rotation rejects replay", as
     if (!allSessions.success) return
     expect(allSessions.data.items).toHaveLength(2)
     expect(allSessions.data.items[0]).toMatchObject({ current: true, id: second.data.session.id })
+    expect(allSessions.data.items[0]).not.toHaveProperty("loginIdentifier")
     const recentSessions = sessionRecentList({
       currentSessionId: second.data.session.id,
       database,
@@ -162,7 +163,10 @@ test("password success issues an opaque session and rotation rejects replay", as
     expect(recentSessions.success).toBe(true)
     if (!recentSessions.success) return
     expect(recentSessions.data.items).toHaveLength(2)
-    expect(recentSessions.data.items[0]).toMatchObject({ id: second.data.session.id })
+    expect(recentSessions.data.items[0]).toMatchObject({
+      id: second.data.session.id,
+      label: "Session User",
+    })
 
     const expiring = sessionIssue({
       assurance: "authenticated",
@@ -610,7 +614,19 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
     expect(current.success).toBe(true)
     const listed = await client.sessionList(alpha.realm.id)
     expect(listed.success).toBe(true)
-    if (listed.success) expect(listed.data.items).toHaveLength(1)
+    if (listed.success) {
+      expect(listed.data.items).toHaveLength(1)
+      expect(listed.data.items[0]?.label).toBeUndefined()
+      expect(listed.data.items[0]).not.toHaveProperty("loginIdentifier")
+    }
+    const recent = await client.sessionRecentList(alpha.realm.id)
+    expect(recent.success).toBe(true)
+    if (recent.success) {
+      expect(recent.data.items[0]?.label).toBe("Session User")
+      expect(recent.data.items[0]?.loginIdentifier).toBe("session-user")
+      expect(recent.data.items[0]).not.toHaveProperty("profile")
+      expect(recent.data.items[0]).not.toHaveProperty("userName")
+    }
     const protectedResponse = await app.request(`http://server.test/realms/${alpha.realm.id}/protected`, {
       headers: { authorization: `Bearer ${token}` },
     })

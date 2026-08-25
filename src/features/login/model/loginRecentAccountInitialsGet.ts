@@ -1,8 +1,8 @@
 import type { LoginRecentAccount } from "./loginRecentAccountSchema.js"
 
-/** Derives a compact initials fallback for a remembered account identifier. */
+/** Derives compact avatar initials from a remembered account label, falling back to its identifier. */
 export function loginRecentAccountInitialsGet(account: LoginRecentAccount): string {
-  const words = account.identifier.trim().split(/\s+/u).filter(Boolean)
+  const words = (account.label ?? account.identifier).trim().split(/\s+/u).filter(Boolean)
   if (words.length > 1)
     return words
       .map((word) => word[0])

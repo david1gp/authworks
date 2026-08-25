@@ -164,4 +164,21 @@ describe("loginPageStateCreate lifecycle focus", () => {
     expect(state.screen()).toBe("signed-in")
     expect(state.pending()).toBe(false)
   })
+
+  test("selects a labeled recent account by its identifier", async () => {
+    const [route] = createSignal<LoginScreen>("chooser")
+    const state = stateCreate(route)
+    await flushEffects()
+
+    state.recentAccountSelect({
+      authenticationMethod: "password",
+      identifier: "alex@acme.example",
+      label: "Alex Morgan",
+      lastUsedAt: 10,
+      sessionId: "session-alex",
+    })
+
+    expect(state.identifier.get()).toBe("alex@acme.example")
+    expect(state.screen()).toBe("password")
+  })
 })

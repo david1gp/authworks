@@ -1,7 +1,7 @@
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import { passkeyCapabilityCheck } from "../../passkeys/ui/passkeyCapabilityCheck.js"
 import { passkeyAuthenticationRun } from "../../passkeys/ui/passkeyAuthenticationRun.js"
+import { passkeyCapabilityCheck } from "../../passkeys/ui/passkeyCapabilityCheck.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
 import type { LoginAdapter, LoginDiscovery } from "./loginAdapter.js"
 import type { loginApiCreate } from "./loginApiCreate.js"
@@ -133,20 +133,20 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       if (realm === undefined) return resultCreate([] as readonly LoginRecentAccount[])
       const result = await api.recentList(realm)
       if (!result.success) return resultCreate([] as readonly LoginRecentAccount[])
-      return resultCreate(
-        result.data.items.flatMap((session) =>
-          session.userId === undefined
-            ? []
-            : [
-                {
-                  authenticationMethod: session.authenticationMethod as LoginRecentAccount["authenticationMethod"],
-                  identifier: session.userId,
-                  lastUsedAt: session.lastUsedAt,
-                  sessionId: session.id,
-                },
-              ],
-        ) as readonly LoginRecentAccount[],
-      )
+      const identifiers = new Set<string>()
+      const accounts: LoginRecentAccount[] = []
+      for (const session of result.data.items) {
+        if (session.loginIdentifier === undefined || identifiers.has(session.loginIdentifier)) continue
+        identifiers.add(session.loginIdentifier)
+        accounts.push({
+          authenticationMethod: session.authenticationMethod as LoginRecentAccount["authenticationMethod"],
+          identifier: session.loginIdentifier,
+          label: session.label,
+          lastUsedAt: session.lastUsedAt,
+          sessionId: session.id,
+        })
+      }
+      return resultCreate(accounts)
     },
     recoveryComplete: async (token, newPassword) => {
       const realm = realmId()

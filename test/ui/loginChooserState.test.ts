@@ -25,15 +25,16 @@ describe("login chooser state", () => {
     expect(demoLoginBootstrap.providers[0]?.displayName).toBe("Google")
   })
 
-  test("derives readable initials for identifier-only recent accounts", () => {
+  test("derives readable initials from labels with identifier fallback", () => {
     expect(
       loginRecentAccountInitialsGet({
         authenticationMethod: "password",
-        identifier: "alex@acme.example",
+        identifier: "alex-login",
+        label: "Alex Morgan",
         lastUsedAt: 10,
         sessionId: "session-alex",
       }),
-    ).toBe("AL")
+    ).toBe("AM")
     expect(
       loginRecentAccountInitialsGet({
         authenticationMethod: "password",

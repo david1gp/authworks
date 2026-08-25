@@ -24,6 +24,7 @@ import { userProfileUpdate } from "../../src/features/users/actions/userProfileU
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
 import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
 import { userServerAppCreate } from "../../src/features/users/server/userServerAppCreate.js"
+import { userAccountSummaryResolve } from "../../src/features/users/server/userAccountSummaryResolve.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -564,6 +565,57 @@ test("user routes and API client enforce public schemas and authorization", asyn
     expect(unauthorized.success).toBe(false)
     const malformed = await client.userCreate(realm.id, { email: "bad", profile: {}, userName: "" })
     expect(malformed.success).toBe(false)
+  })
+})
+
+test("user account summaries are realm scoped and expose only login identifiers and labels", async () => {
+  await withDatabase(async (database) => {
+    const alpha = await createRealm(database, "label-alpha.example.com")
+    const beta = await createRealm(database, "label-beta.example.com")
+    const system = realmSystemContextCreate("system")
+    const named = userCreate({
+      context: system,
+      database,
+      input: createInput("named-user", "named@example.com"),
+      realmId: alpha.id,
+    })
+    const fallback = userCreate({
+      context: system,
+      database,
+      input: { email: "fallback@example.com", profile: {}, userName: "fallback-user" },
+      realmId: alpha.id,
+    })
+    const namedByParts = userCreate({
+      context: system,
+      database,
+      input: {
+        email: "parts@example.com",
+        profile: { firstName: "Grace", lastName: "Hopper" },
+        userName: "parts-user",
+      },
+      realmId: alpha.id,
+    })
+    expect(named.success).toBe(true)
+    expect(fallback.success).toBe(true)
+    expect(namedByParts.success).toBe(true)
+    if (!named.success || !fallback.success || !namedByParts.success) return
+
+    expect(userAccountSummaryResolve({ database, realmId: alpha.id, userId: named.data.user.id })).toEqual({
+      data: { label: "Ada Lovelace", loginIdentifier: "named-user" },
+      success: true,
+    })
+    expect(userAccountSummaryResolve({ database, realmId: alpha.id, userId: namedByParts.data.user.id })).toEqual({
+      data: { label: "Grace Hopper", loginIdentifier: "parts-user" },
+      success: true,
+    })
+    expect(userAccountSummaryResolve({ database, realmId: alpha.id, userId: fallback.data.user.id })).toEqual({
+      data: { label: "fallback-user", loginIdentifier: "fallback-user" },
+      success: true,
+    })
+    expect(userAccountSummaryResolve({ database, realmId: beta.id, userId: named.data.user.id })).toEqual({
+      data: undefined,
+      success: true,
+    })
   })
 })
 

@@ -47,7 +47,7 @@ export function RecentAccountChooser(props: RecentAccountChooserProps) {
                 </span>
                 <span class="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span class="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-extrabold">
-                    {account.identifier}
+                    {account.label ?? account.identifier}
                   </span>
                 </span>
               </Button>
