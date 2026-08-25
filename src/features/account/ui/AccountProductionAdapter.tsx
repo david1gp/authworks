@@ -52,9 +52,23 @@ export function AccountProductionAdapter(props: {
           onLastNameInput={state.lastName.set}
           onNickNameInput={state.nickName.set}
           onPreferredLanguageInput={state.preferredLanguage.set}
+          onPhoneCancel={state.phoneChangeCancel}
+          onPhoneCodeInput={state.phoneCode.set}
+          onPhoneInput={state.phoneCandidate.set}
+          onPhoneResend={state.phoneChangeResend}
+          onPhoneStart={state.phoneChangeStart}
+          onPhoneVerify={state.phoneChangeVerify}
           onRetry={state.load}
           onSubmit={state.profileSubmit}
           preferredLanguage={state.preferredLanguage.get()}
+          phoneCandidate={state.phoneCandidate.get()}
+          phoneChallengeActive={state.phoneChallengeId.get() !== undefined}
+          phoneCode={state.phoneCode.get()}
+          phoneErrorMessage={state.phoneErrorMessage.get()}
+          phoneNumber={state.user.get()?.phoneNumber}
+          phoneStatus={state.phoneStatus.get()}
+          phoneValidationMessage={state.phoneValidationMessage.get()}
+          phoneVerified={state.user.get()?.phoneNumberVerifiedAt !== undefined}
           status={state.status.get()}
           userName={state.user.get()?.userName ?? ""}
           validationMessage={state.validationMessage.get()}

@@ -2,6 +2,7 @@ import { Show } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
+import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
 
 type AccountProfileViewProps = {
   readonly displayName: string
@@ -17,9 +18,23 @@ type AccountProfileViewProps = {
   readonly onLastNameInput: (value: string) => void
   readonly onNickNameInput: (value: string) => void
   readonly onPreferredLanguageInput: (value: string) => void
+  readonly onPhoneCancel: () => void
+  readonly onPhoneCodeInput: (value: string) => void
+  readonly onPhoneInput: (value: string) => void
+  readonly onPhoneResend: () => void
+  readonly onPhoneStart: (event: SubmitEvent) => void
+  readonly onPhoneVerify: (event: SubmitEvent) => void
   readonly onRetry: () => void
   readonly onSubmit: (event: SubmitEvent) => void
   readonly preferredLanguage: string
+  readonly phoneCandidate: string
+  readonly phoneChallengeActive: boolean
+  readonly phoneCode: string
+  readonly phoneErrorMessage?: string
+  readonly phoneNumber?: string
+  readonly phoneStatus: AccountPhoneViewStatus
+  readonly phoneValidationMessage?: string
+  readonly phoneVerified: boolean
   readonly status: AccountViewStatus
   readonly userName: string
   readonly validationMessage?: string
@@ -80,6 +95,135 @@ export function AccountProfileView(props: AccountProfileViewProps) {
         </section>
 
         <Show when={props.kind !== "email"}>
+          <section class="rounded-xl border border-line bg-surface p-5 shadow-sm sm:p-7">
+            <div class="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <h2 class="text-xl font-semibold">{messageTranslate("account.profile.phoneTitle")}</h2>
+                <p class="mt-1 text-sm text-muted-foreground">{messageTranslate("account.profile.phoneDescription")}</p>
+              </div>
+              <Show when={props.phoneNumber}>
+                <span
+                  class={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    props.phoneVerified ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                  }`}
+                >
+                  {props.phoneVerified
+                    ? messageTranslate("account.profile.verified")
+                    : messageTranslate("account.profile.verificationPending")}
+                </span>
+              </Show>
+            </div>
+            <div class="mt-6">
+              <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {messageTranslate("account.profile.phoneNumber")}
+              </p>
+              <p class="mt-1 break-all font-medium">
+                {props.phoneNumber ?? messageTranslate("account.profile.phoneNotAdded")}
+              </p>
+            </div>
+            <Show
+              when={props.phoneChallengeActive}
+              fallback={
+                <form class="mt-6 grid gap-4" onSubmit={props.onPhoneStart}>
+                  <label class="grid gap-2 text-sm font-medium">
+                    {props.phoneNumber
+                      ? messageTranslate("account.profile.phoneNew")
+                      : messageTranslate("account.profile.phoneNumber")}
+                    <input
+                      autocomplete="tel"
+                      class="rounded-lg border border-line bg-background px-3 py-2.5"
+                      inputmode="tel"
+                      maxlength={16}
+                      placeholder={messageTranslate("account.profile.phonePlaceholder")}
+                      required
+                      type="tel"
+                      value={props.phoneCandidate}
+                      onInput={(event) => props.onPhoneInput(event.currentTarget.value)}
+                    />
+                    <span class="text-xs font-normal text-muted-foreground">
+                      {messageTranslate("account.profile.phoneHint")}
+                    </span>
+                  </label>
+                  <div class="flex justify-end">
+                    <button
+                      class="rounded-lg bg-accent px-4 py-2.5 font-semibold text-accent-contrast disabled:opacity-60"
+                      disabled={props.phoneStatus === "sending"}
+                      type="submit"
+                    >
+                      {props.phoneStatus === "sending"
+                        ? messageTranslate("account.profile.phoneSending")
+                        : props.phoneNumber
+                          ? messageTranslate("account.profile.phoneChange")
+                          : messageTranslate("account.profile.phoneAdd")}
+                    </button>
+                  </div>
+                </form>
+              }
+            >
+              <form class="mt-6 grid gap-4" onSubmit={props.onPhoneVerify}>
+                <p class="text-sm text-muted-foreground">
+                  {messageTranslate("account.profile.phoneCodeSent", { phoneNumber: props.phoneCandidate })}
+                </p>
+                <label class="grid gap-2 text-sm font-medium">
+                  {messageTranslate("account.profile.phoneCode")}
+                  <input
+                    autocomplete="one-time-code"
+                    class="rounded-lg border border-line bg-background px-3 py-2.5"
+                    inputmode="numeric"
+                    maxlength={6}
+                    pattern="[0-9]{6}"
+                    required
+                    value={props.phoneCode}
+                    onInput={(event) => props.onPhoneCodeInput(event.currentTarget.value)}
+                  />
+                </label>
+                <div class="flex flex-wrap justify-end gap-3">
+                  <button
+                    class="rounded-lg border border-line px-4 py-2.5 font-semibold"
+                    type="button"
+                    onClick={props.onPhoneCancel}
+                  >
+                    {messageTranslate("account.profile.phoneDifferent")}
+                  </button>
+                  <button
+                    class="rounded-lg border border-line px-4 py-2.5 font-semibold"
+                    disabled={props.phoneStatus === "sending" || props.phoneStatus === "verifying"}
+                    type="button"
+                    onClick={props.onPhoneResend}
+                  >
+                    {props.phoneStatus === "sending"
+                      ? messageTranslate("account.profile.phoneSending")
+                      : messageTranslate("account.profile.phoneResend")}
+                  </button>
+                  <button
+                    class="rounded-lg bg-accent px-4 py-2.5 font-semibold text-accent-contrast disabled:opacity-60"
+                    disabled={props.phoneStatus === "verifying" || props.phoneStatus === "sending"}
+                    type="submit"
+                  >
+                    {props.phoneStatus === "verifying"
+                      ? messageTranslate("account.profile.phoneVerifying")
+                      : messageTranslate("account.profile.phoneVerify")}
+                  </button>
+                </div>
+              </form>
+            </Show>
+            <Show when={props.phoneValidationMessage}>
+              {(message) => <p class="mt-4 text-sm text-danger">{message()}</p>}
+            </Show>
+            <Show when={props.phoneErrorMessage}>
+              {(message) => (
+                <p class="mt-4 text-sm text-danger" role="alert">
+                  {message()}
+                </p>
+              )}
+            </Show>
+            <Show when={props.phoneStatus === "success"}>
+              <p class="mt-4 text-sm font-medium text-success" role="status">
+                {messageTranslate("account.profile.phoneSaved")}
+              </p>
+            </Show>
+          </section>
+
           <form class="rounded-xl border border-line bg-surface p-5 shadow-sm sm:p-7" onSubmit={props.onSubmit}>
             <h2 class="text-xl font-semibold">{messageTranslate("account.profile.personalInformation")}</h2>
             <p class="mt-1 text-sm text-muted-foreground">{messageTranslate("account.profile.personalDescription")}</p>

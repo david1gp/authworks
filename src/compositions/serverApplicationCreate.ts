@@ -4,9 +4,6 @@ import type { MailDeliveryPort } from "../features/email/domain/mailDeliveryPort
 import { emailDeliveryCallbacksCreate } from "../features/email/server/emailDeliveryCallbacksCreate.js"
 import type { EmailGeneratorServerConfiguration } from "../features/email/server/emailGeneratorServerConfiguration.js"
 import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpServerAppCreate.js"
-import { whatsappOtpServerAppCreate } from "../features/whatsappOtp/server/whatsappOtpServerAppCreate.js"
-import { whatsappOtpAvailabilityCreate } from "../features/whatsappOtp/server/whatsappOtpAvailabilityCreate.js"
-import type { WhatsappOtpAvailabilityPort } from "../features/whatsappOtp/domain/whatsappOtpAvailabilityPort.js"
 import { eventServerAppCreate } from "../features/events/server/eventServerAppCreate.js"
 import type { ExternalIdentityProviderPorts } from "../features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
@@ -17,25 +14,28 @@ import { oidcServerAppCreate } from "../features/oidc/server/oidcServerAppCreate
 import type { OrganizationDomainDnsVerificationPort } from "../features/organizations/domain/organizationDomainDnsVerificationPort.js"
 import { organizationServerAppCreate } from "../features/organizations/server/organizationServerAppCreate.js"
 import { passkeyServerAppCreate } from "../features/passkeys/server/passkeyServerAppCreate.js"
+import { passwordRegistrationRateLimitSecretValidate } from "../features/passwords/domain/passwordRegistrationRateLimitSecretValidate.js"
+import type { PasswordWhatsappDeliveryPort } from "../features/passwords/domain/passwordWhatsappDeliveryPort.js"
 import type { PasswordRecoveryDelivery } from "../features/passwords/public/passwordRecoveryDeliverySchema.js"
 import type { PasswordRegistrationDelivery } from "../features/passwords/public/passwordRegistrationDeliverySchema.js"
-import type { PasswordWhatsappDeliveryPort } from "../features/passwords/domain/passwordWhatsappDeliveryPort.js"
-import { passwordRegistrationRateLimitSecretValidate } from "../features/passwords/domain/passwordRegistrationRateLimitSecretValidate.js"
 import { passwordServerAppCreate } from "../features/passwords/server/passwordServerAppCreate.js"
-import type { WahaDeliveryPort } from "../features/waha/domain/wahaDeliveryPort.js"
 import { projectServerAppCreate } from "../features/projects/server/projectServerAppCreate.js"
 import { realmServerAppCreate } from "../features/realms/server/realmServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/actions/sessionPasswordCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
 import { userServerAppCreate } from "../features/users/server/userServerAppCreate.js"
+import type { WahaDeliveryPort } from "../features/waha/domain/wahaDeliveryPort.js"
 import { wahaHealthCandidateRepositoryCreate } from "../features/waha/persistence/wahaHealthCandidateRepositoryCreate.js"
-import { wahaHealthPortCreate } from "../features/waha/server/wahaHealthPortCreate.js"
-import { wahaDeliveryPortCreate } from "../features/waha/server/wahaDeliveryPortCreate.js"
 import type { WahaConfiguration } from "../features/waha/server/wahaConfiguration.js"
+import { wahaDeliveryPortCreate } from "../features/waha/server/wahaDeliveryPortCreate.js"
 import { wahaHealthCandidateReaderCreate } from "../features/waha/server/wahaHealthCandidateReaderCreate.js"
+import { wahaHealthPortCreate } from "../features/waha/server/wahaHealthPortCreate.js"
 import { wahaHealthRefreshLifecycleCreate } from "../features/waha/server/wahaHealthRefreshLifecycleCreate.js"
 import { wahaHealthRegistryCreate } from "../features/waha/server/wahaHealthRegistryCreate.js"
 import { wahaTextDeliveryCreate } from "../features/waha/server/wahaTextDeliveryCreate.js"
+import type { WhatsappOtpAvailabilityPort } from "../features/whatsappOtp/domain/whatsappOtpAvailabilityPort.js"
+import { whatsappOtpAvailabilityCreate } from "../features/whatsappOtp/server/whatsappOtpAvailabilityCreate.js"
+import { whatsappOtpServerAppCreate } from "../features/whatsappOtp/server/whatsappOtpServerAppCreate.js"
 import { resultCreate } from "../platform/errors/resultCreate.js"
 import { healthServerAppCreate } from "../platform/http/healthServerAppCreate.js"
 import { uiStaticServerAppCreate } from "../platform/http/uiStaticServerAppCreate.js"
@@ -151,6 +151,7 @@ export function serverApplicationCreate(
         options.clientIpResolve === undefined ? undefined : (context) => options.clientIpResolve?.(context.req.raw),
       database: database.data,
       delivery: whatsappDelivery,
+      publicOrigin,
       rateLimitSecret: options.systemSecret,
       trustedProxyAddresses: options.trustedProxyAddresses,
       availability: whatsappAvailability,

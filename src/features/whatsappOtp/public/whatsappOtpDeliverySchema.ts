@@ -5,7 +5,7 @@ export const whatsappOtpDeliverySchema = v.strictObject({
   code: v.pipe(v.string(), v.regex(/^\d{6}$/)),
   expiresAt: v.pipe(v.number(), v.integer(), v.minValue(0)),
   phoneNumber: v.pipe(v.string(), v.regex(/^\+[1-9]\d{1,14}$/)),
-  purpose: v.literal("sign_in"),
+  purpose: v.picklist(["sign_in", "account_phone_change"]),
   realmId: v.pipe(v.string(), v.minLength(1)),
   userId: v.pipe(v.string(), v.minLength(1)),
 })

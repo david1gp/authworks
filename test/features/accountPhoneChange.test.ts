@@ -5,16 +5,22 @@ import { join } from "node:path"
 import * as v from "valibot"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { userCreate } from "../../src/features/users/actions/userCreate.js"
 import { userPhoneNumberChange } from "../../src/features/users/actions/userPhoneNumberChange.js"
-import { userPhoneNumberChangedEventPayloadSchema } from "../../src/features/users/events/userPhoneNumberChangedEventPayloadSchema.js"
 import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
+import { userPhoneNumberChangedEventPayloadSchema } from "../../src/features/users/events/userPhoneNumberChangedEventPayloadSchema.js"
 import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
-import { whatsappOtpPhoneHashCreate } from "../../src/features/whatsappOtp/domain/whatsappOtpPhoneHashCreate.js"
+import { whatsappOtpPhoneChangeResend } from "../../src/features/whatsappOtp/actions/whatsappOtpPhoneChangeResend.js"
+import { whatsappOtpPhoneChangeStart } from "../../src/features/whatsappOtp/actions/whatsappOtpPhoneChangeStart.js"
+import { whatsappOtpPhoneChangeVerify } from "../../src/features/whatsappOtp/actions/whatsappOtpPhoneChangeVerify.js"
+import type { WhatsappOtpAvailabilityPort } from "../../src/features/whatsappOtp/domain/whatsappOtpAvailabilityPort.js"
 import { whatsappOtpPhoneChangePurpose } from "../../src/features/whatsappOtp/domain/whatsappOtpPhoneChangePurpose.js"
+import { whatsappOtpPhoneHashCreate } from "../../src/features/whatsappOtp/domain/whatsappOtpPhoneHashCreate.js"
+import { whatsappOtpRepositoryCreate } from "../../src/features/whatsappOtp/persistence/whatsappOtpRepositoryCreate.js"
+import { whatsappOtpPhoneChangeResendRequestSchema } from "../../src/features/whatsappOtp/public/whatsappOtpPhoneChangeResendRequestSchema.js"
 import { whatsappOtpPhoneChangeStartRequestSchema } from "../../src/features/whatsappOtp/public/whatsappOtpPhoneChangeStartRequestSchema.js"
 import { whatsappOtpPhoneChangeVerifyRequestSchema } from "../../src/features/whatsappOtp/public/whatsappOtpPhoneChangeVerifyRequestSchema.js"
-import { whatsappOtpRepositoryCreate } from "../../src/features/whatsappOtp/persistence/whatsappOtpRepositoryCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
@@ -33,17 +39,76 @@ async function withDatabase<T>(operation: (database: StorageDatabase) => Promise
   }
 }
 
+const available: WhatsappOtpAvailabilityPort = {
+  whatsappOtpAvailabilityGet: () => ({ data: { available: true }, success: true }),
+}
+
+async function createAuthenticatedPhoneUser(
+  database: StorageDatabase,
+  email: string,
+  phoneNumber: string,
+  existingRealm?: { readonly id: string },
+) {
+  const realm =
+    existingRealm ??
+    (() => {
+      const created = realmCreate({
+        context: realmSystemContextCreate(),
+        database,
+        input: { domain: `${email.replace("@", "-")}.example.com`, name: email },
+      })
+      expect(created.success).toBe(true)
+      if (!created.success) throw new Error(created.errorMessage)
+      return created.data.realm
+    })()
+  const created = userCreate({
+    context: realmSystemContextCreate(),
+    database,
+    input: { email, phoneNumber, profile: {}, userName: email.split("@")[0] ?? "phone-user" },
+    realmId: realm.id,
+  })
+  expect(created.success).toBe(true)
+  if (!created.success) throw new Error(created.errorMessage)
+  const repository = userRepositoryCreate(database.db)
+  const current = repository.userGet(realm.id, created.data.user.id)
+  expect(current.success).toBe(true)
+  if (!current.success || current.data === null) throw new Error("The phone user was not created")
+  const updated = repository.userUpdate(realm.id, created.data.user.id, {
+    phoneNumberVerifiedAt: database.runtime.now(),
+    state: "active",
+    updatedAt: database.runtime.now(),
+    version: current.data.version + 1,
+  })
+  expect(updated.success).toBe(true)
+  return {
+    context: realmTenantContextCreate(realm.id, created.data.user.id),
+    realm,
+    userId: created.data.user.id,
+  }
+}
+
 test("account phone-change contracts are strict and require a candidate E.164 number", () => {
   expect(v.safeParse(whatsappOtpPhoneChangeStartRequestSchema, { phoneNumber: "+14155552671" }).success).toBe(true)
   expect(v.safeParse(whatsappOtpPhoneChangeStartRequestSchema, { phoneNumber: "4155552671" }).success).toBe(false)
   expect(
-    v.safeParse(whatsappOtpPhoneChangeVerifyRequestSchema, { challengeId: "challenge", code: "123456" }).success,
+    v.safeParse(whatsappOtpPhoneChangeResendRequestSchema, {
+      challengeId: "challenge",
+      phoneNumber: "+14155552671",
+    }).success,
+  ).toBe(true)
+  expect(
+    v.safeParse(whatsappOtpPhoneChangeVerifyRequestSchema, {
+      challengeId: "challenge",
+      code: "123456",
+      phoneNumber: "+14155552671",
+    }).success,
   ).toBe(true)
   expect(
     v.safeParse(whatsappOtpPhoneChangeVerifyRequestSchema, {
       challengeId: "challenge",
       code: "123456",
       organizationId: "unexpected",
+      phoneNumber: "+14155552671",
     }).success,
   ).toBe(false)
 })
@@ -169,5 +234,164 @@ test("verified phone replacement updates the user and redacted event atomically"
     expect(payload.success).toBe(true)
     if (payload.success) expect(payload.output).toEqual({ verified: true })
     expect(event.payload).not.toContain("+14155552673")
+
+    database.sqlite.run(
+      `CREATE TRIGGER reject_phone_change_events BEFORE INSERT ON events WHEN NEW.event_type = '${userEventTypes.phoneNumberChanged}' BEGIN SELECT RAISE(ABORT, 'event rejected'); END`,
+    )
+    const rolledBack = userPhoneNumberChange({
+      context: realmSystemContextCreate("account-user"),
+      database,
+      input: { phoneNumber: "+14155552674" },
+      realmId: realm.data.realm.id,
+      userId: first.data.user.id,
+    })
+    expect(rolledBack.success).toBe(false)
+    expect(repository.userGet(realm.data.realm.id, first.data.user.id)).toMatchObject({
+      success: true,
+      data: { phoneNumber: "+14155552673" },
+    })
+    expect(
+      database.sqlite
+        .query("SELECT COUNT(*) AS count FROM events WHERE event_type = ?")
+        .get(userEventTypes.phoneNumberChanged),
+    ).toEqual({ count: 1 })
+  })
+})
+
+test("authenticated phone-change actions bind the challenge and issue no session", async () => {
+  await withDatabase(async (database) => {
+    const first = await createAuthenticatedPhoneUser(database, "action-first@example.com", "+14155552671")
+    const second = await createAuthenticatedPhoneUser(
+      database,
+      "action-second@example.com",
+      "+14155552672",
+      first.realm,
+    )
+    const candidate = "+14155552673"
+    let firstDelivery: { challengeId: string; code: string } | undefined
+    const started = whatsappOtpPhoneChangeStart({
+      availability: available,
+      context: first.context,
+      database,
+      input: { phoneNumber: candidate },
+      onDelivery: ({ challengeId, code }) => {
+        firstDelivery = { challengeId, code }
+      },
+      rateLimitSecret: "account-phone-action-secret",
+      realmId: first.realm.id,
+      userId: first.userId,
+    })
+    expect(started.success).toBe(true)
+    expect(firstDelivery).toBeDefined()
+    if (!started.success || firstDelivery === undefined) return
+
+    const wrongUser = whatsappOtpPhoneChangeVerify({
+      availability: available,
+      context: second.context,
+      database,
+      input: { challengeId: firstDelivery.challengeId, code: firstDelivery.code, phoneNumber: candidate },
+      rateLimitSecret: "account-phone-action-secret",
+      realmId: second.realm.id,
+      userId: second.userId,
+    })
+    expect(wrongUser).toMatchObject({ code: "whatsapp-otp.invalid", success: false })
+    expect(
+      database.sqlite
+        .query("SELECT consumed_at FROM whatsapp_otp_challenges WHERE id = ?")
+        .get(firstDelivery.challengeId),
+    ).toEqual({ consumed_at: null })
+
+    const verified = whatsappOtpPhoneChangeVerify({
+      availability: available,
+      context: first.context,
+      database,
+      input: { challengeId: firstDelivery.challengeId, code: firstDelivery.code, phoneNumber: candidate },
+      rateLimitSecret: "account-phone-action-secret",
+      realmId: first.realm.id,
+      userId: first.userId,
+    })
+    expect(verified).toMatchObject({ success: true, data: { user: { phoneNumber: candidate } } })
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM sessions").get()).toEqual({ count: 0 })
+  })
+})
+
+test("phone-change resend delivers a replacement and conflicts preserve the old phone", async () => {
+  await withDatabase(async (database) => {
+    const first = await createAuthenticatedPhoneUser(database, "conflict-first@example.com", "+14155552674")
+    const second = await createAuthenticatedPhoneUser(
+      database,
+      "conflict-second@example.com",
+      "+14155552675",
+      first.realm,
+    )
+    const candidate = "+14155552675"
+    let firstDelivery: { challengeId: string; code: string } | undefined
+    const started = whatsappOtpPhoneChangeStart({
+      availability: available,
+      context: first.context,
+      database,
+      input: { phoneNumber: candidate },
+      onDelivery: ({ challengeId, code }) => {
+        firstDelivery = { challengeId, code }
+      },
+      rateLimitSecret: "account-phone-conflict-secret",
+      realmId: first.realm.id,
+      userId: first.userId,
+    })
+    expect(started.success).toBe(true)
+    expect(firstDelivery).toBeDefined()
+    if (!started.success || firstDelivery === undefined) return
+
+    const resentDelivery: { challengeId: string; code: string }[] = []
+    const resent = whatsappOtpPhoneChangeResend({
+      availability: available,
+      context: first.context,
+      database,
+      input: { challengeId: firstDelivery.challengeId, phoneNumber: candidate },
+      onDelivery: ({ challengeId, code }) => {
+        resentDelivery.push({ challengeId, code })
+      },
+      rateLimitSecret: "account-phone-conflict-secret",
+      realmId: first.realm.id,
+      userId: first.userId,
+    })
+    expect(resent.success).toBe(true)
+    expect(resentDelivery).toHaveLength(0)
+
+    database.sqlite.query("UPDATE whatsapp_otp_challenges SET cooldown_until = 0 WHERE user_id = ?").run(first.userId)
+    const replacement = whatsappOtpPhoneChangeResend({
+      availability: available,
+      context: first.context,
+      database,
+      input: { challengeId: firstDelivery.challengeId, phoneNumber: candidate },
+      onDelivery: ({ challengeId, code }) => {
+        resentDelivery.push({ challengeId, code })
+      },
+      rateLimitSecret: "account-phone-conflict-secret",
+      realmId: first.realm.id,
+      userId: first.userId,
+    })
+    expect(replacement.success).toBe(true)
+    expect(resentDelivery).toHaveLength(1)
+    if (!replacement.success || resentDelivery[0] === undefined) return
+
+    const conflict = whatsappOtpPhoneChangeVerify({
+      availability: available,
+      context: first.context,
+      database,
+      input: { challengeId: resentDelivery[0].challengeId, code: resentDelivery[0].code, phoneNumber: candidate },
+      rateLimitSecret: "account-phone-conflict-secret",
+      realmId: first.realm.id,
+      userId: first.userId,
+    })
+    expect(conflict).toMatchObject({ code: "users.conflict", success: false })
+    expect(userRepositoryCreate(database.db).userGet(first.realm.id, first.userId)).toMatchObject({
+      success: true,
+      data: { phoneNumber: "+14155552674" },
+    })
+    expect(userRepositoryCreate(database.db).userGet(second.realm.id, second.userId)).toMatchObject({
+      success: true,
+      data: { phoneNumber: candidate },
+    })
   })
 })

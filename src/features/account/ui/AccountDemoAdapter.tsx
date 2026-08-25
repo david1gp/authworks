@@ -66,9 +66,23 @@ export function AccountDemoAdapter(props: {
             onLastNameInput={page.lastName.set}
             onNickNameInput={page.nickName.set}
             onPreferredLanguageInput={page.preferredLanguage.set}
+            onPhoneCancel={page.phoneChangeCancel}
+            onPhoneCodeInput={page.phoneCode.set}
+            onPhoneInput={page.phoneCandidate.set}
+            onPhoneResend={page.phoneChangeResend}
+            onPhoneStart={page.phoneChangeStart}
+            onPhoneVerify={page.phoneChangeVerify}
             onRetry={page.load}
             onSubmit={page.profileSubmit}
             preferredLanguage={page.preferredLanguage.get()}
+            phoneCandidate={page.phoneCandidate.get()}
+            phoneChallengeActive={page.phoneChallengeId.get() !== undefined}
+            phoneCode={page.phoneCode.get()}
+            phoneErrorMessage={page.phoneErrorMessage.get()}
+            phoneNumber={page.user.get()?.phoneNumber}
+            phoneStatus={page.phoneStatus.get()}
+            phoneValidationMessage={page.phoneValidationMessage.get()}
+            phoneVerified={page.user.get()?.phoneNumberVerifiedAt !== undefined}
             status={page.status.get()}
             userName={page.user.get()?.userName ?? ""}
             validationMessage={page.validationMessage.get()}

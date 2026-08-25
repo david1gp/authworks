@@ -6,6 +6,8 @@ export const accountDemoUserFixture: User = {
   emailVerified: true,
   emailVerifiedAt: 1_774_000_060_000,
   id: "019c1234-5678-7abc-8def-0123456789ab",
+  phoneNumber: "+14155552671",
+  phoneNumberVerifiedAt: 1_774_000_060_000,
   profile: {
     displayName: "Avery Stone",
     firstName: "Avery",

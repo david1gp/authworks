@@ -142,7 +142,13 @@ export function userRepositoryCreate(database: StorageExecutor) {
         if (profile === undefined)
           return resultErrorCreate("userPhoneNumberChange", "The user profile could not be read.", "users.read-failed")
         return resultCreate({ ...updated, profile })
-      } catch (_error) {
+      } catch (error: unknown) {
+        if (error instanceof Error && error.message.toLowerCase().includes("unique"))
+          return resultErrorCreate(
+            "userPhoneNumberChange",
+            "The user phone number is already verified by another user.",
+            "users.conflict",
+          )
         return resultErrorCreate(
           "userPhoneNumberChange",
           "The user phone number could not be changed.",

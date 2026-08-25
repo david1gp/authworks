@@ -10,7 +10,13 @@ type WhatsappOtpRateLimitConsumeOptions = {
   readonly clientIp: string
   readonly identifier: string
   readonly now: number
-  readonly operation: "resend" | "start" | "verify"
+  readonly operation:
+    | "resend"
+    | "start"
+    | "verify"
+    | "phone_change_resend"
+    | "phone_change_start"
+    | "phone_change_verify"
   readonly rateLimitSecret?: Secret | string
   readonly realmId: string
 }

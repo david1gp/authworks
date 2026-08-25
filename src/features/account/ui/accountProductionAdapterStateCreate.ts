@@ -5,6 +5,7 @@ import { productionRealmIdResolve } from "../../../ui/production/productionRealm
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { passwordApiClientCreate } from "../../passwords/client/passwordApiClientCreate.js"
 import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
+import { whatsappOtpApiClientCreate } from "../../whatsappOtp/client/whatsappOtpApiClientCreate.js"
 import { accountPageStateCreate } from "./accountPageStateCreate.js"
 
 export function accountProductionAdapterStateCreate(
@@ -27,6 +28,7 @@ export function accountProductionAdapterStateCreate(
   }
   const users = userApiClientCreate({ baseUrl })
   const passwords = passwordApiClientCreate({ baseUrl })
+  const whatsappOtp = whatsappOtpApiClientCreate({ baseUrl })
   return accountPageStateCreate({
     adapter: {
       deleteAccount: async () => users.userMeDelete(await realmIdResolve()),
@@ -41,6 +43,9 @@ export function accountProductionAdapterStateCreate(
           )
         return resultCreate(result.data)
       },
+      phoneChangeResend: async (input) => whatsappOtp.whatsappOtpPhoneChangeResend(await realmIdResolve(), input),
+      phoneChangeStart: async (input) => whatsappOtp.whatsappOtpPhoneChangeStart(await realmIdResolve(), input),
+      phoneChangeVerify: async (input) => whatsappOtp.whatsappOtpPhoneChangeVerify(await realmIdResolve(), input),
       updatePassword: async (input) => passwords.passwordMeChange(await realmIdResolve(), input),
       updateProfile: async (input) => users.userMeProfileUpdate(await realmIdResolve(), input),
     },

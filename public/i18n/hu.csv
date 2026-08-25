@@ -76,6 +76,25 @@ account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
+account.profile.phoneAdd,Add phone number
+account.profile.phoneChange,Change phone number
+account.profile.phoneCode,Six-digit verification code
+account.profile.phoneCodeInvalid,Enter the six-digit verification code.
+account.profile.phoneCodeSent,Enter the code sent to {phoneNumber} on WhatsApp.
+account.profile.phoneDescription,"Add or change the verified WhatsApp number you can use to sign in. Your current number stays active until the new one is verified."
+account.profile.phoneDifferent,Use a different number
+account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
+account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
+account.profile.phoneNew,New phone number
+account.profile.phoneNotAdded,No verified phone number added
+account.profile.phoneNumber,WhatsApp phone number
+account.profile.phonePlaceholder,+14155552671
+account.profile.phoneResend,Resend code
+account.profile.phoneSaved,Your verified phone number was updated.
+account.profile.phoneSending,Sending code…
+account.profile.phoneTitle,WhatsApp phone number
+account.profile.phoneVerify,Verify phone number
+account.profile.phoneVerifying,Verifying…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.

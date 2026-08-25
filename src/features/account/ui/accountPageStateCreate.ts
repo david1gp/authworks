@@ -1,4 +1,5 @@
 import { onMount } from "solid-js"
+import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -6,11 +7,25 @@ import type { PasswordMeChangeResponse } from "../../passwords/public/passwordMe
 import type { UserProfileUpdateRequest } from "../../users/public/userProfileUpdateRequestSchema.js"
 import type { UserResponse } from "../../users/public/userResponseSchema.js"
 import type { User } from "../../users/public/userSchema.js"
+import { whatsappOtpPhoneChangeStartRequestSchema } from "../../whatsappOtp/public/whatsappOtpPhoneChangeStartRequestSchema.js"
+import type { WhatsappOtpPhoneChangeStartResponse } from "../../whatsappOtp/public/whatsappOtpPhoneChangeStartResponseSchema.js"
+import { whatsappOtpPhoneChangeVerifyRequestSchema } from "../../whatsappOtp/public/whatsappOtpPhoneChangeVerifyRequestSchema.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
+import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
 
 type AccountPageAdapter = {
   readonly deleteAccount: () => Promise<Result<UserResponse>>
   readonly loadUser: () => Promise<Result<UserResponse>>
+  readonly phoneChangeResend: (input: {
+    challengeId: string
+    phoneNumber: string
+  }) => Promise<Result<WhatsappOtpPhoneChangeStartResponse>>
+  readonly phoneChangeStart: (input: { phoneNumber: string }) => Promise<Result<WhatsappOtpPhoneChangeStartResponse>>
+  readonly phoneChangeVerify: (input: {
+    challengeId: string
+    code: string
+    phoneNumber: string
+  }) => Promise<Result<UserResponse>>
   readonly updatePassword: (input: {
     currentPassword: string
     newPassword: string
@@ -36,6 +51,12 @@ export function accountPageStateCreate(options: {
   const newPassword = createSignalObject("")
   const confirmPassword = createSignalObject("")
   const deletionConfirmation = createSignalObject("")
+  const phoneCandidate = createSignalObject("")
+  const phoneChallengeId = createSignalObject<string | undefined>(undefined)
+  const phoneCode = createSignalObject("")
+  const phoneErrorMessage = createSignalObject<string | undefined>(undefined)
+  const phoneStatus = createSignalObject<AccountPhoneViewStatus>("idle")
+  const phoneValidationMessage = createSignalObject<string | undefined>(undefined)
 
   const resultFail = (result: { readonly errorMessage: string }) => {
     errorMessage.set(result.errorMessage)
@@ -112,6 +133,76 @@ export function accountPageStateCreate(options: {
     userApply(result.data.user)
     status.set("success")
   }
+  const phoneOperationPrepare = () => {
+    phoneErrorMessage.set(undefined)
+    phoneValidationMessage.set(undefined)
+  }
+  const phoneChangeStart = async (event: SubmitEvent) => {
+    event.preventDefault()
+    phoneOperationPrepare()
+    const parsed = v.safeParse(whatsappOtpPhoneChangeStartRequestSchema, {
+      phoneNumber: phoneCandidate.get().trim(),
+    })
+    if (!parsed.success) {
+      phoneValidationMessage.set(messageTranslate("account.profile.phoneInvalid"))
+      return
+    }
+    phoneCandidate.set(parsed.output.phoneNumber)
+    phoneStatus.set("sending")
+    const result = await options.adapter.phoneChangeStart(parsed.output)
+    if (!result.success) {
+      phoneErrorMessage.set(result.errorMessage)
+      phoneStatus.set("error")
+      return
+    }
+    phoneChallengeId.set(result.data.challengeId)
+    phoneStatus.set("code")
+  }
+  const phoneChangeResend = async () => {
+    const challengeId = phoneChallengeId.get()
+    if (challengeId === undefined) return
+    phoneOperationPrepare()
+    phoneStatus.set("sending")
+    const result = await options.adapter.phoneChangeResend({ challengeId, phoneNumber: phoneCandidate.get() })
+    if (!result.success) {
+      phoneErrorMessage.set(result.errorMessage)
+      phoneStatus.set("error")
+      return
+    }
+    phoneChallengeId.set(result.data.challengeId)
+    phoneStatus.set("code")
+  }
+  const phoneChangeVerify = async (event: SubmitEvent) => {
+    event.preventDefault()
+    phoneOperationPrepare()
+    const parsed = v.safeParse(whatsappOtpPhoneChangeVerifyRequestSchema, {
+      challengeId: phoneChallengeId.get(),
+      code: phoneCode.get().trim(),
+      phoneNumber: phoneCandidate.get(),
+    })
+    if (!parsed.success) {
+      phoneValidationMessage.set(messageTranslate("account.profile.phoneCodeInvalid"))
+      return
+    }
+    phoneStatus.set("verifying")
+    const result = await options.adapter.phoneChangeVerify(parsed.output)
+    if (!result.success) {
+      phoneErrorMessage.set(result.errorMessage)
+      phoneStatus.set("error")
+      return
+    }
+    userApply(result.data.user)
+    phoneCandidate.set("")
+    phoneChallengeId.set(undefined)
+    phoneCode.set("")
+    phoneStatus.set("success")
+  }
+  const phoneChangeCancel = () => {
+    phoneChallengeId.set(undefined)
+    phoneCode.set("")
+    phoneOperationPrepare()
+    phoneStatus.set("idle")
+  }
 
   onMount(() => void load())
   return {
@@ -127,6 +218,16 @@ export function accountPageStateCreate(options: {
     newPassword,
     nickName,
     passwordSubmit,
+    phoneCandidate,
+    phoneChallengeId,
+    phoneChangeCancel,
+    phoneChangeResend,
+    phoneChangeStart,
+    phoneChangeVerify,
+    phoneCode,
+    phoneErrorMessage,
+    phoneStatus,
+    phoneValidationMessage,
     preferredLanguage,
     profileSubmit,
     status,

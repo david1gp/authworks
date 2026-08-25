@@ -2,29 +2,41 @@ import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
 import type { Result } from "#result"
-import { resultErrorDetailsParse } from "../../../platform/errors/resultErrorDetailsParse.js"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { resultErrorDetailsParse } from "../../../platform/errors/resultErrorDetailsParse.js"
 import { httpResultResponseCreate } from "../../../platform/http/httpResultResponseCreate.js"
 import { trustedProxyIpResolve } from "../../../platform/http/trustedProxyIpResolve.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
 import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
+import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
+import { whatsappOtpPhoneChangeResend } from "../actions/whatsappOtpPhoneChangeResend.js"
+import { whatsappOtpPhoneChangeStart } from "../actions/whatsappOtpPhoneChangeStart.js"
+import { whatsappOtpPhoneChangeVerify } from "../actions/whatsappOtpPhoneChangeVerify.js"
 import { whatsappOtpResend } from "../actions/whatsappOtpResend.js"
 import { whatsappOtpStart } from "../actions/whatsappOtpStart.js"
 import { whatsappOtpVerify } from "../actions/whatsappOtpVerify.js"
+import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
+import type { WhatsappOtpDeliveryPort } from "../domain/whatsappOtpDeliveryPort.js"
+import type { WhatsappOtpAvailabilityResponse } from "../public/whatsappOtpAvailabilityResponseSchema.js"
 import type { WhatsappOtpDelivery } from "../public/whatsappOtpDeliverySchema.js"
+import { whatsappOtpPhoneChangeResendRequestSchema } from "../public/whatsappOtpPhoneChangeResendRequestSchema.js"
+import { whatsappOtpPhoneChangeStartRequestSchema } from "../public/whatsappOtpPhoneChangeStartRequestSchema.js"
+import { whatsappOtpPhoneChangeVerifyRequestSchema } from "../public/whatsappOtpPhoneChangeVerifyRequestSchema.js"
 import { whatsappOtpResendRequestSchema } from "../public/whatsappOtpResendRequestSchema.js"
 import type { WhatsappOtpSecurityNotification } from "../public/whatsappOtpSecurityNotificationSchema.js"
 import { whatsappOtpStartRequestSchema } from "../public/whatsappOtpStartRequestSchema.js"
 import { whatsappOtpVerifyRequestSchema } from "../public/whatsappOtpVerifyRequestSchema.js"
-import type { WhatsappOtpDeliveryPort } from "../domain/whatsappOtpDeliveryPort.js"
-import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
-import type { WhatsappOtpAvailabilityResponse } from "../public/whatsappOtpAvailabilityResponseSchema.js"
 
 type WhatsappOtpRouteContext = {
+  get: (key: "authorizationActor") => AuthorizationActorContext
   json: (body: unknown, status?: ContentfulStatusCode) => Response
   req: {
     header: (name: string) => string | undefined
@@ -42,13 +54,27 @@ type WhatsappOtpServerAppCreateOptions = {
   readonly delivery?: WhatsappOtpDeliveryPort
   readonly onDelivery?: (delivery: WhatsappOtpDelivery) => void | Promise<void>
   readonly onSecurityNotification?: (notification: WhatsappOtpSecurityNotification) => void | Promise<void>
+  readonly publicOrigin?: string
   readonly rateLimitSecret?: Secret | string
   readonly trustedProxyAddresses?: readonly string[]
   readonly availability: WhatsappOtpAvailabilityPort
 }
 
+type WhatsappOtpServerEnv = {
+  Variables: {
+    authorizationActor: AuthorizationActorContext
+    cookieAuthenticated: boolean
+    session: Session
+  }
+}
+
 export function whatsappOtpServerAppCreate(options: WhatsappOtpServerAppCreateOptions) {
-  const app = new Hono()
+  const app = new Hono<WhatsappOtpServerEnv>()
+  const authenticatedMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    minimumAssurance: "authenticated",
+    publicOrigin: options.publicOrigin,
+  })
 
   app.get("/realms/:realmId/whatsapp-otp/availability", (context) => {
     const tenant = whatsappOtpTenantContextResolve(
@@ -64,6 +90,103 @@ export function whatsappOtpServerAppCreate(options: WhatsappOtpServerAppCreateOp
       realmId: context.req.param("realmId"),
     })
     return whatsappOtpAvailabilityResponseCreate(context, availability)
+  })
+
+  app.post("/realms/:realmId/me/phone-change/start", authenticatedMiddleware, async (context) => {
+    const subject = whatsappOtpPhoneChangeSubjectContextResolve(context, options.database)
+    if (!subject.success) return whatsappOtpErrorResponseCreate(context, subject)
+    const body = await whatsappOtpRequestJsonRead(context)
+    if (!body.success) return whatsappOtpErrorResponseCreate(context, body)
+    const input = v.safeParse(whatsappOtpPhoneChangeStartRequestSchema, body.data)
+    if (!input.success)
+      return whatsappOtpErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "whatsappOtpPhoneChangeStart",
+          "The account phone-change request is invalid.",
+          "whatsapp-otp.invalid",
+        ),
+      )
+    return whatsappOtpResultResponseCreate(
+      context,
+      whatsappOtpPhoneChangeStart({
+        availability: options.availability,
+        clientIp: whatsappOtpTrustedClientIpGet(context, options),
+        context: subject.data,
+        database: options.database,
+        delivery: options.delivery,
+        input: input.output,
+        onDelivery: options.onDelivery,
+        onSecurityNotification: options.onSecurityNotification,
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/phone-change/resend", authenticatedMiddleware, async (context) => {
+    const subject = whatsappOtpPhoneChangeSubjectContextResolve(context, options.database)
+    if (!subject.success) return whatsappOtpErrorResponseCreate(context, subject)
+    const body = await whatsappOtpRequestJsonRead(context)
+    if (!body.success) return whatsappOtpErrorResponseCreate(context, body)
+    const input = v.safeParse(whatsappOtpPhoneChangeResendRequestSchema, body.data)
+    if (!input.success)
+      return whatsappOtpErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "whatsappOtpPhoneChangeResend",
+          "The account phone-change request is invalid.",
+          "whatsapp-otp.invalid",
+        ),
+      )
+    return whatsappOtpResultResponseCreate(
+      context,
+      whatsappOtpPhoneChangeResend({
+        availability: options.availability,
+        clientIp: whatsappOtpTrustedClientIpGet(context, options),
+        context: subject.data,
+        database: options.database,
+        delivery: options.delivery,
+        input: input.output,
+        onDelivery: options.onDelivery,
+        onSecurityNotification: options.onSecurityNotification,
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/phone-change/verify", authenticatedMiddleware, async (context) => {
+    const subject = whatsappOtpPhoneChangeSubjectContextResolve(context, options.database)
+    if (!subject.success) return whatsappOtpErrorResponseCreate(context, subject)
+    const body = await whatsappOtpRequestJsonRead(context)
+    if (!body.success) return whatsappOtpErrorResponseCreate(context, body)
+    const input = v.safeParse(whatsappOtpPhoneChangeVerifyRequestSchema, body.data)
+    if (!input.success)
+      return whatsappOtpErrorResponseCreate(
+        context,
+        resultErrorCodedCreate(
+          "whatsappOtpPhoneChangeVerify",
+          "The account phone-change code is invalid.",
+          "whatsapp-otp.invalid",
+        ),
+      )
+    return whatsappOtpResultResponseCreate(
+      context,
+      whatsappOtpPhoneChangeVerify({
+        availability: options.availability,
+        clientIp: whatsappOtpTrustedClientIpGet(context, options),
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        onSecurityNotification: options.onSecurityNotification,
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
   })
 
   app.post("/realms/:realmId/whatsapp-otp/start", async (context) => {
@@ -191,6 +314,23 @@ function whatsappOtpTenantContextResolve(
       success: false as const,
     }
   return tenant
+}
+
+function whatsappOtpPhoneChangeSubjectContextResolve(
+  context: WhatsappOtpRouteContext,
+  database: StorageDatabase,
+): Result<RealmTenantContext> {
+  const realmId = context.req.param("realmId")
+  const tenant = whatsappOtpTenantContextResolve(database, context.req.header("host"), context.req.url, realmId)
+  if (!tenant.success) return tenant
+  const actor = context.get("authorizationActor")
+  if (actor.kind !== "user" || actor.realmId !== realmId)
+    return resultErrorCodedCreate(
+      "whatsappOtpPhoneChangeSubjectContextResolve",
+      "An authenticated user is required for the account phone change.",
+      "whatsapp-otp.invalid",
+    )
+  return resultCreate({ ...tenant.data, actor, actorId: actor.actorId })
 }
 
 function whatsappOtpTrustedClientIpGet(

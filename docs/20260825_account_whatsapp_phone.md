@@ -25,11 +25,11 @@ Let a signed-in user add or change the phone number shown on `/account/profile`,
 
 ## Tasks
 
-- [ ] 1. Add phone-change public contracts, challenge persistence, and the atomic verified-phone mutation/event.
-- [ ] 2. Implement authenticated-user-bound WhatsApp phone-change start, resend, and verify actions.
-- [ ] 3. Add authenticated self-service routes and typed API client methods.
-- [ ] 4. Add account profile phone management UI, adapter state, copy, and demo behavior.
-- [ ] 5. Add production account end-to-end coverage and complete repository verification.
+- [x] 1. Add phone-change public contracts, challenge persistence, and the atomic verified-phone mutation/event.
+- [x] 2. Implement authenticated-user-bound WhatsApp phone-change start, resend, and verify actions.
+- [x] 3. Add authenticated self-service routes and typed API client methods.
+- [x] 4. Add account profile phone management UI, adapter state, copy, and demo behavior.
+- [x] 5. Add production account end-to-end coverage and complete repository verification.
 
 ## Paths
 
