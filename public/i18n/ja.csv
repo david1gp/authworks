@@ -75,6 +75,7 @@ account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailNew,New email address
@@ -1275,8 +1276,16 @@ shell.state.readyDetail,このページはコンテンツを表示する準備�
 login.chooser.whatsappOtpDetail,WhatsAppでワンタイムコードを受け取る
 login.chooser.whatsappOtpLabel,WhatsAppコード
 login.whatsappOtp.codeError,WhatsAppコードが正しくありません。
+login.whatsappOtp.codeDescription,{phoneNumber}にWhatsAppで送信されたコードを入力してください。
 login.whatsappOtp.codeTitle,WhatsApp確認コード
 login.whatsappOtp.description,パスワードを入力する代わりにWhatsAppでワンタイムコードを送信します。
+login.whatsappOtp.differentNumber,別の番号を使用
+login.whatsappOtp.phoneHint,国際E.164形式を使用してください（例：+14155552671）。
+login.whatsappOtp.phoneNumber,WhatsApp電話番号
+login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.resend,コードを再送信
 login.whatsappOtp.send,WhatsAppコードを送信
 login.whatsappOtp.sendError,WhatsAppコードを送信できませんでした。
+login.whatsappOtp.sending,コードを送信中…
 login.whatsappOtp.title,WhatsAppでログイン
+login.whatsappOtp.verifying,確認中…

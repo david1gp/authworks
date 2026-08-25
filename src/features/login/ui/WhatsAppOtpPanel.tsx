@@ -38,7 +38,7 @@ export function WhatsAppOtpPanel(props: WhatsAppOtpPanelProps) {
             ? messageTranslate("login.whatsappOtp.description")
             : props.phoneNumber.length === 0
               ? messageTranslate("login.emailOtp.codeHelp")
-              : messageTranslate("account.profile.phoneCodeSent", { phoneNumber: props.phoneNumber })
+              : messageTranslate("login.whatsappOtp.codeDescription", { phoneNumber: props.phoneNumber })
         }
         headingId="login-title"
         title={messageTranslate(props.step === "phone" ? "login.whatsappOtp.title" : "login.whatsappOtp.codeTitle")}
@@ -46,7 +46,7 @@ export function WhatsAppOtpPanel(props: WhatsAppOtpPanelProps) {
       <form class="mt-6 grid gap-5 sm:gap-4" novalidate onSubmit={props.onSubmit}>
         {props.step === "phone" ? (
           <div class="grid gap-2">
-            <Label for="whatsapp-otp-phone">{messageTranslate("account.profile.phoneNumber")}</Label>
+            <Label for="whatsapp-otp-phone">{messageTranslate("login.whatsappOtp.phoneNumber")}</Label>
             <Input
               aria-describedby="whatsapp-otp-phone-help"
               autocomplete="tel"
@@ -57,14 +57,14 @@ export function WhatsAppOtpPanel(props: WhatsAppOtpPanelProps) {
               name="phone-number"
               onInput={(event) => props.onPhoneNumber(event.currentTarget.value)}
               pattern="\+[1-9][0-9]{1,14}"
-              placeholder={messageTranslate("account.profile.phonePlaceholder")}
+              placeholder={messageTranslate("login.whatsappOtp.phonePlaceholder")}
               ref={props.phoneInputRegister}
               required
               type="tel"
               value={props.phoneNumber}
             />
             <p class="text-sm text-muted-foreground" id="whatsapp-otp-phone-help">
-              {messageTranslate("account.profile.phoneHint")}
+              {messageTranslate("login.whatsappOtp.phoneHint")}
             </p>
           </div>
         ) : (
@@ -95,7 +95,7 @@ export function WhatsAppOtpPanel(props: WhatsAppOtpPanelProps) {
           label={messageTranslate(props.step === "phone" ? "login.whatsappOtp.send" : "common.continue")}
           pending={props.pending}
           pendingLabel={messageTranslate(
-            props.step === "phone" ? "account.profile.phoneSending" : "account.profile.phoneVerifying",
+            props.step === "phone" ? "login.whatsappOtp.sending" : "login.whatsappOtp.verifying",
           )}
         />
       </form>
@@ -109,10 +109,10 @@ export function WhatsAppOtpPanel(props: WhatsAppOtpPanelProps) {
             type="button"
             variant="link"
           >
-            {messageTranslate("account.profile.phoneResend")}
+            {messageTranslate("login.whatsappOtp.resend")}
           </Button>
           <Button class="w-full" disabled={props.pending} onClick={props.onChangePhone} type="button" variant="link">
-            {messageTranslate("account.profile.phoneDifferent")}
+            {messageTranslate("login.whatsappOtp.differentNumber")}
           </Button>
         </div>
       ) : null}

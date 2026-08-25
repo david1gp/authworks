@@ -75,6 +75,7 @@ account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailNew,New email address
@@ -1275,8 +1276,16 @@ shell.state.readyDetail,هذه الصفحة جاهزة لمحتوى الميزة
 login.chooser.whatsappOtpDetail,استلام رمز لمرة واحدة عبر واتساب
 login.chooser.whatsappOtpLabel,رمز واتساب
 login.whatsappOtp.codeError,رمز واتساب غير صحيح.
+login.whatsappOtp.codeDescription,أدخل الرمز المرسل إلى {phoneNumber} عبر واتساب.
 login.whatsappOtp.codeTitle,رمز التحقق عبر واتساب
 login.whatsappOtp.description,سنرسل إليك رمزاً للاستخدام مرة واحدة عبر واتساب بدلاً من طلب كلمة مرور.
+login.whatsappOtp.differentNumber,استخدم رقمًا مختلفًا
+login.whatsappOtp.phoneHint,استخدم تنسيق E.164 الدولي، مثل +14155552671.
+login.whatsappOtp.phoneNumber,رقم هاتف واتساب
+login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.resend,إعادة إرسال الرمز
 login.whatsappOtp.send,إرسال رمز واتساب
 login.whatsappOtp.sendError,تعذر إرسال رمز واتساب.
+login.whatsappOtp.sending,جارٍ إرسال الرمز…
 login.whatsappOtp.title,تسجيل الدخول عبر واتساب
+login.whatsappOtp.verifying,جارٍ التحقق…

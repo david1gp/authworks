@@ -75,6 +75,7 @@ account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailNew,New email address
@@ -1275,8 +1276,16 @@ shell.state.readyDetail,Ця сторінка готова до показу в�
 login.chooser.whatsappOtpDetail,Отримати одноразовий код у WhatsApp
 login.chooser.whatsappOtpLabel,Код WhatsApp
 login.whatsappOtp.codeError,Код WhatsApp неправильний.
+login.whatsappOtp.codeDescription,"Введіть код, надісланий на номер {phoneNumber} у WhatsApp."
 login.whatsappOtp.codeTitle,Код підтвердження WhatsApp
 login.whatsappOtp.description,"Замість пароля ми надішлемо вам одноразовий код у WhatsApp."
+login.whatsappOtp.differentNumber,Використати інший номер
+login.whatsappOtp.phoneHint,"Використовуйте міжнародний формат E.164, наприклад +14155552671."
+login.whatsappOtp.phoneNumber,Номер телефону WhatsApp
+login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.resend,Надіслати код повторно
 login.whatsappOtp.send,Надіслати код WhatsApp
 login.whatsappOtp.sendError,Не вдалося надіслати код WhatsApp.
+login.whatsappOtp.sending,Надсилання коду…
 login.whatsappOtp.title,Увійти через WhatsApp
+login.whatsappOtp.verifying,Перевірка…

@@ -75,6 +75,7 @@ account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailNew,New email address
@@ -1275,8 +1276,16 @@ shell.state.readyDetail,Deze pagina is klaar voor inhoud.
 login.chooser.whatsappOtpDetail,Een eenmalige code via WhatsApp ontvangen
 login.chooser.whatsappOtpLabel,WhatsApp-code
 login.whatsappOtp.codeError,De WhatsApp-code is onjuist.
+login.whatsappOtp.codeDescription,Voer de code in die via WhatsApp naar {phoneNumber} is verzonden.
 login.whatsappOtp.codeTitle,WhatsApp-verificatiecode
 login.whatsappOtp.description,"We sturen u een eenmalige code via WhatsApp, in plaats van om een wachtwoord te vragen."
+login.whatsappOtp.differentNumber,Een ander nummer gebruiken
+login.whatsappOtp.phoneHint,"Gebruik de internationale E.164-notatie, bijvoorbeeld +14155552671."
+login.whatsappOtp.phoneNumber,WhatsApp-telefoonnummer
+login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.resend,Code opnieuw verzenden
 login.whatsappOtp.send,WhatsApp-code verzenden
 login.whatsappOtp.sendError,De WhatsApp-code kon niet worden verzonden.
+login.whatsappOtp.sending,Code verzenden…
 login.whatsappOtp.title,Inloggen met WhatsApp
+login.whatsappOtp.verifying,Verifiëren…

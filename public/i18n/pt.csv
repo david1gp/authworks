@@ -75,6 +75,7 @@ account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailNew,New email address
@@ -1275,8 +1276,16 @@ shell.state.readyDetail,Esta página está pronta para o seu conteúdo.
 login.chooser.whatsappOtpDetail,Receber um código de utilização única pelo WhatsApp
 login.chooser.whatsappOtpLabel,Código do WhatsApp
 login.whatsappOtp.codeError,O código do WhatsApp está incorreto.
+login.whatsappOtp.codeDescription,Introduza o código enviado para {phoneNumber} pelo WhatsApp.
 login.whatsappOtp.codeTitle,Código de verificação do WhatsApp
 login.whatsappOtp.description,"Enviaremos um código de utilização única pelo WhatsApp, em vez de pedir uma palavra-passe."
+login.whatsappOtp.differentNumber,Usar outro número
+login.whatsappOtp.phoneHint,"Use o formato internacional E.164, por exemplo +14155552671."
+login.whatsappOtp.phoneNumber,Número de telefone do WhatsApp
+login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.resend,Reenviar código
 login.whatsappOtp.send,Enviar código do WhatsApp
 login.whatsappOtp.sendError,Não foi possível enviar o código do WhatsApp.
+login.whatsappOtp.sending,A enviar código…
 login.whatsappOtp.title,Iniciar sessão com o WhatsApp
+login.whatsappOtp.verifying,A verificar…

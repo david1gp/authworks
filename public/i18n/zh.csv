@@ -75,6 +75,7 @@ account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailNew,New email address
@@ -1275,8 +1276,16 @@ shell.state.readyDetail,此页面已准备好展示功能内容。
 login.chooser.whatsappOtpDetail,通过 WhatsApp 接收一次性代码
 login.chooser.whatsappOtpLabel,WhatsApp 代码
 login.whatsappOtp.codeError,WhatsApp 代码不正确。
+login.whatsappOtp.codeDescription,请输入通过 WhatsApp 发送到 {phoneNumber} 的代码。
 login.whatsappOtp.codeTitle,WhatsApp 验证代码
 login.whatsappOtp.description,我们将通过 WhatsApp 向您发送一次性代码，无需输入密码。
+login.whatsappOtp.differentNumber,使用其他号码
+login.whatsappOtp.phoneHint,请使用国际 E.164 格式，例如 +14155552671。
+login.whatsappOtp.phoneNumber,WhatsApp 手机号码
+login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.resend,重新发送代码
 login.whatsappOtp.send,发送 WhatsApp 代码
 login.whatsappOtp.sendError,无法发送 WhatsApp 代码。
+login.whatsappOtp.sending,正在发送代码…
 login.whatsappOtp.title,使用 WhatsApp 登录
+login.whatsappOtp.verifying,正在验证…

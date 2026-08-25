@@ -75,6 +75,7 @@ account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailNew,New email address
@@ -1275,8 +1276,16 @@ shell.state.readyDetail,Ez az oldal készen áll a tartalomra.
 login.chooser.whatsappOtpDetail,Egyszer használatos kód fogadása WhatsAppon
 login.chooser.whatsappOtpLabel,WhatsApp-kód
 login.whatsappOtp.codeError,A WhatsApp-kód helytelen.
+login.whatsappOtp.codeDescription,Adja meg a(z) {phoneNumber} számra WhatsAppon küldött kódot.
 login.whatsappOtp.codeTitle,WhatsApp ellenőrző kód
 login.whatsappOtp.description,"Jelszó kérése helyett egyszer használatos kódot küldünk WhatsAppon."
+login.whatsappOtp.differentNumber,Másik szám használata
+login.whatsappOtp.phoneHint,"Használja a nemzetközi E.164 formátumot, például: +14155552671."
+login.whatsappOtp.phoneNumber,WhatsApp-telefonszám
+login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.resend,Kód újraküldése
 login.whatsappOtp.send,WhatsApp-kód küldése
 login.whatsappOtp.sendError,A WhatsApp-kódot nem sikerült elküldeni.
+login.whatsappOtp.sending,Kód küldése…
 login.whatsappOtp.title,Bejelentkezés WhatsAppal
+login.whatsappOtp.verifying,Ellenőrzés…

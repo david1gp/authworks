@@ -1,6 +1,20 @@
 import { describe, expect, test } from "bun:test"
+import { readFile } from "node:fs/promises"
 import { loginPrimaryMethodsGet } from "../../src/features/login/model/loginPrimaryMethodsGet.js"
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
+import { languagesSupported } from "../../src/ui/i18n/model/languagesSupported.js"
+import { translationCsvParse } from "../../src/ui/i18n/model/translationCsvParse.js"
+
+const whatsappScreenKeys = [
+  "login.whatsappOtp.codeDescription",
+  "login.whatsappOtp.differentNumber",
+  "login.whatsappOtp.phoneHint",
+  "login.whatsappOtp.phoneNumber",
+  "login.whatsappOtp.phonePlaceholder",
+  "login.whatsappOtp.resend",
+  "login.whatsappOtp.sending",
+  "login.whatsappOtp.verifying",
+] as const
 
 describe("login chooser reference copy", () => {
   test("keeps supported methods in reference order", () => {
@@ -40,6 +54,33 @@ describe("login chooser reference copy", () => {
     )
     expect(englishCatalog["login.whatsappOtp.codeTitle"]).toBe("WhatsApp verification code")
     expect(englishCatalog["login.whatsappOtp.send"]).toBe("Send WhatsApp code")
+    expect(englishCatalog["login.whatsappOtp.codeDescription"]).toBe(
+      "Enter the code sent to {phoneNumber} on WhatsApp.",
+    )
+    expect(englishCatalog["login.whatsappOtp.phoneNumber"]).toBe("WhatsApp phone number")
+    expect(englishCatalog["login.whatsappOtp.resend"]).toBe("Resend code")
+  })
+
+  test("localizes every WhatsApp login screen key in every catalog", async () => {
+    for (const { code } of languagesSupported) {
+      if (code === "en") continue
+
+      const csv = await readFile(new URL(`../../public/i18n/${code}.csv`, import.meta.url), "utf8")
+      const parsed = translationCsvParse(csv)
+      expect(parsed.success).toBe(true)
+      if (!parsed.success) continue
+
+      for (const key of whatsappScreenKeys) {
+        expect(parsed.data[key]).toBeDefined()
+        if (key === "login.whatsappOtp.phonePlaceholder") continue
+        expect(parsed.data[key]).not.toBe(englishCatalog[key])
+      }
+    }
+  })
+
+  test("keeps WhatsApp panel copy in the login catalog", async () => {
+    const panel = await readFile(new URL("../../src/features/login/ui/WhatsAppOtpPanel.tsx", import.meta.url), "utf8")
+    expect(panel).not.toContain('messageTranslate("account.profile.')
   })
 
   test("uses source-equivalent email OTP headings and code-step copy", () => {

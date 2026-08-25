@@ -75,6 +75,7 @@ account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailNew,New email address
@@ -1275,8 +1276,16 @@ shell.state.readyDetail,Bu sayfa özellik içeriği için hazır.
 login.chooser.whatsappOtpDetail,WhatsApp üzerinden tek kullanımlık kod alın
 login.chooser.whatsappOtpLabel,WhatsApp kodu
 login.whatsappOtp.codeError,WhatsApp kodu yanlış.
+login.whatsappOtp.codeDescription,{phoneNumber} numarasına WhatsApp üzerinden gönderilen kodu girin.
 login.whatsappOtp.codeTitle,WhatsApp doğrulama kodu
 login.whatsappOtp.description,"Parola istemek yerine WhatsApp üzerinden tek kullanımlık bir kod göndereceğiz."
+login.whatsappOtp.differentNumber,Farklı bir numara kullan
+login.whatsappOtp.phoneHint,"Uluslararası E.164 biçimini kullanın, örneğin +14155552671."
+login.whatsappOtp.phoneNumber,WhatsApp telefon numarası
+login.whatsappOtp.phonePlaceholder,+14155552671
+login.whatsappOtp.resend,Kodu yeniden gönder
 login.whatsappOtp.send,WhatsApp kodu gönder
 login.whatsappOtp.sendError,WhatsApp kodu gönderilemedi.
+login.whatsappOtp.sending,Kod gönderiliyor…
 login.whatsappOtp.title,WhatsApp ile oturum aç
+login.whatsappOtp.verifying,Doğrulanıyor…
