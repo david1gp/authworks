@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gt, isNull } from "drizzle-orm"
+import { and, asc, desc, eq, gt, isNull, lt, or, sql } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -23,6 +23,13 @@ type OidcConsentInsert = typeof oidcConsentTable.$inferInsert
 type OidcInteractionInsert = typeof oidcInteractionTable.$inferInsert
 type OidcAccessTokenInsert = typeof oidcAccessTokenTable.$inferInsert
 type OidcRefreshTokenInsert = typeof oidcRefreshTokenTable.$inferInsert
+
+type OidcRefreshTokenFamilyPageOptions = {
+  readonly after?: { readonly familyId: string; readonly sortValue: string | number }
+  readonly limit: number
+  readonly now: number
+  readonly sortBy: "familyId" | "lastUsedAt"
+}
 
 export function oidcRepositoryCreate(database: StorageExecutor) {
   return {
@@ -198,6 +205,36 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    accessTokenOwnedFamilyRevoke(
+      realmId: string,
+      userId: string,
+      familyId: string,
+      revokedAt: number,
+    ): Result<OidcAccessTokenRow[]> {
+      try {
+        const rows = database
+          .update(oidcAccessTokenTable)
+          .set({ revokedAt })
+          .where(
+            and(
+              eq(oidcAccessTokenTable.realmId, realmId),
+              eq(oidcAccessTokenTable.userId, userId),
+              eq(oidcAccessTokenTable.refreshFamilyId, familyId),
+              isNull(oidcAccessTokenTable.revokedAt),
+            ),
+          )
+          .returning()
+          .all()
+        return resultCreate(rows)
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcAccessTokenOwnedFamilyRevoke",
+          "The owned access-token family could not be revoked.",
+          "oidc.write-failed",
+        )
+      }
+    },
+
     refreshTokenCreate(input: OidcRefreshTokenInsert): Result<OidcRefreshTokenRow> {
       try {
         const row = database.insert(oidcRefreshTokenTable).values(input).returning().get()
@@ -247,6 +284,61 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    refreshTokenOwnedFamilyRevoke(
+      realmId: string,
+      userId: string,
+      familyId: string,
+      revokedAt: number,
+    ): Result<OidcRefreshTokenRow[]> {
+      try {
+        const rows = database
+          .update(oidcRefreshTokenTable)
+          .set({ revokedAt })
+          .where(
+            and(
+              eq(oidcRefreshTokenTable.realmId, realmId),
+              eq(oidcRefreshTokenTable.userId, userId),
+              eq(oidcRefreshTokenTable.familyId, familyId),
+              isNull(oidcRefreshTokenTable.revokedAt),
+            ),
+          )
+          .returning()
+          .all()
+        return resultCreate(rows)
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenOwnedFamilyRevoke",
+          "The owned refresh-token family could not be revoked.",
+          "oidc.write-failed",
+        )
+      }
+    },
+
+    refreshTokenFamilyGet(realmId: string, userId: string, familyId: string): Result<OidcRefreshTokenRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(oidcRefreshTokenTable)
+            .where(
+              and(
+                eq(oidcRefreshTokenTable.realmId, realmId),
+                eq(oidcRefreshTokenTable.userId, userId),
+                eq(oidcRefreshTokenTable.familyId, familyId),
+              ),
+            )
+            .orderBy(desc(oidcRefreshTokenTable.createdAt), desc(oidcRefreshTokenTable.id))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenFamilyGet",
+          "The refresh token family could not be read.",
+          "oidc.read-failed",
+        )
+      }
+    },
+
     refreshTokenGetByTokenHash(realmId: string, tokenHash: string): Result<OidcRefreshTokenRow | null> {
       try {
         return resultCreate(
@@ -265,6 +357,104 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    refreshTokenFamilyPage(
+      realmId: string,
+      userId: string,
+      options: OidcRefreshTokenFamilyPageOptions,
+    ): Result<
+      {
+        readonly clientId: string
+        readonly clientName: string
+        readonly createdAt: number
+        readonly expiredCount: number
+        readonly expiresAt: number
+        readonly familyId: string
+        readonly lastUsedAt: number | null
+        readonly realmId: string
+        readonly revokedAt: number | null
+        readonly revokedCount: number
+        readonly rowCount: number
+        readonly scope: string
+        readonly sessionId: string
+        readonly sortValue: string | number
+        readonly userId: string
+      }[]
+    > {
+      try {
+        const lastUsedAt = sql<number | null>`max(${oidcRefreshTokenTable.lastUsedAt})`
+        const lastUsedSort = sql<number>`coalesce(max(${oidcRefreshTokenTable.lastUsedAt}), -1)`
+        const rowCount = sql<number>`count(*)`
+        const revokedCount = sql<number>`sum(case when ${oidcRefreshTokenTable.revokedAt} is not null then 1 else 0 end)`
+        const expiredCount = sql<number>`sum(case when ${oidcRefreshTokenTable.expiresAt} <= ${options.now} then 1 else 0 end)`
+        const cursor =
+          options.after === undefined
+            ? undefined
+            : options.sortBy === "familyId"
+              ? lt(oidcRefreshTokenTable.familyId, String(options.after.sortValue))
+              : or(
+                  lt(lastUsedSort, Number(options.after.sortValue)),
+                  and(
+                    eq(lastUsedSort, Number(options.after.sortValue)),
+                    lt(oidcRefreshTokenTable.familyId, options.after.familyId),
+                  ),
+                )
+        const query = database
+          .select({
+            clientId: oidcRefreshTokenTable.clientId,
+            clientName: oidcClientTable.name,
+            createdAt: sql<number>`min(${oidcRefreshTokenTable.createdAt})`,
+            expiredCount,
+            expiresAt: sql<number>`max(${oidcRefreshTokenTable.expiresAt})`,
+            familyId: oidcRefreshTokenTable.familyId,
+            lastUsedAt,
+            realmId: oidcRefreshTokenTable.realmId,
+            revokedAt: sql<number | null>`min(${oidcRefreshTokenTable.revokedAt})`,
+            revokedCount,
+            rowCount,
+            scope: sql<string>`(
+              select latest_refresh_token.scope
+              from oidc_refresh_tokens as latest_refresh_token
+              where latest_refresh_token.realm_id = ${oidcRefreshTokenTable.realmId}
+                and latest_refresh_token.user_id = ${oidcRefreshTokenTable.userId}
+                and latest_refresh_token.family_id = ${oidcRefreshTokenTable.familyId}
+                and latest_refresh_token.replaced_by_hash is null
+              order by latest_refresh_token.created_at desc, latest_refresh_token.id desc
+              limit 1
+            )`,
+            sessionId: sql<string>`min(${oidcRefreshTokenTable.sessionId})`,
+            sortValue: options.sortBy === "familyId" ? oidcRefreshTokenTable.familyId : lastUsedSort,
+            userId: oidcRefreshTokenTable.userId,
+          })
+          .from(oidcRefreshTokenTable)
+          .innerJoin(
+            oidcClientTable,
+            and(
+              eq(oidcClientTable.id, oidcRefreshTokenTable.clientId),
+              eq(oidcClientTable.realmId, oidcRefreshTokenTable.realmId),
+            ),
+          )
+          .where(and(eq(oidcRefreshTokenTable.realmId, realmId), eq(oidcRefreshTokenTable.userId, userId), cursor))
+          .groupBy(
+            oidcRefreshTokenTable.clientId,
+            oidcClientTable.name,
+            oidcRefreshTokenTable.familyId,
+            oidcRefreshTokenTable.realmId,
+            oidcRefreshTokenTable.userId,
+          )
+        const ordered =
+          options.sortBy === "familyId"
+            ? query.orderBy(desc(oidcRefreshTokenTable.familyId))
+            : query.orderBy(desc(lastUsedSort), desc(oidcRefreshTokenTable.familyId))
+        return resultCreate(ordered.limit(options.limit).all())
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcRefreshTokenFamilyPage",
+          "The refresh-token families could not be read.",
+          "oidc.read-failed",
+        )
+      }
+    },
+
     refreshTokenRotate(
       realmId: string,
       clientId: string,
@@ -276,7 +466,7 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
         return resultCreate(
           database
             .update(oidcRefreshTokenTable)
-            .set({ replacedByHash, revokedAt: now })
+            .set({ lastUsedAt: now, replacedByHash, revokedAt: now })
             .where(
               and(
                 eq(oidcRefreshTokenTable.realmId, realmId),

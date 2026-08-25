@@ -27,7 +27,6 @@ import { oidcResourceOwnerScope } from "../domain/oidcResourceOwnerScope.js"
 import { oidcValueDecrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcAccessTokenIssuedEventPayloadSchema } from "../events/oidcAccessTokenIssuedEventPayloadSchema.js"
-import { oidcResourceOwnerClaim } from "../public/oidcResourceOwnerClaim.js"
 import { oidcAuthorizationCodeConsumedEventPayloadSchema } from "../events/oidcAuthorizationCodeConsumedEventPayloadSchema.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcRefreshTokenIssuedEventPayloadSchema } from "../events/oidcRefreshTokenIssuedEventPayloadSchema.js"
@@ -36,6 +35,7 @@ import { oidcRefreshTokenRotatedEventPayloadSchema } from "../events/oidcRefresh
 import type { OidcClientRow } from "../persistence/oidcClientTable.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import { oidcPublicJwkSchema } from "../public/oidcPublicJwkSchema.js"
+import { oidcResourceOwnerClaim } from "../public/oidcResourceOwnerClaim.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 import type { OidcTokenRequest } from "../public/oidcTokenRequestSchema.js"
 import { oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
@@ -478,6 +478,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     expiresAt: refreshExpiresAt,
     familyId: refreshFamilyId,
     id: uuidv7Create(options.runtime),
+    lastUsedAt: null,
     realmId: options.realmId,
     nonceEncrypted: options.nonceEncrypted,
     replacedByHash: null,

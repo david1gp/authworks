@@ -97,6 +97,48 @@ describe("account security external identity API", () => {
       expect(request.init?.credentials).toBe("include")
     }
   })
+
+  test("lists refresh-token metadata and protects family revocation with CSRF", async () => {
+    const requests: { readonly init?: RequestInit; readonly url: string }[] = []
+    const fetch = async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input)
+      requests.push({ init, url })
+      if (url.endsWith("/sessions/csrf")) return jsonResponse({ csrfToken: "csrf-token" })
+      if (url.endsWith("/me/refresh-tokens"))
+        return jsonResponse({
+          items: [
+            {
+              clientId: "01900000-0000-7000-8000-000000000031",
+              clientName: "Acme Dashboard",
+              createdAt: 1,
+              expiresAt: 2,
+              familyId: "01900000-0000-7000-8000-000000000032",
+              lastUsedAt: 1,
+              revokedAt: null,
+              scope: ["openid"],
+              status: "active",
+            },
+          ],
+        })
+      return jsonResponse({ revoked: true })
+    }
+
+    const api = accountSecurityApiCreate({ baseUrl: "https://auth.example.test", fetch })
+    expect((await api.refreshTokensList("realm-one")).success).toBe(true)
+    expect((await api.refreshTokenRevoke("realm-one", "family-one")).success).toBe(true)
+    expect((await api.refreshTokensRevokeAll("realm-one")).success).toBe(true)
+
+    const mutations = requests.filter((request) => request.init?.method !== "GET")
+    expect(mutations.map((request) => new URL(request.url).pathname)).toEqual([
+      "/realms/realm-one/me/refresh-tokens/family-one/revoke",
+      "/realms/realm-one/me/refresh-tokens/revoke-all",
+    ])
+    expect(requests.filter((request) => request.url.endsWith("/sessions/csrf"))).toHaveLength(2)
+    for (const request of mutations) {
+      expect(new Headers(request.init?.headers).get("x-csrf-token")).toBe("csrf-token")
+      expect(request.init?.credentials).toBe("include")
+    }
+  })
 })
 
 function jsonResponse(body: unknown) {

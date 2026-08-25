@@ -319,6 +319,93 @@ export function AccountSecurityView(props: { readonly state: AccountSecurityView
             </Show>
           </div>
         </Match>
+        <Match when={props.state.status() === "ready" && props.state.screen() === "refresh-tokens"}>
+          <div class="grid gap-4">
+            <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+              <p class="max-w-2xl text-sm leading-6 text-muted-foreground">
+                {messageTranslate("account.refreshTokens.description")}
+              </p>
+              <Show when={props.state.refreshTokens().some((token) => token.status === "active")}>
+                <Button
+                  disabled={props.state.pendingId() === "refresh-tokens:all"}
+                  onClick={props.state.refreshTokensRevokeAll}
+                  variant="outline"
+                >
+                  {messageTranslate("account.refreshTokens.revokeAll")}
+                </Button>
+              </Show>
+            </div>
+            <Show
+              when={props.state.refreshTokens().length > 0}
+              fallback={<EmptyState title={messageTranslate("account.refreshTokens.empty")} />}
+            >
+              <For each={props.state.refreshTokens()}>
+                {(token) => (
+                  <article class="rounded-2xl border border-line bg-surface p-5 shadow-sm">
+                    <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                      <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                          <h2 class="font-semibold">{token.clientName}</h2>
+                          <span class="rounded-full bg-muted px-2 py-0.5 text-xs font-semibold uppercase">
+                            {token.status === "active"
+                              ? messageTranslate("account.refreshTokens.active")
+                              : token.status === "expired"
+                                ? messageTranslate("account.refreshTokens.expired")
+                                : messageTranslate("account.refreshTokens.revoked")}
+                          </span>
+                        </div>
+                        <p class="mt-2 text-sm text-muted-foreground">
+                          {messageTranslate("account.refreshTokens.scope", { scope: token.scope.join(" · ") })}
+                        </p>
+                        <Show
+                          when={token.lastUsedAt !== null}
+                          fallback={
+                            <p class="mt-1 text-sm text-muted-foreground">
+                              {messageTranslate("account.refreshTokens.neverUsed")}
+                            </p>
+                          }
+                        >
+                          <p class="mt-1 text-sm text-muted-foreground">
+                            {messageTranslate("account.refreshTokens.lastUsed", {
+                              date: localeDateFormat(token.lastUsedAt as number, {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              }),
+                            })}
+                          </p>
+                        </Show>
+                        <p class="mt-1 text-sm text-muted-foreground">
+                          {messageTranslate("account.refreshTokens.expires", {
+                            date: localeDateFormat(token.expiresAt, { dateStyle: "medium", timeStyle: "short" }),
+                          })}
+                        </p>
+                        <Show when={token.revokedAt !== null}>
+                          <p class="mt-1 text-sm text-muted-foreground">
+                            {messageTranslate("account.refreshTokens.revokedAt", {
+                              date: localeDateFormat(token.revokedAt as number, {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              }),
+                            })}
+                          </p>
+                        </Show>
+                      </div>
+                      <Show when={token.status === "active"}>
+                        <Button
+                          disabled={props.state.pendingId() === `refresh-token:${token.familyId}`}
+                          onClick={() => props.state.refreshTokenRevoke(token.familyId)}
+                          variant="outline"
+                        >
+                          {messageTranslate("account.refreshTokens.revoke")}
+                        </Button>
+                      </Show>
+                    </div>
+                  </article>
+                )}
+              </For>
+            </Show>
+          </div>
+        </Match>
       </Switch>
     </section>
   )

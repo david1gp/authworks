@@ -4,6 +4,7 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentity } from "../../externalIdentities/public/externalIdentitySchema.js"
+import type { OidcRefreshTokenMetadata } from "../../oidc/public/oidcRefreshTokenMetadataSchema.js"
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
 import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
@@ -45,6 +46,30 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       id: "session-mobile",
       lastUsedAt: now - 7_200_000,
       revokedAt: null,
+    },
+  ])
+  const refreshTokens = createSignalObject<OidcRefreshTokenMetadata[]>([
+    {
+      clientId: "01900000-0000-7000-8000-000000000031",
+      clientName: "Acme Dashboard",
+      createdAt: now - 86_400_000,
+      expiresAt: now + 29 * 86_400_000,
+      familyId: "01900000-0000-7000-8000-000000000032",
+      lastUsedAt: now - 60_000,
+      revokedAt: null,
+      scope: ["openid", "profile", "email"],
+      status: "active",
+    },
+    {
+      clientId: "01900000-0000-7000-8000-000000000033",
+      clientName: "Acme Mobile",
+      createdAt: now - 5_184_000_000,
+      expiresAt: now - 2_592_000_000,
+      familyId: "01900000-0000-7000-8000-000000000034",
+      lastUsedAt: now - 2_592_000_000,
+      revokedAt: now - 2_592_000_000,
+      scope: ["openid", "profile"],
+      status: "revoked",
     },
   ])
   const passkeys = createSignalObject<PasskeyCredential[]>([
@@ -289,6 +314,25 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       oneTimeCodes.set([...demoRecoveryCodes])
     },
     reload: () => undefined,
+    refreshTokenRevoke: (familyId: string) => {
+      if (!window.confirm(messageTranslate("account.refreshTokens.revokeConfirm"))) return
+      const revokedAt = Date.now()
+      refreshTokens.set(
+        refreshTokens
+          .get()
+          .map((token) => (token.familyId === familyId ? { ...token, revokedAt, status: "revoked" as const } : token)),
+      )
+    },
+    refreshTokens: () => visible(refreshTokens.get()),
+    refreshTokensRevokeAll: () => {
+      if (!window.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm"))) return
+      const revokedAt = Date.now()
+      refreshTokens.set(
+        refreshTokens
+          .get()
+          .map((token) => (token.status === "active" ? { ...token, revokedAt, status: "revoked" as const } : token)),
+      )
+    },
     screen,
     sessionRevoke: (sessionId: string) => {
       if (!window.confirm(messageTranslate("account.sessions.revokeConfirm"))) return

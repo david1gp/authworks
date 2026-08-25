@@ -175,6 +175,51 @@ describe("account security external identity state", () => {
     expect(state.identityLinkConfirmation()).toBeUndefined()
     expect(state.identityProviderLinked("provider-google")).toBe(true)
   })
+
+  test("renders safe refresh-token state and reloads after family revocation", async () => {
+    let revoked = false
+    const browserWindow = {
+      addEventListener: () => undefined,
+      confirm: () => true,
+      location: { origin: "https://auth.example.test" },
+      removeEventListener: () => undefined,
+    } as unknown as Window
+    Object.defineProperty(globalThis, "window", { configurable: true, value: browserWindow })
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = String(input)
+      if (url.endsWith("/sessions/csrf")) return jsonResponse({ csrfToken: "csrf-token" })
+      if (url.endsWith("/me/refresh-tokens"))
+        return jsonResponse({
+          items: [
+            {
+              clientId: "01900000-0000-7000-8000-000000000031",
+              clientName: "Acme Dashboard",
+              createdAt: 1,
+              expiresAt: 2,
+              familyId: "01900000-0000-7000-8000-000000000032",
+              lastUsedAt: 1,
+              revokedAt: revoked ? 3 : null,
+              scope: ["openid"],
+              status: revoked ? "revoked" : "active",
+            },
+          ],
+        })
+      revoked = true
+      return jsonResponse({ revoked: true })
+    }) as typeof fetch
+
+    const state = accountSecurityProductionStateCreate({
+      apiBaseUrl: "https://api.example.test",
+      realmId: () => "realm-one",
+      screen: () => "refresh-tokens",
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(state.refreshTokens()).toHaveLength(1)
+    expect(state.refreshTokens()[0]).not.toHaveProperty("tokenHash")
+    await state.refreshTokenRevoke("01900000-0000-7000-8000-000000000032")
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(state.refreshTokens()[0]?.status).toBe("revoked")
+  })
 })
 
 function jsonResponse(body: unknown) {

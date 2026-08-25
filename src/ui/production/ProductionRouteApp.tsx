@@ -163,6 +163,9 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
       <Match when={props.state.screen()?.key === "organizations" && props.state.shellKind() === "account"}>
         <AccountAccessProductionAdapter screen="organizations" />
       </Match>
+      <Match when={props.state.screen()?.key === "effective-access" && props.state.shellKind() === "account"}>
+        <AccountAccessProductionAdapter screen="effective-access" />
+      </Match>
       <Match when={props.state.screen()?.key === "consents" && props.state.shellKind() === "account"}>
         <AccountAccessProductionAdapter screen="consents" />
       </Match>

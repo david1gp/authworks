@@ -96,6 +96,12 @@ export const productionRouteContractMap = {
         title: "shell.nav.myOrganizations",
       },
       {
+        contracts: ["account.effective-access"],
+        key: "effective-access",
+        path: "/account/effective-access",
+        title: "shell.nav.effectiveAccess",
+      },
+      {
         contracts: ["sessions.list", "sessions.revoke"],
         key: "sessions",
         path: "/account/sessions",
@@ -131,6 +137,12 @@ export const productionRouteContractMap = {
         key: "identities",
         path: "/account/identities",
         title: "shell.nav.linkedIdentities",
+      },
+      {
+        contracts: ["oidc.refresh-tokens.list", "oidc.refresh-tokens.revoke"],
+        key: "refresh-tokens",
+        path: "/account/refresh-tokens",
+        title: "shell.nav.refreshTokens",
       },
       {
         contracts: ["oidc.consents.list", "oidc.consents.revoke"],

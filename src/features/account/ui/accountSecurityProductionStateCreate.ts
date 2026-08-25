@@ -7,6 +7,7 @@ import { externalIdentityCallbackResponseSchema } from "../../externalIdentities
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentity } from "../../externalIdentities/public/externalIdentitySchema.js"
 import type { MfaTotpEnrollmentStartResponse } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
+import type { OidcRefreshTokenMetadata } from "../../oidc/public/oidcRefreshTokenMetadataSchema.js"
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
 import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
@@ -32,6 +33,7 @@ export function accountSecurityProductionStateCreate(options: {
   const error = createSignalObject<string | undefined>(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
   const sessions = createSignalObject<SessionMe[]>([])
+  const refreshTokens = createSignalObject<OidcRefreshTokenMetadata[]>([])
   const passkeys = createSignalObject<PasskeyCredential[]>([])
   const methods = createSignalObject<UserAuthenticationMethods>(emptyMethods)
   const identities = createSignalObject<ExternalIdentity[]>([])
@@ -60,6 +62,11 @@ export function accountSecurityProductionStateCreate(options: {
       const result = await api.sessionsList(realmId)
       if (!result.success) return failed(result.errorMessage)
       sessions.set(result.data.items.filter((session) => session.revokedAt === null))
+    }
+    if (screen === "refresh-tokens") {
+      const result = await api.refreshTokensList(realmId)
+      if (!result.success) return failed(result.errorMessage)
+      refreshTokens.set(result.data.items)
     }
     if (screen === "passkeys") {
       const result = await api.passkeyList(realmId)
@@ -235,6 +242,15 @@ export function accountSecurityProductionStateCreate(options: {
       await load()
     },
     reload: () => void load(),
+    refreshTokenRevoke: (familyId: string) => {
+      if (!window.confirm(messageTranslate("account.refreshTokens.revokeConfirm"))) return
+      void mutate(`refresh-token:${familyId}`, () => api.refreshTokenRevoke(options.realmId(), familyId))
+    },
+    refreshTokens: refreshTokens.get,
+    refreshTokensRevokeAll: () => {
+      if (!window.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm"))) return
+      void mutate("refresh-tokens:all", () => api.refreshTokensRevokeAll(options.realmId()))
+    },
     screen: options.screen,
     sessionRevoke: (sessionId: string) => {
       if (!window.confirm(messageTranslate("account.sessions.revokeConfirm"))) return

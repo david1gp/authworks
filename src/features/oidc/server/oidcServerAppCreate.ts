@@ -42,6 +42,9 @@ import { oidcConsentRevoke } from "../actions/oidcConsentRevoke.js"
 import { oidcDiscoveryGet } from "../actions/oidcDiscoveryGet.js"
 import { oidcJwksGet } from "../actions/oidcJwksGet.js"
 import { oidcLogout } from "../actions/oidcLogout.js"
+import { oidcRefreshTokenFamiliesMeRevokeAll } from "../actions/oidcRefreshTokenFamiliesMeRevokeAll.js"
+import { oidcRefreshTokenFamilyMeRevoke } from "../actions/oidcRefreshTokenFamilyMeRevoke.js"
+import { oidcRefreshTokenMeList } from "../actions/oidcRefreshTokenMeList.js"
 import { oidcSigningKeyCreate } from "../actions/oidcSigningKeyCreate.js"
 import { oidcSigningKeyLifecycleSet } from "../actions/oidcSigningKeyLifecycleSet.js"
 import { oidcSigningKeyList } from "../actions/oidcSigningKeyList.js"
@@ -118,6 +121,47 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
         database: options.database,
         realmId: context.req.param("realmId"),
         clientId: context.req.param("clientId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+  app.get("/realms/:realmId/me/refresh-tokens", protectedMiddleware, (context) => {
+    const subject = oidcSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return oidcManagementErrorResponseCreate(context, subject)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return oidcManagementErrorResponseCreate(context, query)
+    return oidcManagementResultResponseCreate(
+      context,
+      oidcRefreshTokenMeList({
+        database: options.database,
+        query: query.data,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/refresh-tokens/revoke-all", protectedMiddleware, (context) => {
+    const subject = oidcSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return oidcManagementErrorResponseCreate(context, subject)
+    return oidcManagementResultResponseCreate(
+      context,
+      oidcRefreshTokenFamiliesMeRevokeAll({
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+  app.post("/realms/:realmId/me/refresh-tokens/:familyId/revoke", protectedMiddleware, (context) => {
+    const subject = oidcSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return oidcManagementErrorResponseCreate(context, subject)
+    return oidcManagementResultResponseCreate(
+      context,
+      oidcRefreshTokenFamilyMeRevoke({
+        database: options.database,
+        familyId: context.req.param("familyId"),
+        realmId: context.req.param("realmId"),
         userId: subject.data.actorId,
       }),
     )

@@ -15,6 +15,9 @@ import { oidcClientSecretRotate } from "../../src/features/oidc/actions/oidcClie
 import { oidcClientUpdate } from "../../src/features/oidc/actions/oidcClientUpdate.js"
 import { oidcConsentRevoke } from "../../src/features/oidc/actions/oidcConsentRevoke.js"
 import { oidcDiscoveryGet } from "../../src/features/oidc/actions/oidcDiscoveryGet.js"
+import { oidcRefreshTokenFamiliesMeRevokeAll } from "../../src/features/oidc/actions/oidcRefreshTokenFamiliesMeRevokeAll.js"
+import { oidcRefreshTokenFamilyMeRevoke } from "../../src/features/oidc/actions/oidcRefreshTokenFamilyMeRevoke.js"
+import { oidcRefreshTokenMeList } from "../../src/features/oidc/actions/oidcRefreshTokenMeList.js"
 import { oidcJwksGet } from "../../src/features/oidc/actions/oidcJwksGet.js"
 import { oidcLogout } from "../../src/features/oidc/actions/oidcLogout.js"
 import { oidcSigningKeyCreate } from "../../src/features/oidc/actions/oidcSigningKeyCreate.js"
@@ -33,6 +36,8 @@ import { oidcJwksSchema } from "../../src/features/oidc/public/oidcJwksSchema.js
 import { oidcTokenResponseSchema } from "../../src/features/oidc/public/oidcTokenResponseSchema.js"
 import { oidcUserInfoSchema } from "../../src/features/oidc/public/oidcUserInfoSchema.js"
 import { oidcServerAppCreate } from "../../src/features/oidc/server/oidcServerAppCreate.js"
+import { oidcAccessTokenTable } from "../../src/features/oidc/persistence/oidcAccessTokenTable.js"
+import { oidcRefreshTokenTable } from "../../src/features/oidc/persistence/oidcRefreshTokenTable.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
@@ -73,7 +78,12 @@ async function createRealm(database: StorageDatabase, domain: string) {
 async function createAuthenticatedSession(
   database: StorageDatabase,
   domain: string,
-): Promise<{ realm: Awaited<ReturnType<typeof createRealm>>; token: string; userId: string }> {
+): Promise<{
+  realm: Awaited<ReturnType<typeof createRealm>>
+  sessionId: string
+  token: string
+  userId: string
+}> {
   const realm = await createRealm(database, domain)
   const context = realmTenantContextCreate(realm.id, "anonymous")
   let verificationToken = ""
@@ -109,7 +119,59 @@ async function createAuthenticatedSession(
   })
   expect(login.success).toBe(true)
   if (!login.success || login.data.session === undefined) throw new Error("The OIDC test session could not be created.")
-  return { realm, token: login.data.session.token, userId: login.data.authentication.userId }
+  return {
+    realm,
+    sessionId: login.data.session.session.id,
+    token: login.data.session.token,
+    userId: login.data.authentication.userId,
+  }
+}
+
+async function createAdditionalAuthenticatedSession(
+  database: StorageDatabase,
+  realm: Awaited<ReturnType<typeof createRealm>>,
+  suffix: string,
+) {
+  const context = realmTenantContextCreate(realm.id, "anonymous")
+  let verificationToken = ""
+  const registered = passwordRegister({
+    context,
+    database,
+    input: {
+      email: `${suffix}@example.com`,
+      password: "Correct Horse 12",
+      profile: { displayName: "OIDC Other User" },
+      userName: suffix,
+    },
+    realmId: realm.id,
+    onVerificationToken: (delivery) => {
+      verificationToken = delivery.token
+    },
+  })
+  expect(registered.success).toBe(true)
+  expect(
+    passwordEmailVerify({
+      context,
+      database,
+      input: { token: verificationToken },
+      realmId: realm.id,
+    }).success,
+  ).toBe(true)
+  const login = passwordLogin({
+    context,
+    database,
+    input: { identifier: suffix, password: "Correct Horse 12" },
+    realmId: realm.id,
+    sessionCreate: sessionPasswordCreate(),
+  })
+  expect(login.success).toBe(true)
+  if (!login.success || login.data.session === undefined)
+    throw new Error("The additional OIDC test session could not be created.")
+  return {
+    sessionId: login.data.session.session.id,
+    token: login.data.session.token,
+    userId: login.data.authentication.userId,
+  }
 }
 
 function pkceChallengeCreate(verifier: string): string {
@@ -185,6 +247,39 @@ async function createOidcTokenFixture(database: StorageDatabase, domain: string,
     clientSecret: client.data.clientSecret,
     token: v.parse(oidcTokenResponseSchema, await response.json()),
   }
+}
+
+function refreshTokenFamilyInsert(
+  database: StorageDatabase,
+  fixture: Awaited<ReturnType<typeof createOidcTokenFixture>>,
+  input: {
+    readonly familyId: string
+    readonly id: string
+    readonly lastUsedAt?: number | null
+    readonly scope?: string
+    readonly sessionId?: string
+    readonly userId?: string
+  },
+) {
+  database.db
+    .insert(oidcRefreshTokenTable)
+    .values({
+      clientId: fixture.client.id,
+      createdAt: 1_699_999_900_000,
+      expiresAt: 1_700_000_100_000,
+      familyId: input.familyId,
+      id: input.id,
+      lastUsedAt: input.lastUsedAt ?? null,
+      nonceEncrypted: null,
+      realmId: fixture.authenticated.realm.id,
+      replacedByHash: null,
+      revokedAt: null,
+      scope: input.scope ?? JSON.stringify(["openid"]),
+      sessionId: input.sessionId ?? fixture.authenticated.sessionId,
+      tokenHash: `${input.id}-hash`,
+      userId: input.userId ?? fixture.authenticated.userId,
+    })
+    .run()
 }
 
 test("redirect URI matching is exact and rejects unsafe registrations", () => {
@@ -1030,10 +1125,20 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
       client_secret: client.data.clientSecret,
       grant_type: "refresh_token",
       refresh_token: token.refresh_token,
+      scope: "openid",
     })
     expect(rotatedResponse.status).toBe(200)
     const rotated = v.parse(oidcTokenResponseSchema, await rotatedResponse.json())
     expect(rotated.refresh_token).not.toBe(token.refresh_token)
+    const refreshMetadata = oidcRefreshTokenMeList({
+      database,
+      realmId: authenticated.realm.id,
+      userId: authenticated.userId,
+    })
+    expect(refreshMetadata).toMatchObject({
+      data: { items: [{ lastUsedAt: database.runtime.now(), scope: ["openid"], status: "active" }] },
+      success: true,
+    })
     const expandedScope = await oidcTokenRequest(app, "token.example.com", {
       client_id: client.data.client.id,
       client_secret: client.data.clientSecret,
@@ -1923,5 +2028,354 @@ test("logout without an ID token hint requires and revokes only the authenticate
     expect(database.sqlite.query("SELECT revoked_at, revocation_reason FROM sessions").get()).toMatchObject({
       revocation_reason: "rp_initiated_logout",
     })
+  })
+})
+
+test("account refresh-token management returns safe family metadata and invalidates a family and its access tokens", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createOidcTokenFixture(database, "refresh-management.example.com")
+    const rows = database.db.select().from(oidcRefreshTokenTable).all()
+    const familyId = rows[0]?.familyId
+    expect(familyId).toBeString()
+    if (familyId === undefined) return
+    database.db
+      .insert(oidcAccessTokenTable)
+      .values({
+        clientId: fixture.client.id,
+        createdAt: 1_700_000_000_000,
+        expiresAt: 1_700_000_300_000,
+        id: "01900000-0000-7000-8000-000000000099",
+        realmId: fixture.authenticated.realm.id,
+        refreshFamilyId: familyId,
+        revokedAt: null,
+        scope: JSON.stringify(["openid", "profile", "email"]),
+        sessionId: fixture.authenticated.sessionId,
+        tokenHash: "second-access-token-hash",
+        userId: fixture.authenticated.userId,
+      })
+      .run()
+
+    const listed = oidcRefreshTokenMeList({
+      database,
+      realmId: fixture.authenticated.realm.id,
+      userId: fixture.authenticated.userId,
+    })
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(listed.data.items).toHaveLength(1)
+    expect(listed.data.items[0]).toMatchObject({
+      clientId: fixture.client.id,
+      clientName: "refresh-management.example.com client",
+      familyId,
+      lastUsedAt: null,
+      scope: ["openid", "profile", "email"],
+      status: "active",
+    })
+    expect(listed.data.items[0]).not.toHaveProperty("userId")
+    expect(listed.data.items[0]).not.toHaveProperty("realmId")
+    const safeMetadata = JSON.stringify(listed.data)
+    expect(safeMetadata).not.toContain(fixture.token.access_token)
+    expect(safeMetadata).not.toContain(fixture.token.refresh_token)
+    expect(safeMetadata).not.toContain("tokenHash")
+    expect(safeMetadata).not.toContain("nonceEncrypted")
+    expect(safeMetadata).not.toContain("replacedByHash")
+    expect(
+      oidcRefreshTokenMeList({ database, realmId: fixture.authenticated.realm.id, userId: "another-user" }),
+    ).toEqual({ data: { items: [] }, success: true })
+    const routeList = await fixture.app.request(
+      `https://refresh-management.example.com/realms/${fixture.authenticated.realm.id}/me/refresh-tokens`,
+      { headers: { authorization: `Bearer ${fixture.authenticated.token}` } },
+    )
+    expect(routeList.status).toBe(200)
+    expect(await routeList.json()).toMatchObject({ items: [{ familyId, status: "active" }] })
+    const deleteAlias = await fixture.app.request(
+      `https://refresh-management.example.com/realms/${fixture.authenticated.realm.id}/me/refresh-tokens/${familyId}`,
+      { headers: { authorization: `Bearer ${fixture.authenticated.token}` }, method: "DELETE" },
+    )
+    expect(deleteAlias.status).toBe(404)
+
+    const csrf = sessionCsrfTokenCreate(testkit.runtime)
+    const cookie = `session=${fixture.authenticated.token}; csrf=${csrf}`
+    const missingCsrf = await fixture.app.request(
+      `https://refresh-management.example.com/realms/${fixture.authenticated.realm.id}/me/refresh-tokens/${familyId}/revoke`,
+      { headers: { cookie, origin: "http://127.0.0.1:3000" }, method: "POST" },
+    )
+    expect(missingCsrf.status).toBe(403)
+    const accessBefore = await fixture.app.request("https://refresh-management.example.com/oauth2/userinfo", {
+      headers: { authorization: `Bearer ${fixture.token.access_token}` },
+    })
+    expect(accessBefore.status).toBe(200)
+
+    const revoked = await fixture.app.request(
+      `https://refresh-management.example.com/realms/${fixture.authenticated.realm.id}/me/refresh-tokens/${familyId}/revoke`,
+      {
+        headers: { cookie, origin: "http://127.0.0.1:3000", "x-csrf-token": csrf },
+        method: "POST",
+      },
+    )
+    expect(revoked.status).toBe(200)
+    expect(await revoked.json()).toEqual({ revoked: true })
+    const accessAfter = await fixture.app.request("https://refresh-management.example.com/oauth2/userinfo", {
+      headers: { authorization: `Bearer ${fixture.token.access_token}` },
+    })
+    expect(accessAfter.status).toBe(401)
+    expect(
+      database.db
+        .select()
+        .from(oidcRefreshTokenTable)
+        .all()
+        .every((row) => row.revokedAt !== null),
+    ).toBe(true)
+    expect(
+      database.db
+        .select()
+        .from(oidcAccessTokenTable)
+        .all()
+        .every((row) => row.revokedAt !== null),
+    ).toBe(true)
+
+    const repeated = oidcRefreshTokenFamilyMeRevoke({
+      database,
+      familyId,
+      realmId: fixture.authenticated.realm.id,
+      userId: fixture.authenticated.userId,
+    })
+    expect(repeated).toEqual({ data: { revoked: false }, success: true })
+    const crossRealm = await fixture.app.request(
+      `https://refresh-management.example.com/realms/018f0b7b-5c6e-7b7d-8e8f-901234567890/me/refresh-tokens`,
+      { headers: { authorization: `Bearer ${fixture.authenticated.token}` } },
+    )
+    expect(crossRealm.status).toBe(401)
+
+    const refresh = await oidcTokenRequest(fixture.app, "refresh-management.example.com", {
+      client_id: fixture.client.id,
+      client_secret: fixture.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: fixture.token.refresh_token,
+    })
+    expect(refresh.status).toBe(400)
+    expect(await refresh.json()).toMatchObject({ error: "invalid_grant" })
+
+    const events = database.db
+      .select({ eventType: storageEventTable.eventType, payload: storageEventTable.payload })
+      .from(storageEventTable)
+      .all()
+      .filter(
+        ({ eventType }) =>
+          eventType === "oidc.access_token_revoked" || eventType === "oidc.refresh_token_family_revoked",
+      )
+    expect(events.filter(({ eventType }) => eventType === "oidc.access_token_revoked")).toHaveLength(2)
+    expect(events.filter(({ eventType }) => eventType === "oidc.refresh_token_family_revoked")).toHaveLength(1)
+    expect(JSON.stringify(events)).not.toContain(fixture.token.access_token)
+    expect(JSON.stringify(events)).not.toContain(fixture.token.refresh_token)
+
+    const allFixture = await createOidcTokenFixture(database, "refresh-management-all.example.com")
+    const allRows = database.db
+      .select()
+      .from(oidcRefreshTokenTable)
+      .all()
+      .filter((row) => row.realmId === allFixture.authenticated.realm.id)
+    expect(allRows).toHaveLength(1)
+    const all = oidcRefreshTokenFamiliesMeRevokeAll({
+      database,
+      realmId: allFixture.authenticated.realm.id,
+      runtime: testkit.runtime,
+      userId: allFixture.authenticated.userId,
+    })
+    expect(all).toEqual({ data: { revoked: true }, success: true })
+    const allAgain = oidcRefreshTokenFamiliesMeRevokeAll({
+      database,
+      realmId: allFixture.authenticated.realm.id,
+      runtime: testkit.runtime,
+      userId: allFixture.authenticated.userId,
+    })
+    expect(allAgain).toEqual({ data: { revoked: false }, success: true })
+  })
+})
+
+test("account refresh-token family metadata uses bounded stable cursor pages", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "refresh-pagination.example.com")
+    const originalFamilyId = database.db.select().from(oidcRefreshTokenTable).get()?.familyId
+    expect(originalFamilyId).toBeString()
+    if (originalFamilyId === undefined) return
+    refreshTokenFamilyInsert(database, fixture, {
+      familyId: "00000000-0000-7000-8000-000000000041",
+      id: "00000000-0000-7000-8000-000000000141",
+      scope: JSON.stringify(["openid", "openid"]),
+    })
+    refreshTokenFamilyInsert(database, fixture, {
+      familyId: "00000000-0000-7000-8000-000000000042",
+      id: "00000000-0000-7000-8000-000000000142",
+    })
+    refreshTokenFamilyInsert(database, fixture, {
+      familyId: "00000000-0000-7000-8000-000000000043",
+      id: "00000000-0000-7000-8000-000000000143",
+    })
+
+    let pageToken: string | undefined
+    const familyIds: string[] = []
+    for (let pageNumber = 0; pageNumber < 2; pageNumber += 1) {
+      const page = oidcRefreshTokenMeList({
+        database,
+        query: { pageSize: 1, pageToken, sortBy: "familyId" },
+        realmId: fixture.authenticated.realm.id,
+        userId: fixture.authenticated.userId,
+      })
+      expect(page.success).toBe(true)
+      if (!page.success) return
+      expect(page.data.items).toHaveLength(1)
+      const item = page.data.items[0]
+      if (item === undefined) return
+      familyIds.push(item.familyId)
+      expect(item.scope).toEqual(item.familyId === originalFamilyId ? ["openid", "profile", "email"] : ["openid"])
+      expect(page.data.nextPageToken).toBeString()
+      pageToken = page.data.nextPageToken
+    }
+    expect(familyIds).toEqual([originalFamilyId, "00000000-0000-7000-8000-000000000043"])
+    const boundedPage = oidcRefreshTokenMeList({
+      database,
+      query: { pageSize: 1, pageToken, sortBy: "familyId" },
+      realmId: fixture.authenticated.realm.id,
+      userId: fixture.authenticated.userId,
+    })
+    expect(boundedPage.success).toBe(false)
+  })
+})
+
+test("account refresh-token revocation preserves user and realm isolation and idempotent events", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "refresh-isolation.example.com")
+    const otherUser = await createAdditionalAuthenticatedSession(
+      database,
+      fixture.authenticated.realm,
+      "refresh-isolation-other-user",
+    )
+    const otherUserFamilyId = "00000000-0000-7000-8000-000000000051"
+    refreshTokenFamilyInsert(database, fixture, {
+      familyId: otherUserFamilyId,
+      id: "00000000-0000-7000-8000-000000000151",
+      sessionId: otherUser.sessionId,
+      userId: otherUser.userId,
+    })
+    database.db
+      .insert(oidcAccessTokenTable)
+      .values({
+        clientId: fixture.client.id,
+        createdAt: 1_700_000_000_000,
+        expiresAt: 1_700_000_300_000,
+        id: "00000000-0000-7000-8000-000000000251",
+        realmId: fixture.authenticated.realm.id,
+        refreshFamilyId: otherUserFamilyId,
+        revokedAt: null,
+        scope: JSON.stringify(["openid"]),
+        sessionId: otherUser.sessionId,
+        tokenHash: "other-user-access-token-hash",
+        userId: otherUser.userId,
+      })
+      .run()
+    const otherRealm = await createOidcTokenFixture(database, "refresh-isolation-other-realm.example.com")
+    const otherRealmFamilyId = database.db
+      .select()
+      .from(oidcRefreshTokenTable)
+      .all()
+      .find((row) => row.realmId === otherRealm.authenticated.realm.id)?.familyId
+    expect(otherRealmFamilyId).toBeString()
+    if (otherRealmFamilyId === undefined) return
+
+    expect(
+      oidcRefreshTokenMeList({
+        database,
+        realmId: fixture.authenticated.realm.id,
+        userId: fixture.authenticated.userId,
+      }),
+    ).toMatchObject({ data: { items: [{ familyId: expect.any(String) }] }, success: true })
+    expect(
+      oidcRefreshTokenMeList({
+        database,
+        realmId: fixture.authenticated.realm.id,
+        userId: otherUser.userId,
+      }),
+    ).toMatchObject({ data: { items: [{ familyId: otherUserFamilyId }] }, success: true })
+    expect(
+      oidcRefreshTokenFamilyMeRevoke({
+        database,
+        familyId: otherUserFamilyId,
+        realmId: fixture.authenticated.realm.id,
+        userId: fixture.authenticated.userId,
+      }),
+    ).toEqual({ data: { revoked: false }, success: true })
+    expect(
+      database.db
+        .select()
+        .from(oidcRefreshTokenTable)
+        .all()
+        .find((row) => row.familyId === otherUserFamilyId)?.revokedAt,
+    ).toBeNull()
+
+    const eventCountBefore = database.db
+      .select()
+      .from(storageEventTable)
+      .all()
+      .filter(
+        (event) =>
+          event.eventType === "oidc.access_token_revoked" || event.eventType === "oidc.refresh_token_family_revoked",
+      ).length
+    expect(
+      oidcRefreshTokenFamiliesMeRevokeAll({
+        database,
+        realmId: fixture.authenticated.realm.id,
+        runtime: database.runtime,
+        userId: fixture.authenticated.userId,
+      }),
+    ).toEqual({ data: { revoked: true }, success: true })
+    const eventCountAfter = database.db
+      .select()
+      .from(storageEventTable)
+      .all()
+      .filter(
+        (event) =>
+          event.eventType === "oidc.access_token_revoked" || event.eventType === "oidc.refresh_token_family_revoked",
+      ).length
+    expect(eventCountAfter - eventCountBefore).toBe(2)
+    expect(
+      database.db
+        .select()
+        .from(oidcRefreshTokenTable)
+        .all()
+        .find((row) => row.familyId === otherUserFamilyId)?.revokedAt,
+    ).toBeNull()
+    expect(
+      database.db
+        .select()
+        .from(oidcAccessTokenTable)
+        .all()
+        .find((row) => row.refreshFamilyId === otherUserFamilyId)?.revokedAt,
+    ).toBeNull()
+    expect(
+      database.db
+        .select()
+        .from(oidcRefreshTokenTable)
+        .all()
+        .find((row) => row.familyId === otherRealmFamilyId)?.revokedAt,
+    ).toBeNull()
+    expect(
+      oidcRefreshTokenFamiliesMeRevokeAll({
+        database,
+        realmId: fixture.authenticated.realm.id,
+        runtime: database.runtime,
+        userId: fixture.authenticated.userId,
+      }),
+    ).toEqual({ data: { revoked: false }, success: true })
+    expect(
+      database.db
+        .select()
+        .from(storageEventTable)
+        .all()
+        .filter(
+          (event) =>
+            event.eventType === "oidc.access_token_revoked" || event.eventType === "oidc.refresh_token_family_revoked",
+        ).length,
+    ).toBe(eventCountAfter)
   })
 })

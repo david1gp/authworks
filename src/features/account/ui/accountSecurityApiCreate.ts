@@ -10,6 +10,8 @@ import type { MfaTotpEnrollmentConfirmRequest } from "../../mfa/public/mfaTotpEn
 import { mfaTotpEnrollmentConfirmResponseSchema } from "../../mfa/public/mfaTotpEnrollmentConfirmResponseSchema.js"
 import { mfaTotpEnrollmentRemoveResponseSchema } from "../../mfa/public/mfaTotpEnrollmentRemoveResponseSchema.js"
 import { mfaTotpEnrollmentStartResponseSchema } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
+import { oidcApiClientCreate } from "../../oidc/client/oidcApiClientCreate.js"
+import { oidcRefreshTokenRevokeResponseSchema } from "../../oidc/public/oidcRefreshTokenRevokeResponseSchema.js"
 import { passkeyApiClientCreate } from "../../passkeys/client/passkeyApiClientCreate.js"
 import { passkeyCredentialRevokeResponseSchema } from "../../passkeys/public/passkeyCredentialRevokeResponseSchema.js"
 import type { PasskeyRegistrationCompleteRequest } from "../../passkeys/public/passkeyRegistrationCompleteRequestSchema.js"
@@ -29,6 +31,7 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
   const passkeys = passkeyApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const mfa = mfaApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const identities = externalIdentityApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
+  const oidc = oidcApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const users = userApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const mutate = <T>(
     realmId: string,
@@ -101,6 +104,21 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
         { body: "{}", method: "POST" },
         mfaRecoveryCodesResponseSchema,
       ),
+    refreshTokenRevoke: (realmId: string, familyId: string) =>
+      mutate(
+        realmId,
+        `/realms/${encodeURIComponent(realmId)}/me/refresh-tokens/${encodeURIComponent(familyId)}/revoke`,
+        { method: "POST" },
+        oidcRefreshTokenRevokeResponseSchema,
+      ),
+    refreshTokensList: oidc.oidcRefreshTokenMeList,
+    refreshTokensRevokeAll: (realmId: string) =>
+      mutate(
+        realmId,
+        `/realms/${encodeURIComponent(realmId)}/me/refresh-tokens/revoke-all`,
+        { method: "POST" },
+        oidcRefreshTokenRevokeResponseSchema,
+      ),
     sessionsList: sessions.sessionMeList,
     sessionRevoke: (realmId: string, sessionId: string) =>
       mutate(
@@ -138,6 +156,6 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
         mfaTotpEnrollmentStartResponseSchema,
       ),
     // Keep completed feature clients in this adapter even where mutations require a freshly fetched CSRF token.
-    featureClients: { identities, mfa, passkeys, sessions, users },
+    featureClients: { identities, mfa, oidc, passkeys, sessions, users },
   }
 }

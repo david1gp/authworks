@@ -6,6 +6,7 @@ export const accountSecurityScreenSchema = v.picklist([
   "factors",
   "recovery-codes",
   "identities",
+  "refresh-tokens",
 ])
 
 export type AccountSecurityScreen = v.InferOutput<typeof accountSecurityScreenSchema>

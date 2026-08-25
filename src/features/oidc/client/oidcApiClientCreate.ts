@@ -62,6 +62,14 @@ import { type OidcJwks, oidcJwksSchema } from "../public/oidcJwksSchema.js"
 import { type OidcLogoutRequest, oidcLogoutRequestSchema } from "../public/oidcLogoutRequestSchema.js"
 import { type OidcLogoutResponse, oidcLogoutResponseSchema } from "../public/oidcLogoutResponseSchema.js"
 import {
+  type OidcRefreshTokenListResponse,
+  oidcRefreshTokenListResponseSchema,
+} from "../public/oidcRefreshTokenListResponseSchema.js"
+import {
+  type OidcRefreshTokenRevokeResponse,
+  oidcRefreshTokenRevokeResponseSchema,
+} from "../public/oidcRefreshTokenRevokeResponseSchema.js"
+import {
   type OidcSigningKeyLifecycleRequest,
   oidcSigningKeyLifecycleRequestSchema,
 } from "../public/oidcSigningKeyLifecycleRequestSchema.js"
@@ -391,6 +399,30 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
         `/realms/${encodeURIComponent(realmId)}/me/consents/${encodeURIComponent(parsed.output.client_id)}/revoke`,
         { method: "POST" },
         oidcConsentRevokeResponseSchema,
+      )
+    },
+
+    oidcRefreshTokenMeList(realmId: string, query?: ListQuery): Promise<Result<OidcRefreshTokenListResponse>> {
+      return request(
+        oidcListPath(`/realms/${encodeURIComponent(realmId)}/me/refresh-tokens`, query),
+        { method: "GET" },
+        oidcRefreshTokenListResponseSchema,
+      )
+    },
+
+    oidcRefreshTokenMeRevoke(realmId: string, familyId: string): Promise<Result<OidcRefreshTokenRevokeResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/me/refresh-tokens/${encodeURIComponent(familyId)}/revoke`,
+        { method: "POST" },
+        oidcRefreshTokenRevokeResponseSchema,
+      )
+    },
+
+    oidcRefreshTokenMeRevokeAll(realmId: string): Promise<Result<OidcRefreshTokenRevokeResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/me/refresh-tokens/revoke-all`,
+        { method: "POST" },
+        oidcRefreshTokenRevokeResponseSchema,
       )
     },
 

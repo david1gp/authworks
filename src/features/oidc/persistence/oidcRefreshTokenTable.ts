@@ -8,6 +8,7 @@ export const oidcRefreshTokenTable = sqliteTable(
     expiresAt: integer("expires_at").notNull(),
     familyId: text("family_id").notNull(),
     id: text("id").primaryKey(),
+    lastUsedAt: integer("last_used_at"),
     realmId: text("realm_id").notNull(),
     nonceEncrypted: text("nonce_encrypted"),
     scope: text("scope").notNull(),
@@ -20,6 +21,7 @@ export const oidcRefreshTokenTable = sqliteTable(
   (table) => [
     uniqueIndex("oidc_refresh_tokens_token_hash_idx").on(table.tokenHash),
     index("oidc_refresh_tokens_realm_user_idx").on(table.realmId, table.userId),
+    index("oidc_refresh_tokens_realm_user_family_idx").on(table.realmId, table.userId, table.familyId),
     index("oidc_refresh_tokens_family_idx").on(table.familyId),
   ],
 )
