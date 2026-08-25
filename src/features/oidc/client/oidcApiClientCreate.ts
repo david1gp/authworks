@@ -320,7 +320,7 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       return tokenRevokeRequest(parsed.output)
     },
 
-    oidcLogout(input: OidcLogoutRequest): Promise<Result<OidcLogoutResponse>> {
+    oidcLogout(input: OidcLogoutRequest): Promise<Result<OidcLogoutResponse | undefined>> {
       const parsed = v.safeParse(oidcLogoutRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
@@ -330,7 +330,11 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
       for (const [key, value] of Object.entries(parsed.output)) {
         if (value !== undefined) query.set(key, value)
       }
-      return request(`/oauth2/logout?${query.toString()}`, { method: "GET" }, oidcLogoutResponseSchema)
+      return request(
+        `/oauth2/logout?${query.toString()}`,
+        { method: "GET" },
+        v.union([oidcLogoutResponseSchema, v.undefined()]),
+      )
     },
 
     oidcConsentList(realmId: string, userId: string, query?: ListQuery): Promise<Result<OidcConsentListResponse>> {
