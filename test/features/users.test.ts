@@ -2,6 +2,7 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import * as v from "valibot"
 import { mfaRecoveryCodesGenerate } from "../../src/features/mfa/actions/mfaRecoveryCodesGenerate.js"
 import { mfaRecoveryCodeVerify } from "../../src/features/mfa/actions/mfaRecoveryCodeVerify.js"
 import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
@@ -23,8 +24,9 @@ import { userList } from "../../src/features/users/actions/userList.js"
 import { userProfileUpdate } from "../../src/features/users/actions/userProfileUpdate.js"
 import { userApiClientCreate } from "../../src/features/users/client/userApiClientCreate.js"
 import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
-import { userServerAppCreate } from "../../src/features/users/server/userServerAppCreate.js"
+import { userResponseSchema } from "../../src/features/users/public/userResponseSchema.js"
 import { userAccountSummaryResolve } from "../../src/features/users/server/userAccountSummaryResolve.js"
+import { userServerAppCreate } from "../../src/features/users/server/userServerAppCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -765,6 +767,52 @@ test("subject-bound user routes use the session actor and enforce realm, status,
       data: { user: { id: alphaCreated.data.user.id, state: "deleted" } },
     })
     expect(JSON.stringify(deleted)).not.toMatch(/password|secret|token|hash/i)
+  })
+})
+
+test("the current-user response omits legacy empty profile values", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "legacy-profile.example.com")
+    const system = realmSystemContextCreate("system")
+    const created = userCreate({
+      context: system,
+      database,
+      input: createInput("legacy-profile", "legacy-profile@example.com"),
+      realmId: realm.id,
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+
+    database.sqlite.run(
+      `UPDATE user_profiles SET display_name = 'Legacy user', first_name = '', gender = '', last_name = '', nick_name = '', preferred_language = '' WHERE user_id = '${created.data.user.id}'`,
+    )
+    const activated = userLifecycleSet({
+      context: system,
+      database,
+      input: { state: "active" },
+      realmId: realm.id,
+      userId: created.data.user.id,
+    })
+    expect(activated.success).toBe(true)
+    const issued = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId: created.data.user.id,
+    })
+    expect(issued.success).toBe(true)
+    if (!issued.success) return
+
+    const app = userServerAppCreate({ database, publicOrigin: "https://legacy-profile.example.com" })
+    const response = await app.request(`https://legacy-profile.example.com/realms/${realm.id}/me`, {
+      headers: { authorization: `Bearer ${issued.data.token}` },
+    })
+    expect(response.status).toBe(200)
+    const parsed = v.safeParse(userResponseSchema, await response.json())
+    expect(parsed.success).toBe(true)
+    if (parsed.success) expect(parsed.output.user.profile).toEqual({ displayName: "Legacy user" })
   })
 })
 

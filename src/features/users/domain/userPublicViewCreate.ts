@@ -1,18 +1,28 @@
 import type { UserRecord } from "../persistence/userRepositoryCreate.js"
 import type { User } from "../public/userSchema.js"
 
+function userProfileStringValueGet(value: string | null, maxLength: number): string | undefined {
+  return value !== null && value.length >= 1 && value.length <= maxLength ? value : undefined
+}
+
 export function userPublicViewCreate(row: UserRecord): User {
   const registrationVerified =
     row.registrationVerifiedAt !== null &&
     ((row.registrationVerificationMethod === "email" && row.emailVerifiedAt !== null) ||
       (row.registrationVerificationMethod === "whatsapp" && row.phoneNumberVerifiedAt !== null))
+  const displayName = userProfileStringValueGet(row.profile.displayName, 128)
+  const firstName = userProfileStringValueGet(row.profile.firstName, 128)
+  const gender = userProfileStringValueGet(row.profile.gender, 64)
+  const lastName = userProfileStringValueGet(row.profile.lastName, 128)
+  const nickName = userProfileStringValueGet(row.profile.nickName, 128)
+  const preferredLanguage = userProfileStringValueGet(row.profile.preferredLanguage, 16)
   const profile = {
-    ...(row.profile.displayName === null ? {} : { displayName: row.profile.displayName }),
-    ...(row.profile.firstName === null ? {} : { firstName: row.profile.firstName }),
-    ...(row.profile.gender === null ? {} : { gender: row.profile.gender }),
-    ...(row.profile.lastName === null ? {} : { lastName: row.profile.lastName }),
-    ...(row.profile.nickName === null ? {} : { nickName: row.profile.nickName }),
-    ...(row.profile.preferredLanguage === null ? {} : { preferredLanguage: row.profile.preferredLanguage }),
+    ...(displayName === undefined ? {} : { displayName }),
+    ...(firstName === undefined ? {} : { firstName }),
+    ...(gender === undefined ? {} : { gender }),
+    ...(lastName === undefined ? {} : { lastName }),
+    ...(nickName === undefined ? {} : { nickName }),
+    ...(preferredLanguage === undefined ? {} : { preferredLanguage }),
   }
   return {
     createdAt: row.createdAt,
