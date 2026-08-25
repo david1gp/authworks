@@ -8,6 +8,20 @@ account.access.consentRevoked,تم إلغاء وصول التطبيق.
 account.access.created,مُنح في {date}
 account.access.declined,تم رفض الدعوة
 account.access.email,البريد الإلكتروني
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.error,تعذر تحميل معلومات هذا الحساب.
 account.access.expired,انتهت صلاحية هذه الدعوة.
 account.access.invitationDeclineConfirm,هل تريد رفض هذه الدعوة؟
@@ -17,6 +31,8 @@ account.access.invitationFor,دعوة إلى {email}
 account.access.invitationMissing,افتح رابط الدعوة الكامل للمتابعة.
 account.access.invitationReplay,تم استخدام هذه الدعوة بالفعل أو لم تعد متاحة.
 account.access.membership,أدوار العضوية
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.organizationDescription,اختر المنظمة التي تعمل بها.
 account.access.organizationEmpty,هذا الحساب لا ينتمي إلى أي منظمة.
 account.access.permission,ليس لديك إذن لتنفيذ هذا الإجراء.
@@ -157,6 +173,21 @@ account.recovery.remaining,تبقى {count} من الرموز غير المست�
 account.recovery.saveNow,احفظ رموز الاسترداد الخاصة بك الآن
 account.recovery.saved,لقد حفظت هذه الرموز
 account.recovery.summary,الوصول للاسترداد
+account.refreshTokens.active,نشط
+account.refreshTokens.description,"راجع التطبيقات التي تستخدم رموز التحديث لهذا الحساب. لا تظهر سوى البيانات الوصفية الآمنة؛ ويؤدي إلغاء العائلة إلى إبطال رموز الوصول الخاصة بها أيضًا."
+account.refreshTokens.empty,لا تتوفر عائلات لرموز التحديث
+account.refreshTokens.expired,منتهي الصلاحية
+account.refreshTokens.expires,تنتهي الصلاحية {date}
+account.refreshTokens.lastUsed,آخر استخدام {date}
+account.refreshTokens.neverUsed,لم يُستخدم من قبل
+account.refreshTokens.revoke,إلغاء العائلة
+account.refreshTokens.revokeAll,إلغاء جميع العائلات
+account.refreshTokens.revokeAllConfirm,هل تريد إلغاء جميع عائلات رموز التحديث لهذا الحساب؟
+account.refreshTokens.revokeConfirm,هل تريد إلغاء عائلة رمز التحديث هذه ورموز الوصول الخاصة بها؟
+account.refreshTokens.revoked,ملغى
+account.refreshTokens.revokedAt,أُلغي في {date}
+account.refreshTokens.scope,النطاقات: {scope}
+account.refreshTokens.title,عائلات رموز التحديث
 account.security.label,إدارة أمان الحساب
 account.sessionExpired,انتهت صلاحية جلستك
 account.sessions.current,الجلسة الحالية
@@ -1252,6 +1283,8 @@ shell.nav.chooseDestination,اختر وجهة
 shell.nav.credentialsTokens,بيانات الاعتماد والرموز
 shell.nav.deleteAccount,حذف الحساب
 shell.nav.directory,الدليل
+shell.nav.effectiveAccess,Effective access
+shell.nav.effectiveAccess,الوصول الفعلي
 shell.nav.emailAddress,عنوان البريد الإلكتروني
 shell.nav.emailOtpSignIn,تسجيل الدخول برمز البريد الإلكتروني
 shell.nav.externalIdentitySignIn,تسجيل الدخول بهوية خارجية
@@ -1286,6 +1319,7 @@ shell.nav.protocolDocuments,مستندات البروتوكول
 shell.nav.realm,النطاق
 shell.nav.realmSettings,إعدادات النطاق
 shell.nav.recoveryCodes,رموز الاسترداد
+shell.nav.refreshTokens,رموز التحديث
 shell.nav.registration,التسجيل
 shell.nav.rolesGrants,الأدوار والمنح
 shell.nav.security,الأمان

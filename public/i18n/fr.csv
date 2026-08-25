@@ -8,6 +8,20 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.email,Email
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
 account.access.invitationDeclineConfirm,Refuser cette invitation ?
@@ -17,6 +31,8 @@ account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.membership,Membership roles
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.permission,You do not have permission to perform this action.
@@ -157,6 +173,21 @@ account.recovery.remaining,{count} unused codes remain. Generating new codes inv
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
+account.refreshTokens.active,Actif
+account.refreshTokens.description,"Consultez les applications qui utilisent des jetons d’actualisation pour ce compte. Seules des métadonnées sûres sont affichées ; révoquer une famille invalide aussi ses jetons d’accès."
+account.refreshTokens.empty,Aucune famille de jetons d’actualisation disponible
+account.refreshTokens.expired,Expiré
+account.refreshTokens.expires,Expire le {date}
+account.refreshTokens.lastUsed,Dernière utilisation le {date}
+account.refreshTokens.neverUsed,Jamais utilisé
+account.refreshTokens.revoke,Révoquer la famille
+account.refreshTokens.revokeAll,Révoquer toutes les familles
+account.refreshTokens.revokeAllConfirm,Révoquer toutes les familles de jetons d’actualisation de ce compte ?
+account.refreshTokens.revokeConfirm,Révoquer cette famille de jetons d’actualisation et ses jetons d’accès ?
+account.refreshTokens.revoked,Révoqué
+account.refreshTokens.revokedAt,Révoqué le {date}
+account.refreshTokens.scope,Étendues : {scope}
+account.refreshTokens.title,Familles de jetons d’actualisation
 account.security.label,Account security management
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
@@ -1252,6 +1283,8 @@ shell.nav.chooseDestination,Choisir une destination
 shell.nav.credentialsTokens,Identifiants et jetons
 shell.nav.deleteAccount,Supprimer le compte
 shell.nav.directory,Annuaire
+shell.nav.effectiveAccess,Effective access
+shell.nav.effectiveAccess,Accès effectif
 shell.nav.emailAddress,Adresse e-mail
 shell.nav.emailOtpSignIn,Connexion par code e-mail
 shell.nav.externalIdentitySignIn,Connexion par identité externe
@@ -1286,6 +1319,7 @@ shell.nav.protocolDocuments,Documents de protocole
 shell.nav.realm,Domaine
 shell.nav.realmSettings,Paramètres du domaine de sécurité
 shell.nav.recoveryCodes,Codes de récupération
+shell.nav.refreshTokens,Jetons d’actualisation
 shell.nav.registration,Inscription
 shell.nav.rolesGrants,Rôles et autorisations
 shell.nav.security,Sécurité

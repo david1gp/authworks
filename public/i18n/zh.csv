@@ -8,6 +8,20 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.email,Email
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
 account.access.invitationDeclineConfirm,要拒绝此邀请吗？
@@ -17,6 +31,8 @@ account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.membership,Membership roles
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.permission,You do not have permission to perform this action.
@@ -157,6 +173,21 @@ account.recovery.remaining,{count} unused codes remain. Generating new codes inv
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
+account.refreshTokens.active,有效
+account.refreshTokens.description,"查看使用此账户刷新令牌的应用。仅显示安全元数据；撤销一个族也会使其访问令牌失效。"
+account.refreshTokens.empty,没有可用的刷新令牌族
+account.refreshTokens.expired,已过期
+account.refreshTokens.expires,过期时间 {date}
+account.refreshTokens.lastUsed,上次使用 {date}
+account.refreshTokens.neverUsed,从未使用
+account.refreshTokens.revoke,撤销令牌族
+account.refreshTokens.revokeAll,撤销所有令牌族
+account.refreshTokens.revokeAllConfirm,要撤销此账户的所有刷新令牌族吗？
+account.refreshTokens.revokeConfirm,要撤销此刷新令牌族及其访问令牌吗？
+account.refreshTokens.revoked,已撤销
+account.refreshTokens.revokedAt,撤销时间 {date}
+account.refreshTokens.scope,范围：{scope}
+account.refreshTokens.title,刷新令牌族
 account.security.label,Account security management
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
@@ -1252,6 +1283,8 @@ shell.nav.chooseDestination,选择目标
 shell.nav.credentialsTokens,凭据与令牌
 shell.nav.deleteAccount,删除帐户
 shell.nav.directory,目录
+shell.nav.effectiveAccess,Effective access
+shell.nav.effectiveAccess,有效访问
 shell.nav.emailAddress,电子邮件地址
 shell.nav.emailOtpSignIn,电子邮件验证码登录
 shell.nav.externalIdentitySignIn,外部身份登录
@@ -1286,6 +1319,7 @@ shell.nav.protocolDocuments,协议文档
 shell.nav.realm,领域
 shell.nav.realmSettings,领域设置
 shell.nav.recoveryCodes,恢复代码
+shell.nav.refreshTokens,刷新令牌
 shell.nav.registration,注册
 shell.nav.rolesGrants,角色与授权
 shell.nav.security,安全

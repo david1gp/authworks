@@ -8,6 +8,20 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.email,Email
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
 account.access.invitationDeclineConfirm,Elutasítja ezt a meghívást?
@@ -17,6 +31,8 @@ account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.membership,Membership roles
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.permission,You do not have permission to perform this action.
@@ -157,6 +173,21 @@ account.recovery.remaining,{count} unused codes remain. Generating new codes inv
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
+account.refreshTokens.active,Aktív
+account.refreshTokens.description,"Tekintse át a fiók frissítési tokenjeit használó alkalmazásokat. Csak biztonságos metaadatok jelennek meg; egy család visszavonása a hozzá tartozó hozzáférési tokeneket is érvényteleníti."
+account.refreshTokens.empty,Nincsenek elérhető frissítésitoken-családok
+account.refreshTokens.expired,Lejárt
+account.refreshTokens.expires,Lejárat: {date}
+account.refreshTokens.lastUsed,Legutóbbi használat: {date}
+account.refreshTokens.neverUsed,Még nem használták
+account.refreshTokens.revoke,Család visszavonása
+account.refreshTokens.revokeAll,Minden család visszavonása
+account.refreshTokens.revokeAllConfirm,Visszavonja a fiók összes frissítésitoken-családját?
+account.refreshTokens.revokeConfirm,Visszavonja ezt a frissítésitoken-családot és a hozzáférési tokenjeit?
+account.refreshTokens.revoked,Visszavonva
+account.refreshTokens.revokedAt,Visszavonva: {date}
+account.refreshTokens.scope,Hatókörök: {scope}
+account.refreshTokens.title,Frissítésitoken-családok
 account.security.label,Account security management
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
@@ -1252,6 +1283,8 @@ shell.nav.chooseDestination,Válasszon célt
 shell.nav.credentialsTokens,Hitelesítő adatok és tokenek
 shell.nav.deleteAccount,Fiók törlése
 shell.nav.directory,Címtár
+shell.nav.effectiveAccess,Effective access
+shell.nav.effectiveAccess,Hatékony hozzáférés
 shell.nav.emailAddress,E-mail cím
 shell.nav.emailOtpSignIn,E-mail kódos bejelentkezés
 shell.nav.externalIdentitySignIn,Külső identitásos bejelentkezés
@@ -1286,6 +1319,7 @@ shell.nav.protocolDocuments,Protokolldokumentumok
 shell.nav.realm,Tartomány
 shell.nav.realmSettings,Tartománybeállítások
 shell.nav.recoveryCodes,Helyreállítási kódok
+shell.nav.refreshTokens,Frissítési tokenek
 shell.nav.registration,Regisztráció
 shell.nav.rolesGrants,Szerepkörök és jogosultságok
 shell.nav.security,Biztonság

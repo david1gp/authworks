@@ -8,6 +8,20 @@ account.access.consentRevoked,Der Anwendungszugriff wurde widerrufen.
 account.access.created,Erteilt am {date}
 account.access.declined,Einladung abgelehnt
 account.access.email,E-Mail
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.error,Die Kontoinformationen konnten nicht geladen werden.
 account.access.expired,Diese Einladung ist abgelaufen.
 account.access.invitationDeclineConfirm,Diese Einladung ablehnen?
@@ -17,6 +31,8 @@ account.access.invitationFor,Einladung für {email}
 account.access.invitationMissing,Öffnen Sie den vollständigen Einladungslink.
 account.access.invitationReplay,Diese Einladung wurde bereits verwendet oder ist nicht mehr verfügbar.
 account.access.membership,Mitgliedsrollen
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.organizationDescription,Wählen Sie die Organisation aus in der Sie arbeiten.
 account.access.organizationEmpty,Dieses Konto gehört keiner Organisation an.
 account.access.permission,Sie haben keine Berechtigung für diese Aktion.
@@ -157,6 +173,21 @@ account.recovery.remaining,{count} unbenutzte Codes verbleiben. Das Erzeugen neu
 account.recovery.saveNow,Speichern Sie jetzt Ihre Wiederherstellungscodes
 account.recovery.saved,Ich habe diese Codes gespeichert
 account.recovery.summary,Wiederherstellungszugriff
+account.refreshTokens.active,Aktiv
+account.refreshTokens.description,"Prüfen Sie die Anwendungen, die für dieses Konto Refresh-Tokens verwenden. Es werden nur sichere Metadaten angezeigt; der Widerruf einer Familie macht auch ihre Zugriffstoken ungültig."
+account.refreshTokens.empty,Keine Refresh-Token-Familien verfügbar
+account.refreshTokens.expired,Abgelaufen
+account.refreshTokens.expires,Läuft ab am {date}
+account.refreshTokens.lastUsed,Zuletzt verwendet am {date}
+account.refreshTokens.neverUsed,Noch nie verwendet
+account.refreshTokens.revoke,Familie widerrufen
+account.refreshTokens.revokeAll,Alle Familien widerrufen
+account.refreshTokens.revokeAllConfirm,Alle Refresh-Token-Familien für dieses Konto widerrufen?
+account.refreshTokens.revokeConfirm,Diese Refresh-Token-Familie und ihre Zugriffstoken widerrufen?
+account.refreshTokens.revoked,Widerrufen
+account.refreshTokens.revokedAt,Widerrufen am {date}
+account.refreshTokens.scope,Bereiche: {scope}
+account.refreshTokens.title,Refresh-Token-Familien
 account.security.label,Verwaltung der Kontosicherheit
 account.sessionExpired,Ihre Sitzung ist abgelaufen
 account.sessions.current,Aktuelle Sitzung
@@ -1252,6 +1283,8 @@ shell.nav.chooseDestination,Ziel auswählen
 shell.nav.credentialsTokens,Anmeldedaten und Token
 shell.nav.deleteAccount,Konto löschen
 shell.nav.directory,Verzeichnis
+shell.nav.effectiveAccess,Effective access
+shell.nav.effectiveAccess,Effektiver Zugriff
 shell.nav.emailAddress,E-Mail-Adresse
 shell.nav.emailOtpSignIn,E-Mail-Code-Anmeldung
 shell.nav.externalIdentitySignIn,Externe Identitätsanmeldung
@@ -1286,6 +1319,7 @@ shell.nav.protocolDocuments,Protokolldokumente
 shell.nav.realm,Realm-Bereich
 shell.nav.realmSettings,Bereichseinstellungen
 shell.nav.recoveryCodes,Wiederherstellungscodes
+shell.nav.refreshTokens,Refresh-Token
 shell.nav.registration,Registrierung
 shell.nav.rolesGrants,Rollen und Berechtigungen
 shell.nav.security,Sicherheit

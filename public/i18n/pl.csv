@@ -8,6 +8,20 @@ account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
 account.access.email,Email
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
 account.access.invitationDeclineConfirm,Odrzucić to zaproszenie?
@@ -17,6 +31,8 @@ account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.membership,Membership roles
+account.access.loadMore,Load more access
+account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.permission,You do not have permission to perform this action.
@@ -157,6 +173,21 @@ account.recovery.remaining,{count} unused codes remain. Generating new codes inv
 account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
+account.refreshTokens.active,Aktywny
+account.refreshTokens.description,"Przejrzyj aplikacje używające tokenów odświeżania dla tego konta. Wyświetlane są tylko bezpieczne metadane; unieważnienie rodziny unieważnia również jej tokeny dostępu."
+account.refreshTokens.empty,Brak dostępnych rodzin tokenów odświeżania
+account.refreshTokens.expired,Wygasł
+account.refreshTokens.expires,Wygasa {date}
+account.refreshTokens.lastUsed,Ostatnie użycie {date}
+account.refreshTokens.neverUsed,Nigdy nie użyto
+account.refreshTokens.revoke,Unieważnij rodzinę
+account.refreshTokens.revokeAll,Unieważnij wszystkie rodziny
+account.refreshTokens.revokeAllConfirm,Unieważnić wszystkie rodziny tokenów odświeżania dla tego konta?
+account.refreshTokens.revokeConfirm,Unieważnić tę rodzinę tokenów odświeżania i jej tokeny dostępu?
+account.refreshTokens.revoked,Unieważniony
+account.refreshTokens.revokedAt,Unieważniono {date}
+account.refreshTokens.scope,Zakresy: {scope}
+account.refreshTokens.title,Rodziny tokenów odświeżania
 account.security.label,Account security management
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
@@ -1252,6 +1283,8 @@ shell.nav.chooseDestination,Wybierz miejsce docelowe
 shell.nav.credentialsTokens,Poświadczenia i tokeny
 shell.nav.deleteAccount,Usuń konto
 shell.nav.directory,Katalog
+shell.nav.effectiveAccess,Effective access
+shell.nav.effectiveAccess,Efektywny dostęp
 shell.nav.emailAddress,Adres e-mail
 shell.nav.emailOtpSignIn,Logowanie kodem e-mail
 shell.nav.externalIdentitySignIn,Logowanie tożsamością zewnętrzną
@@ -1286,6 +1319,7 @@ shell.nav.protocolDocuments,Dokumenty protokołu
 shell.nav.realm,Domena
 shell.nav.realmSettings,Ustawienia obszaru
 shell.nav.recoveryCodes,Kody odzyskiwania
+shell.nav.refreshTokens,Tokeny odświeżania
 shell.nav.registration,Rejestracja
 shell.nav.rolesGrants,Role i uprawnienia
 shell.nav.security,Bezpieczeństwo
