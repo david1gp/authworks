@@ -400,7 +400,7 @@ test("email-change routes and the public client keep the session subject and del
         notifications.push(notification)
       },
       publicOrigin: "https://email-change-api.example.com",
-      rateLimitSecret: emailChangeSecret,
+      systemSecret: emailChangeSecret,
     })
     const client = userApiClientCreate({
       baseUrl: "https://email-change-api.example.com",
