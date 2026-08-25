@@ -29,7 +29,7 @@ const apiRejectedStageExitCodes = [
 const repositoryRoot = join(import.meta.dir, "../..")
 const preloadPath = join(import.meta.dir, "passwordContentorenSsoTestProductionEnsureProcessPreload.ts")
 
-test("Contentoren ssotest process maps every API rejection stage to its reserved exit code", async () => {
+test.serial("Contentoren ssotest process maps every API rejection stage to its reserved exit code", async () => {
   const cliPath = await cliBuild()
   for (const { exitCode, stage } of apiRejectedStageExitCodes) {
     const fixture = await processFixtureCreate(stage, "rejected")
@@ -43,7 +43,7 @@ test("Contentoren ssotest process maps every API rejection stage to its reserved
   }
 })
 
-test("Contentoren ssotest process reports an invalid realm-list response cleanly", async () => {
+test.serial("Contentoren ssotest process reports an invalid realm-list response cleanly", async () => {
   const cliPath = await cliBuild()
   const fixture = await processFixtureCreate("realm-list", "invalid")
   try {

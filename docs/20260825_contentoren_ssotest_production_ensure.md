@@ -49,15 +49,39 @@ command emits only one redacted JSON status:
 The other possible statuses are `updated` and `reused`. It never emits the
 email, password, system token, user ID, organization ID, or password hash.
 
-## Failure output contract
+## Failure output and exit-code contract
 
-Successful output is unchanged. Every failed command exits with status `1`,
-writes no stdout, and writes exactly one JSON object to stderr followed by a
-newline:
+Successful output is unchanged. Every failed command writes no stdout and
+writes exactly one JSON object to stderr followed by a newline:
 
 ```json
 {"error":{"code":"passwords.contentoren-ssotest-ensure.<reason>"}}
 ```
+
+The twelve `api-rejected.<stage>` failures have stable, distinct process exit
+codes in the reserved safe application range `32` through `43`. No other
+failure uses this range; all other failures continue to exit with status `1`.
+
+| Failure stage | Exit code |
+| --- | ---: |
+| `api-rejected.realm-list` | 32 |
+| `api-rejected.organization-list` | 33 |
+| `api-rejected.password-policy-get` | 34 |
+| `api-rejected.user-list` | 35 |
+| `api-rejected.machine-user-list` | 36 |
+| `api-rejected.membership-list` | 37 |
+| `api-rejected.user-create` | 38 |
+| `api-rejected.user-email-verification-set` | 39 |
+| `api-rejected.user-lifecycle-set` | 40 |
+| `api-rejected.password-credential-replace` | 41 |
+| `api-rejected.membership-create` | 42 |
+| `api-rejected.membership-update` | 43 |
+| Any other failure | 1 |
+
+The range is reserved for this command's stage-specific contract: it stays
+below conventional shell command-not-found and signal-derived statuses and
+does not expose HTTP status, response data, identifiers, or secrets. The
+canonical stderr JSON remains unchanged for every failure.
 
 The closed reason-code set is:
 
