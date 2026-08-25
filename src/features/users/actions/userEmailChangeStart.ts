@@ -22,7 +22,6 @@ import type { UserEmailChangeDelivery } from "../public/userEmailChangeDeliveryS
 import type { UserEmailChangeStartRequest } from "../public/userEmailChangeStartRequestSchema.js"
 import { userEmailChangeStartRequestSchema } from "../public/userEmailChangeStartRequestSchema.js"
 import type { UserEmailChangeStartResponse } from "../public/userEmailChangeStartResponseSchema.js"
-import type { UserEmailChangeNotification } from "../public/userEmailChangeNotificationSchema.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 
 const userEmailChangeCooldownMs = 60 * 1_000
@@ -45,7 +44,6 @@ type UserEmailChangeStartOptions = {
 
 type UserEmailChangeStartCommit = {
   readonly delivery?: UserEmailChangeDelivery
-  readonly notification?: UserEmailChangeNotification
   readonly response: UserEmailChangeStartResponse
 }
 
