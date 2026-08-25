@@ -91,6 +91,66 @@ export function userRepositoryCreate(database: StorageExecutor) {
       return userRecordGetByVerifiedPhoneNumber(realmId, phoneNumber)
     },
 
+    userPhoneNumberChange(input: {
+      expectedVersion: number
+      phoneNumber: string
+      phoneNumberVerifiedAt: number
+      realmId: string
+      updatedAt: number
+      userId: string
+      version: number
+    }): Result<UserRecord | null> {
+      try {
+        const current = database
+          .select()
+          .from(userTable)
+          .where(and(eq(userTable.id, input.userId), eq(userTable.realmId, input.realmId)))
+          .get()
+        if (current === undefined) return resultCreate(null)
+        const invariant = userStateInvariantValidate({
+          emailVerifiedAt: current.emailVerifiedAt,
+          phoneNumber: input.phoneNumber,
+          phoneNumberVerifiedAt: input.phoneNumberVerifiedAt,
+          registrationVerifiedAt: current.registrationVerifiedAt,
+          registrationVerificationMethod: current.registrationVerificationMethod,
+        })
+        if (!invariant.success)
+          return resultErrorCreate(
+            "userPhoneNumberChange",
+            invariant.errorMessage,
+            invariant.code ?? "users.invalid-transition",
+          )
+        const updated = database
+          .update(userTable)
+          .set({
+            phoneNumber: input.phoneNumber,
+            phoneNumberVerifiedAt: input.phoneNumberVerifiedAt,
+            updatedAt: input.updatedAt,
+            version: input.version,
+          })
+          .where(
+            and(
+              eq(userTable.id, input.userId),
+              eq(userTable.realmId, input.realmId),
+              eq(userTable.version, input.expectedVersion),
+            ),
+          )
+          .returning()
+          .get()
+        if (updated === undefined) return resultCreate(null)
+        const profile = database.select().from(userProfileTable).where(eq(userProfileTable.userId, input.userId)).get()
+        if (profile === undefined)
+          return resultErrorCreate("userPhoneNumberChange", "The user profile could not be read.", "users.read-failed")
+        return resultCreate({ ...updated, profile })
+      } catch (_error) {
+        return resultErrorCreate(
+          "userPhoneNumberChange",
+          "The user phone number could not be changed.",
+          "users.write-failed",
+        )
+      }
+    },
+
     userList(realmId: string): Result<UserRecord[]> {
       try {
         const users = database
