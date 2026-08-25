@@ -28,7 +28,7 @@ Let users choose WhatsApp on the production login page, enter a verified phone n
 - [x] 2. Wire production and demo adapters to WhatsApp availability, start, resend, verify, and authentication outcomes.
 - [x] 3. Add the WhatsApp chooser and phone/code panels with localized copy and demo scenarios.
 - [x] 4. Add production and demo end-to-end browser coverage and run the full repository check.
-- [ ] 5. Review complete; committed as `f321731`. Push and deployment remain.
+- [x] 5. Review, commit, push, and deploy the feature.
 - [ ] 6. Verify production health, WhatsApp availability, the deployed browser flow, and live OTP delivery when recipient access is available.
 
 ## Paths
