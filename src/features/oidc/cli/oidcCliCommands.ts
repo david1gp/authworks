@@ -8,6 +8,8 @@ import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 import { oidcCodelineClientEnsure } from "./oidcCodelineClientEnsure.js"
 import { oidcCodelineProductionClientEnsure } from "./oidcCodelineProductionClientEnsure.js"
 import { oidcCodelineProductionSecretRotate } from "./oidcCodelineProductionSecretRotate.js"
+import { oidcCodelineSecretRotateExitCodeGet } from "./oidcCodelineSecretRotateExitCodeGet.js"
+import { oidcCodelineSecretRotateFailureOutputCreate } from "./oidcCodelineSecretRotateFailureOutputCreate.js"
 
 type OidcCliFlags = {
   readonly profile?: string
@@ -192,12 +194,19 @@ const oidcCodelineProductionClientEnsureCommand = buildCommand({
 
 const oidcCodelineProductionSecretRotateCommand = buildCommand({
   async func(this: ApplicationContext) {
-    const result = await oidcCodelineProductionSecretRotate({
-      credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
-      homeDirectory: "/home/authworks",
-    })
-    if (result.success) return
-    this.process.exitCode = 1
+    try {
+      const result = await oidcCodelineProductionSecretRotate({
+        credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+        homeDirectory: "/home/authworks",
+      })
+      if (result.success) return
+      this.process.stderr.write(oidcCodelineSecretRotateFailureOutputCreate(result))
+      this.process.exitCode = oidcCodelineSecretRotateExitCodeGet(result)
+    } catch (_error) {
+      const code = "oidc.codeline-secret-rotate.internal-failed"
+      this.process.stderr.write(oidcCodelineSecretRotateFailureOutputCreate(code))
+      this.process.exitCode = oidcCodelineSecretRotateExitCodeGet(code)
+    }
   },
   parameters: { flags: {} },
   docs: { brief: "Rotate only the exact fixed production Codeline client secret for machine handoff" },

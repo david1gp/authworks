@@ -101,10 +101,35 @@ inactive, differently named, extra-callback, and wrong-callback clients fail
 without rotation.
 
 Success calls only the existing authenticated client-secret rotation API and
-writes exactly one version-1 `authworks.codeline-oidc-credential` envelope to
-stdout. The command writes no human logs; operational failures have empty stdout
-and stderr and are represented only by a nonzero exit status. The envelope is a
-one-time machine protocol and must be captured by the dedicated prodctl rotation
-command, never invoked in a terminal or through generic execution. Rotation is
-irreversible: if the downstream handoff fails after the API accepts rotation,
-the operation fails closed and must be rerun through the same workflow.
+writes exactly one unchanged version-1 `authworks.codeline-oidc-credential`
+envelope to stdout. Failure stdout is empty. Failure stderr is exactly one
+canonical JSON line containing only an allowlisted code; IDs, credentials,
+envelopes, HTTP bodies, exception text, and raw API diagnostics are never part of
+the failure protocol.
+
+| Exit | Canonical stderr code |
+| ---: | --- |
+| 40 | `oidc.codeline-secret-rotate.input-invalid` |
+| 41 | `oidc.codeline-secret-rotate.realm-not-found` |
+| 42 | `oidc.codeline-secret-rotate.realm-ambiguous` |
+| 43 | `oidc.codeline-secret-rotate.realm-inactive` |
+| 44 | `oidc.codeline-secret-rotate.api-unauthorized` |
+| 45 | `oidc.codeline-secret-rotate.api-unreachable` |
+| 46 | `oidc.codeline-secret-rotate.api-invalid-response` |
+| 47 | `oidc.codeline-secret-rotate.client-not-found` |
+| 48 | `oidc.codeline-secret-rotate.client-ambiguous` |
+| 49 | `oidc.codeline-secret-rotate.client-inactive` |
+| 50 | `oidc.codeline-secret-rotate.client-public` |
+| 51 | `oidc.codeline-secret-rotate.client-name-mismatch` |
+| 52 | `oidc.codeline-secret-rotate.client-callback-mismatch` |
+| 53 | `oidc.codeline-secret-rotate.client-cardinality-mismatch` |
+| 54 | `oidc.codeline-secret-rotate.rotation-rejected` |
+| 55 | `oidc.codeline-secret-rotate.envelope-invalid` |
+| 56 | `oidc.codeline-secret-rotate.internal-failed` |
+
+The exit/code pair is exact and stable. Unknown failures close to exit 56 and
+the canonical internal code. The envelope remains a one-time machine protocol
+and must be captured by the dedicated prodctl rotation command, never invoked in
+a terminal or through generic execution. Rotation is irreversible: if the
+downstream handoff fails after the API accepts rotation, the operation fails
+closed and must be rerun through the same workflow.

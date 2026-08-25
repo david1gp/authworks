@@ -7,9 +7,16 @@ import type { Realm } from "../../realms/public/realmSchema.js"
 
 const productionRealmDomain = "authworks.contentoren.de"
 
-export async function oidcCodelineProductionRealmResolve(api: {
-  readonly realmList: (query?: ListQuery) => ReturnType<ReturnType<typeof realmApiClientCreate>["realmList"]>
-}): Promise<Result<Realm>> {
+export async function oidcCodelineProductionRealmResolve(
+  api: {
+    readonly realmList: (query?: ListQuery) => ReturnType<ReturnType<typeof realmApiClientCreate>["realmList"]>
+  },
+  failureCodes?: {
+    readonly ambiguous: string
+    readonly inactive: string
+    readonly missing: string
+  },
+): Promise<Result<Realm>> {
   const op = "oidcCodelineProductionRealmResolve"
   const matches: Realm[] = []
   let pageToken: string | undefined
@@ -25,20 +32,22 @@ export async function oidcCodelineProductionRealmResolve(api: {
       matches.length === 0
         ? "No realm owns the production Authworks domain; no changes were made."
         : "More than one realm owns the production Authworks domain; no changes were made.",
-      "realms.conflict",
+      matches.length === 0
+        ? (failureCodes?.missing ?? "realms.conflict")
+        : (failureCodes?.ambiguous ?? "realms.conflict"),
     )
   const realm = matches[0]
   if (realm === undefined || realm.domain !== productionRealmDomain)
     return resultErrorCodedCreate(
       op,
       "The production Authworks domain is not the realm's primary domain; no changes were made.",
-      "realms.conflict",
+      failureCodes?.missing ?? "realms.conflict",
     )
   if (realm.status !== "active")
     return resultErrorCodedCreate(
       op,
       "The production Authworks realm is not active; no changes were made.",
-      "realms.conflict",
+      failureCodes?.inactive ?? "realms.conflict",
     )
   return resultCreate(realm)
 }

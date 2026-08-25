@@ -46,16 +46,36 @@ test("production Codeline rotation rotates only the exact client and hands off i
   }
 })
 
-test("production Codeline rotation refuses wrong type, callback, lifecycle, and ambiguity before mutation", async () => {
-  for (const scenario of ["public", "wrong-callback", "inactive", "ambiguous"] as const) {
+test("production Codeline rotation maps every client refusal before mutation", async () => {
+  const scenarios = [
+    ["missing", "client-not-found"],
+    ["public", "client-public"],
+    ["wrong-name", "client-name-mismatch"],
+    ["wrong-callback", "client-callback-mismatch"],
+    ["extra-callback", "client-cardinality-mismatch"],
+    ["inactive", "client-inactive"],
+    ["ambiguous", "client-ambiguous"],
+  ] as const
+  for (const [scenario, suffix] of scenarios) {
     const fixture = await productionFixtureCreate()
     try {
+      if (scenario === "missing") {
+        const result = await rotationRun(fixture)
+        expectFailure(result, suffix)
+        expect(fixture.rotationRequests).toBe(0)
+        continue
+      }
       const target = await fixture.oidcApi.oidcClientCreate(
         fixture.realmId,
         clientInputCreate({
           clientType: scenario === "public" ? "public" : "confidential",
-          name: "Codeline preview",
-          redirectUris: [scenario === "wrong-callback" ? "https://wrong.example/callback" : callback],
+          name: scenario === "wrong-name" ? "Callback owner" : "Codeline preview",
+          redirectUris:
+            scenario === "wrong-callback"
+              ? ["https://wrong.example/callback"]
+              : scenario === "extra-callback"
+                ? [callback, "https://extra.example/callback"]
+                : [callback],
         }),
       )
       expect(target.success).toBe(true)
@@ -73,22 +93,16 @@ test("production Codeline rotation refuses wrong type, callback, lifecycle, and 
         )
         expect(conflict.success).toBe(true)
       }
-      const envelopes: string[] = []
-      const result = await oidcCodelineProductionSecretRotate({
-        credentialEnvelopeWrite: (envelope) => envelopes.push(envelope),
-        fetch: fixture.observedFetch,
-        homeDirectory: fixture.directory,
-      })
-      expect(result.success).toBe(false)
+      const result = await rotationRun(fixture)
+      expectFailure(result, suffix)
       expect(fixture.rotationRequests).toBe(0)
-      expect(envelopes).toEqual([])
     } finally {
       await fixture.remove()
     }
   }
 })
 
-test("production Codeline rotation CLI is zero-argument and silent on operational failure", async () => {
+test("production Codeline rotation CLI emits only its canonical configuration failure", async () => {
   const failed = Bun.spawn(["bun", "src/outputs/cli.ts", "oidc", "codeline-production-secret-rotate"], {
     stderr: "pipe",
     stdout: "pipe",
@@ -98,9 +112,9 @@ test("production Codeline rotation CLI is zero-argument and silent on operationa
     new Response(failed.stderr).text(),
     new Response(failed.stdout).text(),
   ])
-  expect(failedExitCode).not.toBe(0)
+  expect(failedExitCode).toBe(40)
   expect(failedStdout).toBe("")
-  expect(failedStderr).toBe("")
+  expect(failedStderr).toBe('{"error":{"code":"oidc.codeline-secret-rotate.input-invalid"}}\n')
 
   const configured = Bun.spawn(
     ["bun", "src/outputs/cli.ts", "oidc", "codeline-production-secret-rotate", "--client-id", "other"],
@@ -114,6 +128,91 @@ test("production Codeline rotation CLI is zero-argument and silent on operationa
   expect(configuredExitCode).not.toBe(0)
   expect(configuredStdout).toBe("")
   expect(configuredStderr).toContain("No flag registered for --client-id")
+})
+
+test("production Codeline rotation maps realm and API failures without mutation", async () => {
+  const scenarios = [
+    ["realm-not-found", "realm-not-found"],
+    ["realm-ambiguous", "realm-ambiguous"],
+    ["realm-inactive", "realm-inactive"],
+    ["api-unauthorized", "api-unauthorized"],
+    ["api-unreachable", "api-unreachable"],
+    ["api-invalid-response", "api-invalid-response"],
+  ] as const
+  for (const [scenario, suffix] of scenarios) {
+    const fixture = await productionFixtureCreate()
+    try {
+      const result = await rotationRun(fixture, async (input, init) => {
+        const request = new Request(input, init)
+        if (request.method === "GET" && new URL(request.url).pathname === "/system/realms") {
+          if (scenario === "realm-not-found") return Response.json({ items: [] })
+          if (scenario === "api-unauthorized") return Response.json({ error: { code: "private" } }, { status: 401 })
+          if (scenario === "api-unreachable") throw new Error("private")
+          if (scenario === "api-invalid-response") return Response.json({ private: true })
+          const source = (await (await fixture.observedFetch(request)).json()) as { items: Record<string, unknown>[] }
+          if (scenario === "realm-ambiguous") return Response.json({ items: [...source.items, ...source.items] })
+          return Response.json({ items: source.items.map((realm) => ({ ...realm, status: "disabled" })) })
+        }
+        return await fixture.observedFetch(request)
+      })
+      expectFailure(result, suffix)
+      expect(fixture.rotationRequests).toBe(0)
+    } finally {
+      await fixture.remove()
+    }
+  }
+})
+
+test("production Codeline rotation separates rejected API and invalid envelope failures", async () => {
+  for (const [scenario, suffix] of [
+    ["rejected", "rotation-rejected"],
+    ["envelope", "envelope-invalid"],
+  ] as const) {
+    const fixture = await productionFixtureCreate()
+    try {
+      const created = await fixture.oidcApi.oidcClientCreate(
+        fixture.realmId,
+        clientInputCreate({ clientType: "confidential", name: "Codeline preview", redirectUris: [callback] }),
+      )
+      expect(created.success).toBe(true)
+      const result = await rotationRun(fixture, async (input, init) => {
+        const request = new Request(input, init)
+        if (request.method === "POST" && new URL(request.url).pathname.endsWith("/secret/rotate")) {
+          if (scenario === "rejected") return Response.json({ error: { code: "private" } }, { status: 409 })
+          const source = (await (await fixture.observedFetch(request)).json()) as Record<string, unknown>
+          return Response.json({ ...source, clientSecret: "x".repeat(44) })
+        }
+        return await fixture.observedFetch(request)
+      })
+      expectFailure(result, suffix)
+    } finally {
+      await fixture.remove()
+    }
+  }
+})
+
+test("production Codeline rotation closes a failed credential handoff as internal", async () => {
+  const fixture = await productionFixtureCreate()
+  try {
+    const created = await fixture.oidcApi.oidcClientCreate(
+      fixture.realmId,
+      clientInputCreate({ clientType: "confidential", name: "Codeline preview", redirectUris: [callback] }),
+    )
+    expect(created.success).toBe(true)
+    const result = await oidcCodelineProductionSecretRotate({
+      credentialEnvelopeWrite: () => {
+        throw new Error("private")
+      },
+      fetch: fixture.observedFetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(result.success).toBe(false)
+    if (result.success) return
+    expect(result.code).toBe("oidc.codeline-secret-rotate.internal-failed")
+    expect(fixture.rotationRequests).toBe(1)
+  } finally {
+    await fixture.remove()
+  }
 })
 
 test("production Codeline rotation refuses symbolic system-secret path components before network access", async () => {
@@ -166,6 +265,26 @@ async function productionFixtureCreate() {
       return rotationRequests
     },
   }
+}
+
+async function rotationRun(
+  fixture: Awaited<ReturnType<typeof productionFixtureCreate>>,
+  fetch = fixture.observedFetch,
+) {
+  const envelopes: string[] = []
+  const result = await oidcCodelineProductionSecretRotate({
+    credentialEnvelopeWrite: (envelope) => envelopes.push(envelope),
+    fetch,
+    homeDirectory: fixture.directory,
+  })
+  return { envelopes, result }
+}
+
+function expectFailure(run: Awaited<ReturnType<typeof rotationRun>>, suffix: string): void {
+  expect(run.result.success).toBe(false)
+  if (run.result.success) return
+  expect(run.result.code).toBe(`oidc.codeline-secret-rotate.${suffix}`)
+  expect(run.envelopes).toEqual([])
 }
 
 function clientInputCreate(options: {

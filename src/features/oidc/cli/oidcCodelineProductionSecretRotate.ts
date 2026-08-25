@@ -1,4 +1,4 @@
-import { type Result } from "#result"
+import { type Result, type ResultErr } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
@@ -11,6 +11,7 @@ import { oidcCodelineProductionSystemSecretGet } from "./oidcCodelineProductionS
 const productionOrigin = "https://authworks.contentoren.de"
 const productionClientName = "Codeline preview"
 const productionCallback = "https://preview.codeline.work/api/auth/callback"
+const failurePrefix = "oidc.codeline-secret-rotate"
 
 type ProductionFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 type ProductionOidcApi = {
@@ -28,22 +29,27 @@ export async function oidcCodelineProductionSecretRotate(options: {
 }): Promise<Result<{ readonly clientId: string }>> {
   const op = "oidcCodelineProductionSecretRotate"
   const secret = await oidcCodelineProductionSystemSecretGet(options.homeDirectory)
-  if (!secret.success) return secret
+  if (!secret.success) return failureCreate(op, "input-invalid")
   const realm = await oidcCodelineProductionRealmResolve(
     realmApiClientCreate({ baseUrl: productionOrigin, fetch: options.fetch, token: secret.data }),
+    {
+      ambiguous: `${failurePrefix}.realm-ambiguous`,
+      inactive: `${failurePrefix}.realm-inactive`,
+      missing: `${failurePrefix}.realm-not-found`,
+    },
   )
-  if (!realm.success) return realm
+  if (!realm.success) return failureIsClosed(realm) ? realm : apiFailureCreate(op, realm, "api-invalid-response")
   const api = oidcApiClientCreate({ baseUrl: productionOrigin, fetch: options.fetch, token: secret.data })
   const client = await productionClientResolve(api, realm.data.id)
-  if (!client.success) return client
+  if (!client.success) return failureIsClosed(client) ? client : apiFailureCreate(op, client, "api-invalid-response")
   const rotated = await api.oidcClientSecretRotate(realm.data.id, client.data.id)
-  if (!rotated.success) return rotated
+  if (!rotated.success) return apiFailureCreate(op, rotated, "rotation-rejected")
   if (
     rotated.data.client.id !== client.data.id ||
     !productionClientIsExact(rotated.data.client, realm.data.id) ||
     !/^[A-Za-z0-9_-]{43}$/.test(rotated.data.clientSecret)
   )
-    return resultErrorCodedCreate(op, "Authworks returned an invalid rotated credential.", "platform.invalid-response")
+    return failureCreate(op, "envelope-invalid")
   const envelope = JSON.stringify({
     clientId: rotated.data.client.id,
     clientSecret: rotated.data.clientSecret,
@@ -53,7 +59,7 @@ export async function oidcCodelineProductionSecretRotate(options: {
   try {
     options.credentialEnvelopeWrite(envelope)
   } catch (_error) {
-    return resultErrorCodedCreate(op, "The rotated credential could not be handed off.", "platform.internal")
+    return failureCreate(op, "internal-failed")
   }
   return resultCreate({ clientId: rotated.data.client.id })
 }
@@ -75,22 +81,46 @@ async function productionClientResolve(api: ProductionOidcApi, realmId: string):
     )
     pageToken = listed.data.nextPageToken
   } while (pageToken !== undefined)
-  if (matches.length !== 1)
-    return resultErrorCodedCreate(
-      op,
-      matches.length === 0
-        ? "The production Codeline client was not found; no changes were made."
-        : "The production Codeline client is ambiguous; no changes were made.",
-      "oidc.conflict",
-    )
+  if (matches.length === 0) return failureCreate(op, "client-not-found")
+  if (matches.length > 1) return failureCreate(op, "client-ambiguous")
   const client = matches[0]
-  if (client === undefined || !productionClientIsExact(client, realmId))
-    return resultErrorCodedCreate(
-      op,
-      "The production Codeline client does not have the exact required identity; no changes were made.",
-      "oidc.conflict",
-    )
+  if (client === undefined || client.realmId !== realmId) return failureCreate(op, "internal-failed")
+  if (client.status !== "active") return failureCreate(op, "client-inactive")
+  if (client.clientType !== "confidential") return failureCreate(op, "client-public")
+  if (client.name !== productionClientName) return failureCreate(op, "client-name-mismatch")
+  if (client.redirectUris.length !== 1) return failureCreate(op, "client-cardinality-mismatch")
+  if (client.redirectUris[0] !== productionCallback) return failureCreate(op, "client-callback-mismatch")
   return resultCreate(client)
+}
+
+function apiFailureCreate(
+  op: string,
+  failure: ResultErr,
+  fallback: "api-invalid-response" | "rotation-rejected",
+): ResultErr {
+  if (
+    failure.code === "platform.unauthorized" ||
+    failure.code === "platform.forbidden" ||
+    failure.statusCode === 401 ||
+    failure.statusCode === 403
+  )
+    return failureCreate(op, "api-unauthorized")
+  if (
+    failure.code === "platform.unreachable" ||
+    failure.code === "platform.unavailable" ||
+    (failure.statusCode !== undefined && failure.statusCode >= 500)
+  )
+    return failureCreate(op, "api-unreachable")
+  if (failure.code === "platform.invalid-response") return failureCreate(op, "api-invalid-response")
+  return failureCreate(op, fallback)
+}
+
+function failureCreate(op: string, suffix: string): ResultErr {
+  return resultErrorCodedCreate(op, "The fixed Codeline secret rotation was refused.", `${failurePrefix}.${suffix}`)
+}
+
+function failureIsClosed(failure: ResultErr): boolean {
+  return failure.code?.startsWith(`${failurePrefix}.`) ?? false
 }
 
 function productionClientIsExact(client: OidcClient, realmId: string): boolean {
