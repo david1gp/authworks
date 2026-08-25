@@ -4,6 +4,7 @@ import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { passwordApiClientCreate } from "../client/passwordApiClientCreate.js"
 import { passwordContentorenSsoTestProductionEnsure } from "./passwordContentorenSsoTestProductionEnsure.js"
+import { passwordContentorenSsoTestProductionEnsureExitCodeGet } from "./passwordContentorenSsoTestProductionEnsureExitCodeGet.js"
 import { passwordContentorenSsoTestProductionEnsureFailureOutputCreate } from "./passwordContentorenSsoTestProductionEnsureFailureOutputCreate.js"
 
 type PasswordCliFlags = {
@@ -251,7 +252,7 @@ const passwordContentorenSsoTestProductionEnsureCommand = buildCommand({
       })
       if (!result.success) {
         this.process.stderr.write(passwordContentorenSsoTestProductionEnsureFailureOutputCreate(result))
-        this.process.exitCode = 1
+        this.process.exitCode = passwordContentorenSsoTestProductionEnsureExitCodeGet(result)
         return
       }
       this.process.stdout.write(`${JSON.stringify(result.data)}\n`)
