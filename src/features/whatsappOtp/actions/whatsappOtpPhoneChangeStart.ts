@@ -12,7 +12,8 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { userPhoneNumberNormalize } from "../../users/domain/userPhoneNumberNormalize.js"
+import { userPhoneNumberNormalize } from "../../users/server/userPhoneNumberNormalize.js"
+import { userLookupCreate } from "../../users/server/userLookupCreate.js"
 import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
 import { whatsappOtpCodeCreate } from "../domain/whatsappOtpCodeCreate.js"
 import { whatsappOtpCodeHashCreate } from "../domain/whatsappOtpCodeHashCreate.js"
@@ -76,10 +77,10 @@ export function whatsappOtpPhoneChangeStart(
   if (!realm.success || realm.data.realm.status !== "active")
     return resultErrorCreate(op, "The account phone change is not available in this realm.", "whatsapp-otp.not-found")
   if (options.availability === undefined)
-    return resultErrorCreate(op, "The WhatsApp OTP is currently unavailable.", "whatsapp-otp.unavailable")
+    return whatsappOtpPhoneChangeAvailabilityFailure(options, now, phoneNumber.data)
   const availability = options.availability.whatsappOtpAvailabilityGet({ realmId: options.realmId })
   if (!availability.success || !availability.data.available)
-    return resultErrorCreate(op, "The WhatsApp OTP is currently unavailable.", "whatsapp-otp.unavailable")
+    return whatsappOtpPhoneChangeAvailabilityFailure(options, now, phoneNumber.data)
   const code = whatsappOtpCodeCreate(runtime)
   if (!code.success) return code
   const challengeId = uuidv7Create(runtime)
@@ -145,7 +146,7 @@ function whatsappOtpPhoneChangeStartTransaction(
   if (!limited.data.allowed) return resultCreate({ rateLimited: true, retryAt: limited.data.retryAt })
 
   const repository = whatsappOtpRepositoryCreate(options.database)
-  const user = repository.whatsappOtpUserGet(options.realmId, options.userId)
+  const user = userLookupCreate(options.database).userGet(options.realmId, options.userId)
   if (!user.success) return user
   if (user.data === null || user.data.state !== "active" || user.data.deletedAt !== null)
     return resultErrorCreate(
@@ -270,4 +271,44 @@ function whatsappOtpPhoneChangePortInvoke(
       }),
     ).catch(() => undefined)
   } catch (_error) {}
+}
+
+function whatsappOtpPhoneChangeAvailabilityFailure(
+  options: WhatsappOtpPhoneChangeStartOptions,
+  now: number,
+  phoneNumber: string,
+): Result<WhatsappOtpPhoneChangeStartResponse> {
+  const secret =
+    typeof options.rateLimitSecret === "string" ? options.rateLimitSecret : options.rateLimitSecret?.valueGet()
+  if (secret === undefined || secret.length === 0)
+    return resultErrorCreate(
+      "whatsappOtpPhoneChangeStart",
+      "The WhatsApp OTP is currently unavailable.",
+      "whatsapp-otp.unavailable",
+    )
+  const limited = storageTransactionRun(options.database, (transaction) =>
+    whatsappOtpRateLimitConsume(transaction, {
+      clientIp: options.clientIp ?? "unknown",
+      identifier: whatsappOtpPhoneHashCreate(phoneNumber),
+      now,
+      operation: "phone_change_start",
+      rateLimitSecret: options.rateLimitSecret,
+      realmId: options.realmId,
+    }),
+  )
+  if (!limited.success) return limited
+  if (!limited.data.allowed)
+    return resultErrorCreate(
+      "whatsappOtpPhoneChangeStart",
+      "Too many WhatsApp OTP requests.",
+      "whatsapp-otp.rate-limited",
+      {
+        retryAfterSeconds: Math.max(1, Math.ceil((limited.data.retryAt - now) / 1_000)),
+      },
+    )
+  return resultErrorCreate(
+    "whatsappOtpPhoneChangeStart",
+    "The WhatsApp OTP is currently unavailable.",
+    "whatsapp-otp.unavailable",
+  )
 }

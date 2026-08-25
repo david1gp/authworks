@@ -15,6 +15,7 @@ import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userPhoneNumberNormalize } from "../../users/domain/userPhoneNumberNormalize.js"
+import { userLookupCreate } from "../../users/server/userLookupCreate.js"
 import { whatsappOtpCodeCreate } from "../domain/whatsappOtpCodeCreate.js"
 import { whatsappOtpCodeHashCreate } from "../domain/whatsappOtpCodeHashCreate.js"
 import type { WhatsappOtpDeliveryPort } from "../domain/whatsappOtpDeliveryPort.js"
@@ -177,6 +178,7 @@ type WhatsappOtpStartTransactionOptions = {
 
 function whatsappOtpStartTransaction(options: WhatsappOtpStartTransactionOptions): Result<WhatsappOtpStartCommit> {
   const repository = whatsappOtpRepositoryCreate(options.database)
+  const users = userLookupCreate(options.database)
   const phoneHash = whatsappOtpPhoneHashCreate(options.phoneNumber)
   const latest = repository.whatsappOtpChallengeLatestGet(options.realmId, phoneHash, "sign_in")
   if (!latest.success) return latest
@@ -191,7 +193,7 @@ function whatsappOtpStartTransaction(options: WhatsappOtpStartTransactionOptions
     })
   const previous = repository.whatsappOtpChallengeExpirePrevious(options.realmId, phoneHash, "sign_in", options.now)
   if (!previous.success) return previous
-  const user = repository.whatsappOtpUserFindByPhone(options.realmId, options.phoneNumber)
+  const user = users.userFindByVerifiedPhoneNumber(options.realmId, options.phoneNumber)
   if (!user.success) return user
   const eligibleUser =
     user.data !== null &&

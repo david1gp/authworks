@@ -58,9 +58,21 @@ export function accountPageStateCreate(options: {
   const phoneStatus = createSignalObject<AccountPhoneViewStatus>("idle")
   const phoneValidationMessage = createSignalObject<string | undefined>(undefined)
 
-  const resultFail = (result: { readonly errorMessage: string }) => {
+  const resultIsExpired = (result: {
+    readonly code?: string
+    readonly errorMessage: string
+    readonly statusCode?: number
+  }) =>
+    result.statusCode === 401 ||
+    result.code === "sessions.unauthorized" ||
+    /session|authenticated|unauthorized/i.test(result.errorMessage)
+  const resultFail = (result: {
+    readonly code?: string
+    readonly errorMessage: string
+    readonly statusCode?: number
+  }) => {
     errorMessage.set(result.errorMessage)
-    status.set(/session|authenticated|unauthorized/i.test(result.errorMessage) ? "expired" : "error")
+    status.set(resultIsExpired(result) ? "expired" : "error")
   }
   const userApply = (nextUser: User) => {
     user.set(nextUser)
@@ -77,6 +89,12 @@ export function accountPageStateCreate(options: {
     const result = await options.adapter.loadUser()
     if (!result.success) return resultFail(result)
     userApply(result.data.user)
+    phoneCandidate.set("")
+    phoneChallengeId.set(undefined)
+    phoneCode.set("")
+    phoneErrorMessage.set(undefined)
+    phoneValidationMessage.set(undefined)
+    phoneStatus.set("idle")
     status.set("ready")
   }
   const profileSubmit = async (event: SubmitEvent) => {
@@ -151,6 +169,7 @@ export function accountPageStateCreate(options: {
     phoneStatus.set("sending")
     const result = await options.adapter.phoneChangeStart(parsed.output)
     if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
       phoneErrorMessage.set(result.errorMessage)
       phoneStatus.set("error")
       return
@@ -165,6 +184,7 @@ export function accountPageStateCreate(options: {
     phoneStatus.set("sending")
     const result = await options.adapter.phoneChangeResend({ challengeId, phoneNumber: phoneCandidate.get() })
     if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
       phoneErrorMessage.set(result.errorMessage)
       phoneStatus.set("error")
       return
@@ -187,6 +207,7 @@ export function accountPageStateCreate(options: {
     phoneStatus.set("verifying")
     const result = await options.adapter.phoneChangeVerify(parsed.output)
     if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
       phoneErrorMessage.set(result.errorMessage)
       phoneStatus.set("error")
       return

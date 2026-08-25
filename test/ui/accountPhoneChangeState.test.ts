@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from "bun:test"
+import { resultErrorCodedCreate } from "../../src/platform/errors/resultErrorCodedCreate.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { accountDemoUserFixture } from "../../src/features/account/ui/accountDemoUserFixture.js"
 
@@ -59,6 +60,36 @@ describe("account phone-change state", () => {
     })
   })
 
+  test("clears phone-change state after a successful user reload", async () => {
+    const refreshedUser = { ...accountDemoUserFixture, phoneNumber: "+14155552672" }
+    const adapter = accountDemoAdapterCreate(() => "success")
+    const state = accountPageStateCreate({
+      adapter: {
+        ...adapter,
+        loadUser: async () => resultCreate({ user: refreshedUser }),
+      },
+      initialStatus: "ready",
+      kind: "profile",
+    })
+
+    state.phoneCandidate.set("+14155550000")
+    state.phoneChallengeId.set("stale-challenge")
+    state.phoneCode.set("123456")
+    state.phoneErrorMessage.set("stale error")
+    state.phoneValidationMessage.set("stale validation")
+    state.phoneStatus.set("code")
+
+    await state.load(true)
+
+    expect(state.user.get()?.phoneNumber).toBe(refreshedUser.phoneNumber)
+    expect(state.phoneCandidate.get()).toBe("")
+    expect(state.phoneChallengeId.get()).toBeUndefined()
+    expect(state.phoneCode.get()).toBe("")
+    expect(state.phoneErrorMessage.get()).toBeUndefined()
+    expect(state.phoneValidationMessage.get()).toBeUndefined()
+    expect(state.phoneStatus.get()).toBe("idle")
+  })
+
   test("validates inputs before adapter calls and supports deterministic resend", async () => {
     let calls = 0
     const adapter = accountDemoAdapterCreate(() => "success")
@@ -114,5 +145,38 @@ describe("account phone-change state", () => {
     } finally {
       globalThis.fetch = originalFetch
     }
+  })
+
+  test("routes phone session failures through account expiry handling", async () => {
+    const sessionExpired = () => {
+      const result = resultErrorCodedCreate("phoneChange", "Session expired.", "sessions.unauthorized")
+      result.statusCode = 401
+      return result
+    }
+    const adapter = accountDemoAdapterCreate(() => "success")
+    const expiredAdapter = {
+      ...adapter,
+      phoneChangeResend: async () => sessionExpired(),
+      phoneChangeStart: async () => sessionExpired(),
+      phoneChangeVerify: async () => sessionExpired(),
+    }
+
+    const startState = accountPageStateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    startState.phoneCandidate.set("+14155552672")
+    await startState.phoneChangeStart(submitEvent)
+    expect(startState.status.get()).toBe("expired")
+
+    const resendState = accountPageStateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    resendState.phoneCandidate.set("+14155552672")
+    resendState.phoneChallengeId.set("challenge")
+    await resendState.phoneChangeResend()
+    expect(resendState.status.get()).toBe("expired")
+
+    const verifyState = accountPageStateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    verifyState.phoneCandidate.set("+14155552672")
+    verifyState.phoneChallengeId.set("challenge")
+    verifyState.phoneCode.set("123456")
+    await verifyState.phoneChangeVerify(submitEvent)
+    expect(verifyState.status.get()).toBe("expired")
   })
 })

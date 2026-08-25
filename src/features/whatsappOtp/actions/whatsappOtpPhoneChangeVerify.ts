@@ -12,8 +12,8 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { userPhoneNumberChange } from "../../users/actions/userPhoneNumberChange.js"
-import { userPhoneNumberNormalize } from "../../users/domain/userPhoneNumberNormalize.js"
+import { userPhoneNumberNormalize } from "../../users/server/userPhoneNumberNormalize.js"
+import { userPhoneNumberChange } from "../../users/server/userPhoneNumberChange.js"
 import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
 import { whatsappOtpCodeMatches } from "../domain/whatsappOtpCodeMatches.js"
 import { whatsappOtpPhoneChangePurpose } from "../domain/whatsappOtpPhoneChangePurpose.js"
@@ -71,10 +71,10 @@ export function whatsappOtpPhoneChangeVerify(
   if (!realm.success || realm.data.realm.status !== "active")
     return resultErrorCreate(op, "The account phone change is not available in this realm.", "whatsapp-otp.not-found")
   if (options.availability === undefined)
-    return resultErrorCreate(op, "The WhatsApp OTP is currently unavailable.", "whatsapp-otp.unavailable")
+    return whatsappOtpPhoneChangeAvailabilityFailure(options, now, parsed.output.challengeId)
   const availability = options.availability.whatsappOtpAvailabilityGet({ realmId: options.realmId })
   if (!availability.success || !availability.data.available)
-    return resultErrorCreate(op, "The WhatsApp OTP is currently unavailable.", "whatsapp-otp.unavailable")
+    return whatsappOtpPhoneChangeAvailabilityFailure(options, now, parsed.output.challengeId)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   const committed = storageTransactionRun(options.database, (transaction) =>
     whatsappOtpPhoneChangeVerifyTransaction({
@@ -309,4 +309,44 @@ function whatsappOtpPhoneChangeNotificationInvoke(
   try {
     void Promise.resolve(callback(notification)).catch(() => undefined)
   } catch (_error) {}
+}
+
+function whatsappOtpPhoneChangeAvailabilityFailure(
+  options: WhatsappOtpPhoneChangeVerifyOptions,
+  now: number,
+  challengeId: string,
+): Result<WhatsappOtpPhoneChangeVerifyResponse> {
+  const secret =
+    typeof options.rateLimitSecret === "string" ? options.rateLimitSecret : options.rateLimitSecret?.valueGet()
+  if (secret === undefined || secret.length === 0)
+    return resultErrorCreate(
+      "whatsappOtpPhoneChangeVerify",
+      "The WhatsApp OTP is currently unavailable.",
+      "whatsapp-otp.unavailable",
+    )
+  const limited = storageTransactionRun(options.database, (transaction) =>
+    whatsappOtpRateLimitConsume(transaction, {
+      clientIp: options.clientIp ?? "unknown",
+      identifier: challengeId,
+      now,
+      operation: "phone_change_verify",
+      rateLimitSecret: options.rateLimitSecret,
+      realmId: options.realmId,
+    }),
+  )
+  if (!limited.success) return limited
+  if (!limited.data.allowed)
+    return resultErrorCreate(
+      "whatsappOtpPhoneChangeVerify",
+      "Too many WhatsApp OTP requests.",
+      "whatsapp-otp.rate-limited",
+      {
+        retryAfterSeconds: Math.max(1, Math.ceil((limited.data.retryAt - now) / 1_000)),
+      },
+    )
+  return resultErrorCreate(
+    "whatsappOtpPhoneChangeVerify",
+    "The WhatsApp OTP is currently unavailable.",
+    "whatsapp-otp.unavailable",
+  )
 }

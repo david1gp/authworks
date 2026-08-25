@@ -16,6 +16,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
+import { userLookupCreate } from "../../users/server/userLookupCreate.js"
 import { whatsappOtpCodeMatches } from "../domain/whatsappOtpCodeMatches.js"
 import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
 import { whatsappOtpPhoneHashCreate } from "../domain/whatsappOtpPhoneHashCreate.js"
@@ -157,6 +158,7 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
   if (!limited.data.allowed) return resultCreate({ rateLimited: true, retryAt: limited.data.retryAt })
 
   const repository = whatsappOtpRepositoryCreate(options.database)
+  const users = userLookupCreate(options.database)
   const challenge = repository.whatsappOtpChallengeGet(options.realmId, options.input.challengeId)
   if (!challenge.success) return challenge
   if (options.input.organizationId !== undefined) {
@@ -231,7 +233,7 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
   }
   if (current.userId === null) return resultCreate({ failure: true })
   const userId = current.userId
-  const user = repository.whatsappOtpUserGet(options.realmId, userId)
+  const user = users.userGet(options.realmId, userId)
   if (!user.success) return user
   const eligible =
     user.data !== null &&

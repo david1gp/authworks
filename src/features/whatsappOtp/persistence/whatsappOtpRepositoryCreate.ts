@@ -1,9 +1,8 @@
-import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm"
+import { and, desc, eq, isNull } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
-import { type UserRow, userTable } from "../../users/persistence/userTable.js"
 import { whatsappOtpPhoneChangePurpose } from "../domain/whatsappOtpPhoneChangePurpose.js"
 import { type WhatsappOtpChallengeRow, whatsappOtpChallengeTable } from "./whatsappOtpChallengeTable.js"
 
@@ -279,49 +278,6 @@ export function whatsappOtpRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "whatsappOtpPhoneChangeChallengeLatestGet",
           "The account phone-change challenge could not be read.",
-          "whatsapp-otp.read-failed",
-        )
-      }
-    },
-
-    whatsappOtpUserFindByPhone(realmId: string, phoneNumber: string): Result<UserRow | null> {
-      try {
-        return resultCreate(
-          database
-            .select()
-            .from(userTable)
-            .where(
-              and(
-                eq(userTable.realmId, realmId),
-                eq(userTable.phoneNumber, phoneNumber),
-                isNotNull(userTable.phoneNumberVerifiedAt),
-              ),
-            )
-            .orderBy(asc(userTable.createdAt))
-            .get() ?? null,
-        )
-      } catch (_error) {
-        return resultErrorCreate(
-          "whatsappOtpUserFindByPhone",
-          "The WhatsApp OTP user could not be read.",
-          "whatsapp-otp.read-failed",
-        )
-      }
-    },
-
-    whatsappOtpUserGet(realmId: string, userId: string): Result<UserRow | null> {
-      try {
-        return resultCreate(
-          database
-            .select()
-            .from(userTable)
-            .where(and(eq(userTable.realmId, realmId), eq(userTable.id, userId)))
-            .get() ?? null,
-        )
-      } catch (_error) {
-        return resultErrorCreate(
-          "whatsappOtpUserGet",
-          "The WhatsApp OTP user could not be read.",
           "whatsapp-otp.read-failed",
         )
       }
