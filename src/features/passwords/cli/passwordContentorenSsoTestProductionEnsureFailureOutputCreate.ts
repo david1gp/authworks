@@ -20,6 +20,20 @@ const apiUnauthorizedCode = "passwords.contentoren-ssotest-ensure.api-unauthoriz
 const apiForbiddenCode = "passwords.contentoren-ssotest-ensure.api-forbidden"
 const apiRateLimitedCode = "passwords.contentoren-ssotest-ensure.api-rate-limited"
 const apiInvalidResponseCode = "passwords.contentoren-ssotest-ensure.api-invalid-response"
+const apiInvalidResponseStageCodes = new Set([
+  `${apiInvalidResponseCode}.realm-list`,
+  `${apiInvalidResponseCode}.organization-list`,
+  `${apiInvalidResponseCode}.password-policy-get`,
+  `${apiInvalidResponseCode}.user-list`,
+  `${apiInvalidResponseCode}.machine-user-list`,
+  `${apiInvalidResponseCode}.membership-list`,
+  `${apiInvalidResponseCode}.user-create`,
+  `${apiInvalidResponseCode}.user-email-verification-set`,
+  `${apiInvalidResponseCode}.user-lifecycle-set`,
+  `${apiInvalidResponseCode}.password-credential-replace`,
+  `${apiInvalidResponseCode}.membership-create`,
+  `${apiInvalidResponseCode}.membership-update`,
+])
 const apiRejectedCode = "passwords.contentoren-ssotest-ensure.api-rejected"
 const apiFailedCode = "passwords.contentoren-ssotest-ensure.api-failed"
 const internalFailedCode = "passwords.contentoren-ssotest-ensure.internal-failed"
@@ -45,6 +59,7 @@ const failureCodes = new Set([
   apiForbiddenCode,
   apiRateLimitedCode,
   apiInvalidResponseCode,
+  ...apiInvalidResponseStageCodes,
   apiRejectedCode,
   apiFailedCode,
   internalFailedCode,
@@ -56,6 +71,7 @@ export function passwordContentorenSsoTestProductionEnsureFailureOutputCreate(fa
 }
 
 function failureCodeGet(result: ResultErr): string {
+  if (result.code !== undefined && apiInvalidResponseStageCodes.has(result.code)) return result.code
   switch (result.code) {
     case inputInvalidCode:
     case realmNotFoundCode:

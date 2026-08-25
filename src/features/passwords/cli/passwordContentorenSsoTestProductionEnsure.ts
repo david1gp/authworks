@@ -21,6 +21,21 @@ const fixtureUserName = "ssotest"
 
 type ProductionFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 type ProductionStatus = { readonly status: "created" | "updated" | "reused" }
+const productionApiStages = [
+  "realm-list",
+  "organization-list",
+  "password-policy-get",
+  "user-list",
+  "machine-user-list",
+  "membership-list",
+  "user-create",
+  "user-email-verification-set",
+  "user-lifecycle-set",
+  "password-credential-replace",
+  "membership-create",
+  "membership-update",
+] as const
+type ProductionApiStage = (typeof productionApiStages)[number]
 
 export async function passwordContentorenSsoTestProductionEnsure(options: {
   readonly email: string
@@ -43,7 +58,7 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
   const organization = productionOrganizationResolve(organizations.data, realm.data.id)
   if (!organization.success) return organization
   const passwordApi = passwordApiClientCreate(clientOptions)
-  const policy = await passwordApi.passwordPolicyGet(realm.data.id)
+  const policy = productionApiResultStage(await passwordApi.passwordPolicyGet(realm.data.id), "password-policy-get")
   if (!policy.success) return policy
   const policyChecked = passwordPolicyCheck(input.data.password.valueGet(), policy.data.policy)
   if (!policyChecked.success)
@@ -70,11 +85,14 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
   let changed = false
   let user = current.data
   if (user === null) {
-    const created = await userApi.userCreate(realm.data.id, {
-      email: input.data.email,
-      profile: {},
-      userName: fixtureUserName,
-    })
+    const created = productionApiResultStage(
+      await userApi.userCreate(realm.data.id, {
+        email: input.data.email,
+        profile: {},
+        userName: fixtureUserName,
+      }),
+      "user-create",
+    )
     if (!created.success) return created
     user = created.data.user
   }
@@ -85,7 +103,10 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
       "passwords.contentoren-ssotest-ensure.human-conflict",
     )
   if (!user.emailVerified || user.registrationVerifiedAt === undefined) {
-    const verified = await userApi.userEmailVerificationSet(realm.data.id, user.id, { state: "verified" })
+    const verified = productionApiResultStage(
+      await userApi.userEmailVerificationSet(realm.data.id, user.id, { state: "verified" }),
+      "user-email-verification-set",
+    )
     if (!verified.success) return verified
     user = verified.data.user
     changed = true
@@ -97,29 +118,38 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
         "The fixture user is deleted; no changes were made.",
         "passwords.contentoren-ssotest-ensure.human-deleted",
       )
-    const activated = await userApi.userLifecycleSet(realm.data.id, user.id, { state: "active" })
+    const activated = productionApiResultStage(
+      await userApi.userLifecycleSet(realm.data.id, user.id, { state: "active" }),
+      "user-lifecycle-set",
+    )
     if (!activated.success) return activated
     user = activated.data.user
     changed = true
   }
-  const replaced = await passwordApi.passwordCredentialReplace(realm.data.id, user.id, {
-    password: input.data.password.valueGet(),
-  })
+  const replaced = productionApiResultStage(
+    await passwordApi.passwordCredentialReplace(realm.data.id, user.id, {
+      password: input.data.password.valueGet(),
+    }),
+    "password-credential-replace",
+  )
   if (!replaced.success) return replaced
   changed ||= replaced.data.changed
   if (membership.data === null) {
-    const created = await organizationApi.organizationMembershipCreate(realm.data.id, organization.data.id, {
-      roles: ["member"],
-      userId: user.id,
-    })
+    const created = productionApiResultStage(
+      await organizationApi.organizationMembershipCreate(realm.data.id, organization.data.id, {
+        roles: ["member"],
+        userId: user.id,
+      }),
+      "membership-create",
+    )
     if (!created.success) return created
     changed = true
   } else if (membership.data.roles.length !== 1 || membership.data.roles[0] !== "member") {
-    const updated = await organizationApi.organizationMembershipUpdate(
-      realm.data.id,
-      organization.data.id,
-      membership.data.id,
-      { roles: ["member"] },
+    const updated = productionApiResultStage(
+      await organizationApi.organizationMembershipUpdate(realm.data.id, organization.data.id, membership.data.id, {
+        roles: ["member"],
+      }),
+      "membership-update",
     )
     if (!updated.success) return updated
     changed = true
@@ -148,7 +178,7 @@ async function realmListAll(api: ReturnType<typeof realmApiClientCreate>): Promi
   const items: Realm[] = []
   let pageToken: string | undefined
   do {
-    const listed = await api.realmList(pageQueryCreate(pageToken))
+    const listed = productionApiResultStage(await api.realmList(pageQueryCreate(pageToken)), "realm-list")
     if (!listed.success) return listed
     items.push(...listed.data.items)
     pageToken = listed.data.nextPageToken
@@ -185,7 +215,10 @@ async function organizationListAll(
   const items: Organization[] = []
   let pageToken: string | undefined
   do {
-    const listed = await api.organizationList(realmId, pageQueryCreate(pageToken))
+    const listed = productionApiResultStage(
+      await api.organizationList(realmId, pageQueryCreate(pageToken)),
+      "organization-list",
+    )
     if (!listed.success) return listed
     items.push(...listed.data.items)
     pageToken = listed.data.nextPageToken
@@ -224,7 +257,7 @@ async function fixtureUsersFind(
   for (const realm of realms) {
     let pageToken: string | undefined
     do {
-      const listed = await api.userList(realm.id, pageQueryCreate(pageToken))
+      const listed = productionApiResultStage(await api.userList(realm.id, pageQueryCreate(pageToken)), "user-list")
       if (!listed.success) return listed
       matches.push(
         ...listed.data.items.filter(
@@ -273,7 +306,10 @@ async function fixtureMachineUsersRefuse(
   for (const realm of realms) {
     let pageToken: string | undefined
     do {
-      const listed = await api.machineUserList(realm.id, pageQueryCreate(pageToken))
+      const listed = productionApiResultStage(
+        await api.machineUserList(realm.id, pageQueryCreate(pageToken)),
+        "machine-user-list",
+      )
       if (!listed.success) return listed
       if (listed.data.items.some((user) => user.userName.trim().toLowerCase() === fixtureUserName))
         return resultErrorCodedCreate(
@@ -297,7 +333,10 @@ async function fixtureMembershipsFind(
   for (const organization of organizations.filter((candidate) => candidate.status === "active")) {
     let pageToken: string | undefined
     do {
-      const listed = await api.organizationMembershipList(realmId, organization.id, pageQueryCreate(pageToken))
+      const listed = productionApiResultStage(
+        await api.organizationMembershipList(realmId, organization.id, pageQueryCreate(pageToken)),
+        "membership-list",
+      )
       if (!listed.success) return listed
       matches.push(...listed.data.items.filter((membership) => membership.userId === userId))
       pageToken = listed.data.nextPageToken
@@ -328,4 +367,13 @@ function fixtureMembershipResolve(
 
 function pageQueryCreate(pageToken: string | undefined): ListQuery {
   return { pageSize: 100, ...(pageToken === undefined ? {} : { pageToken }) }
+}
+
+function productionApiResultStage<T>(result: Result<T>, stage: ProductionApiStage): Result<T> {
+  if (result.success || result.code !== "platform.invalid-response") return result
+  return resultErrorCodedCreate(
+    result.op,
+    "The server returned an invalid response.",
+    `passwords.contentoren-ssotest-ensure.api-invalid-response.${stage}`,
+  )
 }

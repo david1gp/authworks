@@ -16,6 +16,20 @@ const systemSecret = "production-system-secret-ssotest-0001"
 const privateEmail = "private.ssotest@example.invalid"
 const privatePassword = "Private-fixture-password-100!"
 const replacementPassword = "Replacement-fixture-password-200!"
+const apiInvalidResponseStages = [
+  "realm-list",
+  "organization-list",
+  "password-policy-get",
+  "user-list",
+  "machine-user-list",
+  "membership-list",
+  "user-create",
+  "user-email-verification-set",
+  "user-lifecycle-set",
+  "password-credential-replace",
+  "membership-create",
+  "membership-update",
+] as const
 
 test("Contentoren ssotest ensure creates and reuses an active verified member account", async () => {
   const fixture = await productionFixtureCreate()
@@ -209,6 +223,36 @@ test("Contentoren ssotest ensure refuses ambiguous Contentoren organizations wit
     if (users.success) expect(users.data.items).toHaveLength(0)
   } finally {
     await fixture.close()
+  }
+})
+
+test("Contentoren ssotest ensure identifies every invalid API response boundary without disclosure", async () => {
+  for (const stage of apiInvalidResponseStages) {
+    const fixture = await productionFixtureCreate()
+    try {
+      await invalidResponseStageFixturePrepare(fixture, stage)
+      const fetch = async (input: string | URL | Request, init?: RequestInit) => {
+        const request = new Request(input, init)
+        if (invalidResponseStageMatches(stage, request)) return Response.json({ malformed: true })
+        return await fixture.fetch(request)
+      }
+      const result = await passwordContentorenSsoTestProductionEnsure({
+        email: privateEmail,
+        fetch,
+        password: replacementPassword,
+        token: systemSecret,
+      })
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.code).toBe(`passwords.contentoren-ssotest-ensure.api-invalid-response.${stage}`)
+        expect(JSON.stringify(result)).not.toContain(privateEmail)
+        expect(JSON.stringify(result)).not.toContain(privatePassword)
+        expect(JSON.stringify(result)).not.toContain(replacementPassword)
+        expect(JSON.stringify(result)).not.toContain(systemSecret)
+      }
+    } finally {
+      await fixture.close()
+    }
   }
 })
 
@@ -429,10 +473,91 @@ test("Contentoren ssotest command normalizes every failure category to an allowl
     )
     expect(passwordContentorenSsoTestProductionEnsureFailureOutputCreate(failure)).not.toContain(secretText)
   }
+  for (const stage of apiInvalidResponseStages) {
+    const code = `passwords.contentoren-ssotest-ensure.api-invalid-response.${stage}`
+    expect(
+      passwordContentorenSsoTestProductionEnsureFailureOutputCreate({
+        code,
+        errorMessage: secretText,
+        op: "api",
+        success: false,
+      }),
+    ).toBe(`{"error":{"code":"${code}"}}\n`)
+  }
   expect(passwordContentorenSsoTestProductionEnsureFailureOutputCreate("not-allowlisted")).toBe(
     '{"error":{"code":"passwords.contentoren-ssotest-ensure.internal-failed"}}\n',
   )
 })
+
+async function invalidResponseStageFixturePrepare(
+  fixture: Awaited<ReturnType<typeof productionFixtureCreate>>,
+  stage: (typeof apiInvalidResponseStages)[number],
+): Promise<void> {
+  if (stage === "realm-list" || stage === "organization-list" || stage === "password-policy-get") return
+  if (stage === "user-list" || stage === "machine-user-list" || stage === "user-create") {
+    if (stage === "user-create") return
+    await fixture.ensure(privatePassword)
+    return
+  }
+  const ensured = await fixture.ensure(privatePassword)
+  expect(ensured.success).toBe(true)
+  const users = await fixture.users.userList(fixture.realmId)
+  expect(users.success).toBe(true)
+  if (!users.success || users.data.items[0] === undefined) throw new Error("The ssotest user fixture was not created.")
+  const user = users.data.items[0]
+  if (stage === "user-email-verification-set") {
+    const unverified = await fixture.users.userEmailVerificationSet(fixture.realmId, user.id, { state: "unverified" })
+    expect(unverified.success).toBe(true)
+    return
+  }
+  if (stage === "user-lifecycle-set") {
+    const inactive = await fixture.users.userLifecycleSet(fixture.realmId, user.id, { state: "inactive" })
+    expect(inactive.success).toBe(true)
+    return
+  }
+  if (stage === "membership-create") {
+    const memberships = await fixture.organizations.organizationMembershipList(fixture.realmId, fixture.organizationId)
+    expect(memberships.success).toBe(true)
+    if (!memberships.success || memberships.data.items[0] === undefined)
+      throw new Error("The ssotest membership fixture was not created.")
+    const removed = await fixture.organizations.organizationMembershipRemove(
+      fixture.realmId,
+      fixture.organizationId,
+      memberships.data.items[0].id,
+    )
+    expect(removed.success).toBe(true)
+    return
+  }
+  if (stage === "membership-update") {
+    const memberships = await fixture.organizations.organizationMembershipList(fixture.realmId, fixture.organizationId)
+    expect(memberships.success).toBe(true)
+    if (!memberships.success || memberships.data.items[0] === undefined)
+      throw new Error("The ssotest membership fixture was not created.")
+    const changed = await fixture.organizations.organizationMembershipUpdate(
+      fixture.realmId,
+      fixture.organizationId,
+      memberships.data.items[0].id,
+      { roles: ["guest"] },
+    )
+    expect(changed.success).toBe(true)
+  }
+}
+
+function invalidResponseStageMatches(stage: (typeof apiInvalidResponseStages)[number], request: Request): boolean {
+  const pathname = new URL(request.url).pathname
+  if (stage === "realm-list") return request.method === "GET" && pathname === "/system/realms"
+  if (stage === "organization-list") return request.method === "GET" && pathname.endsWith("/organizations")
+  if (stage === "password-policy-get") return request.method === "GET" && pathname.endsWith("/password-policy")
+  if (stage === "user-list") return request.method === "GET" && pathname.endsWith("/users")
+  if (stage === "machine-user-list") return request.method === "GET" && pathname.endsWith("/machine-users")
+  if (stage === "membership-list") return request.method === "GET" && pathname.endsWith("/memberships")
+  if (stage === "user-create") return request.method === "POST" && pathname.endsWith("/users")
+  if (stage === "user-email-verification-set") return request.method === "POST" && pathname.endsWith("/verification")
+  if (stage === "user-lifecycle-set") return request.method === "POST" && pathname.endsWith("/lifecycle")
+  if (stage === "password-credential-replace") return request.method === "POST" && pathname.endsWith("/password")
+  if (stage === "membership-create") return request.method === "POST" && pathname.endsWith("/memberships")
+  return request.method === "PATCH" && pathname.includes("/memberships/")
+}
 
 async function productionFixtureCreate() {
   const directory = await mkdtemp(join(tmpdir(), "authworks-contentoren-ssotest-"))

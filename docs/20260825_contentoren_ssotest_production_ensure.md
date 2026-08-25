@@ -70,13 +70,26 @@ The closed reason-code set is:
 - `membership-elevated`, `membership-ambiguous`
 - `password-policy-rejected`
 - `api-unreachable`, `api-unauthorized`, `api-forbidden`,
-  `api-rate-limited`, `api-invalid-response`, `api-rejected`, `api-failed`
+  `api-rate-limited`, `api-rejected`, `api-failed`
+- `api-invalid-response.realm-list`, `api-invalid-response.organization-list`,
+  `api-invalid-response.password-policy-get`,
+  `api-invalid-response.user-list`,
+  `api-invalid-response.machine-user-list`,
+  `api-invalid-response.membership-list`
+- `api-invalid-response.user-create`,
+  `api-invalid-response.user-email-verification-set`,
+  `api-invalid-response.user-lifecycle-set`,
+  `api-invalid-response.password-credential-replace`,
+  `api-invalid-response.membership-create`,
+  `api-invalid-response.membership-update`
 - `internal-failed`
 
 The command never writes an error message, API body, request ID, identifier,
 email, password, token, hash, or other failure detail. Remote HTTP and
 transport failures are normalized to the closed `api-*` set; unexpected
-exceptions use `internal-failed`.
+exceptions use `internal-failed`. Invalid successful API responses include
+only the closed operation stage suffix shown above; they never include a URL,
+ID, status, response body, credential or account data, or raw message.
 
 ## Operator password API
 
