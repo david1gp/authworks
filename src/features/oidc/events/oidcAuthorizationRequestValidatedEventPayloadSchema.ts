@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { userResourceIdSchema } from "../../users/public/userResourceIdSchema.js"
 import { oidcResourceIdSchema } from "../public/oidcResourceIdSchema.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 
@@ -10,7 +11,7 @@ export const oidcAuthorizationRequestValidatedEventPayloadSchema = v.strictObjec
   scope: v.pipe(v.array(oidcScopeSchema), v.minLength(1)),
   sessionId: oidcResourceIdSchema,
   stateProvided: v.literal(true),
-  userId: oidcResourceIdSchema,
+  userId: userResourceIdSchema,
 })
 
 export type OidcAuthorizationRequestValidatedEventPayload = v.InferOutput<

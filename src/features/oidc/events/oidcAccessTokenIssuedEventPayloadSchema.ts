@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { userResourceIdSchema } from "../../users/public/userResourceIdSchema.js"
 import { oidcResourceIdSchema } from "../public/oidcResourceIdSchema.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 
@@ -9,7 +10,7 @@ export const oidcAccessTokenIssuedEventPayloadSchema = v.strictObject({
   refreshTokenIssued: v.boolean(),
   scope: v.pipe(v.array(oidcScopeSchema), v.minLength(1)),
   sessionId: oidcResourceIdSchema,
-  userId: oidcResourceIdSchema,
+  userId: userResourceIdSchema,
 })
 
 export type OidcAccessTokenIssuedEventPayload = v.InferOutput<typeof oidcAccessTokenIssuedEventPayloadSchema>
