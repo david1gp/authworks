@@ -24,13 +24,13 @@ export function LoginUnavailableFrame(props: {
       }}
     >
       <main class="login-frame">
+        <section aria-busy={props.busy} class="login-card p-5 sm:p-10">
+          {props.children}
+        </section>
         <header class="login-controls">
           <LanguageSelector class="login-language-selector" />
           <LoginThemeToggle disabled={false} options={state.themeOptions} />
         </header>
-        <section aria-busy={props.busy} class="login-card p-5 sm:p-10">
-          {props.children}
-        </section>
       </main>
     </div>
   )

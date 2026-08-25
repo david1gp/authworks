@@ -1,7 +1,9 @@
+import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
@@ -42,11 +44,12 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
               </div>
             </dl>
             <Button
-              class="mt-6"
+              class="mt-6 gap-2"
               disabled={props.state.pendingId() === "session:sign-out"}
               onClick={props.state.adminSignOut}
               variant="outline"
             >
+              <Icon path={mdiLogout} />
               {messageTranslate("common.signOut")}
             </Button>
           </div>

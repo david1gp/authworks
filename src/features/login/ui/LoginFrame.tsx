@@ -37,10 +37,6 @@ export function LoginFrame(props: LoginFrameProps) {
       }}
     >
       <main class="login-frame">
-        <header class="login-controls">
-          <LanguageSelector class="login-language-selector" />
-          <LoginThemeToggle disabled={!state.themeSwitchable()} options={state.themeOptions} />
-        </header>
         <section aria-busy={props.busy} class="login-card">
           <BrandHeader
             name={state.bootstrap().organization.name}
@@ -69,6 +65,10 @@ export function LoginFrame(props: LoginFrameProps) {
             </p>
           )}
         </Show>
+        <header class="login-controls">
+          <LanguageSelector class="login-language-selector" />
+          <LoginThemeToggle disabled={!state.themeSwitchable()} options={state.themeOptions} />
+        </header>
       </main>
     </div>
   )

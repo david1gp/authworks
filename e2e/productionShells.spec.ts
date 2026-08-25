@@ -90,7 +90,32 @@ test("production focus and authenticated shells render without network adapters"
 
   await page.goto("/account/sessions")
   await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
-  await expect(page.getByRole("navigation", { name: "Sessions and devices" })).toBeVisible()
+  const navigation = page.getByRole("navigation", { name: "Sessions and devices" })
+  await expect(navigation).toBeVisible()
+  for (const label of [
+    "Overview",
+    "Profile",
+    "Email address",
+    "Organizations",
+    "Password",
+    "Sessions and devices",
+    "Passkeys",
+    "Multi-factor authentication",
+    "Recovery codes",
+    "Linked identities",
+    "Application consents",
+    "Delete account",
+  ]) {
+    await expect(navigation.getByRole("link", { name: label, exact: true }).locator("svg")).toHaveCount(1)
+  }
+  for (const label of ["Security", "Access"]) {
+    await expect(navigation.locator("h2").filter({ hasText: label }).locator("svg")).toHaveCount(1)
+  }
+  await expect(page.getByLabel("Realm").locator("..").locator("svg")).toHaveCount(1)
+  await expect(page.getByLabel("Organization").locator("..").locator("svg")).toHaveCount(1)
+  await expect(page.getByLabel("Language").locator("..").locator("svg")).toHaveCount(1)
+  await expect(page.getByText("Signed in", { exact: true }).locator("svg")).toHaveCount(1)
+  await expect(page.getByRole("link", { name: "Sign out", exact: true }).locator("svg")).toHaveCount(1)
   await expect(page.getByLabel("Realm")).toHaveValue(realmId)
 
   await page.goto("/invitations")
@@ -114,6 +139,21 @@ test("authenticated navigation becomes a mobile drawer", async ({ page }) => {
   await expect(page.getByRole("dialog")).toBeVisible()
   await expect(page.getByRole("navigation", { name: "Account" })).toBeVisible()
   await expect(page.getByRole("link", { name: "Sessions and devices", exact: true })).toBeVisible()
+})
+
+test("desktop sidebar collapse releases production content space", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await page.goto("/account")
+
+  const content = page.locator("main").locator("..")
+  await expect(content).toHaveCSS("margin-left", "288px")
+  await page.getByRole("button", { name: "Close sidebar" }).click()
+  await expect(page.locator("aside")).toHaveCount(0)
+  await expect(content).toHaveCSS("margin-left", "0px")
+
+  await page.getByRole("button", { name: "Open sidebar" }).click()
+  await expect(page.locator("aside")).toHaveCount(1)
+  await expect(content).toHaveCSS("margin-left", "288px")
 })
 
 test("representative production login, account, and administration views have no serious axe violations", async ({

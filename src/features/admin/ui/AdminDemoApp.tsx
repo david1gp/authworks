@@ -3,6 +3,7 @@ import type { JSX } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
@@ -24,7 +25,13 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
         }
         mobileChildren={<AdminSidebarContent state={state} />}
       />
-      <main class="min-h-dvh transition-[margin] lg:ltr:ml-64 lg:rtl:mr-64 [&_section>*]:min-w-0">
+      <main
+        class="min-h-dvh transition-[margin] [&_section>*]:min-w-0"
+        classList={{
+          "lg:ltr:ml-64": state.sidebar.openDesktop.get(),
+          "lg:rtl:mr-64": state.sidebar.openDesktop.get(),
+        }}
+      >
         <header class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
           <SidebarToggle {...state.sidebar} variant="ghost" />
           <div class="flex items-center gap-2">
@@ -56,14 +63,16 @@ function AdminSidebarContent(props: { state: ReturnType<typeof adminDemoAppState
       <nav aria-label={messageTranslate("admin.navigation.label")} class="grid gap-4">
         {props.state.navigationGroups.map((group) => (
           <div class="grid gap-1">
-            <p class="px-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p class="flex items-center gap-2 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <Icon path={group.icon} />
               {ttc(group.label)}
             </p>
             {group.items.map((item) => (
               <A
-                class={`rounded-md px-3 py-2 text-sm font-medium ${props.state.isActive(item.href) ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                class={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${props.state.isActive(item.href) ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
                 href={item.href}
               >
+                <Icon path={item.icon} />
                 {ttc(item.label)}
               </A>
             ))}

@@ -1,7 +1,12 @@
+import { mdiAccountCheckOutline } from "@adaptive-ds/mdi/mdiAccountCheckOutline.js"
+import { mdiDomain } from "@adaptive-ds/mdi/mdiDomain.js"
+import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
+import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { A } from "@solidjs/router"
 import { For, type JSX } from "solid-js"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
@@ -28,7 +33,8 @@ export function ProductionAuthenticatedShell(props: {
         <For each={state.groups()}>
           {(group) => (
             <section class="mb-5">
-              <h2 class="mb-1 px-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <h2 class="mb-1 flex items-center gap-2 px-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                <Icon path={group.icon} />
                 {messageTranslate(group.label)}
               </h2>
               <div class="grid gap-0.5">
@@ -36,13 +42,14 @@ export function ProductionAuthenticatedShell(props: {
                   {(item) => (
                     <A
                       aria-current={state.isActive(item.href) ? "page" : undefined}
-                      class={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      class={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                         state.isActive(item.href)
                           ? "bg-accent text-accent-contrast shadow-sm"
                           : "text-foreground hover:bg-muted"
                       }`}
                       href={item.href}
                     >
+                      <Icon path={item.icon} />
                       {messageTranslate(item.label)}
                     </A>
                   )}
@@ -54,11 +61,15 @@ export function ProductionAuthenticatedShell(props: {
       </nav>
       <div class="border-t border-line p-4">
         <p class="truncate text-sm font-medium">{state.session.actorLabel}</p>
-        <p class="text-xs text-muted-foreground">{messageTranslate("login.signedIn.title")}</p>
+        <p class="flex items-center gap-2 text-xs text-muted-foreground">
+          <Icon path={mdiAccountCheckOutline} />
+          {messageTranslate("login.signedIn.title")}
+        </p>
         <A
-          class="mt-3 inline-flex rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          class="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           href={state.signOutHref}
         >
+          <Icon path={mdiLogout} />
           {messageTranslate("common.signOut")}
         </A>
       </div>
@@ -77,7 +88,7 @@ export function ProductionAuthenticatedShell(props: {
         }
         mobileChildren={navigation}
       />
-      <div class="min-h-dvh lg:ml-72">
+      <div class={`min-h-dvh ${state.sidebar.openDesktop.get() ? "lg:ml-72" : ""}`}>
         <header class="sticky top-0 z-10 flex min-h-16 items-center gap-3 border-b border-line bg-surface/95 px-4 backdrop-blur sm:px-6">
           <SidebarToggle {...state.sidebar} variant="ghost" />
           <div class="min-w-0 flex-1">
@@ -85,6 +96,7 @@ export function ProductionAuthenticatedShell(props: {
             <p class="hidden truncate text-xs text-muted-foreground sm:block">{state.session.actorLabel}</p>
           </div>
           <label class="hidden items-center gap-2 text-xs text-muted-foreground md:flex">
+            <Icon path={mdiDomain} />
             <span>{messageTranslate("shell.nav.realm")}</span>
             <select
               aria-label={messageTranslate("shell.nav.realm")}
@@ -96,6 +108,7 @@ export function ProductionAuthenticatedShell(props: {
             </select>
           </label>
           <label class="hidden items-center gap-2 text-xs text-muted-foreground xl:flex">
+            <Icon path={mdiOfficeBuildingOutline} />
             <span>{messageTranslate("shell.nav.organization")}</span>
             <select
               aria-label={messageTranslate("shell.nav.organization")}

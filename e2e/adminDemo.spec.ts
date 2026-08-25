@@ -1,5 +1,20 @@
 import { expect, test } from "@playwright/test"
 
+test("desktop sidebar collapse releases demo content space", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 })
+  await page.goto("/demo/admin")
+
+  const main = page.locator("main")
+  await expect(main).toHaveCSS("margin-left", "256px")
+  await page.getByRole("button", { name: "Hide sidebar", exact: true }).click()
+  await expect(page.locator("aside")).toHaveCount(0)
+  await expect(main).toHaveCSS("margin-left", "0px")
+
+  await page.getByRole("button", { name: "Open sidebar" }).click()
+  await expect(page.locator("aside")).toHaveCount(1)
+  await expect(main).toHaveCSS("margin-left", "256px")
+})
+
 test("the administration demo navigates through its list pages", async ({ page }) => {
   await page.goto("/demo/admin")
 
@@ -7,6 +22,27 @@ test("the administration demo navigates through its list pages", async ({ page }
   await expect(page.getByRole("heading", { name: "OpenID Connect", exact: true })).toBeVisible()
 
   const navigation = page.getByRole("navigation", { name: "Administration" })
+  for (const label of [
+    "Directory",
+    "Administrator sign-in",
+    "Realm overview",
+    "Realm settings",
+    "Organizations",
+    "Members and roles",
+    "Invitations",
+    "Domains",
+    "Users",
+    "Projects",
+    "OIDC clients",
+    "Signing keys",
+    "Application consents",
+    "Protocol documents",
+    "Sessions",
+    "Events",
+  ]) {
+    await expect(navigation.getByRole("link", { name: label, exact: true }).locator("svg")).toHaveCount(1)
+  }
+  await expect(page.getByLabel("Language").locator("..").locator("svg")).toHaveCount(1)
   await navigation.getByRole("link", { name: "Organizations", exact: true }).click()
   await expect(page.getByRole("heading", { name: "Organizations", exact: true })).toBeVisible()
   await expect(page.getByText("Acme Corporation", { exact: true })).toBeVisible()

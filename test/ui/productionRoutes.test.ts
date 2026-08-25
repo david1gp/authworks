@@ -7,6 +7,7 @@ import { organizationAdminScreenSchema } from "../../src/features/organizations/
 import { projectAdminScreenSchema } from "../../src/features/projects/ui/projectAdminScreenSchema.js"
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 import { productionNavigationItemActive } from "../../src/ui/production/productionNavigationItemActive.js"
+import type { ProductionNavigationGroup } from "../../src/ui/production/productionNavigationGroup.js"
 import { productionRouteContractMap } from "../../src/ui/production/productionRouteContractMap.js"
 import type { ProductionRouteGuardContext } from "../../src/ui/production/productionRouteGuardContext.js"
 import { productionRouteGuardStateCreate } from "../../src/ui/production/productionRouteGuardStateCreate.js"
@@ -59,6 +60,26 @@ describe("production route contracts", () => {
         }
       }
     }
+  })
+
+  test("keeps semantic icons on every authenticated navigation group and item", () => {
+    const navigationGroups = Object.values(
+      productionShellNavigationGroups,
+    ) as readonly (readonly ProductionNavigationGroup[])[]
+    for (const groups of navigationGroups) {
+      for (const group of groups) {
+        expect(group.icon.length).toBeGreaterThan(0)
+        for (const item of group.items) expect(item.icon.length, item.href).toBeGreaterThan(0)
+      }
+    }
+
+    expect(productionShellNavigationGroups.invitations[0]?.items[0]?.icon).toBe(
+      productionShellNavigationGroups.account[0]?.items[0]?.icon,
+    )
+    expect(productionShellNavigationGroups.invitations[0]?.items[1]?.icon).toBe(
+      productionShellNavigationGroups.account[0]?.items[3]?.icon,
+    )
+    expect(productionShellNavigationGroups.account[2]?.items[0]?.icon).toBeDefined()
   })
 
   test("resolves shell labels that share an English value through distinct unambiguous keys", () => {

@@ -96,6 +96,26 @@ test.describe("login web UI parity", () => {
     }
   })
 
+  test("login preference controls follow the legal copy in normal and unavailable frames", async ({ page }) => {
+    for (const viewport of viewports) {
+      await page.setViewportSize(viewport)
+      for (const route of ["/demo/login/password", "/demo/login/fatal"]) {
+        await page.goto(route, { waitUntil: "domcontentloaded" })
+        await expect(page.locator("main.login-frame")).toBeVisible({ timeout: loginRouteReadyTimeout })
+
+        const children = await page
+          .locator("main.login-frame")
+          .evaluate((frame) => [...frame.children].map((child) => child.className))
+
+        if (route === "/demo/login/password") {
+          expect(children).toEqual(["login-card", "login-legal", "login-controls"])
+        } else {
+          expect(children).toEqual(["login-card p-5 sm:p-10", "login-controls"])
+        }
+      }
+    }
+  })
+
   test("chooser and password remember recent identifiers and focus headings after keyboard navigation", async ({
     page,
   }) => {

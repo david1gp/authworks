@@ -4,13 +4,26 @@ import { expect, test } from "@playwright/test"
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const organizationId = "018f0000-0000-7000-8000-000000000002"
 const providerId = "018f0000-0000-7000-8000-000000000003"
+const logoUrl = "https://assets.example.com/northwind-logo.svg"
 
 const discovery = {
   branding: {
-    dark: { backgroundColor: "#111827", fontColor: "#f9fafb", primaryColor: "#60a5fa", warnColor: "#f87171" },
+    dark: {
+      backgroundColor: "#111827",
+      fontColor: "#f9fafb",
+      logoUrl,
+      primaryColor: "#60a5fa",
+      warnColor: "#f87171",
+    },
     disableWatermark: true,
     legal: { privacyUrl: "https://acme.example/privacy", termsUrl: "https://acme.example/terms" },
-    light: { backgroundColor: "#f8fafc", fontColor: "#111827", primaryColor: "#2563eb", warnColor: "#dc2626" },
+    light: {
+      backgroundColor: "#f8fafc",
+      fontColor: "#111827",
+      logoUrl,
+      primaryColor: "#2563eb",
+      warnColor: "#dc2626",
+    },
     themeMode: "system",
   },
   domain: "acme.example",
@@ -54,6 +67,18 @@ test("production sign-in discovers the realm at runtime and never hardcodes an i
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
   await expect(page.getByText("Choose how you want to sign in to Northwind Labs.")).toBeVisible()
   expect(requests[0]?.pathname).toBe("/organization-discovery")
+})
+
+test("production login renders the discovered branding logo instead of the fallback", async ({ page }) => {
+  await loginBackendMock(page, (route) => route.fulfill({ json: { authentication } }))
+  await page.route(logoUrl, (route) =>
+    route.fulfill({ body: '<svg xmlns="http://www.w3.org/2000/svg" />', contentType: "image/svg+xml" }),
+  )
+
+  await page.goto("/login")
+
+  await expect(page.locator("img.login-brand-logo")).toHaveAttribute("src", logoUrl)
+  await expect(page.locator("svg.login-brand-logo")).toHaveCount(0)
 })
 
 test("a successful production password sign-in returns to a validated return path", async ({ page }) => {
