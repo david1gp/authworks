@@ -16,12 +16,16 @@ import type { SessionMeListResponse } from "../public/sessionMeListResponseSchem
 import { sessionMeListResponseSchema } from "../public/sessionMeListResponseSchema.js"
 import type { SessionRecentListResponse } from "../public/sessionRecentListResponseSchema.js"
 import { sessionRecentListResponseSchema } from "../public/sessionRecentListResponseSchema.js"
+import type { SessionRecentResumeRequest } from "../public/sessionRecentResumeRequestSchema.js"
+import type { SessionRecentResumeResponse } from "../public/sessionRecentResumeResponseSchema.js"
+import { sessionRecentResumeResponseSchema } from "../public/sessionRecentResumeResponseSchema.js"
 import type { SessionResponse } from "../public/sessionResponseSchema.js"
 import { sessionResponseSchema } from "../public/sessionResponseSchema.js"
 import type { SessionRevocationResponse } from "../public/sessionRevocationResponseSchema.js"
 import { sessionRevocationResponseSchema } from "../public/sessionRevocationResponseSchema.js"
 import type { SessionRevokeAllRequest } from "../public/sessionRevokeAllRequestSchema.js"
 import { sessionRevokeAllRequestSchema } from "../public/sessionRevokeAllRequestSchema.js"
+import { sessionBrowserRequest } from "./sessionBrowserRequest.js"
 
 type SessionApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -88,6 +92,28 @@ export function sessionApiClientCreate(options: SessionApiClientCreateOptions) {
         { method: "GET" },
         sessionRecentListResponseSchema,
       )
+    },
+    sessionRecentResume(
+      realmId: string,
+      inputOrSessionId: SessionRecentResumeRequest | string,
+      organizationId?: string,
+    ): Promise<Result<SessionRecentResumeResponse>> {
+      const input: SessionRecentResumeRequest =
+        typeof inputOrSessionId === "string"
+          ? {
+              sessionId: inputOrSessionId,
+              ...(organizationId === undefined ? {} : { organizationId }),
+            }
+          : inputOrSessionId
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { body: JSON.stringify(input), method: "POST" },
+        op: "sessionRecentResume",
+        path: `/realms/${encodeURIComponent(realmId)}/sessions/recent/resume`,
+        realmId,
+        schema: sessionRecentResumeResponseSchema,
+      })
     },
     sessionRotate(realmId: string): Promise<Result<SessionCredentialResponse>> {
       return request(

@@ -32,5 +32,8 @@ export function organizationLoginPolicyOverrideViewCreate(
       ? {}
       : { allowRegistration: policy.allowRegistration }),
     ...(providerIds === null ? {} : { providerIds }),
+    ...(policy.sessionLifetimeSeconds === null || policy.sessionLifetimeSeconds === undefined
+      ? {}
+      : { sessionLifetimeSeconds: policy.sessionLifetimeSeconds }),
   }
 }

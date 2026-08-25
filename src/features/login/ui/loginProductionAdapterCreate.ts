@@ -148,6 +148,13 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       }
       return resultCreate(accounts)
     },
+    recentAccountResume: async (sessionId) => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginRecentAccountResume")
+      const result = await api.recentResume(realm, sessionId, organizationId())
+      if (!result.success) return result
+      return resultCreate({ resumed: true as const })
+    },
     recoveryComplete: async (token, newPassword) => {
       const realm = realmId()
       if (realm === undefined) return notDiscovered("loginRecoveryComplete")

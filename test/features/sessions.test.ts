@@ -5,6 +5,8 @@ import { join } from "node:path"
 import { Hono } from "hono"
 import * as v from "valibot"
 import { authorizationPolicyEvaluate } from "../../src/features/authorization/actions/authorizationPolicyEvaluate.js"
+import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
+import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
@@ -17,6 +19,7 @@ import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.j
 import { sessionList } from "../../src/features/sessions/actions/sessionList.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { sessionRecentList } from "../../src/features/sessions/actions/sessionRecentList.js"
+import { sessionRecentResume } from "../../src/features/sessions/actions/sessionRecentResume.js"
 import { sessionRevoke } from "../../src/features/sessions/actions/sessionRevoke.js"
 import { sessionRevokeAll } from "../../src/features/sessions/actions/sessionRevokeAll.js"
 import { sessionRotate } from "../../src/features/sessions/actions/sessionRotate.js"
@@ -183,6 +186,177 @@ test("password success issues an opaque session and rotation rejects replay", as
     if (!expiring.success) return
     testkit.advance(2)
     expect(sessionRotate({ database, realmId: realm.id, token: expiring.data.token }).success).toBe(false)
+  })
+})
+
+test("session issuance captures organization login lifetime with realm and explicit expiry precedence", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { realm, userId } = await createVerifiedUser(database, "sessions-policy.example.com")
+    const organization = organizationCreate({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { name: "Session Policy Organization" },
+      realmId: realm.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+
+    const defaultNow = testkit.runtime.now()
+    const defaultSession = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      organizationId: organization.data.organization.id,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId,
+    })
+    expect(defaultSession.success).toBe(true)
+    if (!defaultSession.success) return
+    expect(defaultSession.data.session.expiresAt).toBe(defaultNow + 30 * 24 * 60 * 60 * 1_000)
+
+    const realmPolicy = organizationLoginPolicySet({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { sessionLifetimeSeconds: 2 * 60 * 60 },
+      realmId: realm.id,
+    })
+    expect(realmPolicy.success).toBe(true)
+    const realmNow = testkit.runtime.now()
+    const inheritedSession = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      organizationId: organization.data.organization.id,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId,
+    })
+    expect(inheritedSession.success).toBe(true)
+    if (!inheritedSession.success) return
+    expect(inheritedSession.data.session.expiresAt).toBe(realmNow + 2 * 60 * 60 * 1_000)
+
+    const organizationPolicy = organizationLoginPolicySet({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { sessionLifetimeSeconds: 3 * 60 * 60 },
+      organizationId: organization.data.organization.id,
+      realmId: realm.id,
+    })
+    expect(organizationPolicy.success).toBe(true)
+    const explicitExpiresAt = testkit.runtime.now() + 17_000
+    const explicitSession = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      expiresAt: explicitExpiresAt,
+      organizationId: organization.data.organization.id,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId,
+    })
+    expect(explicitSession.success).toBe(true)
+    if (explicitSession.success) expect(explicitSession.data.session.expiresAt).toBe(explicitExpiresAt)
+  })
+})
+
+test("recent session resume authenticates the current cookie, preserves boundaries, and rotates the selected session", async () => {
+  await withDatabase(async (database, testkit) => {
+    const { context, realm, userId } = await createVerifiedUser(database, "sessions-resume.example.com")
+    const current = issueTestSession(database, testkit.runtime, realm.id, userId)
+    testkit.advance(1)
+    const selected = issueTestSession(database, testkit.runtime, realm.id, userId)
+    let otherUserId = ""
+    let otherVerificationToken = ""
+    const otherRegistered = passwordRegister({
+      context,
+      database,
+      input: {
+        email: "other-session@example.com",
+        password: "Correct Horse 12",
+        profile: { displayName: "Other Session User" },
+        userName: "other-session-user",
+      },
+      onVerificationToken: (delivery) => {
+        otherUserId = delivery.userId
+        otherVerificationToken = delivery.token
+      },
+      realmId: realm.id,
+    })
+    expect(otherRegistered.success).toBe(true)
+    if (!otherRegistered.success) return
+    expect(
+      passwordEmailVerify({ context, database, input: { token: otherVerificationToken }, realmId: realm.id }).success,
+    ).toBe(true)
+
+    const policy = organizationLoginPolicySet({
+      context: realmSystemContextCreate("system"),
+      database,
+      input: { sessionLifetimeSeconds: 2 * 60 * 60 },
+      realmId: realm.id,
+    })
+    expect(policy.success).toBe(true)
+
+    testkit.advance(10)
+    const resumed = sessionRecentResume({
+      database,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      sessionId: selected.session.id,
+      token: current.token,
+    })
+    expect(resumed.success).toBe(true)
+    if (!resumed.success) return
+    expect(resumed.data.token).not.toBe(selected.token)
+    expect(resumed.data.session.expiresAt).toBe(testkit.runtime.now() + 2 * 60 * 60 * 1_000)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: selected.token }).success).toBe(false)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: resumed.data.token }).success).toBe(true)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: current.token }).success).toBe(true)
+
+    const otherSession = issueTestSession(database, testkit.runtime, realm.id, otherUserId)
+    expect(
+      sessionRecentResume({
+        database,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        sessionId: otherSession.session.id,
+        token: current.token,
+      }).success,
+    ).toBe(false)
+
+    const expired = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      expiresAt: testkit.runtime.now() + 1,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId,
+    })
+    expect(expired.success).toBe(true)
+    if (!expired.success) return
+    testkit.advance(2)
+    expect(
+      sessionRecentResume({
+        database,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        sessionId: expired.data.session.id,
+        token: current.token,
+      }).success,
+    ).toBe(false)
+
+    const revoked = issueTestSession(database, testkit.runtime, realm.id, userId)
+    expect(sessionRevoke({ database, realmId: realm.id, sessionId: revoked.session.id, userId }).success).toBe(true)
+    expect(
+      sessionRecentResume({
+        database,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        sessionId: revoked.session.id,
+        token: current.token,
+      }).success,
+    ).toBe(false)
   })
 })
 
@@ -510,7 +684,7 @@ test("the password HTTP success seam returns a session with device metadata", as
 
 test("browser password login, rotation, and logout keep session credentials in cookies", async () => {
   await withDatabase(async (database, testkit) => {
-    const { realm } = await createVerifiedUser(database, "sessions-browser-http.example.com")
+    const { realm, userId } = await createVerifiedUser(database, "sessions-browser-http.example.com")
     const passwordApp = passwordServerAppCreate({ browserMode: true, database })
     const loginResponse = await passwordApp.request(
       `https://sessions-browser-http.example.com/realms/${realm.id}/password/login`,
@@ -538,6 +712,7 @@ test("browser password login, rotation, and logout keep session credentials in c
     expect(loginCookie).toContain("SameSite=Lax")
     if (loginToken === undefined) return
     expect(sessionAuthenticate({ database, realmId: realm.id, token: loginToken }).success).toBe(true)
+    const selected = issueTestSession(database, testkit.runtime, realm.id, userId)
 
     const sessionApp = sessionServerAppCreate({
       database,
@@ -549,6 +724,51 @@ test("browser password login, rotation, and logout keep session credentials in c
       origin: "https://sessions-browser-http.example.com",
       "x-csrf-token": csrfToken,
     }
+    const missingCookieResume = await sessionApp.request(
+      `https://server.test/realms/${realm.id}/sessions/recent/resume`,
+      {
+        body: JSON.stringify({ sessionId: selected.session.id }),
+        headers: {
+          "content-type": "application/json",
+          origin: "https://sessions-browser-http.example.com",
+          "x-csrf-token": csrfToken,
+        },
+        method: "POST",
+      },
+    )
+    expect(missingCookieResume.status).toBe(401)
+    const bearerResume = await sessionApp.request(`https://server.test/realms/${realm.id}/sessions/recent/resume`, {
+      body: JSON.stringify({ sessionId: selected.session.id }),
+      headers: {
+        authorization: `Bearer ${loginToken}`,
+        "content-type": "application/json",
+        origin: "https://sessions-browser-http.example.com",
+        "x-csrf-token": csrfToken,
+      },
+      method: "POST",
+    })
+    expect(bearerResume.status).toBe(401)
+    const resumedResponse = await sessionApp.request(`https://server.test/realms/${realm.id}/sessions/recent/resume`, {
+      body: JSON.stringify({ sessionId: selected.session.id }),
+      headers: { ...browserHeaders, "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(resumedResponse.status).toBe(200)
+    const resumedBody = (await resumedResponse.json()) as { session?: unknown; token?: unknown }
+    const resumedCookie = resumedResponse.headers.get("set-cookie") ?? ""
+    const resumedToken = /^session=([^;]+);/.exec(resumedCookie)?.[1]
+    expect(resumedBody.session).toBeDefined()
+    expect(resumedBody.token).toBeUndefined()
+    expect(resumedToken).toHaveLength(43)
+    expect(resumedCookie).toContain("Path=/")
+    expect(resumedCookie).toContain("HttpOnly")
+    expect(resumedCookie).toContain("Secure")
+    expect(resumedCookie).toContain("SameSite=Lax")
+    expect(resumedToken).not.toBe(selected.token)
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: selected.token }).success).toBe(false)
+    if (resumedToken === undefined) return
+    expect(sessionAuthenticate({ database, realmId: realm.id, token: resumedToken }).success).toBe(true)
+
     const rotatedResponse = await sessionApp.request(`https://server.test/realms/${realm.id}/sessions/rotate`, {
       headers: browserHeaders,
       method: "POST",
@@ -787,6 +1007,52 @@ test("browser session middleware resolves cookies and protects unsafe requests w
     const csrfBody = (await csrfResponse.json()) as { csrfToken: string }
     expect(csrfBody.csrfToken).toMatch(/^[A-Za-z0-9_-]{43}$/)
     expect(csrfResponse.headers.get("set-cookie")).toContain(`csrf=${csrfBody.csrfToken}`)
+  })
+})
+
+test("the session API client keeps recent resume browser-only and CSRF protected", async () => {
+  const requests: Array<{ init?: RequestInit; url: string }> = []
+  const client = sessionApiClientCreate({
+    baseUrl: "https://server.test",
+    fetch: async (input, init) => {
+      const url = String(input)
+      requests.push({ init, url })
+      if (url.endsWith("/sessions/csrf")) return Response.json({ csrfToken: "csrf-fixture" })
+      return Response.json({
+        session: {
+          assurance: "authenticated",
+          authenticationMethod: "password",
+          createdAt: 1,
+          current: true,
+          device: {},
+          expiresAt: 2,
+          id: "session-1",
+          lastUsedAt: 1,
+          realmId: "realm-1",
+          revokedAt: null,
+          subjectId: "user-1",
+          subjectType: "user",
+          userId: "user-1",
+        },
+      })
+    },
+  })
+
+  const result = await client.sessionRecentResume("realm-1", "selected-session", "organization-1")
+
+  expect(result.success).toBe(true)
+  expect(requests.map((request) => request.url)).toEqual([
+    "https://server.test/realms/realm-1/sessions/csrf",
+    "https://server.test/realms/realm-1/sessions/recent/resume",
+  ])
+  const resumeRequest = requests[1]
+  expect(resumeRequest?.init?.credentials).toBe("include")
+  expect(new Headers(resumeRequest?.init?.headers).get("authorization")).toBeNull()
+  expect(new Headers(resumeRequest?.init?.headers).get("x-csrf-token")).toBe("csrf-fixture")
+  expect(new Headers(resumeRequest?.init?.headers).get(sessionBrowserModeHeaderName)).toBe("true")
+  expect(JSON.parse(String(resumeRequest?.init?.body))).toEqual({
+    organizationId: "organization-1",
+    sessionId: "selected-session",
   })
 })
 

@@ -150,6 +150,7 @@ export async function passkeyAuthenticationComplete(
       realmId: options.realmId,
       input: input.output,
       now,
+      policyDatabase: options.database,
       runtime,
       sessionToken: options.sessionToken,
       tokenHash,
@@ -165,6 +166,7 @@ type PasskeyAuthenticationCompleteTransactionOptions = {
   readonly realmId: string
   readonly input: PasskeyAuthenticationCompleteRequest
   readonly now: number
+  readonly policyDatabase: StorageDatabase
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly sessionToken?: string
   readonly tokenHash: string
@@ -285,7 +287,9 @@ function passkeyAuthenticationCompleteTransaction(
       authenticationMethod: "passkey",
       commandIndex: 2,
       correlationId: options.correlationId,
+      database: options.policyDatabase,
       executor: options.database,
+      organizationId: ceremony.data.organizationId ?? undefined,
       realmId: options.realmId,
       runtime: options.runtime,
       userId: credential.data.userId,

@@ -10,6 +10,7 @@ import type { StorageExecutor } from "../../../platform/storage/storageSchema.js
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import { authorizationPermissionSchema } from "../../authorization/public/authorizationPermissionSchema.js"
+import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
 import { sessionPublicViewCreate } from "../domain/sessionPublicViewCreate.js"
@@ -37,6 +38,7 @@ type SessionIssueOptions = {
   readonly executor?: StorageExecutor
   readonly expiresAt?: number
   readonly realmId: string
+  readonly organizationId?: string
   readonly impersonationOrganizationId?: string
   readonly impersonationPermissions?: readonly AuthorizationPermission[]
   readonly impersonationReason?: string
@@ -53,9 +55,7 @@ const sessionDefaultLifetimeMs = 30 * 24 * 60 * 60 * 1_000
 export function sessionIssue(options: SessionIssueOptions): Result<SessionCredentialResponse> {
   const op = "sessionIssue"
   if (options.executor === undefined && options.database !== undefined)
-    return storageTransactionRun(options.database, (transaction) =>
-      sessionIssue({ ...options, database: undefined, executor: transaction }),
-    )
+    return storageTransactionRun(options.database, (transaction) => sessionIssue({ ...options, executor: transaction }))
   const assurance = v.safeParse(sessionAssuranceSchema, options.assurance)
   if (!assurance.success) return resultErrorCreate(op, "The session assurance is invalid.", "sessions.invalid")
   const authenticationMethod = v.safeParse(sessionAuthenticationMethodSchema, options.authenticationMethod)
@@ -112,7 +112,20 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate(op, "The session timestamp is invalid.", "sessions.invalid-timestamp")
-  const expiresAt = options.expiresAt ?? now + sessionDefaultLifetimeMs
+  if (options.organizationId !== undefined && options.database === undefined)
+    return resultErrorCreate(op, "Session policy storage is required.", "sessions.invalid")
+  let sessionLifetimeMs = sessionDefaultLifetimeMs
+  if (options.database !== undefined) {
+    const policy = organizationLoginPolicyResolve({
+      database: options.database,
+      executor,
+      organizationId: options.organizationId,
+      realmId: options.realmId,
+    })
+    if (!policy.success) return resultErrorCreate(op, "The session policy is invalid.", "sessions.invalid")
+    sessionLifetimeMs = (policy.data.sessionLifetimeSeconds ?? sessionDefaultLifetimeMs / 1_000) * 1_000
+  }
+  const expiresAt = options.expiresAt ?? now + sessionLifetimeMs
   if (!Number.isSafeInteger(expiresAt) || expiresAt <= now)
     return resultErrorCreate(op, "The session expiry is invalid.", "sessions.invalid")
   const token = sessionCredentialCreate(runtime)

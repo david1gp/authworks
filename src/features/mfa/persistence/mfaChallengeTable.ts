@@ -13,6 +13,7 @@ export const mfaChallengeTable = sqliteTable(
     realmId: text("realm_id").notNull(),
     ipAddress: text("ip_address"),
     maxAttempts: integer("max_attempts").notNull(),
+    organizationId: text("organization_id"),
     primaryAuthenticationMethod: text("primary_authentication_method").notNull(),
     purpose: text("purpose").notNull(),
     requiredAssurance: text("required_assurance").notNull(),

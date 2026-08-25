@@ -1,6 +1,12 @@
 import * as v from "valibot"
 
 const organizationLoginPolicyProviderIdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(128))
+const organizationLoginPolicySessionLifetimeSecondsSchema = v.pipe(
+  v.number(),
+  v.integer(),
+  v.minValue(1),
+  v.maxValue(365 * 24 * 60 * 60),
+)
 
 export const organizationLoginPolicyOverrideSchema = v.strictObject({
   allowDomainDiscovery: v.optional(v.nullable(v.boolean())),
@@ -12,6 +18,7 @@ export const organizationLoginPolicyOverrideSchema = v.strictObject({
   allowPasskey: v.optional(v.nullable(v.boolean())),
   allowRegistration: v.optional(v.nullable(v.boolean())),
   providerIds: v.optional(v.nullable(v.array(organizationLoginPolicyProviderIdSchema))),
+  sessionLifetimeSeconds: v.optional(v.nullable(organizationLoginPolicySessionLifetimeSecondsSchema)),
 })
 
 export type OrganizationLoginPolicyOverride = v.InferOutput<typeof organizationLoginPolicyOverrideSchema>

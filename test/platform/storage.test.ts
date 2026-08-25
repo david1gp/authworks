@@ -106,6 +106,24 @@ test("storage upgrades legacy user columns before user reads and is idempotent",
   })
 })
 
+test("storage upgrades legacy MFA challenges with organization context", async () => {
+  await withStorage(async (path) => {
+    const legacy = new Database(path)
+    legacy.run(
+      "CREATE TABLE mfa_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT, purpose TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, primary_authentication_method TEXT NOT NULL, device_fingerprint TEXT, device_description TEXT, ip_address TEXT, user_agent TEXT, required_assurance TEXT NOT NULL, attempts INTEGER NOT NULL, max_attempts INTEGER NOT NULL, expires_at INTEGER NOT NULL, consumed_at INTEGER, created_at INTEGER NOT NULL, version INTEGER NOT NULL)",
+    )
+    legacy.close()
+
+    const opened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
+    expect(opened.success).toBe(true)
+    if (!opened.success) return
+
+    const columns = opened.data.sqlite.query("PRAGMA table_info(mfa_challenges)").all() as Array<{ name: string }>
+    expect(columns.map((column) => column.name)).toContain("organization_id")
+    opened.data.close()
+  })
+})
+
 test("event append rejects invalid envelope values and rolls back preceding state", async () => {
   await withStorage(async (path) => {
     const testkit = platformTestkitCreate()

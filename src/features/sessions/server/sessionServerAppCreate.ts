@@ -12,6 +12,7 @@ import { sessionBootstrapAdminSignIn } from "../actions/sessionBootstrapAdminSig
 import { sessionList } from "../actions/sessionList.js"
 import { sessionMeList } from "../actions/sessionMeList.js"
 import { sessionRecentList } from "../actions/sessionRecentList.js"
+import { sessionRecentResume } from "../actions/sessionRecentResume.js"
 import { sessionRevoke } from "../actions/sessionRevoke.js"
 import { sessionRevokeAll } from "../actions/sessionRevokeAll.js"
 import { sessionRotate } from "../actions/sessionRotate.js"
@@ -23,6 +24,7 @@ import { sessionRequestOriginValidate } from "../domain/sessionRequestOriginVali
 import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
 import { sessionBootstrapAdminSignInRequestSchema } from "../public/sessionBootstrapAdminSignInRequestSchema.js"
 import type { SessionDeviceMetadata } from "../public/sessionDeviceMetadataSchema.js"
+import { sessionRecentResumeRequestSchema } from "../public/sessionRecentResumeRequestSchema.js"
 import { sessionRevokeAllRequestSchema } from "../public/sessionRevokeAllRequestSchema.js"
 import type { Session } from "../public/sessionSchema.js"
 import type { SessionSubjectType } from "../public/sessionSubjectTypeSchema.js"
@@ -111,6 +113,35 @@ export function sessionServerAppCreate(options: SessionServerAppCreateOptions) {
   app.get("/realms/:realmId/sessions/recent", protectedMiddleware, (context) =>
     sessionRecentListRoute(context, options.database),
   )
+
+  app.post("/realms/:realmId/sessions/recent/resume", protectedMiddleware, async (context) => {
+    if (!context.get("cookieAuthenticated"))
+      return sessionErrorResponseCreate(context, {
+        code: "sessions.unauthorized",
+        errorMessage: "Cookie authorization is required.",
+        op: "sessionRecentResume",
+        success: false,
+      })
+    const body = await sessionRequestJsonRead(context)
+    if (!body.success) return sessionErrorResponseCreate(context, body)
+    const input = v.safeParse(sessionRecentResumeRequestSchema, body.data)
+    if (!input.success)
+      return sessionErrorResponseCreate(context, {
+        code: "sessions.invalid",
+        errorMessage: "The session resume request is invalid.",
+        op: "sessionRecentResume",
+        success: false,
+      })
+    const resumed = sessionRecentResume({
+      database: options.database,
+      ...(input.output.organizationId === undefined ? {} : { organizationId: input.output.organizationId }),
+      realmId: context.req.param("realmId"),
+      sessionId: input.output.sessionId,
+      token: sessionBrowserCookieTokenGet(context.req.header("cookie")),
+    })
+    const browser = sessionBrowserCredentialResponseCreate(context, resumed)
+    return sessionResultResponseCreate(context, browser)
+  })
 
   app.post("/realms/:realmId/sessions/rotate", protectedMiddleware, (context) =>
     sessionRotateRoute(context, options.database),

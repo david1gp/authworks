@@ -132,6 +132,7 @@ test("every API client publishes its complete method set", () => {
     "sessionUserList",
     "sessionMeList",
     "sessionRecentList",
+    "sessionRecentResume",
     "sessionRotate",
     "sessionRevoke",
     "sessionUserRevoke",
@@ -145,6 +146,9 @@ test("every API client publishes its complete method set", () => {
     "whatsappOtpStart",
     "whatsappOtpResend",
     "whatsappOtpVerify",
+    "whatsappOtpPhoneChangeStart",
+    "whatsappOtpPhoneChangeResend",
+    "whatsappOtpPhoneChangeVerify",
   ])
   expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(2)
   expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(20)

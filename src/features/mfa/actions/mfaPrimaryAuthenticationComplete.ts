@@ -18,6 +18,7 @@ type MfaPrimaryAuthenticationCompleteOptions<TSession> = {
     readonly userAgent?: string
   }
   readonly executor: StorageExecutor
+  readonly organizationId?: string
   readonly realmId: string
   readonly primaryAuthenticationMethod: SessionAuthenticationMethod
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -40,6 +41,7 @@ export function mfaPrimaryAuthenticationComplete<TSession>(
       actorId: options.actorId,
       deviceMetadata: options.deviceMetadata,
       executor: options.executor,
+      organizationId: options.organizationId,
       realmId: options.realmId,
       primaryAuthenticationMethod: options.primaryAuthenticationMethod,
       purpose: "login",

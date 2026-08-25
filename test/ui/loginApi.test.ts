@@ -86,6 +86,44 @@ describe("hosted login browser API", () => {
     expect(requests[1]?.init?.credentials).toBe("include")
   })
 
+  test("recent account resume delegates to the CSRF-protected session client", async () => {
+    const { api, requests } = loginApiFixtureCreate(() => ({
+      session: {
+        assurance: "authenticated",
+        authenticationMethod: "password",
+        createdAt: 1,
+        current: true,
+        device: {},
+        expiresAt: 2,
+        id: "session-alex",
+        lastUsedAt: 1,
+        realmId,
+        revokedAt: null,
+        subjectId: "user-1",
+        subjectType: "user",
+        userId: "user-1",
+      },
+    }))
+
+    const result = await api.recentResume(realmId, "session-alex", "org-1")
+
+    expect(result.success).toBe(true)
+    expect(requests.map((request) => request.url)).toEqual([
+      `${baseUrl}/realms/${realmId}/sessions/csrf`,
+      `${baseUrl}/realms/${realmId}/sessions/recent/resume`,
+    ])
+    const resumeRequest = requests[1]
+    expect(resumeRequest?.init?.credentials).toBe("include")
+    const headers = new Headers(resumeRequest?.init?.headers)
+    expect(headers.get("authorization")).toBeNull()
+    expect(headers.get("x-csrf-token")).toBe("csrf-fixture")
+    expect(headers.get(sessionBrowserModeHeaderName)).toBe("true")
+    expect(JSON.parse(String(resumeRequest?.init?.body))).toEqual({
+      organizationId: "org-1",
+      sessionId: "session-alex",
+    })
+  })
+
   test("a failed CSRF exchange stops the mutation", async () => {
     let requestCount = 0
     const api = loginApiCreate({

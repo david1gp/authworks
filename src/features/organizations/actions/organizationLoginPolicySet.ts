@@ -188,6 +188,7 @@ function organizationLoginPolicyOverrideValues(input: OrganizationLoginPolicySet
     ...(input.providerIds === undefined
       ? {}
       : { providerIds: input.providerIds === null ? null : JSON.stringify(input.providerIds) }),
+    ...(input.sessionLifetimeSeconds === undefined ? {} : { sessionLifetimeSeconds: input.sessionLifetimeSeconds }),
   }
 }
 
@@ -204,6 +205,8 @@ function organizationLoginPolicyRealmValues(
     allowPasswordRecovery: input.allowPasswordRecovery ?? current.allowPasswordRecovery,
     allowPasskey: input.allowPasskey ?? current.allowPasskey,
     allowRegistration: input.allowRegistration ?? current.allowRegistration,
+    sessionLifetimeSeconds:
+      input.sessionLifetimeSeconds === undefined ? current.sessionLifetimeSeconds : input.sessionLifetimeSeconds,
     providerIds:
       input.providerIds === undefined
         ? current.providerIds === null

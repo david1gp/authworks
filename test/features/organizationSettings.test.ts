@@ -14,7 +14,9 @@ import { organizationDomainDiscover } from "../../src/features/organizations/act
 import { organizationDomainRemove } from "../../src/features/organizations/actions/organizationDomainRemove.js"
 import { organizationDomainVerify } from "../../src/features/organizations/actions/organizationDomainVerify.js"
 import { organizationLoginPolicyEnforce } from "../../src/features/organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyGet } from "../../src/features/organizations/actions/organizationLoginPolicyGet.js"
 import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
+import { organizationRealmLoginPolicyGet } from "../../src/features/organizations/actions/organizationRealmLoginPolicyGet.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
 import type { OrganizationDomainDnsVerificationPort } from "../../src/features/organizations/domain/organizationDomainDnsVerificationPort.js"
 import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
@@ -296,6 +298,72 @@ test("verified organization domains resolve the owning realm for tenant requests
     expect(verified.success).toBe(true)
     const resolved = realmTenantContextResolve({ database, host: "login.example.com:443" })
     expect(resolved).toMatchObject({ data: { realmId: realm.id }, success: true })
+  })
+})
+
+test("organization login policy resolves bounded session lifetime overrides over the 30-day default", async () => {
+  await withDatabase(async (database) => {
+    const { realm, organization } = await createOrganization(database)
+    const defaultPolicy = organizationRealmLoginPolicyGet({ database, realmId: realm.id })
+    expect(defaultPolicy).toMatchObject({
+      data: { policy: { sessionLifetimeSeconds: 30 * 24 * 60 * 60 } },
+      success: true,
+    })
+
+    const realmPolicy = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { sessionLifetimeSeconds: 24 * 60 * 60 },
+      realmId: realm.id,
+    })
+    expect(realmPolicy).toMatchObject({ data: { policy: { sessionLifetimeSeconds: 24 * 60 * 60 } }, success: true })
+
+    const inherited = organizationLoginPolicyGet({ database, organizationId: organization.id, realmId: realm.id })
+    expect(inherited).toMatchObject({ data: { policy: { sessionLifetimeSeconds: 24 * 60 * 60 } }, success: true })
+
+    const overridden = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { sessionLifetimeSeconds: 7 * 24 * 60 * 60 },
+      organizationId: organization.id,
+      realmId: realm.id,
+    })
+    expect(overridden).toMatchObject({
+      data: {
+        overrides: { sessionLifetimeSeconds: 7 * 24 * 60 * 60 },
+        policy: { sessionLifetimeSeconds: 7 * 24 * 60 * 60 },
+      },
+      success: true,
+    })
+
+    const cleared = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { sessionLifetimeSeconds: null },
+      organizationId: organization.id,
+      realmId: realm.id,
+    })
+    expect(cleared).toMatchObject({ data: { policy: { sessionLifetimeSeconds: 24 * 60 * 60 } }, success: true })
+    if (cleared.success) expect(cleared.data.overrides.sessionLifetimeSeconds).toBeUndefined()
+
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { sessionLifetimeSeconds: 0 },
+        organizationId: organization.id,
+        realmId: realm.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { sessionLifetimeSeconds: 365 * 24 * 60 * 60 + 1 },
+        organizationId: organization.id,
+        realmId: realm.id,
+      }).success,
+    ).toBe(false)
   })
 })
 

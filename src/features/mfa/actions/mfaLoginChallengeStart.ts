@@ -29,6 +29,7 @@ type MfaLoginChallengeStartOptions = {
     readonly userAgent?: string
   }
   readonly executor?: StorageExecutor
+  readonly organizationId?: string
   readonly realmId: string
   readonly primaryAuthenticationMethod?: SessionAuthenticationMethod
   readonly purpose: "login" | "step_up"
@@ -63,6 +64,7 @@ type MfaLoginChallengeStartTransactionOptions = {
   readonly correlationId: string
   readonly deviceMetadata?: MfaLoginChallengeStartOptions["deviceMetadata"]
   readonly executor: StorageExecutor
+  readonly organizationId?: string
   readonly realmId: string
   readonly now: number
   readonly primaryAuthenticationMethod?: SessionAuthenticationMethod
@@ -130,6 +132,7 @@ function mfaLoginChallengeStartTransaction(
     realmId: options.realmId,
     ipAddress: options.deviceMetadata?.ipAddress ?? null,
     maxAttempts: policy.maxAttempts,
+    organizationId: options.organizationId ?? null,
     primaryAuthenticationMethod,
     purpose: options.purpose,
     requiredAssurance: "multi_factor",

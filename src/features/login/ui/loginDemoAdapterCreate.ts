@@ -20,6 +20,7 @@ export function loginDemoAdapterCreate(options: {
   const failing = () => options.fixtureState() === "error"
   const emailOtpWait = () => new Promise<void>((resolve) => setTimeout(resolve, 280))
   const passwordLoginWait = () => new Promise<void>((resolve) => setTimeout(resolve, 280))
+  const recentAccountResumeWait = () => new Promise<void>((resolve) => setTimeout(resolve, 280))
   const recoveryRequestWait = () => new Promise<void>((resolve) => setTimeout(resolve, 280))
   const providerWait = () => new Promise<void>((resolve) => setTimeout(resolve, 280))
   const passkeyWait = () => new Promise<void>((resolve) => setTimeout(resolve, 280))
@@ -198,6 +199,12 @@ export function loginDemoAdapterCreate(options: {
       return resultCreate({ authorizationUrl: "https://accounts.example/authorize?demo=1" })
     },
     recentAccounts: async () => resultCreate(options.fixtureState() === "empty" ? [] : demoLoginRecentAccounts),
+    recentAccountResume: async () => {
+      await recentAccountResumeWait()
+      if (failing())
+        return fail("loginDemoRecentAccountResume", "The remembered account could not be resumed.", "sessions.invalid")
+      return resultCreate({ resumed: true as const })
+    },
     recoveryComplete: async () => {
       if (failing())
         return fail("loginDemoRecoveryComplete", "The recovery link is no longer valid.", "passwords.invalid")

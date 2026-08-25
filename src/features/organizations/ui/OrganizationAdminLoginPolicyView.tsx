@@ -14,7 +14,7 @@ import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
 
-type PolicyKey = keyof Omit<OrganizationLoginPolicy, "providerIds">
+type PolicyKey = keyof Omit<OrganizationLoginPolicy, "providerIds" | "sessionLifetimeSeconds">
 
 const policyFields: readonly { key: PolicyKey; labelKey: MessageKey }[] = [
   { key: "allowPassword", labelKey: "admin.organizations.policy.password" },

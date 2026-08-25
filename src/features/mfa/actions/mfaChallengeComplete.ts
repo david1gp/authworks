@@ -56,6 +56,7 @@ export function mfaChallengeComplete(options: MfaChallengeCompleteOptions): Resu
       database: transaction,
       encryptionSecret: options.encryptionSecret,
       input: input.output,
+      policyDatabase: options.database,
       realmId: options.realmId,
       now,
       runtime,
@@ -70,6 +71,7 @@ type MfaChallengeCompleteTransactionOptions = {
   readonly database: Parameters<typeof mfaRepositoryCreate>[0]
   readonly encryptionSecret?: Secret | string
   readonly input: MfaChallengeCompleteRequest
+  readonly policyDatabase: StorageDatabase
   readonly realmId: string
   readonly now: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -252,7 +254,9 @@ function mfaChallengeCompleteTransaction(options: MfaChallengeCompleteTransactio
         ...(challenge.data.ipAddress === null ? {} : { ipAddress: challenge.data.ipAddress }),
         ...(challenge.data.userAgent === null ? {} : { userAgent: challenge.data.userAgent }),
       },
+      database: options.policyDatabase,
       executor: options.database,
+      organizationId: challenge.data.organizationId ?? undefined,
       realmId: options.realmId,
       mfaMethod: factor,
       runtime: options.runtime,

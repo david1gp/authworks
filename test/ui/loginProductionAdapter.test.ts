@@ -106,6 +106,23 @@ describe("production login adapter", () => {
     })
   })
 
+  test("resumes a recent session in the discovered organization context", async () => {
+    const calls: string[] = []
+    const adapter = loginProductionAdapterCreate({
+      api: apiCreate(calls),
+      discovery: () => demoLoginBootstrap,
+      discoverySet: () => undefined,
+      domain: "acme.example",
+      interactionHandle: () => undefined,
+      interactionResume: () => undefined,
+    })
+
+    const resumed = await adapter.recentAccountResume("session-alex")
+
+    expect(resumed).toEqual({ data: { resumed: true }, success: true })
+    expect(calls).toContain("recentResume:realm-acme:session-alex:org-acme")
+  })
+
   test("skips malformed recent sessions and shows one account per login identifier", async () => {
     const adapter = loginProductionAdapterCreate({
       api: apiCreate(
@@ -176,5 +193,9 @@ function apiCreate(calls: string[], recentItems: readonly unknown[] = []): Retur
       recentItems.length === 0
         ? resultErrorCodedCreate("recentList", "recent sessions unavailable", "sessions.invalid")
         : resultCreate({ items: recentItems }),
+    recentResume: async (realmId: string, sessionId: string, organizationId?: string) => {
+      calls.push(`recentResume:${realmId}:${sessionId}:${organizationId}`)
+      return resultCreate({ session: {} })
+    },
   } as unknown as ReturnType<typeof loginApiCreate>
 }

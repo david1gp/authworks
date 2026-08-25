@@ -34,5 +34,9 @@ export function organizationLoginPolicyViewCreate(
     allowRegistration:
       organization?.allowRegistration ?? realm?.allowRegistration ?? organizationLoginPolicyDefaults.allowRegistration,
     providerIds: organizationProviderIds ?? realmProviderIds,
+    sessionLifetimeSeconds:
+      organization?.sessionLifetimeSeconds ??
+      realm?.sessionLifetimeSeconds ??
+      organizationLoginPolicyDefaults.sessionLifetimeSeconds,
   }
 }

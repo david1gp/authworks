@@ -118,12 +118,18 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       now: number,
       expectedVersion: number,
       nextVersion: number,
+      expiresAt?: number,
     ): Result<SessionRow | null> {
       try {
         return resultCreate(
           database
             .update(sessionTable)
-            .set({ lastUsedAt: now, tokenHash: nextTokenHash, version: nextVersion })
+            .set({
+              ...(expiresAt === undefined ? {} : { expiresAt }),
+              lastUsedAt: now,
+              tokenHash: nextTokenHash,
+              version: nextVersion,
+            })
             .where(
               and(
                 eq(sessionTable.realmId, realmId),

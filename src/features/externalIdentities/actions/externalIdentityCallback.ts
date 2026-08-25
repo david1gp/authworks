@@ -134,6 +134,7 @@ export async function externalIdentityCallback(
       database: executor,
       deviceMetadata: options.deviceMetadata,
       identity: identity.data,
+      policyDatabase: options.database,
       realmId: options.realmId,
       now,
       provider: providerRow,
@@ -221,6 +222,7 @@ type ExternalIdentitySignInCommitOptions = {
   readonly database: Parameters<typeof externalIdentityRepositoryCreate>[0]
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly identity: ExternalIdentityProviderIdentity
+  readonly policyDatabase: StorageDatabase
   readonly realmId: string
   readonly now: number
   readonly provider: ExternalIdentityProviderRow
@@ -440,6 +442,7 @@ function externalIdentitySignInCommit(
     actorId: null,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
+    organizationId: options.transaction.organizationId ?? undefined,
     realmId: options.realmId,
     primaryAuthenticationMethod: "external_identity",
     runtime: options.runtime,
@@ -450,8 +453,10 @@ function externalIdentitySignInCommit(
         authenticationMethod: "external_identity",
         commandIndex: 2,
         correlationId: options.correlationId,
+        database: options.policyDatabase,
         deviceMetadata: options.deviceMetadata,
         executor: options.database,
+        organizationId: options.transaction.organizationId ?? undefined,
         realmId: options.realmId,
         runtime: options.runtime,
         userId,

@@ -10,4 +10,5 @@ export const organizationLoginPolicyDefaults: OrganizationLoginPolicy = {
   allowPasskey: true,
   allowRegistration: true,
   providerIds: null,
+  sessionLifetimeSeconds: 30 * 24 * 60 * 60,
 }

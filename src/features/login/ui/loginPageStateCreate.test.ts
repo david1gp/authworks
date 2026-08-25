@@ -1,5 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test"
 import { Window } from "happy-dom"
+import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoLoginBootstrap } from "../../demo/demoLoginBootstrap.js"
 import type { LoginScreen } from "../model/loginScreenSchema.js"
 import { loginDemoAdapterCreate } from "./loginDemoAdapterCreate.js"
@@ -37,6 +38,7 @@ const stateCreate = (
   route: () => LoginScreen,
   initialStatus?: "loading" | "ready",
   onResume: () => void = () => {},
+  fixtureState: DemoFixtureState = "success",
 ) => {
   const browserWindow = new Window()
   previousGlobals.set("document", globalValues.document)
@@ -48,7 +50,7 @@ const stateCreate = (
   const state = createRoot((rootDispose) => {
     dispose = rootDispose
     return loginPageStateCreate({
-      adapter: loginDemoAdapterCreate({ fixtureState: () => "success", onResume }),
+      adapter: loginDemoAdapterCreate({ fixtureState: () => fixtureState, onResume }),
       basePath: "/demo/login",
       initialDiscovery: initialStatus === "loading" ? undefined : () => demoLoginBootstrap,
       initialStatus: initialStatus === undefined ? () => "ready" : () => initialStatus,
@@ -165,20 +167,43 @@ describe("loginPageStateCreate lifecycle focus", () => {
     expect(state.pending()).toBe(false)
   })
 
-  test("selects a labeled recent account by its identifier", async () => {
-    const [route] = createSignal<LoginScreen>("chooser")
-    const state = stateCreate(route)
+  test("resumes a selected recent account and completes the current flow", async () => {
+    const [route, routeSet] = createSignal<LoginScreen>("chooser")
+    const state = stateCreate(route, "ready", () => routeSet("signed-in"))
     await flushEffects()
 
-    state.recentAccountSelect({
+    const selecting = state.recentAccountSelect({
       authenticationMethod: "password",
       identifier: "alex@acme.example",
       label: "Alex Morgan",
       lastUsedAt: 10,
       sessionId: "session-alex",
     })
+    expect(state.pending()).toBe(true)
+    await selecting
+    await flushEffects()
+
+    expect(state.identifier.get()).toBe("alex@acme.example")
+    expect(route()).toBe("signed-in")
+    expect(state.screen()).toBe("signed-in")
+  })
+
+  test("keeps the selected identifier and falls back to password when resume fails", async () => {
+    const [route] = createSignal<LoginScreen>("chooser")
+    const state = stateCreate(route, "ready", undefined, "error")
+    await flushEffects()
+
+    const selecting = state.recentAccountSelect({
+      authenticationMethod: "password",
+      identifier: "alex@acme.example",
+      label: "Alex Morgan",
+      lastUsedAt: 10,
+      sessionId: "session-alex",
+    })
+    await selecting
 
     expect(state.identifier.get()).toBe("alex@acme.example")
     expect(state.screen()).toBe("password")
+    expect(state.pending()).toBe(false)
   })
 })

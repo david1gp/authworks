@@ -124,6 +124,8 @@ export function loginApiCreate(options: { readonly baseUrl: string; readonly fet
         externalIdentityStartResponseSchema,
       ),
     recentList: (realmId: string) => sessions.sessionRecentList(realmId),
+    recentResume: (realmId: string, sessionId: string, organizationId?: string) =>
+      sessions.sessionRecentResume(realmId, sessionId, organizationId),
     recoveryComplete: (realmId: string, token: string, newPassword: string) =>
       post(
         `${realmPath(realmId)}/password/recovery/complete`,

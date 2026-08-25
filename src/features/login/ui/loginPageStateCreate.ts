@@ -612,13 +612,22 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     const revoked = await run(() => options.adapter.logout())
     if (revoked !== undefined) go("logout-done")
   }
-  const recentAccountSelect = (account: LoginRecentAccount | undefined) => {
+  const recentAccountSelect = async (account: LoginRecentAccount | undefined) => {
     identifier.set(account?.identifier ?? "")
     if (account !== undefined) {
       rememberIdentifier.set(true)
       preferenceSchedule()
     }
-    go("password")
+    if (account === undefined) {
+      go("password")
+      return
+    }
+    const resumed = await run(() => options.adapter.recentAccountResume(account.sessionId))
+    if (resumed === undefined) {
+      go("password")
+      return
+    }
+    interactionContinue()
   }
 
   onMount(() => {

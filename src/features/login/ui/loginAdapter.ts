@@ -44,6 +44,7 @@ export type LoginAdapter = {
   readonly passwordLogin: (identifier: string, password: string) => Promise<Result<LoginAuthenticationOutcome>>
   readonly providerStart: (providerId: string) => Promise<Result<{ readonly authorizationUrl: string }>>
   readonly recentAccounts: () => Promise<Result<readonly LoginRecentAccount[]>>
+  readonly recentAccountResume: (sessionId: string) => Promise<Result<{ readonly resumed: true }>>
   readonly recoveryComplete: (token: string, newPassword: string) => Promise<Result<{ readonly changed: true }>>
   readonly recoveryRequest: (email: string) => Promise<Result<{ readonly accepted: true }>>
   readonly register: (input: {

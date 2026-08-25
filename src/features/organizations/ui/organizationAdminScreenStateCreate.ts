@@ -13,7 +13,7 @@ import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 import { organizationAdminFormStateCreate } from "./organizationAdminFormStateCreate.js"
 import type { organizationAdminPageStateCreate } from "./organizationAdminPageStateCreate.js"
 
-type PolicyKey = keyof Omit<OrganizationLoginPolicy, "providerIds">
+type PolicyKey = keyof Omit<OrganizationLoginPolicy, "providerIds" | "sessionLifetimeSeconds">
 type ThemeKey = "dark" | "light"
 type ThemeColorKey = "backgroundColor" | "fontColor" | "primaryColor" | "warnColor"
 

@@ -9,6 +9,7 @@ export const realmLoginPolicyTable = sqliteTable("realm_login_policies", {
   allowPasswordRecovery: integer("allow_password_recovery", { mode: "boolean" }).notNull(),
   allowPasskey: integer("allow_passkey", { mode: "boolean" }).notNull(),
   allowRegistration: integer("allow_registration", { mode: "boolean" }).notNull(),
+  sessionLifetimeSeconds: integer("session_lifetime_seconds"),
   realmId: text("realm_id").primaryKey(),
   providerIds: text("provider_ids"),
   updatedAt: integer("updated_at").notNull(),

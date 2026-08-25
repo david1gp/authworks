@@ -87,6 +87,7 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
       database: transaction,
       deviceMetadata: options.deviceMetadata,
       input: parsed.output,
+      policyDatabase: options.database,
       realmId: options.realmId,
       now,
       runtime,
@@ -105,6 +106,7 @@ type EmailOtpVerifyTransactionOptions = {
   readonly database: StorageExecutor
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly input: EmailOtpVerifyRequest
+  readonly policyDatabase: StorageDatabase
   readonly realmId: string
   readonly now: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -224,6 +226,7 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
     actorId: options.context.actorId,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
+    organizationId: current.organizationId ?? undefined,
     realmId: options.realmId,
     primaryAuthenticationMethod: "email_otp",
     runtime: options.runtime,
@@ -234,8 +237,10 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
         authenticationMethod: "email_otp",
         commandIndex: 1,
         correlationId: options.correlationId,
+        database: options.policyDatabase,
         deviceMetadata: options.deviceMetadata,
         executor: options.database,
+        organizationId: current.organizationId ?? undefined,
         realmId: options.realmId,
         runtime: options.runtime,
         userId,
