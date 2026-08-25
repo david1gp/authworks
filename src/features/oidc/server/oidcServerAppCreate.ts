@@ -438,10 +438,18 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   })
 
   app.post("/oauth2/token", async (context) => {
+    const stage = oidcTokenStageReporterCreate()
     const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
-    if (!realm.success) return oidcTokenErrorResponseCreate(context, "invalid_request", "The token request is invalid.")
+    if (!realm.success) {
+      stage.report("unexpected")
+      return oidcTokenErrorResponseCreate(context, "invalid_request", "The token request is invalid.")
+    }
     const body = await oidcTokenFormRead(context)
-    if (!body.success) return oidcTokenErrorResponseCreate(context, "invalid_request", body.errorMessage)
+    if (!body.success) {
+      stage.report("request_parse")
+      return oidcTokenErrorResponseCreate(context, "invalid_request", body.errorMessage)
+    }
+    const authorizationCodeRequest = body.data.grant_type === "authorization_code"
     if (
       body.data.grant_type !== undefined &&
       body.data.grant_type !== "authorization_code" &&
@@ -450,21 +458,30 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     )
       return oidcTokenErrorResponseCreate(context, "unsupported_grant_type", "The grant type is not supported.")
     const credentials = oidcTokenClientCredentialsResolve(context.req.header("authorization"), body.data)
-    if (!credentials.success) return oidcTokenErrorResponseCreate(context, "invalid_client", credentials.errorMessage)
+    if (!credentials.success) {
+      if (authorizationCodeRequest) stage.report("client_auth")
+      return oidcTokenErrorResponseCreate(context, "invalid_client", credentials.errorMessage)
+    }
     const input = v.safeParse(oidcTokenRequestSchema, {
       ...body.data,
       client_id: credentials.clientId,
       ...(credentials.clientSecret === undefined ? {} : { client_secret: credentials.clientSecret }),
     })
-    if (!input.success) return oidcTokenErrorResponseCreate(context, "invalid_request", "The token request is invalid.")
+    if (!input.success) {
+      if (authorizationCodeRequest) stage.report("token_schema")
+      return oidcTokenErrorResponseCreate(context, "invalid_request", "The token request is invalid.")
+    }
     const token = oidcTokenIssue({
       database: options.database,
       encryptionSecret: options.systemSecret,
       input: input.output,
+      ...(authorizationCodeRequest ? { onStage: stage.report } : {}),
       realmId: realm.data.realmId,
     })
-    if (!token.success)
+    if (!token.success) {
+      if (authorizationCodeRequest && !stage.reported()) stage.report("unexpected")
       return oidcTokenErrorResponseCreate(context, oidcTokenErrorCodeResolve(token), token.errorMessage)
+    }
     context.header("cache-control", "no-store")
     context.header("pragma", "no-cache")
     return context.json(token.data)
@@ -1445,6 +1462,33 @@ function oidcManagementResultResponseCreate<T>(
   if (!result.success)
     return oidcManagementErrorResponseCreate(context, result as { errorMessage: string; op: string; code?: string })
   return httpResultResponseCreate(context, result as never, status, lastModified)
+}
+
+type OidcTokenStage =
+  | "request_parse"
+  | "client_auth"
+  | "code_lookup"
+  | "code_state"
+  | "redirect"
+  | "pkce"
+  | "session"
+  | "user"
+  | "membership"
+  | "signing_key"
+  | "token_schema"
+  | "token_persistence"
+  | "event_schema"
+  | "event_persistence"
+  | "unexpected"
+
+function oidcTokenStageReporterCreate() {
+  let emitted = false
+  const report = (stage: OidcTokenStage) => {
+    if (emitted) return
+    emitted = true
+    console.error(`oidc_token_stage=${stage}`)
+  }
+  return { report, reported: () => emitted }
 }
 
 async function oidcRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

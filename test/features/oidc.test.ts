@@ -1172,6 +1172,103 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
   })
 })
 
+test("authorization-code token diagnostics use one closed stage and disclose no request secrets", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "token-diagnostics.example.com")
+    const verifier = "verifier-diagnostics-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const authorization = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: fixture.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid",
+        state: "diagnostics-state",
+      },
+      realmId: fixture.authenticated.realm.id,
+      sessionToken: fixture.authenticated.token,
+    })
+    expect(authorization.success).toBe(true)
+    if (!authorization.success) return
+
+    const diagnostics: string[] = []
+    const originalConsoleError = console.error
+    console.error = (...args: unknown[]) => diagnostics.push(args.map(String).join(" "))
+    try {
+      const requestParse = await fixture.app.fetch(
+        new Request("https://token-diagnostics.example.com/oauth2/token", {
+          body: `code=${encodeURIComponent(authorization.data.code)}&code_verifier=${encodeURIComponent(verifier)}`,
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        }),
+      )
+      expect(requestParse.status).toBe(400)
+      expect(await requestParse.json()).toMatchObject({ error: "invalid_request" })
+
+      const clientAuth = await oidcTokenRequest(fixture.app, "token-diagnostics.example.com", {
+        client_id: fixture.client.id,
+        code: authorization.data.code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: authorization.data.redirect_uri,
+      })
+      expect(clientAuth.status).toBe(401)
+      expect(await clientAuth.json()).toMatchObject({ error: "invalid_client" })
+
+      const codeState = await oidcTokenRequest(fixture.app, "token-diagnostics.example.com", {
+        client_id: fixture.client.id,
+        client_secret: fixture.clientSecret,
+        code: "diagnostic-code-not-stored",
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: authorization.data.redirect_uri,
+      })
+      expect(codeState.status).toBe(400)
+      expect(await codeState.json()).toMatchObject({ error: "invalid_grant" })
+
+      const redirect = await oidcTokenRequest(fixture.app, "token-diagnostics.example.com", {
+        client_id: fixture.client.id,
+        client_secret: fixture.clientSecret,
+        code: authorization.data.code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: "https://client.example/wrong-callback",
+      })
+      expect(redirect.status).toBe(400)
+      expect(await redirect.json()).toMatchObject({ error: "invalid_grant" })
+
+      const pkce = await oidcTokenRequest(fixture.app, "token-diagnostics.example.com", {
+        client_id: fixture.client.id,
+        client_secret: fixture.clientSecret,
+        code: authorization.data.code,
+        code_verifier: "wrong-verifier-diagnostics-abcdefghijklmnopqrstuvwxyz-0123456789._~",
+        grant_type: "authorization_code",
+        redirect_uri: authorization.data.redirect_uri,
+      })
+      expect(pkce.status).toBe(400)
+      expect(await pkce.json()).toMatchObject({ error: "invalid_grant" })
+    } finally {
+      console.error = originalConsoleError
+    }
+
+    expect(diagnostics).toEqual([
+      "oidc_token_stage=request_parse",
+      "oidc_token_stage=client_auth",
+      "oidc_token_stage=code_state",
+      "oidc_token_stage=redirect",
+      "oidc_token_stage=pkce",
+    ])
+    const diagnosticOutput = diagnostics.join("\n")
+    expect(diagnosticOutput).not.toContain(fixture.client.id)
+    expect(diagnosticOutput).not.toContain(fixture.clientSecret)
+    expect(diagnosticOutput).not.toContain(authorization.data.code)
+    expect(diagnosticOutput).not.toContain(verifier)
+    expect(diagnosticOutput).not.toContain("https://client.example")
+  })
+})
+
 test("the token endpoint supports public clients and confidential basic authentication while isolating grants", async () => {
   await withDatabase(async (database) => {
     const authenticated = await createAuthenticatedSession(database, "token-auth.example.com")

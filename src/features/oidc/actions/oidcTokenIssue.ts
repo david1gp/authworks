@@ -51,7 +51,25 @@ type OidcTokenIssueOptions = {
   readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
+  readonly onStage?: (stage: OidcTokenStage) => void
 }
+
+type OidcTokenStage =
+  | "request_parse"
+  | "client_auth"
+  | "code_lookup"
+  | "code_state"
+  | "redirect"
+  | "pkce"
+  | "session"
+  | "user"
+  | "membership"
+  | "signing_key"
+  | "token_schema"
+  | "token_persistence"
+  | "event_schema"
+  | "event_persistence"
+  | "unexpected"
 
 type OidcTokenSubject = {
   readonly profile: UserProfileRow | null
@@ -72,28 +90,45 @@ type OidcTokenTransactionResult =
 export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcTokenResponse> {
   const op = "oidcTokenIssue"
   const parsed = v.safeParse(oidcTokenRequestSchema, options.input)
-  if (!parsed.success) return resultErrorCreate("oidcTokenInvalidRequest", "The token request is invalid.")
-  if (options.realmId.length === 0) return resultErrorCreate("oidcTokenInvalidRequest", "The token request is invalid.")
+  if (!parsed.success) {
+    oidcTokenStageReport(options, "token_schema")
+    return resultErrorCreate("oidcTokenInvalidRequest", "The token request is invalid.")
+  }
+  if (options.realmId.length === 0) {
+    oidcTokenStageReport(options, "unexpected")
+    return resultErrorCreate("oidcTokenInvalidRequest", "The token request is invalid.")
+  }
 
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0)
+  if (!Number.isSafeInteger(now) || now < 0) {
+    oidcTokenStageReport(options, "unexpected")
     return resultErrorCreate(
       "oidcTokenInvalidRequest",
       "The token timestamp is invalid.",
       undefined,
       "oidc.invalid-timestamp",
     )
+  }
   const realm = realmGet({
     context: realmSystemContextCreate(),
     database: options.database,
     realmId: options.realmId,
   })
-  if (!realm.success) return realm
-  if (realm.data.realm.status !== "active") return resultErrorCreate(op, "The realm is not active.")
+  if (!realm.success) {
+    oidcTokenStageReport(options, "unexpected")
+    return realm
+  }
+  if (realm.data.realm.status !== "active") {
+    oidcTokenStageReport(options, "unexpected")
+    return resultErrorCreate(op, "The realm is not active.")
+  }
   const issuer = oidcIssuerCreate(realm.data.realm.domain)
   const clientId = parsed.output.client_id
-  if (clientId === undefined) return resultErrorCreate("oidcTokenInvalidClient", "Client authentication failed.")
+  if (clientId === undefined) {
+    oidcTokenStageReport(options, "client_auth")
+    return resultErrorCreate("oidcTokenInvalidClient", "Client authentication failed.")
+  }
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
   if (parsed.output.grant_type === "client_credentials") {
@@ -120,6 +155,7 @@ export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcToken
     const signingKey = oidcTokenSigningKeyGet(
       oidcRepositoryCreate(options.database.db).signingKeyList(options.realmId),
       options.encryptionSecret,
+      options.onStage,
     )
     if (signingKey.success) {
       const signed = oidcJwtSign(
@@ -136,7 +172,7 @@ export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcToken
         },
         signingKey.data.privateKey,
       )
-      if (!signed.success) return signed
+      if (!signed.success) return oidcTokenStageResult(signed, options, "signing_key")
       accessToken = signed.data
     }
     const issued = machineClientCredentialsIssue({
@@ -168,7 +204,10 @@ export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcToken
   const completed = storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
     const client = oidcTokenClientAuthenticate(repository.clientGet(options.realmId, clientId), parsed.output)
-    if (!client.success) return client
+    if (!client.success) {
+      oidcTokenStageReport(options, "client_auth")
+      return client
+    }
     if (parsed.output.grant_type === "authorization_code")
       return oidcTokenAuthorizationCodeExchange({
         client: client.data,
@@ -181,6 +220,7 @@ export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcToken
         repository,
         runtime,
         transaction,
+        onStage: options.onStage,
       })
     return oidcTokenRefreshExchange({
       client: client.data,
@@ -193,6 +233,7 @@ export function oidcTokenIssue(options: OidcTokenIssueOptions): Result<OidcToken
       repository,
       runtime,
       transaction,
+      onStage: options.onStage,
     })
   })
   if (!completed.success) return completed
@@ -232,33 +273,34 @@ type OidcTokenExchangeOptions = {
   readonly repository: ReturnType<typeof oidcRepositoryCreate>
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly transaction: StorageTransaction
+  readonly onStage?: (stage: OidcTokenStage) => void
 }
 
 function oidcTokenAuthorizationCodeExchange(options: OidcTokenExchangeOptions): Result<OidcTokenTransactionResult> {
   const { input } = options
   if (input.code === undefined || input.code_verifier === undefined || input.redirect_uri === undefined)
-    return resultErrorCreate("oidcTokenInvalidGrant", "The authorization grant is invalid.")
+    return oidcTokenStageError(options, "code_state")
   const code = options.repository.authorizationCodeGetByTokenHash(options.realmId, oidcHashCreate(input.code))
-  if (!code.success) return code
+  if (!code.success) return oidcTokenStageResult(code, options, "code_lookup")
+  if (code.data === null) return oidcTokenStageError(options, "code_state")
   if (
-    code.data === null ||
     code.data.realmId !== options.realmId ||
     code.data.clientId !== options.client.id ||
-    code.data.redirectUri !== input.redirect_uri ||
     code.data.issuer !== options.issuer ||
     code.data.usedAt !== null ||
     code.data.expiresAt <= options.now
   )
-    return resultErrorCreate("oidcTokenInvalidGrant", "The authorization grant is invalid.")
+    return oidcTokenStageError(options, "code_state")
+  if (code.data.redirectUri !== input.redirect_uri) return oidcTokenStageError(options, "redirect")
   const pkce = oidcPkceVerify(input.code_verifier, code.data.codeChallenge, code.data.codeChallengeMethod)
-  if (!pkce.success) return resultErrorCreate("oidcTokenInvalidGrant", "The authorization grant is invalid.")
+  if (!pkce.success) return oidcTokenStageError(options, "pkce")
   const scope = oidcTokenStoredScopeParse(code.data.scope)
-  if (!scope.success) return resultErrorCreate("oidcTokenInvalidGrant", "The authorization grant is invalid.")
+  if (!scope.success) return oidcTokenStageResult(scope, options, "token_schema")
   const nonce =
     code.data.nonceEncrypted === null
       ? resultCreate<string | null>(null)
       : oidcValueDecrypt(code.data.nonceEncrypted, options.realmId, options.encryptionSecret)
-  if (!nonce.success) return resultErrorCreate("oidcTokenInvalidGrant", "The authorization grant is invalid.")
+  if (!nonce.success) return oidcTokenStageError(options, "code_state")
   const subject = oidcTokenSubjectGet(
     options.transaction,
     options.realmId,
@@ -266,6 +308,7 @@ function oidcTokenAuthorizationCodeExchange(options: OidcTokenExchangeOptions): 
     code.data.sessionId,
     options.now,
     scope.data,
+    options.onStage,
   )
   if (!subject.success) return subject
   const consumed = options.repository.authorizationCodeConsume(
@@ -276,8 +319,8 @@ function oidcTokenAuthorizationCodeExchange(options: OidcTokenExchangeOptions): 
     options.now,
     options.now,
   )
-  if (!consumed.success) return consumed
-  if (consumed.data === null) return resultErrorCreate("oidcTokenInvalidGrant", "The authorization grant is invalid.")
+  if (!consumed.success) return oidcTokenStageResult(consumed, options, "token_persistence")
+  if (consumed.data === null) return oidcTokenStageError(options, "code_state")
 
   const consumedPayload = v.safeParse(oidcAuthorizationCodeConsumedEventPayloadSchema, {
     authorizationCodeId: consumed.data.id,
@@ -288,7 +331,8 @@ function oidcTokenAuthorizationCodeExchange(options: OidcTokenExchangeOptions): 
     sessionId: consumed.data.sessionId,
     userId: consumed.data.userId,
   })
-  if (!consumedPayload.success) return resultErrorCreate("oidcTokenIssue", "The token event payload is invalid.")
+  if (!consumedPayload.success)
+    return oidcTokenStageError(options, "event_schema", "The token event payload is invalid.", "oidcTokenIssue")
   const consumedEvent = storageEventAppend(
     options.transaction,
     {
@@ -306,7 +350,7 @@ function oidcTokenAuthorizationCodeExchange(options: OidcTokenExchangeOptions): 
     },
     options.runtime,
   )
-  if (!consumedEvent.success) return consumedEvent
+  if (!consumedEvent.success) return oidcTokenStageResult(consumedEvent, options, "event_persistence")
   return oidcTokenArtifactsIssue({
     ...options,
     nonce: nonce.data,
@@ -424,8 +468,12 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
   const accessExpiresAt = options.now + oidcAccessTokenLifetimeMs
   const refreshExpiresAt = options.now + oidcRefreshTokenLifetimeMs
   if (!Number.isSafeInteger(accessExpiresAt) || !Number.isSafeInteger(refreshExpiresAt))
-    return resultErrorCreate("oidcTokenIssue", "The token expiry is invalid.")
-  const key = oidcTokenSigningKeyGet(options.repository.signingKeyList(options.realmId), options.encryptionSecret)
+    return oidcTokenStageError(options, "token_schema", "The token expiry is invalid.")
+  const key = oidcTokenSigningKeyGet(
+    options.repository.signingKeyList(options.realmId),
+    options.encryptionSecret,
+    options.onStage,
+  )
   if (!key.success) return key
   const accessJti = uuidv7Create(options.runtime)
   const accessClaims = oidcTokenClaimsCreate(
@@ -440,7 +488,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
   accessClaims.jti = accessJti
   accessClaims.scope = options.scope.join(" ")
   const accessToken = oidcJwtSign({ alg: "RS256", kid: key.data.id, typ: "JWT" }, accessClaims, key.data.privateKey)
-  if (!accessToken.success) return accessToken
+  if (!accessToken.success) return oidcTokenStageResult(accessToken, options, "signing_key")
   const idClaims = oidcTokenClaimsCreate(
     options.subject,
     options.scope,
@@ -453,10 +501,10 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
   idClaims.sid = options.subject.session.id
   if (options.nonce !== null) idClaims.nonce = options.nonce
   const idToken = oidcJwtSign({ alg: "RS256", kid: key.data.id, typ: "JWT" }, idClaims, key.data.privateKey)
-  if (!idToken.success) return idToken
+  if (!idToken.success) return oidcTokenStageResult(idToken, options, "signing_key")
   const refreshToken =
     options.refreshToken === undefined ? oidcRefreshTokenCreate(options.runtime) : resultCreate(options.refreshToken)
-  if (!refreshToken.success) return refreshToken
+  if (!refreshToken.success) return oidcTokenStageResult(refreshToken, options, "token_schema")
   const refreshFamilyId = options.refreshFamilyId ?? uuidv7Create(options.runtime)
   const createdAccess = options.repository.accessTokenCreate({
     clientId: options.client.id,
@@ -471,7 +519,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     tokenHash: oidcHashCreate(accessToken.data),
     userId: options.subject.user.id,
   })
-  if (!createdAccess.success) return createdAccess
+  if (!createdAccess.success) return oidcTokenStageResult(createdAccess, options, "token_persistence")
   const createdRefresh = options.repository.refreshTokenCreate({
     clientId: options.client.id,
     createdAt: options.now,
@@ -488,7 +536,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     tokenHash: oidcHashCreate(refreshToken.data),
     userId: options.subject.user.id,
   })
-  if (!createdRefresh.success) return createdRefresh
+  if (!createdRefresh.success) return oidcTokenStageResult(createdRefresh, options, "token_persistence")
   if (options.rotatedFrom !== undefined) {
     const rotatedPayload = v.safeParse(oidcRefreshTokenRotatedEventPayloadSchema, {
       clientId: options.client.id,
@@ -497,7 +545,8 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
       sessionId: options.subject.session.id,
       userId: options.subject.user.id,
     })
-    if (!rotatedPayload.success) return resultErrorCreate("oidcTokenIssue", "The token event payload is invalid.")
+    if (!rotatedPayload.success)
+      return oidcTokenStageError(options, "event_schema", "The token event payload is invalid.", "oidcTokenIssue")
     const rotatedEvent = storageEventAppend(
       options.transaction,
       {
@@ -515,7 +564,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
       },
       options.runtime,
     )
-    if (!rotatedEvent.success) return rotatedEvent
+    if (!rotatedEvent.success) return oidcTokenStageResult(rotatedEvent, options, "event_persistence")
   }
   const accessPayload = v.safeParse(oidcAccessTokenIssuedEventPayloadSchema, {
     clientId: options.client.id,
@@ -535,7 +584,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     userId: options.subject.user.id,
   })
   if (!accessPayload.success || !refreshPayload.success)
-    return resultErrorCreate("oidcTokenIssue", "The token event payload is invalid.")
+    return oidcTokenStageError(options, "event_schema", "The token event payload is invalid.", "oidcTokenIssue")
   const accessEvent = storageEventAppend(
     options.transaction,
     {
@@ -553,7 +602,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     },
     options.runtime,
   )
-  if (!accessEvent.success) return accessEvent
+  if (!accessEvent.success) return oidcTokenStageResult(accessEvent, options, "event_persistence")
   const refreshEvent = storageEventAppend(
     options.transaction,
     {
@@ -571,7 +620,7 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
     },
     options.runtime,
   )
-  if (!refreshEvent.success) return refreshEvent
+  if (!refreshEvent.success) return oidcTokenStageResult(refreshEvent, options, "event_persistence")
   return resultCreate({
     kind: "issued",
     response: {
@@ -588,17 +637,30 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
 function oidcTokenSigningKeyGet(
   keysResult: ReturnType<ReturnType<typeof oidcRepositoryCreate>["signingKeyList"]>,
   encryptionSecret?: Secret | string,
+  onStage?: (stage: OidcTokenStage) => void,
 ): Result<OidcTokenSigningKey> {
-  if (!keysResult.success) return keysResult
+  if (!keysResult.success) {
+    oidcTokenStageReport(onStage, "signing_key")
+    return keysResult
+  }
   const key = keysResult.data.find((candidate) => candidate.status === "active" && candidate.algorithm === "RS256")
-  if (key === undefined) return resultErrorCreate("oidcTokenIssue", "No active signing key is available.")
+  if (key === undefined) {
+    oidcTokenStageReport(onStage, "signing_key")
+    return resultErrorCreate("oidcTokenIssue", "No active signing key is available.")
+  }
   const privateKey = oidcValueDecrypt(key.encryptedPrivateKey, key.realmId, encryptionSecret)
-  if (!privateKey.success) return resultErrorCreate("oidcTokenIssue", "The signing key is invalid.")
+  if (!privateKey.success) {
+    oidcTokenStageReport(onStage, "signing_key")
+    return resultErrorCreate("oidcTokenIssue", "The signing key is invalid.")
+  }
   try {
     const publicJwk = v.safeParse(oidcPublicJwkSchema, JSON.parse(key.publicJwk))
-    if (!publicJwk.success || publicJwk.output.kid !== key.id)
+    if (!publicJwk.success || publicJwk.output.kid !== key.id) {
+      oidcTokenStageReport(onStage, "signing_key")
       return resultErrorCreate("oidcTokenIssue", "The signing key is invalid.")
+    }
   } catch (_error) {
+    oidcTokenStageReport(onStage, "signing_key")
     return resultErrorCreate("oidcTokenIssue", "The signing key is invalid.")
   }
   return resultCreate({ id: key.id, privateKey: privateKey.data })
@@ -611,27 +673,65 @@ function oidcTokenSubjectGet(
   sessionId: string,
   now: number,
   scope: readonly string[],
+  onStage?: (stage: OidcTokenStage) => void,
 ): Result<OidcTokenSubject> {
   const session = transaction
     .select()
     .from(sessionTable)
     .where(and(eq(sessionTable.realmId, realmId), eq(sessionTable.id, sessionId), eq(sessionTable.userId, userId)))
     .get()
-  if (session === undefined || session.revokedAt !== null || session.expiresAt <= now)
+  if (session === undefined || session.revokedAt !== null || session.expiresAt <= now) {
+    oidcTokenStageReport(onStage, "session")
     return resultErrorCreate("oidcTokenInvalidGrant", "The authenticated session is no longer valid.")
+  }
   const user = transaction
     .select()
     .from(userTable)
     .where(and(eq(userTable.realmId, realmId), eq(userTable.id, userId)))
     .get()
-  if (user === undefined || user.state !== "active" || user.deletedAt !== null)
+  if (user === undefined || user.state !== "active" || user.deletedAt !== null) {
+    oidcTokenStageReport(onStage, "user")
     return resultErrorCreate("oidcTokenInvalidGrant", "The authenticated user is no longer valid.")
+  }
   const profile = transaction.select().from(userProfileTable).where(eq(userProfileTable.userId, userId)).get() ?? null
   const resourceOwnerOrganizationId = scope.includes(oidcResourceOwnerScope)
     ? oidcResourceOwnerOrganizationIdResolve({ executor: transaction, realmId, session, userId })
     : resultCreate<string | undefined>(undefined)
-  if (!resourceOwnerOrganizationId.success) return resourceOwnerOrganizationId
+  if (!resourceOwnerOrganizationId.success) {
+    oidcTokenStageReport(onStage, "membership")
+    return resourceOwnerOrganizationId
+  }
   return resultCreate({ profile, resourceOwnerOrganizationId: resourceOwnerOrganizationId.data, session, user })
+}
+
+function oidcTokenStageReport(
+  target: OidcTokenIssueOptions | OidcTokenExchangeOptions | ((stage: OidcTokenStage) => void) | undefined,
+  stage: OidcTokenStage,
+): void {
+  if (typeof target === "function") {
+    target(stage)
+    return
+  }
+  target?.onStage?.(stage)
+}
+
+function oidcTokenStageError(
+  options: OidcTokenExchangeOptions,
+  stage: OidcTokenStage,
+  message = "The authorization grant is invalid.",
+  op = "oidcTokenInvalidGrant",
+) {
+  oidcTokenStageReport(options, stage)
+  return resultErrorCreate(op, message)
+}
+
+function oidcTokenStageResult<T>(
+  result: Result<T>,
+  options: OidcTokenExchangeOptions | OidcTokenIssueOptions,
+  stage: OidcTokenStage,
+): Result<T> {
+  oidcTokenStageReport(options, stage)
+  return result
 }
 
 function oidcTokenClaimsCreate(
