@@ -23,17 +23,16 @@ export function ProductionAuthenticatedShell(props: {
   const title = () => messageTranslate(props.title)
   const navigation = (
     <div class="flex h-full flex-col">
-      <div class="border-b border-line px-5 py-5">
+      <div class="border-b border-line px-4 py-3">
         <A class="text-xl font-bold tracking-tight" href={props.kind === "admin" ? "/admin" : "/account"}>
           {messageTranslate("app.name")}
         </A>
-        <p class="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">{title()}</p>
       </div>
-      <nav aria-label={title()} class="flex-1 overflow-y-auto px-3 py-4">
+      <nav aria-label={title()} class="flex-1 overflow-y-auto px-2 py-2">
         <For each={state.groups()}>
           {(group) => (
-            <section class="mb-5">
-              <h2 class="mb-1 flex items-center gap-2 px-3 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <section class="mb-3">
+              <h2 class="mb-0.5 flex items-center gap-2 px-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 <Icon path={group.icon} />
                 {messageTranslate(group.label)}
               </h2>
@@ -42,7 +41,7 @@ export function ProductionAuthenticatedShell(props: {
                   {(item) => (
                     <A
                       aria-current={state.isActive(item.href) ? "page" : undefined}
-                      class={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                      class={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
                         state.isActive(item.href)
                           ? "bg-accent text-accent-contrast shadow-sm"
                           : "text-foreground hover:bg-muted"
@@ -58,21 +57,21 @@ export function ProductionAuthenticatedShell(props: {
             </section>
           )}
         </For>
+        <div class="px-2 pb-2 pt-1">
+          <p class="truncate text-sm font-medium">{state.session.actorLabel}</p>
+          <p class="flex items-center gap-2 text-xs text-muted-foreground">
+            <Icon path={mdiAccountCheckOutline} />
+            {messageTranslate("login.signedIn.title")}
+          </p>
+          <A
+            class="mt-1 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            href={state.signOutHref}
+          >
+            <Icon path={mdiLogout} />
+            {messageTranslate("common.signOut")}
+          </A>
+        </div>
       </nav>
-      <div class="border-t border-line p-4">
-        <p class="truncate text-sm font-medium">{state.session.actorLabel}</p>
-        <p class="flex items-center gap-2 text-xs text-muted-foreground">
-          <Icon path={mdiAccountCheckOutline} />
-          {messageTranslate("login.signedIn.title")}
-        </p>
-        <A
-          class="mt-3 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-          href={state.signOutHref}
-        >
-          <Icon path={mdiLogout} />
-          {messageTranslate("common.signOut")}
-        </A>
-      </div>
     </div>
   )
 
