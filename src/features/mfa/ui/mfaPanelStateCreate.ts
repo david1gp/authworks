@@ -1,6 +1,6 @@
+import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import type { MfaFactor } from "../model/mfaFactorSchema.js"
 import type { MfaPanelMode } from "../model/mfaPanelModeSchema.js"
-import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 
 type MfaPanelStateCreateOptions = {
   readonly factors: () => readonly MfaFactor[]

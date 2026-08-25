@@ -1,5 +1,5 @@
-import type { MfaFactor } from "../model/mfaFactorSchema.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
+import type { MfaFactor } from "../model/mfaFactorSchema.js"
 
 export function mfaCodePanelStateCreate(kind: () => Extract<MfaFactor, "recovery-code" | "totp">) {
   return {

@@ -2,10 +2,10 @@ import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
-import type { WahaHealthCandidateRow } from "../persistence/wahaHealthCandidateTable.js"
-import { wahaHealthCandidateRepositoryCreate } from "../persistence/wahaHealthCandidateRepositoryCreate.js"
 import type { WahaHealthPort } from "../domain/wahaHealthPort.js"
 import type { WahaHealthPortResult } from "../domain/wahaHealthPortResult.js"
+import { wahaHealthCandidateRepositoryCreate } from "../persistence/wahaHealthCandidateRepositoryCreate.js"
+import type { WahaHealthCandidateRow } from "../persistence/wahaHealthCandidateTable.js"
 import type { WahaConfiguration } from "./wahaConfiguration.js"
 
 type WahaHealthRegistryCreateOptions = {

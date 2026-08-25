@@ -1,7 +1,7 @@
 import { createMemo } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
-import { mfaTotpProvisioningQrGet } from "../model/mfaTotpProvisioningQrGet.js"
 import { mfaSecretGroupsGet } from "../model/mfaSecretGroupsGet.js"
+import { mfaTotpProvisioningQrGet } from "../model/mfaTotpProvisioningQrGet.js"
 
 export function mfaTotpEnrollPanelStateCreate(secret: () => string | undefined, otpauthUri: () => string | undefined) {
   const secretVisible = createSignalObject(false)

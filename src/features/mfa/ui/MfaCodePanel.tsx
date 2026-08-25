@@ -1,11 +1,11 @@
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import type { MfaFactor } from "../model/mfaFactorSchema.js"
 import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
 import { LoginMessages } from "../../login/ui/LoginMessages.js"
 import { LoginPanelHeader } from "../../login/ui/LoginPanelHeader.js"
 import { LoginSubmitButton } from "../../login/ui/LoginSubmitButton.js"
+import type { MfaFactor } from "../model/mfaFactorSchema.js"
 import { mfaCodePanelStateCreate } from "./mfaCodePanelStateCreate.js"
 
 type MfaCodePanelProps = {

@@ -2,8 +2,8 @@ import { Show } from "solid-js"
 import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import { LoginScreenView } from "./LoginScreenView.js"
-import { loginDemoStates } from "./loginDemoStates.js"
 import type { loginDemoStateCreate } from "./loginDemoStateCreate.js"
+import { loginDemoStates } from "./loginDemoStates.js"
 
 /** Fixture-state chooser plus the shared login view, so every demo state stays URL-selectable. */
 export function LoginDemoAdapter(props: { readonly state: ReturnType<typeof loginDemoStateCreate> }) {

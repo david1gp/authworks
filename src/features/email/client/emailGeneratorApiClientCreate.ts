@@ -3,7 +3,6 @@ import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
-import { type EmailOtpRenderRequest, emailOtpRenderRequestSchema } from "../public/emailOtpRenderRequestSchema.js"
 import {
   type EmailChangeNotificationRenderRequest,
   emailChangeNotificationRenderRequestSchema,
@@ -12,6 +11,7 @@ import {
   type EmailChangeRenderRequest,
   emailChangeRenderRequestSchema,
 } from "../public/emailChangeRenderRequestSchema.js"
+import { type EmailOtpRenderRequest, emailOtpRenderRequestSchema } from "../public/emailOtpRenderRequestSchema.js"
 import {
   type EmailOtpSecurityNotificationRenderRequest,
   emailOtpSecurityNotificationRenderRequestSchema,

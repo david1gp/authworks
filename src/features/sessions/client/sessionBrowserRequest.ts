@@ -1,8 +1,8 @@
 import type * as v from "valibot"
 import type { Result } from "#result"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
-import { sessionCsrfTokenGet } from "./sessionCsrfTokenGet.js"
 import { sessionBrowserModeHeaderName } from "../public/sessionBrowserModeHeaderName.js"
+import { sessionCsrfTokenGet } from "./sessionCsrfTokenGet.js"
 
 type SessionBrowserFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 

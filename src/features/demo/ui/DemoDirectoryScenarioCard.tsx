@@ -1,8 +1,8 @@
 import { A } from "@solidjs/router"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
-import { demoFixtureStateLabel } from "../demoFixtureStateLabel.js"
 import type { DemoFixtureScenario } from "../demoFixtureScenarioSchema.js"
+import { demoFixtureStateLabel } from "../demoFixtureStateLabel.js"
 
 export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario }) {
   return (

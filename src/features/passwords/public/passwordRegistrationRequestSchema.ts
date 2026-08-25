@@ -1,6 +1,6 @@
 import * as v from "valibot"
-import { userRegistrationVerificationMethodSchema } from "../../users/public/userRegistrationVerificationMethodSchema.js"
 import { userProfileSchema } from "../../users/public/userProfileSchema.js"
+import { userRegistrationVerificationMethodSchema } from "../../users/public/userRegistrationVerificationMethodSchema.js"
 
 export const passwordRegistrationRequestSchema = v.pipe(
   v.strictObject({

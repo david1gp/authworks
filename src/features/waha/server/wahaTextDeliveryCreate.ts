@@ -4,11 +4,11 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { wahaChatIdCreate } from "../domain/wahaChatIdCreate.js"
 import type { WahaDeliveryPort } from "../domain/wahaDeliveryPort.js"
+import type { WahaTextDeliveryPort } from "../domain/wahaTextDeliveryPort.js"
 import { wahaHealthCandidateRepositoryCreate } from "../persistence/wahaHealthCandidateRepositoryCreate.js"
 import type { WahaHealthCandidateRow } from "../persistence/wahaHealthCandidateTable.js"
 import { wahaHealthCandidateSelectorCreate } from "./wahaHealthCandidateSelectorCreate.js"
 import { wahaHealthRegistryCreate } from "./wahaHealthRegistryCreate.js"
-import type { WahaTextDeliveryPort } from "../domain/wahaTextDeliveryPort.js"
 
 type WahaTextDeliveryCreateOptions = {
   readonly deliveryPort: WahaDeliveryPort

@@ -1,7 +1,7 @@
 import * as v from "valibot"
+import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
 import { organizationLoginPolicyOverrideSchema } from "./organizationLoginPolicyOverrideSchema.js"
 import { organizationLoginPolicySchema } from "./organizationLoginPolicySchema.js"
-import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
 import { organizationResourceIdSchema } from "./organizationResourceIdSchema.js"
 
 export const organizationLoginPolicyResponseSchema = v.strictObject({

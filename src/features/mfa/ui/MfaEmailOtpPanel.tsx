@@ -1,4 +1,4 @@
-import { Show, Switch, Match } from "solid-js"
+import { Match, Show, Switch } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
@@ -7,8 +7,8 @@ import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
 import { LoginMessages } from "../../login/ui/LoginMessages.js"
 import { LoginPanelHeader } from "../../login/ui/LoginPanelHeader.js"
 import { LoginSubmitButton } from "../../login/ui/LoginSubmitButton.js"
-import type { MfaEmailOtpStage } from "./mfaEmailOtpStageSchema.js"
 import { mfaEmailOtpPanelStateCreate } from "./mfaEmailOtpPanelStateCreate.js"
+import type { MfaEmailOtpStage } from "./mfaEmailOtpStageSchema.js"
 
 export function MfaEmailOtpPanel(props: {
   readonly available: boolean

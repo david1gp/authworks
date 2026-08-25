@@ -4,8 +4,8 @@ import { demoAdminImpersonationNow } from "../../demo/demoAdminImpersonationNow.
 import { demoAdminScenarioGroups } from "../../demo/demoAdminScenarioGroups.js"
 import { demoFixtureScenarioHrefBuild } from "../../demo/demoFixtureScenarioHrefBuild.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
-import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
+import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.js"
 import { impersonationAdminDemoAdapterCreate } from "./impersonationAdminDemoAdapterCreate.js"
 import { impersonationAdminPageStateCreate } from "./impersonationAdminPageStateCreate.js"
 

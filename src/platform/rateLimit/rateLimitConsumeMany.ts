@@ -3,8 +3,8 @@ import { type Result } from "#result"
 import { resultCreate } from "../errors/resultCreate.js"
 import { resultErrorCreate } from "../errors/resultErrorCreate.js"
 import type { StorageExecutor } from "../storage/storageSchema.js"
-import { rateLimitTable } from "./rateLimitTable.js"
 import { rateLimitConsume } from "./rateLimitConsume.js"
+import { rateLimitTable } from "./rateLimitTable.js"
 
 type RateLimitConsumeManyDimension = {
   readonly keyHash: string

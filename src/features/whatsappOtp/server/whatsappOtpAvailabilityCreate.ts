@@ -3,11 +3,11 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
-import { whatsappOtpAvailabilityPredicate } from "../domain/whatsappOtpAvailabilityPredicate.js"
-import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
-import type { WhatsappOtpAvailabilityResponse } from "../public/whatsappOtpAvailabilityResponseSchema.js"
 import type { WahaConfiguration } from "../../waha/server/wahaConfiguration.js"
 import { wahaHealthCandidateReaderCreate } from "../../waha/server/wahaHealthCandidateReaderCreate.js"
+import type { WhatsappOtpAvailabilityPort } from "../domain/whatsappOtpAvailabilityPort.js"
+import { whatsappOtpAvailabilityPredicate } from "../domain/whatsappOtpAvailabilityPredicate.js"
+import type { WhatsappOtpAvailabilityResponse } from "../public/whatsappOtpAvailabilityResponseSchema.js"
 
 type WhatsappOtpAvailabilityCreateOptions = {
   readonly configuration?: WahaConfiguration

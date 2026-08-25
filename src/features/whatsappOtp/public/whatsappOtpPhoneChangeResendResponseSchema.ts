@@ -1,4 +1,4 @@
 export {
-  whatsappOtpResendResponseSchema as whatsappOtpPhoneChangeResendResponseSchema,
   type WhatsappOtpResendResponse as WhatsappOtpPhoneChangeResendResponse,
+  whatsappOtpResendResponseSchema as whatsappOtpPhoneChangeResendResponseSchema,
 } from "./whatsappOtpResendResponseSchema.js"
