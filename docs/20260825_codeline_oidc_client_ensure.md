@@ -19,16 +19,19 @@ environment/default values. The default client name is `Codeline preview`.
 
 The command is idempotent:
 
-- It first uses an existing client ID from `OIDC_CLIENT_ID` or
-  `ZITADEL_CLIENT_ID`, then falls back to the unique exact client name.
+- It first uses an existing client ID from `OIDC_AUTHWORKS_CLIENT_ID`,
+  `OIDC_CLIENT_ID`, or `ZITADEL_CLIENT_ID`, then falls back to the unique exact
+  client name.
 - It refuses ambiguous names and refuses to modify a public client.
 - It creates a confidential client when no target exists.
 - It updates configuration drift and reactivates an inactive target without
   rotating an existing secret.
-- It treats an existing secret as write-only. Only a newly generated secret is
-  written, once, to the existing ignored environment aliases:
+- It treats an existing secret as write-only. Only a newly generated or
+  explicitly rotated secret is written to the existing ignored environment
+  aliases: `OIDC_AUTHWORKS_CLIENT_ID`, `OIDC_AUTHWORKS_CLIENT_SECRET`,
   `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `ZITADEL_CLIENT_ID`, and
-  `ZITADEL_CLIENT_SECRET`.
+  `ZITADEL_CLIENT_SECRET`. All six aliases are replaced atomically. Duplicate
+  credential keys are refused before any replacement.
 
 The environment file must already exist, be a regular writable file, and is
 replaced with a mode-`0600` temporary file using an atomic rename. The command
@@ -106,6 +109,11 @@ envelope to stdout. Failure stdout is empty. Failure stderr is exactly one
 canonical JSON line containing only an allowlisted code; IDs, credentials,
 envelopes, HTTP bodies, exception text, and raw API diagnostics are never part of
 the failure protocol.
+
+The private envelope handoff that applies a newly rotated credential to an
+environment file must use the same atomic updater: it replaces all six client
+ID/secret aliases listed above and refuses duplicate keys. This repository does
+not execute that production handoff.
 
 | Exit | Canonical stderr code |
 | ---: | --- |

@@ -66,6 +66,8 @@ test("Codeline client ensure creates, updates, and never prints the client secre
     expect(clientSecret).toBeDefined()
     expect(first.stdout).not.toContain(clientSecret ?? "")
     expect(environmentAfterCreate).toContain(`OIDC_CLIENT_ID=${firstOutput.client.id}`)
+    expect(environmentAfterCreate).toContain(`OIDC_AUTHWORKS_CLIENT_ID=${firstOutput.client.id}`)
+    expect(environmentAfterCreate).toContain(`OIDC_AUTHWORKS_CLIENT_SECRET=${clientSecret}`)
     expect(environmentAfterCreate).toContain(`ZITADEL_CLIENT_ID=${firstOutput.client.id}`)
     expect(environmentAfterCreate).toContain(`ZITADEL_CLIENT_SECRET=${clientSecret}`)
     expect(environmentAfterCreate).toContain("OTHER=value")

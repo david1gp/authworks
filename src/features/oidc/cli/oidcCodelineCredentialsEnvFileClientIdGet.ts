@@ -3,7 +3,11 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 
-const oidcCodelineClientIdEnvironmentNames = ["OIDC_CLIENT_ID", "ZITADEL_CLIENT_ID"] as const
+const oidcCodelineClientIdEnvironmentNames = [
+  "OIDC_AUTHWORKS_CLIENT_ID",
+  "OIDC_CLIENT_ID",
+  "ZITADEL_CLIENT_ID",
+] as const
 
 export async function oidcCodelineCredentialsEnvFileClientIdGet(
   path: string,
@@ -21,8 +25,18 @@ export async function oidcCodelineCredentialsEnvFileClientIdGet(
       )
     await access(path, constants.W_OK)
     const content = await readFile(path, "utf8")
+    const valuesByName = new Map<string, string>()
+    for (const entry of environmentEntriesGet(content)) {
+      if (valuesByName.has(entry.name))
+        return resultErrorCodedCreate(
+          op,
+          "The Codeline environment file contains duplicate credential aliases.",
+          "oidc.conflict",
+        )
+      valuesByName.set(entry.name, environmentValueNormalize(entry.value))
+    }
     const values = oidcCodelineClientIdEnvironmentNames.flatMap((name) => {
-      const value = environmentValueGet(content, name)
+      const value = valuesByName.get(name)
       return value === undefined || value.length === 0 ? [] : [value]
     })
     if (new Set(values).size > 1)
@@ -37,11 +51,21 @@ export async function oidcCodelineCredentialsEnvFileClientIdGet(
   }
 }
 
-function environmentValueGet(content: string, name: string): string | undefined {
-  const expression = new RegExp(`^\\s*${name}\\s*=\\s*(.*?)\\s*$`, "m")
-  const match = expression.exec(content)
-  if (match === null) return undefined
-  const value = match[1] ?? ""
+function environmentEntriesGet(content: string): Array<{ readonly name: string; readonly value: string }> {
+  const entries: Array<{ readonly name: string; readonly value: string }> = []
+  for (const line of content.split(/\r?\n/)) {
+    const match =
+      /^[ \t]*(OIDC_AUTHWORKS_CLIENT_ID|OIDC_AUTHWORKS_CLIENT_SECRET|OIDC_CLIENT_ID|OIDC_CLIENT_SECRET|ZITADEL_CLIENT_ID|ZITADEL_CLIENT_SECRET)[ \t]*=(.*)$/.exec(
+        line,
+      )
+    if (match === null || match[1] === undefined) continue
+    entries.push({ name: match[1], value: match[2] ?? "" })
+  }
+  return entries
+}
+
+function environmentValueNormalize(rawValue: string): string {
+  const value = rawValue.trim()
   if (
     value.length >= 2 &&
     ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))

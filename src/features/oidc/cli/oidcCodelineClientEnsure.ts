@@ -9,6 +9,8 @@ import { oidcCodelineCredentialsEnvFileUpdate } from "./oidcCodelineCredentialsE
 const oidcCodelineRedirectUri = "https://preview.codeline.work/api/auth/callback"
 const oidcCodelineAllowedScopes = ["openid", "profile", "email", "urn:zitadel:iam:user:resourceowner"] as const
 const oidcCodelineCredentialAliases = [
+  "OIDC_AUTHWORKS_CLIENT_ID",
+  "OIDC_AUTHWORKS_CLIENT_SECRET",
   "OIDC_CLIENT_ID",
   "OIDC_CLIENT_SECRET",
   "ZITADEL_CLIENT_ID",

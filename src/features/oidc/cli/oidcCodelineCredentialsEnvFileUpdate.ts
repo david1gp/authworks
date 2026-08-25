@@ -4,6 +4,8 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 
 const oidcCodelineCredentialEnvironmentNames = [
+  "OIDC_AUTHWORKS_CLIENT_ID",
+  "OIDC_AUTHWORKS_CLIENT_SECRET",
   "OIDC_CLIENT_ID",
   "OIDC_CLIENT_SECRET",
   "ZITADEL_CLIENT_ID",
@@ -29,8 +31,9 @@ export async function oidcCodelineCredentialsEnvFileUpdate(options: {
       )
     const content = await readFile(options.path, "utf8")
     const updated = environmentFileUpdate(content, options.clientId, options.clientSecret)
+    if (!updated.success) return updated
     temporaryPath = `${options.path}.${process.pid}.${crypto.randomUUID()}.tmp`
-    await writeFile(temporaryPath, updated, { encoding: "utf8", flag: "wx", mode: 0o600 })
+    await writeFile(temporaryPath, updated.data, { encoding: "utf8", flag: "wx", mode: 0o600 })
     await chmod(temporaryPath, 0o600)
     await rename(temporaryPath, options.path)
     temporaryPath = undefined
@@ -46,12 +49,14 @@ export async function oidcCodelineCredentialsEnvFileUpdate(options: {
   }
 }
 
-function environmentFileUpdate(content: string, clientId: string, clientSecret: string): string {
+function environmentFileUpdate(content: string, clientId: string, clientSecret: string): Result<string> {
   const newline = content.includes("\r\n") ? "\r\n" : "\n"
   const trailingNewline = content.endsWith("\n")
   const lines = content.split(/\r?\n/)
   if (trailingNewline) lines.pop()
   const values = new Map<string, string>([
+    ["OIDC_AUTHWORKS_CLIENT_ID", clientId],
+    ["OIDC_AUTHWORKS_CLIENT_SECRET", clientSecret],
     ["OIDC_CLIENT_ID", clientId],
     ["OIDC_CLIENT_SECRET", clientSecret],
     ["ZITADEL_CLIENT_ID", clientId],
@@ -60,10 +65,19 @@ function environmentFileUpdate(content: string, clientId: string, clientSecret: 
   const present = new Set<string>()
   for (let index = 0; index < lines.length; index += 1) {
     const line = lines[index] ?? ""
-    const match = /^\s*(OIDC_CLIENT_ID|OIDC_CLIENT_SECRET|ZITADEL_CLIENT_ID|ZITADEL_CLIENT_SECRET)\s*=/.exec(line)
+    const match =
+      /^[ \t]*(OIDC_AUTHWORKS_CLIENT_ID|OIDC_AUTHWORKS_CLIENT_SECRET|OIDC_CLIENT_ID|OIDC_CLIENT_SECRET|ZITADEL_CLIENT_ID|ZITADEL_CLIENT_SECRET)[ \t]*=/.exec(
+        line,
+      )
     if (match === null) continue
     const name = match[1]
     if (name === undefined) continue
+    if (present.has(name))
+      return resultErrorCodedCreate(
+        "oidcCodelineCredentialsEnvFileUpdate",
+        "The Codeline environment file contains duplicate credential aliases.",
+        "oidc.conflict",
+      )
     const value = values.get(name)
     if (value === undefined) continue
     lines[index] = `${name}=${value}`
@@ -73,7 +87,7 @@ function environmentFileUpdate(content: string, clientId: string, clientSecret: 
     if (!present.has(name)) lines.push(`${name}=${values.get(name) ?? ""}`)
   }
   const result = lines.join(newline)
-  return trailingNewline || present.size !== oidcCodelineCredentialEnvironmentNames.length
-    ? `${result}${newline}`
-    : result
+  return resultCreate(
+    trailingNewline || present.size !== oidcCodelineCredentialEnvironmentNames.length ? `${result}${newline}` : result,
+  )
 }
