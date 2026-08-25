@@ -231,7 +231,9 @@ const passwordContentorenSsoTestProductionEnsureCommand = buildCommand({
           "passwords.contentoren-ssotest-ensure.authorization-unavailable",
         ),
       )
-      this.process.exitCode = 1
+      this.process.exitCode = passwordContentorenSsoTestProductionEnsureExitCodeGet(
+        "passwords.contentoren-ssotest-ensure.authorization-unavailable",
+      )
       return
     }
     const input = await passwordContentorenSsoTestInputRead(this.process.env)
@@ -241,7 +243,9 @@ const passwordContentorenSsoTestProductionEnsureCommand = buildCommand({
           "passwords.contentoren-ssotest-ensure.input-invalid",
         ),
       )
-      this.process.exitCode = 1
+      this.process.exitCode = passwordContentorenSsoTestProductionEnsureExitCodeGet(
+        "passwords.contentoren-ssotest-ensure.input-invalid",
+      )
       return
     }
     try {
@@ -262,7 +266,9 @@ const passwordContentorenSsoTestProductionEnsureCommand = buildCommand({
           "passwords.contentoren-ssotest-ensure.internal-failed",
         ),
       )
-      this.process.exitCode = 1
+      this.process.exitCode = passwordContentorenSsoTestProductionEnsureExitCodeGet(
+        "passwords.contentoren-ssotest-ensure.internal-failed",
+      )
       return
     }
   },

@@ -58,11 +58,10 @@ writes exactly one JSON object to stderr followed by a newline:
 {"error":{"code":"passwords.contentoren-ssotest-ensure.<reason>"}}
 ```
 
-The twelve `api-rejected.<stage>` failures have stable, distinct process exit
-codes in the reserved safe application range `32` through `43`. No other
-failure uses this range; all other failures continue to exit with status `1`.
+Every closed failure code has a stable process exit code. The reserved safe
+application range is `32` through `86`; no other failure uses that range.
 
-| Failure stage | Exit code |
+| Failure code | Exit code |
 | --- | ---: |
 | `api-rejected.realm-list` | 32 |
 | `api-rejected.organization-list` | 33 |
@@ -76,9 +75,52 @@ failure uses this range; all other failures continue to exit with status `1`.
 | `api-rejected.password-credential-replace` | 41 |
 | `api-rejected.membership-create` | 42 |
 | `api-rejected.membership-update` | 43 |
-| Any other failure | 1 |
+| `authorization-unavailable` | 44 |
+| `input-invalid` | 45 |
+| `realm-not-found` | 46 |
+| `realm-ambiguous` | 47 |
+| `realm-inactive` | 48 |
+| `organization-not-found` | 49 |
+| `organization-ambiguous` | 50 |
+| `organization-inactive` | 51 |
+| `human-ambiguous` | 52 |
+| `human-conflict` | 53 |
+| `human-deleted` | 54 |
+| `machine-conflict` | 55 |
+| `membership-elevated` | 56 |
+| `membership-ambiguous` | 57 |
+| `password-policy-rejected` | 58 |
+| `api-unreachable` | 59 |
+| `api-unauthorized` | 60 |
+| `api-forbidden` | 61 |
+| `api-rate-limited` | 62 |
+| `api-invalid-response` | 63 |
+| `api-invalid-response.realm-list` | 64 |
+| `api-invalid-response.organization-list` | 65 |
+| `api-invalid-response.password-policy-get` | 66 |
+| `api-invalid-response.user-list` | 67 |
+| `api-invalid-response.machine-user-list` | 68 |
+| `api-invalid-response.user-create` | 69 |
+| `api-invalid-response.user-email-verification-set` | 70 |
+| `api-invalid-response.user-lifecycle-set` | 71 |
+| `api-invalid-response.password-credential-replace` | 72 |
+| `api-invalid-response.membership-create` | 73 |
+| `api-invalid-response.membership-update` | 74 |
+| `api-invalid-response.membership-list.envelope` | 75 |
+| `api-invalid-response.membership-list.items` | 76 |
+| `api-invalid-response.membership-list.id` | 77 |
+| `api-invalid-response.membership-list.realm-id` | 78 |
+| `api-invalid-response.membership-list.organization-id` | 79 |
+| `api-invalid-response.membership-list.user-id` | 80 |
+| `api-invalid-response.membership-list.created-at` | 81 |
+| `api-invalid-response.membership-list.updated-at` | 82 |
+| `api-invalid-response.membership-list.roles` | 83 |
+| `api-invalid-response.membership-list.next-page-token` | 84 |
+| `api-invalid-response.membership-list.unknown` | 85 |
+| `api-failed` | 86 |
+| `internal-failed`, unknown failure | 1 |
 
-The range is reserved for this command's stage-specific contract: it stays
+The range is reserved for this command's closed failure contract: it stays
 below conventional shell command-not-found and signal-derived statuses and
 does not expose HTTP status, response data, identifiers, or secrets. The
 canonical stderr JSON remains unchanged for every failure.
@@ -94,7 +136,7 @@ The closed reason-code set is:
 - `membership-elevated`, `membership-ambiguous`
 - `password-policy-rejected`
 - `api-unreachable`, `api-unauthorized`, `api-forbidden`,
-  `api-rate-limited`, `api-failed`
+  `api-rate-limited`, `api-invalid-response`, `api-failed`
 - `api-rejected.realm-list`, `api-rejected.organization-list`,
   `api-rejected.password-policy-get`, `api-rejected.user-list`,
   `api-rejected.machine-user-list`, `api-rejected.membership-list`,

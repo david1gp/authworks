@@ -418,7 +418,7 @@ test("Contentoren ssotest command rejects malformed private input without disclo
     new Response(child.stderr).text(),
     new Response(child.stdout).text(),
   ])
-  expect(exitCode).toBe(1)
+  expect(exitCode).toBe(45)
   expect(stdout).toBe("")
   expect(stderr).toBe('{"error":{"code":"passwords.contentoren-ssotest-ensure.input-invalid"}}\n')
   expect(stderr).not.toContain(privateEmail)
@@ -443,7 +443,7 @@ test("Contentoren ssotest command rejects unavailable authorization without disc
     new Response(child.stderr).text(),
     new Response(child.stdout).text(),
   ])
-  expect(exitCode).toBe(1)
+  expect(exitCode).toBe(44)
   expect(stdout).toBe("")
   expect(stderr).toBe('{"error":{"code":"passwords.contentoren-ssotest-ensure.authorization-unavailable"}}\n')
   expect(stderr).not.toContain(privateEmail)
