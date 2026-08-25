@@ -71,7 +71,27 @@ account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailDescription,Review the verified address used for sign-in and account communication.
 account.profile.emailTitle,Email address and verification
+account.profile.emailChange,Change email address
+account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
+account.profile.emailChangeTitle,Change email address
+account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailDifferent,Use a different address
+account.profile.emailInvalid,Enter a valid email address.
+account.profile.emailNew,New email address
+account.profile.emailResend,Resend verification email
+account.profile.emailSaved,Your verified email address was updated.
+account.profile.emailSending,Sending verification email…
+account.profile.emailToken,Verification token
+account.profile.emailTokenInvalid,Enter the verification token from the email.
+account.profile.emailVerify,Verify email address
+account.profile.emailVerifying,Verifying…
 account.profile.firstName,First name
+account.profile.gender,Gender
+account.profile.pictureContentType,Picture content type
+account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
+account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.pictureRemove,Remove picture
+account.profile.pictureUrl,Picture URL
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
@@ -1252,3 +1272,11 @@ shell.state.loadingDetail,正在准备此页面及其安全上下文。
 shell.state.nothingHere,此处暂无内容
 shell.state.pageUnavailable,此页面不可用
 shell.state.readyDetail,此页面已准备好展示功能内容。
+login.chooser.whatsappOtpDetail,通过 WhatsApp 接收一次性代码
+login.chooser.whatsappOtpLabel,WhatsApp 代码
+login.whatsappOtp.codeError,WhatsApp 代码不正确。
+login.whatsappOtp.codeTitle,WhatsApp 验证代码
+login.whatsappOtp.description,我们将通过 WhatsApp 向您发送一次性代码，无需输入密码。
+login.whatsappOtp.send,发送 WhatsApp 代码
+login.whatsappOtp.sendError,无法发送 WhatsApp 代码。
+login.whatsappOtp.title,使用 WhatsApp 登录

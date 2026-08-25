@@ -41,14 +41,28 @@ export function AccountProductionAdapter(props: {
         <AccountProfileView
           displayName={state.displayName.get()}
           email={state.user.get()?.email ?? ""}
+          emailCandidate={state.emailCandidate.get()}
+          emailChallengeActive={state.emailChallengeId.get() !== undefined}
+          emailErrorMessage={state.emailErrorMessage.get()}
+          emailStatus={state.emailStatus.get()}
+          emailToken={state.emailToken.get()}
+          emailValidationMessage={state.emailValidationMessage.get()}
           emailVerified={state.user.get()?.emailVerified ?? false}
           errorMessage={state.errorMessage.get()}
           firstName={state.firstName.get()}
+          gender={state.gender.get()}
           kind={props.kind as "email" | "overview" | "profile"}
           lastName={state.lastName.get()}
           nickName={state.nickName.get()}
           onDisplayNameInput={state.displayName.set}
+          onEmailCancel={state.emailChangeCancel}
+          onEmailInput={state.emailCandidate.set}
+          onEmailResend={state.emailChangeResend}
+          onEmailStart={state.emailChangeStart}
+          onEmailTokenInput={state.emailToken.set}
+          onEmailVerify={state.emailChangeVerify}
           onFirstNameInput={state.firstName.set}
+          onGenderInput={state.gender.set}
           onLastNameInput={state.lastName.set}
           onNickNameInput={state.nickName.set}
           onPreferredLanguageInput={state.preferredLanguage.set}
@@ -58,6 +72,9 @@ export function AccountProductionAdapter(props: {
           onPhoneResend={state.phoneChangeResend}
           onPhoneStart={state.phoneChangeStart}
           onPhoneVerify={state.phoneChangeVerify}
+          onPictureContentTypeInput={state.pictureContentType.set}
+          onPictureRemove={state.pictureRemove}
+          onPictureUrlInput={state.pictureUrl.set}
           onRetry={state.load}
           onSubmit={state.profileSubmit}
           preferredLanguage={state.preferredLanguage.get()}
@@ -69,6 +86,8 @@ export function AccountProductionAdapter(props: {
           phoneStatus={state.phoneStatus.get()}
           phoneValidationMessage={state.phoneValidationMessage.get()}
           phoneVerified={state.user.get()?.phoneNumberVerifiedAt !== undefined}
+          pictureContentType={state.pictureContentType.get()}
+          pictureUrl={state.pictureUrl.get()}
           status={state.status.get()}
           userName={state.user.get()?.userName ?? ""}
           validationMessage={state.validationMessage.get()}

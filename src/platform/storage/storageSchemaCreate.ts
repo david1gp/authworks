@@ -115,9 +115,25 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     )
     database.run("CREATE INDEX IF NOT EXISTS users_realm_id_idx ON users (realm_id)")
     database.run(
-      "CREATE TABLE IF NOT EXISTS user_profiles (user_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, first_name TEXT, last_name TEXT, nick_name TEXT, display_name TEXT, preferred_language TEXT, gender TEXT, updated_at INTEGER NOT NULL CHECK (updated_at >= 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS user_profiles (user_id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, first_name TEXT, last_name TEXT, nick_name TEXT, display_name TEXT, preferred_language TEXT, gender TEXT, picture_url TEXT, picture_content_type TEXT, updated_at INTEGER NOT NULL CHECK (updated_at >= 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
+    try {
+      database.run("ALTER TABLE user_profiles ADD COLUMN picture_url TEXT")
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "picture_url")) throw error
+    }
+    try {
+      database.run("ALTER TABLE user_profiles ADD COLUMN picture_content_type TEXT")
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "picture_content_type")) throw error
+    }
     database.run("CREATE INDEX IF NOT EXISTS user_profiles_realm_id_idx ON user_profiles (realm_id)")
+    database.run(
+      "CREATE TABLE IF NOT EXISTS user_email_change_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, pending_email TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS user_email_change_challenges_realm_user_email_idx ON user_email_change_challenges (realm_id, user_id, pending_email)",
+    )
     database.run(
       "CREATE TABLE IF NOT EXISTS email_otp_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT, user_id TEXT, email_hash TEXT NOT NULL, purpose TEXT NOT NULL CHECK (purpose IN ('sign_in')), code_hash TEXT NOT NULL, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )

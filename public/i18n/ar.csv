@@ -71,7 +71,27 @@ account.profile.displayNameRequired,أدخل اسمًا معروضًا.
 account.profile.email,عنوان البريد الإلكتروني
 account.profile.emailDescription,راجع العنوان المؤكد المستخدم لتسجيل الدخول والتواصل بشأن الحساب.
 account.profile.emailTitle,عنوان البريد الإلكتروني والتحقق
+account.profile.emailChange,Change email address
+account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
+account.profile.emailChangeTitle,Change email address
+account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailDifferent,Use a different address
+account.profile.emailInvalid,Enter a valid email address.
+account.profile.emailNew,New email address
+account.profile.emailResend,Resend verification email
+account.profile.emailSaved,Your verified email address was updated.
+account.profile.emailSending,Sending verification email…
+account.profile.emailToken,Verification token
+account.profile.emailTokenInvalid,Enter the verification token from the email.
+account.profile.emailVerify,Verify email address
+account.profile.emailVerifying,Verifying…
 account.profile.firstName,الاسم الأول
+account.profile.gender,Gender
+account.profile.pictureContentType,Picture content type
+account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
+account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.pictureRemove,Remove picture
+account.profile.pictureUrl,Picture URL
 account.profile.lastName,اسم العائلة
 account.profile.nickName,الاسم المستعار
 account.profile.personalDescription,حافظ على تحديث الملف الشخصي المعروض للتطبيقات والمسؤولين.
@@ -1252,3 +1272,11 @@ shell.state.loadingDetail,جارٍ إعداد هذه الصفحة وسياق ا�
 shell.state.nothingHere,لا يوجد شيء هنا بعد
 shell.state.pageUnavailable,هذه الصفحة غير متاحة
 shell.state.readyDetail,هذه الصفحة جاهزة لمحتوى الميزة الخاصة بها.
+login.chooser.whatsappOtpDetail,استلام رمز لمرة واحدة عبر واتساب
+login.chooser.whatsappOtpLabel,رمز واتساب
+login.whatsappOtp.codeError,رمز واتساب غير صحيح.
+login.whatsappOtp.codeTitle,رمز التحقق عبر واتساب
+login.whatsappOtp.description,سنرسل إليك رمزاً للاستخدام مرة واحدة عبر واتساب بدلاً من طلب كلمة مرور.
+login.whatsappOtp.send,إرسال رمز واتساب
+login.whatsappOtp.sendError,تعذر إرسال رمز واتساب.
+login.whatsappOtp.title,تسجيل الدخول عبر واتساب

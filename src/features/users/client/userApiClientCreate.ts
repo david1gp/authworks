@@ -14,6 +14,18 @@ import {
   userAuthenticationMethodsSchema,
 } from "../public/userAuthenticationMethodsSchema.js"
 import { type UserCreateRequest, userCreateRequestSchema } from "../public/userCreateRequestSchema.js"
+import type { UserEmailChangeResendRequest } from "../public/userEmailChangeResendRequestSchema.js"
+import { userEmailChangeResendRequestSchema } from "../public/userEmailChangeResendRequestSchema.js"
+import type { UserEmailChangeResendResponse } from "../public/userEmailChangeResendResponseSchema.js"
+import { userEmailChangeResendResponseSchema } from "../public/userEmailChangeResendResponseSchema.js"
+import type { UserEmailChangeStartRequest } from "../public/userEmailChangeStartRequestSchema.js"
+import { userEmailChangeStartRequestSchema } from "../public/userEmailChangeStartRequestSchema.js"
+import type { UserEmailChangeStartResponse } from "../public/userEmailChangeStartResponseSchema.js"
+import { userEmailChangeStartResponseSchema } from "../public/userEmailChangeStartResponseSchema.js"
+import type { UserEmailChangeVerifyRequest } from "../public/userEmailChangeVerifyRequestSchema.js"
+import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVerifyRequestSchema.js"
+import type { UserEmailChangeVerifyResponse } from "../public/userEmailChangeVerifyResponseSchema.js"
+import { userEmailChangeVerifyResponseSchema } from "../public/userEmailChangeVerifyResponseSchema.js"
 import { type UserLifecycleRequest, userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
 import { type UserListResponse, userListResponseSchema } from "../public/userListResponseSchema.js"
 import {
@@ -73,6 +85,29 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
     schema: v.GenericSchema<T>,
   ): Promise<Result<T>> =>
     sessionBrowserRequest({ baseUrl: options.baseUrl, fetch: options.fetch, init, op, path, realmId, schema })
+  const meMutate = <T>(
+    realmId: string,
+    op: string,
+    path: string,
+    input: unknown,
+    requestSchema: v.GenericSchema<unknown>,
+    responseSchema: v.GenericSchema<T>,
+  ): Promise<Result<T>> => {
+    const parsed = v.safeParse(requestSchema, input)
+    if (!parsed.success)
+      return Promise.resolve(resultErrorCreate(op, "The account email-change request is invalid.", "users.invalid"))
+    const init = { body: JSON.stringify(parsed.output), method: "POST" }
+    if (options.token !== undefined) return request(path, init, responseSchema)
+    return sessionBrowserRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init,
+      op,
+      path,
+      realmId,
+      schema: responseSchema,
+    })
+  }
 
   return {
     userCreate(realmId: string, input: UserCreateRequest): Promise<Result<UserResponse>> {
@@ -112,6 +147,45 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         `/realms/${encodeURIComponent(realmId)}/me/authentication-methods`,
         userAuthenticationMethodsSchema,
         getOptions,
+      )
+    },
+    userMeEmailChangeResend(
+      realmId: string,
+      input: UserEmailChangeResendRequest,
+    ): Promise<Result<UserEmailChangeResendResponse>> {
+      return meMutate(
+        realmId,
+        "userMeEmailChangeResend",
+        `/realms/${encodeURIComponent(realmId)}/me/email-change/resend`,
+        input,
+        userEmailChangeResendRequestSchema,
+        userEmailChangeResendResponseSchema,
+      )
+    },
+    userMeEmailChangeStart(
+      realmId: string,
+      input: UserEmailChangeStartRequest,
+    ): Promise<Result<UserEmailChangeStartResponse>> {
+      return meMutate(
+        realmId,
+        "userMeEmailChangeStart",
+        `/realms/${encodeURIComponent(realmId)}/me/email-change/start`,
+        input,
+        userEmailChangeStartRequestSchema,
+        userEmailChangeStartResponseSchema,
+      )
+    },
+    userMeEmailChangeVerify(
+      realmId: string,
+      input: UserEmailChangeVerifyRequest,
+    ): Promise<Result<UserEmailChangeVerifyResponse>> {
+      return meMutate(
+        realmId,
+        "userMeEmailChangeVerify",
+        `/realms/${encodeURIComponent(realmId)}/me/email-change/verify`,
+        input,
+        userEmailChangeVerifyRequestSchema,
+        userEmailChangeVerifyResponseSchema,
       )
     },
     userTenantAuthenticationMethodsGet(realmId: string, userId: string): Promise<Result<UserAuthenticationMethods>> {

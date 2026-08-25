@@ -32,6 +32,9 @@ export function accountProductionAdapterStateCreate(
   return accountPageStateCreate({
     adapter: {
       deleteAccount: async () => users.userMeDelete(await realmIdResolve()),
+      emailChangeResend: async (input) => users.userMeEmailChangeResend(await realmIdResolve(), input),
+      emailChangeStart: async (input) => users.userMeEmailChangeStart(await realmIdResolve(), input),
+      emailChangeVerify: async (input) => users.userMeEmailChangeVerify(await realmIdResolve(), input),
       loadUser: async () => {
         const result = await users.userMeGet(await realmIdResolve())
         if (!result.success) return result

@@ -55,14 +55,28 @@ export function AccountDemoAdapter(props: {
           <AccountProfileView
             displayName={page.displayName.get()}
             email={page.user.get()?.email ?? ""}
+            emailCandidate={page.emailCandidate.get()}
+            emailChallengeActive={page.emailChallengeId.get() !== undefined}
+            emailErrorMessage={page.emailErrorMessage.get()}
+            emailStatus={page.emailStatus.get()}
+            emailToken={page.emailToken.get()}
+            emailValidationMessage={page.emailValidationMessage.get()}
             emailVerified={page.user.get()?.emailVerified ?? false}
             errorMessage={page.errorMessage.get()}
             firstName={page.firstName.get()}
+            gender={page.gender.get()}
             kind={props.kind as "email" | "overview" | "profile"}
             lastName={page.lastName.get()}
             nickName={page.nickName.get()}
             onDisplayNameInput={page.displayName.set}
+            onEmailCancel={page.emailChangeCancel}
+            onEmailInput={page.emailCandidate.set}
+            onEmailResend={page.emailChangeResend}
+            onEmailStart={page.emailChangeStart}
+            onEmailTokenInput={page.emailToken.set}
+            onEmailVerify={page.emailChangeVerify}
             onFirstNameInput={page.firstName.set}
+            onGenderInput={page.gender.set}
             onLastNameInput={page.lastName.set}
             onNickNameInput={page.nickName.set}
             onPreferredLanguageInput={page.preferredLanguage.set}
@@ -72,6 +86,9 @@ export function AccountDemoAdapter(props: {
             onPhoneResend={page.phoneChangeResend}
             onPhoneStart={page.phoneChangeStart}
             onPhoneVerify={page.phoneChangeVerify}
+            onPictureContentTypeInput={page.pictureContentType.set}
+            onPictureRemove={page.pictureRemove}
+            onPictureUrlInput={page.pictureUrl.set}
             onRetry={page.load}
             onSubmit={page.profileSubmit}
             preferredLanguage={page.preferredLanguage.get()}
@@ -83,6 +100,8 @@ export function AccountDemoAdapter(props: {
             phoneStatus={page.phoneStatus.get()}
             phoneValidationMessage={page.phoneValidationMessage.get()}
             phoneVerified={page.user.get()?.phoneNumberVerifiedAt !== undefined}
+            pictureContentType={page.pictureContentType.get()}
+            pictureUrl={page.pictureUrl.get()}
             status={page.status.get()}
             userName={page.user.get()?.userName ?? ""}
             validationMessage={page.validationMessage.get()}

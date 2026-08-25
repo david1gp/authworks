@@ -22,6 +22,9 @@ import { userAuthenticationMethodsGet } from "../actions/userAuthenticationMetho
 import { userCreate } from "../actions/userCreate.js"
 import { userDelete } from "../actions/userDelete.js"
 import { userEmailVerificationSet } from "../actions/userEmailVerificationSet.js"
+import { userEmailChangeResend } from "../actions/userEmailChangeResend.js"
+import { userEmailChangeStart } from "../actions/userEmailChangeStart.js"
+import { userEmailChangeVerify } from "../actions/userEmailChangeVerify.js"
 import { userGet } from "../actions/userGet.js"
 import { userLifecycleSet } from "../actions/userLifecycleSet.js"
 import { userList } from "../actions/userList.js"
@@ -30,10 +33,19 @@ import { userCreateRequestSchema } from "../public/userCreateRequestSchema.js"
 import { userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
 import { userProfileUpdateRequestSchema } from "../public/userProfileUpdateRequestSchema.js"
 import { userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
+import type { UserEmailChangeDelivery } from "../public/userEmailChangeDeliverySchema.js"
+import { userEmailChangeResendRequestSchema } from "../public/userEmailChangeResendRequestSchema.js"
+import type { UserEmailChangeNotification } from "../public/userEmailChangeNotificationSchema.js"
+import { userEmailChangeStartRequestSchema } from "../public/userEmailChangeStartRequestSchema.js"
+import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVerifyRequestSchema.js"
 
 type UserServerAppCreateOptions = {
+  readonly clientIpResolve?: (context: { readonly req: { readonly raw: Request } }) => string | undefined
   readonly database: StorageDatabase
+  readonly onEmailChangeDelivery?: (delivery: UserEmailChangeDelivery) => void | Promise<void>
+  readonly onEmailChangeNotification?: (notification: UserEmailChangeNotification) => void | Promise<void>
   readonly publicOrigin?: string
+  readonly rateLimitSecret?: Secret | string
   readonly systemSecret?: Secret | string
 }
 
@@ -237,6 +249,90 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: subject.data,
         database: options.database,
         realmId: context.req.param("realmId"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/email-change/start", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userEmailChangeStartRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The account email-change request is invalid.",
+        op: "userEmailChangeStart",
+      })
+    return userResultResponseCreate(
+      context,
+      userEmailChangeStart({
+        clientIp: options.clientIpResolve?.(context),
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        onDelivery: options.onEmailChangeDelivery,
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: context.req.param("realmId"),
+        session: context.get("session"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/email-change/resend", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userEmailChangeResendRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The account email-change request is invalid.",
+        op: "userEmailChangeResend",
+      })
+    return userResultResponseCreate(
+      context,
+      userEmailChangeResend({
+        clientIp: options.clientIpResolve?.(context),
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        onDelivery: options.onEmailChangeDelivery,
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: context.req.param("realmId"),
+        session: context.get("session"),
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/me/email-change/verify", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userRequestJsonRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    const input = v.safeParse(userEmailChangeVerifyRequestSchema, body.data)
+    if (!input.success)
+      return userErrorResponseCreate(context, {
+        code: "users.invalid",
+        errorMessage: "The account email-change token is invalid.",
+        op: "userEmailChangeVerify",
+      })
+    return userResultResponseCreate(
+      context,
+      userEmailChangeVerify({
+        clientIp: options.clientIpResolve?.(context),
+        context: subject.data,
+        database: options.database,
+        input: input.output,
+        onNotification: options.onEmailChangeNotification,
+        rateLimitSecret: options.rateLimitSecret,
+        realmId: context.req.param("realmId"),
+        session: context.get("session"),
         userId: subject.data.actorId,
       }),
     )

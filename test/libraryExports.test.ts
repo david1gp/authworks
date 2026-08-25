@@ -87,6 +87,9 @@ test("every API client publishes its complete method set", () => {
     "userList",
     "userMeGet",
     "userMeAuthenticationMethodsGet",
+    "userMeEmailChangeResend",
+    "userMeEmailChangeStart",
+    "userMeEmailChangeVerify",
     "userTenantAuthenticationMethodsGet",
     "userMeProfileUpdate",
     "userProfileUpdate",
@@ -118,6 +121,8 @@ test("every API client publishes its complete method set", () => {
     "passwordPolicySet",
   ])
   expect(Object.keys(email.emailGeneratorApiClientCreate(options))).toEqual([
+    "emailChangeNotificationRender",
+    "emailChangeRender",
     "emailOtpSecurityNotificationRender",
     "emailVerificationRender",
     "emailOtpRender",

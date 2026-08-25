@@ -85,6 +85,8 @@ export function userCreate(options: UserCreateOptions): Result<{ user: User }> {
         realmId: options.realmId,
         lastName: profile.data.lastName,
         nickName: profile.data.nickName,
+        pictureContentType: profile.data.picture?.contentType ?? null,
+        pictureUrl: profile.data.picture?.url ?? null,
         preferredLanguage: profile.data.preferredLanguage,
         updatedAt: createdAt,
         userId,

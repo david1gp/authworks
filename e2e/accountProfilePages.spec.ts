@@ -13,8 +13,10 @@ const user = {
   profile: {
     displayName: "Avery Stone",
     firstName: "Avery",
+    gender: "unspecified",
     lastName: "Stone",
     nickName: "Avery",
+    picture: { contentType: "image/png", url: "https://assets.example.com/avery-stone.png" },
     preferredLanguage: "en",
   },
   realmId,
@@ -33,8 +35,14 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   await page.goto("/demo/account/profile")
   await expect(page.getByRole("heading", { name: "Personal information" })).toBeVisible()
   await page.getByLabel("Display name").fill("Avery Example")
+  await page.getByLabel("Gender").fill("woman")
+  await page.getByLabel("Picture URL").fill("https://assets.example.com/avery-example.png")
+  await page.getByLabel("Picture content type").fill("image/png")
   await page.getByRole("button", { name: "Save changes" }).click()
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
+  await page.getByRole("button", { name: "Remove picture" }).click()
+  await page.getByRole("button", { name: "Save changes" }).click()
+  await expect(page.getByLabel("Picture URL")).toHaveValue("")
 
   await page.goto("/demo/account/password")
   await page.getByLabel("Current password").fill("fixture-current")
@@ -52,23 +60,57 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
 
 test("production profile uses the subject API and CSRF", async ({ page }) => {
   let csrfHeader: string | null = null
+  const profileUpdates: unknown[] = []
+  let currentUser = user
   await productionAccountSessionBootstrap(page)
   await accountApiRoutesInstall(page, async (route, method) => {
     if (method === "PATCH") {
       csrfHeader = route.request().headers()["x-csrf-token"] ?? null
       const body = route.request().postDataJSON()
-      await route.fulfill({ json: { user: { ...user, profile: { ...user.profile, ...body } } } })
+      profileUpdates.push(body)
+      const profile = { ...currentUser.profile, ...body }
+      if (body.picture === null) delete profile.picture
+      currentUser = { ...currentUser, profile }
+      await route.fulfill({ json: { user: currentUser } })
       return
     }
-    await route.fulfill({ json: { user } })
+    await route.fulfill({ json: { user: currentUser } })
   })
 
   await page.goto("/account/profile")
   await expect(page.getByLabel("Display name")).toHaveValue("Avery Stone")
+  await expect(page.getByLabel("Gender")).toHaveValue("unspecified")
+  await expect(page.getByLabel("Picture URL")).toHaveValue("https://assets.example.com/avery-stone.png")
   await page.getByLabel("Display name").fill("Avery Updated")
+  await page.getByLabel("Gender").fill("woman")
+  await page.getByLabel("Picture URL").fill("https://assets.example.com/avery-updated.png")
+  await page.getByLabel("Picture content type").fill("image/png")
   await page.getByRole("button", { name: "Save changes" }).click()
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
+  await page.getByRole("button", { name: "Remove picture" }).click()
+  await page.getByRole("button", { name: "Save changes" }).click()
+  await expect(page.getByLabel("Picture URL")).toHaveValue("")
   expect(csrfHeader).toBe("e2e-csrf-token")
+  expect(profileUpdates).toEqual([
+    {
+      displayName: "Avery Updated",
+      firstName: "Avery",
+      gender: "woman",
+      lastName: "Stone",
+      nickName: "Avery",
+      picture: { contentType: "image/png", url: "https://assets.example.com/avery-updated.png" },
+      preferredLanguage: "en",
+    },
+    {
+      displayName: "Avery Updated",
+      firstName: "Avery",
+      gender: "woman",
+      lastName: "Stone",
+      nickName: "Avery",
+      picture: null,
+      preferredLanguage: "en",
+    },
+  ])
 })
 
 test("production profile adds, verifies, and changes its WhatsApp phone number", async ({ page }) => {

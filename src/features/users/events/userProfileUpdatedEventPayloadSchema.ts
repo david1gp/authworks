@@ -2,7 +2,7 @@ import * as v from "valibot"
 
 export const userProfileUpdatedEventPayloadSchema = v.strictObject({
   fields: v.pipe(
-    v.array(v.picklist(["displayName", "firstName", "gender", "lastName", "nickName", "preferredLanguage"])),
+    v.array(v.picklist(["displayName", "firstName", "gender", "lastName", "nickName", "picture", "preferredLanguage"])),
     v.minLength(1),
   ),
 })

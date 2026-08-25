@@ -19,6 +19,55 @@ const [{ accountDemoAdapterCreate }, { accountPageStateCreate }] = await Promise
 const submitEvent = { preventDefault: () => {} } as SubmitEvent
 
 describe("account phone-change state", () => {
+  test("submits gender and picture assets and supports picture removal", async () => {
+    const adapter = accountDemoAdapterCreate(() => "success")
+    const state = accountPageStateCreate({ adapter, initialStatus: "ready", kind: "profile" })
+    const loaded = await adapter.loadUser()
+    if (!loaded.success) throw new Error("Expected demo user")
+    state.user.set(loaded.data.user)
+    state.displayName.set("Avery Updated")
+    state.gender.set("woman")
+    state.pictureUrl.set("https://assets.example.com/avery-updated.png")
+    state.pictureContentType.set("image/png")
+
+    await state.profileSubmit(submitEvent)
+
+    expect(state.user.get()?.profile.gender).toBe("woman")
+    expect(state.user.get()?.profile.picture).toEqual({
+      contentType: "image/png",
+      url: "https://assets.example.com/avery-updated.png",
+    })
+
+    state.pictureRemove()
+    await state.profileSubmit(submitEvent)
+    expect(state.user.get()?.profile.picture).toBeUndefined()
+  })
+
+  test("does not replace general profile validation with picture feedback", async () => {
+    const adapter = accountDemoAdapterCreate(() => "success")
+    const updateProfile = adapter.updateProfile
+    let submittedGender = ""
+    const state = accountPageStateCreate({
+      adapter: {
+        ...adapter,
+        updateProfile: async (input) => {
+          submittedGender = input.gender ?? ""
+          return updateProfile(input)
+        },
+      },
+      initialStatus: "ready",
+      kind: "profile",
+    })
+    state.displayName.set("Avery Updated")
+    state.gender.set("x".repeat(65))
+
+    await state.profileSubmit(submitEvent)
+
+    expect(submittedGender).toBe("x".repeat(65))
+    expect(state.validationMessage.get()).toBeUndefined()
+    expect(state.status.get()).toBe("success")
+  })
+
   test("keeps the verified phone until a valid code applies the returned user", async () => {
     const calls: { name: string; input: unknown }[] = []
     const replacement = "+14155552672"

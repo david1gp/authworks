@@ -1,5 +1,7 @@
+import * as v from "valibot"
 import type { UserRecord } from "../persistence/userRepositoryCreate.js"
 import type { User } from "../public/userSchema.js"
+import { userPictureAssetSchema } from "../public/userPictureAssetSchema.js"
 
 function userProfileStringValueGet(value: string | null, maxLength: number): string | undefined {
   return value !== null && value.length >= 1 && value.length <= maxLength ? value : undefined
@@ -16,12 +18,21 @@ export function userPublicViewCreate(row: UserRecord): User {
   const lastName = userProfileStringValueGet(row.profile.lastName, 128)
   const nickName = userProfileStringValueGet(row.profile.nickName, 128)
   const preferredLanguage = userProfileStringValueGet(row.profile.preferredLanguage, 16)
+  const picture =
+    row.profile.pictureUrl === null
+      ? undefined
+      : v.safeParse(userPictureAssetSchema, {
+          ...(row.profile.pictureContentType === null ? {} : { contentType: row.profile.pictureContentType }),
+          url: row.profile.pictureUrl,
+        })
+  const pictureAsset = picture?.success ? picture.output : undefined
   const profile = {
     ...(displayName === undefined ? {} : { displayName }),
     ...(firstName === undefined ? {} : { firstName }),
     ...(gender === undefined ? {} : { gender }),
     ...(lastName === undefined ? {} : { lastName }),
     ...(nickName === undefined ? {} : { nickName }),
+    ...(pictureAsset === undefined ? {} : { picture: pictureAsset }),
     ...(preferredLanguage === undefined ? {} : { preferredLanguage }),
   }
   return {

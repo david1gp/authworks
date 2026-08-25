@@ -5,6 +5,14 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { type EmailOtpRenderRequest, emailOtpRenderRequestSchema } from "../public/emailOtpRenderRequestSchema.js"
 import {
+  type EmailChangeNotificationRenderRequest,
+  emailChangeNotificationRenderRequestSchema,
+} from "../public/emailChangeNotificationRenderRequestSchema.js"
+import {
+  type EmailChangeRenderRequest,
+  emailChangeRenderRequestSchema,
+} from "../public/emailChangeRenderRequestSchema.js"
+import {
   type EmailOtpSecurityNotificationRenderRequest,
   emailOtpSecurityNotificationRenderRequestSchema,
 } from "../public/emailOtpSecurityNotificationRenderRequestSchema.js"
@@ -60,6 +68,32 @@ export function emailGeneratorApiClientCreate(options: EmailGeneratorApiClientCr
   })
 
   return {
+    emailChangeNotificationRender(input: EmailChangeNotificationRenderRequest): Promise<Result<EmailRenderedMessage>> {
+      const parsed = parsedRequest(
+        emailChangeNotificationRenderRequestSchema,
+        input,
+        "The email-change notification render request is invalid.",
+      )
+      if (!parsed.success) return Promise.resolve(parsed)
+      return securityNotificationRender(request, "emailOtpRequested", {
+        details: [{ label: "New email address", value: parsed.data.notification.newEmail }],
+        message:
+          "Your Authworks account email address was changed. If you did not request this change, secure your account.",
+        subject: "Your email address was changed",
+        ...footerWireCreate(parsed.data.footer),
+      })
+    },
+    emailChangeRender(input: EmailChangeRenderRequest): Promise<Result<EmailRenderedMessage>> {
+      const parsed = parsedRequest(emailChangeRenderRequestSchema, input, "The email-change render request is invalid.")
+      if (!parsed.success) return Promise.resolve(parsed)
+      return request("/renderEmailTemplate/emailChangeV1", {
+        code: parsed.data.delivery.token,
+        expiryMinutes: Math.max(1, Math.ceil((parsed.data.delivery.expiresAt - Date.now()) / 60_000)),
+        ...footerWireCreate(parsed.data.footer),
+        ...(parsed.data.delivery.userName === undefined ? {} : { userName: parsed.data.delivery.userName }),
+        url: parsed.data.url,
+      })
+    },
     emailOtpSecurityNotificationRender(
       input: EmailOtpSecurityNotificationRenderRequest,
     ): Promise<Result<EmailRenderedMessage>> {

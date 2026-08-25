@@ -214,8 +214,13 @@ export function serverApplicationCreate(
   application.route(
     "/",
     userServerAppCreate({
+      clientIpResolve:
+        options.clientIpResolve === undefined ? undefined : (context) => options.clientIpResolve?.(context.req.raw),
       database: database.data,
+      onEmailChangeDelivery: emailDeliveryCallbacks?.onEmailChangeDelivery,
+      onEmailChangeNotification: emailDeliveryCallbacks?.onEmailChangeNotification,
       publicOrigin,
+      rateLimitSecret: options.systemSecret,
       systemSecret: options.systemSecret,
     }),
   )

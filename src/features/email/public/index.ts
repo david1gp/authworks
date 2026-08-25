@@ -1,5 +1,7 @@
 export * from "./emailGeneratorFooterSchema.js"
 export * from "./emailGeneratorLanguageSchema.js"
+export * from "./emailChangeNotificationRenderRequestSchema.js"
+export * from "./emailChangeRenderRequestSchema.js"
 export * from "./emailOtpRenderRequestSchema.js"
 export * from "./emailOtpSecurityNotificationRenderRequestSchema.js"
 export * from "./emailRecoveryRenderRequestSchema.js"

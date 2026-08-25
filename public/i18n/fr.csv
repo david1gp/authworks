@@ -71,7 +71,27 @@ account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailDescription,Review the verified address used for sign-in and account communication.
 account.profile.emailTitle,Email address and verification
+account.profile.emailChange,Change email address
+account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
+account.profile.emailChangeTitle,Change email address
+account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
+account.profile.emailDifferent,Use a different address
+account.profile.emailInvalid,Enter a valid email address.
+account.profile.emailNew,New email address
+account.profile.emailResend,Resend verification email
+account.profile.emailSaved,Your verified email address was updated.
+account.profile.emailSending,Sending verification email…
+account.profile.emailToken,Verification token
+account.profile.emailTokenInvalid,Enter the verification token from the email.
+account.profile.emailVerify,Verify email address
+account.profile.emailVerifying,Verifying…
 account.profile.firstName,First name
+account.profile.gender,Gender
+account.profile.pictureContentType,Picture content type
+account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
+account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.pictureRemove,Remove picture
+account.profile.pictureUrl,Picture URL
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
@@ -1252,3 +1272,11 @@ shell.state.loadingDetail,Préparation de cette page et de son contexte de sécu
 shell.state.nothingHere,Rien ici pour le moment
 shell.state.pageUnavailable,Cette page n'est pas disponible
 shell.state.readyDetail,Cette page est prête pour son contenu.
+login.chooser.whatsappOtpDetail,Recevoir un code à usage unique sur WhatsApp
+login.chooser.whatsappOtpLabel,Code WhatsApp
+login.whatsappOtp.codeError,Le code WhatsApp est incorrect.
+login.whatsappOtp.codeTitle,Code de vérification WhatsApp
+login.whatsappOtp.description,"Nous vous enverrons un code à usage unique sur WhatsApp, au lieu de vous demander un mot de passe."
+login.whatsappOtp.send,Envoyer le code WhatsApp
+login.whatsappOtp.sendError,Le code WhatsApp n’a pas pu être envoyé.
+login.whatsappOtp.title,Se connecter avec WhatsApp

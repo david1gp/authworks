@@ -11,9 +11,17 @@ const demoPhoneChallenge = {
   expiresAt: 1_800_000_300_000,
   retryAt: 1_800_000_060_000,
 }
+const demoEmailChallenge = {
+  accepted: true as const,
+  challengeId: "account-demo-email-change",
+  expiresAt: 1_800_000_300_000,
+  retryAt: 1_800_000_060_000,
+}
+const demoEmailTokenLength = 32
 
 export function accountDemoAdapterCreate(fixtureState: () => DemoFixtureState) {
   let fixtureUser = structuredClone(accountDemoUserFixture)
+  let emailChallenge: { consumed: boolean; email: string } | undefined
   const error = () =>
     resultErrorCodedCreate(
       "accountDemoFixture",
@@ -25,6 +33,61 @@ export function accountDemoAdapterCreate(fixtureState: () => DemoFixtureState) {
     deleteAccount: async () => {
       if (fixtureState() === "error") return error()
       fixtureUser = { ...fixtureUser, deletedAt: demoMutationTimestamp, state: "deleted" }
+      return resultCreate({ user: fixtureUser })
+    },
+    emailChangeResend: async (input: { readonly challengeId: string; readonly email: string }) => {
+      if (fixtureState() === "error") return error()
+      if (
+        emailChallenge === undefined ||
+        emailChallenge.consumed ||
+        input.challengeId !== demoEmailChallenge.challengeId ||
+        input.email.toLowerCase() !== emailChallenge.email
+      )
+        return resultErrorCodedCreate(
+          "accountDemoEmailChange",
+          "The account email-change challenge is invalid.",
+          "users.invalid",
+        )
+      return resultCreate(demoEmailChallenge)
+    },
+    emailChangeStart: async (input: { readonly email: string }) => {
+      if (fixtureState() === "error") return error()
+      if (input.email.toLowerCase() === fixtureUser.email.toLowerCase())
+        return resultErrorCodedCreate(
+          "accountDemoEmailChange",
+          "The account already uses this email address.",
+          "users.conflict",
+        )
+      emailChallenge = { consumed: false, email: input.email.toLowerCase() }
+      return resultCreate(demoEmailChallenge)
+    },
+    emailChangeVerify: async (input: { readonly challengeId: string; readonly token: string }) => {
+      if (fixtureState() === "error") return error()
+      if (
+        emailChallenge === undefined ||
+        emailChallenge.consumed ||
+        input.challengeId !== demoEmailChallenge.challengeId ||
+        input.token.length < demoEmailTokenLength
+      )
+        return resultErrorCodedCreate(
+          "accountDemoEmailChange",
+          "The account email-change token is invalid.",
+          "users.invalid",
+        )
+      if (emailChallenge.email === fixtureUser.email.toLowerCase())
+        return resultErrorCodedCreate(
+          "accountDemoEmailChange",
+          "The account already uses this email address.",
+          "users.conflict",
+        )
+      emailChallenge = { ...emailChallenge, consumed: true }
+      fixtureUser = {
+        ...fixtureUser,
+        email: emailChallenge.email,
+        emailVerified: true,
+        emailVerifiedAt: demoMutationTimestamp,
+        updatedAt: demoMutationTimestamp,
+      }
       return resultCreate({ user: fixtureUser })
     },
     loadUser: async () => {
@@ -48,12 +111,14 @@ export function accountDemoAdapterCreate(fixtureState: () => DemoFixtureState) {
     updatePassword: async () => (fixtureState() === "error" ? error() : resultCreate({ changed: true as const })),
     updateProfile: async (input: UserProfileUpdateRequest) => {
       if (fixtureState() === "error") return error()
+      const profile = Object.fromEntries(
+        Object.entries({ ...fixtureUser.profile, ...input }).filter(
+          (entry) => entry[1] !== null && entry[1] !== undefined,
+        ),
+      ) as typeof fixtureUser.profile
       fixtureUser = {
         ...fixtureUser,
-        profile: {
-          ...fixtureUser.profile,
-          ...Object.fromEntries(Object.entries(input).filter((entry) => entry[1] !== null)),
-        },
+        profile,
         updatedAt: demoMutationTimestamp,
       }
       return resultCreate({ user: fixtureUser })

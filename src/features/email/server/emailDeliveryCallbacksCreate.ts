@@ -6,6 +6,8 @@ import type { PasswordRegistrationDelivery } from "../../passwords/public/passwo
 import { emailGeneratorApiClientCreate } from "../client/emailGeneratorApiClientCreate.js"
 import type { MailDeliveryPort } from "../domain/mailDeliveryPort.js"
 import type { EmailRenderedMessage } from "../public/emailRenderedMessageSchema.js"
+import type { UserEmailChangeDelivery } from "../../users/public/userEmailChangeDeliverySchema.js"
+import type { UserEmailChangeNotification } from "../../users/public/userEmailChangeNotificationSchema.js"
 import type { EmailGeneratorServerConfiguration } from "./emailGeneratorServerConfiguration.js"
 
 type EmailDeliveryCallbacksCreateOptions = {
@@ -22,6 +24,28 @@ export function emailDeliveryCallbacksCreate(options: EmailDeliveryCallbacksCrea
   const footer = options.emailGenerator.footer
 
   return {
+    onEmailChangeDelivery(delivery: UserEmailChangeDelivery): void {
+      emailDeliverySend(
+        delivery.email,
+        renderer.emailChangeRender({
+          delivery,
+          footer,
+          url: emailDeliveryUrlCreate(options.publicOrigin, "/account/email", {
+            challengeId: delivery.challengeId,
+            realmId: delivery.realmId,
+            token: delivery.token,
+          }),
+        }),
+        options.mailDelivery,
+      )
+    },
+    onEmailChangeNotification(notification: UserEmailChangeNotification): void {
+      emailDeliverySend(
+        notification.email,
+        renderer.emailChangeNotificationRender({ footer, notification }),
+        options.mailDelivery,
+      )
+    },
     onInvitationDelivery(delivery: OrganizationInvitationDelivery): void {
       emailDeliverySend(
         delivery.email,

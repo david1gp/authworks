@@ -11,8 +11,10 @@ export const accountDemoUserFixture: User = {
   profile: {
     displayName: "Avery Stone",
     firstName: "Avery",
+    gender: "unspecified",
     lastName: "Stone",
     nickName: "Avery",
+    picture: { contentType: "image/png", url: "https://assets.example.com/avery-stone.png" },
     preferredLanguage: "en",
   },
   realmId: "019c1234-5678-7abc-8def-1123456789ab",

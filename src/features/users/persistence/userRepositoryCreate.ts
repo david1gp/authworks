@@ -59,6 +59,23 @@ export function userRepositoryCreate(database: StorageExecutor) {
     }
   }
 
+  const userRecordGetByEmail = (realmId: string, email: string): Result<UserRecord | null> => {
+    try {
+      const user = database
+        .select()
+        .from(userTable)
+        .where(and(eq(userTable.email, email), eq(userTable.realmId, realmId)))
+        .get()
+      if (user === undefined) return resultCreate(null)
+      const profile = database.select().from(userProfileTable).where(eq(userProfileTable.userId, user.id)).get()
+      if (profile === undefined)
+        return resultErrorCreate("userGetByEmail", "The user profile could not be read.", "users.read-failed")
+      return resultCreate({ ...user, profile })
+    } catch (_error) {
+      return resultErrorCreate("userGetByEmail", "The user could not be read.", "users.read-failed")
+    }
+  }
+
   return {
     userCreate(user: UserInsert, profile: UserProfileInsert): Result<UserRecord> {
       const invariant = userStateInvariantValidate({
@@ -85,6 +102,10 @@ export function userRepositoryCreate(database: StorageExecutor) {
 
     userGet(realmId: string, userId: string): Result<UserRecord | null> {
       return userRecordGet(realmId, userId)
+    },
+
+    userGetByEmail(realmId: string, email: string): Result<UserRecord | null> {
+      return userRecordGetByEmail(realmId, email)
     },
 
     userGetByVerifiedPhoneNumber(realmId: string, phoneNumber: string): Result<UserRecord | null> {
@@ -154,6 +175,49 @@ export function userRepositoryCreate(database: StorageExecutor) {
           "The user phone number could not be changed.",
           "users.write-failed",
         )
+      }
+    },
+
+    userEmailChange(input: {
+      email: string
+      emailVerifiedAt: number
+      expectedVersion: number
+      realmId: string
+      updatedAt: number
+      userId: string
+      version: number
+    }): Result<UserRecord | null> {
+      try {
+        const updated = database
+          .update(userTable)
+          .set({
+            email: input.email,
+            emailVerifiedAt: input.emailVerifiedAt,
+            updatedAt: input.updatedAt,
+            version: input.version,
+          })
+          .where(
+            and(
+              eq(userTable.id, input.userId),
+              eq(userTable.realmId, input.realmId),
+              eq(userTable.version, input.expectedVersion),
+            ),
+          )
+          .returning()
+          .get()
+        if (updated === undefined) return resultCreate(null)
+        const profile = database.select().from(userProfileTable).where(eq(userProfileTable.userId, input.userId)).get()
+        if (profile === undefined)
+          return resultErrorCreate("userEmailChange", "The user profile could not be read.", "users.read-failed")
+        return resultCreate({ ...updated, profile })
+      } catch (error: unknown) {
+        if (error instanceof Error && error.message.toLowerCase().includes("unique"))
+          return resultErrorCreate(
+            "userEmailChange",
+            "The user email is already used by another account.",
+            "users.conflict",
+          )
+        return resultErrorCreate("userEmailChange", "The user email could not be changed.", "users.write-failed")
       }
     },
 

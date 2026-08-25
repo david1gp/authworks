@@ -56,12 +56,34 @@ export function userProfileUpdate(options: UserProfileUpdateOptions): Result<{ u
     const currentUser = current.data
     const changedFields = Object.keys(profile.data).filter((field) => {
       const key = field as keyof typeof profile.data
+      if (key === "picture") {
+        const currentPicture =
+          currentUser.profile.pictureUrl === null
+            ? undefined
+            : {
+                ...(currentUser.profile.pictureContentType === null
+                  ? {}
+                  : { contentType: currentUser.profile.pictureContentType }),
+                url: currentUser.profile.pictureUrl,
+              }
+        const nextPicture = profile.data.picture ?? undefined
+        return currentPicture?.url !== nextPicture?.url || currentPicture?.contentType !== nextPicture?.contentType
+      }
       const currentValue = currentUser.profile[key] ?? undefined
       return currentValue !== profile.data[key]
     }) as (keyof typeof profile.data)[]
     if (changedFields.length === 0) return resultCreate({ user: userPublicViewCreate(currentUser) })
     const updatedProfile = repository.userProfileUpdate(options.realmId, options.userId, {
-      ...Object.fromEntries(changedFields.map((field) => [field, profile.data[field] ?? null])),
+      ...Object.fromEntries(
+        changedFields.flatMap((field) =>
+          field === "picture"
+            ? [
+                ["pictureContentType", profile.data.picture?.contentType ?? null],
+                ["pictureUrl", profile.data.picture?.url ?? null],
+              ]
+            : [[field, profile.data[field] ?? null]],
+        ),
+      ),
       updatedAt,
     })
     if (!updatedProfile.success) return updatedProfile

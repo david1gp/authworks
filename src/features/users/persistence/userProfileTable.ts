@@ -9,6 +9,8 @@ export const userProfileTable = sqliteTable(
     realmId: text("realm_id").notNull(),
     lastName: text("last_name"),
     nickName: text("nick_name"),
+    pictureContentType: text("picture_content_type"),
+    pictureUrl: text("picture_url"),
     preferredLanguage: text("preferred_language"),
     updatedAt: integer("updated_at").notNull(),
     userId: text("user_id").primaryKey(),

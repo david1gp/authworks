@@ -3,18 +3,33 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
+import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 
 type AccountProfileViewProps = {
   readonly displayName: string
   readonly email: string
+  readonly emailCandidate: string
+  readonly emailChallengeActive: boolean
+  readonly emailErrorMessage?: string
+  readonly emailStatus: AccountEmailViewStatus
+  readonly emailToken: string
+  readonly emailValidationMessage?: string
   readonly emailVerified: boolean
   readonly errorMessage?: string
   readonly firstName: string
+  readonly gender: string
   readonly kind: "email" | "overview" | "profile"
   readonly lastName: string
   readonly nickName: string
   readonly onDisplayNameInput: (value: string) => void
+  readonly onEmailCancel: () => void
+  readonly onEmailInput: (value: string) => void
+  readonly onEmailResend: () => void
+  readonly onEmailStart: (event: SubmitEvent) => void
+  readonly onEmailTokenInput: (value: string) => void
+  readonly onEmailVerify: (event: SubmitEvent) => void
   readonly onFirstNameInput: (value: string) => void
+  readonly onGenderInput: (value: string) => void
   readonly onLastNameInput: (value: string) => void
   readonly onNickNameInput: (value: string) => void
   readonly onPreferredLanguageInput: (value: string) => void
@@ -24,6 +39,9 @@ type AccountProfileViewProps = {
   readonly onPhoneResend: () => void
   readonly onPhoneStart: (event: SubmitEvent) => void
   readonly onPhoneVerify: (event: SubmitEvent) => void
+  readonly onPictureContentTypeInput: (value: string) => void
+  readonly onPictureRemove: () => void
+  readonly onPictureUrlInput: (value: string) => void
   readonly onRetry: () => void
   readonly onSubmit: (event: SubmitEvent) => void
   readonly preferredLanguage: string
@@ -35,6 +53,8 @@ type AccountProfileViewProps = {
   readonly phoneStatus: AccountPhoneViewStatus
   readonly phoneValidationMessage?: string
   readonly phoneVerified: boolean
+  readonly pictureContentType: string
+  readonly pictureUrl: string
   readonly status: AccountViewStatus
   readonly userName: string
   readonly validationMessage?: string
@@ -93,6 +113,105 @@ export function AccountProfileView(props: AccountProfileViewProps) {
             </div>
           </dl>
         </section>
+
+        <Show when={props.kind === "email"}>
+          <section class="rounded-xl border border-line bg-surface p-5 shadow-sm sm:p-7">
+            <h2 class="text-xl font-semibold">{messageTranslate("account.profile.emailChangeTitle")}</h2>
+            <p class="mt-1 text-sm text-muted-foreground">
+              {messageTranslate("account.profile.emailChangeDescription")}
+            </p>
+            <Show
+              when={props.emailChallengeActive}
+              fallback={
+                <form class="mt-6 grid gap-4" onSubmit={props.onEmailStart}>
+                  <label class="grid gap-2 text-sm font-medium">
+                    {messageTranslate("account.profile.emailNew")}
+                    <input
+                      autocomplete="email"
+                      class="rounded-lg border border-line bg-background px-3 py-2.5"
+                      required
+                      type="email"
+                      value={props.emailCandidate}
+                      onInput={(event) => props.onEmailInput(event.currentTarget.value)}
+                    />
+                  </label>
+                  <div class="flex justify-end">
+                    <button
+                      class="rounded-lg bg-accent px-4 py-2.5 font-semibold text-accent-contrast disabled:opacity-60"
+                      disabled={props.emailStatus === "sending"}
+                      type="submit"
+                    >
+                      {props.emailStatus === "sending"
+                        ? messageTranslate("account.profile.emailSending")
+                        : messageTranslate("account.profile.emailChange")}
+                    </button>
+                  </div>
+                </form>
+              }
+            >
+              <form class="mt-6 grid gap-4" onSubmit={props.onEmailVerify}>
+                <p class="text-sm text-muted-foreground">
+                  {props.emailCandidate.length === 0
+                    ? messageTranslate("account.profile.emailCodeSentGeneric")
+                    : messageTranslate("account.profile.emailCodeSent", { email: props.emailCandidate })}
+                </p>
+                <label class="grid gap-2 text-sm font-medium">
+                  {messageTranslate("account.profile.emailToken")}
+                  <input
+                    autocomplete="one-time-code"
+                    class="rounded-lg border border-line bg-background px-3 py-2.5"
+                    required
+                    value={props.emailToken}
+                    onInput={(event) => props.onEmailTokenInput(event.currentTarget.value)}
+                  />
+                </label>
+                <div class="flex flex-wrap justify-end gap-3">
+                  <button
+                    class="rounded-lg border border-line px-4 py-2.5 font-semibold"
+                    type="button"
+                    onClick={props.onEmailCancel}
+                  >
+                    {messageTranslate("account.profile.emailDifferent")}
+                  </button>
+                  <button
+                    class="rounded-lg border border-line px-4 py-2.5 font-semibold"
+                    disabled={props.emailStatus === "sending" || props.emailStatus === "verifying"}
+                    type="button"
+                    onClick={props.onEmailResend}
+                  >
+                    {props.emailStatus === "sending"
+                      ? messageTranslate("account.profile.emailSending")
+                      : messageTranslate("account.profile.emailResend")}
+                  </button>
+                  <button
+                    class="rounded-lg bg-accent px-4 py-2.5 font-semibold text-accent-contrast disabled:opacity-60"
+                    disabled={props.emailStatus === "verifying" || props.emailStatus === "sending"}
+                    type="submit"
+                  >
+                    {props.emailStatus === "verifying"
+                      ? messageTranslate("account.profile.emailVerifying")
+                      : messageTranslate("account.profile.emailVerify")}
+                  </button>
+                </div>
+              </form>
+            </Show>
+            <Show when={props.emailValidationMessage}>
+              {(message) => <p class="mt-4 text-sm text-danger">{message()}</p>}
+            </Show>
+            <Show when={props.emailErrorMessage}>
+              {(message) => (
+                <p class="mt-4 text-sm text-danger" role="alert">
+                  {message()}
+                </p>
+              )}
+            </Show>
+            <Show when={props.emailStatus === "success"}>
+              <p class="mt-4 text-sm font-medium text-success" role="status">
+                {messageTranslate("account.profile.emailSaved")}
+              </p>
+            </Show>
+          </section>
+        </Show>
 
         <Show when={props.kind !== "email"}>
           <section class="rounded-xl border border-line bg-surface p-5 shadow-sm sm:p-7">
@@ -256,6 +375,15 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                 />
               </label>
               <label class="grid gap-2 text-sm font-medium">
+                {messageTranslate("account.profile.gender")}
+                <input
+                  class="rounded-lg border border-line bg-background px-3 py-2.5"
+                  maxlength={64}
+                  value={props.gender}
+                  onInput={(event) => props.onGenderInput(event.currentTarget.value)}
+                />
+              </label>
+              <label class="grid gap-2 text-sm font-medium">
                 {messageTranslate("account.profile.nickName")}
                 <input
                   class="rounded-lg border border-line bg-background px-3 py-2.5"
@@ -273,6 +401,38 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                   onInput={(event) => props.onPreferredLanguageInput(event.currentTarget.value)}
                 />
               </label>
+              <label class="grid gap-2 text-sm font-medium sm:col-span-2">
+                {messageTranslate("account.profile.pictureUrl")}
+                <input
+                  class="rounded-lg border border-line bg-background px-3 py-2.5"
+                  type="url"
+                  value={props.pictureUrl}
+                  onInput={(event) => props.onPictureUrlInput(event.currentTarget.value)}
+                />
+                <span class="text-xs font-normal text-muted-foreground">
+                  {messageTranslate("account.profile.pictureHint")}
+                </span>
+              </label>
+              <label class="grid gap-2 text-sm font-medium">
+                {messageTranslate("account.profile.pictureContentType")}
+                <input
+                  class="rounded-lg border border-line bg-background px-3 py-2.5"
+                  maxlength={128}
+                  value={props.pictureContentType}
+                  onInput={(event) => props.onPictureContentTypeInput(event.currentTarget.value)}
+                />
+              </label>
+              <Show when={props.pictureUrl.length > 0}>
+                <div class="flex items-end">
+                  <button
+                    class="rounded-lg border border-line px-4 py-2.5 font-semibold"
+                    type="button"
+                    onClick={props.onPictureRemove}
+                  >
+                    {messageTranslate("account.profile.pictureRemove")}
+                  </button>
+                </div>
+              </Show>
             </div>
             <Show when={props.validationMessage}>
               {(message) => <p class="mt-4 text-sm text-danger">{message()}</p>}
