@@ -8,6 +8,9 @@ import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles
 import { oidcApiClientCreate } from "../client/oidcApiClientCreate.js"
 import { oidcCodelineClientEnsure } from "./oidcCodelineClientEnsure.js"
 import { oidcCodelineProductionClientEnsure } from "./oidcCodelineProductionClientEnsure.js"
+import { oidcCodelineProductionOrganizationIdGet } from "./oidcCodelineProductionOrganizationIdGet.js"
+import { oidcCodelineProductionOrganizationIdGetExitCodeGet } from "./oidcCodelineProductionOrganizationIdGetExitCodeGet.js"
+import { oidcCodelineProductionOrganizationIdGetFailureOutputCreate } from "./oidcCodelineProductionOrganizationIdGetFailureOutputCreate.js"
 import { oidcCodelineProductionSecretRotate } from "./oidcCodelineProductionSecretRotate.js"
 import { oidcCodelineSecretRotateExitCodeGet } from "./oidcCodelineSecretRotateExitCodeGet.js"
 import { oidcCodelineSecretRotateFailureOutputCreate } from "./oidcCodelineSecretRotateFailureOutputCreate.js"
@@ -217,6 +220,26 @@ const oidcCodelineProductionSecretRotateCommand = buildCommand({
   docs: { brief: "Rotate only the exact fixed production Codeline client secret for machine handoff" },
 })
 
+const oidcCodelineProductionOrganizationIdGetCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcCodelineProductionOrganizationIdGet({ homeDirectory: "/home/authworks" })
+      if (result.success) {
+        this.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+        return
+      }
+      this.process.stderr.write(oidcCodelineProductionOrganizationIdGetFailureOutputCreate(result))
+      this.process.exitCode = oidcCodelineProductionOrganizationIdGetExitCodeGet(result)
+    } catch (_error) {
+      const code = "oidc.codeline-organization-id-get.internal-failed"
+      this.process.stderr.write(oidcCodelineProductionOrganizationIdGetFailureOutputCreate(code))
+      this.process.exitCode = oidcCodelineProductionOrganizationIdGetExitCodeGet(code)
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Read the fixed Contentoren production organization ID for one machine handoff" },
+})
+
 const oidcProductionSigningKeyEnsureCommand = buildCommand({
   async func(this: ApplicationContext) {
     try {
@@ -414,6 +437,7 @@ export const oidcCliCommands = buildRouteMap({
     clientCreate: oidcClientCreateCommand,
     clientEnsure: oidcCodelineClientEnsureCommand,
     codelineProductionEnsure: oidcCodelineProductionClientEnsureCommand,
+    codelineProductionOrganizationIdGet: oidcCodelineProductionOrganizationIdGetCommand,
     codelineProductionSecretRotate: oidcCodelineProductionSecretRotateCommand,
     clientGet: oidcClientGetCommand,
     clientList: oidcClientListCommand,
