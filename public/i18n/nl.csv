@@ -1281,6 +1281,7 @@ login.whatsappOtp.codeTitle,WhatsApp-verificatiecode
 login.whatsappOtp.description,"We sturen u een eenmalige code via WhatsApp, in plaats van om een wachtwoord te vragen."
 login.whatsappOtp.differentNumber,Een ander nummer gebruiken
 login.whatsappOtp.phoneHint,"Gebruik de internationale E.164-notatie, bijvoorbeeld +14155552671."
+login.whatsappOtp.phoneInvalid,Voer een geldig telefoonnummer in E.164-notatie in.
 login.whatsappOtp.phoneNumber,WhatsApp-telefoonnummer
 login.whatsappOtp.phonePlaceholder,+31612345678
 login.whatsappOtp.resend,Code opnieuw verzenden

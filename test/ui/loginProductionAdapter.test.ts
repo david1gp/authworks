@@ -183,6 +183,42 @@ describe("production login adapter", () => {
     })
   })
 
+  test("maps WhatsApp OTP recent sessions without narrowing the API response unsafely", async () => {
+    const adapter = loginProductionAdapterCreate({
+      api: apiCreate(
+        [],
+        [
+          {
+            authenticationMethod: "whatsapp_otp",
+            id: "session-whatsapp",
+            lastUsedAt: 10,
+            loginIdentifier: "+15551234567",
+            userId: "user-whatsapp",
+          },
+        ],
+      ),
+      discovery: () => demoLoginBootstrap,
+      discoverySet: () => undefined,
+      domain: "acme.example",
+      interactionHandle: () => undefined,
+      interactionResume: () => undefined,
+    })
+
+    const accounts = await adapter.recentAccounts()
+
+    expect(accounts).toEqual({
+      data: [
+        {
+          authenticationMethod: "whatsapp_otp",
+          identifier: "+15551234567",
+          lastUsedAt: 10,
+          sessionId: "session-whatsapp",
+        },
+      ],
+      success: true,
+    })
+  })
+
   test("resumes a recent session in the discovered organization context", async () => {
     const calls: string[] = []
     const adapter = loginProductionAdapterCreate({
@@ -226,6 +262,13 @@ describe("production login adapter", () => {
             id: "session-malformed",
             label: "Malformed Session",
             lastUsedAt: 30,
+            userId: "different-user",
+          },
+          {
+            authenticationMethod: "bootstrap_admin",
+            id: "session-unsupported-method",
+            lastUsedAt: 30,
+            loginIdentifier: "unsupported-login",
             userId: "different-user",
           },
         ],

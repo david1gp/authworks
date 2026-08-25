@@ -1281,6 +1281,7 @@ login.whatsappOtp.codeTitle,Код подтверждения WhatsApp
 login.whatsappOtp.description,"Вместо пароля мы отправим вам одноразовый код в WhatsApp."
 login.whatsappOtp.differentNumber,Использовать другой номер
 login.whatsappOtp.phoneHint,"Используйте международный формат E.164, например +14155552671."
+login.whatsappOtp.phoneInvalid,Введите действительный номер телефона в формате E.164.
 login.whatsappOtp.phoneNumber,Номер телефона WhatsApp
 login.whatsappOtp.phonePlaceholder,+79161234567
 login.whatsappOtp.resend,Отправить код повторно

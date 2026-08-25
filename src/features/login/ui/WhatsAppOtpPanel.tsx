@@ -26,6 +26,7 @@ type WhatsAppOtpPanelProps = {
   readonly resendAllowed: boolean
   readonly resendCountdown: number
   readonly step: "code" | "phone"
+  readonly submitAllowed: boolean
   readonly validationMessage?: string
 }
 
@@ -91,7 +92,7 @@ export function WhatsAppOtpPanel(props: WhatsAppOtpPanelProps) {
         )}
         <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
         <LoginSubmitButton
-          disabled={props.step === "phone" ? !props.phoneNumberValid : !props.codeValid}
+          disabled={!props.submitAllowed || (props.step === "phone" ? !props.phoneNumberValid : !props.codeValid)}
           label={messageTranslate(props.step === "phone" ? "login.whatsappOtp.send" : "common.continue")}
           pending={props.pending}
           pendingLabel={messageTranslate(

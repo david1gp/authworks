@@ -1304,6 +1304,7 @@ export const englishCatalog = {
   "login.whatsappOtp.description": "We will send you a single-use code on WhatsApp instead of asking for a password.",
   "login.whatsappOtp.differentNumber": "Use a different number",
   "login.whatsappOtp.phoneHint": "Use international E.164 format, for example +14155552671.",
+  "login.whatsappOtp.phoneInvalid": "Enter a valid phone number in E.164 format.",
   "login.whatsappOtp.phoneNumber": "WhatsApp phone number",
   "login.whatsappOtp.phonePlaceholder": "+14155552671",
   "login.whatsappOtp.resend": "Resend code",

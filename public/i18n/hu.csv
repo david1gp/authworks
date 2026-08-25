@@ -1281,6 +1281,7 @@ login.whatsappOtp.codeTitle,WhatsApp ellenőrző kód
 login.whatsappOtp.description,"Jelszó kérése helyett egyszer használatos kódot küldünk WhatsAppon."
 login.whatsappOtp.differentNumber,Másik szám használata
 login.whatsappOtp.phoneHint,"Használja a nemzetközi E.164 formátumot, például: +14155552671."
+login.whatsappOtp.phoneInvalid,Adjon meg egy érvényes telefonszámot E.164 formátumban.
 login.whatsappOtp.phoneNumber,WhatsApp-telefonszám
 login.whatsappOtp.phonePlaceholder,+36301234567
 login.whatsappOtp.resend,Kód újraküldése

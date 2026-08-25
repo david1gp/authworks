@@ -223,6 +223,11 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
                   phoneNumberValid={state.whatsappOtpPhoneNumberValid()}
                   resendAllowed={state.whatsappOtpResendAllowed()}
                   resendCountdown={state.whatsappOtpResendCountdown()}
+                  submitAllowed={
+                    state.screen() === "whatsapp-otp"
+                      ? state.whatsappOtpStartAllowed()
+                      : state.whatsappOtpVerifyAllowed()
+                  }
                   step={state.screen() === "whatsapp-otp" ? "phone" : "code"}
                   validationMessage={state.validationMessage()}
                 />

@@ -1281,6 +1281,7 @@ login.whatsappOtp.codeTitle,Codice di verifica WhatsApp
 login.whatsappOtp.description,"Ti invieremo un codice monouso su WhatsApp, invece di chiederti una password."
 login.whatsappOtp.differentNumber,Usa un altro numero
 login.whatsappOtp.phoneHint,"Usa il formato internazionale E.164, ad esempio +14155552671."
+login.whatsappOtp.phoneInvalid,Inserisci un numero di telefono valido in formato E.164.
 login.whatsappOtp.phoneNumber,Numero di telefono WhatsApp
 login.whatsappOtp.phonePlaceholder,+393331234567
 login.whatsappOtp.resend,Invia di nuovo il codice

@@ -1281,6 +1281,7 @@ login.whatsappOtp.codeTitle,WhatsApp-Bestätigungscode
 login.whatsappOtp.description,"Wir senden Ihnen über WhatsApp einen Einmalcode, anstatt nach einem Passwort zu fragen."
 login.whatsappOtp.differentNumber,Andere Nummer verwenden
 login.whatsappOtp.phoneHint,"Verwenden Sie das internationale E.164-Format, zum Beispiel +14155552671."
+login.whatsappOtp.phoneInvalid,Geben Sie eine gültige Telefonnummer im E.164-Format ein.
 login.whatsappOtp.phoneNumber,WhatsApp-Telefonnummer
 login.whatsappOtp.phonePlaceholder,+4915123456789
 login.whatsappOtp.resend,Code erneut senden

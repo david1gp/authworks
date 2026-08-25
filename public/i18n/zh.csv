@@ -1281,6 +1281,7 @@ login.whatsappOtp.codeTitle,WhatsApp 验证代码
 login.whatsappOtp.description,我们将通过 WhatsApp 向您发送一次性代码，无需输入密码。
 login.whatsappOtp.differentNumber,使用其他号码
 login.whatsappOtp.phoneHint,请使用国际 E.164 格式，例如 +14155552671。
+login.whatsappOtp.phoneInvalid,请输入有效的 E.164 格式电话号码。
 login.whatsappOtp.phoneNumber,WhatsApp 手机号码
 login.whatsappOtp.phonePlaceholder,+8613812345678
 login.whatsappOtp.resend,重新发送代码

@@ -229,7 +229,7 @@ export function loginDemoAdapterCreate(options: {
     whatsappOtpResend: async () => {
       await emailOtpWait()
       if (failing())
-        return fail("loginDemoWhatsappOtpResend", "The WhatsApp code could not be sent.", "whatsapp-otp.invalid")
+        return fail("loginDemoWhatsappOtpResend", englishCatalog["login.whatsappOtp.sendError"], "whatsapp-otp.invalid")
       return resultCreate({
         accepted: true as const,
         challengeId: "demo-whatsapp-challenge",
@@ -240,7 +240,7 @@ export function loginDemoAdapterCreate(options: {
     whatsappOtpStart: async () => {
       await emailOtpWait()
       if (failing())
-        return fail("loginDemoWhatsappOtpStart", "The WhatsApp code could not be sent.", "whatsapp-otp.invalid")
+        return fail("loginDemoWhatsappOtpStart", englishCatalog["login.whatsappOtp.sendError"], "whatsapp-otp.invalid")
       return resultCreate({
         accepted: true as const,
         challengeId: "demo-whatsapp-challenge",
@@ -251,7 +251,7 @@ export function loginDemoAdapterCreate(options: {
     whatsappOtpVerify: async () => {
       await emailOtpWait()
       if (failing())
-        return fail("loginDemoWhatsappOtpVerify", "The WhatsApp code is incorrect.", "whatsapp-otp.invalid")
+        return fail("loginDemoWhatsappOtpVerify", englishCatalog["login.whatsappOtp.codeError"], "whatsapp-otp.invalid")
       return authenticated(options.fixtureState() === "expired")
     },
   }

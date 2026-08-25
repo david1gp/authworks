@@ -9,6 +9,7 @@ const whatsappScreenKeys = [
   "login.whatsappOtp.codeDescription",
   "login.whatsappOtp.differentNumber",
   "login.whatsappOtp.phoneHint",
+  "login.whatsappOtp.phoneInvalid",
   "login.whatsappOtp.phoneNumber",
   "login.whatsappOtp.phonePlaceholder",
   "login.whatsappOtp.resend",
@@ -58,6 +59,7 @@ describe("login chooser reference copy", () => {
       "Enter the code sent to {phoneNumber} on WhatsApp.",
     )
     expect(englishCatalog["login.whatsappOtp.phoneNumber"]).toBe("WhatsApp phone number")
+    expect(englishCatalog["login.whatsappOtp.phoneInvalid"]).toBe("Enter a valid phone number in E.164 format.")
     expect(englishCatalog["login.whatsappOtp.resend"]).toBe("Resend code")
   })
 

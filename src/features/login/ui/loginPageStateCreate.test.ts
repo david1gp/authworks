@@ -5,7 +5,7 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoLoginBootstrap } from "../../demo/demoLoginBootstrap.js"
 import type { LoginScreen } from "../model/loginScreenSchema.js"
-import type { LoginAdapter } from "./loginAdapter.js"
+import type { LoginAdapter, LoginDiscovery } from "./loginAdapter.js"
 import { loginDemoAdapterCreate } from "./loginDemoAdapterCreate.js"
 
 type LoginPageStateCreate = typeof import("./loginPageStateCreate.js")["loginPageStateCreate"]
@@ -43,6 +43,8 @@ const stateCreate = (
   onResume: () => void = () => {},
   fixtureState: DemoFixtureState = "success",
   adapterOverrides: Partial<LoginAdapter> = {},
+  initialDiscovery: LoginDiscovery = demoLoginBootstrap,
+  onNavigate: (path: string) => void = () => {},
 ) => {
   const browserWindow = new Window()
   previousGlobals.set("document", globalValues.document)
@@ -59,9 +61,9 @@ const stateCreate = (
         ...adapterOverrides,
       },
       basePath: "/demo/login",
-      initialDiscovery: initialStatus === "loading" ? undefined : () => demoLoginBootstrap,
+      initialDiscovery: initialStatus === "loading" ? undefined : () => initialDiscovery,
       initialStatus: initialStatus === undefined ? () => "ready" : () => initialStatus,
-      navigate: () => {},
+      navigate: onNavigate,
       screen: route,
     })
   })
@@ -249,7 +251,7 @@ describe("loginPageStateCreate lifecycle focus", () => {
     state.phoneNumber.set("14155552671")
     await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
     expect(state.whatsappOtpPhoneNumberValid()).toBe(false)
-    expect(state.validationMessage()).toBeDefined()
+    expect(state.validationMessage()).toBe("Enter a valid phone number in E.164 format.")
     expect(startedPhoneNumber).toBe("")
 
     state.phoneNumber.set(" +14155552671 ")
@@ -295,6 +297,63 @@ describe("loginPageStateCreate lifecycle focus", () => {
     expect(state.errorMessage()).toBe("Too many requests.")
   })
 
+  test("keeps the phone and blocks WhatsApp start while rate-limited", async () => {
+    let startCount = 0
+    const rateLimited = resultErrorCodedCreate("whatsappOtpStart", "Too many requests.", "platform.rate-limited", {
+      retryAfterSeconds: "23",
+    })
+    rateLimited.statusCode = 429
+    const state = stateCreate(createSignal<LoginScreen>("whatsapp-otp")[0], "ready", undefined, "success", {
+      whatsappOtpStart: async () => {
+        startCount += 1
+        return rateLimited
+      },
+    })
+    await flushEffects()
+
+    state.phoneNumber.set(" +14155552671 ")
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(startCount).toBe(1)
+    expect(state.phoneNumber.get()).toBe("+14155552671")
+    expect(state.whatsappOtpStartRetryCountdown()).toBeGreaterThan(0)
+    expect(state.whatsappOtpStartAllowed()).toBe(false)
+    expect(state.errorMessage()).toBe("Too many requests.")
+  })
+
+  test("keeps the code and blocks WhatsApp verify while rate-limited", async () => {
+    let verifyCount = 0
+    const rateLimited = resultErrorCodedCreate("whatsappOtpVerify", "Too many requests.", "whatsapp-otp.rate-limited", {
+      retryAfter: "19",
+    })
+    rateLimited.statusCode = 429
+    const [route, routeSet] = createSignal<LoginScreen>("whatsapp-otp")
+    const state = stateCreate(route, "ready", undefined, "success", {
+      whatsappOtpStart: async () =>
+        resultCreate({ accepted: true, challengeId: "wa-challenge-1", expiresAt: 0, retryAt: 0 }),
+      whatsappOtpVerify: async () => {
+        verifyCount += 1
+        return rateLimited
+      },
+    })
+    await flushEffects()
+
+    state.phoneNumber.set("+14155552671")
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    routeSet("whatsapp-otp-code")
+    await flushEffects()
+    state.whatsappOtpCodeSet("654321")
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+    await state.whatsappOtpSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(verifyCount).toBe(1)
+    expect(state.code.get()).toBe("654321")
+    expect(state.whatsappOtpVerifyRetryCountdown()).toBeGreaterThan(0)
+    expect(state.whatsappOtpVerifyAllowed()).toBe(false)
+    expect(state.errorMessage()).toBe("Too many requests.")
+  })
+
   test("refreshes WhatsApp availability when returning to the method chooser", async () => {
     const [route] = createSignal<LoginScreen>("password")
     let available = true
@@ -317,5 +376,83 @@ describe("loginPageStateCreate lifecycle focus", () => {
     state.go("chooser")
     await flushEffects()
     expect(state.methods()).toContain("whatsapp-otp")
+  })
+
+  test("returns direct WhatsApp routes to the chooser when policy disables an available method", async () => {
+    for (const routeScreen of ["whatsapp-otp", "whatsapp-otp-code"] as const) {
+      const [route] = createSignal<LoginScreen>(routeScreen)
+      const navigated: string[] = []
+      const state = stateCreate(
+        route,
+        "ready",
+        undefined,
+        "success",
+        { whatsappOtpAvailable: () => true },
+        { ...demoLoginBootstrap, policy: { ...demoLoginBootstrap.policy, allowWhatsappOtp: false } },
+        (path) => navigated.push(path),
+      )
+      await flushEffects()
+
+      expect(state.screen()).toBe("chooser")
+      expect(navigated).toEqual(["/demo/login/chooser"])
+    }
+  })
+
+  test("keeps direct WhatsApp routes usable when policy and availability allow them", async () => {
+    for (const routeScreen of ["whatsapp-otp", "whatsapp-otp-code"] as const) {
+      const [route] = createSignal<LoginScreen>(routeScreen)
+      const navigated: string[] = []
+      const state = stateCreate(
+        route,
+        "ready",
+        undefined,
+        "success",
+        { whatsappOtpAvailable: () => true },
+        demoLoginBootstrap,
+        (path) => navigated.push(path),
+      )
+      await flushEffects()
+
+      expect(state.screen()).toBe(routeScreen)
+      expect(navigated).toEqual([])
+    }
+  })
+
+  test("refreshes WhatsApp availability before gating a browser-history transition", async () => {
+    const [route, routeSet] = createSignal<LoginScreen>("chooser")
+    const navigated: string[] = []
+    let available = true
+    let discoveryCount = 0
+    const state = stateCreate(
+      route,
+      "ready",
+      undefined,
+      "success",
+      {
+        discover: async () => {
+          discoveryCount += 1
+          available = discoveryCount !== 1
+          return resultCreate(demoLoginBootstrap)
+        },
+        whatsappOtpAvailable: () => available,
+      },
+      demoLoginBootstrap,
+      (path) => navigated.push(path),
+    )
+    await flushEffects()
+
+    routeSet("whatsapp-otp")
+    await flushEffects()
+    expect(discoveryCount).toBe(1)
+    expect(state.screen()).toBe("chooser")
+    expect(navigated).toEqual(["/demo/login/chooser"])
+
+    routeSet("chooser")
+    await flushEffects()
+    routeSet("whatsapp-otp")
+    await flushEffects()
+    expect(discoveryCount).toBe(2)
+    expect(state.screen()).toBe("whatsapp-otp")
+    expect(navigated).toEqual(["/demo/login/chooser"])
   })
 })

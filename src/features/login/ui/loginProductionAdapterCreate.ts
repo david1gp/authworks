@@ -1,8 +1,10 @@
+import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { passkeyAuthenticationRun } from "../../passkeys/ui/passkeyAuthenticationRun.js"
 import { passkeyCapabilityCheck } from "../../passkeys/ui/passkeyCapabilityCheck.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
+import { loginRecentAccountSchema } from "../model/loginRecentAccountSchema.js"
 import type { LoginAdapter, LoginDiscovery } from "./loginAdapter.js"
 import type { loginApiCreate } from "./loginApiCreate.js"
 
@@ -34,7 +36,6 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       const result = await api.discover(options.domain)
       if (!result.success) return result
       if (!result.data.found) return notDiscovered("loginDiscover")
-      options.discoverySet(result.data)
       if (result.data.policy.allowWhatsappOtp === true) {
         const availability = await api.whatsappOtpAvailabilityGet(
           result.data.organization.realmId,
@@ -42,6 +43,7 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
         )
         whatsappAvailable = availability.success && availability.data.available
       }
+      options.discoverySet(result.data)
       return resultCreate(result.data)
     },
     emailOtpStart: async (email) => {
@@ -146,14 +148,16 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       const accounts: LoginRecentAccount[] = []
       for (const session of result.data.items) {
         if (session.loginIdentifier === undefined || identifiers.has(session.loginIdentifier)) continue
-        identifiers.add(session.loginIdentifier)
-        accounts.push({
-          authenticationMethod: session.authenticationMethod as LoginRecentAccount["authenticationMethod"],
+        const parsed = v.safeParse(loginRecentAccountSchema, {
+          authenticationMethod: session.authenticationMethod,
           identifier: session.loginIdentifier,
           label: session.label,
           lastUsedAt: session.lastUsedAt,
           sessionId: session.id,
         })
+        if (!parsed.success) continue
+        identifiers.add(session.loginIdentifier)
+        accounts.push(parsed.output)
       }
       return resultCreate(accounts)
     },

@@ -106,6 +106,47 @@ test("production chooser omits WhatsApp when production availability is unhealth
   await expect(page.getByRole("button", { name: /WhatsApp code/ })).toHaveCount(0)
 })
 
+test("production direct WhatsApp routes return to the chooser when policy disables WhatsApp", async ({ page }) => {
+  await loginBackendMock(page, (route) => route.fulfill({ json: { authentication } }))
+
+  for (const path of ["/login/whatsapp-otp", "/login/whatsapp-otp/code"]) {
+    await page.goto(path)
+    await expect(page).toHaveURL(/\/login\/chooser$/)
+    await expect(page.getByRole("heading", { name: "Choose a method" })).toBeVisible()
+  }
+})
+
+test("production browser-history WhatsApp entries refresh availability for outage and recovery", async ({ page }) => {
+  let availabilityCalls = 0
+  await loginBackendMock(
+    page,
+    (route, pathname) => {
+      if (pathname.endsWith("/whatsapp-otp/availability")) {
+        availabilityCalls += 1
+        return route.fulfill({ json: { available: availabilityCalls !== 2 } })
+      }
+      return route.fulfill({ json: { authentication } })
+    },
+    whatsappDiscovery,
+  )
+
+  await page.goto("/login/chooser")
+  await expect(page.getByRole("button", { name: /WhatsApp code/ })).toBeVisible()
+  await page.getByRole("button", { name: /WhatsApp code/ }).click()
+  await expect(page).toHaveURL(/\/login\/whatsapp-otp$/)
+
+  await page.goBack()
+  await expect(page).toHaveURL(/\/login\/chooser$/)
+  await page.goForward()
+  await expect(page).toHaveURL(/\/login\/chooser$/)
+  expect(availabilityCalls).toBe(2)
+
+  await page.goBack()
+  await expect(page).toHaveURL(/\/login\/whatsapp-otp$/)
+  await expect.poll(() => availabilityCalls).toBe(3)
+  await expect(page.getByRole("heading", { name: "Sign in with WhatsApp" })).toBeVisible()
+})
+
 test("a production WhatsApp sign-in starts, resends, verifies, and continues authenticated", async ({ page }) => {
   const requests = await loginBackendMock(
     page,

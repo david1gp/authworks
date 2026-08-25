@@ -1281,6 +1281,7 @@ login.whatsappOtp.codeTitle,WhatsApp doğrulama kodu
 login.whatsappOtp.description,"Parola istemek yerine WhatsApp üzerinden tek kullanımlık bir kod göndereceğiz."
 login.whatsappOtp.differentNumber,Farklı bir numara kullan
 login.whatsappOtp.phoneHint,"Uluslararası E.164 biçimini kullanın, örneğin +14155552671."
+login.whatsappOtp.phoneInvalid,E.164 biçiminde geçerli bir telefon numarası girin.
 login.whatsappOtp.phoneNumber,WhatsApp telefon numarası
 login.whatsappOtp.phonePlaceholder,+905321234567
 login.whatsappOtp.resend,Kodu yeniden gönder

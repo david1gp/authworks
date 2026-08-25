@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import type { DemoFixtureState } from "../../src/features/demo/demoFixtureStateSchema.js"
 import { loginDemoAdapterCreate } from "../../src/features/login/ui/loginDemoAdapterCreate.js"
+import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 
 const adapterCreate = (state: DemoFixtureState, onResume = () => undefined) =>
   loginDemoAdapterCreate({ fixtureState: () => state, onResume })
@@ -114,6 +115,17 @@ describe("deterministic login demo adapter", () => {
       success: true,
     })
     expect(resent).toEqual(started)
+  })
+
+  test("WhatsApp demo submission failures use localized catalog copy", async () => {
+    const adapter = adapterCreate("error")
+    const started = await adapter.whatsappOtpStart?.("+15551234567")
+    const resent = await adapter.whatsappOtpResend?.("demo-whatsapp-challenge")
+    const verified = await adapter.whatsappOtpVerify?.("demo-whatsapp-challenge", "000000")
+
+    expect(started?.success || started?.errorMessage).toBe(englishCatalog["login.whatsappOtp.sendError"])
+    expect(resent?.success || resent?.errorMessage).toBe(englishCatalog["login.whatsappOtp.sendError"])
+    expect(verified?.success || verified?.errorMessage).toBe(englishCatalog["login.whatsappOtp.codeError"])
   })
 
   test("realm discovery stays available so form errors render in place", async () => {

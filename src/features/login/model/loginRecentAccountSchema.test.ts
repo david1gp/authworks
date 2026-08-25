@@ -3,6 +3,17 @@ import * as v from "valibot"
 import { loginRecentAccountSchema } from "./loginRecentAccountSchema.js"
 
 describe("login recent account model", () => {
+  test("accepts WhatsApp OTP as a recent authentication method", () => {
+    const parsed = v.safeParse(loginRecentAccountSchema, {
+      authenticationMethod: "whatsapp_otp",
+      identifier: "+15551234567",
+      lastUsedAt: 10,
+      sessionId: "session-whatsapp",
+    })
+
+    expect(parsed.success).toBe(true)
+  })
+
   test("accepts an optional display label without changing the identifier contract", () => {
     const account = {
       authenticationMethod: "password",
