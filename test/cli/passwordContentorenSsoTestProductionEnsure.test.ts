@@ -310,6 +310,41 @@ test("Contentoren membership-list diagnostics use only the closed field categori
   }
 })
 
+test("Contentoren membership-list diagnostics classify every rejected membership ID as id", () => {
+  const validItem = {
+    createdAt: 1,
+    id: "018f0000-0000-7000-8000-000000000001",
+    organizationId: "018f0000-0000-7000-8000-000000000002",
+    realmId: "018f0000-0000-7000-8000-000000000003",
+    roles: ["member"],
+    updatedAt: 2,
+    userId: "user-1",
+  }
+  const invalidIds = [
+    "membership-",
+    "membership-0",
+    "membership-01",
+    "membership-123456789012345678901",
+    "membership-1/2",
+    "membership-1\\2",
+    "membership-1.2",
+    "membership-1\u0000",
+    "zitadel-membership-1",
+    "zitadel-membership-0-1",
+    "zitadel-membership-01-1",
+    "zitadel-membership-1-01",
+    "zitadel-membership-123456789012345678901-1",
+    "zitadel-membership-1-123456789012345678901",
+    "zitadel-membership-1-2/3",
+    "zitadel-membership-1-2\\3",
+    "zitadel-membership-1-2.3",
+    "zitadel-membership-1-2\n",
+    "018F0000-0000-7000-8000-000000000001",
+  ]
+  for (const id of invalidIds)
+    expect(organizationMembershipListResponseInvalidFieldClassify({ items: [{ ...validItem, id }] })).toBe("id")
+})
+
 test("Contentoren ssotest command rejects malformed private input without disclosure", async () => {
   const malformedPassword = "private-value-with-newline\n"
   const child = Bun.spawn(["bun", "src/outputs/cli.ts", "passwords", "contentoren-ssotest-production-ensure"], {

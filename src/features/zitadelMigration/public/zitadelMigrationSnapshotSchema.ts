@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { organizationMembershipResourceIdSchema } from "../../organizations/public/organizationMembershipResourceIdSchema.js"
 import { organizationResourceIdSchema } from "../../organizations/public/organizationResourceIdSchema.js"
 import { userResourceIdSchema } from "../../users/public/userResourceIdSchema.js"
 
@@ -40,7 +41,7 @@ const organizationSchema = v.strictObject({
 
 const organizationMembershipSchema = v.strictObject({
   createdAt: timestampSchema,
-  id: v.pipe(v.string(), v.minLength(1), v.maxLength(640)),
+  id: organizationMembershipResourceIdSchema,
   organizationId: organizationResourceIdSchema,
   roles: v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(320))),
   updatedAt: timestampSchema,

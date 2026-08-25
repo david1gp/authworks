@@ -1,7 +1,8 @@
 import * as v from "valibot"
+import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
+import { organizationMembershipResourceIdSchema } from "../public/organizationMembershipResourceIdSchema.js"
 import { organizationResourceIdSchema } from "../public/organizationResourceIdSchema.js"
 import { organizationRolesSchema } from "../public/organizationRolesSchema.js"
-import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
 
 type OrganizationMembershipListResponseInvalidField =
   | "envelope"
@@ -22,7 +23,7 @@ const envelopeFields = new Set(["items", "nextPageToken"])
 const membershipFields = new Set(["createdAt", "id", "realmId", "organizationId", "roles", "updatedAt", "userId"])
 const membershipFieldChecks = [
   ["createdAt", "created-at", timestampSchema],
-  ["id", "id", organizationResourceIdSchema],
+  ["id", "id", organizationMembershipResourceIdSchema],
   ["realmId", "realm-id", realmResourceIdSchema],
   ["organizationId", "organization-id", organizationResourceIdSchema],
   ["roles", "roles", organizationRolesSchema],

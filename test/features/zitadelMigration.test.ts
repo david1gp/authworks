@@ -135,6 +135,42 @@ test("migration rejects malformed or path-dangerous user IDs and references befo
   }
 })
 
+test("migration rejects malformed membership IDs before writing", async () => {
+  const snapshot = (await fixture("zitadel-migration-snapshot.json")) as {
+    organizationMemberships: Array<{ id: string }>
+  }
+  const invalidIds = [
+    "membership-",
+    "membership-0",
+    "membership-01",
+    "membership-123456789012345678901",
+    "membership-1/2",
+    "membership-1\\2",
+    "membership-1.2",
+    "membership-1\u0000",
+    "zitadel-membership-0-1",
+    "zitadel-membership-01-1",
+    "zitadel-membership-1-01",
+    "zitadel-membership-123456789012345678901-1",
+    "zitadel-membership-1-123456789012345678901",
+    "zitadel-membership-1",
+    "zitadel-membership-1-2/3",
+    "zitadel-membership-1-2\\3",
+    "zitadel-membership-1-2.3",
+    "zitadel-membership-1-2\n",
+    "018F0000-0000-7000-8000-000000000001",
+  ]
+  for (const id of invalidIds) {
+    const invalidSnapshot = structuredClone(snapshot)
+    invalidSnapshot.organizationMemberships[0]!.id = id
+    await withDatabase(async (database, realmId) => {
+      const imported = zitadelMigrationImport({ database, realmId, snapshot: invalidSnapshot })
+      expect(imported).toMatchObject({ code: "zitadel-migration.snapshot-invalid", success: false })
+      expect(organizationRepositoryCreate(database.db).organizationList(realmId)).toEqual({ data: [], success: true })
+    })
+  }
+})
+
 test("migration rejects unsupported organization IDs before opening the import transaction", async () => {
   const snapshot = (await fixture("zitadel-migration-snapshot.json")) as {
     organizations: Array<{ id: string }>
@@ -223,6 +259,18 @@ test("exporter uses API records without exporting password or federated material
   if (!result.success) return
   expect(result.data.snapshot.users[0]).not.toHaveProperty("passwordChanged")
   expect(result.data.snapshot.users[0]).not.toHaveProperty("idpLinks")
+  expect(result.data.snapshot.organizationMemberships[0]?.id).toBe(
+    "zitadel-membership-323456789012345678-98765432109876543210",
+  )
+  await withDatabase(async (database, realmId) => {
+    const imported = zitadelMigrationImport({ database, realmId, snapshot: result.data.snapshot })
+    expect(imported.success).toBe(true)
+    expect(
+      organizationRepositoryCreate(database.db).organizationMembershipGet(
+        "zitadel-membership-323456789012345678-98765432109876543210",
+      ),
+    ).toMatchObject({ success: true })
+  })
   expect(result.data.snapshot.unsupported.map((item) => item.entity)).toEqual(["userPassword", "federatedIdentity"])
   expect(result.data.snapshot.projects[0]).toMatchObject({
     authorizationRequired: true,
