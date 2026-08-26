@@ -60,7 +60,7 @@
     "test:e2e": "playwright test",
     "test:mailcow": "bun test test/integration/mailcowEmail.test.ts",
     "test:w": "bun test --watch test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance test/ui",
-    "test:build": "bun run build && bun test --max-concurrency=1 --dots --bail=1 test/build",
+    "test:build": "bun run build && AUTHWORKS_REQUIRE_BUILT_OUTPUTS=1 bun test --max-concurrency=1 --dots --bail=1 test/build",
     "test:all": "bun run test && bun run test:build",
     "check:no-literal-ui-text": "bun run scripts/uiTextLiteralsCheck.ts",
     "typecheck": "tsc -p ./tsconfig.json --noEmit",
@@ -72,7 +72,7 @@
     "build:ui": "vite build",
     "smoke:public": "bash ./ops/public-smoke.sh",
     "verify:outputs": "bun run test:build",
-    "check": "bun run format:check && bun run check:no-literal-ui-text && bun run typecheck && bun run test && bun run build && bun test --max-concurrency=1 --dots --bail=1 test/build",
+    "check": "bun run format:check && bun run check:no-literal-ui-text && bun run typecheck && bun run test && bun run build && AUTHWORKS_REQUIRE_BUILT_OUTPUTS=1 bun test --max-concurrency=1 --dots --bail=1 test/build",
     "release": "bash ./ops/release.sh",
     "deploy": "prodctl deploy",
     "production:logs": "prodctl logs",
@@ -107,6 +107,10 @@
     "./library": {
       "types": "./dist/library/outputs/library.d.ts",
       "import": "./dist/library/outputs/library.js"
+    },
+    "./account": {
+      "types": "./dist/library/outputs/library/account.d.ts",
+      "import": "./dist/library/outputs/library/account.js"
     },
     "./authorization": {
       "types": "./dist/library/outputs/library/authorization.d.ts",

@@ -10,12 +10,12 @@ type ProcessResult = {
   readonly stdout: string
 }
 
+test("build output tests require post-build mode", () => {
+  expect(process.env.AUTHWORKS_REQUIRE_BUILT_OUTPUTS).toBe("1")
+})
+
 test("built library, server, and CLI outputs are executable", async () => {
-  const built = await Bun.file("dist/cli/cli.js").exists()
-  if (!built) {
-    if (process.env.AUTHWORKS_REQUIRE_BUILT_OUTPUTS === "1") throw new Error("The distributable outputs are not built.")
-    return
-  }
+  expect(await Bun.file("dist/cli/cli.js").exists()).toBe(true)
 
   const uiIndex = Bun.file("dist/ui/index.html")
   expect(await uiIndex.exists()).toBe(true)
@@ -34,7 +34,7 @@ test("built library, server, and CLI outputs are executable", async () => {
   const packageImport = await processRun([
     "bun",
     "-e",
-    'const subpaths = ["authorization", "email", "emailOtp", "events", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/authworks/" + path))); const root = await import("@adaptive-ds/authworks"); const packageJson = await Bun.file("package.json").json(); if (typeof root.packageName !== "string" || root.packageVersion !== packageJson.version || modules.some((module) => Object.keys(module).length === 0)) process.exit(2)',
+    'const subpaths = ["account", "authorization", "email", "emailOtp", "events", "externalIdentities", "impersonation", "realms", "machineUsers", "mfa", "oidc", "organizations", "passkeys", "passwords", "projects", "sessions", "users", "whatsappOtp"]; const modules = await Promise.all(subpaths.map((path) => import("@adaptive-ds/authworks/" + path))); const account = modules[0]; const root = await import("@adaptive-ds/authworks"); const packageJson = await Bun.file("package.json").json(); if (typeof root.packageName !== "string" || root.packageVersion !== packageJson.version || modules.some((module) => Object.keys(module).length === 0) || typeof account.accountApiClientCreate !== "function") process.exit(2)',
   ])
   expect(packageImport).toEqual({ exitCode: 0, stderr: "", stdout: "" })
 
@@ -85,6 +85,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     "projects",
     "sessions",
     "users",
+    "whatsapp-otp",
   ]) {
     const routeHelp = await processRun(["bun", "dist/cli/cli.js", route, "--help"])
     expect(routeHelp.exitCode, route).toBe(0)
@@ -104,6 +105,12 @@ test("built library, server, and CLI outputs are executable", async () => {
   expect(cliRealmHelp.stdout).toContain("Realm UUID")
   expect(cliRealmHelp.stdout).not.toContain("--instance-id")
   expect(cliRealmHelp.stdout).not.toContain("Instance UUID")
+
+  const cliOrganizationHelp = await processRun(["bun", "dist/cli/cli.js", "organizations", "--help"])
+  expect(cliOrganizationHelp.exitCode).toBe(0)
+  expect(cliOrganizationHelp.stderr).toBe("")
+  expect(cliOrganizationHelp.stdout).toContain("login-policy-set")
+  expect(cliOrganizationHelp.stdout).toContain("realm-login-policy-set")
 
   const directory = await mkdtemp(join(tmpdir(), "authworks-built-outputs-"))
   const child = Bun.spawn(["bun", "dist/server/server.js"], {
@@ -144,6 +151,11 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(healthResponse.status).toBe(200)
     expect(healthResponse.headers.get("cache-control")).toBe("no-store")
     expect(await healthResponse.json()).toEqual({ status: "ok" })
+
+    const accountResponse = await fetch("http://127.0.0.1:3000/realms/not-a-realm/me/effective-access")
+    expect(accountResponse.status).toBe(401)
+    const accountHistoryResponse = await fetch("http://127.0.0.1:3000/realms/not-a-realm/me/security-history")
+    expect(accountHistoryResponse.status).toBe(401)
 
     const loginResponse = await fetch("http://127.0.0.1:3000/login/deep-link")
     expect(loginResponse.status).toBe(200)
@@ -187,6 +199,10 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(JSON.parse(cliCreate.stdout)).toMatchObject({ realm: { domains: ["built-output.task-20.example"] } })
 
     const builtRealmId = (JSON.parse(cliCreate.stdout) as { realm: { id: string } }).realm.id
+    const adminResponse = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/users`, {
+      headers: { host: "built-output.task-20.example" },
+    })
+    expect(adminResponse.status).toBe(401)
     const registration = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/register`, {
       body: JSON.stringify({
         email: "browser-mode@built-output.task-20.example",
@@ -202,7 +218,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     const cliArguments = [
       "--server",
       "http://127.0.0.1:3000",
-      "--token",
+      "--system-token",
       "built-output-secret",
       "--realm-id",
       builtRealmId,

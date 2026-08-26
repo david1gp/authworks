@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test"
+import * as account from "../src/outputs/library/account.js"
 import * as authorization from "../src/outputs/library/authorization.js"
 import * as email from "../src/outputs/library/email.js"
 import * as emailOtp from "../src/outputs/library/emailOtp.js"
@@ -32,6 +33,7 @@ test("root library publishes HTTP GET contracts", () => {
 })
 
 test("every completed feature has a public library subpath and client", () => {
+  expect(account.accountApiClientCreate).toBeFunction()
   expect(authorization.authorizationActorContextSchema).toBeDefined()
   expect(email.emailGeneratorApiClientCreate).toBeFunction()
   expect(email.imapMailReceivePortCreate).toBeFunction()
@@ -51,6 +53,22 @@ test("every completed feature has a public library subpath and client", () => {
   expect(projects.projectApiClientCreate).toBeFunction()
   expect(sessions.sessionApiClientCreate).toBeFunction()
   expect(users.userApiClientCreate).toBeFunction()
+})
+
+test("account library publishes only account contracts and client methods", () => {
+  expect(Object.keys(account).sort()).toEqual([
+    "accountApiClientCreate",
+    "accountEffectiveAccessEntrySchema",
+    "accountEffectiveAccessGroupSchema",
+    "accountEffectiveAccessListResponseSchema",
+    "accountEffectiveAccessSourceSchema",
+    "accountSecurityHistoryItemSchema",
+    "accountSecurityHistoryListResponseSchema",
+  ])
+  expect(Object.keys(account.accountApiClientCreate({ baseUrl: "https://identity.example.test" }))).toEqual([
+    "effectiveAccessList",
+    "securityHistoryList",
+  ])
 })
 
 test("public contracts include the previously omitted transport schemas", () => {
@@ -165,8 +183,8 @@ test("every API client publishes its complete method set", () => {
   ])
   expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(2)
   expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(21)
-  expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(41)
-  expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(13)
+  expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(42)
+  expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(15)
   expect(Object.keys(passkeys.passkeyApiClientCreate(options))).toHaveLength(10)
   expect(Object.keys(machineUsers.machineUserApiClientCreate(options))).toHaveLength(20)
   expect(Object.keys(projects.projectApiClientCreate(options))).toHaveLength(44)
@@ -178,6 +196,7 @@ test("package exports name every library feature boundary", async () => {
   const exportKeys = Object.keys(packageJson.exports).sort()
   const expectedKeys = [
     ".",
+    "./account",
     "./authorization",
     "./cli",
     "./email",
