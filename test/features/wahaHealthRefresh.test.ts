@@ -112,6 +112,65 @@ test("WAHA health adapter filters session results to configured sender sessions"
   }
 })
 
+test("WAHA health refresh immediately expires persisted candidates when health or session listing fails", async () => {
+  await withDatabase(async (database) => {
+    const now = 1_700_000_000_000
+    const failureConfiguration: WahaConfiguration = {
+      endpoints: [
+        { client: { baseUrl: "https://health-failure.example.test" }, id: "health-failure" },
+        { client: { baseUrl: "https://list-failure.example.test" }, id: "list-failure" },
+      ],
+      freshnessTtlMs: 60_000,
+      refreshIntervalMs: 30_000,
+    }
+    const repository = wahaHealthCandidateRepositoryCreate(database.db)
+    for (const endpointId of ["health-failure", "list-failure"]) {
+      expect(
+        repository.wahaHealthCandidateCreate({
+          checkedAt: now,
+          createdAt: now,
+          endpointId,
+          expiresAt: now + 60_000,
+          failureAt: null,
+          failureCode: null,
+          failureMessage: null,
+          sessionName: "default",
+          status: "healthy",
+          updatedAt: now,
+          version: 1,
+        }),
+      ).toMatchObject({ success: true })
+    }
+
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = (async (input) => {
+      const url = input.toString()
+      if (url === "https://health-failure.example.test/health") return new Response("unavailable", { status: 503 })
+      if (url === "https://list-failure.example.test/health") return Response.json({ status: "ok" })
+      return new Response("unavailable", { status: 503 })
+    }) as typeof fetch
+
+    try {
+      const registry = wahaHealthRegistryCreate({
+        configuration: failureConfiguration,
+        healthPort: wahaHealthPortCreate({ configuration: failureConfiguration }),
+        repository,
+        runtime: { now: () => now },
+      })
+      expect(await registry.refresh()).toEqual({ success: true, data: undefined })
+      expect(repository.wahaHealthCandidateList()).toMatchObject({
+        success: true,
+        data: [
+          { endpointId: "health-failure", expiresAt: now, status: "unhealthy" },
+          { endpointId: "list-failure", expiresAt: now, status: "unhealthy" },
+        ],
+      })
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
+})
+
 test("WAHA health refresh scans every endpoint and persists only working sessions", async () => {
   await withDatabase(async (database) => {
     const now = 1_700_000_000_000

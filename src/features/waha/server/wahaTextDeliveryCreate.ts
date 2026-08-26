@@ -7,10 +7,12 @@ import type { WahaDeliveryPort } from "../domain/wahaDeliveryPort.js"
 import type { WahaTextDeliveryPort } from "../domain/wahaTextDeliveryPort.js"
 import { wahaHealthCandidateRepositoryCreate } from "../persistence/wahaHealthCandidateRepositoryCreate.js"
 import type { WahaHealthCandidateRow } from "../persistence/wahaHealthCandidateTable.js"
+import type { WahaConfiguration } from "./wahaConfiguration.js"
 import { wahaHealthCandidateSelectorCreate } from "./wahaHealthCandidateSelectorCreate.js"
 import { wahaHealthRegistryCreate } from "./wahaHealthRegistryCreate.js"
 
 type WahaTextDeliveryCreateOptions = {
+  readonly configuration: WahaConfiguration
   readonly deliveryPort: WahaDeliveryPort
   readonly healthRegistry: Pick<ReturnType<typeof wahaHealthRegistryCreate>, "markUnhealthy">
   readonly repository: ReturnType<typeof wahaHealthCandidateRepositoryCreate>
@@ -18,7 +20,11 @@ type WahaTextDeliveryCreateOptions = {
 }
 
 export function wahaTextDeliveryCreate(options: WahaTextDeliveryCreateOptions) {
-  const selector = wahaHealthCandidateSelectorCreate({ repository: options.repository, runtime: options.runtime })
+  const selector = wahaHealthCandidateSelectorCreate({
+    configuration: options.configuration,
+    repository: options.repository,
+    runtime: options.runtime,
+  })
 
   const delivery: WahaTextDeliveryPort = {
     sendText(input: { readonly phoneNumber: string; readonly text: string }): Promise<Result<void>> {

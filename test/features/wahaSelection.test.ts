@@ -10,6 +10,15 @@ import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 
+const selectionConfiguration: WahaConfiguration = {
+  endpoints: ["alpha", "bravo", "charlie", "expired", "unhealthy"].map((id) => ({
+    client: { baseUrl: `https://${id}.example.test` },
+    id,
+  })),
+  freshnessTtlMs: 60_000,
+  refreshIntervalMs: 30_000,
+}
+
 test("WAHA selection uses only fresh healthy persisted candidates and injected randomness", async () => {
   await withDatabase(async (database) => {
     const now = 1_700_000_000_000
@@ -40,6 +49,7 @@ test("WAHA selection uses only fresh healthy persisted candidates and injected r
 
     const randomCalls: number[] = []
     const selector = wahaHealthCandidateSelectorCreate({
+      configuration: selectionConfiguration,
       repository,
       runtime: {
         now: () => now,
@@ -85,6 +95,7 @@ test("WAHA selection excludes the first candidate during fallback by endpoint an
     }
 
     const selector = wahaHealthCandidateSelectorCreate({
+      configuration: selectionConfiguration,
       repository,
       runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
     })
@@ -149,6 +160,7 @@ test("WAHA selection cannot select a session excluded during health refresh", as
     expect(await registry.refresh()).toMatchObject({ success: true })
 
     const selector = wahaHealthCandidateSelectorCreate({
+      configuration,
       repository,
       runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
     })
@@ -160,6 +172,47 @@ test("WAHA selection cannot select a session excluded during health refresh", as
       success: true,
       data: { expiresAt: now, status: "unhealthy" },
     })
+  })
+})
+
+test("WAHA selection filters persisted candidates against changed configuration before refresh", async () => {
+  await withDatabase(async (database) => {
+    const now = 1_700_000_000_000
+    const repository = wahaHealthCandidateRepositoryCreate(database.db)
+    expect(
+      repository.wahaHealthCandidateCreate({
+        checkedAt: now,
+        createdAt: now,
+        endpointId: "primary",
+        expiresAt: now + 60_000,
+        failureAt: null,
+        failureCode: null,
+        failureMessage: null,
+        sessionName: "recipient",
+        status: "healthy",
+        updatedAt: now,
+        version: 1,
+      }),
+    ).toMatchObject({ success: true })
+
+    const changedConfiguration: WahaConfiguration = {
+      endpoints: [
+        {
+          client: { baseUrl: "https://waha.example.test" },
+          id: "primary",
+          senderSessions: ["sender"],
+        },
+      ],
+      freshnessTtlMs: 60_000,
+      refreshIntervalMs: 30_000,
+    }
+    const selector = wahaHealthCandidateSelectorCreate({
+      configuration: changedConfiguration,
+      repository,
+      runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0, 0]) },
+    })
+
+    expect(selector.select()).toEqual({ data: null, success: true })
   })
 })
 
@@ -187,6 +240,7 @@ test("WAHA selection rejects a biased random tail before choosing an index", asy
 
     const randomValues = [new Uint8Array([255, 255, 255, 255]), new Uint8Array([0, 0, 0, 3])]
     const selector = wahaHealthCandidateSelectorCreate({
+      configuration: selectionConfiguration,
       repository,
       runtime: {
         now: () => now,
@@ -225,12 +279,14 @@ test("WAHA selection returns a typed error for malformed and exhausted random so
     }
 
     const malformed = wahaHealthCandidateSelectorCreate({
+      configuration: selectionConfiguration,
       repository,
       runtime: { now: () => now, randomBytes: () => new Uint8Array([0, 0, 0]) },
     })
     expect(malformed.select()).toMatchObject({ code: "waha.internal", success: false })
 
     const exhausted = wahaHealthCandidateSelectorCreate({
+      configuration: selectionConfiguration,
       repository,
       runtime: { now: () => now, randomBytes: () => new Uint8Array([255, 255, 255, 255]) },
     })

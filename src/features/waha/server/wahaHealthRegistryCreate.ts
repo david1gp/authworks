@@ -85,7 +85,7 @@ export function wahaHealthRegistryCreate(options: WahaHealthRegistryCreateOption
     const endpointRows = rows.data.filter((row) => row.endpointId === endpoint.id)
 
     if (!health.success) {
-      return endpointRowsMarkUnhealthy(endpointRows, checkedAt, "The WAHA health check failed.")
+      return endpointRowsMarkUnhealthy(endpointRows, checkedAt, "The WAHA health check failed.", true)
     }
 
     const sessions = new Map(

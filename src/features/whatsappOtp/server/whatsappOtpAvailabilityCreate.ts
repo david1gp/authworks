@@ -22,7 +22,8 @@ export function whatsappOtpAvailabilityCreate(
   return {
     whatsappOtpAvailabilityGet(input) {
       const op = "whatsappOtpAvailabilityGet"
-      const configured = (options.configuration?.endpoints.length ?? 0) > 0
+      const configuration = options.configuration
+      const configured = (configuration?.endpoints.length ?? 0) > 0
       if (!configured)
         return resultCreate({
           available: whatsappOtpAvailabilityPredicate({
@@ -56,11 +57,17 @@ export function whatsappOtpAvailabilityCreate(
           "whatsapp-otp.read-failed",
         )
 
-      const configuredEndpointIds = new Set(options.configuration?.endpoints.map((endpoint) => endpoint.id))
+      const configuredEndpoints = new Map((configuration?.endpoints ?? []).map((endpoint) => [endpoint.id, endpoint]))
       return resultCreate<WhatsappOtpAvailabilityResponse>({
         available: whatsappOtpAvailabilityPredicate({
           configured,
-          freshHealthyCandidate: candidates.data.some((candidate) => configuredEndpointIds.has(candidate.endpointId)),
+          freshHealthyCandidate: candidates.data.some((candidate) => {
+            const endpoint = configuredEndpoints.get(candidate.endpointId)
+            return (
+              endpoint !== undefined &&
+              (endpoint.senderSessions === undefined || endpoint.senderSessions.includes(candidate.sessionName))
+            )
+          }),
           policyEnabled: true,
         }),
       })

@@ -17,7 +17,7 @@ test("WAHA configuration parses multiple server-only endpoints and defaults", ()
         apiKey: "secret-one",
         baseUrl: "https://waha-one.example.test/",
         id: "primary",
-        senderSessions: ["sender-one", "sender-two"],
+        senderSessions: [" sender-one ", "sender-two"],
         session: "default",
       },
       { apiKey: "secret-two", baseUrl: "https://waha-two.example.test", id: "secondary", session: "otp" },
@@ -53,7 +53,7 @@ test("WAHA sender session allowlists require nonempty unique names and remain op
   if (!omitted.success) return
   expect(omitted.data?.endpoints[0]?.senderSessions).toBeUndefined()
 
-  for (const senderSessions of [[], [""], ["sender", "sender"]]) {
+  for (const senderSessions of [[], [""], [" "]]) {
     const invalid = wahaConfigurationParse({
       AUTHWORKS_WAHA_ENABLED: "true",
       AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([
@@ -64,6 +64,26 @@ test("WAHA sender session allowlists require nonempty unique names and remain op
     if (invalid.success) continue
     expect(invalid.errorMessage).toContain("endpoint 1.senderSessions")
     expect(String(invalid.errorData ?? "")).not.toContain("sender")
+  }
+
+  const normalizedDuplicate = wahaConfigurationParse({
+    AUTHWORKS_WAHA_ENABLED: "true",
+    AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([
+      { baseUrl: "https://waha.example.test", id: "primary", senderSessions: ["sender", " sender "] },
+    ]),
+  })
+  expect(normalizedDuplicate).toMatchObject({ success: false })
+  if (!normalizedDuplicate.success) expect(normalizedDuplicate.errorMessage).toContain("unique session names")
+
+  for (const senderSessions of [["sender.name"], ["a".repeat(55)]]) {
+    const invalid = wahaConfigurationParse({
+      AUTHWORKS_WAHA_ENABLED: "true",
+      AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([
+        { baseUrl: "https://waha.example.test", id: "primary", senderSessions },
+      ]),
+    })
+    expect(invalid).toMatchObject({ success: false })
+    if (!invalid.success) expect(invalid.errorMessage).toContain("invalid WAHA session name")
   }
 })
 

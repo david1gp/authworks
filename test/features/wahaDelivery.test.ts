@@ -152,6 +152,7 @@ test("WAHA delivery marks a failed candidate and retries one different candidate
         runtime: { now: () => now },
       })
       const delivery = wahaTextDeliveryCreate({
+        configuration,
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository,
@@ -197,6 +198,7 @@ test("WAHA delivery retries at most once and does not retry a single candidate",
         runtime: { now: () => now },
       })
       const delivery = wahaTextDeliveryCreate({
+        configuration,
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository,
@@ -262,6 +264,7 @@ test("WAHA delivery retries failure marking after a CAS race that refreshes a ca
         runtime: { now: () => now },
       })
       const delivery = wahaTextDeliveryCreate({
+        configuration,
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository: racedRepository,
@@ -327,6 +330,7 @@ test("WAHA delivery keeps a concurrent unhealthy state and does not mask the fal
         runtime: { now: () => now },
       })
       const delivery = wahaTextDeliveryCreate({
+        configuration,
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository: racedRepository,
@@ -392,6 +396,7 @@ test("WAHA delivery leaves a newer state in place after bounded CAS contention",
         runtime: { now: () => now },
       })
       const delivery = wahaTextDeliveryCreate({
+        configuration,
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository: racedRepository,
@@ -429,6 +434,7 @@ test("WAHA delivery does not replace a failed send with a failure-mark write err
 
     try {
       const delivery = wahaTextDeliveryCreate({
+        configuration,
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: {
           markUnhealthy: () =>
@@ -473,6 +479,7 @@ test("WAHA delivery returns the fallback failure when both candidates fail", asy
         runtime: { now: () => now },
       })
       const delivery = wahaTextDeliveryCreate({
+        configuration,
         deliveryPort: wahaDeliveryPortCreate({ configuration }),
         healthRegistry: registry,
         repository,
@@ -523,6 +530,7 @@ test("WAHA delivery attempts no third candidate after a failed fallback", async 
         runtime: { now: () => now },
       })
       const delivery = wahaTextDeliveryCreate({
+        configuration: threeEndpointConfiguration,
         deliveryPort: wahaDeliveryPortCreate({ configuration: threeEndpointConfiguration }),
         healthRegistry: registry,
         repository,

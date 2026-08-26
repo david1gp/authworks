@@ -132,6 +132,45 @@ test("WhatsApp availability requires configuration, policy, and a fresh configur
   })
 })
 
+test("WhatsApp availability filters persisted candidates against changed configuration before refresh", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "whatsapp-availability-config-change.example.com")
+    const repository = wahaHealthCandidateRepositoryCreate(database.db)
+    const now = testkit.runtime.now()
+    expect(
+      repository.wahaHealthCandidateCreate({
+        checkedAt: now,
+        createdAt: now,
+        endpointId: "primary",
+        expiresAt: now + 60_000,
+        failureAt: null,
+        failureCode: null,
+        failureMessage: null,
+        sessionName: "recipient",
+        status: "healthy",
+        updatedAt: now,
+        version: 1,
+      }),
+    ).toMatchObject({ success: true })
+
+    const changedConfiguration: WahaConfiguration = {
+      ...configuration,
+      endpoints: [{ ...configuration.endpoints[0]!, senderSessions: ["sender"] }],
+    }
+    const availability = whatsappOtpAvailabilityCreate({
+      configuration: changedConfiguration,
+      database,
+      reader: wahaHealthCandidateReaderCreate({ repository }),
+      runtime: testkit.runtime,
+    })
+
+    expect(availability.whatsappOtpAvailabilityGet({ realmId: realm.id })).toEqual({
+      data: { available: false },
+      success: true,
+    })
+  })
+})
+
 test("WhatsApp availability ignores a persisted recipient session after sender filtering refreshes", async () => {
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "whatsapp-availability-sender-filter.example.com")

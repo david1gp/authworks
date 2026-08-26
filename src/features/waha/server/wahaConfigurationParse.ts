@@ -1,4 +1,5 @@
 import { type WahaClientConfigInput, wahaClientConfig } from "@adaptive-ds/waha-client"
+import { sessionNameSchema } from "@adaptive-ds/waha-client/sessionSchemas.js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
@@ -98,6 +99,7 @@ function wahaEndpointParse(value: unknown, index: number): Result<WahaEndpointCo
   }
 
   const { apiKey, baseUrl, id, retries, senderSessions, session, timeoutMs } = parsed.output
+  const normalizedSenderSessions = senderSessions?.map((senderSession) => senderSession.trim())
   if (!wahaEndpointIdPattern.test(id))
     return resultErrorCreate(
       op,
@@ -105,7 +107,15 @@ function wahaEndpointParse(value: unknown, index: number): Result<WahaEndpointCo
     )
   if (!urlValid(baseUrl))
     return resultErrorCreate(op, `WAHA configuration is invalid: endpoint ${index + 1}.baseUrl is invalid.`)
-  if (senderSessions !== undefined && new Set(senderSessions).size !== senderSessions.length)
+  if (normalizedSenderSessions?.some((senderSession) => !v.safeParse(sessionNameSchema, senderSession).success))
+    return resultErrorCreate(
+      op,
+      `WAHA configuration is invalid: endpoint ${index + 1}.senderSessions contains an invalid WAHA session name.`,
+    )
+  if (
+    normalizedSenderSessions !== undefined &&
+    new Set(normalizedSenderSessions).size !== normalizedSenderSessions.length
+  )
     return resultErrorCreate(
       op,
       `WAHA configuration is invalid: endpoint ${index + 1}.senderSessions must contain unique session names.`,
@@ -124,7 +134,7 @@ function wahaEndpointParse(value: unknown, index: number): Result<WahaEndpointCo
   return resultCreate({
     client: client.data,
     id,
-    ...(senderSessions === undefined ? {} : { senderSessions }),
+    ...(normalizedSenderSessions === undefined ? {} : { senderSessions: normalizedSenderSessions }),
   })
 }
 

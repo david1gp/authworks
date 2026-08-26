@@ -150,6 +150,7 @@ export function serverApplicationCreate(
     (wahaRegistry === undefined || options.wahaConfiguration === undefined
       ? undefined
       : wahaTextDeliveryCreate({
+          configuration: options.wahaConfiguration,
           deliveryPort:
             options.wahaDeliveryPort ?? wahaDeliveryPortCreate({ configuration: options.wahaConfiguration }),
           healthRegistry: wahaRegistry,

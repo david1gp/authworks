@@ -4,16 +4,19 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import { wahaHealthCandidateRepositoryCreate } from "../persistence/wahaHealthCandidateRepositoryCreate.js"
 import type { WahaHealthCandidateRow } from "../persistence/wahaHealthCandidateTable.js"
+import type { WahaConfiguration } from "./wahaConfiguration.js"
 
 type WahaHealthCandidateKey = Pick<WahaHealthCandidateRow, "endpointId" | "sessionName">
 
 type WahaHealthCandidateSelectorCreateOptions = {
+  readonly configuration: WahaConfiguration
   readonly repository: ReturnType<typeof wahaHealthCandidateRepositoryCreate>
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
 }
 
 export function wahaHealthCandidateSelectorCreate(options: WahaHealthCandidateSelectorCreateOptions) {
   const runtime = options.runtime ?? runtimeCreate()
+  const configuredEndpoints = new Map(options.configuration.endpoints.map((endpoint) => [endpoint.id, endpoint]))
 
   return {
     select(excluded: readonly WahaHealthCandidateKey[] = []): Result<WahaHealthCandidateRow | null> {
@@ -27,7 +30,9 @@ export function wahaHealthCandidateSelectorCreate(options: WahaHealthCandidateSe
 
       const excludedKeys = new Set(excluded.map(wahaHealthCandidateKeyCreate))
       const available = candidates.data.filter(
-        (candidate) => !excludedKeys.has(wahaHealthCandidateKeyCreate(candidate)),
+        (candidate) =>
+          wahaHealthCandidateAllowedByConfiguration(candidate) &&
+          !excludedKeys.has(wahaHealthCandidateKeyCreate(candidate)),
       )
       if (available.length === 0) return resultCreate(null)
       if (available.length === 1) return resultCreate(available[0] ?? null)
@@ -36,6 +41,14 @@ export function wahaHealthCandidateSelectorCreate(options: WahaHealthCandidateSe
       if (!index.success) return index
       return resultCreate(available[index.data] ?? null)
     },
+  }
+
+  function wahaHealthCandidateAllowedByConfiguration(candidate: WahaHealthCandidateRow): boolean {
+    const endpoint = configuredEndpoints.get(candidate.endpointId)
+    return (
+      endpoint !== undefined &&
+      (endpoint.senderSessions === undefined || endpoint.senderSessions.includes(candidate.sessionName))
+    )
   }
 }
 
