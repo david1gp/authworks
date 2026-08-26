@@ -93,7 +93,7 @@ if ! rg -qi '^content-type: image/svg\+xml' "$temporary_directory/favicon.header
 	echo "The deployed origin did not return the packaged favicon." >&2
 	exit 1
 fi
-if ! rg -qi '^cache-control: public, max-age=3600' "$temporary_directory/favicon.headers"; then
+if ! rg -qi '^cache-control: public, max-age=14400' "$temporary_directory/favicon.headers"; then
 	echo "The deployed favicon did not use the static cache policy." >&2
 	exit 1
 fi
