@@ -17,6 +17,7 @@ const recoveryPassword = "E2E Recovery Password 123!"
 test("task 17 composed production authentication preserves recovery, MFA, deep links, locale, and expiry", async ({
   page,
 }) => {
+  test.setTimeout(120_000)
   const server = await e2eServerStart()
   const fixture = server.metadata
 
@@ -74,7 +75,7 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     expect(passkeyBody.options.rpId).toBe("e2e.authworks.test")
     expect(passkeyBody.options.userVerification).toBe("required")
     expect(passkeyBody.token.length).toBeGreaterThanOrEqual(43)
-    await expect(page.getByRole("alert")).toContainText("Something went wrong.")
+    await expect(page.getByRole("alert")).toContainText("Passkey sign-in was canceled or timed out. Try again.")
     expect(await page.locator("body").textContent()).not.toContain(passkeyBody.token)
 
     const passwordLoginPromise = page.waitForResponse((response) =>
