@@ -115,15 +115,11 @@ export function loginDemoAdapterCreate(options: {
       await passkeyWait()
       if (options.fixtureState() === "passkey-permission-denied" || options.fixtureState() === "permission-denied") {
         input?.statusSet?.("permission-denied")
-        return fail("loginDemoMfaPasskey", "Passkey sign-in was canceled or timed out.", "passkeys.invalid")
+        return fail("loginDemoMfaPasskey", englishCatalog["login.passkey.permissionDenied"], "passkeys.invalid")
       }
       if (options.fixtureState() === "passkey-ceremony-failure") {
         input?.statusSet?.("ceremony-failure")
-        return fail(
-          "loginDemoMfaPasskey",
-          "Passkey sign-in could not be completed. Please try again.",
-          "passkeys.invalid",
-        )
+        return fail("loginDemoMfaPasskey", englishCatalog["login.passkey.ceremonyFailure"], "passkeys.invalid")
       }
       if (failing()) {
         input?.statusSet?.("failure")
@@ -155,11 +151,11 @@ export function loginDemoAdapterCreate(options: {
       if (options.fixtureState() === "loading" || options.fixtureState() === "passkey-pending") await passkeyWait()
       if (options.fixtureState() === "passkey-permission-denied" || options.fixtureState() === "permission-denied") {
         input?.statusSet?.("permission-denied")
-        return fail("loginDemoPasskey", "Passkey sign-in was canceled or timed out.", "passkeys.invalid")
+        return fail("loginDemoPasskey", englishCatalog["login.passkey.permissionDenied"], "passkeys.invalid")
       }
       if (options.fixtureState() === "passkey-ceremony-failure") {
         input?.statusSet?.("ceremony-failure")
-        return fail("loginDemoPasskey", "Passkey sign-in could not be completed. Please try again.", "passkeys.invalid")
+        return fail("loginDemoPasskey", englishCatalog["login.passkey.ceremonyFailure"], "passkeys.invalid")
       }
       if (failing()) {
         input?.statusSet?.("failure")

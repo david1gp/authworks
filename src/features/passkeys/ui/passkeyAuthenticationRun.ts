@@ -1,5 +1,6 @@
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { englishCatalog } from "../../../ui/i18n/model/englishCatalog.js"
 import type { PasskeyAuthenticationCompleteRequest } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
 import type { PasskeyAuthenticationStartResponse } from "../public/passkeyAuthenticationStartResponseSchema.js"
 import type { PasskeyAuthenticationStatus } from "../public/passkeyAuthenticationStatusSchema.js"
@@ -16,7 +17,7 @@ export async function passkeyAuthenticationRun(
   const op = "passkeyAuthenticationRun"
   if (!passkeyCapabilityCheck()) {
     options?.statusSet?.("unsupported")
-    return resultErrorCodedCreate(op, "Passkeys are not supported by this browser.", "passkeys.invalid")
+    return resultErrorCodedCreate(op, englishCatalog["login.passkey.unsupported"], "passkeys.invalid")
   }
 
   try {
@@ -38,8 +39,8 @@ export async function passkeyAuthenticationRun(
       },
     })) as PublicKeyCredential | null
     if (credential === null) {
-      options?.statusSet?.("permission-denied")
-      return resultErrorCodedCreate(op, "Passkey sign-in was canceled or timed out.", "passkeys.invalid")
+      options?.statusSet?.("ceremony-failure")
+      return resultErrorCodedCreate(op, englishCatalog["login.passkey.canceled"], "passkeys.invalid")
     }
     const response = credential.response as AuthenticatorAssertionResponse
     const input: PasskeyAuthenticationCompleteRequest = {

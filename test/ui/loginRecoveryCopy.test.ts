@@ -9,4 +9,8 @@ describe("login recovery reference copy", () => {
   test("uses the source confirmation label for new-password forms", () => {
     expect(englishCatalog["account.password.confirm"]).toBe("Confirm new password")
   })
+
+  test("uses concise actionable copy for password policy rejection", () => {
+    expect(englishCatalog["login.recovery.policyRejected"]).toBe("Choose a password that meets the requirements.")
+  })
 })

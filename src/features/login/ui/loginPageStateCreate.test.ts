@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bu
 import { Window } from "happy-dom"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { englishCatalog } from "../../../ui/i18n/model/englishCatalog.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoLoginBootstrap } from "../../demo/demoLoginBootstrap.js"
 import type { LoginScreen } from "../model/loginScreenSchema.js"
@@ -45,6 +46,7 @@ const stateCreate = (
   adapterOverrides: Partial<LoginAdapter> = {},
   initialDiscovery: LoginDiscovery = demoLoginBootstrap,
   onNavigate: (path: string) => void = () => {},
+  recoveryToken: () => string = () => "recovery-token",
 ) => {
   const browserWindow = new Window()
   previousGlobals.set("document", globalValues.document)
@@ -64,6 +66,7 @@ const stateCreate = (
       initialDiscovery: initialStatus === "loading" ? undefined : () => initialDiscovery,
       initialStatus: initialStatus === undefined ? () => "ready" : () => initialStatus,
       navigate: onNavigate,
+      recoveryToken,
       screen: route,
     })
   })
@@ -216,6 +219,113 @@ describe("loginPageStateCreate lifecycle focus", () => {
     expect(state.pending()).toBe(false)
   })
 
+  test("renders actual passkey permission denial with localized retry guidance", async () => {
+    const [route] = createSignal<LoginScreen>("passkey")
+    const state = stateCreate(route, "ready", undefined, "passkey-permission-denied")
+    await flushEffects()
+
+    await state.passkeyAuthenticate()
+
+    expect(state.passkeyStatus()).toBe("permission-denied")
+    expect(state.errorMessage()).toBe(englishCatalog["login.passkey.permissionDenied"])
+    expect(state.pending()).toBe(false)
+  })
+
+  test("returns a direct MFA email code route to the send step without verifying", async () => {
+    const [route, routeSet] = createSignal<LoginScreen>("mfa-email-otp-code")
+    const navigated: string[] = []
+    let verifyCount = 0
+    const state = stateCreate(
+      route,
+      "ready",
+      undefined,
+      "success",
+      {
+        mfaEmailOtpVerify: async () => {
+          verifyCount += 1
+          return resultCreate({ userId: "mfa-user" })
+        },
+      },
+      demoLoginBootstrap,
+      (path) => {
+        navigated.push(path)
+        routeSet("mfa-email-otp")
+      },
+    )
+    await flushEffects()
+
+    state.mfaCodeSet("123456")
+    await state.mfaSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(verifyCount).toBe(0)
+    expect(route()).toBe("mfa-email-otp")
+    expect(state.screen()).toBe("mfa-email-otp")
+    expect(state.mfaEmailOtpStage()).toBe("send")
+    expect(navigated).toEqual(["/demo/login/mfa/email-otp"])
+  })
+
+  test("forwards the active MFA email challenge ID during normal verification", async () => {
+    const [route, routeSet] = createSignal<LoginScreen>("mfa-email-otp")
+    let verifiedChallengeId = ""
+    let resumed = 0
+    const state = stateCreate(
+      route,
+      "ready",
+      () => {
+        resumed += 1
+      },
+      "success",
+      {
+        mfaEmailOtpStart: async () =>
+          resultCreate({ accepted: true, challengeId: "mfa-email-challenge-1", expiresAt: 0, retryAt: 0 }),
+        mfaEmailOtpVerify: async (challengeId, submittedCode) => {
+          verifiedChallengeId = challengeId
+          expect(submittedCode).toBe("123456")
+          return resultCreate({ userId: "mfa-user" })
+        },
+      },
+    )
+    await flushEffects()
+
+    await state.mfaEmailOtpSend()
+    routeSet("mfa-email-otp-code")
+    await flushEffects()
+    state.mfaCodeSet("123456")
+    await state.mfaSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(verifiedChallengeId).toBe("mfa-email-challenge-1")
+    expect(resumed).toBe(1)
+  })
+
+  test("uses the replacement challenge ID after resending an MFA email code", async () => {
+    const [route, routeSet] = createSignal<LoginScreen>("mfa-email-otp")
+    let resentChallengeId = ""
+    let verifiedChallengeId = ""
+    const state = stateCreate(route, "ready", undefined, "success", {
+      mfaEmailOtpResend: async (challengeId) => {
+        resentChallengeId = challengeId
+        return resultCreate({ accepted: true, challengeId: "mfa-email-challenge-2", expiresAt: 0, retryAt: 0 })
+      },
+      mfaEmailOtpStart: async () =>
+        resultCreate({ accepted: true, challengeId: "mfa-email-challenge-1", expiresAt: 0, retryAt: 0 }),
+      mfaEmailOtpVerify: async (challengeId) => {
+        verifiedChallengeId = challengeId
+        return resultCreate({ userId: "mfa-user" })
+      },
+    })
+    await flushEffects()
+
+    await state.mfaEmailOtpSend()
+    routeSet("mfa-email-otp-code")
+    await flushEffects()
+    await state.mfaEmailOtpResend()
+    state.mfaCodeSet("654321")
+    await state.mfaSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(resentChallengeId).toBe("mfa-email-challenge-1")
+    expect(verifiedChallengeId).toBe("mfa-email-challenge-2")
+  })
+
   test("starts, resends, validates, and verifies a WhatsApp code through the adapter", async () => {
     const [route, routeSet] = createSignal<LoginScreen>("whatsapp-otp")
     let startedPhoneNumber = ""
@@ -352,6 +462,69 @@ describe("loginPageStateCreate lifecycle focus", () => {
     expect(state.whatsappOtpVerifyRetryCountdown()).toBeGreaterThan(0)
     expect(state.whatsappOtpVerifyAllowed()).toBe(false)
     expect(state.errorMessage()).toBe("Too many requests.")
+  })
+
+  test("moves the dedicated invalid recovery-token error to the invalid-link screen", async () => {
+    const [route] = createSignal<LoginScreen>("recovery-reset")
+    const state = stateCreate(route, "ready", undefined, "success", {
+      recoveryComplete: async () =>
+        resultErrorCodedCreate("loginRecoveryComplete", "The recovery token is invalid.", "passwords.invalid"),
+    })
+    await flushEffects()
+
+    state.newPassword.set("Recovered Horse 12")
+    state.confirmPassword.set("Recovered Horse 12")
+    await state.recoveryResetSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(state.recoveryResetStep()).toBe("invalid-link")
+    expect(state.errorMessage()).toBe("This password reset link is invalid or has expired.")
+    expect(state.newPassword.get()).toBe("")
+    expect(state.confirmPassword.get()).toBe("")
+  })
+
+  test("keeps password policy rejection on the reset form with its actionable error", async () => {
+    const [route] = createSignal<LoginScreen>("recovery-reset")
+    const state = stateCreate(route, "ready", undefined, "success", {
+      recoveryComplete: async () =>
+        resultErrorCodedCreate(
+          "loginRecoveryComplete",
+          "Backend policy rejection detail.",
+          "passwords.policy-rejected",
+        ),
+    })
+    await flushEffects()
+
+    state.newPassword.set("short password")
+    state.confirmPassword.set("short password")
+    await state.recoveryResetSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(state.recoveryResetStep()).toBe("ready")
+    expect(state.errorMessage()).toBe(englishCatalog["login.recovery.policyRejected"])
+    expect(state.newPassword.get()).toBe("short password")
+    expect(state.confirmPassword.get()).toBe("short password")
+  })
+
+  test("keeps unrelated HTTP 409 errors on the reset form with their actionable error", async () => {
+    const conflict = resultErrorCodedCreate(
+      "loginRecoveryComplete",
+      "This recovery request cannot be completed right now.",
+      "platform.conflict",
+    )
+    conflict.statusCode = 409
+    const [route] = createSignal<LoginScreen>("recovery-reset")
+    const state = stateCreate(route, "ready", undefined, "success", {
+      recoveryComplete: async () => conflict,
+    })
+    await flushEffects()
+
+    state.newPassword.set("Recovered Horse 12")
+    state.confirmPassword.set("Recovered Horse 12")
+    await state.recoveryResetSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(state.recoveryResetStep()).toBe("ready")
+    expect(state.errorMessage()).toBe("This recovery request cannot be completed right now.")
+    expect(state.newPassword.get()).toBe("Recovered Horse 12")
+    expect(state.confirmPassword.get()).toBe("Recovered Horse 12")
   })
 
   test("refreshes WhatsApp availability when returning to the method chooser", async () => {

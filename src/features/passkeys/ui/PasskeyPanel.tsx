@@ -63,12 +63,12 @@ export function PasskeyPanel(props: PasskeyPanelProps) {
         <Show when={props.errorMessage}>{(message) => <LoginMessages errorMessage={message()} />}</Show>
         <Show when={props.status === "permission-denied" && props.errorMessage === undefined}>
           <p class="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
-            {messageTranslate("common.error")}
+            {messageTranslate("login.passkey.permissionDenied")}
           </p>
         </Show>
         <Show when={props.status === "ceremony-failure" && props.errorMessage === undefined}>
           <p class="rounded-lg border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
-            {messageTranslate("common.error")}
+            {messageTranslate("login.passkey.ceremonyFailure")}
           </p>
         </Show>
         <Show when={props.status === "pending"}>

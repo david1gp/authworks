@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { passkeyAuthenticationRun } from "../../src/features/passkeys/ui/passkeyAuthenticationRun.js"
+import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 
 const originalNavigator = globalThis.navigator
 const originalPublicKeyCredential = globalThis.PublicKeyCredential
@@ -33,7 +34,7 @@ describe("passkeyAuthenticationRun", () => {
     expect(statuses).toEqual(["unsupported"])
   })
 
-  test("classifies permission denial separately and leaves the ceremony retryable", async () => {
+  test("classifies user cancellation as a retryable ceremony failure", async () => {
     Object.defineProperty(globalThis, "PublicKeyCredential", { configurable: true, value: class {} })
     Object.defineProperty(globalThis, "navigator", {
       configurable: true,
@@ -43,8 +44,36 @@ describe("passkeyAuthenticationRun", () => {
 
     const result = await passkeyAuthenticationRun(start, { statusSet: (status) => statuses.push(status) })
 
-    expect(result).toMatchObject({ success: false, errorMessage: "Passkey sign-in was canceled or timed out." })
-    expect(statuses).toEqual(["pending", "permission-denied"])
+    expect(result).toMatchObject({ success: false, errorMessage: englishCatalog["login.passkey.canceled"] })
+    expect(statuses).toEqual(["pending", "ceremony-failure"])
+  })
+
+  test("classifies an aborted or timed-out ceremony as a retryable ceremony failure", async () => {
+    Object.defineProperty(globalThis, "PublicKeyCredential", { configurable: true, value: class {} })
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: { credentials: { get: async () => Promise.reject({ name: "AbortError" }) } },
+    })
+    const statuses: string[] = []
+
+    const result = await passkeyAuthenticationRun(start, { statusSet: (status) => statuses.push(status) })
+
+    expect(result).toMatchObject({ success: false, errorMessage: englishCatalog["login.passkey.canceled"] })
+    expect(statuses).toEqual(["pending", "ceremony-failure"])
+  })
+
+  test("classifies an empty browser credential as a canceled ceremony", async () => {
+    Object.defineProperty(globalThis, "PublicKeyCredential", { configurable: true, value: class {} })
+    Object.defineProperty(globalThis, "navigator", {
+      configurable: true,
+      value: { credentials: { get: async () => null } },
+    })
+    const statuses: string[] = []
+
+    const result = await passkeyAuthenticationRun(start, { statusSet: (status) => statuses.push(status) })
+
+    expect(result).toMatchObject({ success: false, errorMessage: englishCatalog["login.passkey.canceled"] })
+    expect(statuses).toEqual(["pending", "ceremony-failure"])
   })
 
   test("classifies browser ceremony failures without exposing native errors", async () => {
@@ -59,7 +88,7 @@ describe("passkeyAuthenticationRun", () => {
 
     expect(result).toMatchObject({
       success: false,
-      errorMessage: "Passkey sign-in could not be completed in this browser context.",
+      errorMessage: englishCatalog["login.passkey.ceremonyFailure"],
     })
     expect(JSON.stringify(result)).not.toContain("secret")
     expect(statuses).toEqual(["pending", "ceremony-failure"])

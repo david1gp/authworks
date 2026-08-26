@@ -2,6 +2,7 @@ import { createEffect, onCleanup, onMount } from "solid-js"
 import * as v from "valibot"
 import type { Result, ResultErr } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { englishCatalog } from "../../../ui/i18n/model/englishCatalog.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { emailOtpCodeNormalize } from "../../emailOtp/model/emailOtpCodeNormalize.js"
 import { emailOtpResendCountdownGet } from "../../emailOtp/model/emailOtpResendCountdownGet.js"
@@ -322,6 +323,16 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     status.set("continuing")
     pending.set(false)
     options.adapter.interactionResume()
+  }
+  const passkeyFailureMessage = (result: ResultErr) => {
+    const currentStatus = passkeyStatus.get()
+    if (currentStatus === "permission-denied") return messageTranslate("login.passkey.permissionDenied")
+    if (currentStatus !== "ceremony-failure") return undefined
+    return messageTranslate(
+      result.errorMessage === englishCatalog["login.passkey.canceled"]
+        ? "login.passkey.canceled"
+        : "login.passkey.ceremonyFailure",
+    )
   }
 
   const authenticationApply = (outcome: LoginAuthenticationOutcome) => {
@@ -669,6 +680,10 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   }
   const mfaEmailOtpSubmit = async (event: SubmitEvent) => {
     event.preventDefault()
+    if (mfaEmailOtpChallengeId.get().length === 0) {
+      go("mfa-email-otp")
+      return
+    }
     const value = mfaCodeNormalize("email-otp", code.get())
     code.set(value)
     if (!/^\d{6}$/.test(value)) return invalid(messageTranslate("login.error.codeRequired"))
@@ -699,7 +714,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
       return
     }
     passkeyStatus.set("pending")
-    const outcome = await run(() => authenticate({ statusSet: passkeyStatus.set }))
+    const outcome = await run(() => authenticate({ statusSet: passkeyStatus.set }), passkeyFailureMessage)
     if (outcome === undefined) {
       if (passkeyStatus.get() === "pending" || passkeyStatus.get() === "ready") passkeyStatus.set("failure")
       return
@@ -731,16 +746,16 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     }
     passkeyStatus.set("pending")
     preferenceSaveNow()
-    const outcome = await run(() =>
-      options.adapter.passkeyAuthenticate({
-        statusSet: passkeyStatus.set,
-      }),
+    const outcome = await run(
+      () =>
+        options.adapter.passkeyAuthenticate({
+          statusSet: passkeyStatus.set,
+        }),
+      passkeyFailureMessage,
     )
     if (outcome === undefined) {
       const currentStatus = passkeyStatus.get()
       if (currentStatus === "pending" || currentStatus === "ready") passkeyStatus.set("failure")
-      if (currentStatus === "permission-denied") errorMessage.set(messageTranslate("common.error"))
-      if (currentStatus === "ceremony-failure") errorMessage.set(messageTranslate("common.error"))
       return
     }
     if (outcome.challenge !== undefined) passkeyStatus.set("mfa-continuation")
@@ -788,9 +803,12 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
     const completed = await run(
       () => options.adapter.recoveryComplete(token, newPassword.get()),
       (result) => {
-        if (result.code !== "passwords.invalid" && result.statusCode !== 409) return undefined
-        recoveryResetStep.set("invalid-link")
-        return messageTranslate("login.recovery.invalidLinkError")
+        if (result.code === "passwords.invalid") {
+          recoveryResetStep.set("invalid-link")
+          return messageTranslate("login.recovery.invalidLinkError")
+        }
+        if (result.code === "passwords.policy-rejected") return messageTranslate("login.recovery.policyRejected")
+        return undefined
       },
     )
     if (completed !== undefined) {

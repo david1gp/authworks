@@ -59,4 +59,15 @@ describe("demo passwordless login states", () => {
     expect(statuses).toEqual(["pending", "mfa-continuation"])
     if (continued.success) expect(continued.data.challenge?.challenge.requiredAssurance).toBe("multi_factor")
   })
+
+  test("keeps actual permission denial distinct and gives it retry guidance", async () => {
+    const adapter = loginDemoAdapterCreate({ fixtureState: () => "passkey-permission-denied", onResume: () => {} })
+
+    const result = await adapter.passkeyAuthenticate()
+
+    expect(result).toMatchObject({
+      success: false,
+      errorMessage: englishCatalog["login.passkey.permissionDenied"],
+    })
+  })
 })

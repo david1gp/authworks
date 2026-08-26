@@ -1,3 +1,4 @@
+import { englishCatalog } from "../../../ui/i18n/model/englishCatalog.js"
 import type { PasskeyAuthenticationStatus } from "../public/passkeyAuthenticationStatusSchema.js"
 
 /** Maps browser WebAuthn failures to safe, retryable login states without exposing native details. */
@@ -7,12 +8,12 @@ export function passkeyCeremonyErrorClassify(error: unknown): {
 } {
   const name = passkeyCeremonyErrorNameGet(error)
   if (name === "NotAllowedError" || name === "AbortError")
-    return { message: "Passkey sign-in was canceled or timed out.", status: "permission-denied" }
+    return { message: englishCatalog["login.passkey.canceled"], status: "ceremony-failure" }
   if (name === "SecurityError")
-    return { message: "Passkey sign-in could not be completed in this browser context.", status: "ceremony-failure" }
+    return { message: englishCatalog["login.passkey.ceremonyFailure"], status: "ceremony-failure" }
   if (name === "NotSupportedError" || name === "InvalidStateError")
-    return { message: "This passkey is not supported or registered on this device.", status: "ceremony-failure" }
-  return { message: "Passkey sign-in could not be completed. Please try again.", status: "ceremony-failure" }
+    return { message: englishCatalog["login.passkey.ceremonyFailure"], status: "ceremony-failure" }
+  return { message: englishCatalog["login.passkey.ceremonyFailure"], status: "ceremony-failure" }
 }
 
 function passkeyCeremonyErrorNameGet(error: unknown): string | undefined {
