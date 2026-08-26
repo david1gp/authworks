@@ -2,12 +2,15 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { userApiClientCreate } from "../client/userApiClientCreate.js"
 
 type UserCliFlags = {
   readonly profile?: string
   readonly server?: string
+  readonly systemToken?: string
   readonly token?: string
 }
 type UserListCliFlags = UserCliFlags & {
@@ -39,6 +42,7 @@ const userCreateCommand = buildCommand({
         profile: { displayName: flags.displayName },
         userName: flags.userName,
       }),
+      [connection.token, connection.systemToken],
     )
   },
   parameters: {
@@ -59,7 +63,10 @@ const userListCommand = buildCommand({
     if (connection === undefined) return
     const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
-    userCliResultWrite(this, await userCliClientCreate(connection).userList(realmId, userListQueryCreate(flags)))
+    userCliResultWrite(this, await userCliClientCreate(connection).userList(realmId, userListQueryCreate(flags)), [
+      connection.token,
+      connection.systemToken,
+    ])
   },
   parameters: { flags: { ...userCommonFlags(), ...userListFlags(), realmId: userRealmIdFlag() } },
   docs: { brief: "List users" },
@@ -78,6 +85,7 @@ const userGetCommand = buildCommand({
         flags.userId,
         flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
       ),
+      [connection.token, connection.systemToken],
     )
   },
   parameters: {
@@ -102,6 +110,7 @@ const userProfileCommand = buildCommand({
       await userCliClientCreate(connection).userProfileUpdate(realmId, flags.userId, {
         displayName: flags.displayName,
       }),
+      [connection.token, connection.systemToken],
     )
   },
   parameters: {
@@ -127,6 +136,7 @@ const userLifecycleCommand = buildCommand({
     userCliResultWrite(
       this,
       await userCliClientCreate(connection).userLifecycleSet(realmId, flags.userId, { state: flags.state }),
+      [connection.token, connection.systemToken],
     )
   },
   parameters: {
@@ -151,6 +161,7 @@ const userVerifyCommand = buildCommand({
       await userCliClientCreate(connection).userEmailVerificationSet(realmId, flags.userId, {
         state: flags.state,
       }),
+      [connection.token, connection.systemToken],
     )
   },
   parameters: {
@@ -170,7 +181,10 @@ const userDeleteCommand = buildCommand({
     if (connection === undefined) return
     const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
-    userCliResultWrite(this, await userCliClientCreate(connection).userDelete(realmId, flags.userId))
+    userCliResultWrite(this, await userCliClientCreate(connection).userDelete(realmId, flags.userId), [
+      connection.token,
+      connection.systemToken,
+    ])
   },
   parameters: { flags: { ...userCommonFlags(), realmId: userRealmIdFlag(), userId: userIdFlag() } },
   docs: { brief: "Delete a user account" },
@@ -189,28 +203,47 @@ export const userCliCommands = buildRouteMap({
   docs: { brief: "User administration" },
 })
 
-function userCliClientCreate(connection: { readonly server: string; readonly token?: string }) {
-  return userApiClientCreate({ baseUrl: connection.server, token: connection.token })
-}
-
 async function userCliConnectionResolve(
   context: ApplicationContext,
   flags: UserCliFlags & { readonly realmId?: string },
 ) {
   const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
   if (!result.success) {
-    userCliResultWrite(context, result)
+    userCliResultWrite(context, result, [
+      flags.systemToken,
+      flags.token,
+      context.process.env?.AUTHWORKS_SYSTEM_SECRET,
+      context.process.env?.AUTHWORKS_TOKEN,
+    ])
     return undefined
   }
-  return result.data
+  return {
+    ...result.data,
+    systemToken: connectionProfileCliSystemTokenResolve(flags.systemToken ?? flags.token, context.process.env),
+  }
+}
+
+function userCliClientCreate(connection: {
+  readonly server: string
+  readonly systemToken?: string
+  readonly token?: string
+}) {
+  return userApiClientCreate({
+    baseUrl: connection.server,
+    systemToken: connection.systemToken,
+    token: connection.token,
+  })
 }
 
 function userCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; status?: "current" | "unchanged"; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
@@ -218,7 +251,9 @@ function userCliResultWrite(
     context.process.stderr.write("304 Not Modified\n")
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function userCommonFlags() {
@@ -233,6 +268,13 @@ function userCommonFlags() {
     },
     token: {
       brief: "Bearer token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    systemToken: {
+      brief: "System bearer token",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

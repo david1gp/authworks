@@ -3,12 +3,29 @@ import { rm } from "node:fs/promises"
 import { join } from "node:path"
 import { connectionProfileCliConnectionResolve } from "../../src/features/connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliProfileFlag } from "../../src/features/connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../src/features/connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { connectionProfilesStoreCreate } from "../../src/features/connectionProfiles/persistence/connectionProfilesStoreCreate.js"
 
 test("the reusable profile flag is optional and parses a profile name", () => {
   const flag = connectionProfileCliProfileFlag()
   expect(flag.optional).toBe(true)
   expect(flag.parse("production")).toBe("production")
+})
+
+test("system tokens resolve only from the explicit flag and system-secret environment", () => {
+  expect(
+    connectionProfileCliSystemTokenResolve("flag-system-token", {
+      AUTHWORKS_SYSTEM_SECRET: "environment-system-secret",
+      AUTHWORKS_TOKEN: "environment-token",
+    }),
+  ).toBe("flag-system-token")
+  expect(
+    connectionProfileCliSystemTokenResolve(undefined, {
+      AUTHWORKS_SYSTEM_SECRET: "environment-system-secret",
+      AUTHWORKS_TOKEN: "environment-token",
+    }),
+  ).toBe("environment-system-secret")
+  expect(connectionProfileCliSystemTokenResolve(undefined, { AUTHWORKS_TOKEN: "environment-token" })).toBeUndefined()
 })
 
 test("connection values resolve independently through profile, environment, and flags", async () => {
@@ -85,6 +102,64 @@ test("connection values resolve independently through profile, environment, and 
   } finally {
     await rm(path, { force: true })
     await rm(path.replace(/\/[^/]+$/, ""), { force: true, recursive: true })
+  }
+})
+
+test("mixed connection sources resolve each field independently for selected and implicit profiles", async () => {
+  const directory = `/tmp/authworks-connection-profile-resolve-${crypto.randomUUID()}`
+  const path = join(directory, "profiles.json")
+  const store = connectionProfilesStoreCreate({ path })
+  await store.connectionProfileSet("default", { organizationId: "implicit-default-organization" })
+  await store.connectionProfileSet("staging", {
+    organizationId: "selected-profile-organization",
+    realmId: "selected-profile-realm",
+    server: "https://selected-profile.test",
+    token: "selected-profile-token",
+  })
+
+  try {
+    const selected = await connectionProfileCliConnectionResolve(
+      { profile: "staging", server: "https://flag.test" },
+      {
+        environment: {
+          AUTHWORKS_TOKEN: "environment-token",
+          AUTHWORKS_URL: "https://environment.test",
+        },
+        path,
+      },
+    )
+    expect(selected).toEqual({
+      data: {
+        organizationId: "selected-profile-organization",
+        realmId: "selected-profile-realm",
+        server: "https://flag.test",
+        token: "environment-token",
+      },
+      success: true,
+    })
+
+    const implicit = await connectionProfileCliConnectionResolve(
+      { server: "https://implicit-flag.test" },
+      {
+        environment: {
+          AUTHWORKS_REALM_ID: "environment-realm",
+          AUTHWORKS_TOKEN: "implicit-environment-token",
+          AUTHWORKS_URL: "https://implicit-environment.test",
+        },
+        path,
+      },
+    )
+    expect(implicit).toEqual({
+      data: {
+        organizationId: "implicit-default-organization",
+        realmId: "environment-realm",
+        server: "https://implicit-flag.test",
+        token: "implicit-environment-token",
+      },
+      success: true,
+    })
+  } finally {
+    await rm(directory, { force: true, recursive: true })
   }
 })
 

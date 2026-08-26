@@ -408,7 +408,12 @@ export async function authworksE2eFixtureCreate(
 }
 
 function fixtureClientsCreate(fetchFromServer: AuthworksE2eFixture["fetchFromServer"]): AuthworksE2eFixtureClients {
-  const options = { baseUrl: fixtureOrigin, fetch: fetchFromServer, token: fixtureSystemSecret }
+  const options = {
+    baseUrl: fixtureOrigin,
+    fetch: fetchFromServer,
+    systemToken: fixtureSystemSecret,
+    token: fixtureSystemSecret,
+  }
   return {
     externalIdentities: externalIdentityApiClientCreate(options),
     machines: machineUserApiClientCreate(options),

@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test"
 import { chmod, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises"
+import { homedir } from "node:os"
 import { join } from "node:path"
 import { connectionProfilesConfigPathResolve } from "../../src/features/connectionProfiles/config/connectionProfilesConfigPathResolve.js"
 import { connectionProfileNameValidate } from "../../src/features/connectionProfiles/model/connectionProfileNameValidate.js"
@@ -27,6 +28,15 @@ test("connection profile config paths use injectable XDG and home values", () =>
       homeDirectory: "/tmp/authworks-home",
     }),
   ).toBe("/tmp/authworks-home/.config/authworks/profiles.json")
+  expect(
+    connectionProfilesConfigPathResolve({
+      environment: { HOME: "" },
+      homeDirectory: "/tmp/authworks-home",
+    }),
+  ).toBe("/tmp/authworks-home/.config/authworks/profiles.json")
+  expect(connectionProfilesConfigPathResolve({ environment: { HOME: "" } })).toBe(
+    join(homedir(), ".config", "authworks", "profiles.json"),
+  )
 })
 
 test("connection profile store supports CRUD, partial profiles, and owner-only creation", async () => {
@@ -128,6 +138,53 @@ test("profile file permissions are reduced when an existing file is updated", as
     const result = await connectionProfilesStoreCreate({ path }).connectionProfileSet("default", { server: "local" })
     expect(result.success).toBe(true)
     expect((await stat(path)).mode & 0o777).toBe(0o600)
+  } finally {
+    await rm(directory, { force: true, recursive: true })
+  }
+})
+
+test("read-only profile access secures permissive profile files and directories", async () => {
+  const directory = `/tmp/authworks-connection-profiles-${crypto.randomUUID()}`
+  const path = join(directory, "profiles.json")
+  await mkdir(directory, { mode: 0o755, recursive: true })
+  await chmod(directory, 0o755)
+  await writeFile(path, '{"default":{"token":"profile-token"}}\n', { mode: 0o644 })
+  await chmod(path, 0o644)
+
+  try {
+    const store = connectionProfilesStoreCreate({ path })
+    expect((await store.connectionProfileList()).success).toBe(true)
+    expect((await stat(path)).mode & 0o777).toBe(0o600)
+    expect((await stat(directory)).mode & 0o777).toBe(0o700)
+
+    await chmod(directory, 0o755)
+    await chmod(path, 0o644)
+    expect(await store.connectionProfileGet("default")).toEqual({
+      data: { token: "profile-token" },
+      success: true,
+    })
+    expect((await stat(path)).mode & 0o777).toBe(0o600)
+    expect((await stat(directory)).mode & 0o777).toBe(0o700)
+  } finally {
+    await rm(directory, { force: true, recursive: true })
+  }
+})
+
+test("read-only access secures an existing permissive profile directory without a profile file", async () => {
+  const directory = `/tmp/authworks-connection-profiles-${crypto.randomUUID()}`
+  const profileDirectory = join(directory, "authworks")
+  const path = join(profileDirectory, "profiles.json")
+  await mkdir(profileDirectory, { mode: 0o755, recursive: true })
+  await chmod(profileDirectory, 0o755)
+
+  try {
+    const store = connectionProfilesStoreCreate({ path })
+    expect(await store.connectionProfileList()).toEqual({ data: {}, success: true })
+    expect((await stat(profileDirectory)).mode & 0o777).toBe(0o700)
+
+    await chmod(profileDirectory, 0o755)
+    expect(await store.connectionProfileGet("default")).toEqual({ data: undefined, success: true })
+    expect((await stat(profileDirectory)).mode & 0o777).toBe(0o700)
   } finally {
     await rm(directory, { force: true, recursive: true })
   }

@@ -1,6 +1,7 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { sessionApiClientCreate } from "../client/sessionApiClientCreate.js"
 
@@ -21,7 +22,9 @@ const sessionCurrentCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
     const resolved = await sessionCliConnectionResolve(this, flags)
     if (resolved === undefined) return
-    sessionCliResultWrite(this, await sessionCliClientCreate(resolved.connection).sessionCurrent(resolved.realmId))
+    sessionCliResultWrite(this, await sessionCliClientCreate(resolved.connection).sessionCurrent(resolved.realmId), [
+      resolved.connection.token,
+    ])
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "Read the current session" },
@@ -34,6 +37,7 @@ const sessionListCommand = buildCommand({
     sessionCliResultWrite(
       this,
       await sessionCliClientCreate(resolved.connection).sessionList(resolved.realmId, sessionListQueryCreate(flags)),
+      [resolved.connection.token],
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), ...sessionListFlags() } },
@@ -50,6 +54,7 @@ const sessionRecentCommand = buildCommand({
         resolved.realmId,
         sessionListQueryCreate(flags),
       ),
+      [resolved.connection.token],
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), ...sessionListFlags() } },
@@ -60,7 +65,9 @@ const sessionRotateCommand = buildCommand({
   async func(this: ApplicationContext, flags: SessionCliFlags) {
     const resolved = await sessionCliConnectionResolve(this, flags)
     if (resolved === undefined) return
-    sessionCliResultWrite(this, await sessionCliClientCreate(resolved.connection).sessionRotate(resolved.realmId))
+    sessionCliResultWrite(this, await sessionCliClientCreate(resolved.connection).sessionRotate(resolved.realmId), [
+      resolved.connection.token,
+    ])
   },
   parameters: { flags: sessionCommonFlags() },
   docs: { brief: "Rotate the current session credential" },
@@ -73,6 +80,7 @@ const sessionRevokeCommand = buildCommand({
     sessionCliResultWrite(
       this,
       await sessionCliClientCreate(resolved.connection).sessionRevoke(resolved.realmId, flags.sessionId),
+      [resolved.connection.token],
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), sessionId: sessionIdFlag() } },
@@ -88,6 +96,7 @@ const sessionRevokeAllCommand = buildCommand({
       await sessionCliClientCreate(resolved.connection).sessionRevokeAll(resolved.realmId, {
         keepCurrent: flags.keepCurrent,
       }),
+      [resolved.connection.token],
     )
   },
   parameters: { flags: { ...sessionCommonFlags(), keepCurrent: booleanFlag() } },
@@ -109,7 +118,7 @@ export const sessionCliCommands = buildRouteMap({
 async function sessionCliConnectionResolve(context: ApplicationContext, flags: SessionCliFlags) {
   const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
   if (!result.success) {
-    sessionCliResultWrite(context, result)
+    sessionCliResultWrite(context, result, [flags.token, context.process.env?.AUTHWORKS_TOKEN])
     return undefined
   }
   const realmId = scopeIdResolve(context, result.data.realmId, "realm")
@@ -127,13 +136,18 @@ function sessionCliClientCreate(connection: { readonly server: string; readonly 
 function sessionCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function sessionCommonFlags() {

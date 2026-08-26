@@ -4,11 +4,13 @@ import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { projectApiClientCreate } from "../client/projectApiClientCreate.js"
 
 type ProjectCliFlags = {
   readonly profile?: string
   readonly server?: string
+  readonly systemToken?: string
   readonly token?: string
 }
 type ProjectListCliFlags = ProjectCliFlags & {
@@ -38,7 +40,7 @@ const projectCreateCommand = buildCommand({
         organizationId,
         projectAccessRequired: false,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -61,7 +63,7 @@ const projectListCommand = buildCommand({
     projectCliResultWrite(
       this,
       await projectCliClientCreate(connection.data).projectList(realmId, projectListQueryCreate(flags)),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: { flags: { ...projectCommonFlags(), ...projectListFlags(), realmId: projectScopeIdFlag("Realm UUID") } },
@@ -81,7 +83,7 @@ const projectGetCommand = buildCommand({
         flags.projectId,
         flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
       ),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -104,7 +106,7 @@ const projectUpdateCommand = buildCommand({
     projectCliResultWrite(
       this,
       await projectCliClientCreate(connection.data).projectUpdate(realmId, flags.projectId, { name: flags.name }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -129,7 +131,7 @@ const projectLifecycleCommand = buildCommand({
       await projectCliClientCreate(connection.data).projectLifecycleSet(realmId, flags.projectId, {
         status: flags.status,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -158,7 +160,7 @@ const projectApplicationCreateCommand = buildCommand({
         applicationType: flags.applicationType,
         name: flags.name,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -186,7 +188,7 @@ const projectApplicationListCommand = buildCommand({
         flags.projectId,
         projectListQueryCreate(flags),
       ),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -212,7 +214,7 @@ const projectRoleCreateCommand = buildCommand({
         displayName: flags.displayName,
         key: flags.key,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -240,7 +242,7 @@ const projectRoleListCommand = buildCommand({
         flags.projectId,
         projectListQueryCreate(flags),
       ),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -273,7 +275,7 @@ const projectGrantCreateCommand = buildCommand({
         grantedOrganizationId,
         roleKeys: flags.roleKeys.length === 0 ? [] : flags.roleKeys.split(","),
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -301,7 +303,7 @@ const projectGrantListCommand = buildCommand({
         flags.projectId,
         projectListQueryCreate(flags),
       ),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -336,12 +338,25 @@ async function projectCliConnectionResolve(
   context: ApplicationContext,
   flags: ProjectCliFlags & { readonly realmId?: string; readonly organizationId?: string },
 ) {
-  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  const connection = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!connection.success) return connection
+  return {
+    data: {
+      ...connection.data,
+      systemToken: connectionProfileCliSystemTokenResolve(flags.systemToken ?? flags.token, context.process.env),
+    },
+    success: true as const,
+  }
 }
 
-function projectCliClientCreate(flags: { readonly server: string; readonly token?: string }) {
+function projectCliClientCreate(flags: {
+  readonly server: string
+  readonly systemToken?: string
+  readonly token?: string
+}) {
   return projectApiClientCreate({
     baseUrl: flags.server,
+    systemToken: flags.systemToken,
     token: flags.token,
   })
 }
@@ -379,6 +394,13 @@ function projectCommonFlags() {
     },
     token: {
       brief: "Bearer token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    systemToken: {
+      brief: "System bearer token",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

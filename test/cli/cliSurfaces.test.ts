@@ -119,7 +119,7 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
       "list",
       "--server",
       server.url.toString(),
-      "--token",
+      "--system-token",
       "cli-scope-secret",
     )
     expect(realmDefault.exitCode).toBe(0)
@@ -159,7 +159,7 @@ test("CLI scoped commands use environment defaults and explicit flags take prece
       "list",
       "--server",
       server.url.toString(),
-      "--token",
+      "--system-token",
       "cli-scope-secret",
       "--realm-id",
       realmId,
@@ -254,6 +254,7 @@ test("CLI profile resolution supplies server, token, realm, and organization val
       {
         AUTHWORKS_ORGANIZATION_ID: undefined,
         AUTHWORKS_REALM_ID: undefined,
+        AUTHWORKS_SYSTEM_SECRET: "cli-profile-secret",
         AUTHWORKS_TOKEN: undefined,
         AUTHWORKS_URL: undefined,
         XDG_CONFIG_HOME: configHome,
@@ -270,6 +271,7 @@ test("CLI profile resolution supplies server, token, realm, and organization val
       {
         AUTHWORKS_ORGANIZATION_ID: undefined,
         AUTHWORKS_REALM_ID: undefined,
+        AUTHWORKS_SYSTEM_SECRET: "cli-profile-secret",
         AUTHWORKS_TOKEN: undefined,
         AUTHWORKS_URL: undefined,
         XDG_CONFIG_HOME: configHome,
@@ -286,6 +288,7 @@ test("CLI profile resolution supplies server, token, realm, and organization val
       {
         AUTHWORKS_ORGANIZATION_ID: undefined,
         AUTHWORKS_REALM_ID: undefined,
+        AUTHWORKS_SYSTEM_SECRET: "cli-profile-secret",
         AUTHWORKS_TOKEN: undefined,
         AUTHWORKS_URL: undefined,
         XDG_CONFIG_HOME: configHome,
@@ -303,7 +306,7 @@ test("CLI profile resolution supplies server, token, realm, and organization val
   }
 })
 
-test("CLI integrated commands use profile-sourced server, token, realm, and organization values", async () => {
+test("CLI integrated commands use profile-sourced server, realm, and organization values", async () => {
   const directory = await mkdtemp(join(tmpdir(), "authworks-cli-profile-command-integration-"))
   const configHome = join(directory, "config")
   const realmId = "profile-realm"
@@ -407,7 +410,7 @@ test("CLI integrated commands use profile-sourced server, token, realm, and orga
         pathname: `/realms/${realmId}/email-otp/start`,
       },
       {
-        authorization: "Bearer profile-token",
+        authorization: undefined,
         organizationId,
         pathname: `/system/realms/${realmId}/external-identity-providers`,
       },

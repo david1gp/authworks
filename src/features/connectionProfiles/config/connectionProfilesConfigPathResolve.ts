@@ -9,7 +9,7 @@ export function connectionProfilesConfigPathResolve(
 ): string {
   const environment = options.environment ?? process.env
   const configHome = environment.XDG_CONFIG_HOME
-  const homeDirectory = options.homeDirectory ?? environment.HOME ?? homedir()
+  const homeDirectory = options.homeDirectory || environment.HOME || homedir()
   return join(
     configHome && configHome.length > 0 ? configHome : join(homeDirectory, ".config"),
     "authworks",

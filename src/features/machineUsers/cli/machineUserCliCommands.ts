@@ -3,6 +3,7 @@ import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { machineUserApiClientCreate } from "../client/machineUserApiClientCreate.js"
 
 type MachineListFlags = {
@@ -11,7 +12,12 @@ type MachineListFlags = {
   readonly sortBy?: string
   readonly sortDirection?: "asc" | "desc"
 }
-type MachineCliFlags = { readonly profile?: string; readonly server?: string; readonly token?: string }
+type MachineCliFlags = {
+  readonly profile?: string
+  readonly server?: string
+  readonly systemToken?: string
+  readonly token?: string
+}
 type MachineRealmFlags = MachineCliFlags & { readonly realmId?: string }
 type MachineUserFlags = MachineRealmFlags & { readonly machineUserId: string }
 
@@ -31,7 +37,7 @@ const machineUserCreateCommand = buildCommand({
         scopes: machineScopesSplit(flags.scopes),
         userName: flags.userName,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -55,7 +61,7 @@ const machineUserListCommand = buildCommand({
     machineCliResultWrite(
       this,
       await machineCliClientCreate(connection.data).machineUserList(realmId, machineListQueryCreate(flags)),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: { flags: { ...machineCommonFlags(), ...machineListFlags(), realmId: machineRealmIdFlag() } },
@@ -71,7 +77,7 @@ const machineUserGetCommand = buildCommand({
     machineCliResultWrite(
       this,
       await machineCliClientCreate(connection.data).machineUserGet(realmId, flags.machineUserId),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -93,7 +99,7 @@ const machineUserSecretRotateCommand = buildCommand({
     machineCliResultWrite(
       this,
       await machineCliClientCreate(connection.data).machineUserClientSecretRotate(realmId, flags.machineUserId),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -117,7 +123,7 @@ const machineUserLifecycleCommand = buildCommand({
       await machineCliClientCreate(connection.data).machineUserLifecycleSet(realmId, flags.machineUserId, {
         status: flags.status,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -150,7 +156,7 @@ const machinePersonalAccessTokenCommand = buildCommand({
         name: flags.name,
         scopes: machineScopesSplit(flags.scopes),
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -180,7 +186,7 @@ const machineApiKeyCommand = buildCommand({
         name: flags.name,
         scopes: machineScopesSplit(flags.scopes),
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -209,7 +215,7 @@ const machineCredentialListCommand = buildCommand({
         flags.machineUserId,
         machineListQueryCreate(flags),
       ),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -234,7 +240,7 @@ const machineCredentialRevokeCommand = buildCommand({
       await machineCliClientCreate(connection.data).machineCredentialRevoke(realmId, flags.credentialId, {
         reason: flags.reason,
       }),
-      [connection.data.token],
+      [connection.data.token, connection.data.systemToken],
     )
   },
   parameters: {
@@ -267,12 +273,25 @@ async function machineCliConnectionResolve(
   context: ApplicationContext,
   flags: MachineCliFlags & { readonly realmId?: string },
 ) {
-  return connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  const connection = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
+  if (!connection.success) return connection
+  return {
+    data: {
+      ...connection.data,
+      systemToken: connectionProfileCliSystemTokenResolve(flags.systemToken ?? flags.token, context.process.env),
+    },
+    success: true as const,
+  }
 }
 
-function machineCliClientCreate(flags: { readonly server: string; readonly token?: string }) {
+function machineCliClientCreate(flags: {
+  readonly server: string
+  readonly systemToken?: string
+  readonly token?: string
+}) {
   return machineUserApiClientCreate({
     baseUrl: flags.server,
+    systemToken: flags.systemToken,
     token: flags.token,
   })
 }
@@ -304,6 +323,13 @@ function machineCommonFlags() {
     },
     token: {
       brief: "Bearer token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    systemToken: {
+      brief: "System bearer token",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

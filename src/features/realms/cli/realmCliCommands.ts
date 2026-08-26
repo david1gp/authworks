@@ -2,7 +2,9 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { realmApiClientCreate } from "../client/realmApiClientCreate.js"
 import type { RealmCreateRequest } from "../public/realmCreateRequestSchema.js"
 
@@ -36,7 +38,7 @@ const realmCreateCommand = buildCommand({
       domain: flags.domain,
       name: flags.name,
     } satisfies RealmCreateRequest)
-    realmCliResultWrite(this, result)
+    realmCliResultWrite(this, result, [connection.token])
   },
   parameters: {
     flags: {
@@ -72,7 +74,7 @@ const realmListCommand = buildCommand({
     const connection = await realmCliConnectionResolve(this, flags)
     if (connection === undefined) return
     const result = await realmCliClientCreate(connection).realmList(realmListQueryCreate(flags))
-    realmCliResultWrite(this, result)
+    realmCliResultWrite(this, result, [connection.token])
   },
   parameters: {
     flags: {
@@ -104,7 +106,7 @@ const realmBootstrapCommand = buildCommand({
     const realmId = scopeIdResolve(this, connection.realmId, "realm")
     if (realmId === undefined) return
     const result = await realmCliClientCreate(connection).realmBootstrapAdminCreate(realmId)
-    realmCliResultWrite(this, result)
+    realmCliResultWrite(this, result, [connection.token])
   },
   parameters: {
     flags: {
@@ -154,10 +156,10 @@ async function realmCliConnectionResolve(
 ) {
   const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
   if (!result.success) {
-    realmCliResultWrite(context, result)
+    realmCliResultWrite(context, result, [flags.token, context.process.env?.AUTHWORKS_TOKEN])
     return undefined
   }
-  return result.data
+  return { ...result.data, token: connectionProfileCliSystemTokenResolve(flags.token, context.process.env) }
 }
 
 function realmListFlags() {
@@ -212,11 +214,16 @@ function realmListQueryCreate(flags: RealmListCliFlags): ListQuery | undefined {
 function realmCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }

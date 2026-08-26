@@ -3,6 +3,7 @@ import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { mfaApiClientCreate } from "../client/mfaApiClientCreate.js"
 
 type MfaCliFlags = {
@@ -170,7 +171,7 @@ function mfaCliClientCreate(
 ) {
   return mfaApiClientCreate({
     baseUrl: connection.server,
-    systemToken: flags.systemToken ?? context.process.env?.AUTHWORKS_SYSTEM_SECRET,
+    systemToken: connectionProfileCliSystemTokenResolve(flags.systemToken ?? flags.token, context.process.env),
     token: connection.token,
   })
 }

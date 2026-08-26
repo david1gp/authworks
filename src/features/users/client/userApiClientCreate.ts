@@ -61,11 +61,20 @@ type UserApiFetch = (input: string | URL | Request, init?: RequestInit) => Promi
 type UserApiClientCreateOptions = {
   readonly baseUrl: string
   readonly fetch?: UserApiFetch
+  readonly systemToken?: Secret | string
   readonly token?: Secret | string
 }
 
 export function userApiClientCreate(options: UserApiClientCreateOptions) {
-  const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+  const systemRequestToken = "systemToken" in options ? options.systemToken : options.token
+  const tokenFallback = Symbol("tokenFallback")
+  const tokenNoFallback = Symbol("tokenNoFallback")
+  const request = <T>(
+    path: string,
+    init: RequestInit,
+    schema: v.GenericSchema<T>,
+    token: Secret | string | undefined | typeof tokenFallback | typeof tokenNoFallback = tokenFallback,
+  ): Promise<Result<T>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
       fetch: options.fetch,
@@ -73,12 +82,13 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
       op: "userApiClientRequest",
       path,
       schema,
-      token: options.token,
+      token: token === tokenFallback ? options.token : token === tokenNoFallback ? undefined : token,
     })
   const getRequest = <T>(
     path: string,
     schema: v.GenericSchema<T>,
     getOptions?: HttpGetOptions,
+    token: Secret | string | undefined | typeof tokenFallback | typeof tokenNoFallback = tokenFallback,
   ): Promise<HttpGetResult<T>> =>
     httpApiClientGetRequest({
       baseUrl: options.baseUrl,
@@ -88,7 +98,7 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
       op: "userApiClientRequest",
       path,
       schema,
-      token: options.token,
+      token: token === tokenFallback ? options.token : token === tokenNoFallback ? undefined : token,
     })
 
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
@@ -141,6 +151,7 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         `/system/realms/${encodeURIComponent(realmId)}/users`,
         jsonRequest(parsed.output),
         userResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     userGet(realmId: string, userId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<UserResponse>> {
@@ -148,6 +159,7 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}`,
         userResponseSchema,
         getOptions,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     userList(realmId: string, query?: ListQuery): Promise<Result<UserListResponse>> {
@@ -155,6 +167,7 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         `/system/realms/${encodeURIComponent(realmId)}/users${listQueryToSearchParams(query)}`,
         { method: "GET" },
         userListResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     userMeGet(realmId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<UserCurrentResponse>> {
@@ -316,6 +329,7 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/profile`,
         patchRequest(parsed.output),
         userResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     userLifecycleSet(realmId: string, userId: string, input: UserLifecycleRequest): Promise<Result<UserResponse>> {
@@ -328,6 +342,7 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/lifecycle`,
         jsonRequest(parsed.output),
         userResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     userEmailVerificationSet(
@@ -348,6 +363,7 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/verification`,
         jsonRequest(parsed.output),
         userResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     userDelete(realmId: string, userId: string): Promise<Result<UserResponse>> {
@@ -355,6 +371,7 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}`,
         { method: "DELETE" },
         userResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     userTenantList(realmId: string, query?: ListQuery): Promise<Result<UserListResponse>> {

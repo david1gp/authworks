@@ -59,10 +59,12 @@ type MachineUserApiClientCreateOptions = {
   readonly baseUrl: string
   readonly csrfToken?: string
   readonly fetch?: MachineApiFetch
+  readonly systemToken?: Secret | string
   readonly token?: Secret | string
 }
 
 export function machineUserApiClientCreate(options: MachineUserApiClientCreateOptions) {
+  const systemRequestToken = "systemToken" in options ? options.systemToken : options.token
   const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
@@ -72,6 +74,16 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       path,
       schema,
       token: options.token,
+    })
+  const managementRequest = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+    httpApiClientRequest({
+      baseUrl: options.baseUrl,
+      fetch: options.fetch,
+      init,
+      op: "machineUserApiClientRequest",
+      path,
+      schema,
+      token: systemRequestToken,
     })
 
   const managementPath = (realmId: string, suffix = "") => `/system/realms/${encodeURIComponent(realmId)}${suffix}`
@@ -99,7 +111,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
             "machine-users.invalid",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/api-keys`),
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialIssueResponseSchema,
@@ -111,7 +123,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       machineUserId: string,
       query?: ListQuery,
     ): Promise<Result<MachineCredentialListResponse>> {
-      return request(
+      return managementRequest(
         `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/credentials`)}${listQueryToSearchParams(query)}`,
         { method: "GET" },
         machineCredentialListResponseSchema,
@@ -132,7 +144,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
             "machine-users.invalid",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, `/machine-credentials/${encodeURIComponent(credentialId)}/revoke`),
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialRevokeResponseSchema,
@@ -153,7 +165,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
             "machine-users.invalid",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/personal-access-tokens`),
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialIssueResponseSchema,
@@ -164,7 +176,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
       realmId: string,
       machineUserId: string,
     ): Promise<Result<MachineUserSecretRotateResponse>> {
-      return request(
+      return managementRequest(
         managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/client-secret/rotate`),
         { method: "POST" },
         machineUserSecretRotateResponseSchema,
@@ -181,7 +193,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
             "machine-users.invalid",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, "/machine-users"),
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineUserCreateResponseSchema,
@@ -189,7 +201,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
     },
 
     machineUserGet(realmId: string, machineUserId: string): Promise<Result<MachineUserResponse>> {
-      return request(
+      return managementRequest(
         managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}`),
         { method: "GET" },
         machineUserResponseSchema,
@@ -210,7 +222,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
             "machine-users.invalid",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/lifecycle`),
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineUserResponseSchema,
@@ -218,7 +230,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
     },
 
     machineUserList(realmId: string, query?: ListQuery): Promise<Result<MachineUserListResponse>> {
-      return request(
+      return managementRequest(
         `${managementPath(realmId, "/machine-users")}${listQueryToSearchParams(query)}`,
         { method: "GET" },
         machineUserListResponseSchema,
@@ -389,7 +401,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
             "machine-users.invalid",
           ),
         )
-      return request(
+      return managementRequest(
         managementPath(realmId, `/machine-users/${encodeURIComponent(parsed.output.machineUserId)}/api-keys`),
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialIssueResponseSchema,

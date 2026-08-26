@@ -80,10 +80,12 @@ type ProjectApiClientCreateOptions = {
   readonly baseUrl: string
   readonly csrfToken?: string
   readonly fetch?: ProjectApiFetch
+  readonly systemToken?: Secret | string
   readonly token?: Secret | string
 }
 
 export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
+  const systemRequestToken = "systemToken" in options ? options.systemToken : options.token
   const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
@@ -92,7 +94,7 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       op: "projectApiClientRequest",
       path,
       schema,
-      token: options.token,
+      token: systemRequestToken,
     })
   const getRequest = <T>(
     path: string,
@@ -107,7 +109,7 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
       op: "projectApiClientRequest",
       path,
       schema,
-      token: options.token,
+      token: systemRequestToken,
     })
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
   const patchRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "PATCH" })

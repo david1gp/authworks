@@ -35,11 +35,20 @@ type ExternalIdentityApiClientCreateOptions = {
   readonly baseUrl: string
   readonly csrfToken?: string
   readonly fetch?: ExternalIdentityApiFetch
+  readonly systemToken?: Secret | string
   readonly token?: Secret | string
 }
 
 export function externalIdentityApiClientCreate(options: ExternalIdentityApiClientCreateOptions) {
-  const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+  const systemRequestToken = "systemToken" in options ? options.systemToken : options.token
+  const tokenFallback = Symbol("tokenFallback")
+  const tokenNoFallback = Symbol("tokenNoFallback")
+  const request = <T>(
+    path: string,
+    init: RequestInit,
+    schema: v.GenericSchema<T>,
+    token: Secret | string | undefined | typeof tokenFallback | typeof tokenNoFallback = tokenFallback,
+  ): Promise<Result<T>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
       fetch: options.fetch,
@@ -47,7 +56,7 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
       op: "externalIdentityApiClientRequest",
       path,
       schema,
-      token: options.token,
+      token: token === tokenFallback ? options.token : token === tokenNoFallback ? undefined : token,
     })
   const browserRequest = (init: RequestInit): RequestInit => {
     const headers = new Headers(init.headers)
@@ -188,6 +197,7 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
         `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers`,
         { body: JSON.stringify(parsed.data), method: "POST" },
         externalIdentityProviderResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     externalIdentityProviderDisable(
@@ -198,6 +208,7 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
         `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers/${encodeURIComponent(providerId)}/disable`,
         { method: "POST" },
         externalIdentityProviderResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     externalIdentityProviderList(
@@ -212,6 +223,7 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
         `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers${queryString}`,
         { method: "GET" },
         externalIdentityProviderListResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     externalIdentityProviderUpdate(
@@ -229,6 +241,7 @@ export function externalIdentityApiClientCreate(options: ExternalIdentityApiClie
         `/system/realms/${encodeURIComponent(realmId)}/external-identity-providers/${encodeURIComponent(providerId)}`,
         { body: JSON.stringify(parsed.data), method: "PATCH" },
         externalIdentityProviderResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     externalIdentityProviderTenantCreate(

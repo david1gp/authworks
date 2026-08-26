@@ -71,11 +71,20 @@ type PasswordApiClientCreateOptions = {
   readonly baseUrl: string
   readonly csrfToken?: string
   readonly fetch?: PasswordApiFetch
+  readonly systemToken?: Secret | string
   readonly token?: Secret | string
 }
 
 export function passwordApiClientCreate(options: PasswordApiClientCreateOptions) {
-  const request = <T>(path: string, init: RequestInit, schema: v.GenericSchema<T>): Promise<Result<T>> =>
+  const systemRequestToken = "systemToken" in options ? options.systemToken : options.token
+  const tokenFallback = Symbol("tokenFallback")
+  const tokenNoFallback = Symbol("tokenNoFallback")
+  const request = <T>(
+    path: string,
+    init: RequestInit,
+    schema: v.GenericSchema<T>,
+    token: Secret | string | undefined | typeof tokenFallback | typeof tokenNoFallback = tokenFallback,
+  ): Promise<Result<T>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
       fetch: options.fetch,
@@ -83,7 +92,7 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
       op: "passwordApiClientRequest",
       path,
       schema,
-      token: options.token,
+      token: token === tokenFallback ? options.token : token === tokenNoFallback ? undefined : token,
     })
 
   const jsonRequest = (input: unknown): RequestInit => ({ body: JSON.stringify(input), method: "POST" })
@@ -115,6 +124,7 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
         `/system/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/password`,
         jsonRequest(parsed.data),
         passwordCredentialReplaceResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
     passwordRegister(
@@ -252,6 +262,7 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
         `/system/realms/${encodeURIComponent(realmId)}/password-policy`,
         patchRequest(parsed.data),
         passwordPolicyResponseSchema,
+        systemRequestToken ?? tokenNoFallback,
       )
     },
   }

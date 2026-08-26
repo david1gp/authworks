@@ -29,7 +29,7 @@ test("Codeline client ensure creates, updates, and never prints the client secre
   try {
     const realm = await cliRun(
       {
-        AUTHWORKS_TOKEN: "codeline-client-ensure-secret",
+        AUTHWORKS_SYSTEM_SECRET: "codeline-client-ensure-secret",
       },
       "realms",
       "create",
@@ -44,7 +44,7 @@ test("Codeline client ensure creates, updates, and never prints the client secre
     const realmId = (JSON.parse(realm.stdout) as { readonly realm: { readonly id: string } }).realm.id
 
     const first = await cliRun(
-      { AUTHWORKS_TOKEN: "codeline-client-ensure-secret" },
+      { AUTHWORKS_SYSTEM_SECRET: "codeline-client-ensure-secret" },
       "oidc",
       "client-ensure",
       "--server",
@@ -73,7 +73,7 @@ test("Codeline client ensure creates, updates, and never prints the client secre
     expect(environmentAfterCreate).toContain("OTHER=value")
 
     const second = await cliRun(
-      { AUTHWORKS_TOKEN: "codeline-client-ensure-secret" },
+      { AUTHWORKS_SYSTEM_SECRET: "codeline-client-ensure-secret" },
       "oidc",
       "client-ensure",
       "--server",
@@ -98,7 +98,7 @@ test("Codeline client ensure creates, updates, and never prints the client secre
     expect(drifted.success).toBe(true)
 
     const third = await cliRun(
-      { AUTHWORKS_TOKEN: "codeline-client-ensure-secret" },
+      { AUTHWORKS_SYSTEM_SECRET: "codeline-client-ensure-secret" },
       "oidc",
       "client-ensure",
       "--server",

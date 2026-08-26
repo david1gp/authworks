@@ -3,7 +3,9 @@ import * as v from "valibot"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { passwordApiClientCreate } from "../client/passwordApiClientCreate.js"
 import { passwordContentorenSsoTestProductionEnsure } from "./passwordContentorenSsoTestProductionEnsure.js"
 import { passwordContentorenSsoTestProductionEnsureExitCodeGet } from "./passwordContentorenSsoTestProductionEnsureExitCodeGet.js"
@@ -12,6 +14,7 @@ import { passwordContentorenSsoTestProductionEnsureFailureOutputCreate } from ".
 type PasswordCliFlags = {
   readonly profile?: string
   readonly server?: string
+  readonly systemToken?: string
   readonly token?: string
 }
 
@@ -23,7 +26,11 @@ const passwordPolicyGetCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasswordPolicyCliFlags) {
     const resolved = await passwordCliConnectionResolve(this, flags)
     if (resolved === undefined) return
-    passwordCliResultWrite(this, await passwordCliClientCreate(resolved.connection).passwordPolicyGet(resolved.realmId))
+    passwordCliResultWrite(
+      this,
+      await passwordCliClientCreate(resolved.connection).passwordPolicyGet(resolved.realmId),
+      [resolved.connection.token, resolved.connection.systemToken],
+    )
   },
   parameters: { flags: { ...passwordCommonFlags(), realmId: passwordRealmIdFlag() } },
   docs: { brief: "Read the password policy" },
@@ -55,6 +62,7 @@ const passwordPolicySetCommand = buildCommand({
         requireSymbol: flags.requireSymbol,
         requireUppercase: flags.requireUppercase,
       }),
+      [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -97,6 +105,7 @@ const passwordRegisterCommand = buildCommand({
         userName: flags.userName,
         verificationMethod: flags.verificationMethod,
       }),
+      [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -126,6 +135,7 @@ const passwordLoginCommand = buildCommand({
         identifier: flags.identifier,
         password: flags.password,
       }),
+      [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -141,11 +151,13 @@ const passwordLoginCommand = buildCommand({
 
 const passwordVerifyCommand = buildCommand({
   async func(this: ApplicationContext, flags: PasswordCliFlags & { realmId?: string; token: string }) {
-    const resolved = await passwordCliConnectionResolve(this, flags)
+    const { token: payloadToken, ...connectionFlags } = flags
+    const resolved = await passwordCliConnectionResolve(this, connectionFlags)
     if (resolved === undefined) return
     passwordCliResultWrite(
       this,
       await passwordCliClientCreate(resolved.connection).passwordEmailVerify(resolved.realmId, { token: flags.token }),
+      [payloadToken, resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -171,6 +183,7 @@ const passwordWhatsappVerifyCommand = buildCommand({
         challengeId: flags.challengeId,
         code: flags.code,
       }),
+      [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -193,6 +206,7 @@ const passwordRecoveryRequestCommand = buildCommand({
       await passwordCliClientCreate(resolved.connection).passwordRecoveryRequest(resolved.realmId, {
         email: flags.email,
       }),
+      [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -206,7 +220,8 @@ const passwordRecoveryCompleteCommand = buildCommand({
     this: ApplicationContext,
     flags: PasswordCliFlags & { newPassword: string; realmId?: string; token: string },
   ) {
-    const resolved = await passwordCliConnectionResolve(this, flags)
+    const { token: payloadToken, ...connectionFlags } = flags
+    const resolved = await passwordCliConnectionResolve(this, connectionFlags)
     if (resolved === undefined) return
     passwordCliResultWrite(
       this,
@@ -214,6 +229,7 @@ const passwordRecoveryCompleteCommand = buildCommand({
         newPassword: flags.newPassword,
         token: flags.token,
       }),
+      [payloadToken, resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -296,6 +312,7 @@ export const passwordCliCommands = buildRouteMap({
             currentPassword: flags.currentPassword,
             newPassword: flags.newPassword,
           }),
+          [resolved.connection.token, resolved.connection.systemToken],
         )
       },
       parameters: {
@@ -362,17 +379,33 @@ async function passwordCliConnectionResolve(
 ) {
   const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
   if (!result.success) {
-    passwordCliResultWrite(context, result)
+    passwordCliResultWrite(context, result, [
+      flags.systemToken,
+      flags.token,
+      context.process.env?.AUTHWORKS_SYSTEM_SECRET,
+      context.process.env?.AUTHWORKS_TOKEN,
+    ])
     return undefined
   }
   const realmId = scopeIdResolve(context, result.data.realmId, "realm")
   if (realmId === undefined) return undefined
-  return { connection: result.data, realmId }
+  return {
+    connection: {
+      ...result.data,
+      systemToken: connectionProfileCliSystemTokenResolve(flags.systemToken ?? flags.token, context.process.env),
+    },
+    realmId,
+  }
 }
 
-function passwordCliClientCreate(connection: { readonly server: string; readonly token?: string }) {
+function passwordCliClientCreate(connection: {
+  readonly server: string
+  readonly systemToken?: string
+  readonly token?: string
+}) {
   return passwordApiClientCreate({
     baseUrl: connection.server,
+    systemToken: connection.systemToken,
     token: connection.token,
   })
 }
@@ -380,13 +413,18 @@ function passwordCliClientCreate(connection: { readonly server: string; readonly
 function passwordCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function passwordCommonFlags() {
@@ -401,6 +439,13 @@ function passwordCommonFlags() {
     profile: connectionProfileCliProfileFlag(),
     token: {
       brief: "Bearer token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    systemToken: {
+      brief: "System bearer token",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

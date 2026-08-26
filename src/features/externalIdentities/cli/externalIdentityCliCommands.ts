@@ -1,7 +1,9 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { externalIdentityApiClientCreate } from "../client/externalIdentityApiClientCreate.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
 
@@ -14,6 +16,7 @@ type ExternalIdentityListFlags = {
 type ExternalIdentityCliFlags = {
   readonly profile?: string
   readonly server?: string
+  readonly systemToken?: string
   readonly token?: string
   readonly realmId?: string
 }
@@ -47,7 +50,7 @@ const externalIdentityProviderCreateCommand = buildCommand({
         type: flags.type as ExternalIdentityProviderType,
       },
     )
-    externalIdentityCliResultWrite(this, result)
+    externalIdentityCliResultWrite(this, result, [resolved.connection.token, resolved.connection.systemToken])
   },
   parameters: {
     flags: {
@@ -79,6 +82,7 @@ const externalIdentityProviderListCommand = buildCommand({
         resolved.organizationId,
         externalIdentityListQueryCreate(flags),
       ),
+      [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -101,6 +105,7 @@ const externalIdentityProviderDisableCommand = buildCommand({
         resolved.realmId,
         flags.providerId,
       ),
+      [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: { flags: { ...externalIdentityCommonFlags(), providerId: externalIdentityTextFlag("Provider UUID") } },
@@ -123,6 +128,7 @@ const externalIdentityStartCommand = buildCommand({
           organizationId: resolved.organizationId,
         },
       ),
+      [resolved.connection.token, resolved.connection.systemToken],
     )
   },
   parameters: {
@@ -151,18 +157,35 @@ async function externalIdentityCliConnectionResolve(
 ) {
   const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
   if (!result.success) {
-    externalIdentityCliResultWrite(context, result)
+    externalIdentityCliResultWrite(context, result, [
+      flags.systemToken,
+      flags.token,
+      context.process.env?.AUTHWORKS_SYSTEM_SECRET,
+      context.process.env?.AUTHWORKS_TOKEN,
+    ])
     return undefined
   }
   const realmId = scopeIdResolve(context, result.data.realmId, "realm")
   if (realmId === undefined) return undefined
   const organizationId = scopeIdResolve(context, result.data.organizationId, "organization", false)
-  return { connection: result.data, organizationId, realmId }
+  return {
+    connection: {
+      ...result.data,
+      systemToken: connectionProfileCliSystemTokenResolve(flags.systemToken ?? flags.token, context.process.env),
+    },
+    organizationId,
+    realmId,
+  }
 }
 
-function externalIdentityCliClientCreate(connection: { readonly server: string; readonly token?: string }) {
+function externalIdentityCliClientCreate(connection: {
+  readonly server: string
+  readonly systemToken?: string
+  readonly token?: string
+}) {
   return externalIdentityApiClientCreate({
     baseUrl: connection.server,
+    systemToken: connection.systemToken,
     token: connection.token,
   })
 }
@@ -170,13 +193,18 @@ function externalIdentityCliClientCreate(connection: { readonly server: string; 
 function externalIdentityCliResultWrite(
   context: ApplicationContext,
   result: { data?: unknown; errorMessage?: string; success: boolean },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
-    context.process.stderr.write(`${result.errorMessage ?? "The request failed."}\n`)
+    context.process.stderr.write(
+      `${connectionProfileCliOutputRedact(result.errorMessage ?? "The request failed.", secrets)}\n`,
+    )
     context.process.exitCode = 1
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function externalIdentityCommonFlags() {
@@ -192,6 +220,13 @@ function externalIdentityCommonFlags() {
     },
     token: {
       brief: "System or session bearer token",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TOKEN",
+    },
+    systemToken: {
+      brief: "System bearer token",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,

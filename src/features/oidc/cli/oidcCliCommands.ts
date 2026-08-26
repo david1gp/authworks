@@ -417,7 +417,7 @@ const oidcLogoutCommand = buildCommand({
         ...(flags.postLogoutRedirectUri === undefined ? {} : { post_logout_redirect_uri: flags.postLogoutRedirectUri }),
         ...(flags.state === undefined ? {} : { state: flags.state }),
       }),
-      [connection.data.token],
+      [connection.data.token, flags.idTokenHint],
     )
   },
   parameters: {

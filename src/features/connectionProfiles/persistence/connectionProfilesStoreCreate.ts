@@ -75,9 +75,16 @@ async function connectionProfilesRead(path: string): Promise<Result<ConnectionPr
   let content: string
   try {
     content = await readFile(path, "utf8")
+    await chmod(path, 0o600)
+    await chmod(dirname(path), 0o700)
   } catch (error) {
-    if (isFileMissing(error)) return resultCreate({})
-    return resultErrorCreate(op, "The connection profiles could not be read.")
+    if (!isFileMissing(error)) return resultErrorCreate(op, "The connection profiles could not be read.")
+    try {
+      await chmod(dirname(path), 0o700)
+    } catch (directoryError) {
+      if (!isFileMissing(directoryError)) return resultErrorCreate(op, "The connection profiles could not be read.")
+    }
+    return resultCreate({})
   }
 
   let decoded: unknown
@@ -109,6 +116,7 @@ async function connectionProfilesWrite(path: string, profiles: ConnectionProfile
   let temporaryPath: string | undefined
   try {
     await mkdir(dirname(path), { mode: 0o700, recursive: true })
+    await chmod(dirname(path), 0o700)
     temporaryPath = `${path}.${process.pid}.${randomUUID()}.tmp`
     await writeFile(temporaryPath, `${JSON.stringify(profiles, null, 2)}\n`, {
       encoding: "utf8",
