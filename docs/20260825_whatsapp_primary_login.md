@@ -38,7 +38,7 @@ Let users choose WhatsApp on the production login page, enter a verified phone n
 - [x] 6. Add and verify typed WAHA WebSocket message observation in `waha-client`.
 - [x] 7. Add an explicit environment-gated Authworks live integration test using only published package surfaces, deriving the authorized recipient from its WAHA session.
 - [x] 8. Add a WAHA sender-session allowlist with focused configuration and health-candidate tests.
-- [ ] 9. Deploy a `david-de`-only sender configuration, run the reproducible test with authorized `Mia` as recipient, verify authenticated or MFA continuation, and clean up the test account.
+- [x] 9. Deploy a `david-de`-only sender configuration, run the reproducible test with authorized `Mia` as recipient, verify authenticated or MFA continuation, and clean up the test account.
 
 ## Paths
 
