@@ -52,6 +52,7 @@ export const productionShellNavigationGroups = {
         { href: "/account/recovery-codes", icon: mdiLifebuoy, label: "shell.nav.recoveryCodes" },
         { href: "/account/identities", icon: mdiLinkVariant, label: "shell.nav.linkedIdentities" },
         { href: "/account/refresh-tokens", icon: mdiOpenid, label: "shell.nav.refreshTokens" },
+        { href: "/account/security-history", icon: mdiClipboardTextOutline, label: "shell.nav.securityHistory" },
       ],
     },
     {

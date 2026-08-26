@@ -71,7 +71,53 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   await page.goto("/demo/account/identities")
   await page.getByRole("button", { name: "Unlink" }).first().click()
   await expect(page.getByRole("heading", { name: "GitHub", exact: true })).toHaveCount(0)
+
+  await page.goto("/demo/account/security-history")
+  await expect(page.getByRole("heading", { name: "Security history", exact: true })).toBeVisible()
+  await expect(page.getByText("A session was created", { exact: true })).toBeVisible()
+  await page.getByRole("button", { name: "Load more security activity", exact: true }).click()
+  await expect(page.getByText("An impersonation session started", { exact: true })).toBeVisible()
   expect(apiRequests).toEqual([])
+})
+
+test("production security history uses the safe newest-first cursor contract", async ({ page }) => {
+  await productionAccountSessionBootstrap(page)
+  await page.route(`**/realms/${realmId}/me/security-history**`, (route) => {
+    const hasPageToken = new URL(route.request().url()).searchParams.has("pageToken")
+    return route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify(
+        hasPageToken
+          ? {
+              items: [
+                {
+                  category: "impersonation",
+                  displayCode: "impersonation.started",
+                  id: "history-2",
+                  occurredAt: 1_777_000_000_001,
+                },
+              ],
+            }
+          : {
+              items: [
+                {
+                  category: "sessions",
+                  displayCode: "session.created",
+                  id: "history-1",
+                  occurredAt: 1_777_000_000_002,
+                },
+              ],
+              nextPageToken: "history-cursor-1",
+            },
+      ),
+    })
+  })
+
+  await page.goto("/account/security-history")
+  await expect(page.getByText("A session was created", { exact: true })).toBeVisible()
+  await expect(page.getByText("session.created", { exact: true })).toHaveCount(0)
+  await page.getByRole("button", { name: "Load more security activity", exact: true }).click()
+  await expect(page.getByText("An impersonation session started", { exact: true })).toBeVisible()
 })
 
 test("production session revocation uses the real account contract and CSRF", async ({ page }) => {

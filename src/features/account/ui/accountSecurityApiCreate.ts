@@ -21,6 +21,7 @@ import { sessionApiClientCreate } from "../../sessions/client/sessionApiClientCr
 import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserRequest.js"
 import { sessionRevocationResponseSchema } from "../../sessions/public/sessionRevocationResponseSchema.js"
 import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
+import { accountApiClientCreate } from "../client/accountApiClientCreate.js"
 
 type AccountSecurityFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -33,6 +34,7 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
   const identities = externalIdentityApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const oidc = oidcApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const users = userApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
+  const account = accountApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch })
   const mutate = <T>(
     realmId: string,
     path: string,
@@ -119,6 +121,7 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
         { method: "POST" },
         oidcRefreshTokenRevokeResponseSchema,
       ),
+    securityHistoryList: account.securityHistoryList,
     sessionsList: sessions.sessionMeList,
     sessionRevoke: (realmId: string, sessionId: string) =>
       mutate(

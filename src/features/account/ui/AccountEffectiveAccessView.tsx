@@ -59,7 +59,10 @@ export function AccountEffectiveAccessView(props: {
                               {entry.project?.name ?? messageTranslate("account.access.organizationAccess")}
                             </h4>
                             <p class="mt-1 text-xs text-muted-foreground">
-                              {messageTranslate("account.access.effectiveSource", { source: entry.source })}
+                              {messageTranslate("account.access.effectiveSource", {
+                                source:
+                                  entry.grant === undefined ? entry.source : `${entry.source} · ${entry.grant.id}`,
+                              })}
                             </p>
                           </div>
                           <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">

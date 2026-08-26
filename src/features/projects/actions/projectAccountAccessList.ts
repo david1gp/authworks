@@ -1,10 +1,12 @@
 import { type Result } from "#result"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { authorizationRoleKeysResolve } from "../../authorization/actions/authorizationRoleKeysResolve.js"
 import { organizationAccountAccessActiveIdList } from "../../organizations/actions/organizationAccountAccessActiveIdList.js"
 import { projectGrantPublicViewCreate } from "../domain/projectGrantPublicViewCreate.js"
 import { projectPublicViewCreate } from "../domain/projectPublicViewCreate.js"
 import { projectRoleKeysDecode } from "../domain/projectRoleKeysDecode.js"
+import { projectRolePublicViewCreate } from "../domain/projectRolePublicViewCreate.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import type { ProjectAccountAccessListResponse } from "../public/projectAccountAccessListResponseSchema.js"
 
@@ -41,26 +43,27 @@ export function projectAccountAccessList(
       !activeOwnerOrganizationIds.has(project.organizationId)
     )
       continue
+    const grants = repository.projectGrantList(project.id)
+    if (!grants.success) return grants
+    const roles = repository.projectRoleList(project.id)
+    if (!roles.success) return roles
+    const roleDefinitions = roles.data
+      .filter((role) => role.realmId === options.realmId && role.projectId === project.id)
+      .map(projectRolePublicViewCreate)
+    const activeRoleKeys = new Set(roleDefinitions.map((role) => role.key))
     if (organizationIds.has(project.organizationId)) {
       const id = `owner:${project.id}:${project.organizationId}`
       if (!seen.has(id)) {
         seen.add(id)
         items.push({
           organizationId: project.organizationId,
+          permissions: [],
           project: projectPublicViewCreate(project),
+          roleDefinitions,
           roleKeys: [],
         })
       }
     }
-    const grants = repository.projectGrantList(project.id)
-    if (!grants.success) return grants
-    const roles = repository.projectRoleList(project.id)
-    if (!roles.success) return roles
-    const activeRoleKeys = new Set(
-      roles.data
-        .filter((role) => role.realmId === options.realmId && role.projectId === project.id)
-        .map((role) => role.key),
-    )
     for (const grant of grants.data) {
       if (
         grant.realmId !== options.realmId ||
@@ -73,6 +76,8 @@ export function projectAccountAccessList(
       const roleKeys = projectRoleKeysDecode(grant.roleKeys)
       if (!roleKeys.success) return roleKeys
       const activeGrantRoleKeys = roleKeys.data.filter((roleKey) => activeRoleKeys.has(roleKey))
+      const permissions = authorizationRoleKeysResolve({ roles: activeGrantRoleKeys })
+      if (!permissions.success) return permissions
       const grantView = projectGrantPublicViewCreate(grant)
       if (!grantView.success) return grantView
       const id = `grant:${project.id}:${grant.grantedOrganizationId}`
@@ -81,7 +86,9 @@ export function projectAccountAccessList(
       items.push({
         grant: { ...grantView.data, roleKeys: activeGrantRoleKeys },
         organizationId: grant.grantedOrganizationId,
+        permissions: permissions.data.permissions,
         project: projectPublicViewCreate(project),
+        roleDefinitions,
         roleKeys: activeGrantRoleKeys,
       })
     }

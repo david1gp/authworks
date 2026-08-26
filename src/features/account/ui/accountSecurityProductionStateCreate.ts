@@ -2,6 +2,7 @@ import { createEffect, on, onCleanup } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import type { AccountSecurityHistoryItem } from "../public/accountSecurityHistoryItemSchema.js"
 import type { ExternalIdentityCallbackResponse } from "../../externalIdentities/public/externalIdentityCallbackResponseSchema.js"
 import { externalIdentityCallbackResponseSchema } from "../../externalIdentities/public/externalIdentityCallbackResponseSchema.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
@@ -34,6 +35,8 @@ export function accountSecurityProductionStateCreate(options: {
   const pendingId = createSignalObject<string | undefined>(undefined)
   const sessions = createSignalObject<SessionMe[]>([])
   const refreshTokens = createSignalObject<OidcRefreshTokenMetadata[]>([])
+  const securityHistory = createSignalObject<AccountSecurityHistoryItem[]>([])
+  const securityHistoryNextPageToken = createSignalObject<string | undefined>(undefined)
   const passkeys = createSignalObject<PasskeyCredential[]>([])
   const methods = createSignalObject<UserAuthenticationMethods>(emptyMethods)
   const identities = createSignalObject<ExternalIdentity[]>([])
@@ -67,6 +70,12 @@ export function accountSecurityProductionStateCreate(options: {
       const result = await api.refreshTokensList(realmId)
       if (!result.success) return failed(result.errorMessage)
       refreshTokens.set(result.data.items)
+    }
+    if (screen === "security-history") {
+      const result = await api.securityHistoryList(realmId, { pageSize: 20 })
+      if (!result.success) return failed(result.errorMessage)
+      securityHistory.set(result.data.items)
+      securityHistoryNextPageToken.set(result.data.nextPageToken)
     }
     if (screen === "passkeys") {
       const result = await api.passkeyList(realmId)
@@ -251,6 +260,18 @@ export function accountSecurityProductionStateCreate(options: {
       if (!window.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm"))) return
       void mutate("refresh-tokens:all", () => api.refreshTokensRevokeAll(options.realmId()))
     },
+    securityHistory: securityHistory.get,
+    securityHistoryLoadMore: async () => {
+      const pageToken = securityHistoryNextPageToken.get()
+      if (pageToken === undefined || pendingId.get() !== undefined) return
+      pendingId.set("security-history:next")
+      const result = await api.securityHistoryList(options.realmId(), { pageSize: 20, pageToken })
+      pendingId.set(undefined)
+      if (!result.success) return failed(result.errorMessage)
+      securityHistory.set([...securityHistory.get(), ...result.data.items])
+      securityHistoryNextPageToken.set(result.data.nextPageToken)
+    },
+    securityHistoryNextPageToken: securityHistoryNextPageToken.get,
     screen: options.screen,
     sessionRevoke: (sessionId: string) => {
       if (!window.confirm(messageTranslate("account.sessions.revokeConfirm"))) return

@@ -2,19 +2,20 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { authorizationRoleKeysResolve } from "../../src/features/authorization/actions/authorizationRoleKeysResolve.js"
 import { accountEffectiveAccessList } from "../../src/features/account/actions/accountEffectiveAccessList.js"
 import { accountApiClientCreate } from "../../src/features/account/client/accountApiClientCreate.js"
 import { accountServerAppCreate } from "../../src/features/account/server/accountServerAppCreate.js"
+import { authorizationRoleKeysResolve } from "../../src/features/authorization/actions/authorizationRoleKeysResolve.js"
+import { impersonationStart } from "../../src/features/impersonation/actions/impersonationStart.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
-import { organizationLifecycleSet } from "../../src/features/organizations/actions/organizationLifecycleSet.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
+import { projectAccountAccessList } from "../../src/features/projects/actions/projectAccountAccessList.js"
 import { projectCreate } from "../../src/features/projects/actions/projectCreate.js"
 import { projectGrantCreate } from "../../src/features/projects/actions/projectGrantCreate.js"
-import { projectRoleCreate } from "../../src/features/projects/actions/projectRoleCreate.js"
-import { projectRepositoryCreate } from "../../src/features/projects/persistence/projectRepositoryCreate.js"
 import { projectLifecycleSet } from "../../src/features/projects/actions/projectLifecycleSet.js"
-import { impersonationStart } from "../../src/features/impersonation/actions/impersonationStart.js"
+import { projectRoleCreate } from "../../src/features/projects/actions/projectRoleCreate.js"
+import { projectRoleDelete } from "../../src/features/projects/actions/projectRoleDelete.js"
+import { projectRepositoryCreate } from "../../src/features/projects/persistence/projectRepositoryCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
@@ -90,7 +91,7 @@ test("effective account access is active, deduplicated, resolved, stale-role saf
     const recipientMembership = organizationMembershipCreate({
       context: realmTenantContextCreate(realm.id, recipient.id),
       database,
-      input: { roles: ["member"], userId: target.id },
+      input: { roles: ["guest"], userId: target.id },
       organizationId: recipientOrganization.data.organization.id,
       realmId: realm.id,
     })
@@ -111,24 +112,55 @@ test("effective account access is active, deduplicated, resolved, stale-role saf
     const role = projectRoleCreate({
       context: realmTenantContextCreate(realm.id, target.id),
       database,
-      input: { displayName: "Reader", key: "reader" },
+      input: { displayName: "Administrator", key: "admin" },
       projectId: project.data.project.id,
       realmId: realm.id,
     })
     expect(role.success).toBe(true)
+    if (!role.success) return
+    const staleRole = projectRoleCreate({
+      context: realmTenantContextCreate(realm.id, target.id),
+      database,
+      input: { displayName: "Realm administrator", key: "realm_admin" },
+      projectId: project.data.project.id,
+      realmId: realm.id,
+    })
+    expect(staleRole.success).toBe(true)
+    if (!staleRole.success) return
+    const deletedStaleRole = projectRoleDelete({
+      context: realmTenantContextCreate(realm.id, target.id),
+      database,
+      projectId: project.data.project.id,
+      realmId: realm.id,
+      roleId: staleRole.data.role.id,
+    })
+    expect(deletedStaleRole).toMatchObject({ data: { deleted: true }, success: true })
     const grant = projectGrantCreate({
       context: realmTenantContextCreate(realm.id, target.id),
       database,
-      input: { grantedOrganizationId: recipientOrganization.data.organization.id, roleKeys: ["reader"] },
+      input: { grantedOrganizationId: recipientOrganization.data.organization.id, roleKeys: ["admin"] },
       projectId: project.data.project.id,
       realmId: realm.id,
     })
     expect(grant.success).toBe(true)
     if (!grant.success) return
     const corrupted = projectRepositoryCreate(database.db).projectGrantUpdate(grant.data.grant.id, {
-      roleKeys: JSON.stringify(["reader", "stale-role"]),
+      roleKeys: JSON.stringify(["admin", "realm_admin"]),
     })
     expect(corrupted.success).toBe(true)
+
+    const projectAccess = projectAccountAccessList({
+      database,
+      organizationIds: [recipientOrganization.data.organization.id],
+      realmId: realm.id,
+    })
+    expect(projectAccess.success).toBe(true)
+    if (!projectAccess.success) return
+    const grantAccess = projectAccess.data.items.find((item) => item.grant?.id === grant.data.grant.id)
+    expect(grantAccess?.roleDefinitions.map((role) => role.key)).toEqual(["admin"])
+    expect(grantAccess?.roleKeys).toEqual(["admin"])
+    expect(grantAccess?.permissions).toEqual(expect.arrayContaining(["project.write"]))
+    expect(grantAccess?.permissions).not.toContain("realm.read")
 
     const firstPage = accountEffectiveAccessList({
       actor: {
@@ -150,7 +182,7 @@ test("effective account access is active, deduplicated, resolved, stale-role saf
     expect(firstPage.data.items).toHaveLength(2)
     expect(firstPage.data.nextPageToken).toBeDefined()
     expect(firstPage.data.items.every((item) => item.organization.organization.realmId === realm.id)).toBe(true)
-    expect(firstPage.data.items.flatMap((item) => item.roleKeys)).not.toContain("stale-role")
+    expect(firstPage.data.items.flatMap((item) => item.roleKeys)).not.toContain("realm_admin")
     expect(firstPage.data.items.some((item) => item.source === "project-grant")).toBe(false)
 
     const secondPage = accountEffectiveAccessList({
@@ -173,9 +205,10 @@ test("effective account access is active, deduplicated, resolved, stale-role saf
     const grantEntry = [...firstPage.data.items, ...secondPage.data.items].find(
       (item) => item.source === "project-grant",
     )
-    expect(grantEntry?.roleKeys).toEqual(expect.arrayContaining(["member", "reader"]))
-    expect(grantEntry?.roleKeys).not.toContain("stale-role")
-    expect(grantEntry?.permissions).toContain("project.read")
+    expect(grantEntry?.roleKeys).toEqual(expect.arrayContaining(["admin", "guest"]))
+    expect(grantEntry?.roleKeys).not.toContain("realm_admin")
+    expect(grantEntry?.permissions).toContain("project.write")
+    expect(grantEntry?.permissions).not.toContain("realm.read")
 
     expect(
       accountEffectiveAccessList({

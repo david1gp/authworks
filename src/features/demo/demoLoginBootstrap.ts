@@ -40,6 +40,10 @@ export const demoLoginBootstrap = {
     allowPasskey: true,
     allowRegistration: true,
     providerIds: ["provider-google"],
+    requiredMfa: false,
+    allowedFactors: ["totp", "email_otp", "passkey"],
+    preferredFactorOrder: ["totp", "email_otp", "passkey"],
+    minimumStepUpAssurance: "authenticated",
   },
   providers: [
     {

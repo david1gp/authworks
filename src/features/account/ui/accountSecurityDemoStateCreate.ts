@@ -10,9 +10,52 @@ import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import { accountDemoUserFixture } from "./accountDemoUserFixture.js"
 import { accountRecoveryCodeAcknowledgementStore } from "./accountRecoveryCodeAcknowledgementStore.js"
+import type { AccountSecurityHistoryItem } from "../public/accountSecurityHistoryItemSchema.js"
 import type { AccountSecurityScreen } from "./accountSecurityScreenSchema.js"
 
 const now = Date.UTC(2026, 7, 21, 9, 30)
+const securityHistoryFirstPage: AccountSecurityHistoryItem[] = [
+  { category: "sessions", displayCode: "session.created", id: "history-session-created", occurredAt: now - 60_000 },
+  {
+    category: "passwords",
+    displayCode: "password.login_succeeded",
+    id: "history-password-login",
+    occurredAt: now - 120_000,
+  },
+  { category: "mfa", displayCode: "mfa.challenge.completed", id: "history-mfa-complete", occurredAt: now - 180_000 },
+  {
+    category: "passkeys",
+    displayCode: "passkey.authentication_completed",
+    id: "history-passkey-authentication",
+    occurredAt: now - 240_000,
+  },
+  {
+    category: "linked_identities",
+    displayCode: "linked_identity.linked",
+    id: "history-identity-linked",
+    occurredAt: now - 300_000,
+  },
+]
+const securityHistorySecondPage: AccountSecurityHistoryItem[] = [
+  {
+    category: "email_changes",
+    displayCode: "email_change.verified",
+    id: "history-email-verified",
+    occurredAt: now - 360_000,
+  },
+  {
+    category: "refresh_tokens",
+    displayCode: "refresh_token.family_revoked",
+    id: "history-refresh-revoked",
+    occurredAt: now - 420_000,
+  },
+  {
+    category: "impersonation",
+    displayCode: "impersonation.started",
+    id: "history-impersonation-started",
+    occurredAt: now - 480_000,
+  },
+]
 
 const emptyDemoMethods: UserAuthenticationMethods = {
   emailOtp: { available: false },
@@ -183,6 +226,8 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       version: 1,
     },
   ])
+  const securityHistory = createSignalObject([...securityHistoryFirstPage])
+  const securityHistoryNextPageToken = createSignalObject<string | undefined>("demo-security-history-page-2")
   const demoRecoveryCodes = ["AX7K-2QPL", "B9MN-4TRS", "C3VW-8XYZ", "D6EF-1GHJ"]
   // The marker identifies the deterministic issuance, never any code material.
   const acknowledgementMarker = () =>
@@ -333,6 +378,13 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
           .map((token) => (token.status === "active" ? { ...token, revokedAt, status: "revoked" as const } : token)),
       )
     },
+    securityHistory: () => (selected() === "empty" ? [] : securityHistory.get()),
+    securityHistoryLoadMore: () => {
+      if (securityHistoryNextPageToken.get() === undefined) return
+      securityHistory.set([...securityHistory.get(), ...securityHistorySecondPage])
+      securityHistoryNextPageToken.set(undefined)
+    },
+    securityHistoryNextPageToken: () => (selected() === "empty" ? undefined : securityHistoryNextPageToken.get()),
     screen,
     sessionRevoke: (sessionId: string) => {
       if (!window.confirm(messageTranslate("account.sessions.revokeConfirm"))) return

@@ -145,6 +145,12 @@ export const productionRouteContractMap = {
         title: "shell.nav.refreshTokens",
       },
       {
+        contracts: ["account.security-history"],
+        key: "security-history",
+        path: "/account/security-history",
+        title: "shell.nav.securityHistory",
+      },
+      {
         contracts: ["oidc.consents.list", "oidc.consents.revoke"],
         key: "consents",
         path: "/account/consents",

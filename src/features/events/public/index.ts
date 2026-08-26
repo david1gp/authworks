@@ -1,2 +1,6 @@
 export * from "./eventListResponseSchema.js"
 export * from "./eventSchema.js"
+export * from "./eventSecurityHistoryCategorySchema.js"
+export * from "./eventSecurityHistoryDisplayCodeSchema.js"
+export * from "./eventSecurityHistoryItemSchema.js"
+export * from "./eventSecurityHistoryListResponseSchema.js"

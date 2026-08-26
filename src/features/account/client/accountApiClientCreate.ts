@@ -1,9 +1,12 @@
 import { type Result } from "#result"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearchParams.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { AccountEffectiveAccessListResponse } from "../public/accountEffectiveAccessListResponseSchema.js"
 import { accountEffectiveAccessListResponseSchema } from "../public/accountEffectiveAccessListResponseSchema.js"
+import type { AccountSecurityHistoryListResponse } from "../public/accountSecurityHistoryListResponseSchema.js"
+import { accountSecurityHistoryListResponseSchema } from "../public/accountSecurityHistoryListResponseSchema.js"
 
 type AccountApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -24,6 +27,17 @@ export function accountApiClientCreate(options: AccountApiClientCreateOptions) {
         op: "accountApiClientEffectiveAccessList",
         path,
         schema: accountEffectiveAccessListResponseSchema,
+        token: options.token,
+      })
+    },
+    securityHistoryList(realmId: string, query?: ListQuery): Promise<Result<AccountSecurityHistoryListResponse>> {
+      return httpApiClientRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "GET" },
+        op: "accountApiClientSecurityHistoryList",
+        path: `/realms/${encodeURIComponent(realmId)}/me/security-history${listQueryToSearchParams(query)}`,
+        schema: accountSecurityHistoryListResponseSchema,
         token: options.token,
       })
     },

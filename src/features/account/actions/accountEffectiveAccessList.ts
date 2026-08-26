@@ -76,7 +76,10 @@ export function accountEffectiveAccessList(
     if (organization === undefined) continue
     const resolved = authorizationRoleKeysResolve({ roles: organization.membership.roles })
     if (!resolved.success) return resolved
-    if (!resolved.data.permissions.includes(authorizationPermissionDefinitions.projectRead)) continue
+    const permissions = [
+      ...new Set([...resolved.data.permissions, ...access.permissions]),
+    ].sort() as AccountEffectiveAccessEntry["permissions"]
+    if (!permissions.includes(authorizationPermissionDefinitions.projectRead)) continue
     const roleKeys = [...new Set([...resolved.data.roleKeys, ...access.roleKeys])].sort().slice(0, 200)
     add({
       ...(access.grant === undefined ? {} : { grant: access.grant }),
@@ -85,7 +88,7 @@ export function accountEffectiveAccessList(
           ? `project:${access.project.id}:organization:${access.organizationId}`
           : `project:${access.project.id}:grant:${access.organizationId}`,
       organization,
-      permissions: resolved.data.permissions,
+      permissions,
       project: access.project,
       roleKeys,
       source: access.grant === undefined ? "project-owner" : "project-grant",

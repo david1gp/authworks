@@ -8,6 +8,7 @@ import type { AuthorizationActorContext } from "../../authorization/public/autho
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { accountEffectiveAccessList } from "../actions/accountEffectiveAccessList.js"
+import { accountSecurityHistoryList } from "../actions/accountSecurityHistoryList.js"
 
 type AccountServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -38,6 +39,22 @@ export function accountServerAppCreate(options: AccountServerAppCreateOptions) {
         query: query.data,
         realmId: context.req.param("realmId"),
         subjectId: context.get("session").subjectId,
+      }),
+    )
+  })
+  app.get("/realms/:realmId/me/security-history", protectedMiddleware, (context) => {
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return accountErrorResponseCreate(context, query)
+    const session = context.get("session")
+    return accountResultResponseCreate(
+      context,
+      accountSecurityHistoryList({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        query: query.data,
+        realmId: context.req.param("realmId"),
+        subjectId: session.subjectId,
+        subjectType: session.subjectType,
       }),
     )
   })

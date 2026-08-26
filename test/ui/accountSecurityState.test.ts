@@ -220,6 +220,48 @@ describe("account security external identity state", () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(state.refreshTokens()[0]?.status).toBe("revoked")
   })
+
+  test("loads newest-first security history pages without accepting event internals", async () => {
+    const browserWindow = {
+      addEventListener: () => undefined,
+      location: { origin: "https://auth.example.test" },
+      removeEventListener: () => undefined,
+    } as unknown as Window
+    Object.defineProperty(globalThis, "window", { configurable: true, value: browserWindow })
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = new URL(String(input))
+      if (url.searchParams.has("pageToken"))
+        return jsonResponse({
+          items: [
+            {
+              category: "impersonation",
+              displayCode: "impersonation.started",
+              id: "history-2",
+              occurredAt: 1,
+            },
+          ],
+        })
+      return jsonResponse({
+        items: [{ category: "sessions", displayCode: "session.created", id: "history-1", occurredAt: 2 }],
+        nextPageToken: "cursor-1",
+      })
+    }) as typeof fetch
+
+    const state = accountSecurityProductionStateCreate({
+      apiBaseUrl: "https://api.example.test",
+      realmId: () => "realm-one",
+      screen: () => "security-history",
+    })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(state.securityHistory()).toEqual([
+      { category: "sessions", displayCode: "session.created", id: "history-1", occurredAt: 2 },
+    ])
+    expect(state.securityHistoryNextPageToken()).toBe("cursor-1")
+    expect(state.securityHistory()[0]).not.toHaveProperty("actorId")
+    await state.securityHistoryLoadMore()
+    expect(state.securityHistory().map((item) => item.id)).toEqual(["history-1", "history-2"])
+    expect(state.securityHistoryNextPageToken()).toBeUndefined()
+  })
 })
 
 function jsonResponse(body: unknown) {

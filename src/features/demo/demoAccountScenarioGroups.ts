@@ -127,6 +127,14 @@ export const demoAccountScenarioGroups: DemoFixtureScenarioGroup[] = [
         availability: "available",
         states: [...collectionStates],
       },
+      {
+        key: "security-history",
+        title: "Security history",
+        description: "Review recent safe security activity for this account.",
+        path: "/demo/account/security-history",
+        availability: "available",
+        states: [...collectionStates],
+      },
     ],
   },
   {
