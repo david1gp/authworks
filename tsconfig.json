@@ -4,6 +4,11 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "paths": {
+      "@adaptive-ds/authworks/organizations": ["./src/outputs/library/organizations.ts"],
+      "@adaptive-ds/authworks/passwords": ["./src/outputs/library/passwords.ts"],
+      "@adaptive-ds/authworks/realms": ["./src/outputs/library/realms.ts"],
+      "@adaptive-ds/authworks/users": ["./src/outputs/library/users.ts"],
+      "@adaptive-ds/authworks/whatsappOtp": ["./src/outputs/library/whatsappOtp.ts"],
       "@adaptive-ds/solid-ui/static/badge/Badge": ["./ui/static/badge/Badge.tsx"],
       "@adaptive-ds/solid-ui/static/badge/badgeCva": ["./ui/static/badge/badgeCva.tsx"],
       "@adaptive-ds/solid-ui/utils/createSignalObject": ["./ui/utils/createSignalObject.ts"],

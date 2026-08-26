@@ -9,7 +9,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import type { RealmTenantContext } from "../../realms/server/index.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { userEmailChangeRateLimitConsume } from "../domain/userEmailChangeRateLimitConsume.js"
 import { userEmailChangeRecentAuthenticationValidate } from "../domain/userEmailChangeRecentAuthenticationValidate.js"

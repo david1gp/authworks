@@ -2,7 +2,7 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import { realmSystemContextCreate } from "../../realms/server/index.js"
 import { userGet } from "../actions/userGet.js"
 
 type UserAccountSummaryResolveOptions = {

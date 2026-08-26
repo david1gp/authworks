@@ -1,5 +1,5 @@
 import * as v from "valibot"
-import { realmResourceIdSchema } from "../../realms/public/realmResourceIdSchema.js"
+import { realmResourceIdSchema } from "../../realms/public/index.js"
 import { userPhoneNumberSchema } from "./userPhoneNumberSchema.js"
 import { userProfileSchema } from "./userProfileSchema.js"
 import { userRegistrationVerificationMethodSchema } from "./userRegistrationVerificationMethodSchema.js"

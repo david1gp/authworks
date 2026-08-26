@@ -1,7 +1,7 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import type { RealmTenantContext } from "../../realms/server/index.js"
 
 export function userEmailAddressContextValidate(
   context: RealmTenantContext,

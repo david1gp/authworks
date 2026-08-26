@@ -3,7 +3,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
-import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
+import { realmAdministratorContextAuthorize } from "../../realms/server/index.js"
 
 type UserRealmReadCapabilityResolveOptions = {
   readonly actor: AuthorizationActorContext

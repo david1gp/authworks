@@ -6,7 +6,7 @@ import { mfaRepositoryCreate } from "../../mfa/persistence/mfaRepositoryCreate.j
 import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { passkeyCredentialViewCreate } from "../../passkeys/domain/passkeyCredentialViewCreate.js"
 import { passkeyRepositoryCreate } from "../../passkeys/persistence/passkeyRepositoryCreate.js"
-import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import type { RealmTenantContext } from "../../realms/server/index.js"
 import { userRepositoryCreate } from "../persistence/userRepositoryCreate.js"
 import type { UserAuthenticationMethods } from "../public/userAuthenticationMethodsSchema.js"
 
