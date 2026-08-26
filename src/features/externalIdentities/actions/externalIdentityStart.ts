@@ -9,7 +9,9 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginContextResolve } from "../../organizations/server/organizationLoginContextResolve.js"
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
+import { oidcInteractionOrganizationContextSet } from "../../oidc/server/oidcInteractionOrganizationContextSet.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmTenantContextCreate } from "../../realms/domain/realmTenantContextCreate.js"
 import { externalIdentityOpaqueSecretCreate } from "../domain/externalIdentityOpaqueSecretCreate.js"
@@ -69,15 +71,33 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
     if (organization === undefined || organization.status !== "active")
       return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
   }
+  const loginContext = organizationLoginContextResolve({
+    executor: options.database.db,
+    organizationId: provider.data.organizationId ?? parsed.output.organizationId,
+    realmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
+  const organizationId = loginContext.data.organizationId
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
     realmId: options.realmId,
     method: "external_identity",
-    organizationId: parsed.output.organizationId,
+    organizationId,
     providerId: options.providerId,
   })
   if (!policy.success)
     return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
+  if (organizationId !== undefined && parsed.output.interaction !== undefined) {
+    const interaction = oidcInteractionOrganizationContextSet({
+      database: options.database,
+      handle: parsed.output.interaction,
+      organizationId,
+      realmId: options.realmId,
+    })
+    if (!interaction.success)
+      return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
+  }
   const port = options.providerPorts[provider.data.type as keyof ExternalIdentityProviderPorts]
   if (port === undefined)
     return resultErrorCreate(op, "The external identity provider is unavailable.", "external-identities.read-failed")
@@ -134,7 +154,7 @@ export function externalIdentityStart(options: ExternalIdentityStartOptions): Re
       intent: "sign_in",
       nonce,
       nonceHash,
-      organizationId: provider.data?.organizationId ?? null,
+      organizationId: organizationId ?? null,
       pkceVerifier,
       providerId: options.providerId,
       redirectUri: provider.data?.redirectUri ?? "",

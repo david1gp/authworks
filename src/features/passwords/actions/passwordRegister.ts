@@ -8,8 +8,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
@@ -233,7 +234,7 @@ type PasswordRegisterTransactionOptions = {
   readonly code?: string
   readonly context: RealmSystemContext | RealmTenantContext
   readonly correlationId: string
-  readonly database: StorageExecutor
+  readonly database: StorageTransaction
   readonly email: string
   readonly hash: string
   readonly identityHash?: string
@@ -397,7 +398,7 @@ function passwordRegisterTransaction(options: PasswordRegisterTransactionOptions
   const credentialPayload = v.safeParse(passwordCredentialChangedEventPayloadSchema, { reason: "registration" })
   if (!credentialPayload.success)
     return resultErrorCreate(op, "The password event payload is invalid.", "passwords.event-invalid")
-  const credentialEvent = storageEventAppend(
+  const credentialEvent = eventSecurityEventAppend(
     options.database,
     {
       actorId: options.context.actorId,
@@ -411,6 +412,7 @@ function passwordRegisterTransaction(options: PasswordRegisterTransactionOptions
       metadata: { auditSafe: true, source: "passwords" },
       occurredAt: options.now,
       payload: credentialPayload.output,
+      userSubjectId: options.userId,
     },
     options.runtime,
   )

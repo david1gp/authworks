@@ -5,18 +5,24 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import { authorizationPermissionSchema } from "../../authorization/public/authorizationPermissionSchema.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
+import { eventSecurityUnindexedEventAppend } from "../../events/server/eventSecurityUnindexedEventAppend.js"
+import { mfaPolicyFactorSchema } from "../../mfa/public/mfaPolicyFactorSchema.js"
+import { mfaLoginAssuranceClaim } from "../../mfa/server/mfaLoginAssuranceClaim.js"
 import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
+import { organizationLoginContextResolve } from "../../organizations/server/organizationLoginContextResolve.js"
+import { organizationMembershipContextValidate } from "../../organizations/server/organizationMembershipContextValidate.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
 import { sessionPublicViewCreate } from "../domain/sessionPublicViewCreate.js"
 import { sessionCreatedEventPayloadSchema } from "../events/sessionCreatedEventPayloadSchema.js"
 import { sessionEventTypes } from "../events/sessionEventTypes.js"
 import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
+import type { SessionAssuranceRequiredDetails } from "../public/sessionAssuranceRequiredDetailsSchema.js"
 import type { SessionAssurance } from "../public/sessionAssuranceSchema.js"
 import { sessionAssuranceSchema } from "../public/sessionAssuranceSchema.js"
 import type { SessionAuthenticationMethod } from "../public/sessionAuthenticationMethodSchema.js"
@@ -35,7 +41,7 @@ type SessionIssueOptions = {
   readonly correlationId?: string
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly database?: StorageDatabase
-  readonly executor?: StorageExecutor
+  readonly executor?: StorageTransaction
   readonly expiresAt?: number
   readonly realmId: string
   readonly organizationId?: string
@@ -43,6 +49,7 @@ type SessionIssueOptions = {
   readonly impersonationPermissions?: readonly AuthorizationPermission[]
   readonly impersonationReason?: string
   readonly impersonatorId?: string
+  readonly mfaChallengeId?: string
   readonly mfaMethod?: SessionMfaMethod
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly subjectId?: string
@@ -65,6 +72,22 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
   if (!device.success) return resultErrorCreate(op, "The session device metadata is invalid.", "sessions.invalid")
   const mfaMethod = v.safeParse(v.optional(sessionMfaMethodSchema), options.mfaMethod)
   if (!mfaMethod.success) return resultErrorCreate(op, "The session MFA method is invalid.", "sessions.invalid")
+  if (
+    assurance.output === "multi_factor" &&
+    mfaMethod.output === undefined &&
+    authenticationMethod.output !== "impersonation"
+  )
+    return resultErrorCreate(op, "A distinct MFA factor is required for multi-factor assurance.", "sessions.invalid")
+  if (assurance.output !== "multi_factor" && mfaMethod.output !== undefined)
+    return resultErrorCreate(op, "The session MFA method requires multi-factor assurance.", "sessions.invalid")
+  if (assurance.output === "multi_factor" && mfaMethod.output === authenticationMethod.output)
+    return resultErrorCreate(op, "The MFA factor must be distinct from the primary method.", "sessions.invalid")
+  if (
+    assurance.output === "multi_factor" &&
+    options.mfaChallengeId === undefined &&
+    authenticationMethod.output === "passkey"
+  )
+    return resultErrorCreate(op, "A validated distinct MFA challenge is required.", "sessions.invalid")
   const subjectType = v.safeParse(sessionSubjectTypeSchema, options.subjectType ?? "user")
   if (!subjectType.success) return resultErrorCreate(op, "The session subject is invalid.", "sessions.invalid")
   const subjectId = options.subjectId ?? options.userId ?? ""
@@ -106,7 +129,7 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
   if (!Number.isSafeInteger(commandIndex) || commandIndex < 0)
     return resultErrorCreate(op, "The session command index is invalid.", "sessions.invalid")
 
-  const executor = options.executor ?? options.database?.db
+  const executor = options.executor
   if (executor === undefined) return resultErrorCreate(op, "Session storage is required.", "sessions.invalid")
   const runtime = options.runtime ?? options.database?.runtime ?? runtimeCreate()
   const now = runtime.now()
@@ -114,15 +137,73 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     return resultErrorCreate(op, "The session timestamp is invalid.", "sessions.invalid-timestamp")
   if (options.organizationId !== undefined && options.database === undefined)
     return resultErrorCreate(op, "Session policy storage is required.", "sessions.invalid")
+  const loginContext = organizationLoginContextResolve({
+    executor,
+    organizationId: options.organizationId,
+    realmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, "The session organization context is invalid.", "sessions.invalid")
+  if (subjectType.output === "bootstrap_admin" && loginContext.data.organizationId !== undefined)
+    return resultErrorCreate(op, "The session organization context is invalid.", "sessions.invalid")
+  const organizationId = loginContext.data.organizationId
+  if (
+    subjectType.output === "user" &&
+    organizationId !== undefined &&
+    authenticationMethod.output !== "external_identity"
+  ) {
+    const membership = organizationMembershipContextValidate({
+      executor,
+      organizationId,
+      realmId: options.realmId,
+      userId: subjectId,
+    })
+    if (!membership.success)
+      return resultErrorCreate(op, "The session organization context is invalid.", "sessions.unauthorized")
+  }
   let sessionLifetimeMs = sessionDefaultLifetimeMs
   if (options.database !== undefined) {
     const policy = organizationLoginPolicyResolve({
       database: options.database,
       executor,
-      organizationId: options.organizationId,
+      organizationId,
       realmId: options.realmId,
     })
     if (!policy.success) return resultErrorCreate(op, "The session policy is invalid.", "sessions.invalid")
+    const requiredAssurance = policy.data.requiredMfa ? "multi_factor" : policy.data.minimumStepUpAssurance
+    if (
+      subjectType.output === "user" &&
+      sessionAssuranceRankGet(assurance.output) < sessionAssuranceRankGet(requiredAssurance)
+    ) {
+      const details: SessionAssuranceRequiredDetails = {
+        action: "step_up",
+        organizationId: organizationId ?? null,
+        requiredAssurance,
+      }
+      return resultErrorCreate(
+        op,
+        "Stronger authentication is required for this organization session.",
+        "sessions.assurance-required",
+        details,
+      )
+    }
+    if (
+      assurance.output === "multi_factor" &&
+      options.mfaChallengeId === undefined &&
+      organizationId !== undefined &&
+      subjectType.output === "user" &&
+      authenticationMethod.output !== "impersonation"
+    )
+      return resultErrorCreate(op, "A validated distinct MFA challenge is required.", "sessions.invalid")
+    if (
+      assurance.output === "multi_factor" &&
+      authenticationMethod.output !== "impersonation" &&
+      mfaMethod.output !== "recovery_code"
+    ) {
+      const factor = v.safeParse(mfaPolicyFactorSchema, mfaMethod.output)
+      if (!factor.success || !policy.data.allowedFactors.includes(factor.output))
+        return resultErrorCreate(op, "The session MFA factor is not permitted by policy.", "sessions.forbidden")
+    }
     sessionLifetimeMs = (policy.data.sessionLifetimeSeconds ?? sessionDefaultLifetimeMs / 1_000) * 1_000
   }
   const expiresAt = options.expiresAt ?? now + sessionLifetimeMs
@@ -143,6 +224,7 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     deviceFingerprint: deviceData.fingerprint ?? null,
     expiresAt,
     id: sessionId,
+    organizationId: organizationId ?? null,
     realmId: options.realmId,
     impersonationOrganizationId: options.impersonationOrganizationId ?? null,
     impersonationPermissions:
@@ -162,6 +244,23 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     version: 1,
   })
   if (!created.success) return created
+  if (options.mfaChallengeId !== undefined) {
+    if (options.database === undefined || mfaMethod.output === undefined)
+      return resultErrorCreate(op, "The session MFA proof is invalid.", "sessions.invalid")
+    const claim = mfaLoginAssuranceClaim({
+      challengeId: options.mfaChallengeId,
+      database: options.database,
+      executor,
+      factor: mfaMethod.output,
+      organizationId,
+      primaryAuthenticationMethod: authenticationMethod.output,
+      realmId: options.realmId,
+      sessionId,
+      userId: subjectId,
+      now,
+    })
+    if (!claim.success) return resultErrorCreate(op, "The session MFA proof is invalid.", "sessions.invalid")
+  }
   const payload = v.safeParse(sessionCreatedEventPayloadSchema, {
     assurance: assurance.output,
     authenticationMethod: authenticationMethod.output,
@@ -179,23 +278,33 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
     ...(subjectType.output === "user" ? { userId: subjectId } : {}),
   })
   if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.", "sessions.event-invalid")
-  const event = storageEventAppend(
-    executor,
-    {
-      actorId: options.actorId,
-      aggregateId: sessionId,
-      aggregateType: "session",
-      aggregateVersion: 1,
-      commandIndex,
-      correlationId,
-      eventType: sessionEventTypes.created,
-      realmId: options.realmId,
-      metadata: { auditSafe: true, source: "sessions" },
-      occurredAt: now,
-      payload: payload.output,
-    },
-    runtime,
-  )
+  const eventInput = {
+    actorId: options.actorId,
+    aggregateId: sessionId,
+    aggregateType: "session" as const,
+    aggregateVersion: 1,
+    commandIndex,
+    correlationId,
+    eventType: sessionEventTypes.created,
+    realmId: options.realmId,
+    metadata: { auditSafe: true, source: "sessions" },
+    occurredAt: now,
+    payload: payload.output,
+  }
+  const event =
+    subjectType.output === "user"
+      ? eventSecurityEventAppend(executor, { ...eventInput, userSubjectId: subjectId }, runtime)
+      : eventSecurityUnindexedEventAppend(
+          executor,
+          { ...eventInput, unindexedReason: "bootstrap_admin_session" },
+          runtime,
+        )
   if (!event.success) return event
   return resultCreate({ session: sessionPublicViewCreate(created.data, true), token })
+}
+
+function sessionAssuranceRankGet(value: SessionAssurance): number {
+  if (value === "multi_factor") return 2
+  if (value === "authenticated") return 1
+  return 0
 }

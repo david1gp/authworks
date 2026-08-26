@@ -54,6 +54,19 @@ export function mfaRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate("mfaChallengeGet", "The MFA challenge could not be read.", "mfa.read-failed")
       }
     },
+    mfaChallengeGet(realmId: string, id: string): Result<MfaChallengeRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(mfaChallengeTable)
+            .where(and(eq(mfaChallengeTable.realmId, realmId), eq(mfaChallengeTable.id, id)))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("mfaChallengeGet", "The MFA challenge could not be read.", "mfa.read-failed")
+      }
+    },
     mfaChallengeUpdate(
       realmId: string,
       id: string,

@@ -20,6 +20,7 @@ export function mfaStepUpStart(options: MfaStepUpStartOptions): Result<MfaChalle
     actorId: options.actorId,
     correlationId: options.correlationId,
     database: options.database,
+    policyDatabase: options.database,
     realmId: options.realmId,
     primaryAuthenticationMethod: options.primaryAuthenticationMethod,
     purpose: "step_up",

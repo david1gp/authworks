@@ -10,6 +10,7 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { userLookupCreate } from "../../users/server/userLookupCreate.js"
@@ -171,12 +172,24 @@ function whatsappOtpResendTransaction(options: WhatsappOtpResendTransactionOptio
   const users = userLookupCreate(options.database)
   const requested = repository.whatsappOtpChallengeGet(options.realmId, options.input.challengeId)
   if (!requested.success) return requested
+  if (requested.data === null || requested.data.purpose !== "sign_in") return generic()
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(requested.data.organizationId === null ? {} : { organizationId: requested.data.organizationId }),
+      realmId: requested.data.realmId,
+    },
+    executor: options.database,
+    ...(options.input.organizationId === undefined ? {} : { expectedOrganizationId: options.input.organizationId }),
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success) return generic()
+  const organizationId = loginContext.data.organizationId
   if (options.input.organizationId !== undefined) {
     const policy = organizationLoginPolicyEnforce({
       database: options.policyDatabase,
       executor: options.database,
       method: "whatsapp_otp",
-      organizationId: options.input.organizationId,
+      organizationId,
       realmId: options.realmId,
     })
     if (!policy.success) return resultCreate({ policyDenied: true })
@@ -189,15 +202,12 @@ function whatsappOtpResendTransaction(options: WhatsappOtpResendTransactionOptio
     })
     if (!realmPolicy.success) return generic()
   }
-  if (requested.data === null || requested.data.purpose !== "sign_in") return generic()
-  if (options.input.organizationId !== undefined && options.input.organizationId !== requested.data.organizationId)
-    return generic()
-  if (options.input.organizationId === undefined && requested.data.organizationId !== null) {
+  if (options.input.organizationId === undefined && organizationId !== undefined) {
     const challengePolicy = organizationLoginPolicyEnforce({
       database: options.policyDatabase,
       executor: options.database,
       method: "whatsapp_otp",
-      organizationId: requested.data.organizationId,
+      organizationId,
       realmId: options.realmId,
     })
     if (!challengePolicy.success) return generic()

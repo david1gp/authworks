@@ -5,7 +5,8 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
+import { eventSecurityUnindexedEventAppend } from "../../events/server/eventSecurityUnindexedEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { sessionEventTypes } from "../events/sessionEventTypes.js"
 import { sessionRevokedEventPayloadSchema } from "../events/sessionRevokedEventPayloadSchema.js"
@@ -54,23 +55,27 @@ export function sessionRevokeAll(options: SessionRevokeAllOptions): Result<Sessi
       })
       if (!payload.success)
         return resultErrorCreate(op, "The session event payload is invalid.", "sessions.event-invalid")
-      const event = storageEventAppend(
-        transaction,
-        {
-          actorId: options.userId,
-          aggregateId: session.id,
-          aggregateType: "session",
-          aggregateVersion: eventVersion.data + 1,
-          commandIndex,
-          correlationId,
-          eventType: sessionEventTypes.revokedAll,
-          realmId: options.realmId,
-          metadata: { auditSafe: true, source: "sessions" },
-          occurredAt: now,
-          payload: payload.output,
-        },
-        runtime,
-      )
+      const eventInput = {
+        actorId: options.userId,
+        aggregateId: session.id,
+        aggregateType: "session" as const,
+        aggregateVersion: eventVersion.data + 1,
+        commandIndex,
+        correlationId,
+        eventType: sessionEventTypes.revokedAll,
+        realmId: options.realmId,
+        metadata: { auditSafe: true, source: "sessions" },
+        occurredAt: now,
+        payload: payload.output,
+      }
+      const event =
+        session.subjectType === "user"
+          ? eventSecurityEventAppend(transaction, { ...eventInput, userSubjectId: session.subjectId }, runtime)
+          : eventSecurityUnindexedEventAppend(
+              transaction,
+              { ...eventInput, unindexedReason: "bootstrap_admin_session" },
+              runtime,
+            )
       if (!event.success) return event
       revoked = true
       commandIndex += 1

@@ -6,11 +6,15 @@ import { authorizationEnforce } from "../../authorization/actions/authorizationE
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import type { AuthorizationPolicyRule } from "../../authorization/public/authorizationPolicyRuleSchema.js"
+import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
+import { organizationMembershipContextValidate } from "../../organizations/server/organizationMembershipContextValidate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { sessionAuthenticate } from "../actions/sessionAuthenticate.js"
 import { sessionBrowserCookieExtract } from "../domain/sessionBrowserCookieExtract.js"
 import { sessionCsrfTokenValidate } from "../domain/sessionCsrfTokenValidate.js"
 import { sessionRequestOriginValidate } from "../domain/sessionRequestOriginValidate.js"
+import type { SessionAssuranceRequiredDetails } from "../public/sessionAssuranceRequiredDetailsSchema.js"
 import type { SessionAssurance } from "../public/sessionAssuranceSchema.js"
 import type { Session } from "../public/sessionSchema.js"
 
@@ -65,6 +69,37 @@ export function sessionProtectedMiddlewareCreate(
       if (options.fallback !== undefined) return options.fallback(context, next)
       return sessionMiddlewareErrorResponseCreate(context, authenticated.errorMessage, "unauthorized")
     }
+    const requestedOrganizationId = options.organizationId ?? context.req.param("organizationId")
+    const expectedSessionOrganizationId =
+      authenticated.data.session.organizationId === undefined ? undefined : requestedOrganizationId
+    const organizationContext = organizationLoginContextValidate({
+      context: {
+        ...(authenticated.data.session.organizationId === undefined
+          ? {}
+          : { organizationId: authenticated.data.session.organizationId }),
+        realmId: authenticated.data.session.realmId,
+      },
+      executor: options.database.db,
+      ...(expectedSessionOrganizationId === undefined ? {} : { expectedOrganizationId: expectedSessionOrganizationId }),
+      expectedRealmId: realmId,
+    })
+    if (!organizationContext.success)
+      return sessionMiddlewareErrorResponseCreate(context, "Session authorization is invalid.", "unauthorized")
+    const organizationId = organizationContext.data.organizationId ?? requestedOrganizationId
+    if (
+      requestedOrganizationId !== undefined &&
+      organizationId !== undefined &&
+      authenticated.data.actor.kind === "user"
+    ) {
+      const membership = organizationMembershipContextValidate({
+        executor: options.database.db,
+        organizationId,
+        realmId,
+        userId: authenticated.data.actor.actorId,
+      })
+      if (!membership.success)
+        return sessionMiddlewareErrorResponseCreate(context, "Session authorization is invalid.", "unauthorized")
+    }
     if (cookieAuthenticated && sessionRequestIsUnsafe(context.req.method)) {
       const origin = sessionRequestOriginValidate(context.req.raw, options.publicOrigin ?? defaultPublicOrigin)
       if (!origin.success || !origin.data)
@@ -73,21 +108,55 @@ export function sessionProtectedMiddlewareCreate(
       if (!csrfCookie.success || !sessionCsrfTokenValidate(context.req.header(csrfHeaderName), csrfCookie.data))
         return sessionMiddlewareErrorResponseCreate(context, "The CSRF token is invalid.", "forbidden")
     }
-    const assurance = options.minimumAssurance
-    if (assurance !== undefined && assuranceRankGet(authenticated.data.actor.assurance) < assuranceRankGet(assurance))
-      return sessionMiddlewareErrorResponseCreate(context, "A stronger authentication is required.", "forbidden")
+    const policy = organizationLoginPolicyResolve({
+      database: options.database,
+      executor: options.database.db,
+      organizationId,
+      realmId,
+    })
+    if (!policy.success)
+      return sessionMiddlewareErrorResponseCreate(context, "Session policy is unavailable.", "unauthorized")
+    const assurance = assuranceStrongerGet(options.minimumAssurance, policy.data.minimumStepUpAssurance)
+    if (assurance !== undefined && assuranceRankGet(authenticated.data.actor.assurance) < assuranceRankGet(assurance)) {
+      const details: SessionAssuranceRequiredDetails = {
+        action: "step_up",
+        organizationId: organizationId ?? null,
+        requiredAssurance: assurance,
+      }
+      return sessionMiddlewareErrorResponseCreate(
+        context,
+        "A stronger authentication is required.",
+        "sessions.assurance-required",
+        details,
+      )
+    }
     if (options.permission !== undefined) {
       const authorization = authorizationEnforce({
         actor: authenticated.data.actor,
         realmId: context.req.param("realmId") ?? "",
         minimumAssurance: assurance,
-        organizationId: options.organizationId,
+        organizationId,
         permission: options.permission,
         policies: options.policies,
         roles: options.roles,
       })
-      if (!authorization.success)
+      if (!authorization.success) {
+        if (authorization.code === "authorization.insufficient-assurance") {
+          const requiredAssurance = assurance ?? "multi_factor"
+          const details: SessionAssuranceRequiredDetails = {
+            action: "step_up",
+            organizationId: organizationId ?? null,
+            requiredAssurance,
+          }
+          return sessionMiddlewareErrorResponseCreate(
+            context,
+            authorization.errorMessage,
+            "sessions.assurance-required",
+            details,
+          )
+        }
         return sessionMiddlewareErrorResponseCreate(context, authorization.errorMessage, "forbidden")
+      }
     }
     context.set("authorizationActor", authenticated.data.actor)
     context.set("cookieAuthenticated", cookieAuthenticated)
@@ -112,10 +181,25 @@ function assuranceRankGet(assurance: SessionAssurance): number {
   return 0
 }
 
+function assuranceStrongerGet(
+  left: SessionAssurance | undefined,
+  right: SessionAssurance | undefined,
+): SessionAssurance | undefined {
+  if (left === undefined) return right
+  if (right === undefined) return left
+  return assuranceRankGet(left) >= assuranceRankGet(right) ? left : right
+}
+
 function sessionMiddlewareErrorResponseCreate(
   context: Context<SessionMiddlewareEnv>,
   message: string,
-  code: "forbidden" | "unauthorized",
+  code: "forbidden" | "unauthorized" | "sessions.assurance-required",
+  details?: Readonly<Record<string, unknown>>,
 ) {
+  if (code === "sessions.assurance-required")
+    return context.json(
+      httpErrorResponseCreate({ code, details, message, op: "sessionProtectedMiddlewareCreate", status: 403 }),
+      403,
+    )
   return context.json(httpErrorResponseCreate(code, message), httpErrorStatusGet(code) as 401 | 403)
 }

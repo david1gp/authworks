@@ -217,8 +217,9 @@ test("impersonation HTTP start/end exposes actor and subject, not credentials, a
     })
     const adminSession = sessionIssue({
       assurance: "multi_factor",
-      authenticationMethod: "totp",
+      authenticationMethod: "password",
       database,
+      mfaMethod: "totp",
       realmId: realm.id,
       userId: admin.id,
     })

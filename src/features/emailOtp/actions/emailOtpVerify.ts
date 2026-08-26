@@ -6,10 +6,11 @@ import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -66,16 +67,22 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
     parsed.output.challengeId,
   )
   if (!challenge.success) return challenge
-  if (
-    challenge.data === null ||
-    (parsed.output.organizationId !== undefined && parsed.output.organizationId !== challenge.data.organizationId)
-  )
-    return resultErrorCreate(op, "The email OTP code is invalid.", "email-otp.invalid")
+  if (challenge.data === null) return resultErrorCreate(op, "The email OTP code is invalid.", "email-otp.invalid")
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(challenge.data.organizationId === null ? {} : { organizationId: challenge.data.organizationId }),
+      realmId: challenge.data.realmId,
+    },
+    executor: options.database.db,
+    ...(parsed.output.organizationId === undefined ? {} : { expectedOrganizationId: parsed.output.organizationId }),
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success) return resultErrorCreate(op, "The email OTP code is invalid.", "email-otp.invalid")
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
     realmId: options.realmId,
     method: "email_otp",
-    organizationId: challenge.data.organizationId ?? undefined,
+    organizationId: loginContext.data.organizationId,
   })
   if (!policy.success)
     return resultErrorCreate(op, "The email OTP login method is disabled for this organization.", "email-otp.conflict")
@@ -103,7 +110,7 @@ export function emailOtpVerify(options: EmailOtpVerifyOptions): Result<EmailOtpV
 type EmailOtpVerifyTransactionOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly correlationId: string
-  readonly database: StorageExecutor
+  readonly database: StorageTransaction
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly input: EmailOtpVerifyRequest
   readonly policyDatabase: StorageDatabase
@@ -120,6 +127,18 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
   if (challenge.data === null || challenge.data.purpose !== "sign_in")
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
   const current = challenge.data
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(current.organizationId === null ? {} : { organizationId: current.organizationId }),
+      realmId: current.realmId,
+    },
+    executor: options.database,
+    ...(options.input.organizationId === undefined ? {} : { expectedOrganizationId: options.input.organizationId }),
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
+  const organizationId = loginContext.data.organizationId
   if (current.consumedAt !== null)
     return resultCreate({ errorMessage: "The email OTP code is invalid.", failure: true as const })
   if (current.expiresAt <= options.now)
@@ -222,7 +241,8 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
     actorId: options.context.actorId,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
-    organizationId: current.organizationId ?? undefined,
+    organizationId,
+    policyDatabase: options.policyDatabase,
     realmId: options.realmId,
     primaryAuthenticationMethod: "email_otp",
     runtime: options.runtime,
@@ -236,15 +256,14 @@ function emailOtpVerifyTransaction(options: EmailOtpVerifyTransactionOptions): R
         database: options.policyDatabase,
         deviceMetadata: options.deviceMetadata,
         executor: options.database,
-        organizationId: current.organizationId ?? undefined,
+        organizationId,
         realmId: options.realmId,
         runtime: options.runtime,
         userId,
       }),
     userId,
   })
-  if (!authenticationResult.success)
-    return resultErrorCreate(op, "The authenticated session could not be created.", "email-otp.internal")
+  if (!authenticationResult.success) return authenticationResult
   return resultCreate({
     failure: false as const,
     notification: emailOtpNotificationCreate("verified", userId, current.id, options.realmId),

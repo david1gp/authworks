@@ -164,7 +164,7 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
 
     const adminSession = sessionIssue({
       assurance: "multi_factor",
-      authenticationMethod: "totp",
+      authenticationMethod: "password",
       database,
       mfaMethod: "totp",
       realmId: alpha.id,

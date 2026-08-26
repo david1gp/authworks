@@ -7,7 +7,7 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { passkeyChallengeHashCreate } from "../domain/passkeyChallengeHashCreate.js"
@@ -145,7 +145,7 @@ function passkeyRegistrationStartStore(options: PasskeyRegistrationStartStoreOpt
         "The passkey event payload is invalid.",
         "passkeys.event-invalid",
       )
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.actorId ?? options.userId,
@@ -159,6 +159,7 @@ function passkeyRegistrationStartStore(options: PasskeyRegistrationStartStoreOpt
         metadata: { auditSafe: true, source: "passkeys" },
         occurredAt: options.now,
         payload: payload.output,
+        userSubjectId: options.userId,
       },
       options.runtime,
     )

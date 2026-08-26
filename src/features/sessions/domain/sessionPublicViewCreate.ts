@@ -16,6 +16,7 @@ export function sessionPublicViewCreate(row: SessionRow, current = false): Sessi
     expiresAt: row.expiresAt,
     id: row.id,
     realmId: row.realmId,
+    ...(row.organizationId === null ? {} : { organizationId: row.organizationId }),
     lastUsedAt: row.lastUsedAt,
     ...(row.impersonatorId === null
       ? {}

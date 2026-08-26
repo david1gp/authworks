@@ -37,7 +37,7 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
 
     await page.goto("/login/password/forgot")
     await page.getByLabel("Email address", { exact: true }).fill(fixture.member.email)
-    await page.getByRole("button", { name: "Send recovery instructions", exact: true }).click()
+    await page.getByRole("button", { name: "Send reset link", exact: true }).click()
     await expect(page).toHaveURL(/\/login\/password\/forgot\/sent$/)
     const recoveryLink = await server.recoveryLinkGet()
     const recoveryUrl = new URL(recoveryLink)
@@ -50,9 +50,9 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     await page.goto(`${new URL(page.url()).origin}${recoveryUrl.pathname}${recoveryUrl.search}`)
     await page.reload()
     await page.getByLabel("New password", { exact: true }).fill(recoveryPassword)
-    await page.getByLabel("Confirm password", { exact: true }).fill(recoveryPassword)
-    await page.getByRole("button", { name: "Update password", exact: true }).click()
-    await expect(page.getByRole("heading", { name: "Password updated", exact: true })).toBeVisible()
+    await page.getByLabel("Confirm new password", { exact: true }).fill(recoveryPassword)
+    await page.getByRole("button", { name: "Set new password", exact: true }).click()
+    await expect(page.getByRole("heading", { name: "Your password was changed", exact: true })).toBeVisible()
 
     await page.goto("/login/passkey")
     await page.evaluate(() => {
@@ -74,7 +74,7 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     expect(passkeyBody.options.rpId).toBe("e2e.authworks.test")
     expect(passkeyBody.options.userVerification).toBe("required")
     expect(passkeyBody.token.length).toBeGreaterThanOrEqual(43)
-    await expect(page.getByRole("alert")).toContainText("Passkey sign-in was cancelled.")
+    await expect(page.getByRole("alert")).toContainText("Something went wrong.")
     expect(await page.locator("body").textContent()).not.toContain(passkeyBody.token)
 
     const passwordLoginPromise = page.waitForResponse((response) =>
@@ -87,7 +87,7 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     const passwordLogin = await passwordLoginPromise
     expect(passwordLogin.status()).toBe(200)
     await expect(page).toHaveURL(/\/login\/mfa\?return_to=%2Faccount%2Fprofile$/)
-    await page.getByRole("button", { name: "Recovery code", exact: true }).click()
+    await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(fixture.recoveryCode)
     const mfaCompletePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/mfa/challenge/complete"),
@@ -187,7 +187,7 @@ test("task 17 composed production account increment consumes captured links and 
 
     await page.goto("/login/password/forgot")
     await page.getByLabel("Email address", { exact: true }).fill(fixture.member.email)
-    await page.getByRole("button", { name: "Send recovery instructions", exact: true }).click()
+    await page.getByRole("button", { name: "Send reset link", exact: true }).click()
     await expect(page).toHaveURL(/\/login\/password\/forgot\/sent$/)
 
     const recoveryLink = await server.recoveryLinkGet()
@@ -200,9 +200,9 @@ test("task 17 composed production account increment consumes captured links and 
     await page.reload()
     expect(await page.locator("body").textContent()).not.toContain(recoveryToken)
     await page.getByLabel("New password", { exact: true }).fill(recoveryPassword)
-    await page.getByLabel("Confirm password", { exact: true }).fill(recoveryPassword)
-    await page.getByRole("button", { name: "Update password", exact: true }).click()
-    await expect(page.getByRole("heading", { name: "Password updated", exact: true })).toBeVisible()
+    await page.getByLabel("Confirm new password", { exact: true }).fill(recoveryPassword)
+    await page.getByRole("button", { name: "Set new password", exact: true }).click()
+    await expect(page.getByRole("heading", { name: "Your password was changed", exact: true })).toBeVisible()
     expect(page.url()).not.toContain(recoveryToken)
     await secretAbsent(recoveryToken)
 
@@ -211,7 +211,7 @@ test("task 17 composed production account increment consumes captured links and 
     await page.getByLabel("Password", { exact: true }).fill(recoveryPassword)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
     await expect(page).toHaveURL(/\/login\/mfa\?return_to=%2Faccount%2Fprofile$/)
-    await page.getByRole("button", { name: "Recovery code", exact: true }).click()
+    await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(fixture.recoveryCode)
     await page.getByRole("button", { name: "Verify", exact: true }).click()
     await expect(page).toHaveURL(/\/account\/profile$/)

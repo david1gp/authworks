@@ -11,6 +11,7 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginContextResolve } from "../../organizations/server/organizationLoginContextResolve.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -105,10 +106,18 @@ export function whatsappOtpStart(options: WhatsappOtpStartOptions): Result<Whats
   if (!phoneNumber.success) return generic()
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success || realm.data.realm.status !== "active") return generic()
+  const loginContext = organizationLoginContextResolve({
+    executor: options.database.db,
+    organizationId: parsed.output.organizationId,
+    realmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, "The WhatsApp OTP is not available in this organization.", "whatsapp-otp.not-found")
+  const organizationId = loginContext.data.organizationId
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
     method: "whatsapp_otp",
-    organizationId: options.input.organizationId,
+    organizationId,
     realmId: options.realmId,
   })
   if (!policy.success)
@@ -120,7 +129,7 @@ export function whatsappOtpStart(options: WhatsappOtpStartOptions): Result<Whats
   if (options.availability === undefined)
     return resultErrorCreate(op, "The WhatsApp OTP is currently unavailable.", "whatsapp-otp.unavailable")
   const availability = options.availability.whatsappOtpAvailabilityGet({
-    organizationId: parsed.output.organizationId,
+    organizationId,
     realmId: options.realmId,
   })
   if (!availability.success)
@@ -146,6 +155,7 @@ export function whatsappOtpStart(options: WhatsappOtpStartOptions): Result<Whats
       correlationId,
       database: transaction,
       input: parsed.output,
+      organizationId,
       challengeId,
       now,
       phoneNumber: phoneNumber.data,
@@ -170,6 +180,7 @@ type WhatsappOtpStartTransactionOptions = {
   readonly correlationId: string
   readonly database: StorageExecutor
   readonly input: WhatsappOtpStartRequest
+  readonly organizationId?: string
   readonly now: number
   readonly phoneNumber: string
   readonly realmId: string
@@ -217,7 +228,7 @@ function whatsappOtpStartTransaction(options: WhatsappOtpStartTransactionOptions
     expiresAt,
     id: options.challengeId,
     maxAttempts: whatsappOtpMaxAttempts,
-    organizationId: options.input.organizationId ?? null,
+    organizationId: options.organizationId ?? null,
     phoneHash,
     purpose: "sign_in",
     realmId: options.realmId,

@@ -181,8 +181,9 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     expect(expiredSession.status).toBe(401)
     await auditContextPage.reload()
     await expect(auditContextPage.locator("[data-impersonation-banner]")).toHaveCount(0)
-    await expect(auditContextPage.locator("[data-content-state='inaccessible']")).toBeVisible()
-
+    await expect(auditContextPage).toHaveURL(
+      `/login?return_to=${encodeURIComponent(`/admin/impersonation?userId=${fixture.administrator.id}`)}`,
+    )
     await browserSecretsAssert(
       [page, assurance, permission, auditContextPage],
       [context, ...auxiliaryContexts],
@@ -351,10 +352,13 @@ function browserObservationInstall(page: Page, responseBodies: Array<Promise<str
   page.on("response", (response) => {
     if (!new URL(response.url()).pathname.startsWith("/realms/")) return
     responseBodies.push(
-      response
-        .text()
-        .then((body) => `${JSON.stringify(response.headers())}\n${body}`)
-        .catch(() => ""),
+      Promise.race([
+        response
+          .text()
+          .then((body) => `${JSON.stringify(response.headers())}\n${body}`)
+          .catch(() => ""),
+        new Promise<string>((resolve) => setTimeout(() => resolve(""), 1_000)),
+      ]),
     )
   })
 }

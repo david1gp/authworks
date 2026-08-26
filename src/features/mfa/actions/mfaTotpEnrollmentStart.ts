@@ -7,8 +7,8 @@ import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
@@ -27,7 +27,7 @@ type MfaTotpEnrollmentStartOptions = {
   readonly actorId?: string | null
   readonly database?: StorageDatabase
   readonly encryptionSecret?: Secret | string
-  readonly executor?: StorageExecutor
+  readonly executor?: StorageTransaction
   readonly input?: MfaTotpEnrollmentStartRequest
   readonly realmId: string
   readonly label?: string
@@ -58,7 +58,7 @@ export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): 
   }
   const input = v.safeParse(mfaTotpEnrollmentStartRequestSchema, options.input ?? { label: options.label })
   if (!input.success) return resultErrorCreate(op, "The TOTP enrollment request is invalid.", "mfa.invalid")
-  const executor = options.executor ?? options.database?.db
+  const executor = options.executor
   if (executor === undefined) return resultErrorCreate(op, "MFA storage is required.", "mfa.invalid")
   const runtime = options.runtime ?? options.database?.runtime ?? runtimeCreate()
   const now = runtime.now()
@@ -97,7 +97,7 @@ export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): 
   if (!created.success) return created
   const payload = v.safeParse(mfaEventPayloadSchema, { enrollmentId, userId: options.userId })
   if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
-  const event = storageEventAppend(
+  const event = eventSecurityEventAppend(
     executor,
     {
       actorId: options.actorId,
@@ -111,6 +111,7 @@ export function mfaTotpEnrollmentStart(options: MfaTotpEnrollmentStartOptions): 
       metadata: { auditSafe: true, source: "mfa" },
       occurredAt: now,
       payload: payload.output,
+      userSubjectId: options.userId,
     },
     runtime,
   )

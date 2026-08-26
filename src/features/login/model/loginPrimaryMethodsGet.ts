@@ -1,9 +1,15 @@
-import type { OrganizationLoginPolicy } from "../../organizations/public/organizationLoginPolicySchema.js"
-
 export type LoginPrimaryMethod = "email-otp" | "external-identity" | "passkey" | "password" | "whatsapp-otp"
 
+type LoginPrimaryMethodsPolicy = {
+  readonly allowEmailOtp: boolean
+  readonly allowExternalIdentity: boolean
+  readonly allowPasskey: boolean
+  readonly allowPassword: boolean
+  readonly allowWhatsappOtp?: boolean
+}
+
 export function loginPrimaryMethodsGet(
-  policy: OrganizationLoginPolicy,
+  policy: LoginPrimaryMethodsPolicy,
   providerCount: number,
   whatsappOtpAvailable = false,
 ): readonly LoginPrimaryMethod[] {

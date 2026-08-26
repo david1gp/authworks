@@ -6,10 +6,13 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
+import { oidcInteractionOrganizationContextValidate } from "../../oidc/server/oidcInteractionOrganizationContextValidate.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
 import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
@@ -75,9 +78,34 @@ export async function externalIdentityCallback(
   )
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const transactionRow = transaction.data
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(transactionRow.organizationId === null ? {} : { organizationId: transactionRow.organizationId }),
+      realmId: transactionRow.realmId,
+    },
+    executor: options.database.db,
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
+  if (transactionRow.interactionHandle !== null && loginContext.data.organizationId !== undefined) {
+    const interaction = oidcInteractionOrganizationContextValidate({
+      database: options.database,
+      handle: transactionRow.interactionHandle,
+      ...(loginContext.data.organizationId === undefined ? {} : { organizationId: loginContext.data.organizationId }),
+      realmId: options.realmId,
+    })
+    if (!interaction.success)
+      return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
+  }
   const provider = repository.externalIdentityProviderGet(options.realmId, options.providerId)
   if (!provider.success) return provider
-  if (provider.data === null || !provider.data.enabled || provider.data.redirectUri !== transactionRow.redirectUri)
+  if (
+    provider.data === null ||
+    !provider.data.enabled ||
+    provider.data.redirectUri !== transactionRow.redirectUri ||
+    (provider.data.organizationId !== null && provider.data.organizationId !== transactionRow.organizationId)
+  )
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const providerRow = provider.data
   const port = options.providerPorts[providerRow.type as keyof ExternalIdentityProviderPorts]
@@ -136,7 +164,7 @@ export async function externalIdentityCallback(
     database: options.database,
     realmId: options.realmId,
     method: "external_identity",
-    organizationId: transactionRow.organizationId ?? undefined,
+    organizationId: loginContext.data.organizationId,
     providerId: options.providerId,
   })
   if (!policy.success)
@@ -161,7 +189,7 @@ export async function externalIdentityCallback(
 
 type ExternalIdentityLinkCallbackCommitOptions = {
   readonly correlationId: string
-  readonly database: Parameters<typeof externalIdentityRepositoryCreate>[0]
+  readonly database: StorageTransaction
   readonly identity: ExternalIdentityProviderIdentity
   readonly now: number
   readonly providerId: string
@@ -174,7 +202,18 @@ type ExternalIdentityLinkCallbackCommitOptions = {
 function externalIdentityLinkCallbackCommit(
   options: ExternalIdentityLinkCallbackCommitOptions & { readonly transaction: ExternalIdentityOAuthTransactionRow },
 ): Result<void> {
+  const op = "externalIdentityCallback"
   const repository = externalIdentityRepositoryCreate(options.database)
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(options.transaction.organizationId === null ? {} : { organizationId: options.transaction.organizationId }),
+      realmId: options.transaction.realmId,
+    },
+    executor: options.database,
+    expectedRealmId: options.transaction.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const updated = repository.externalIdentityOAuthTransactionValidateAndStore(
     options.transaction.id,
     options.transaction.version,
@@ -232,7 +271,7 @@ function externalIdentityLinkCallbackCommit(
 
 type ExternalIdentitySignInCommitOptions = {
   readonly correlationId: string
-  readonly database: Parameters<typeof externalIdentityRepositoryCreate>[0]
+  readonly database: StorageTransaction
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly identity: ExternalIdentityProviderIdentity
   readonly policyDatabase: StorageDatabase
@@ -248,6 +287,17 @@ function externalIdentitySignInCommit(
 ): Result<ExternalIdentityCallbackResponse> {
   const op = "externalIdentityCallback"
   const repository = externalIdentityRepositoryCreate(options.database)
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(options.transaction.organizationId === null ? {} : { organizationId: options.transaction.organizationId }),
+      realmId: options.transaction.realmId,
+    },
+    executor: options.database,
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
+  const organizationId = loginContext.data.organizationId
   const existing = repository.externalIdentityGetByProviderSubject(
     options.provider.id,
     options.identity.externalSubject,
@@ -455,7 +505,8 @@ function externalIdentitySignInCommit(
     actorId: null,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
-    organizationId: options.transaction.organizationId ?? undefined,
+    organizationId,
+    policyDatabase: options.policyDatabase,
     realmId: options.realmId,
     primaryAuthenticationMethod: "external_identity",
     runtime: options.runtime,
@@ -469,15 +520,14 @@ function externalIdentitySignInCommit(
         database: options.policyDatabase,
         deviceMetadata: options.deviceMetadata,
         executor: options.database,
-        organizationId: options.transaction.organizationId ?? undefined,
+        organizationId,
         realmId: options.realmId,
         runtime: options.runtime,
         userId,
       }),
     userId,
   })
-  if (!authenticationResult.success)
-    return resultErrorCreate(op, "The authenticated session could not be created.", "external-identities.write-failed")
+  if (!authenticationResult.success) return authenticationResult
   return resultCreate({
     authentication: { authenticatedAt: options.now, realmId: options.realmId, userId },
     identity: externalIdentityViewCreate(identityRow, options.provider.type),

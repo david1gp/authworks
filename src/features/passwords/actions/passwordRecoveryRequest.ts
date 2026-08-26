@@ -5,8 +5,8 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
@@ -88,7 +88,7 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
     const payload = v.safeParse(passwordRecoveryEventPayloadSchema, { accepted: true })
     if (!payload.success)
       return resultErrorCreate(op, "The recovery event payload is invalid.", "passwords.event-invalid")
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.context.actorId,
@@ -102,6 +102,7 @@ export function passwordRecoveryRequest(options: PasswordRecoveryRequestOptions)
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: userRow.id,
       },
       runtime,
     )

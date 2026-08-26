@@ -4,10 +4,16 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
+import type { EmailOtpStartResponse } from "../../emailOtp/public/emailOtpStartResponseSchema.js"
+import { emailOtpStartResponseSchema } from "../../emailOtp/public/emailOtpStartResponseSchema.js"
 import type { MfaChallengeCompleteRequest } from "../public/mfaChallengeCompleteRequestSchema.js"
 import { mfaChallengeCompleteRequestSchema } from "../public/mfaChallengeCompleteRequestSchema.js"
+import type { MfaChallengeFactorSelectRequest } from "../public/mfaChallengeFactorSelectRequestSchema.js"
+import { mfaChallengeFactorSelectRequestSchema } from "../public/mfaChallengeFactorSelectRequestSchema.js"
 import type { MfaChallengeResponse } from "../public/mfaChallengeResponseSchema.js"
 import { mfaChallengeResponseSchema } from "../public/mfaChallengeResponseSchema.js"
+import type { MfaEmailOtpStartRequest } from "../public/mfaEmailOtpStartRequestSchema.js"
+import { mfaEmailOtpStartRequestSchema } from "../public/mfaEmailOtpStartRequestSchema.js"
 import type { MfaLoginResponse } from "../public/mfaLoginResponseSchema.js"
 import { mfaLoginResponseSchema } from "../public/mfaLoginResponseSchema.js"
 import type { MfaPolicyResponse } from "../public/mfaPolicyResponseSchema.js"
@@ -42,11 +48,13 @@ type MfaApiClientCreateOptions = {
 }
 
 export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
+  const tokenFallback = Symbol("tokenFallback")
+  const tokenNoFallback = Symbol("tokenNoFallback")
   const request = <T>(
     path: string,
     init: RequestInit,
     schema: v.GenericSchema<T>,
-    token = options.token,
+    token: Secret | string | undefined | typeof tokenFallback | typeof tokenNoFallback = tokenFallback,
   ): Promise<Result<T>> =>
     httpApiClientRequest({
       baseUrl: options.baseUrl,
@@ -55,7 +63,7 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
       op: "mfaApiClientRequest",
       path,
       schema,
-      token,
+      token: token === tokenFallback ? options.token : token === tokenNoFallback ? undefined : token,
     })
   const parsed = <T>(schema: v.GenericSchema<T>, input: unknown, message: string): Result<T> => {
     const value = v.safeParse(schema, input)
@@ -74,7 +82,7 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
         `/realms/${encodeURIComponent(realmId)}/mfa-policy`,
         { method: "GET" },
         mfaPolicyResponseSchema,
-        options.systemToken,
+        options.systemToken ?? tokenNoFallback,
       )
     },
     mfaPolicyTenantGet(realmId: string): Promise<Result<MfaPolicyResponse>> {
@@ -100,7 +108,7 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
         `/system/realms/${encodeURIComponent(realmId)}/mfa-policy`,
         { ...json(checked.data), method: "PATCH" },
         mfaPolicyResponseSchema,
-        options.systemToken,
+        options.systemToken ?? tokenNoFallback,
       )
     },
     mfaTotpEnrollmentStart(
@@ -139,6 +147,27 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
         `/realms/${encodeURIComponent(realmId)}/mfa/totp/verify`,
         json({ code }),
         mfaTotpVerifyResponseSchema,
+      )
+    },
+    mfaChallengeFactorSelect(
+      realmId: string,
+      input: MfaChallengeFactorSelectRequest,
+    ): Promise<Result<MfaChallengeResponse>> {
+      const checked = parsed(mfaChallengeFactorSelectRequestSchema, input, "The MFA factor selection is invalid.")
+      if (!checked.success) return Promise.resolve(checked)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/mfa/challenge/factor`,
+        json(checked.data),
+        mfaChallengeResponseSchema,
+      )
+    },
+    mfaEmailOtpStart(realmId: string, input: MfaEmailOtpStartRequest): Promise<Result<EmailOtpStartResponse>> {
+      const checked = parsed(mfaEmailOtpStartRequestSchema, input, "The MFA email OTP request is invalid.")
+      if (!checked.success) return Promise.resolve(checked)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/mfa/challenge/email-otp/start`,
+        json(checked.data),
+        emailOtpStartResponseSchema,
       )
     },
     mfaRecoveryCodesGenerate(realmId: string): Promise<Result<MfaRecoveryCodesResponse>> {

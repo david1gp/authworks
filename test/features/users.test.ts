@@ -9,6 +9,7 @@ import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotp
 import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
+import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { passkeyRepositoryCreate } from "../../src/features/passkeys/persistence/passkeyRepositoryCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -1099,6 +1100,14 @@ test("subject-bound authentication methods summarize factor state without creden
       userId: created.data.user.id,
     })
     expect(mismatchedContext).toMatchObject({ code: "users.tenant-mismatch", success: false })
+
+    const permissiveRealmPolicy = organizationLoginPolicySet({
+      context: system,
+      database,
+      input: { minimumStepUpAssurance: "none" },
+      realmId: alpha.id,
+    })
+    expect(permissiveRealmPolicy.success).toBe(true)
 
     const weak = sessionIssue({
       assurance: "none",

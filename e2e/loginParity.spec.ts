@@ -122,9 +122,8 @@ test.describe("login web UI parity", () => {
     await page.goto("/demo/login/chooser/recent-accounts")
     await page.getByRole("button", { name: /alex@acme\.example/ }).press("Enter")
 
-    await expect(page.getByLabel("Username or email")).toHaveValue("alex@acme.example")
-    await expect(page.getByLabel("Remember this identifier")).toBeChecked()
-    await expect(page.getByRole("heading", { name: "Sign in with password" })).toBeFocused()
+    await expect(page).toHaveURL(/\/demo\/login\/signed-in$/)
+    await expect(page.getByRole("heading", { name: "Signed in" })).toBeFocused()
   })
 
   test("password pending and error states stay in place", async ({ page }) => {

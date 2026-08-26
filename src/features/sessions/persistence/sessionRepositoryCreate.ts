@@ -155,7 +155,7 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
       now: number,
       expectedVersion: number,
       nextVersion: number,
-      mfaMethod: "passkey" | "recovery_code" | "totp",
+      mfaMethod: "email_otp" | "passkey" | "recovery_code" | "totp",
     ): Result<SessionRow | null> {
       try {
         return resultCreate(
@@ -184,6 +184,40 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "sessionAssuranceRotate",
           "The session could not be upgraded.",
+          "sessions.write-failed",
+        )
+      }
+    },
+
+    sessionOrganizationContextSet(
+      realmId: string,
+      sessionId: string,
+      userId: string,
+      organizationId: string,
+      expectedVersion: number,
+    ): Result<SessionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(sessionTable)
+            .set({ organizationId, version: expectedVersion + 1 })
+            .where(
+              and(
+                eq(sessionTable.realmId, realmId),
+                eq(sessionTable.id, sessionId),
+                eq(sessionTable.subjectId, userId),
+                eq(sessionTable.userId, userId),
+                eq(sessionTable.version, expectedVersion),
+                isNull(sessionTable.revokedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "sessionOrganizationContextSet",
+          "The session organization context could not be updated.",
           "sessions.write-failed",
         )
       }

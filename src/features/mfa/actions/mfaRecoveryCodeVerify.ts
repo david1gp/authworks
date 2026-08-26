@@ -5,8 +5,8 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { mfaRecoveryCodeHashCreate } from "../domain/mfaRecoveryCodeHashCreate.js"
 import { mfaEventPayloadSchema } from "../events/mfaEventPayloadSchema.js"
 import { mfaEventTypes } from "../events/mfaEventTypes.js"
@@ -46,7 +46,7 @@ export function mfaRecoveryCodeVerify(options: MfaRecoveryCodeVerifyOptions): Re
     if (consumed.data === null) return resultErrorCreate(op, "The recovery code is invalid.", "mfa.not-found")
     const payload = v.safeParse(mfaEventPayloadSchema, { factor: "recovery_code", userId: options.userId })
     if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.actorId ?? options.userId,
@@ -60,6 +60,7 @@ export function mfaRecoveryCodeVerify(options: MfaRecoveryCodeVerifyOptions): Re
         metadata: { auditSafe: true, source: "mfa" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: options.userId,
       },
       runtime,
     )

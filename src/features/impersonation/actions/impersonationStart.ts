@@ -6,7 +6,7 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import { authorizationRolePermissionsResolve } from "../../authorization/actions/authorizationRolePermissionsResolve.js"
@@ -176,7 +176,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<S
       assurance: options.actor.assurance,
       authenticationMethod: "impersonation",
       correlationId,
-      database: undefined,
+      database: options.database,
       executor: transaction,
       expiresAt,
       realmId: options.realmId,
@@ -200,7 +200,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<S
     })
     if (!payload.success)
       return resultErrorCreate(op, "The impersonation event payload is invalid.", "impersonation.event-invalid")
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.actor.actorId,
@@ -214,6 +214,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<S
         metadata: { auditSafe: true, source: "impersonation" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: options.targetUserId,
       },
       runtime,
     )

@@ -6,7 +6,8 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { passkeyChallengeHashCreate } from "../domain/passkeyChallengeHashCreate.js"
 import { passkeyConfigurationValidate } from "../domain/passkeyConfigurationValidate.js"
@@ -108,7 +109,7 @@ export async function passkeyRegistrationComplete(
 type PasskeyRegistrationCompleteTransactionOptions = {
   readonly actorId?: string | null
   readonly correlationId: string
-  readonly database: Parameters<typeof passkeyRepositoryCreate>[0]
+  readonly database: StorageTransaction
   readonly realmId: string
   readonly now: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -170,7 +171,7 @@ function passkeyRegistrationCompleteTransaction(
   })
   if (!credentialPayload.success)
     return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
-  const credentialEvent = storageEventAppend(
+  const credentialEvent = eventSecurityEventAppend(
     options.database,
     {
       actorId: options.actorId ?? ceremony.data.userId,
@@ -184,6 +185,7 @@ function passkeyRegistrationCompleteTransaction(
       metadata: { auditSafe: true, source: "passkeys" },
       occurredAt: options.now,
       payload: credentialPayload.output,
+      userSubjectId: ceremony.data.userId,
     },
     options.runtime,
   )
@@ -196,7 +198,7 @@ function passkeyRegistrationCompleteTransaction(
   })
   if (!ceremonyPayload.success)
     return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
-  const ceremonyEvent = storageEventAppend(
+  const ceremonyEvent = eventSecurityEventAppend(
     options.database,
     {
       actorId: options.actorId ?? ceremony.data.userId,
@@ -210,6 +212,7 @@ function passkeyRegistrationCompleteTransaction(
       metadata: { auditSafe: true, source: "passkeys" },
       occurredAt: options.now,
       payload: ceremonyPayload.output,
+      userSubjectId: ceremony.data.userId,
     },
     options.runtime,
   )

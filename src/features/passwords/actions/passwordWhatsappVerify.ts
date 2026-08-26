@@ -7,8 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -93,7 +94,7 @@ type PasswordWhatsappVerifyTransactionOptions = {
   readonly clientIp: string
   readonly context: RealmSystemContext | RealmTenantContext
   readonly correlationId: string
-  readonly database: StorageExecutor
+  readonly database: StorageTransaction
   readonly input: PasswordWhatsappVerificationRequest
   readonly now: number
   readonly rateLimitSecret?: Secret | string
@@ -239,7 +240,7 @@ function passwordWhatsappVerifyTransaction(
     )
   const eventVersion = repository.passwordEventVersionGet(options.realmId, user.data.id)
   if (!eventVersion.success) return eventVersion
-  const passwordEvent = storageEventAppend(
+  const passwordEvent = eventSecurityEventAppend(
     options.database,
     {
       actorId: options.context.actorId,
@@ -253,6 +254,7 @@ function passwordWhatsappVerifyTransaction(
       metadata: { auditSafe: true, source: "passwords" },
       occurredAt: options.now,
       payload: passwordPayload.output,
+      userSubjectId: user.data.id,
     },
     options.runtime,
   )

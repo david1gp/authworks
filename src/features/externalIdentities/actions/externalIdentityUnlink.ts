@@ -8,6 +8,7 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { passkeyUsableAuthenticationMethodRead } from "../../passkeys/server/passkeyUsableAuthenticationMethodRead.js"
 import { passwordUsableAuthenticationMethodRead } from "../../passwords/server/passwordUsableAuthenticationMethodRead.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
@@ -112,7 +113,7 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
         "The external identity event payload is invalid.",
         "external-identities.event-invalid",
       )
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.userId,
@@ -126,6 +127,7 @@ export function externalIdentityUnlink(options: ExternalIdentityUnlinkOptions): 
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: options.userId,
       },
       runtime,
     )

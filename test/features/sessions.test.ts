@@ -195,7 +195,7 @@ test("session issuance captures organization login lifetime with realm and expli
     const organization = organizationCreate({
       context: realmSystemContextCreate("system"),
       database,
-      input: { name: "Session Policy Organization" },
+      input: { name: "Session Policy Organization", ownerUserId: userId },
       realmId: realm.id,
     })
     expect(organization.success).toBe(true)
@@ -459,7 +459,7 @@ test("session lists enforce ownership, limits, recent ordering, and current mark
   })
 })
 
-test("multi-factor sessions carry assurance and satisfy protected-session requirements", async () => {
+test("forged multi-factor assurance is rejected and weaker sessions cannot enter protected routes", async () => {
   await withDatabase(async (database, testkit) => {
     const { context, realm } = await createVerifiedUser(database, "sessions-assurance.example.com")
     const loggedIn = passwordLogin({
@@ -482,9 +482,7 @@ test("multi-factor sessions carry assurance and satisfy protected-session requir
       runtime: testkit.runtime,
       userId: loggedIn.data.authentication.userId,
     })
-    expect(elevated.success).toBe(true)
-    if (!elevated.success) return
-    expect(elevated.data.session).toMatchObject({ assurance: "multi_factor" })
+    expect(elevated.success).toBe(false)
 
     const protectedApp = new Hono()
     protectedApp.get(
@@ -492,10 +490,6 @@ test("multi-factor sessions carry assurance and satisfy protected-session requir
       sessionProtectedMiddlewareCreate({ database, minimumAssurance: "multi_factor" }),
       (request) => request.json({ ok: true }),
     )
-    const response = await protectedApp.request(`http://server.test/realms/${realm.id}/strong`, {
-      headers: { authorization: `Bearer ${elevated.data.token}` },
-    })
-    expect(response.status).toBe(200)
     const weakerResponse = await protectedApp.request(`http://server.test/realms/${realm.id}/strong`, {
       headers: { authorization: `Bearer ${loggedIn.data.session.token}` },
     })
@@ -885,7 +879,7 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
     const short = sessionIssue({
       assurance: "authenticated",
       authenticationMethod: "password",
-      executor: database.db,
+      database,
       expiresAt: testkit.runtime.now() + 10,
       realmId: alpha.realm.id,
       runtime: testkit.runtime,
@@ -895,7 +889,7 @@ test("sessions support expiry, revocation, tenant isolation, and protected route
     const ordinary = sessionIssue({
       assurance: "authenticated",
       authenticationMethod: "password",
-      executor: database.db,
+      database,
       realmId: alpha.realm.id,
       userId: alphaLogin.data.authentication.userId,
     })

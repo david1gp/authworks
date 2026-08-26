@@ -6,7 +6,8 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
+import { eventSecurityUnindexedEventAppend } from "../../events/server/eventSecurityUnindexedEventAppend.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { impersonationEndedEventPayloadSchema } from "../../impersonation/events/impersonationEndedEventPayloadSchema.js"
@@ -68,23 +69,27 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
     })
     if (!payload.success)
       return resultErrorCreate(op, "The session event payload is invalid.", "sessions.event-invalid")
-    const event = storageEventAppend(
-      transaction,
-      {
-        actorId,
-        aggregateId: options.sessionId,
-        aggregateType: "session",
-        aggregateVersion: eventVersion.data + 1,
-        commandIndex: 0,
-        correlationId,
-        eventType: sessionEventTypes.revoked,
-        realmId: options.realmId,
-        metadata: { auditSafe: true, source: "sessions" },
-        occurredAt: now,
-        payload: payload.output,
-      },
-      runtime,
-    )
+    const eventInput = {
+      actorId,
+      aggregateId: options.sessionId,
+      aggregateType: "session" as const,
+      aggregateVersion: eventVersion.data + 1,
+      commandIndex: 0,
+      correlationId,
+      eventType: sessionEventTypes.revoked,
+      realmId: options.realmId,
+      metadata: { auditSafe: true, source: "sessions" },
+      occurredAt: now,
+      payload: payload.output,
+    }
+    const event =
+      current.data.subjectType === "user"
+        ? eventSecurityEventAppend(transaction, { ...eventInput, userSubjectId: current.data.subjectId }, runtime)
+        : eventSecurityUnindexedEventAppend(
+            transaction,
+            { ...eventInput, unindexedReason: "bootstrap_admin_session" },
+            runtime,
+          )
     if (!event.success) return event
     if (current.data.impersonatorId !== null) {
       const impersonationVersion = transaction
@@ -113,7 +118,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
       })
       if (!endedPayload.success)
         return resultErrorCreate(op, "The impersonation event payload is invalid.", "sessions.event-invalid")
-      const endedEvent = storageEventAppend(
+      const endedEvent = eventSecurityEventAppend(
         transaction,
         {
           actorId,
@@ -127,6 +132,7 @@ export function sessionRevoke(options: SessionRevokeOptions): Result<SessionRevo
           metadata: { auditSafe: true, source: "impersonation" },
           occurredAt: now,
           payload: endedPayload.output,
+          userSubjectId: current.data.subjectId,
         },
         runtime,
       )

@@ -6,7 +6,7 @@ import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
@@ -126,7 +126,7 @@ export function userEmailChangeResend(options: UserEmailChangeResendOptions): Re
     const payload = v.safeParse(userEmailChangeRequestedEventPayloadSchema, { expiresAt })
     if (!payload.success)
       return resultErrorCreate(op, "The email-change event payload is invalid.", "users.event-invalid")
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.context.actorId,
@@ -140,6 +140,7 @@ export function userEmailChangeResend(options: UserEmailChangeResendOptions): Re
         metadata: { auditSafe: true, source: "users" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: options.userId,
       },
       runtime,
     )

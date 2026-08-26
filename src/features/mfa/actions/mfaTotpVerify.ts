@@ -6,8 +6,8 @@ import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { mfaPolicyDefaults } from "../domain/mfaPolicyDefaults.js"
 import { mfaTotpCodeVerify } from "../domain/mfaTotpCodeVerify.js"
 import { mfaTotpSecretProtect } from "../domain/mfaTotpSecretProtect.js"
@@ -105,7 +105,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
       userId: options.userId,
     })
     if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.actorId ?? options.userId,
@@ -119,6 +119,7 @@ export function mfaTotpVerify(options: MfaTotpVerifyOptions): Result<MfaTotpVeri
         metadata: { auditSafe: true, source: "mfa" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: options.userId,
       },
       runtime,
     )

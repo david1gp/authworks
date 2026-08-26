@@ -8,6 +8,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginContextResolve } from "../../organizations/server/organizationLoginContextResolve.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -69,11 +70,25 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
   if (!email.success) return generic()
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success || realm.data.realm.status !== "active") return generic()
+  if (
+    options.organizationId !== undefined &&
+    parsed.output.organizationId !== undefined &&
+    options.organizationId !== parsed.output.organizationId
+  )
+    return resultErrorCreate(op, "The email OTP request is invalid.", "email-otp.invalid")
+  const loginContext = organizationLoginContextResolve({
+    executor: options.database.db,
+    organizationId: options.organizationId ?? parsed.output.organizationId,
+    realmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, "The email OTP is not available in this organization.", "email-otp.not-found")
+  const organizationId = loginContext.data.organizationId
   const policy = organizationLoginPolicyEnforce({
     database: options.database,
     realmId: options.realmId,
     method: "email_otp",
-    organizationId: options.organizationId ?? parsed.output.organizationId,
+    organizationId,
   })
   if (!policy.success)
     return resultErrorCreate(op, "The email OTP login method is disabled for this organization.", "email-otp.conflict")
@@ -114,7 +129,7 @@ export function emailOtpStart(options: EmailOtpStartOptions): Result<EmailOtpSta
       id: challengeId,
       realmId: options.realmId,
       maxAttempts: emailOtpMaxAttempts,
-      organizationId: options.organizationId ?? parsed.output.organizationId ?? null,
+      organizationId: organizationId ?? null,
       purpose: "sign_in",
       userId: eligible && user.data !== null ? user.data.user.id : null,
       version: 1,

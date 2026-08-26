@@ -46,7 +46,7 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     await page.getByLabel("Password", { exact: true }).fill(fixture.member.password)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
     await expect(page).toHaveURL(/\/login\/mfa/)
-    await page.getByRole("button", { name: "Recovery code", exact: true }).click()
+    await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(fixture.recoveryCode)
     await page.getByRole("button", { name: "Verify", exact: true }).click()
     await expect(page).toHaveURL(/\/account$/)
@@ -98,7 +98,7 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     const totpChallengeToken = passwordLoginBody.challenge?.token
     if (totpChallengeToken === undefined) throw new Error("The TOTP login challenge token was not returned.")
     await expect(page).toHaveURL(/\/login\/mfa/)
-    await page.getByRole("button", { name: "Authenticator app", exact: true }).click()
+    await page.getByRole("button", { name: /^Authenticator app/ }).click()
     await page
       .getByLabel("Verification code", { exact: true })
       .fill(totpCodeCreate(enrollmentBody.secret, Math.floor(Date.now() / 30_000)))
@@ -157,6 +157,17 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     expect(authenticationStartBody.options.userVerification).toBe("required")
     const authenticationComplete = await authenticationCompletePromise
     expect(authenticationComplete.status()).toBe(200)
+    await expect(page).toHaveURL(/\/login\/mfa/)
+    await page.getByRole("button", { name: /^Authenticator app/ }).click()
+    await totpStepAdvanceWait()
+    await page
+      .getByLabel("Verification code", { exact: true })
+      .fill(totpCodeCreate(enrollmentBody.secret, Math.floor(Date.now() / 30_000)))
+    const passkeyMfaCompletePromise = page.waitForResponse((response) =>
+      new URL(response.url()).pathname.endsWith("/mfa/challenge/complete"),
+    )
+    await page.getByRole("button", { name: "Verify", exact: true }).click()
+    expect((await passkeyMfaCompletePromise).status()).toBe(200)
     await expect(page).toHaveURL(/\/account$/)
     await page.reload()
     await page.goto(`${browserOrigin}/account/profile`)

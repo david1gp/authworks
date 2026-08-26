@@ -1,10 +1,15 @@
 import { expect, test } from "bun:test"
+import { createHash } from "node:crypto"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import * as v from "valibot"
 import { oidcAuthorizationInteractionCreate } from "../../src/features/oidc/actions/oidcAuthorizationInteractionCreate.js"
 import { oidcAuthorizationInteractionResolve } from "../../src/features/oidc/actions/oidcAuthorizationInteractionResolve.js"
 import { oidcClientCreate } from "../../src/features/oidc/actions/oidcClientCreate.js"
+import { oidcSigningKeyCreate } from "../../src/features/oidc/actions/oidcSigningKeyCreate.js"
+import { oidcJwtVerify } from "../../src/features/oidc/domain/oidcJwtVerify.js"
+import { oidcTokenResponseSchema } from "../../src/features/oidc/public/oidcTokenResponseSchema.js"
 import { oidcServerAppCreate } from "../../src/features/oidc/server/oidcServerAppCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
@@ -36,6 +41,10 @@ async function withDatabase<T>(operation: (database: StorageDatabase) => Promise
 function cookieGet(value: string | null, name: string): string {
   const match = new RegExp(`(?:^|;\\s*)${name}=([^;]+)`).exec(value ?? "")
   return match?.[1] ?? ""
+}
+
+function pkceChallengeCreate(verifier: string): string {
+  return createHash("sha256").update(verifier, "utf8").digest("base64url")
 }
 
 test("HTML authorization uses an opaque interaction, cookie binding, consent, and one-time resume", async () => {
@@ -229,6 +238,170 @@ test("HTML authorization uses an opaque interaction, cookie binding, consent, an
     ).toBe(false)
   })
 })
+
+test("OIDC interaction resume preserves nonce through consent, code redemption, and signed ID token verification", async () => {
+  await withDatabase(async (database) => {
+    const realm = realmCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { domain: "nonce-interaction.example.com", name: "Nonce interaction OIDC" },
+    })
+    expect(realm.success).toBe(true)
+    if (!realm.success) return
+    const context = realmTenantContextCreate(realm.data.realm.id, "anonymous")
+    let verificationToken = ""
+    const registered = passwordRegister({
+      context,
+      database,
+      input: {
+        email: "nonce@example.com",
+        password: "Correct Horse 12",
+        profile: {},
+        userName: "nonce-user",
+      },
+      realmId: realm.data.realm.id,
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+    })
+    expect(registered.success).toBe(true)
+    expect(
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.data.realm.id })
+        .success,
+    ).toBe(true)
+    const login = passwordLogin({
+      context,
+      database,
+      input: { identifier: "nonce-user", password: "Correct Horse 12" },
+      realmId: realm.data.realm.id,
+      sessionCreate: sessionPasswordCreate(),
+    })
+    expect(login.success).toBe(true)
+    if (!login.success || login.data.session === undefined) return
+    const client = oidcClientCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        allowedScopes: ["openid", "profile", "email"],
+        clientType: "confidential",
+        name: "Nonce interaction client",
+        redirectUris: ["https://client.example/callback"],
+        requireConsent: true,
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(client.success).toBe(true)
+    if (!client.success || client.data.clientSecret === undefined) return
+    const key = oidcSigningKeyCreate({
+      context: realmSystemContextCreate(),
+      database,
+      encryptionSecret: "nonce-interaction-secret",
+      realmId: realm.data.realm.id,
+    })
+    expect(key.success).toBe(true)
+    if (!key.success) return
+
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const nonce = "nonce-preserved-through-interaction-resume"
+    const state = "nonce-interaction-state"
+    const started = await appRequestAuthorization(database, {
+      client_id: client.data.client.id,
+      code_challenge: pkceChallengeCreate(verifier),
+      code_challenge_method: "S256",
+      nonce,
+      redirect_uri: "https://client.example/callback",
+      response_type: "code",
+      scope: "openid profile email",
+      state,
+    })
+    expect(started.status).toBe(302)
+    const startLocation = started.headers.get("location")
+    expect(startLocation).toStartWith("/login?")
+    if (startLocation === null) return
+    const interaction = new URL(`https://nonce-interaction.example.com${startLocation}`).searchParams.get("interaction")
+    expect(interaction).toBeString()
+    if (interaction === null) return
+    const interactionCookie = cookieGet(started.headers.get("set-cookie"), "oidc-interaction")
+    expect(interactionCookie).toHaveLength(43)
+
+    const app = oidcServerAppCreate({
+      database,
+      publicOrigin: "https://nonce-interaction.example.com",
+      systemSecret: "nonce-interaction-secret",
+    })
+    const resumed = await app.request(
+      `https://nonce-interaction.example.com/oauth2/authorize?interaction=${interaction}`,
+      {
+        headers: {
+          accept: "text/html",
+          cookie: `oidc-interaction=${interactionCookie}; session=${login.data.session.token}`,
+        },
+      },
+    )
+    expect(resumed.status).toBe(302)
+    const consentLocation = resumed.headers.get("location")
+    expect(consentLocation).toStartWith("/consent?")
+
+    const csrf = sessionCsrfTokenCreate(database.runtime)
+    const consent = await app.request("https://nonce-interaction.example.com/oauth2/consent", {
+      body: new URLSearchParams({ decision: "approve", interaction }).toString(),
+      headers: {
+        accept: "text/html",
+        "content-type": "application/x-www-form-urlencoded",
+        cookie: `oidc-interaction=${interactionCookie}; session=${login.data.session.token}; csrf=${csrf}`,
+        origin: "https://nonce-interaction.example.com",
+        "x-csrf-token": csrf,
+      },
+      method: "POST",
+    })
+    expect(consent.status).toBe(302)
+    const callbackLocation = consent.headers.get("location")
+    expect(callbackLocation).toStartWith("https://client.example/callback?")
+    if (callbackLocation === null) return
+    const callback = new URL(callbackLocation)
+    expect(callback.searchParams.get("state")).toBe(state)
+    const code = callback.searchParams.get("code")
+    expect(code).toBeString()
+    if (code === null) return
+
+    const tokenResponse = await app.request("https://nonce-interaction.example.com/oauth2/token", {
+      body: new URLSearchParams({
+        client_id: client.data.client.id,
+        client_secret: client.data.clientSecret,
+        code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: "https://client.example/callback",
+      }).toString(),
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      method: "POST",
+    })
+    expect(tokenResponse.status).toBe(200)
+    const token = v.parse(oidcTokenResponseSchema, await tokenResponse.json())
+    expect(token.id_token).toBeString()
+    const idToken = oidcJwtVerify(token.id_token, key.data.signingKey.publicJwk)
+    expect(idToken).toMatchObject({
+      data: {
+        aud: client.data.client.id,
+        iss: "https://nonce-interaction.example.com",
+        nonce,
+        sub: login.data.authentication.userId,
+      },
+      success: true,
+    })
+  })
+})
+
+async function appRequestAuthorization(database: StorageDatabase, input: Record<string, string>): Promise<Response> {
+  const app = oidcServerAppCreate({
+    database,
+    publicOrigin: "https://nonce-interaction.example.com",
+    systemSecret: "nonce-interaction-secret",
+  })
+  return app.request(`https://nonce-interaction.example.com/oauth2/authorize?${new URLSearchParams(input)}`, {
+    headers: { accept: "text/html" },
+  })
+}
 
 test("OIDC interactions reject expiry and cross-realm resolution", async () => {
   await withDatabase(async (database) => {

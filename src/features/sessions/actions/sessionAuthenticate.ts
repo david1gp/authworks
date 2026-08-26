@@ -8,6 +8,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { authorizationActorContextCreate } from "../../authorization/domain/authorizationActorContextCreate.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionSchema } from "../../authorization/public/authorizationPermissionSchema.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import { realmBootstrapAdminTable } from "../../realms/persistence/realmBootstrapAdminTable.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
@@ -41,6 +42,15 @@ export function sessionAuthenticate(options: SessionAuthenticateOptions): Result
   if (!found.success) return found
   if (found.data === null || found.data.realmId !== options.realmId)
     return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
+  const context = organizationLoginContextValidate({
+    context: {
+      ...(found.data.organizationId === null ? {} : { organizationId: found.data.organizationId }),
+      realmId: found.data.realmId,
+    },
+    executor: options.database.db,
+    expectedRealmId: options.realmId,
+  })
+  if (!context.success) return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   if (found.data.revokedAt !== null || found.data.expiresAt <= now)
     return resultErrorCreate(op, "Session authorization is invalid.", "sessions.invalid")
   const subjectType = v.safeParse(sessionSubjectTypeSchema, found.data.subjectType)

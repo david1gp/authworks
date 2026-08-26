@@ -17,6 +17,7 @@ import { passkeyRegistrationComplete } from "../actions/passkeyRegistrationCompl
 import { passkeyRegistrationStart } from "../actions/passkeyRegistrationStart.js"
 import { passkeyAuthenticationCompleteRequestSchema } from "../public/passkeyAuthenticationCompleteRequestSchema.js"
 import { passkeyAuthenticationStartRequestSchema } from "../public/passkeyAuthenticationStartRequestSchema.js"
+import { passkeyMfaAuthenticationStartRequestSchema } from "../public/passkeyMfaAuthenticationStartRequestSchema.js"
 import { passkeyCredentialRevokeRequestSchema } from "../public/passkeyCredentialRevokeRequestSchema.js"
 import { passkeyRegistrationCompleteRequestSchema } from "../public/passkeyRegistrationCompleteRequestSchema.js"
 import { passkeyRegistrationStartRequestSchema } from "../public/passkeyRegistrationStartRequestSchema.js"
@@ -166,6 +167,44 @@ export function passkeyServerAppCreate(options: PasskeyServerAppCreateOptions) {
     )
   })
 
+  app.post("/realms/:realmId/passkeys/mfa/login/start", async (context) => {
+    const tenant = passkeyTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("realmId"),
+    )
+    if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "passkeys.not-found")
+    const body = await passkeyJsonRead(context)
+    if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "passkeys.invalid")
+    const input = v.safeParse(passkeyMfaAuthenticationStartRequestSchema, body.data)
+    if (!input.success)
+      return passkeyErrorResponseCreate(context, "The MFA passkey request is invalid.", "passkeys.invalid")
+    return passkeyResultResponseCreate(
+      context,
+      passkeyAuthenticationStart({
+        database: options.database,
+        mfaChallengeToken: input.output.token,
+        realmId: context.req.param("realmId"),
+        origins: options.origins,
+        purpose: "mfa",
+        rpId: options.rpId,
+        rpName: options.rpName,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/passkeys/mfa/login/complete", async (context) => {
+    const tenant = passkeyTenantContextResolve(
+      options.database,
+      context.req.header("host"),
+      context.req.url,
+      context.req.param("realmId"),
+    )
+    if (!tenant.success) return passkeyErrorResponseCreate(context, tenant.errorMessage, "passkeys.not-found")
+    return passkeyAuthenticationCompleteRoute(context, options, "mfa", false)
+  })
+
   app.post("/realms/:realmId/passkeys/mfa/start", protectedMiddleware, (context) =>
     passkeyResultResponseCreate(
       context,
@@ -258,6 +297,7 @@ async function passkeyAuthenticationCompleteRoute(
   context: PasskeyRouteContext,
   options: PasskeyServerAppCreateOptions,
   purpose: "mfa" | "step_up",
+  authenticated = true,
 ) {
   const body = await passkeyJsonRead(context)
   if (!body.success) return passkeyErrorResponseCreate(context, body.errorMessage, "passkeys.invalid")
@@ -265,7 +305,7 @@ async function passkeyAuthenticationCompleteRoute(
   if (!input.success)
     return passkeyErrorResponseCreate(context, "The passkey authentication response is invalid.", "passkeys.invalid")
   const completed = await passkeyAuthenticationComplete({
-    actorId: context.get("authorizationActor").actorId,
+    ...(authenticated ? { actorId: context.get("authorizationActor").actorId } : {}),
     database: options.database,
     input: input.output,
     realmId: context.req.param("realmId"),
@@ -273,7 +313,9 @@ async function passkeyAuthenticationCompleteRoute(
     rpId: options.rpId,
     rpName: options.rpName,
     expectedPurpose: purpose,
-    sessionToken: passkeySessionTokenGet(context, sessionBrowserModeRequested(context, options.browserMode)),
+    ...(authenticated
+      ? { sessionToken: passkeySessionTokenGet(context, sessionBrowserModeRequested(context, options.browserMode)) }
+      : {}),
   })
   return passkeyResultResponseCreate(
     context,

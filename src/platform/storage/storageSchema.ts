@@ -50,6 +50,7 @@ import { whatsappOtpChallengeTable } from "../../features/whatsappOtp/persistenc
 import { rateLimitTable } from "../rateLimit/rateLimitTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
 import { storageEventTable } from "./storageEventTable.js"
+import { eventUserSubjectTable } from "../../features/events/persistence/eventUserSubjectTable.js"
 
 export const storageSchema = {
   emailOtpChallengeTable,
@@ -101,6 +102,7 @@ export const storageSchema = {
   rateLimitTable,
   storageCurrentStateTable,
   storageEventTable,
+  eventUserSubjectTable,
 }
 
 export type StorageClient = BunSQLiteDatabase<typeof storageSchema>

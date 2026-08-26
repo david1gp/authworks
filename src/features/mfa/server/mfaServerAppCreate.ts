@@ -16,6 +16,8 @@ import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/se
 import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { mfaChallengeComplete } from "../actions/mfaChallengeComplete.js"
+import { mfaChallengeFactorSelect } from "../actions/mfaChallengeFactorSelect.js"
+import { mfaEmailOtpStart } from "../actions/mfaEmailOtpStart.js"
 import { mfaPolicyGet } from "../actions/mfaPolicyGet.js"
 import { mfaPolicySet } from "../actions/mfaPolicySet.js"
 import { mfaRecoveryCodesGenerate } from "../actions/mfaRecoveryCodesGenerate.js"
@@ -27,6 +29,9 @@ import { mfaTotpEnrollmentRemove } from "../actions/mfaTotpEnrollmentRemove.js"
 import { mfaTotpEnrollmentStart } from "../actions/mfaTotpEnrollmentStart.js"
 import { mfaTotpVerify } from "../actions/mfaTotpVerify.js"
 import { mfaChallengeCompleteRequestSchema } from "../public/mfaChallengeCompleteRequestSchema.js"
+import { mfaChallengeFactorSelectRequestSchema } from "../public/mfaChallengeFactorSelectRequestSchema.js"
+import type { MfaEmailOtpDelivery } from "../public/mfaEmailOtpDeliverySchema.js"
+import { mfaEmailOtpStartRequestSchema } from "../public/mfaEmailOtpStartRequestSchema.js"
 import { mfaPolicySetRequestSchema } from "../public/mfaPolicySetRequestSchema.js"
 import { mfaTotpEnrollmentConfirmRequestSchema } from "../public/mfaTotpEnrollmentConfirmRequestSchema.js"
 import { mfaTotpEnrollmentStartRequestSchema } from "../public/mfaTotpEnrollmentStartRequestSchema.js"
@@ -37,6 +42,7 @@ type MfaServerAppCreateOptions = {
   readonly systemSecret?: Secret | string
   readonly encryptionSecret?: Secret | string
   readonly publicOrigin?: string
+  readonly onEmailOtpDelivery?: (delivery: MfaEmailOtpDelivery) => void | Promise<void>
 }
 
 type MfaServerEnv = {
@@ -299,6 +305,38 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
       sessionBrowserModeRequested(context, options.browserMode)
         ? sessionBrowserCredentialResponseCreate(context, completed)
         : completed,
+    )
+  })
+
+  app.post("/realms/:realmId/mfa/challenge/factor", async (context) => {
+    const body = await mfaJsonRead(context)
+    if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "mfa.invalid")
+    const input = v.safeParse(mfaChallengeFactorSelectRequestSchema, body.data)
+    if (!input.success) return mfaErrorResponseCreate(context, "The MFA factor selection is invalid.", "mfa.invalid")
+    return mfaResultResponseCreate(
+      context,
+      mfaChallengeFactorSelect({
+        database: options.database,
+        factor: input.output.factor,
+        realmId: context.req.param("realmId"),
+        token: input.output.token,
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/mfa/challenge/email-otp/start", async (context) => {
+    const body = await mfaJsonRead(context)
+    if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "mfa.invalid")
+    const input = v.safeParse(mfaEmailOtpStartRequestSchema, body.data)
+    if (!input.success) return mfaErrorResponseCreate(context, "The MFA email OTP request is invalid.", "mfa.invalid")
+    return mfaResultResponseCreate(
+      context,
+      mfaEmailOtpStart({
+        challengeToken: input.output.token,
+        database: options.database,
+        onDelivery: options.onEmailOtpDelivery,
+        realmId: context.req.param("realmId"),
+      }),
     )
   })
 

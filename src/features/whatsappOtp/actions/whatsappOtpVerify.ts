@@ -7,10 +7,12 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginContextResolve } from "../../organizations/server/organizationLoginContextResolve.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -77,10 +79,16 @@ export function whatsappOtpVerify(options: WhatsappOtpVerifyOptions): Result<Wha
   if (!realm.success || realm.data.realm.status !== "active")
     return resultErrorCreate(op, "The WhatsApp OTP code is invalid.", "whatsapp-otp.invalid")
   if (parsed.output.organizationId !== undefined) {
+    const loginContext = organizationLoginContextResolve({
+      executor: options.database.db,
+      organizationId: parsed.output.organizationId,
+      realmId: options.realmId,
+    })
+    if (!loginContext.success) return resultErrorCreate(op, "The WhatsApp OTP code is invalid.", "whatsapp-otp.invalid")
     const policy = organizationLoginPolicyEnforce({
       database: options.database,
       method: "whatsapp_otp",
-      organizationId: parsed.output.organizationId,
+      organizationId: loginContext.data.organizationId,
       realmId: options.realmId,
     })
     if (!policy.success)
@@ -135,7 +143,7 @@ type WhatsappOtpVerifyTransactionOptions = {
   readonly clientIp: string
   readonly context: RealmSystemContext | RealmTenantContext
   readonly correlationId: string
-  readonly database: StorageExecutor
+  readonly database: StorageTransaction
   readonly deviceMetadata?: SessionDeviceMetadata
   readonly input: WhatsappOtpVerifyRequest
   readonly now: number
@@ -161,41 +169,29 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
   const users = userLookupCreate(options.database)
   const challenge = repository.whatsappOtpChallengeGet(options.realmId, options.input.challengeId)
   if (!challenge.success) return challenge
+  if (challenge.data === null || challenge.data.purpose !== "sign_in") return resultCreate({ failure: true })
+  const current = challenge.data
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(current.organizationId === null ? {} : { organizationId: current.organizationId }),
+      realmId: current.realmId,
+    },
+    executor: options.database,
+    ...(options.input.organizationId === undefined ? {} : { expectedOrganizationId: options.input.organizationId }),
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success) return resultCreate({ failure: true })
+  const organizationId = loginContext.data.organizationId
   if (options.input.organizationId !== undefined) {
     const policy = organizationLoginPolicyEnforce({
       database: options.policyDatabase,
       executor: options.database,
       method: "whatsapp_otp",
-      organizationId: options.input.organizationId,
+      organizationId,
       realmId: options.realmId,
     })
     if (!policy.success) return resultCreate({ policyDenied: true })
-  } else {
-    const realmPolicy = organizationLoginPolicyEnforce({
-      database: options.policyDatabase,
-      executor: options.database,
-      method: "whatsapp_otp",
-      realmId: options.realmId,
-    })
-    if (!realmPolicy.success) return resultCreate({ failure: true })
   }
-  if (
-    challenge.data === null ||
-    challenge.data.purpose !== "sign_in" ||
-    (options.input.organizationId !== undefined && options.input.organizationId !== challenge.data.organizationId)
-  )
-    return resultCreate({ failure: true })
-  if (options.input.organizationId === undefined && challenge.data.organizationId !== null) {
-    const challengePolicy = organizationLoginPolicyEnforce({
-      database: options.policyDatabase,
-      executor: options.database,
-      method: "whatsapp_otp",
-      organizationId: challenge.data.organizationId,
-      realmId: options.realmId,
-    })
-    if (!challengePolicy.success) return resultCreate({ failure: true })
-  }
-  const current = challenge.data
   if (current.consumedAt !== null) return resultCreate({ failure: true })
   if (current.expiresAt <= options.now)
     return whatsappOtpExpiredRecord(
@@ -288,7 +284,8 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
     actorId: options.context.actorId,
     deviceMetadata: options.deviceMetadata,
     executor: options.database,
-    organizationId: current.organizationId ?? undefined,
+    organizationId,
+    policyDatabase: options.policyDatabase,
     primaryAuthenticationMethod: "whatsapp_otp",
     realmId: options.realmId,
     runtime: options.runtime,
@@ -302,19 +299,14 @@ function whatsappOtpVerifyTransaction(options: WhatsappOtpVerifyTransactionOptio
         database: options.policyDatabase,
         deviceMetadata: options.deviceMetadata,
         executor: options.database,
-        organizationId: current.organizationId ?? undefined,
+        organizationId,
         realmId: options.realmId,
         runtime: options.runtime,
         userId,
       }),
     userId,
   })
-  if (!authenticationResult.success)
-    return resultErrorCreate(
-      "whatsappOtpVerify",
-      "The authenticated session could not be created.",
-      "whatsapp-otp.internal",
-    )
+  if (!authenticationResult.success) return authenticationResult
   return resultCreate({
     failure: false,
     notification: whatsappOtpNotificationCreate("verified", userId, current.id, options.realmId),

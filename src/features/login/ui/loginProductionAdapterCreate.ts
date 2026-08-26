@@ -102,7 +102,7 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
         return completed
       }
       passkeyOptions?.statusSet?.("ready")
-      return resultCreate({ userId: completed.data.authentication.userId })
+      return resultCreate({ challenge: completed.data.challenge, userId: completed.data.authentication.userId })
     },
     passkeySupported: passkeyCapabilityCheck,
     passwordChange: async (currentPassword, newPassword) => {

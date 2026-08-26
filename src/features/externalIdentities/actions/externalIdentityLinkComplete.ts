@@ -8,6 +8,7 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityViewCreate } from "../domain/externalIdentityViewCreate.js"
@@ -144,7 +145,7 @@ export function externalIdentityLinkComplete(
         "The external identity event payload is invalid.",
         "external-identities.event-invalid",
       )
-    const identityEvent = storageEventAppend(
+    const identityEvent = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.userId,
@@ -158,6 +159,7 @@ export function externalIdentityLinkComplete(
         metadata: { auditSafe: true, source: "external_identities" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: options.userId,
       },
       runtime,
     )

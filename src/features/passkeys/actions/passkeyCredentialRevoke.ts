@@ -5,7 +5,7 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { externalIdentityUsableAuthenticationMethodRead } from "../../externalIdentities/server/externalIdentityUsableAuthenticationMethodRead.js"
 import { passwordUsableAuthenticationMethodRead } from "../../passwords/server/passwordUsableAuthenticationMethodRead.js"
@@ -81,7 +81,7 @@ export function passkeyCredentialRevoke(
     })
     if (!payload.success)
       return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.actorId ?? options.userId,
@@ -95,6 +95,7 @@ export function passkeyCredentialRevoke(
         metadata: { auditSafe: true, source: "passkeys" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: options.userId,
       },
       runtime,
     )

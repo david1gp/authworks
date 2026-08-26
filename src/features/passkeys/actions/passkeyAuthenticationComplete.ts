@@ -11,9 +11,15 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
+import { mfaPasskeyComplete } from "../../mfa/actions/mfaPasskeyComplete.js"
+import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
+import { organizationMembershipContextValidate } from "../../organizations/server/organizationMembershipContextValidate.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import { sessionCredentialCreate } from "../../sessions/domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../../sessions/domain/sessionCredentialHashCreate.js"
@@ -74,12 +80,32 @@ export async function passkeyAuthenticationComplete(
     return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
   if (options.expectedPurpose !== undefined && ceremony.data.purpose !== options.expectedPurpose)
     return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(ceremony.data.organizationId === null ? {} : { organizationId: ceremony.data.organizationId }),
+      realmId: ceremony.data.realmId,
+    },
+    executor: options.database.db,
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
+  if (ceremony.data.purpose === "step_up" && loginContext.data.organizationId !== undefined) {
+    const membership = organizationMembershipContextValidate({
+      executor: options.database.db,
+      organizationId: loginContext.data.organizationId,
+      realmId: options.realmId,
+      userId: ceremony.data.userId ?? "",
+    })
+    if (!membership.success)
+      return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.unauthorized")
+  }
   if (ceremony.data.purpose === "passwordless") {
     const policy = organizationLoginPolicyEnforce({
       database: options.database,
       realmId: options.realmId,
       method: "passkey",
-      organizationId: ceremony.data.organizationId ?? undefined,
+      organizationId: loginContext.data.organizationId,
     })
     if (!policy.success)
       return resultErrorCreate(op, "The passkey login method is disabled for this organization.", "passkeys.conflict")
@@ -139,7 +165,11 @@ export async function passkeyAuthenticationComplete(
     return resultErrorCreate(op, "The passkey credential ID is invalid.", "passkeys.invalid")
   if (!passkeyUserHandleMatches(input.output.response.response.userHandle, credential.data.userId))
     return resultErrorCreate(op, "The passkey user handle is invalid.", "passkeys.invalid")
-  if (ceremony.data.purpose !== "passwordless" && options.sessionToken === undefined)
+  if (
+    ceremony.data.purpose !== "passwordless" &&
+    !(ceremony.data.purpose === "mfa" && ceremony.data.mfaChallengeId !== null) &&
+    options.sessionToken === undefined
+  )
     return resultErrorCreate(op, "The passkey session is required.", "passkeys.unauthorized")
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) =>
@@ -162,7 +192,7 @@ export async function passkeyAuthenticationComplete(
 type PasskeyAuthenticationCompleteTransactionOptions = {
   readonly actorId?: string | null
   readonly correlationId: string
-  readonly database: Parameters<typeof passkeyRepositoryCreate>[0]
+  readonly database: StorageTransaction
   readonly realmId: string
   readonly input: PasskeyAuthenticationCompleteRequest
   readonly now: number
@@ -187,6 +217,17 @@ function passkeyAuthenticationCompleteTransaction(
     ceremony.data.expiresAt <= options.now
   )
     return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(ceremony.data.organizationId === null ? {} : { organizationId: ceremony.data.organizationId }),
+      realmId: ceremony.data.realmId,
+    },
+    executor: options.database,
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success)
+    return resultErrorCreate(op, "The passkey authentication ceremony is invalid.", "passkeys.invalid")
+  const organizationId = loginContext.data.organizationId
   const credentialId = options.input.response.id
   const credential = repository.passkeyCredentialGetByCredentialId(options.realmId, ceremony.data.rpId, credentialId)
   if (!credential.success) return credential
@@ -231,7 +272,7 @@ function passkeyAuthenticationCompleteTransaction(
   })
   if (!credentialPayload.success)
     return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
-  const credentialEvent = storageEventAppend(
+  const credentialEvent = eventSecurityEventAppend(
     options.database,
     {
       actorId: options.actorId ?? credential.data.userId,
@@ -245,6 +286,7 @@ function passkeyAuthenticationCompleteTransaction(
       metadata: { auditSafe: true, source: "passkeys" },
       occurredAt: options.now,
       payload: credentialPayload.output,
+      userSubjectId: credential.data.userId,
     },
     options.runtime,
   )
@@ -257,7 +299,7 @@ function passkeyAuthenticationCompleteTransaction(
   })
   if (!authenticationPayload.success)
     return resultErrorCreate(op, "The passkey event payload is invalid.", "passkeys.event-invalid")
-  const authenticationEvent = storageEventAppend(
+  const authenticationEvent = eventSecurityEventAppend(
     options.database,
     {
       actorId: options.actorId ?? credential.data.userId,
@@ -271,6 +313,7 @@ function passkeyAuthenticationCompleteTransaction(
       metadata: { auditSafe: true, source: "passkeys" },
       occurredAt: options.now,
       payload: authenticationPayload.output,
+      userSubjectId: credential.data.userId,
     },
     options.runtime,
   )
@@ -280,38 +323,71 @@ function passkeyAuthenticationCompleteTransaction(
     realmId: options.realmId,
     userId: credential.data.userId,
   }
-  if (ceremony.data.purpose === "passwordless") {
-    const session = sessionIssue({
+  const userId = credential.data.userId
+  if (ceremony.data.purpose === "mfa" && ceremony.data.mfaChallengeId !== null) {
+    const completed = mfaPasskeyComplete({
       actorId: options.actorId ?? credential.data.userId,
-      assurance: "authenticated",
-      authenticationMethod: "passkey",
-      commandIndex: 2,
+      challengeId: ceremony.data.mfaChallengeId,
       correlationId: options.correlationId,
-      database: options.policyDatabase,
-      executor: options.database,
-      organizationId: ceremony.data.organizationId ?? undefined,
+      database: options.database,
+      deviceMetadata: undefined,
+      policyDatabase: options.policyDatabase,
       realmId: options.realmId,
       runtime: options.runtime,
       userId: credential.data.userId,
     })
-    if (!session.success)
-      return resultErrorCreate(op, "The passkey session could not be created.", "passkeys.write-failed")
+    if (!completed.success) return completed
+    return resultCreate(completed.data)
+  }
+  if (ceremony.data.purpose === "passwordless") {
+    const authenticationResult = mfaPrimaryAuthenticationComplete({
+      actorId: options.actorId ?? userId,
+      executor: options.database,
+      organizationId,
+      policyDatabase: options.policyDatabase,
+      primaryAuthenticationMethod: "passkey",
+      realmId: options.realmId,
+      runtime: options.runtime,
+      sessionCreate: () =>
+        sessionIssue({
+          actorId: options.actorId ?? userId,
+          assurance: "authenticated",
+          authenticationMethod: "passkey",
+          commandIndex: 2,
+          correlationId: options.correlationId,
+          database: options.policyDatabase,
+          executor: options.database,
+          organizationId,
+          realmId: options.realmId,
+          runtime: options.runtime,
+          userId,
+        }),
+      userId,
+    })
+    if (!authenticationResult.success) return authenticationResult
     return resultCreate({
       authentication: {
         authenticatedAt: authentication.authenticatedAt,
         realmId: authentication.realmId,
         userId: authentication.userId,
       },
-      session: session.data,
+      ...authenticationResult.data,
     })
   }
-  return passkeySessionAssuranceRotate(options, ceremony.data.sessionId, credential.data.userId, authentication)
+  return passkeySessionAssuranceRotate(
+    options,
+    ceremony.data.sessionId,
+    credential.data.userId,
+    organizationId,
+    authentication,
+  )
 }
 
 function passkeySessionAssuranceRotate(
   options: PasskeyAuthenticationCompleteTransactionOptions,
   sessionId: string | null,
   userId: string,
+  organizationId: string | undefined,
   authentication: PasskeyAuthentication,
 ): Result<PasskeyAuthenticationCompleteResponse> {
   const op = "passkeyAuthenticationComplete"
@@ -331,6 +407,43 @@ function passkeySessionAssuranceRotate(
     current.expiresAt <= options.now
   )
     return resultErrorCreate(op, "The passkey session is invalid.", "passkeys.invalid")
+  if (current.impersonatorId !== null)
+    return resultErrorCreate(op, "The impersonated session cannot be stepped up.", "passkeys.unauthorized")
+  if (current.authenticationMethod === "passkey")
+    return resultErrorCreate(
+      op,
+      "The passkey factor must be distinct from the primary authentication method.",
+      "passkeys.conflict",
+    )
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(current.organizationId === null ? {} : { organizationId: current.organizationId }),
+      realmId: current.realmId,
+    },
+    executor: options.database,
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success || loginContext.data.organizationId !== organizationId)
+    return resultErrorCreate(op, "The passkey session is invalid.", "passkeys.invalid")
+  if (organizationId !== undefined) {
+    const membership = organizationMembershipContextValidate({
+      executor: options.database,
+      organizationId,
+      realmId: options.realmId,
+      userId,
+    })
+    if (!membership.success) return resultErrorCreate(op, "The passkey session is invalid.", "passkeys.unauthorized")
+  }
+  const policy = organizationLoginPolicyResolve({
+    database: options.policyDatabase,
+    executor: options.database,
+    organizationId,
+    realmId: options.realmId,
+    runtimeAvailableFactors: ["passkey"],
+  })
+  if (!policy.success) return policy
+  if (!policy.data.allowedFactors.includes("passkey") || !policy.data.preferredFactorOrder.includes("passkey"))
+    return resultErrorCreate(op, "The passkey step-up factor is disabled for this organization.", "passkeys.conflict")
   const nextToken = sessionCredentialCreate(options.runtime)
   const rotated = sessionRepositoryCreate(options.database).sessionAssuranceRotate(
     options.realmId,
@@ -348,7 +461,7 @@ function passkeySessionAssuranceRotate(
   if (!eventVersion.success) return eventVersion
   const payload = v.safeParse(sessionRotatedEventPayloadSchema, { rotatedAt: options.now, sessionId: current.id })
   if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.", "passkeys.event-invalid")
-  const event = storageEventAppend(
+  const event = eventSecurityEventAppend(
     options.database,
     {
       actorId: userId,
@@ -362,6 +475,7 @@ function passkeySessionAssuranceRotate(
       metadata: { auditSafe: true, source: "sessions" },
       occurredAt: options.now,
       payload: payload.output,
+      userSubjectId: userId,
     },
     options.runtime,
   )

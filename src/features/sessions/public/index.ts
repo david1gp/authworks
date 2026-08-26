@@ -1,3 +1,4 @@
+export * from "./sessionAssuranceRequiredDetailsSchema.js"
 export * from "./sessionAssuranceSchema.js"
 export * from "./sessionAuthenticationMethodSchema.js"
 export * from "./sessionBootstrapAdminSignInRequestSchema.js"

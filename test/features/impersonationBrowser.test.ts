@@ -89,8 +89,9 @@ test("browser impersonation issues opaque cookies, enforces CSRF, and clears the
     if (!targetMembership.success) return
     const adminSession = sessionIssue({
       assurance: "multi_factor",
-      authenticationMethod: "totp",
+      authenticationMethod: "password",
       database,
+      mfaMethod: "totp",
       realmId: realm.data.realm.id,
       userId: admin.id,
     })

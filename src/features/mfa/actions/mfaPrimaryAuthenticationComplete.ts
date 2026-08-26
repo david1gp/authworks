@@ -1,8 +1,9 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
-import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
+import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import type { SessionAuthenticationMethod } from "../../sessions/public/sessionAuthenticationMethodSchema.js"
 import { mfaPolicyDefaults } from "../domain/mfaPolicyDefaults.js"
 import { mfaRepositoryCreate } from "../persistence/mfaRepositoryCreate.js"
@@ -17,8 +18,9 @@ type MfaPrimaryAuthenticationCompleteOptions<TSession> = {
     readonly ipAddress?: string
     readonly userAgent?: string
   }
-  readonly executor: StorageExecutor
+  readonly executor: StorageTransaction
   readonly organizationId?: string
+  readonly policyDatabase?: StorageDatabase
   readonly realmId: string
   readonly primaryAuthenticationMethod: SessionAuthenticationMethod
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -29,19 +31,33 @@ type MfaPrimaryAuthenticationCompleteOptions<TSession> = {
 export function mfaPrimaryAuthenticationComplete<TSession>(
   options: MfaPrimaryAuthenticationCompleteOptions<TSession>,
 ): Result<{ readonly challenge?: MfaChallengeResponse; readonly session?: TSession }> {
-  const op = "mfaPrimaryAuthenticationComplete"
   const repository = mfaRepositoryCreate(options.executor)
-  const policy = repository.mfaPolicyGet(options.realmId)
-  if (!policy.success) return policy
-  if ((policy.data ?? mfaPolicyDefaults).mode === "required") {
-    const enrollment = repository.mfaEnrollmentActiveGet(options.realmId, options.userId)
-    if (!enrollment.success) return enrollment
-    if (enrollment.data === null) return resultErrorCreate(op, "MFA enrollment is required.", "mfa.not-found")
+  const legacyPolicy = repository.mfaPolicyGet(options.realmId)
+  if (!legacyPolicy.success) return legacyPolicy
+  let organizationRequired = false
+  let organizationMinimumStepUpAssurance: "none" | "authenticated" | "multi_factor" | undefined
+  if (options.policyDatabase !== undefined) {
+    const organizationPolicy = organizationLoginPolicyResolve({
+      database: options.policyDatabase,
+      executor: options.executor,
+      organizationId: options.organizationId,
+      realmId: options.realmId,
+    })
+    if (!organizationPolicy.success) return organizationPolicy
+    organizationRequired = organizationPolicy.data.requiredMfa
+    organizationMinimumStepUpAssurance = organizationPolicy.data.minimumStepUpAssurance
+  }
+  const legacyRequired = (legacyPolicy.data ?? mfaPolicyDefaults).mode === "required"
+  const minimumAssuranceRequiresMfa =
+    organizationMinimumStepUpAssurance !== undefined &&
+    mfaAssuranceRankGet(organizationMinimumStepUpAssurance) > mfaAssuranceRankGet("authenticated")
+  if (organizationRequired || legacyRequired || minimumAssuranceRequiresMfa) {
     const challenge = mfaLoginChallengeStart({
       actorId: options.actorId,
       deviceMetadata: options.deviceMetadata,
       executor: options.executor,
       organizationId: options.organizationId,
+      policyDatabase: options.policyDatabase,
       realmId: options.realmId,
       primaryAuthenticationMethod: options.primaryAuthenticationMethod,
       purpose: "login",
@@ -55,4 +71,10 @@ export function mfaPrimaryAuthenticationComplete<TSession>(
   const session = options.sessionCreate()
   if (!session.success) return session
   return resultCreate({ session: session.data })
+}
+
+function mfaAssuranceRankGet(value: "none" | "authenticated" | "multi_factor"): number {
+  if (value === "multi_factor") return 2
+  if (value === "authenticated") return 1
+  return 0
 }

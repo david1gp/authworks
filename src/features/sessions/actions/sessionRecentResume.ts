@@ -6,10 +6,12 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
+import { eventSecurityUnindexedEventAppend } from "../../events/server/eventSecurityUnindexedEventAppend.js"
 import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import { realmBootstrapAdminTable } from "../../realms/persistence/realmBootstrapAdminTable.js"
 import { userTable } from "../../users/persistence/userTable.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
@@ -19,6 +21,7 @@ import { sessionEventTypes } from "../events/sessionEventTypes.js"
 import { sessionRotatedEventPayloadSchema } from "../events/sessionRotatedEventPayloadSchema.js"
 import { sessionRepositoryCreate } from "../persistence/sessionRepositoryCreate.js"
 import type { SessionRow } from "../persistence/sessionTable.js"
+import type { SessionAssuranceRequiredDetails } from "../public/sessionAssuranceRequiredDetailsSchema.js"
 import type { SessionCredentialResponse } from "../public/sessionCredentialResponseSchema.js"
 import { sessionSchema } from "../public/sessionSchema.js"
 import { sessionAuthenticate } from "./sessionAuthenticate.js"
@@ -76,6 +79,16 @@ export function sessionRecentResume(options: SessionRecentResumeOptions): Result
       return resultErrorCreate(op, "Session resume is invalid.", "sessions.invalid")
     const selectedView = v.safeParse(sessionSchema, sessionPublicViewCreate(selectedSession))
     if (!selectedView.success) return resultErrorCreate(op, "Session resume is invalid.", "sessions.invalid")
+    const selectedContext = organizationLoginContextValidate({
+      context: {
+        ...(selectedSession.organizationId === null ? {} : { organizationId: selectedSession.organizationId }),
+        realmId: selectedSession.realmId,
+      },
+      executor: transaction,
+      ...(options.organizationId === undefined ? {} : { expectedOrganizationId: options.organizationId }),
+      expectedRealmId: options.realmId,
+    })
+    if (!selectedContext.success) return resultErrorCreate(op, "Session resume is invalid.", "sessions.invalid")
     if (!sessionRecentResumeSubjectValidate(transaction, selectedSession, selectedView.output.subjectType))
       return resultErrorCreate(op, "Session resume is invalid.", "sessions.invalid")
     if (!sessionRecentResumeAssuranceValid(current.data.assurance, selectedView.output.assurance))
@@ -93,10 +106,27 @@ export function sessionRecentResume(options: SessionRecentResumeOptions): Result
     const policy = organizationLoginPolicyResolve({
       database: options.database,
       executor: transaction,
-      organizationId: options.organizationId,
+      organizationId: selectedContext.data.organizationId,
       realmId: options.realmId,
     })
     if (!policy.success) return resultErrorCreate(op, "Session resume is invalid.", "sessions.invalid")
+    const requiredAssurance =
+      policy.data.requiredMfa && selectedView.output.subjectType === "user"
+        ? "multi_factor"
+        : policy.data.minimumStepUpAssurance
+    if (sessionAssuranceRankGet(selectedView.output.assurance) < sessionAssuranceRankGet(requiredAssurance)) {
+      const details: SessionAssuranceRequiredDetails = {
+        action: "step_up",
+        organizationId: selectedContext.data.organizationId ?? null,
+        requiredAssurance,
+      }
+      return resultErrorCreate(
+        op,
+        "Stronger authentication is required for this session resume.",
+        "sessions.assurance-required",
+        details,
+      )
+    }
     const sessionLifetimeMs = (policy.data.sessionLifetimeSeconds ?? sessionDefaultLifetimeMs / 1_000) * 1_000
     const policyExpiresAt = now + sessionLifetimeMs
     if (!Number.isSafeInteger(policyExpiresAt))
@@ -122,23 +152,27 @@ export function sessionRecentResume(options: SessionRecentResumeOptions): Result
     })
     if (!payload.success)
       return resultErrorCreate(op, "The session event payload is invalid.", "sessions.event-invalid")
-    const event = storageEventAppend(
-      transaction,
-      {
-        actorId: selectedSession.subjectId,
-        aggregateId: selectedSession.id,
-        aggregateType: "session",
-        aggregateVersion: eventVersion.data + 1,
-        commandIndex: 0,
-        correlationId,
-        eventType: sessionEventTypes.rotated,
-        realmId: options.realmId,
-        metadata: { auditSafe: true, source: "sessions" },
-        occurredAt: now,
-        payload: payload.output,
-      },
-      runtime,
-    )
+    const eventInput = {
+      actorId: selectedSession.subjectId,
+      aggregateId: selectedSession.id,
+      aggregateType: "session" as const,
+      aggregateVersion: eventVersion.data + 1,
+      commandIndex: 0,
+      correlationId,
+      eventType: sessionEventTypes.rotated,
+      realmId: options.realmId,
+      metadata: { auditSafe: true, source: "sessions" },
+      occurredAt: now,
+      payload: payload.output,
+    }
+    const event =
+      selectedView.output.subjectType === "user"
+        ? eventSecurityEventAppend(transaction, { ...eventInput, userSubjectId: selectedSession.subjectId }, runtime)
+        : eventSecurityUnindexedEventAppend(
+            transaction,
+            { ...eventInput, unindexedReason: "bootstrap_admin_session" },
+            runtime,
+          )
     if (!event.success) return event
     return resultCreate({ session: sessionPublicViewCreate(rotated.data, true), token: nextToken })
   })

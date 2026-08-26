@@ -5,8 +5,8 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { mfaRecoveryCodeCreate } from "../domain/mfaRecoveryCodeCreate.js"
 import { mfaRecoveryCodeHashCreate } from "../domain/mfaRecoveryCodeHashCreate.js"
 import { mfaEventPayloadSchema } from "../events/mfaEventPayloadSchema.js"
@@ -65,7 +65,7 @@ export function mfaRecoveryCodesGenerate(options: MfaRecoveryCodesGenerateOption
     if (!payload.success) return resultErrorCreate(op, "The MFA event payload is invalid.", "mfa.event-invalid")
     const eventVersion = repository.mfaEventVersionGet(options.realmId, "mfa_recovery_codes", options.userId)
     if (!eventVersion.success) return eventVersion
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.actorId ?? options.userId,
@@ -79,6 +79,7 @@ export function mfaRecoveryCodesGenerate(options: MfaRecoveryCodesGenerateOption
         metadata: { auditSafe: true, source: "mfa" },
         occurredAt: now,
         payload: payload.output,
+        userSubjectId: options.userId,
       },
       runtime,
     )

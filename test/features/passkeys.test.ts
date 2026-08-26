@@ -270,6 +270,20 @@ test("passkeys perform real registration, discoverable authentication, protocol 
     expect(authenticated.data.session.session.authenticationMethod).toBe("passkey")
     expect(authenticated.data.session.session.assurance).toBe("authenticated")
     expect(
+      await passkeyAuthenticationStart({
+        actorId: fixture.userId,
+        database,
+        realmId: fixture.realm.id,
+        origins: [origin],
+        purpose: "step_up",
+        rpId,
+        rpName: "Test RP",
+        runtime: testkit.runtime,
+        sessionId: authenticated.data.session.session.id,
+        userId: fixture.userId,
+      }),
+    ).toMatchObject({ code: "passkeys.conflict", success: false })
+    expect(
       (
         await passkeyAuthenticationComplete({
           database,
@@ -904,34 +918,8 @@ test("passkey browser completion issues and upgrades an HttpOnly session cookie 
       `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/step-up/start`,
       { headers, method: "POST" },
     )
-    expect(stepUpStarted.status).toBe(200)
-    const stepUpBody = (await stepUpStarted.json()) as { options: { challenge: string }; token: string }
-    const upgraded = await app.request(
-      `https://passkeys-browser.example.com/realms/${fixture.realm.id}/passkeys/step-up/complete`,
-      {
-        body: JSON.stringify({
-          response: authenticationResponseCreate(
-            stepUpBody.options.challenge,
-            fixture.userId,
-            credentialId,
-            keys.privateKey,
-            4,
-          ),
-          token: stepUpBody.token,
-        }),
-        headers: { ...headers, "content-type": "application/json" },
-        method: "POST",
-      },
-    )
-    expect(upgraded.status).toBe(200)
-    const rotatedCookie = upgraded.headers.get("set-cookie") ?? ""
-    const rotatedToken = /^session=([^;]+);/.exec(rotatedCookie)?.[1]
-    const upgradedBody = (await upgraded.json()) as { session?: unknown }
-    expect(rotatedToken).toHaveLength(43)
-    expect(upgradedBody.session).toBeUndefined()
-    expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: loginToken }).success).toBe(false)
-    if (rotatedToken !== undefined)
-      expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: rotatedToken }).success).toBe(true)
+    expect(stepUpStarted.status).toBe(409)
+    expect(sessionAuthenticate({ database, realmId: fixture.realm.id, token: loginToken }).success).toBe(true)
   })
 })
 

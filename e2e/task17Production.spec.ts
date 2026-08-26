@@ -43,19 +43,19 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
 
     await loginResponsePromise
     await expect(page).toHaveURL(/\/account\/profile$/)
-    await expect(page.getByLabel("Display name")).toHaveValue("E2E Member")
+    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
     const memberSecretState = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))
     expect(memberSecretState).not.toContain(fixture.member.password)
     expect(await page.locator("body").textContent()).not.toContain(fixture.member.password)
 
     await page.reload()
-    await expect(page.getByLabel("Display name")).toHaveValue("E2E Member")
-    await page.getByLabel("Display name").fill("E2E Member Updated")
+    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await page.getByLabel("Display name", { exact: true }).fill("E2E Member Updated")
     await page.getByRole("button", { name: "Save changes", exact: true }).click()
     await expect(page.getByRole("status")).toContainText("Your profile was saved.")
 
     await page.reload()
-    await expect(page.getByLabel("Display name")).toHaveValue("E2E Member Updated")
+    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member Updated")
 
     const tenantDenied = await page.evaluate(async (realmId) => {
       const response = await fetch(`/realms/${realmId}/me`, { credentials: "include" })
@@ -319,7 +319,7 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await page.getByLabel("Password", { exact: true }).fill(fixture.administrator.password)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
     await expect(page).toHaveURL(/\/login\/mfa\?return_to=/)
-    await page.getByRole("button", { name: "Recovery code", exact: true }).click()
+    await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(administratorRecoveryCode)
     await page.getByRole("button", { name: "Verify", exact: true }).click()
     await expect(page).toHaveURL(new RegExp(`/admin/machine-users/${fixture.machineUser.id}$`))
@@ -374,7 +374,7 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await page.getByLabel("Password", { exact: true }).fill(fixture.member.password)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
     await expect(page).toHaveURL(/\/login\/mfa/)
-    await page.getByRole("button", { name: "Recovery code", exact: true }).click()
+    await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(memberRecoveryCode)
     await page.getByRole("button", { name: "Verify", exact: true }).click()
     await expect(page).toHaveURL(/\/account$/)

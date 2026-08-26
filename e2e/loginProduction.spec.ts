@@ -38,7 +38,11 @@ const discovery = {
     allowPasswordRecovery: true,
     allowPasskey: true,
     allowRegistration: true,
+    allowedFactors: ["totp", "email_otp", "passkey"],
+    minimumStepUpAssurance: "authenticated",
+    preferredFactorOrder: ["totp", "email_otp", "passkey"],
     providerIds: [providerId],
+    requiredMfa: false,
   },
   providers: [{ displayName: "GitHub", id: providerId, type: "github" }],
 }

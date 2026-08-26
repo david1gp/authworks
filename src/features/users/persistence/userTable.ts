@@ -21,6 +21,7 @@ export const userTable = sqliteTable(
   },
   (table) => [
     index("users_realm_id_idx").on(table.realmId),
+    uniqueIndex("users_realm_id_id_idx").on(table.realmId, table.id),
     uniqueIndex("users_realm_user_name_idx").on(table.realmId, table.userName),
     uniqueIndex("users_realm_email_idx").on(table.realmId, table.email),
     uniqueIndex("users_realm_verified_phone_idx")

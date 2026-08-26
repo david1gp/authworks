@@ -15,4 +15,7 @@ export const mfaErrorCatalog = [
   { code: "mfa.authentication-required", httpStatus: 401, retryable: false },
   { code: "mfa.tenant-required", httpStatus: 400, retryable: false },
   { code: "mfa.tenant-mismatch", httpStatus: 404, retryable: false },
+  { code: "mfa.enrollment-required", httpStatus: 409, retryable: false },
+  { code: "mfa.factor-disabled", httpStatus: 403, retryable: false },
+  { code: "mfa.factor-unavailable", httpStatus: 409, retryable: false },
 ] as const satisfies readonly ErrorCatalogEntry[]

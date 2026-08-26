@@ -6,8 +6,8 @@ import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
-import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
@@ -86,7 +86,7 @@ type UserEmailChangeVerifyTransactionOptions = {
   readonly clientIp: string
   readonly context: RealmTenantContext
   readonly correlationId: string
-  readonly database: StorageExecutor
+  readonly database: StorageTransaction
   readonly input: UserEmailChangeVerifyRequest
   readonly now: number
   readonly rateLimitSecret?: Secret | string
@@ -184,7 +184,7 @@ function userEmailChangeVerifyTransaction(
       "The email-change event payload is invalid.",
       "users.event-invalid",
     )
-  const challengeEvent = storageEventAppend(
+  const challengeEvent = eventSecurityEventAppend(
     options.database,
     {
       actorId: options.context.actorId,
@@ -198,11 +198,12 @@ function userEmailChangeVerifyTransaction(
       metadata: { auditSafe: true, source: "users" },
       occurredAt: options.now,
       payload: payload.output,
+      userSubjectId: options.userId,
     },
     options.runtime,
   )
   if (!challengeEvent.success) return challengeEvent
-  const userEvent = storageEventAppend(
+  const userEvent = eventSecurityEventAppend(
     options.database,
     {
       actorId: options.context.actorId,
@@ -216,6 +217,7 @@ function userEmailChangeVerifyTransaction(
       metadata: { auditSafe: true, source: "users" },
       occurredAt: options.now,
       payload: payload.output,
+      userSubjectId: options.userId,
     },
     options.runtime,
   )
@@ -243,7 +245,7 @@ function userEmailChangeFailedEventAppend(
       "The email-change event payload is invalid.",
       "users.event-invalid",
     )
-  return storageEventAppend(
+  return eventSecurityEventAppend(
     options.database,
     {
       actorId: options.context.actorId,
@@ -257,6 +259,7 @@ function userEmailChangeFailedEventAppend(
       metadata: { auditSafe: true, source: "users" },
       occurredAt: options.now,
       payload: payload.output,
+      userSubjectId: options.userId,
     },
     options.runtime,
   )

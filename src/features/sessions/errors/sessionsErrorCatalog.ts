@@ -14,4 +14,5 @@ export const sessionsErrorCatalog = [
   { code: "sessions.authentication-required", httpStatus: 401, retryable: false },
   { code: "sessions.tenant-required", httpStatus: 400, retryable: false },
   { code: "sessions.tenant-mismatch", httpStatus: 404, retryable: false },
+  { code: "sessions.assurance-required", httpStatus: 403, retryable: false },
 ] as const satisfies readonly ErrorCatalogEntry[]

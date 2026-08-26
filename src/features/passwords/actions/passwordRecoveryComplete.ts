@@ -8,6 +8,7 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -23,6 +24,7 @@ import { passwordTokenHashCreate } from "../domain/passwordTokenHashCreate.js"
 import { passwordCredentialChangedEventPayloadSchema } from "../events/passwordCredentialChangedEventPayloadSchema.js"
 import { passwordEventTypes } from "../events/passwordEventTypes.js"
 import { passwordRecoveryEventPayloadSchema } from "../events/passwordRecoveryEventPayloadSchema.js"
+import { passwordUnlockedEventPayloadSchema } from "../events/passwordUnlockedEventPayloadSchema.js"
 import { passwordRepositoryCreate } from "../persistence/passwordRepositoryCreate.js"
 import {
   type PasswordRecoveryCompleteRequest,
@@ -112,6 +114,7 @@ export function passwordRecoveryComplete(
     })
     if (!lockout.success) return lockout
     let userVersion = user.data.version
+    let userUnlocked = false
     if (user.data.state === "locked") {
       const unlocked = transaction
         .update(userTable)
@@ -143,27 +146,53 @@ export function passwordRecoveryComplete(
         runtime,
       )
       if (!stateEvent.success) return stateEvent
+      userUnlocked = true
     }
     const eventVersion = txRepository.passwordEventVersionGet(options.realmId, user.data.id)
     if (!eventVersion.success)
       return resultErrorCreate(op, "The recovery event version is invalid.", "passwords.invalid")
+    if (userUnlocked) {
+      const unlockedPayload = v.safeParse(passwordUnlockedEventPayloadSchema, { unlockedAt: now })
+      if (!unlockedPayload.success)
+        return resultErrorCreate(op, "The unlock event payload is invalid.", "passwords.event-invalid")
+      const unlockedEvent = eventSecurityEventAppend(
+        transaction,
+        {
+          actorId: options.context.actorId,
+          aggregateId: user.data.id,
+          aggregateType: "password",
+          aggregateVersion: eventVersion.data + 1,
+          commandIndex: 0,
+          correlationId,
+          eventType: passwordEventTypes.unlocked,
+          realmId: options.realmId,
+          metadata: { auditSafe: true, source: "passwords" },
+          occurredAt: now,
+          payload: unlockedPayload.output,
+          userSubjectId: user.data.id,
+        },
+        runtime,
+      )
+      if (!unlockedEvent.success) return unlockedEvent
+    }
     const changedPayload = v.safeParse(passwordCredentialChangedEventPayloadSchema, { reason: "recovery" })
     if (!changedPayload.success)
       return resultErrorCreate(op, "The password event payload is invalid.", "passwords.event-invalid")
-    const changedEvent = storageEventAppend(
+    const changedEvent = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.context.actorId,
         aggregateId: user.data.id,
         aggregateType: "password",
-        aggregateVersion: eventVersion.data + 1,
-        commandIndex: userVersion === user.data.version ? 0 : 1,
+        aggregateVersion: eventVersion.data + (userUnlocked ? 2 : 1),
+        commandIndex: userUnlocked ? 1 : 0,
         correlationId,
         eventType: passwordEventTypes.credentialChanged,
         realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: changedPayload.output,
+        userSubjectId: user.data.id,
       },
       runtime,
     )
@@ -171,20 +200,21 @@ export function passwordRecoveryComplete(
     const recoveredPayload = v.safeParse(passwordRecoveryEventPayloadSchema, { accepted: true })
     if (!recoveredPayload.success)
       return resultErrorCreate(op, "The recovery event payload is invalid.", "passwords.event-invalid")
-    const recoveredEvent = storageEventAppend(
+    const recoveredEvent = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.context.actorId,
         aggregateId: user.data.id,
         aggregateType: "password",
-        aggregateVersion: eventVersion.data + 2,
-        commandIndex: userVersion === user.data.version ? 1 : 2,
+        aggregateVersion: eventVersion.data + (userUnlocked ? 3 : 2),
+        commandIndex: userUnlocked ? 2 : 1,
         correlationId,
         eventType: passwordEventTypes.recovered,
         realmId: options.realmId,
         metadata: { auditSafe: true, source: "passwords" },
         occurredAt: now,
         payload: recoveredPayload.output,
+        userSubjectId: user.data.id,
       },
       runtime,
     )

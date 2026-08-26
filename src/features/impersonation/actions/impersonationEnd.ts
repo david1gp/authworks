@@ -6,7 +6,7 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
@@ -79,7 +79,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
     })
     if (!revokedPayload.success)
       return resultErrorCreate(op, "The session event payload is invalid.", "impersonation.event-invalid")
-    const revokedEvent = storageEventAppend(
+    const revokedEvent = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.actor.actorId,
@@ -93,6 +93,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
         metadata: { auditSafe: true, source: "sessions" },
         occurredAt: now,
         payload: revokedPayload.output,
+        userSubjectId: current.data.subjectId,
       },
       runtime,
     )
@@ -120,7 +121,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
     })
     if (!endedPayload.success)
       return resultErrorCreate(op, "The impersonation event payload is invalid.", "impersonation.event-invalid")
-    const endedEvent = storageEventAppend(
+    const endedEvent = eventSecurityEventAppend(
       transaction,
       {
         actorId: options.actor.actorId,
@@ -134,6 +135,7 @@ export function impersonationEnd(options: ImpersonationEndOptions): Result<Imper
         metadata: { auditSafe: true, source: "impersonation" },
         occurredAt: now,
         payload: endedPayload.output,
+        userSubjectId: current.data.subjectId,
       },
       runtime,
     )
