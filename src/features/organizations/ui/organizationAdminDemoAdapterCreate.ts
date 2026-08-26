@@ -14,6 +14,7 @@ import { organizationBrandingDefaultCreate } from "../domain/organizationBrandin
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
 import type { OrganizationDomain } from "../public/organizationDomainSchema.js"
 import type { OrganizationInvitation } from "../public/organizationInvitationSchema.js"
+import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
 import type { Organization } from "../public/organizationSchema.js"
@@ -39,7 +40,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     ...organizationBrandingDefaultCreate(),
     light: { ...organizationBrandingDefaultCreate().light, primaryColor: "#2563eb" },
   }
-  let policy: OrganizationLoginPolicy = {
+  let realmPolicy: OrganizationLoginPolicy = {
     allowDomainDiscovery: true,
     allowEmailOtp: true,
     allowExternalIdentity: true,
@@ -48,6 +49,26 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     allowPasswordRecovery: true,
     allowRegistration: false,
     providerIds: null,
+    requiredMfa: true,
+    allowedFactors: ["totp", "email_otp", "passkey"],
+    preferredFactorOrder: ["totp", "email_otp", "passkey"],
+    minimumStepUpAssurance: "multi_factor",
+  }
+  let organizationOverrides: OrganizationLoginPolicyOverride = {
+    allowRegistration: false,
+    allowedFactors: ["totp", "passkey"],
+    preferredFactorOrder: ["passkey", "totp"],
+  }
+  const organizationPolicy = (): OrganizationLoginPolicy => {
+    const values = Object.fromEntries(
+      Object.entries(organizationOverrides).filter(([, value]) => value !== undefined && value !== null),
+    ) as Partial<OrganizationLoginPolicy>
+    return {
+      ...realmPolicy,
+      ...values,
+      allowedFactors: [...(organizationOverrides.allowedFactors ?? realmPolicy.allowedFactors)],
+      preferredFactorOrder: [...(organizationOverrides.preferredFactorOrder ?? realmPolicy.preferredFactorOrder)],
+    }
   }
 
   const pending = <T>(): Promise<Result<T>> => new Promise<Result<T>>(() => undefined)
@@ -114,7 +135,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
               domain,
               found: true as const,
               organization: { id: demoOrganizationId, name: "Acme Corporation", realmId: demoRealmId },
-              policy,
+              policy: organizationPolicy(),
               providers: providers
                 .filter((provider) => provider.enabled)
                 .map((provider) => ({
@@ -167,22 +188,30 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
         return { revoked: true }
       }),
     loginPolicyGet: (organizationId) =>
-      guard("organizationAdminDemoLoginPolicyGet", () => ({
-        organizationId: organizationId.length === 0 ? null : organizationId,
-        overrides: { allowRegistration: false },
-        policy,
-        realmId: demoRealmId,
-      })),
+      guard("organizationAdminDemoLoginPolicyGet", () =>
+        organizationId.length === 0
+          ? { organizationId: null, overrides: realmPolicy, policy: realmPolicy, realmId: demoRealmId }
+          : {
+              organizationId,
+              overrides: organizationOverrides,
+              policy: organizationPolicy(),
+              realmId: demoRealmId,
+            },
+      ),
     loginPolicySet: (organizationId, input) =>
       guard("organizationAdminDemoLoginPolicySet", () => {
-        policy = {
-          ...policy,
-          ...Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined && value !== null)),
+        if (organizationId.length === 0) {
+          realmPolicy = {
+            ...realmPolicy,
+            ...Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined && value !== null)),
+          }
+        } else {
+          organizationOverrides = { ...organizationOverrides, ...input }
         }
         return {
           organizationId: organizationId.length === 0 ? null : organizationId,
-          overrides: input,
-          policy,
+          overrides: organizationId.length === 0 ? input : organizationOverrides,
+          policy: organizationId.length === 0 ? realmPolicy : organizationPolicy(),
           realmId: demoRealmId,
         }
       }),

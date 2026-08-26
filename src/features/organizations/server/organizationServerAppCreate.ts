@@ -16,6 +16,7 @@ import { realmTenantContextResolve } from "../../realms/actions/realmTenantConte
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
 import { organizationBrandingGet } from "../actions/organizationBrandingGet.js"
 import { organizationBrandingSet } from "../actions/organizationBrandingSet.js"
 import { organizationCreate } from "../actions/organizationCreate.js"
@@ -78,6 +79,7 @@ type OrganizationServerAppCreateOptions = {
 type OrganizationServerEnv = {
   Variables: {
     authorizationActor: AuthorizationActorContext
+    session: Session
   }
 }
 
@@ -599,6 +601,7 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         database: options.database,
         input: input.output,
         realmId: context.req.param("realmId"),
+        sessionId: context.get("session").id,
       }),
     )
   })

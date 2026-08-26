@@ -544,6 +544,32 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    interactionGetByAuthorizationRequestId(
+      realmId: string,
+      authorizationRequestId: string,
+    ): Result<OidcInteractionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(oidcInteractionTable)
+            .where(
+              and(
+                eq(oidcInteractionTable.realmId, realmId),
+                eq(oidcInteractionTable.authorizationRequestId, authorizationRequestId),
+              ),
+            )
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcInteractionGetByAuthorizationRequestId",
+          "The OIDC interaction could not be read.",
+          "oidc.read-failed",
+        )
+      }
+    },
+
     interactionBind(
       realmId: string,
       interactionId: string,
@@ -601,6 +627,39 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
         return resultErrorCodedCreate(
           "oidcInteractionAuthorizationRequestSet",
           "The OIDC interaction could not be updated.",
+          "oidc.write-failed",
+        )
+      }
+    },
+
+    interactionOrganizationContextSet(
+      realmId: string,
+      interactionId: string,
+      organizationId: string,
+    ): Result<OidcInteractionRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(oidcInteractionTable)
+            .set({ organizationId })
+            .where(
+              and(
+                eq(oidcInteractionTable.realmId, realmId),
+                eq(oidcInteractionTable.id, interactionId),
+                or(
+                  isNull(oidcInteractionTable.organizationId),
+                  eq(oidcInteractionTable.organizationId, organizationId),
+                ),
+                isNull(oidcInteractionTable.completedAt),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "oidcInteractionOrganizationContextSet",
+          "The OIDC interaction organization context could not be updated.",
           "oidc.write-failed",
         )
       }

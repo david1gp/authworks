@@ -1,4 +1,5 @@
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
+import { organizationLoginPolicyCanonicalFactorOrder } from "./organizationLoginPolicyCanonicalFactorOrder.js"
 
 export const organizationLoginPolicyDefaults: OrganizationLoginPolicy = {
   allowDomainDiscovery: true,
@@ -11,4 +12,8 @@ export const organizationLoginPolicyDefaults: OrganizationLoginPolicy = {
   allowRegistration: true,
   providerIds: null,
   sessionLifetimeSeconds: 30 * 24 * 60 * 60,
+  requiredMfa: false,
+  allowedFactors: [...organizationLoginPolicyCanonicalFactorOrder],
+  preferredFactorOrder: [...organizationLoginPolicyCanonicalFactorOrder],
+  minimumStepUpAssurance: "authenticated",
 }

@@ -3,7 +3,7 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import type { StorageTransaction } from "../../../platform/storage/storageSchema.js"
 import { oidcAccessTokenRevokedEventPayloadSchema } from "../events/oidcAccessTokenRevokedEventPayloadSchema.js"
 import { oidcEventTypes } from "../events/oidcEventTypes.js"
@@ -55,7 +55,7 @@ export function oidcRefreshTokenFamilyRevokeExecute(options: {
         "The access-token revocation event payload is invalid.",
         "oidc.event-invalid",
       )
-    const event = storageEventAppend(
+    const event = eventSecurityEventAppend(
       options.transaction,
       {
         actorId: options.family.userId,
@@ -69,6 +69,7 @@ export function oidcRefreshTokenFamilyRevokeExecute(options: {
         metadata: { auditSafe: true, source: "oidc" },
         occurredAt: options.now,
         payload: payload.output,
+        userSubjectId: access.userId,
       },
       options.runtime,
     )
@@ -88,7 +89,7 @@ export function oidcRefreshTokenFamilyRevokeExecute(options: {
       "The refresh-token family revocation event payload is invalid.",
       "oidc.event-invalid",
     )
-  const familyEvent = storageEventAppend(
+  const familyEvent = eventSecurityEventAppend(
     options.transaction,
     {
       actorId: options.family.userId,
@@ -102,6 +103,7 @@ export function oidcRefreshTokenFamilyRevokeExecute(options: {
       metadata: { auditSafe: true, source: "oidc" },
       occurredAt: options.now,
       payload: familyPayload.output,
+      userSubjectId: options.family.userId,
     },
     options.runtime,
   )

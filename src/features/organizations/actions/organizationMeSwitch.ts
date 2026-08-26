@@ -13,12 +13,15 @@ type OrganizationMeSwitchOptions = {
   readonly database: StorageDatabase
   readonly input: unknown
   readonly realmId: string
+  readonly sessionId?: string
 }
 
 export function organizationMeSwitch(options: OrganizationMeSwitchOptions): Result<OrganizationMeSwitchResponse> {
   const op = "organizationMeSwitch"
   const subject = organizationSubjectUserGet(options)
   if (!subject.success) return subject
+  if (options.sessionId === undefined)
+    return resultErrorCodedCreate(op, "The authenticated session is required.", "sessions.unauthorized")
   const parsed = v.safeParse(organizationMeSwitchRequestSchema, options.input)
   if (!parsed.success)
     return resultErrorCodedCreate(op, "The organization switch request is invalid.", "organizations.invalid")
@@ -27,5 +30,6 @@ export function organizationMeSwitch(options: OrganizationMeSwitchOptions): Resu
     database: options.database,
     input: parsed.output,
     realmId: options.realmId,
+    sessionId: options.sessionId,
   })
 }

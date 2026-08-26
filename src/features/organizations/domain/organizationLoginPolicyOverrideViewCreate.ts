@@ -1,14 +1,21 @@
+import { type Result } from "#result"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import type { OrganizationLoginPolicyRow } from "../persistence/organizationLoginPolicyTable.js"
 import type { RealmLoginPolicyRow } from "../persistence/realmLoginPolicyTable.js"
 import type { OrganizationLoginPolicyOverride } from "../public/organizationLoginPolicyOverrideSchema.js"
+import { organizationLoginPolicyFactorListParse } from "./organizationLoginPolicyFactorListParse.js"
 import { organizationLoginPolicyProviderIdsParse } from "./organizationLoginPolicyProviderIdsParse.js"
 
 export function organizationLoginPolicyOverrideViewCreate(
   policy: RealmLoginPolicyRow | OrganizationLoginPolicyRow | null,
-): OrganizationLoginPolicyOverride {
-  if (policy === null) return {}
+): Result<OrganizationLoginPolicyOverride> {
+  if (policy === null) return resultCreate({})
   const providerIds = organizationLoginPolicyProviderIdsParse(policy.providerIds)
-  return {
+  const allowedFactors = organizationLoginPolicyFactorListParse(policy.allowedFactors)
+  if (!allowedFactors.success) return allowedFactors
+  const preferredFactorOrder = organizationLoginPolicyFactorListParse(policy.preferredFactorOrder)
+  if (!preferredFactorOrder.success) return preferredFactorOrder
+  return resultCreate({
     ...(policy.allowDomainDiscovery === null || policy.allowDomainDiscovery === undefined
       ? {}
       : { allowDomainDiscovery: policy.allowDomainDiscovery }),
@@ -35,5 +42,14 @@ export function organizationLoginPolicyOverrideViewCreate(
     ...(policy.sessionLifetimeSeconds === null || policy.sessionLifetimeSeconds === undefined
       ? {}
       : { sessionLifetimeSeconds: policy.sessionLifetimeSeconds }),
-  }
+    ...(policy.requiredMfa === null || policy.requiredMfa === undefined ? {} : { requiredMfa: policy.requiredMfa }),
+    ...(allowedFactors.data === null ? {} : { allowedFactors: allowedFactors.data }),
+    ...(preferredFactorOrder.data === null ? {} : { preferredFactorOrder: preferredFactorOrder.data }),
+    ...(policy.minimumStepUpAssurance === null || policy.minimumStepUpAssurance === undefined
+      ? {}
+      : {
+          minimumStepUpAssurance:
+            policy.minimumStepUpAssurance as OrganizationLoginPolicyOverride["minimumStepUpAssurance"],
+        }),
+  })
 }

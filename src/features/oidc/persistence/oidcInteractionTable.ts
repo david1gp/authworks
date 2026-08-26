@@ -10,6 +10,7 @@ export const oidcInteractionTable = sqliteTable(
     expiresAt: integer("expires_at").notNull(),
     handleHash: text("handle_hash").notNull(),
     id: text("id").primaryKey(),
+    organizationId: text("organization_id"),
     realmId: text("realm_id").notNull(),
     requestEncrypted: text("request_encrypted").notNull(),
     resumePath: text("resume_path").notNull(),

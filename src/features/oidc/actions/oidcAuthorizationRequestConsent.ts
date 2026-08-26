@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
@@ -7,7 +8,10 @@ import type { Secret } from "../../../platform/secrets/Secret.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
+import { sessionCredentialHashCreate } from "../../sessions/domain/sessionCredentialHashCreate.js"
+import { sessionTable } from "../../sessions/persistence/sessionTable.js"
 import { oidcAuthorizationCodeCreate } from "../domain/oidcAuthorizationCodeCreate.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcValueDecrypt } from "../domain/oidcValueEncrypt.js"
@@ -66,6 +70,48 @@ export function oidcAuthorizationRequestConsent(
       request.data.expiresAt <= now
     )
       return resultErrorCreate(op, "The OIDC consent request is invalid.")
+    const interaction = repository.interactionGetByAuthorizationRequestId(options.realmId, request.data.id)
+    if (!interaction.success) return interaction
+    if (interaction.data !== null) {
+      if (
+        interaction.data.completedAt !== null ||
+        interaction.data.expiresAt <= now ||
+        interaction.data.sessionId !== request.data.sessionId ||
+        interaction.data.userId !== request.data.userId
+      )
+        return resultErrorCreate(op, "The OIDC consent request is invalid.")
+      const interactionContext = organizationLoginContextValidate({
+        context: {
+          ...(interaction.data.organizationId === null ? {} : { organizationId: interaction.data.organizationId }),
+          realmId: interaction.data.realmId,
+        },
+        executor: transaction,
+        expectedRealmId: options.realmId,
+      })
+      if (!interactionContext.success) return resultErrorCreate(op, "The OIDC consent request is invalid.")
+      const session = transaction
+        .select({ organizationId: sessionTable.organizationId })
+        .from(sessionTable)
+        .where(
+          and(
+            eq(sessionTable.realmId, options.realmId),
+            eq(sessionTable.id, authenticated.data.session.id),
+            eq(sessionTable.tokenHash, sessionCredentialHashCreate(options.sessionToken)),
+          ),
+        )
+        .get()
+      if (session === undefined) return resultErrorCreate(op, "The OIDC consent request is invalid.")
+      const sessionContext = organizationLoginContextValidate({
+        context: {
+          ...(session.organizationId === null ? {} : { organizationId: session.organizationId }),
+          realmId: options.realmId,
+        },
+        executor: transaction,
+        expectedRealmId: options.realmId,
+      })
+      if (!sessionContext.success || sessionContext.data.organizationId !== interactionContext.data.organizationId)
+        return resultErrorCreate(op, "The OIDC consent request is invalid.")
+    }
     const client = repository.clientGet(options.realmId, request.data.clientId)
     if (!client.success) return client
     if (client.data === null || client.data.status !== "active")

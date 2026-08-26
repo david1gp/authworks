@@ -12,9 +12,19 @@ import type { OrganizationLoginPolicyOverride } from "../public/organizationLogi
 import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
+import { OrganizationAdminSecurityPolicyView } from "./OrganizationAdminSecurityPolicyView.js"
+import type { organizationAdminSecurityPolicyDraftCreate } from "./organizationAdminSecurityPolicyDraftCreate.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
 
-type PolicyKey = keyof Omit<OrganizationLoginPolicy, "providerIds" | "sessionLifetimeSeconds">
+type PolicyKey = keyof Omit<
+  OrganizationLoginPolicy,
+  | "allowedFactors"
+  | "minimumStepUpAssurance"
+  | "preferredFactorOrder"
+  | "providerIds"
+  | "requiredMfa"
+  | "sessionLifetimeSeconds"
+>
 
 const policyFields: readonly { key: PolicyKey; labelKey: MessageKey }[] = [
   { key: "allowPassword", labelKey: "admin.organizations.policy.password" },
@@ -48,6 +58,8 @@ export function OrganizationAdminLoginPolicyView(props: {
   readonly overrides: OrganizationLoginPolicyOverride
   readonly pendingId?: string
   readonly policy: OrganizationLoginPolicy
+  readonly policyScope: "organization" | "realm"
+  readonly policyValidationMessage?: string
   readonly providerCreate: {
     readonly allowAccountCreation: boolean
     readonly clientId: string
@@ -59,6 +71,7 @@ export function OrganizationAdminLoginPolicyView(props: {
   readonly providers: readonly ExternalIdentityProvider[]
   readonly providerSecrets: Readonly<Record<string, string>>
   readonly status: OrganizationAdminStatus
+  readonly securityPolicy: ReturnType<typeof organizationAdminSecurityPolicyDraftCreate>
   readonly validationMessage?: string
 }) {
   return (
@@ -67,6 +80,22 @@ export function OrganizationAdminLoginPolicyView(props: {
       <p class="max-w-2xl text-sm leading-6 text-muted-foreground">
         {messageTranslate("admin.organizations.policy.description")}
       </p>
+      <nav aria-label={messageTranslate("admin.organizations.policy.scopeLabel")} class="flex flex-wrap gap-2">
+        <a
+          aria-current={props.policyScope === "realm" ? "page" : undefined}
+          class="rounded-lg border border-line px-3 py-2 text-sm font-medium"
+          href="?scope=realm"
+        >
+          {messageTranslate("admin.organizations.policy.realmDefaults")}
+        </a>
+        <a
+          aria-current={props.policyScope === "organization" ? "page" : undefined}
+          class="rounded-lg border border-line px-3 py-2 text-sm font-medium"
+          href="?scope=organization"
+        >
+          {messageTranslate("admin.organizations.policy.organizationOverrides")}
+        </a>
+      </nav>
       <OrganizationAdminNotice notice={props.notice} />
       <OrganizationAdminState
         emptyDetail={messageTranslate("admin.organizations.providers.empty")}
@@ -104,6 +133,20 @@ export function OrganizationAdminLoginPolicyView(props: {
               </div>
             </form>
           </CardWrapper>
+          <OrganizationAdminSecurityPolicyView
+            allowedFactors={props.securityPolicy.effectiveAllowedFactors()}
+            assurance={props.securityPolicy.effectiveMinimumStepUpAssurance()}
+            fieldInherited={props.securityPolicy.fieldInherited}
+            onAllowedFactorToggle={props.securityPolicy.allowedFactorToggle}
+            onAssuranceInput={props.securityPolicy.minimumStepUpAssuranceSet}
+            onFieldOverrideSet={props.securityPolicy.fieldOverrideSet}
+            onPreferredFactorMove={props.securityPolicy.preferredFactorMove}
+            onRequiredMfaInput={props.securityPolicy.requiredMfaSet}
+            order={props.securityPolicy.effectivePreferredFactorOrder()}
+            requiredMfa={props.securityPolicy.effectiveRequiredMfa()}
+            scope={props.policyScope}
+            validationMessage={props.policyValidationMessage}
+          />
           <CardWrapper>
             <h2 class="text-lg font-semibold">{messageTranslate("admin.organizations.providers.title")}</h2>
             <p class="mt-1 text-sm text-muted-foreground">

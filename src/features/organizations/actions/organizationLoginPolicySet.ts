@@ -12,11 +12,14 @@ import { authorizationPermissionDefinitions } from "../../authorization/public/a
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { organizationLoginPolicyOverrideViewCreate } from "../domain/organizationLoginPolicyOverrideViewCreate.js"
+import { organizationLoginPolicyDefaults } from "../domain/organizationLoginPolicyDefaults.js"
+import { organizationLoginPolicySecurityValidate } from "../domain/organizationLoginPolicySecurityValidate.js"
 import { organizationLoginPolicyViewCreate } from "../domain/organizationLoginPolicyViewCreate.js"
 import { organizationEventTypes } from "../events/organizationEventTypes.js"
 import { organizationLoginPolicyChangedEventPayloadSchema } from "../events/organizationLoginPolicyChangedEventPayloadSchema.js"
 import { organizationLoginPolicyRepositoryCreate } from "../persistence/organizationLoginPolicyRepositoryCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
+import type { OrganizationLoginPolicy } from "../public/organizationLoginPolicySchema.js"
 import type { OrganizationLoginPolicyResponse } from "../public/organizationLoginPolicyResponseSchema.js"
 import {
   type OrganizationLoginPolicySetRequest,
@@ -97,6 +100,17 @@ function organizationLoginPolicySetRun(
       if (!authorized.success) return authorized
       const current = repository.organizationLoginPolicyGet(options.organizationId ?? "")
       if (!current.success) return current
+      const organizationOverride = organizationLoginPolicyOverrideViewCreate(current.data)
+      if (!organizationOverride.success) return organizationOverride
+      const realmPolicy = organizationLoginPolicyViewCreate(realm.data, null)
+      if (!realmPolicy.success) return realmPolicy
+      const security = organizationLoginPolicySecurityValidate({
+        input: parsed.output,
+        organizationOverride: organizationOverride.data,
+        realmPolicy: realmPolicy.data,
+        scope: "organization",
+      })
+      if (!security.success) return security
       const saved =
         current.data === null
           ? repository.organizationLoginPolicyCreate({
@@ -115,13 +129,16 @@ function organizationLoginPolicySetRun(
       if (saved.data === null)
         return resultErrorCodedCreate(op, "The login policy could not be saved.", "organizations.write-failed")
       const effective = organizationLoginPolicyViewCreate(realm.data, saved.data)
+      if (!effective.success) return effective
+      const overrides = organizationLoginPolicyOverrideViewCreate(saved.data)
+      if (!overrides.success) return overrides
       const event = organizationLoginPolicyChangedEventAppend({
         aggregateId: options.organizationId ?? "",
         aggregateVersion: saved.data.version,
         actorId: options.context.actorId,
         correlationId,
         eventRealmId: options.realmId,
-        effective,
+        effective: effective.data,
         occurredAt: now,
         runtime,
         transaction,
@@ -130,37 +147,59 @@ function organizationLoginPolicySetRun(
       return resultCreate({
         realmId: options.realmId,
         organizationId: options.organizationId ?? "",
-        overrides: organizationLoginPolicyOverrideViewCreate(saved.data),
-        policy: effective,
+        overrides: overrides.data,
+        policy: effective.data,
       })
     }
     const current = repository.realmLoginPolicyGet(options.realmId)
     if (!current.success) return current
     const currentEffective = organizationLoginPolicyViewCreate(current.data, null)
+    if (!currentEffective.success) return currentEffective
+    const security = organizationLoginPolicySecurityValidate({
+      input: parsed.output,
+      realmPolicy: currentEffective.data,
+      scope: "realm",
+    })
+    if (!security.success) return security
     const saved =
       current.data === null
         ? repository.realmLoginPolicyCreate({
-            ...organizationLoginPolicyRealmValues(parsed.output, currentEffective),
+            ...organizationLoginPolicyRealmValues(parsed.output, currentEffective.data),
             realmId: options.realmId,
             updatedAt: now,
             version: 1,
           })
         : repository.realmLoginPolicyUpdate(options.realmId, {
-            ...organizationLoginPolicyRealmValues(parsed.output, currentEffective),
+            ...organizationLoginPolicyRealmValues(parsed.output, currentEffective.data),
             updatedAt: now,
             version: current.data.version + 1,
           })
     if (!saved.success) return saved
     if (saved.data === null)
       return resultErrorCodedCreate(op, "The login policy could not be saved.", "organizations.write-failed")
+    const organizationPolicies = repository.organizationLoginPolicyListByRealm(options.realmId)
+    if (!organizationPolicies.success) return organizationPolicies
+    for (const organizationPolicy of organizationPolicies.data) {
+      const organizationEffective = organizationLoginPolicyViewCreate(saved.data, organizationPolicy)
+      if (!organizationEffective.success) return organizationEffective
+      if (organizationEffective.data.requiredMfa && organizationEffective.data.allowedFactors.length === 0)
+        return resultErrorCodedCreate(
+          op,
+          "The realm factor allowlist would leave an organization without an MFA factor.",
+          "organizations.invalid",
+        )
+    }
     const effective = organizationLoginPolicyViewCreate(saved.data, null)
+    if (!effective.success) return effective
+    const overrides = organizationLoginPolicyOverrideViewCreate(saved.data)
+    if (!overrides.success) return overrides
     const event = organizationLoginPolicyChangedEventAppend({
       aggregateId: options.realmId,
       aggregateVersion: saved.data.version,
       actorId: options.context.actorId,
       correlationId,
       eventRealmId: options.realmId,
-      effective,
+      effective: effective.data,
       occurredAt: now,
       runtime,
       transaction,
@@ -169,8 +208,8 @@ function organizationLoginPolicySetRun(
     return resultCreate({
       realmId: options.realmId,
       organizationId: null,
-      overrides: organizationLoginPolicyOverrideViewCreate(saved.data),
-      policy: effective,
+      overrides: overrides.data,
+      policy: effective.data,
     })
   })
 }
@@ -189,12 +228,22 @@ function organizationLoginPolicyOverrideValues(input: OrganizationLoginPolicySet
       ? {}
       : { providerIds: input.providerIds === null ? null : JSON.stringify(input.providerIds) }),
     ...(input.sessionLifetimeSeconds === undefined ? {} : { sessionLifetimeSeconds: input.sessionLifetimeSeconds }),
+    ...(input.requiredMfa === undefined ? {} : { requiredMfa: input.requiredMfa }),
+    ...(input.allowedFactors === undefined
+      ? {}
+      : { allowedFactors: input.allowedFactors === null ? null : JSON.stringify(input.allowedFactors) }),
+    ...(input.preferredFactorOrder === undefined
+      ? {}
+      : {
+          preferredFactorOrder: input.preferredFactorOrder === null ? null : JSON.stringify(input.preferredFactorOrder),
+        }),
+    ...(input.minimumStepUpAssurance === undefined ? {} : { minimumStepUpAssurance: input.minimumStepUpAssurance }),
   }
 }
 
 function organizationLoginPolicyRealmValues(
   input: OrganizationLoginPolicySetRequest,
-  current: ReturnType<typeof organizationLoginPolicyViewCreate>,
+  current: OrganizationLoginPolicy,
 ) {
   return {
     allowDomainDiscovery: input.allowDomainDiscovery ?? current.allowDomainDiscovery,
@@ -207,6 +256,26 @@ function organizationLoginPolicyRealmValues(
     allowRegistration: input.allowRegistration ?? current.allowRegistration,
     sessionLifetimeSeconds:
       input.sessionLifetimeSeconds === undefined ? current.sessionLifetimeSeconds : input.sessionLifetimeSeconds,
+    requiredMfa:
+      input.requiredMfa === undefined
+        ? current.requiredMfa
+        : (input.requiredMfa ?? organizationLoginPolicyDefaults.requiredMfa),
+    allowedFactors:
+      input.allowedFactors === undefined
+        ? JSON.stringify(current.allowedFactors)
+        : input.allowedFactors === null
+          ? JSON.stringify(organizationLoginPolicyDefaults.allowedFactors)
+          : JSON.stringify(input.allowedFactors),
+    preferredFactorOrder:
+      input.preferredFactorOrder === undefined
+        ? JSON.stringify(current.preferredFactorOrder)
+        : input.preferredFactorOrder === null
+          ? JSON.stringify(organizationLoginPolicyDefaults.preferredFactorOrder)
+          : JSON.stringify(input.preferredFactorOrder),
+    minimumStepUpAssurance:
+      input.minimumStepUpAssurance === undefined
+        ? current.minimumStepUpAssurance
+        : (input.minimumStepUpAssurance ?? organizationLoginPolicyDefaults.minimumStepUpAssurance),
     providerIds:
       input.providerIds === undefined
         ? current.providerIds === null
@@ -224,7 +293,7 @@ type OrganizationLoginPolicyChangedEventAppendOptions = {
   readonly aggregateVersion: number
   readonly correlationId: string
   readonly eventRealmId: string
-  readonly effective: ReturnType<typeof organizationLoginPolicyViewCreate>
+  readonly effective: OrganizationLoginPolicy
   readonly occurredAt: number
   readonly runtime: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly transaction: Parameters<typeof storageEventAppend>[0]

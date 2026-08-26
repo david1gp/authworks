@@ -4,7 +4,7 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { machineClientCredentialsRevoke } from "../../machineUsers/actions/machineClientCredentialsRevoke.js"
 import { oidcClientSecretMatches } from "../domain/oidcClientSecretMatches.js"
@@ -75,7 +75,7 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
         userId: revoked.data.userId,
       })
       if (!payload.success) return resultErrorCreate(op, "The token revocation event payload is invalid.")
-      const event = storageEventAppend(
+      const event = eventSecurityEventAppend(
         transaction,
         {
           actorId: revoked.data.userId,
@@ -89,6 +89,7 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
           metadata: { auditSafe: true, source: "oidc" },
           occurredAt: now,
           payload: payload.output,
+          userSubjectId: revoked.data.userId,
         },
         runtime,
       )
@@ -122,7 +123,7 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
         userId: revoked.userId,
       })
       if (!payload.success) return resultErrorCreate(op, "The token revocation event payload is invalid.")
-      const event = storageEventAppend(
+      const event = eventSecurityEventAppend(
         transaction,
         {
           actorId: revoked.userId,
@@ -136,6 +137,7 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
           metadata: { auditSafe: true, source: "oidc" },
           occurredAt: now,
           payload: payload.output,
+          userSubjectId: revoked.userId,
         },
         runtime,
       )
@@ -150,7 +152,7 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
       userId: refresh.data.userId,
     })
     if (!familyPayload.success) return resultErrorCreate(op, "The token revocation event payload is invalid.")
-    const familyEvent = storageEventAppend(
+    const familyEvent = eventSecurityEventAppend(
       transaction,
       {
         actorId: refresh.data.userId,
@@ -164,6 +166,7 @@ export function oidcTokenRevoke(options: OidcTokenRevokeOptions): Result<void> {
         metadata: { auditSafe: true, source: "oidc" },
         occurredAt: now,
         payload: familyPayload.output,
+        userSubjectId: refresh.data.userId,
       },
       runtime,
     )

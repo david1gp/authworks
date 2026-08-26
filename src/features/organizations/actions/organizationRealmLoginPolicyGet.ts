@@ -38,10 +38,12 @@ export function organizationRealmLoginPolicyGet(
   if (!policy.success) return policy
   const override = organizationLoginPolicyRepositoryCreate(options.database.db).realmLoginPolicyGet(options.realmId)
   if (!override.success) return override
+  const overrides = organizationLoginPolicyOverrideViewCreate(override.data)
+  if (!overrides.success) return overrides
   return resultCreate({
     realmId: options.realmId,
     organizationId: null,
-    overrides: organizationLoginPolicyOverrideViewCreate(override.data),
+    overrides: overrides.data,
     policy: policy.data,
   })
 }

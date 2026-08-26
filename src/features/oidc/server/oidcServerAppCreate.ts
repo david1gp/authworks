@@ -17,6 +17,7 @@ import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAd
 import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import { sessionBrowserCookieExtract } from "../../sessions/domain/sessionBrowserCookieExtract.js"
@@ -55,6 +56,7 @@ import { oidcUserInfoGet } from "../actions/oidcUserInfoGet.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
+import { oidcInteractionOrganizationContextSet } from "./oidcInteractionOrganizationContextSet.js"
 import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import { oidcAuthorizationConsentRequestSchema } from "../public/oidcAuthorizationConsentRequestSchema.js"
 import { oidcAuthorizationConsentRequiredSchema } from "../public/oidcAuthorizationConsentRequiredSchema.js"
@@ -788,6 +790,28 @@ function oidcInteractionBind(
   const existing = oidcRepositoryCreate(database.db).interactionGetByHandleHash(realmId, oidcHashCreate(handle))
   if (!existing.success) return existing
   if (existing.data === null) return resultErrorCreate("oidcInteractionBind", "The OIDC interaction is invalid.")
+  if (existing.data.completedAt !== null || existing.data.expiresAt <= database.runtime.now())
+    return resultErrorCreate("oidcInteractionBind", "The OIDC interaction is invalid.")
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(session.session.organizationId === null ? {} : { organizationId: session.session.organizationId }),
+      realmId: session.session.realmId,
+    },
+    executor: database.db,
+    expectedRealmId: realmId,
+  })
+  if (!loginContext.success) return resultErrorCreate("oidcInteractionBind", "The OIDC interaction is invalid.")
+  if (existing.data.organizationId === null && loginContext.data.organizationId !== undefined) {
+    const contextSet = oidcInteractionOrganizationContextSet({
+      database,
+      handle,
+      organizationId: loginContext.data.organizationId,
+      realmId,
+    })
+    if (!contextSet.success) return contextSet
+  } else if ((loginContext.data.organizationId ?? null) !== existing.data.organizationId) {
+    return resultErrorCreate("oidcInteractionBind", "The OIDC interaction is invalid.")
+  }
   if (
     (existing.data.sessionId !== null && existing.data.sessionId !== session.session.id) ||
     (existing.data.userId !== null && existing.data.userId !== session.actor.actorId)
@@ -833,6 +857,15 @@ function oidcInteractionComplete(database: StorageDatabase, realmId: string, han
   const existing = oidcRepositoryCreate(database.db).interactionGetByHandleHash(realmId, oidcHashCreate(handle))
   if (!existing.success) return existing
   if (existing.data === null) return resultErrorCreate("oidcInteractionComplete", "The OIDC interaction is invalid.")
+  const context = organizationLoginContextValidate({
+    context: {
+      ...(existing.data.organizationId === null ? {} : { organizationId: existing.data.organizationId }),
+      realmId: existing.data.realmId,
+    },
+    executor: database.db,
+    expectedRealmId: realmId,
+  })
+  if (!context.success) return resultErrorCreate("oidcInteractionComplete", "The OIDC interaction is invalid.")
   const completed = oidcRepositoryCreate(database.db).interactionComplete(
     realmId,
     existing.data.id,

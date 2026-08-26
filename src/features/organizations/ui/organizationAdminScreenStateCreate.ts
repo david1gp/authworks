@@ -12,8 +12,17 @@ import type { OrganizationMembership } from "../public/organizationMembershipSch
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 import { organizationAdminFormStateCreate } from "./organizationAdminFormStateCreate.js"
 import type { organizationAdminPageStateCreate } from "./organizationAdminPageStateCreate.js"
+import { organizationAdminSecurityPolicyDraftCreate } from "./organizationAdminSecurityPolicyDraftCreate.js"
 
-type PolicyKey = keyof Omit<OrganizationLoginPolicy, "providerIds" | "sessionLifetimeSeconds">
+type PolicyKey = keyof Omit<
+  OrganizationLoginPolicy,
+  | "allowedFactors"
+  | "minimumStepUpAssurance"
+  | "preferredFactorOrder"
+  | "providerIds"
+  | "requiredMfa"
+  | "sessionLifetimeSeconds"
+>
 type ThemeKey = "dark" | "light"
 type ThemeColorKey = "backgroundColor" | "fontColor" | "primaryColor" | "warnColor"
 
@@ -27,6 +36,7 @@ export function organizationAdminScreenStateCreate(options: {
   const location = useLocation()
   const navigate = useNavigate()
   const policyDraftSignal = createSignalObject<OrganizationLoginPolicy | undefined>(undefined)
+  const policyValidationMessage = createSignalObject<string | undefined>(undefined)
 
   const createOpen = () => new URLSearchParams(location.search).get("create") === "organization"
   const createOpenSet = (open: boolean) => {
@@ -50,6 +60,13 @@ export function organizationAdminScreenStateCreate(options: {
   const brandingUpdate = (next: OrganizationBranding) => form.branding.set(next)
   const themeUpdate = (theme: ThemeKey, patch: Partial<OrganizationBrandingTheme>) =>
     brandingUpdate({ ...branding(), [theme]: { ...branding()[theme], ...patch } })
+  const policyScope = () => (options.page.policyScope() === "realm" ? "realm" : "organization")
+  const securityPolicy = organizationAdminSecurityPolicyDraftCreate({
+    effectivePolicy: options.page.policy,
+    overrides: options.page.overrides,
+    realmPolicy: options.page.realmPolicy,
+    scope: policyScope,
+  })
 
   createEffect(on(options.page.organization, (organization) => form.detailName.set(organization?.name ?? "")))
   createEffect(
@@ -139,19 +156,29 @@ export function organizationAdminScreenStateCreate(options: {
     page: options.page,
     policySubmit: (event: SubmitEvent) => {
       event.preventDefault()
+      const validationKey = securityPolicy.validationKey()
+      policyValidationMessage.set(validationKey === undefined ? undefined : messageTranslate(validationKey))
+      if (validationKey !== undefined) return
       const draft = policyDraft()
-      void options.page.policySave({
-        allowDomainDiscovery: draft.allowDomainDiscovery,
-        allowEmailOtp: draft.allowEmailOtp,
-        allowExternalIdentity: draft.allowExternalIdentity,
-        allowPasskey: draft.allowPasskey,
-        allowPassword: draft.allowPassword,
-        allowPasswordRecovery: draft.allowPasswordRecovery,
-        allowRegistration: draft.allowRegistration,
-      })
+      void (async () => {
+        const saved = await options.page.policySave({
+          allowDomainDiscovery: draft.allowDomainDiscovery,
+          allowEmailOtp: draft.allowEmailOtp,
+          allowExternalIdentity: draft.allowExternalIdentity,
+          allowPasskey: draft.allowPasskey,
+          allowPassword: draft.allowPassword,
+          allowPasswordRecovery: draft.allowPasswordRecovery,
+          allowRegistration: draft.allowRegistration,
+          ...securityPolicy.draft(),
+        })
+        if (!saved) return
+        securityPolicy.draftReset()
+      })()
     },
     policyDraft,
+    policyScope,
     policyToggle: (key: PolicyKey) => policyDraftSignal.set({ ...policyDraft(), [key]: !policyDraft()[key] }),
+    policyValidationMessage: policyValidationMessage.get,
     providerAccountCreationToggle: () =>
       form.providerCreate.set({
         ...form.providerCreate.get(),
@@ -196,5 +223,6 @@ export function organizationAdminScreenStateCreate(options: {
       void options.page.organizationRename(name)
     },
     searchSet,
+    securityPolicy,
   }
 }

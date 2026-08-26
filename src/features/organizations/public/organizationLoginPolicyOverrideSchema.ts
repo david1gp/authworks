@@ -1,4 +1,6 @@
 import * as v from "valibot"
+import { organizationLoginPolicyAssuranceSchema } from "./organizationLoginPolicyAssuranceSchema.js"
+import { organizationLoginPolicyFactorListSchema } from "./organizationLoginPolicyFactorListSchema.js"
 
 const organizationLoginPolicyProviderIdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(128))
 const organizationLoginPolicySessionLifetimeSecondsSchema = v.pipe(
@@ -19,6 +21,10 @@ export const organizationLoginPolicyOverrideSchema = v.strictObject({
   allowRegistration: v.optional(v.nullable(v.boolean())),
   providerIds: v.optional(v.nullable(v.array(organizationLoginPolicyProviderIdSchema))),
   sessionLifetimeSeconds: v.optional(v.nullable(organizationLoginPolicySessionLifetimeSecondsSchema)),
+  requiredMfa: v.optional(v.nullable(v.boolean())),
+  allowedFactors: v.optional(v.nullable(organizationLoginPolicyFactorListSchema)),
+  preferredFactorOrder: v.optional(v.nullable(organizationLoginPolicyFactorListSchema)),
+  minimumStepUpAssurance: v.optional(v.nullable(organizationLoginPolicyAssuranceSchema)),
 })
 
 export type OrganizationLoginPolicyOverride = v.InferOutput<typeof organizationLoginPolicyOverrideSchema>

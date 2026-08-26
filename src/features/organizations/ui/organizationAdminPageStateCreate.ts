@@ -29,6 +29,10 @@ const emptyPolicy: OrganizationLoginPolicy = {
   allowPasswordRecovery: true,
   allowRegistration: true,
   providerIds: null,
+  requiredMfa: false,
+  allowedFactors: ["totp", "email_otp", "passkey"],
+  preferredFactorOrder: ["totp", "email_otp", "passkey"],
+  minimumStepUpAssurance: "authenticated",
 }
 
 /**
@@ -60,6 +64,7 @@ export function organizationAdminPageStateCreate(options: {
   const roles = createSignalObject<OrganizationRole[]>([])
   const branding = createSignalObject<OrganizationBranding>(organizationBrandingDefaultCreate())
   const policy = createSignalObject<OrganizationLoginPolicy>(emptyPolicy)
+  const realmPolicy = createSignalObject<OrganizationLoginPolicy>(emptyPolicy)
   const overrides = createSignalObject<OrganizationLoginPolicyOverride>({})
   const nextPageToken = createSignalObject<string | undefined>(undefined)
   const pageTokens = createSignalObject<string[]>([])
@@ -134,13 +139,16 @@ export function organizationAdminPageStateCreate(options: {
       branding.set(result.data.branding)
       return status.set("ready")
     }
-    const [policyResult, providerList] = await Promise.all([
+    const [policyResult, realmPolicyResult, providerList] = await Promise.all([
       options.adapter.loginPolicyGet(organizationId),
+      organizationId.length === 0 ? options.adapter.loginPolicyGet(organizationId) : options.adapter.loginPolicyGet(""),
       options.adapter.providerList(organizationId.length === 0 ? undefined : organizationId),
     ])
     if (!policyResult.success) return fail(policyResult)
+    if (!realmPolicyResult.success) return fail(realmPolicyResult)
     if (!providerList.success) return fail(providerList)
     policy.set(policyResult.data.policy)
+    realmPolicy.set(realmPolicyResult.data.policy)
     overrides.set(policyResult.data.overrides)
     providers.set([...providerList.data.items])
     status.set("ready")
@@ -301,12 +309,15 @@ export function organizationAdminPageStateCreate(options: {
     pageIndex: () => pageTokens.get().length,
     pendingId: pendingId.get,
     policy: policy.get,
+    policyScope: () => (options.organizationId().length === 0 ? "realm" : "organization"),
     policySave: async (next: OrganizationLoginPolicyOverride) => {
       const saved = await mutate("policy", () => options.adapter.loginPolicySet(options.organizationId(), next))
-      if (saved === undefined) return
+      if (saved === undefined) return false
       policy.set(saved.policy)
+      if (options.organizationId().length === 0) realmPolicy.set(saved.policy)
       overrides.set(saved.overrides)
       notice.set("policy-saved")
+      return true
     },
     previousPageAvailable: () => pageTokens.get().length > 0,
     previousPageOpen: () => pageTokens.set(pageTokens.get().slice(0, -1)),
@@ -357,6 +368,7 @@ export function organizationAdminPageStateCreate(options: {
       notice.set("provider-updated")
     },
     reload: () => void load(),
+    realmPolicy: realmPolicy.get,
     roles: roles.get,
     screen: options.screen,
     status: status.get,

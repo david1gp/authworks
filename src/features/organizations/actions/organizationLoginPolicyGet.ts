@@ -54,10 +54,12 @@ export function organizationLoginPolicyGet(
     options.organizationId,
   )
   if (!override.success) return override
+  const overrides = organizationLoginPolicyOverrideViewCreate(override.data)
+  if (!overrides.success) return overrides
   return resultCreate({
     realmId: options.realmId,
     organizationId: options.organizationId,
-    overrides: organizationLoginPolicyOverrideViewCreate(override.data),
+    overrides: overrides.data,
     policy: policy.data,
   })
 }

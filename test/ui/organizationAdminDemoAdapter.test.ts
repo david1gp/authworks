@@ -152,6 +152,19 @@ describe("organization administration demo adapter", () => {
 
     expect(settled).toBe(false)
   })
+
+  test("keeps realm values separate from organization inheritance and overrides", async () => {
+    const adapter = organizationAdminDemoAdapterCreate(() => "success")
+
+    const realm = await adapter.loginPolicyGet("")
+    const organization = await adapter.loginPolicyGet(organizationId)
+
+    expect(realm.success && realm.data.organizationId).toBeNull()
+    expect(realm.success && realm.data.policy.requiredMfa).toBe(true)
+    expect(organization.success && organization.data.overrides.requiredMfa).toBeUndefined()
+    expect(organization.success && organization.data.policy.requiredMfa).toBe(true)
+    expect(organization.success && organization.data.overrides.allowedFactors).toEqual(["totp", "passkey"])
+  })
 })
 
 function reactiveSignalCreate<T>(initial: T) {

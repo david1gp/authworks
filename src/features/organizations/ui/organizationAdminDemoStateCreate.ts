@@ -19,7 +19,8 @@ export function organizationAdminDemoStateCreate(screen: () => OrganizationAdmin
   const params = useParams<{ organizationId?: string }>()
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAdminScenarioGroups)
   const fixtureState = () => demoFixtureStateSelect(location.search, scenario()?.states ?? ["success"])
-  const organizationId = () => params.organizationId ?? demoOrganizationId
+  const organizationId = () =>
+    new URLSearchParams(location.search).get("scope") === "realm" ? "" : (params.organizationId ?? demoOrganizationId)
   const adapter = organizationAdminDemoAdapterCreate(fixtureState)
   const initialInvitationToken = () => {
     if (fixtureState() !== "one-time") return undefined

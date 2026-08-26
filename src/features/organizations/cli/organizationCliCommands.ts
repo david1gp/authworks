@@ -2,7 +2,9 @@ import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/c
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
+import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
+import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { organizationApiClientCreate } from "../client/organizationApiClientCreate.js"
 import type { OrganizationBrandingSetRequest } from "../public/organizationBrandingSetRequestSchema.js"
 import type { OrganizationLoginPolicySetRequest } from "../public/organizationLoginPolicySetRequestSchema.js"
@@ -54,6 +56,7 @@ const organizationCreateCommand = buildCommand({
         name: flags.name,
         ownerUserId: flags.ownerUserId,
       }),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -77,6 +80,7 @@ const organizationListCommand = buildCommand({
         resolved.realmId,
         organizationListQueryCreate(flags),
       ),
+      [resolved.connection.token],
     )
   },
   parameters: { flags: { ...organizationCommonFlags(), ...organizationListFlags(), realmId: realmIdFlag() } },
@@ -95,6 +99,7 @@ const organizationGetCommand = buildCommand({
         ids.organizationId,
         flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -118,6 +123,7 @@ const organizationUpdateCommand = buildCommand({
       await organizationCliClientCreate(resolved.connection).organizationUpdate(ids.realmId, ids.organizationId, {
         name: flags.name,
       }),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -143,6 +149,7 @@ const organizationBrandingSetCommand = buildCommand({
         ids.organizationId,
         organizationCliJsonParse(flags.branding) as OrganizationBrandingSetRequest,
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -167,6 +174,7 @@ const organizationDomainClaimCommand = buildCommand({
         domain: flags.domain,
         isPrimary: flags.primary,
       }),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -193,6 +201,7 @@ const organizationDomainListCommand = buildCommand({
         ids.organizationId,
         organizationListQueryCreate(flags),
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -218,6 +227,7 @@ const organizationDomainVerifyCommand = buildCommand({
         ids.organizationId,
         flags.domain,
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -243,6 +253,7 @@ const organizationLoginPolicySetCommand = buildCommand({
         ids.organizationId,
         organizationCliJsonParse(flags.policy) as OrganizationLoginPolicySetRequest,
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -256,6 +267,70 @@ const organizationLoginPolicySetCommand = buildCommand({
   docs: { brief: "Set organization login policy overrides" },
 })
 
+const organizationLoginPolicyGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationIdCliFlags) {
+    const resolved = await organizationCliScopeResolve(this, flags)
+    if (resolved === undefined) return
+    const ids = resolved.ids
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationLoginPolicyGet(
+        ids.realmId,
+        ids.organizationId,
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      organizationId: organizationFlag(),
+    },
+  },
+  docs: { brief: "Get organization login policy overrides" },
+})
+
+const organizationRealmLoginPolicyGetCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OrganizationCliFlags & { readonly realmId?: string }) {
+    const resolved = await organizationCliRealmResolve(this, flags)
+    if (resolved === undefined) return
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationRealmLoginPolicyGet(resolved.realmId),
+      [resolved.connection.token],
+    )
+  },
+  parameters: { flags: { ...organizationCommonFlags(), realmId: realmIdFlag() } },
+  docs: { brief: "Get realm login policy defaults" },
+})
+
+const organizationRealmLoginPolicySetCommand = buildCommand({
+  async func(
+    this: ApplicationContext,
+    flags: OrganizationCliFlags & { readonly policy: string; readonly realmId?: string },
+  ) {
+    const resolved = await organizationCliRealmResolve(this, flags)
+    if (resolved === undefined) return
+    organizationCliResultWrite(
+      this,
+      await organizationCliClientCreate(resolved.connection).organizationRealmLoginPolicySet(
+        resolved.realmId,
+        organizationCliJsonParse(flags.policy) as OrganizationLoginPolicySetRequest,
+      ),
+      [resolved.connection.token],
+    )
+  },
+  parameters: {
+    flags: {
+      ...organizationCommonFlags(),
+      realmId: realmIdFlag(),
+      policy: textFlag("Realm login policy JSON document"),
+    },
+  },
+  docs: { brief: "Set realm login policy defaults" },
+})
+
 const organizationLifecycleCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationIdCliFlags & { status: "active" | "inactive" | "removed" }) {
     const resolved = await organizationCliScopeResolve(this, flags)
@@ -266,6 +341,7 @@ const organizationLifecycleCommand = buildCommand({
       await organizationCliClientCreate(resolved.connection).organizationLifecycleSet(ids.realmId, ids.organizationId, {
         status: flags.status,
       }),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -291,6 +367,7 @@ const organizationRolesCommand = buildCommand({
     organizationCliResultWrite(
       this,
       await organizationCliClientCreate(connection).organizationRoleList(organizationListQueryCreate(flags)),
+      [connection.token],
     )
   },
   parameters: { flags: { ...organizationCommonFlags(), ...organizationListFlags() } },
@@ -312,6 +389,7 @@ const organizationMemberAddCommand = buildCommand({
           roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[],
         },
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -338,6 +416,7 @@ const organizationMemberListCommand = buildCommand({
         ids.organizationId,
         organizationListQueryCreate(flags),
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -364,6 +443,7 @@ const organizationMemberUpdateCommand = buildCommand({
         flags.membershipId,
         { roles: flags.roles.split(",") as ("owner" | "admin" | "member" | "guest")[] },
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -390,6 +470,7 @@ const organizationMemberRemoveCommand = buildCommand({
         ids.organizationId,
         flags.membershipId,
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -422,6 +503,7 @@ const organizationInvitationCreateCommand = buildCommand({
           expiresAt: flags.expiresAt,
         },
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -439,7 +521,8 @@ const organizationInvitationCreateCommand = buildCommand({
 
 const organizationInvitationDeclineCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationCliFlags & { token: string; userId: string }) {
-    const connection = await organizationCliConnectionResolve(this, flags)
+    const { token: payloadToken, ...connectionFlags } = flags
+    const connection = await organizationCliConnectionResolve(this, connectionFlags, false)
     if (connection === undefined) return
     organizationCliResultWrite(
       this,
@@ -447,6 +530,7 @@ const organizationInvitationDeclineCommand = buildCommand({
         token: flags.token,
         userId: flags.userId,
       }),
+      [payloadToken, connection.token],
     )
   },
   parameters: {
@@ -467,6 +551,7 @@ const organizationInvitationListCommand = buildCommand({
         ids.organizationId,
         organizationListQueryCreate(flags),
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -492,6 +577,7 @@ const organizationInvitationRevokeCommand = buildCommand({
         ids.organizationId,
         flags.invitationId,
       ),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -507,7 +593,8 @@ const organizationInvitationRevokeCommand = buildCommand({
 
 const organizationInvitationAcceptCommand = buildCommand({
   async func(this: ApplicationContext, flags: OrganizationCliFlags & { token: string; userId: string }) {
-    const connection = await organizationCliConnectionResolve(this, flags)
+    const { token: payloadToken, ...connectionFlags } = flags
+    const connection = await organizationCliConnectionResolve(this, connectionFlags, false)
     if (connection === undefined) return
     organizationCliResultWrite(
       this,
@@ -515,6 +602,7 @@ const organizationInvitationAcceptCommand = buildCommand({
         token: flags.token,
         userId: flags.userId,
       }),
+      [payloadToken, connection.token],
     )
   },
   parameters: {
@@ -533,6 +621,7 @@ const organizationSwitchCommand = buildCommand({
       await organizationCliClientCreate(resolved.connection).organizationSwitch(ids.realmId, {
         organizationId: ids.organizationId,
       }),
+      [resolved.connection.token],
     )
   },
   parameters: {
@@ -564,6 +653,9 @@ export const organizationCliCommands = buildRouteMap({
     domainList: organizationDomainListCommand,
     domainVerify: organizationDomainVerifyCommand,
     loginPolicySet: organizationLoginPolicySetCommand,
+    loginPolicyGet: organizationLoginPolicyGetCommand,
+    realmLoginPolicyGet: organizationRealmLoginPolicyGetCommand,
+    realmLoginPolicySet: organizationRealmLoginPolicySetCommand,
   },
   docs: { brief: "Organization administration" },
 })
@@ -575,13 +667,15 @@ function organizationCliClientCreate(connection: { readonly server: string; read
 async function organizationCliConnectionResolve(
   context: ApplicationContext,
   flags: OrganizationCliFlags & { readonly organizationId?: string; readonly realmId?: string },
+  systemAuthentication = true,
 ) {
   const result = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
   if (!result.success) {
-    organizationCliResultWrite(context, result)
+    organizationCliResultWrite(context, result, [flags.token, context.process.env?.AUTHWORKS_TOKEN])
     return undefined
   }
-  return result.data
+  if (!systemAuthentication) return result.data
+  return { ...result.data, token: connectionProfileCliSystemTokenResolve(flags.token, context.process.env) }
 }
 
 async function organizationCliScopeResolve(
@@ -618,20 +712,20 @@ function organizationCliResultWrite(
     readonly status?: "current" | "unchanged"
     readonly success: boolean
   },
+  secrets: readonly (string | undefined)[] = [],
 ) {
   if (!result.success) {
     const details = organizationCliErrorDetailsParse(result.errorData)
-    context.process.stderr.write(
-      `${JSON.stringify({
-        error: {
-          code: result.code ?? "platform.internal",
-          ...(details === undefined ? {} : { details }),
-          message: result.errorMessage ?? "The request failed.",
-          op: result.op ?? "organizationCliResultWrite",
-          ...(result.statusCode === undefined ? {} : { status: result.statusCode }),
-        },
-      })}\n`,
-    )
+    const output = JSON.stringify({
+      error: {
+        code: result.code ?? "platform.internal",
+        ...(details === undefined ? {} : { details }),
+        message: result.errorMessage ?? "The request failed.",
+        op: result.op ?? "organizationCliResultWrite",
+        ...(result.statusCode === undefined ? {} : { status: result.statusCode }),
+      },
+    })
+    context.process.stderr.write(`${connectionProfileCliOutputRedact(output, secrets)}\n`)
     context.process.exitCode = 1
     return
   }
@@ -639,7 +733,9 @@ function organizationCliResultWrite(
     context.process.stderr.write("304 Not Modified\n")
     return
   }
-  context.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+  context.process.stdout.write(
+    `${connectionProfileCliOutputRedact(JSON.stringify(result.data) ?? "undefined", secrets)}\n`,
+  )
 }
 
 function organizationCommonFlags() {

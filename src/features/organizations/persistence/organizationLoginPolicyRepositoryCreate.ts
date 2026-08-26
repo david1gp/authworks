@@ -102,6 +102,24 @@ export function organizationLoginPolicyRepositoryCreate(database: StorageExecuto
       }
     },
 
+    organizationLoginPolicyListByRealm(realmId: string): Result<OrganizationLoginPolicyRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(organizationLoginPolicyTable)
+            .where(eq(organizationLoginPolicyTable.realmId, realmId))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "organizationLoginPolicyListByRealm",
+          "The organization login policies could not be read.",
+          "organizations.read-failed",
+        )
+      }
+    },
+
     organizationLoginPolicyUpdate(
       organizationId: string,
       input: Partial<typeof organizationLoginPolicyTable.$inferInsert>,

@@ -166,10 +166,13 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
             overrides={state.page.overrides()}
             pendingId={state.page.pendingId?.()}
             policy={state.policyDraft()}
+            policyScope={state.policyScope()}
+            policyValidationMessage={state.policyValidationMessage()}
             providerCreate={state.form.providerCreate.get()}
             providers={state.page.providers()}
             providerSecrets={state.form.providerSecrets.get()}
             status={state.page.status()}
+            securityPolicy={state.securityPolicy}
             validationMessage={state.form.validationMessage.get()}
           />
         </Match>

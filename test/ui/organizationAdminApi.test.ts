@@ -96,6 +96,10 @@ describe("organization administration browser API", () => {
             allowPasswordRecovery: true,
             allowRegistration: true,
             providerIds: null,
+            requiredMfa: false,
+            allowedFactors: ["totp", "email_otp", "passkey"],
+            preferredFactorOrder: ["totp", "email_otp", "passkey"],
+            minimumStepUpAssurance: "authenticated",
           },
           realmId,
         })

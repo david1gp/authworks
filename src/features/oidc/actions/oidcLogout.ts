@@ -9,6 +9,7 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageEventTable } from "../../../platform/storage/storageEventTable.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
@@ -103,7 +104,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
         sessionId: session.data.id,
       })
       if (!payload.success) return resultErrorCreate(op, "The session event payload is invalid.")
-      const event = storageEventAppend(
+      const event = eventSecurityEventAppend(
         transaction,
         {
           actorId: identity.data.userId,
@@ -117,6 +118,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
           metadata: { auditSafe: true, source: "sessions" },
           occurredAt: now,
           payload: payload.output,
+          userSubjectId: session.data.userId,
         },
         runtime,
       )
@@ -134,7 +136,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
         userId: token.userId,
       })
       if (!payload.success) return resultErrorCreate(op, "The token event payload is invalid.")
-      const event = storageEventAppend(
+      const event = eventSecurityEventAppend(
         transaction,
         {
           actorId: token.userId,
@@ -148,6 +150,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
           metadata: { auditSafe: true, source: "oidc" },
           occurredAt: now,
           payload: payload.output,
+          userSubjectId: token.userId,
         },
         runtime,
       )
@@ -170,7 +173,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
         userId: token.userId,
       })
       if (!payload.success) return resultErrorCreate(op, "The token event payload is invalid.")
-      const event = storageEventAppend(
+      const event = eventSecurityEventAppend(
         transaction,
         {
           actorId: token.userId,
@@ -184,6 +187,7 @@ export function oidcLogout(options: OidcLogoutOptions): Result<OidcLogoutRespons
           metadata: { auditSafe: true, source: "oidc" },
           occurredAt: now,
           payload: payload.output,
+          userSubjectId: token.userId,
         },
         runtime,
       )

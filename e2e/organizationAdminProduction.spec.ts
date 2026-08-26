@@ -154,7 +154,11 @@ test("a production provider secret rotation never reveals the stored secret", as
             allowPassword: true,
             allowPasswordRecovery: true,
             allowRegistration: true,
+            allowedFactors: ["totp", "email_otp", "passkey"],
+            minimumStepUpAssurance: "authenticated",
+            preferredFactorOrder: ["totp", "email_otp", "passkey"],
             providerIds: null,
+            requiredMfa: false,
           },
           realmId,
         },
@@ -173,4 +177,60 @@ test("a production provider secret rotation never reveals the stored secret", as
   await expect(page.getByRole("status")).toContainText("The client secret was replaced.")
   expect(rotationBody).toEqual({ clientSecret: "rotated-secret" })
   await expect(secretField).toHaveValue("")
+})
+
+test("production organization MFA overrides use realm inheritance and a CSRF-protected policy route", async ({
+  page,
+}) => {
+  const realmPolicy = {
+    allowDomainDiscovery: true,
+    allowEmailOtp: true,
+    allowExternalIdentity: true,
+    allowPasskey: true,
+    allowPassword: true,
+    allowPasswordRecovery: true,
+    allowRegistration: true,
+    allowedFactors: ["totp", "email_otp", "passkey"],
+    minimumStepUpAssurance: "authenticated",
+    preferredFactorOrder: ["totp", "email_otp", "passkey"],
+    providerIds: null,
+    requiredMfa: false,
+  }
+  let patchBody: Record<string, unknown> | undefined
+  let patchHadCsrf = false
+
+  await page.route(realmApiPath, async (route) => {
+    const request = route.request()
+    const pathname = new URL(request.url()).pathname
+    if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
+    if (pathname.endsWith("/external-identity-providers")) return route.fulfill({ json: { items: [] } })
+    if (pathname.endsWith(`/organizations/${organizationId}/login-policy`) && request.method() === "PATCH") {
+      patchHadCsrf = request.headers()["x-csrf-token"] === "csrf-e2e"
+      patchBody = request.postDataJSON() as Record<string, unknown>
+      return route.fulfill({
+        json: {
+          organizationId,
+          overrides: patchBody,
+          policy: { ...realmPolicy, ...patchBody },
+          realmId,
+        },
+      })
+    }
+    if (pathname.endsWith(`/organizations/${organizationId}/login-policy`))
+      return route.fulfill({ json: { organizationId, overrides: {}, policy: realmPolicy, realmId } })
+    if (pathname.endsWith("/login-policy"))
+      return route.fulfill({ json: { organizationId: null, overrides: realmPolicy, policy: realmPolicy, realmId } })
+    return route.fulfill({ json: { items: [] } })
+  })
+
+  await page.goto("/admin/login-policy")
+  const factors = page.locator("fieldset").filter({ hasText: "Allowed MFA factors" })
+  await expect(factors.getByText("Inherited from the realm")).toBeVisible()
+  await factors.getByLabel("Override the realm value").check()
+  await factors.getByLabel("Email one-time code").uncheck()
+  await page.getByRole("button", { name: "Save", exact: true }).click()
+
+  await expect(page.getByRole("status")).toContainText("The login policy was saved.")
+  expect(patchHadCsrf).toBe(true)
+  expect(patchBody?.allowedFactors).toEqual(["totp", "passkey"])
 })

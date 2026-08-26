@@ -234,6 +234,6 @@ test("browser organization administration denies a user outside the organization
       `https://member-admin.example.com/realms/${realm.data.realm.id}/organizations/${organization.data.organization.id}`,
       { headers: { authorization: `Bearer ${issued.data.token}` } },
     )
-    expect(response.status).toBe(403)
+    expect(response.status).toBe(401)
   })
 })

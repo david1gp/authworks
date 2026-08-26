@@ -106,3 +106,32 @@ test("domain discovery preview resolves a claimed domain without a network reque
   await page.getByRole("button", { name: "Discovery preview", exact: true }).click()
   await expect(page.getByRole("status")).toContainText("acme.example resolves to Acme Corporation.")
 })
+
+test("organization MFA policy shows inheritance, enforcement, and enrollment remediation", async ({ page }) => {
+  await page.goto("/demo/admin/login-policy")
+
+  const requiredMfa = page.locator("fieldset").filter({ hasText: "Required MFA" })
+  await expect(requiredMfa.getByText("Inherited from the realm")).toBeVisible()
+  await expect(requiredMfa).toContainText("Effective value: Required")
+  await expect(page.getByRole("heading", { name: "Effective enforcement" })).toBeVisible()
+  await expect(page.getByText("Login cannot complete until a permitted MFA factor succeeds.")).toBeVisible()
+  await expect(page.getByText(/sent to enrollment and remediation/)).toBeVisible()
+
+  await requiredMfa.getByLabel("Override the realm value").check()
+  await requiredMfa.getByLabel("Required MFA").selectOption("optional")
+  await page.getByRole("button", { name: "Save", exact: true }).click()
+  await expect(page.getByRole("alert")).toContainText("cannot turn off MFA required by the realm")
+})
+
+test("realm MFA policy and keyboard ordering controls remain usable at a narrow viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 })
+  await page.goto("/demo/admin/login-policy?scope=realm")
+
+  await expect(page.getByRole("link", { name: "Realm defaults" })).toHaveAttribute("aria-current", "page")
+  const order = page.locator("fieldset").filter({ hasText: "Preferred factor order" })
+  const moveDown = order.getByRole("button", { name: "Move Authenticator app (TOTP) down" })
+  await moveDown.focus()
+  await page.keyboard.press("Enter")
+  await expect(order.getByRole("listitem").first()).toContainText("Email one-time code")
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})

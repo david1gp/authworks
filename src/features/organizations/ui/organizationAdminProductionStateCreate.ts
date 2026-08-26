@@ -1,4 +1,4 @@
-import { useParams } from "@solidjs/router"
+import { useLocation, useParams } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { organizationAdminApiCreate } from "./organizationAdminApiCreate.js"
@@ -10,11 +10,13 @@ import { organizationAdminScreenStateCreate } from "./organizationAdminScreenSta
 export function organizationAdminProductionStateCreate(screen: () => OrganizationAdminScreen) {
   const session = productionSessionContextGet()
   const params = useParams<{ organizationId?: string }>()
+  const location = useLocation()
   const realmId = () => {
     const realm = session.guard.realm
     return typeof realm === "object" ? realm.realmId : ""
   }
   const organizationId = () => {
+    if (new URLSearchParams(location.search).get("scope") === "realm") return ""
     if (params.organizationId !== undefined) return params.organizationId
     const organization = session.guard.organization
     return typeof organization === "object" ? organization.organizationId : ""

@@ -80,6 +80,7 @@ export function oidcAuthorizationInteractionCreate(options: OidcAuthorizationInt
       expiresAt,
       handleHash: oidcHashCreate(handle),
       id: uuidv7Create(runtime),
+      organizationId: null,
       realmId: options.realmId,
       requestEncrypted: encrypted.data,
       resumePath: validatedResumePath.data,

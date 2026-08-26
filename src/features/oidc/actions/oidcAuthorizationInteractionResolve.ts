@@ -10,6 +10,7 @@ import { oidcValueDecrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import type { OidcInteractionRow } from "../persistence/oidcInteractionTable.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import type { OidcAuthorizationRequest } from "../public/oidcAuthorizationRequestSchema.js"
 import { oidcAuthorizationRequestSchema } from "../public/oidcAuthorizationRequestSchema.js"
 
@@ -41,6 +42,15 @@ export function oidcAuthorizationInteractionResolve(options: OidcAuthorizationIn
     options.binding === undefined
   )
     return resultErrorCreate(op, "The OIDC interaction is invalid.")
+  const loginContext = organizationLoginContextValidate({
+    context: {
+      ...(row.data.organizationId === null ? {} : { organizationId: row.data.organizationId }),
+      realmId: row.data.realmId,
+    },
+    executor: options.database.db,
+    expectedRealmId: options.realmId,
+  })
+  if (!loginContext.success) return resultErrorCreate(op, "The OIDC interaction is invalid.")
   const expectedResumePath = `/oauth2/authorize?interaction=${encodeURIComponent(options.handle)}`
   const resumePath = sessionReturnPathValidate(row.data.resumePath, options.publicOrigin)
   if (!resumePath.success || resumePath.data !== row.data.resumePath || row.data.resumePath !== expectedResumePath)
