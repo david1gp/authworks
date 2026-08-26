@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Nickname
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,Сохранить профиль
 admin.users.profileSaved,Профиль пользователя сохранён.
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Профиль
 admin.users.search,Поиск пользователей
 admin.users.searchPlaceholder,"Фильтр по имени пользователя, электронной почте или идентификатору"
@@ -1096,7 +1101,10 @@ login.mfa.totp,Приложение для аутентификации
 login.mfa.totpDescription,Введите шестизначный код из приложения для аутентификации.
 login.mfa.verificationCode,Проверочный код
 login.mfa.verify,Проверять
+login.passkey.canceled,Вход с помощью ключа доступа отменён или время ожидания истекло. Повторите попытку.
+login.passkey.ceremonyFailure,Не удалось завершить вход с помощью ключа доступа. Повторите попытку.
 login.passkey.description,"Подтвердите с помощью блокировки экрана устройства, отпечатка пальца или ключа безопасности."
+login.passkey.permissionDenied,Доступ к ключу доступа запрещён. Разрешите доступ к ключам доступа для этого сайта и повторите попытку.
 login.passkey.submit,Продолжить с ключом доступа
 login.passkey.title,Войти с помощью пароля
 login.passkey.unsupported,Этот браузер или устройство не может использовать ключи доступа. Выберите другой способ входа.
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,"Войдите с новым пар
 login.recovery.completeTitleReference,Пароль изменён
 login.recovery.invalidLinkTitle,Эта ссылка сброса больше недействительна
 login.recovery.invalidLinkError,Эта ссылка сброса пароля недействительна или устарела.
+login.recovery.policyRejected,"Выберите пароль, соответствующий требованиям."
 login.recovery.loading,Загрузка восстановления пароля...
 login.recovery.resetSubmitReference,Задать новый пароль
 login.recovery.saving,Сохранение...

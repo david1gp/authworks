@@ -7,6 +7,7 @@ export type ExternalIdentityProviderIdentity = {
   readonly externalSubject: string
   readonly issuer?: string
   readonly nonce?: string
+  readonly picture?: string
   readonly providerType: ExternalIdentityProviderType
   readonly username?: string
 }

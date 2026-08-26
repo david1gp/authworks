@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Nickname
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,Salva profilo
 admin.users.profileSaved,Il profilo utente è stato salvato.
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Profilo
 admin.users.search,Cerca utenti
 admin.users.searchPlaceholder,"Filtra per nome utente, email o identificatore"
@@ -1096,7 +1101,10 @@ login.mfa.totp,Aplicación de autenticación
 login.mfa.totpDescription,Inserisca el codice de seis dígitos de il suo aplicación de autenticación.
 login.mfa.verificationCode,Codice de verifica
 login.mfa.verify,Verificar
+login.passkey.canceled,L’accesso con chiave di accesso è stato annullato o è scaduto. Riprovi.
+login.passkey.ceremonyFailure,Non è stato possibile completare l’accesso con chiave di accesso. Riprovi.
 login.passkey.description,"Confirme con el bloqueo de pantalla, il suo huella digital o una llave de seguridad."
+login.passkey.permissionDenied,L’accesso alla chiave di accesso è stato negato. Consenta l’accesso alle chiavi di accesso per questo sito e riprovi.
 login.passkey.submit,Continuar con la clave de acceso
 login.passkey.title,Accedi con una clave de acceso
 login.passkey.unsupported,Este navegador o dispositivo no puede usar claves de acceso. Scelga otro método de inicio de sesión.
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,"Accedi con la nuova password per co
 login.recovery.completeTitleReference,La password è stata cambiata
 login.recovery.invalidLinkTitle,Questo link di reimpostazione non è più valido
 login.recovery.invalidLinkError,Questo link per reimpostare la password non è valido o è scaduto.
+login.recovery.policyRejected,Scegli una password che soddisfi i requisiti.
 login.recovery.loading,Caricamento del recupero password...
 login.recovery.resetSubmitReference,Imposta nuova password
 login.recovery.saving,Salvataggio in corso...

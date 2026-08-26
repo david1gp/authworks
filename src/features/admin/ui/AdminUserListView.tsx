@@ -133,9 +133,20 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
                 {(item) => (
                   <TableRow>
                     <TableCell class="font-medium">
-                      <A class="text-accent hover:underline" href={`${props.detailHrefBase}/${item.id}`}>
-                        {item.userName}
-                      </A>
+                      <div class="flex items-center gap-3">
+                        <Show when={item.profile.picture?.url}>
+                          {(url) => (
+                            <img
+                              alt={messageTranslate("admin.users.pictureAlt")}
+                              class="h-8 w-8 rounded-full border border-line object-cover"
+                              src={url()}
+                            />
+                          )}
+                        </Show>
+                        <A class="text-accent hover:underline" href={`${props.detailHrefBase}/${item.id}`}>
+                          {item.userName}
+                        </A>
+                      </div>
                     </TableCell>
                     <TableCell>{item.email}</TableCell>
                     <TableCell>

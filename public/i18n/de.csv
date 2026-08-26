@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Nachname
 account.profile.nickName,Spitzname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Spitzname
 admin.users.preferredLanguage,Bevorzugte Sprache
 admin.users.profileSave,Profil speichern
 admin.users.profileSaved,Das Benutzerprofil wurde gespeichert.
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Profil
 admin.users.search,Benutzer durchsuchen
 admin.users.searchPlaceholder,"Nach Benutzername, E-Mail oder Kennung filtern"
@@ -1096,7 +1101,10 @@ login.mfa.totp,Authenticator-App
 login.mfa.totpDescription,Geben Sie den sechsstelligen Code aus Ihrer Authenticator-App ein.
 login.mfa.verificationCode,Bestätigungscode
 login.mfa.verify,Bestätigen
+login.passkey.canceled,Die Passkey-Anmeldung wurde abgebrochen oder ist wegen einer Zeitüberschreitung beendet worden. Versuchen Sie es erneut.
+login.passkey.ceremonyFailure,Die Passkey-Anmeldung konnte nicht abgeschlossen werden. Versuchen Sie es erneut.
 login.passkey.description,"Bestätigen Sie dies mit der Bildschirmsperre Ihres Geräts, Ihrem Fingerabdruck oder einem Sicherheitsschlüssel."
+login.passkey.permissionDenied,Der Zugriff auf den Passkey wurde verweigert. Erlauben Sie den Passkey-Zugriff für diese Website und versuchen Sie es erneut.
 login.passkey.submit,Mit Passkey fortfahren
 login.passkey.title,Mit einem Passkey anmelden
 login.passkey.unsupported,Dieser Browser oder dieses Gerät kann keine Passkeys verwenden. Wählen Sie eine andere Anmeldemethode.
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,"Mit Ihrem neuen Passwort anmelden, 
 login.recovery.completeTitleReference,Ihr Passwort wurde geändert
 login.recovery.invalidLinkTitle,Dieser Reset-Link ist nicht mehr gültig
 login.recovery.invalidLinkError,Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.
+login.recovery.policyRejected,"Wählen Sie ein Passwort, das die Anforderungen erfüllt."
 login.recovery.loading,Passwortwiederherstellung wird geladen...
 login.recovery.resetSubmitReference,Neues Passwort festlegen
 login.recovery.saving,Wird gespeichert...

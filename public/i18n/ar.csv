@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,اسم العائلة
 account.profile.nickName,الاسم المستعار
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Nickname
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,حفظ الملف الشخصي
 admin.users.profileSaved,تم حفظ الملف الشخصي للمستخدم.
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,الملف الشخصي
 admin.users.search,البحث في المستخدمين
 admin.users.searchPlaceholder,تصفية حسب اسم المستخدم أو البريد الإلكتروني أو المعرّف
@@ -1096,7 +1101,10 @@ login.mfa.totp,تطبيق المصادقة
 login.mfa.totpDescription,أدخل الرمز المكوّن من ستة أرقام من تطبيق المصادقة.
 login.mfa.verificationCode,رمز التحقق
 login.mfa.verify,تحقق
+login.passkey.canceled,تم إلغاء تسجيل الدخول بمفتاح المرور أو انتهت مهلة العملية. حاول مرة أخرى.
+login.passkey.ceremonyFailure,تعذر إكمال تسجيل الدخول بمفتاح المرور. يرجى المحاولة مرة أخرى.
 login.passkey.description,أكد هويتك باستخدام قفل شاشة جهازك أو بصمة إصبعك أو مفتاح أمان.
+login.passkey.permissionDenied,تم رفض الوصول إلى مفتاح المرور. اسمح بالوصول إلى مفاتيح المرور لهذا الموقع ثم حاول مرة أخرى.
 login.passkey.submit,المتابعة باستخدام مفتاح المرور
 login.passkey.title,تسجيل الدخول باستخدام مفتاح المرور
 login.passkey.unsupported,لا يمكن لهذا المتصفح أو الجهاز استخدام مفاتيح المرور. اختر طريقة تسجيل دخول أخرى.
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,سجّل الدخول بكلمة م�
 login.recovery.completeTitleReference,تم تغيير كلمة مرورك
 login.recovery.invalidLinkTitle,لم يعد رابط إعادة التعيين صالحًا
 login.recovery.invalidLinkError,رابط إعادة تعيين كلمة المرور غير صالح أو انتهت صلاحيته.
+login.recovery.policyRejected,اختر كلمة مرور تستوفي المتطلبات.
 login.recovery.loading,جارٍ تحميل استرداد كلمة المرور...
 login.recovery.resetSubmitReference,تعيين كلمة مرور جديدة
 login.recovery.saving,جارٍ الحفظ...

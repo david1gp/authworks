@@ -19,6 +19,12 @@ const demoEmailAddressChallenge = {
   retryAt: 1_800_000_060_000,
 }
 const demoEmailAddressToken = "demo-email-address-token-000000000000000000000"
+const demoPictureExtensions: Record<string, string> = {
+  "image/gif": "gif",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+}
 
 const demoEmailAddresses: UserEmailAddress[] = [
   {
@@ -168,6 +174,28 @@ export function accountDemoAdapterCreate(fixtureState: () => DemoFixtureState) {
         ...fixtureUser,
         phoneNumber: input.phoneNumber,
         phoneNumberVerifiedAt: demoMutationTimestamp,
+        updatedAt: demoMutationTimestamp,
+      }
+      return resultCreate({ user: fixtureUser })
+    },
+    profilePictureRemove: async () => {
+      if (fixtureState() === "error") return error()
+      const { picture: _removed, ...profile } = fixtureUser.profile
+      fixtureUser = { ...fixtureUser, profile, updatedAt: demoMutationTimestamp }
+      return resultCreate({ user: fixtureUser })
+    },
+    profilePictureUpload: async (file: Blob) => {
+      if (fixtureState() === "error") return error()
+      // The fixture mirrors the immutable hosted key shape without performing any network call.
+      fixtureUser = {
+        ...fixtureUser,
+        profile: {
+          ...fixtureUser.profile,
+          picture: {
+            contentType: file.type,
+            url: `https://assets.example.com/user-pictures/${fixtureUser.userName}_demo.${demoPictureExtensions[file.type] ?? "png"}`,
+          },
+        },
         updatedAt: demoMutationTimestamp,
       }
       return resultCreate({ user: fixtureUser })

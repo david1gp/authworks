@@ -212,6 +212,34 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     }
     database.run("CREATE INDEX IF NOT EXISTS user_profiles_realm_id_idx ON user_profiles (realm_id)")
     database.run(
+      "CREATE TABLE IF NOT EXISTS user_profile_picture_cleanup (object_key TEXT PRIMARY KEY NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), state TEXT NOT NULL DEFAULT 'pending-delete' CHECK (state IN ('uploading', 'pending-delete', 'deleting')), lease_until INTEGER CHECK (lease_until IS NULL OR lease_until >= 0), lease_token TEXT)",
+    )
+    try {
+      database.run(
+        "ALTER TABLE user_profile_picture_cleanup ADD COLUMN state TEXT NOT NULL DEFAULT 'pending-delete' CHECK (state IN ('uploading', 'pending-delete', 'deleting'))",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "state")) throw error
+    }
+    try {
+      database.run(
+        "ALTER TABLE user_profile_picture_cleanup ADD COLUMN lease_until INTEGER CHECK (lease_until IS NULL OR lease_until >= 0)",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "lease_until")) throw error
+    }
+    try {
+      database.run("ALTER TABLE user_profile_picture_cleanup ADD COLUMN lease_token TEXT")
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "lease_token")) throw error
+    }
+    database.run(
+      "CREATE INDEX IF NOT EXISTS user_profile_picture_cleanup_created_at_idx ON user_profile_picture_cleanup (created_at, object_key)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS user_profile_picture_cleanup_lifecycle_idx ON user_profile_picture_cleanup (state, lease_until, created_at, object_key)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS user_email_change_challenges (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, pending_email TEXT NOT NULL, purpose TEXT NOT NULL DEFAULT 'email_change' CHECK (purpose IN ('email_change', 'email_address')), token_hash TEXT NOT NULL UNIQUE, attempts INTEGER NOT NULL CHECK (attempts >= 0), max_attempts INTEGER NOT NULL CHECK (max_attempts > 0), expires_at INTEGER NOT NULL CHECK (expires_at >= 0), cooldown_until INTEGER NOT NULL CHECK (cooldown_until >= 0), consumed_at INTEGER CHECK (consumed_at IS NULL OR consumed_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     try {

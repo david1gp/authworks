@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Nickname
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,保存个人资料
 admin.users.profileSaved,用户资料已保存。
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,个人资料
 admin.users.search,搜索用户
 admin.users.searchPlaceholder,按用户名、电子邮件或标识符筛选
@@ -1096,7 +1101,10 @@ login.mfa.totp,验证器应用
 login.mfa.totpDescription,输入验证器应用中的六位数代码。
 login.mfa.verificationCode,验证码
 login.mfa.verify,验证
+login.passkey.canceled,通行密钥登录已取消或超时。请重试。
+login.passkey.ceremonyFailure,无法完成通行密钥登录。请重试。
 login.passkey.description,使用设备屏幕锁、指纹或安全密钥确认身份。
+login.passkey.permissionDenied,通行密钥访问被拒绝。请允许此网站访问通行密钥后重试。
 login.passkey.submit,使用通行密钥继续
 login.passkey.title,使用通行密钥登录
 login.passkey.unsupported,此浏览器或设备无法使用通行密钥。请选择其他登录方式。
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,使用新密码登录以继续。
 login.recovery.completeTitleReference,密码已更改
 login.recovery.invalidLinkTitle,此重置链接已失效
 login.recovery.invalidLinkError,此密码重置链接无效或已过期。
+login.recovery.policyRejected,请选择符合要求的密码。
 login.recovery.loading,正在加载密码恢复...
 login.recovery.resetSubmitReference,设置新密码
 login.recovery.saving,正在保存...

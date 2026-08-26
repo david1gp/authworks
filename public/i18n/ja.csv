@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Nickname
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,プロフィールを保存
 admin.users.profileSaved,ユーザープロフィールを保存しました。
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,プロフィール
 admin.users.search,ユーザーを検索
 admin.users.searchPlaceholder,ユーザー名、メール、識別子で絞り込む
@@ -1096,7 +1101,10 @@ login.mfa.totp,認証アプリ
 login.mfa.totpDescription,認証アプリに表示された6桁のコードを入力してください。
 login.mfa.verificationCode,確認コード
 login.mfa.verify,確認
+login.passkey.canceled,パスキーでのサインインがキャンセルされたかタイムアウトしました。もう一度お試しください。
+login.passkey.ceremonyFailure,パスキーでのサインインを完了できませんでした。もう一度お試しください。
 login.passkey.description,デバイスの画面ロック、指紋、またはセキュリティキーで確認してください。
+login.passkey.permissionDenied,パスキーへのアクセスが拒否されました。このサイトのパスキーへのアクセスを許可してからもう一度お試しください。
 login.passkey.submit,パスキーで続行
 login.passkey.title,パスキーでログイン
 login.passkey.unsupported,このブラウザまたはデバイスはパスキーに対応していません。別のログイン方法を選択してください。
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,新しいパスワードでサイン
 login.recovery.completeTitleReference,パスワードを変更しました
 login.recovery.invalidLinkTitle,このリセットリンクは無効になりました
 login.recovery.invalidLinkError,このパスワードリセットリンクは無効か、有効期限が切れています。
+login.recovery.policyRejected,要件を満たすパスワードを選択してください。
 login.recovery.loading,パスワードリカバリーを読み込み中...
 login.recovery.resetSubmitReference,新しいパスワードを設定
 login.recovery.saving,保存中...

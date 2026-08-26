@@ -160,6 +160,7 @@ async function googleIdentityFetch(
       "The external provider identity response is invalid.",
       "external-identities.invalid",
     )
+  const picture = providerPictureGet(userInfo.data, "picture") ?? providerPictureGet(tokenClaims.data, "picture")
   return resultCreate({
     displayName: providerStringGet(userInfo.data, "name") ?? providerStringGet(tokenClaims.data, "name") ?? undefined,
     email: providerStringGet(userInfo.data, "email") ?? providerStringGet(tokenClaims.data, "email") ?? undefined,
@@ -168,6 +169,7 @@ async function googleIdentityFetch(
     externalSubject: subject,
     issuer,
     nonce,
+    ...(picture === undefined ? {} : { picture }),
     providerType: "google",
     username: providerStringGet(userInfo.data, "preferred_username") ?? undefined,
   })
@@ -214,11 +216,13 @@ async function githubIdentityFetch(
         }
       }
     }
+    const picture = providerPictureGet(raw, "avatar_url")
     return resultCreate({
       displayName: providerStringGet(raw, "name") ?? undefined,
       ...(email === null ? {} : { email }),
       emailVerified,
       externalSubject: subject,
+      ...(picture === undefined ? {} : { picture }),
       providerType: "github",
       username: providerStringGet(raw, "login") ?? undefined,
     })
@@ -375,6 +379,12 @@ function providerStringGet(value: unknown, key: string): string | null {
 function providerBooleanGet(value: unknown, key: string): boolean {
   if (typeof value !== "object" || value === null || Array.isArray(value)) return false
   return (value as Record<string, unknown>)[key] === true
+}
+
+function providerPictureGet(value: unknown, key: string): string | undefined {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return undefined
+  const candidate = (value as Record<string, unknown>)[key]
+  return typeof candidate === "string" && candidate.length > 0 ? candidate : undefined
 }
 
 function authorizationEndpointGet(type: ExternalIdentityProviderType): string {

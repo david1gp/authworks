@@ -1,6 +1,5 @@
 import * as v from "valibot"
 import { patchClearableSchemaCreate } from "../../../platform/http/patchClearableSchemaCreate.js"
-import { userPictureAssetSchema } from "./userPictureAssetSchema.js"
 
 const userProfileFieldSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(128))
 const userProfileLanguageSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(16))
@@ -12,7 +11,6 @@ export const userProfileUpdateRequestSchema = v.strictObject({
   gender: patchClearableSchemaCreate(userProfileGenderSchema),
   lastName: patchClearableSchemaCreate(userProfileFieldSchema),
   nickName: patchClearableSchemaCreate(userProfileFieldSchema),
-  picture: patchClearableSchemaCreate(userPictureAssetSchema),
   preferredLanguage: patchClearableSchemaCreate(userProfileLanguageSchema),
 })
 

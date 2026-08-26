@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Nickname
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,Guardar perfil
 admin.users.profileSaved,O perfil do utilizador foi guardado.
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Perfil
 admin.users.search,Procurar utilizadores
 admin.users.searchPlaceholder,"Filtrar por nome de utilizador, e-mail ou identificador"
@@ -1096,7 +1101,10 @@ login.mfa.totp,Aplicativo autenticador
 login.mfa.totpDescription,Insira o código de seis dígitos do seu aplicativo autenticador.
 login.mfa.verificationCode,Código de verificação
 login.mfa.verify,Verificar
+login.passkey.canceled,O início de sessão com chave de acesso foi cancelado ou expirou. Tente novamente.
+login.passkey.ceremonyFailure,Não foi possível concluir o início de sessão com chave de acesso. Tente novamente.
 login.passkey.description,"Confirme com o bloqueio de tela, impressão digital ou chave de segurança do seu dispositivo."
+login.passkey.permissionDenied,O acesso à chave de acesso foi recusado. Permita o acesso às chaves de acesso para este site e tente novamente.
 login.passkey.submit,Continuar com senha
 login.passkey.title,Faça login com uma senha
 login.passkey.unsupported,Este navegador ou dispositivo não pode usar senhas. Escolha outro método de login.
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,Entre com sua nova senha para contin
 login.recovery.completeTitleReference,Sua senha foi alterada
 login.recovery.invalidLinkTitle,Este link de redefinição não é mais válido
 login.recovery.invalidLinkError,Este link de redefinição de senha é inválido ou expirou.
+login.recovery.policyRejected,Escolha uma senha que atenda aos requisitos.
 login.recovery.loading,Carregando a recuperação de senha...
 login.recovery.resetSubmitReference,Definir nova senha
 login.recovery.saving,Salvando...

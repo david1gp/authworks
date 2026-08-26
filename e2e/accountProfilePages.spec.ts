@@ -1,4 +1,5 @@
 import { expect, type Page, type Route, test } from "@playwright/test"
+import { accountPictureFileFixture } from "./accountPictureFileFixture.js"
 import { productionAccountSessionBootstrap } from "./productionAccountSessionBootstrap.js"
 
 const realmId = "01900000-0000-7000-8000-000000000001"
@@ -43,13 +44,34 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
       { exact: true },
     ),
   ).toBeVisible()
-  await page.getByLabel("Picture URL").fill("https://assets.example.com/avery-example.png")
-  await page.getByLabel("Picture content type").fill("image/png")
   await page.getByRole("button", { name: "Save changes" }).click()
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
+
+  const pictureChooser = page.getByLabel("Choose a picture file")
+  await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
+  await expect(page.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
+
+  await pictureChooser.setInputFiles(
+    accountPictureFileFixture({ bytes: 600 * 1024, mimeType: "image/png", name: "too-large.png" }),
+  )
+  await expect(page.getByText("Choose an image of at most 512 KiB.")).toBeVisible()
+
+  await pictureChooser.setInputFiles(
+    accountPictureFileFixture({ bytes: 2048, mimeType: "image/bmp", name: "unsupported.bmp" }),
+  )
+  await expect(page.getByText("Choose a JPEG, PNG, WebP, or GIF image.")).toBeVisible()
+
+  await pictureChooser.setInputFiles(
+    accountPictureFileFixture({ bytes: 4096, mimeType: "image/png", name: "avery-example.png" }),
+  )
+  await expect(page.getByText("Profile picture updated.")).toBeVisible()
+  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveAttribute(
+    "src",
+    "https://assets.example.com/user-pictures/avery.stone_demo.png",
+  )
   await page.getByRole("button", { name: "Remove picture" }).click()
-  await page.getByRole("button", { name: "Save changes" }).click()
-  await expect(page.getByLabel("Picture URL")).toHaveValue("")
+  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Remove picture" })).toHaveCount(0)
 
   await page.goto("/demo/account/password")
   await page.getByLabel("Current password").fill("fixture-current")
@@ -68,16 +90,42 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
 test("production profile uses the subject API and CSRF", async ({ page }) => {
   let csrfHeader: string | null = null
   const profileUpdates: unknown[] = []
-  let currentUser = user
+  const pictureRequests: {
+    contentType: string | undefined
+    csrf: string | undefined
+    length: number
+    method: string
+  }[] = []
+  const uploadedPictureUrl =
+    "https://assets.example.com/user-pictures/avery.stone_0123456789abcdef0123456789abcdef_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.png"
+  let currentUser: Omit<typeof user, "profile"> & {
+    profile: Omit<(typeof user)["profile"], "picture"> & { picture?: { contentType: string; url: string } }
+  } = user
   await productionAccountSessionBootstrap(page)
   await accountApiRoutesInstall(page, async (route, method) => {
+    const request = route.request()
+    const pathname = new URL(request.url()).pathname
+    if (pathname.endsWith("/me/profile-picture")) {
+      pictureRequests.push({
+        contentType: request.headers()["content-type"],
+        csrf: request.headers()["x-csrf-token"],
+        length: request.postDataBuffer()?.byteLength ?? 0,
+        method,
+      })
+      const { picture: _current, ...rest } = currentUser.profile
+      currentUser = {
+        ...currentUser,
+        profile:
+          method === "DELETE" ? rest : { ...rest, picture: { contentType: "image/png", url: uploadedPictureUrl } },
+      }
+      await route.fulfill({ json: { user: currentUser } })
+      return
+    }
     if (method === "PATCH") {
-      csrfHeader = route.request().headers()["x-csrf-token"] ?? null
-      const body = route.request().postDataJSON()
+      csrfHeader = request.headers()["x-csrf-token"] ?? null
+      const body = request.postDataJSON()
       profileUpdates.push(body)
-      const profile = { ...currentUser.profile, ...body }
-      if (body.picture === null) delete profile.picture
-      currentUser = { ...currentUser, profile }
+      currentUser = { ...currentUser, profile: { ...currentUser.profile, ...body } }
       await route.fulfill({ json: { user: currentUser } })
       return
     }
@@ -87,18 +135,46 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
   await page.goto("/account/profile")
   await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("Avery Stone")
   await expect(page.getByRole("button", { name: "Unspecified", exact: true })).toBeVisible()
-  await expect(page.getByLabel("Picture URL")).toHaveValue("https://assets.example.com/avery-stone.png")
+  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveAttribute(
+    "src",
+    "https://assets.example.com/avery-stone.png",
+  )
   await page.getByLabel("Display name", { exact: true }).fill("Avery Updated")
   await page.getByRole("button", { name: "Unspecified", exact: true }).click()
   await page.getByRole("option", { name: "Woman", exact: true }).click()
-  await page.getByLabel("Picture URL").fill("https://assets.example.com/avery-updated.png")
-  await page.getByLabel("Picture content type").fill("image/png")
   await page.getByRole("button", { name: "Save changes" }).click()
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
+
+  const pictureChooser = page.getByLabel("Choose a picture file")
+  await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
+  await expect(page.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
+
+  // Client-side rejections must never reach the upload route.
+  await pictureChooser.setInputFiles(
+    accountPictureFileFixture({ bytes: 600 * 1024, mimeType: "image/png", name: "too-large.png" }),
+  )
+  await expect(page.getByText("Choose an image of at most 512 KiB.")).toBeVisible()
+  await pictureChooser.setInputFiles(
+    accountPictureFileFixture({ bytes: 1024, mimeType: "image/bmp", name: "unsupported.bmp" }),
+  )
+  await expect(page.getByText("Choose a JPEG, PNG, WebP, or GIF image.")).toBeVisible()
+  expect(pictureRequests).toEqual([])
+
+  await pictureChooser.setInputFiles(
+    accountPictureFileFixture({ bytes: 3072, mimeType: "image/png", name: "avery-updated.png" }),
+  )
+  await expect(page.getByText("Profile picture updated.")).toBeVisible()
+  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveAttribute("src", uploadedPictureUrl)
+
   await page.getByRole("button", { name: "Remove picture" }).click()
-  await page.getByRole("button", { name: "Save changes" }).click()
-  await expect(page.getByLabel("Picture URL")).toHaveValue("")
+  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Remove picture" })).toHaveCount(0)
+
   expect(csrfHeader).toBe("e2e-csrf-token")
+  expect(pictureRequests).toEqual([
+    { contentType: "image/png", csrf: "e2e-csrf-token", length: 3072, method: "PUT" },
+    { contentType: undefined, csrf: "e2e-csrf-token", length: 0, method: "DELETE" },
+  ])
   expect(profileUpdates).toEqual([
     {
       displayName: "Avery Updated",
@@ -106,16 +182,6 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
       gender: "woman",
       lastName: "Stone",
       nickName: "Avery",
-      picture: { contentType: "image/png", url: "https://assets.example.com/avery-updated.png" },
-      preferredLanguage: "en",
-    },
-    {
-      displayName: "Avery Updated",
-      firstName: "Avery",
-      gender: "woman",
-      lastName: "Stone",
-      nickName: "Avery",
-      picture: null,
       preferredLanguage: "en",
     },
   ])

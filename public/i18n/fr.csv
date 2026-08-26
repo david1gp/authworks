@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Nickname
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,Enregistrer le profil
 admin.users.profileSaved,Le profil de l'utilisateur a été enregistré.
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Profil
 admin.users.search,Rechercher des utilisateurs
 admin.users.searchPlaceholder,"Filtrer par nom d'utilisateur, e-mail ou identifiant"
@@ -1096,7 +1101,10 @@ login.mfa.totp,Application d’authentification
 login.mfa.totpDescription,Saisissez le code à six chiffres de votre application d’authentification.
 login.mfa.verificationCode,Code de vérification
 login.mfa.verify,Vérifier
+login.passkey.canceled,La connexion avec la clé d’accès a été annulée ou a expiré. Réessayez.
+login.passkey.ceremonyFailure,La connexion avec la clé d’accès n’a pas pu être terminée. Réessayez.
 login.passkey.description,"Confirmez avec le verrouillage de l’écran, votre empreinte digitale ou une clé de sécurité."
+login.passkey.permissionDenied,L’accès à la clé d’accès a été refusé. Autorisez l’accès aux clés d’accès pour ce site puis réessayez.
 login.passkey.submit,Continuer avec la clé d’accès
 login.passkey.title,Se connecter avec une clé d’accès
 login.passkey.unsupported,Ce navigateur ou cet appareil ne peut pas utiliser les clés d’accès. Choisissez une autre méthode de connexion.
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,"Connectez-vous avec votre nouveau m
 login.recovery.completeTitleReference,Votre mot de passe a été modifié
 login.recovery.invalidLinkTitle,Ce lien de réinitialisation n’est plus valide
 login.recovery.invalidLinkError,Ce lien de réinitialisation du mot de passe est invalide ou expiré.
+login.recovery.policyRejected,Choisissez un mot de passe qui respecte les exigences.
 login.recovery.loading,Chargement de la récupération du mot de passe...
 login.recovery.resetSubmitReference,Définir le nouveau mot de passe
 login.recovery.saving,Enregistrement en cours...

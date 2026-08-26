@@ -2,6 +2,7 @@ import type { ExtractTablesWithRelations } from "drizzle-orm"
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 import type { SQLiteTransaction } from "drizzle-orm/sqlite-core"
 import { emailOtpChallengeTable } from "../../features/emailOtp/persistence/emailOtpChallengeTable.js"
+import { eventUserSubjectTable } from "../../features/events/persistence/eventUserSubjectTable.js"
 import { externalIdentityOAuthTransactionTable } from "../../features/externalIdentities/persistence/externalIdentityOAuthTransactionTable.js"
 import { externalIdentityProviderTable } from "../../features/externalIdentities/persistence/externalIdentityProviderTable.js"
 import { externalIdentityTable } from "../../features/externalIdentities/persistence/externalIdentityTable.js"
@@ -43,6 +44,7 @@ import { realmDomainTable } from "../../features/realms/persistence/realmDomainT
 import { realmTable } from "../../features/realms/persistence/realmTable.js"
 import { sessionTable } from "../../features/sessions/persistence/sessionTable.js"
 import { userEmailTable } from "../../features/users/persistence/userEmailTable.js"
+import { userProfilePictureCleanupTable } from "../../features/users/persistence/userProfilePictureCleanupTable.js"
 import { userProfileTable } from "../../features/users/persistence/userProfileTable.js"
 import { userTable } from "../../features/users/persistence/userTable.js"
 import { wahaHealthCandidateTable } from "../../features/waha/persistence/wahaHealthCandidateTable.js"
@@ -50,7 +52,6 @@ import { whatsappOtpChallengeTable } from "../../features/whatsappOtp/persistenc
 import { rateLimitTable } from "../rateLimit/rateLimitTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
 import { storageEventTable } from "./storageEventTable.js"
-import { eventUserSubjectTable } from "../../features/events/persistence/eventUserSubjectTable.js"
 
 export const storageSchema = {
   emailOtpChallengeTable,
@@ -95,6 +96,7 @@ export const storageSchema = {
   mfaRecoveryCodeTable,
   mfaTotpEnrollmentTable,
   userEmailTable,
+  userProfilePictureCleanupTable,
   userProfileTable,
   userTable,
   wahaHealthCandidateTable,

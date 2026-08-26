@@ -42,6 +42,11 @@ type ExternalIdentityServerAppCreateOptions = {
   readonly accountUiOrigin?: string
   readonly browserMode?: boolean
   readonly database: StorageDatabase
+  readonly profilePictureImport?: (input: {
+    readonly pictureUrl: string
+    readonly realmId: string
+    readonly userId: string
+  }) => Promise<Result<void>>
   readonly providerPorts?: ExternalIdentityProviderPorts
   readonly publicOrigin?: string
   readonly systemSecret?: Secret | string
@@ -78,6 +83,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       realmId: input.realmId,
       providerId: input.providerId,
       providerPorts,
+      profilePictureImport: options.profilePictureImport,
       state: input.state,
     })
     const browserMode =

@@ -3,6 +3,7 @@ import { mailTransportConfigurationParse } from "../features/email/server/mailTr
 import { smtpMailDeliveryPortCreate } from "../features/email/server/smtpMailDeliveryPortCreate.js"
 import { wahaConfigurationParse } from "../features/waha/server/wahaConfigurationParse.js"
 import { configurationParse } from "../platform/configuration/configurationParse.js"
+import { r2ConfigurationParse } from "../platform/configuration/r2ConfigurationParse.js"
 
 export function serverListen(): void {
   const parsed = configurationParse({
@@ -30,6 +31,12 @@ export function serverListen(): void {
     process.exit(1)
   }
 
+  const r2Configuration = r2ConfigurationParse(process.env)
+  if (!r2Configuration.success) {
+    console.error(r2Configuration.errorMessage)
+    process.exit(1)
+  }
+
   const directPeerAddressByRequest = new WeakMap<Request, string>()
   const created = serverApplicationCreate({
     browserMode: true,
@@ -41,6 +48,7 @@ export function serverListen(): void {
       mailConfiguration.data === undefined ? undefined : smtpMailDeliveryPortCreate(mailConfiguration.data.smtp),
     production: parsed.data.nodeEnv === "production",
     publicOrigin: parsed.data.publicOrigin,
+    r2Configuration: r2Configuration.data,
     systemSecret: process.env.AUTHWORKS_SYSTEM_SECRET,
     trustedProxyAddresses: parsed.data.trustedProxyAddresses,
     wahaConfiguration: wahaConfiguration.data,

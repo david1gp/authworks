@@ -19,28 +19,65 @@ const [{ accountDemoAdapterCreate }, { accountPageStateCreate }] = await Promise
 const submitEvent = { preventDefault: () => {} } as SubmitEvent
 
 describe("account phone-change state", () => {
-  test("submits gender and picture assets and supports picture removal", async () => {
+  test("submits gender without the picture and uploads or removes the picture separately", async () => {
     const adapter = accountDemoAdapterCreate(() => "success")
-    const state = accountPageStateCreate({ adapter, initialStatus: "ready", kind: "profile" })
+    let submitted: Record<string, unknown> = {}
+    const state = accountPageStateCreate({
+      adapter: {
+        ...adapter,
+        updateProfile: async (input) => {
+          submitted = input
+          return adapter.updateProfile(input)
+        },
+      },
+      initialStatus: "ready",
+      kind: "profile",
+    })
     const loaded = await adapter.loadUser()
     if (!loaded.success) throw new Error("Expected demo user")
     state.user.set(loaded.data.user)
     state.displayName.set("Avery Updated")
     state.gender.set("woman")
-    state.pictureUrl.set("https://assets.example.com/avery-updated.png")
-    state.pictureContentType.set("image/png")
 
     await state.profileSubmit(submitEvent)
 
     expect(state.user.get()?.profile.gender).toBe("woman")
-    expect(state.user.get()?.profile.picture).toEqual({
-      contentType: "image/png",
-      url: "https://assets.example.com/avery-updated.png",
+    expect(Object.hasOwn(submitted, "picture")).toBe(false)
+
+    await state.pictureUpload(new File([new Uint8Array([1])], "avatar.webp", { type: "image/webp" }))
+    expect(state.pictureStatus.get()).toBe("success")
+    expect(state.pictureUrl.get()).toContain("avery.stone_demo.webp")
+    expect(state.user.get()?.profile.picture?.contentType).toBe("image/webp")
+
+    await state.pictureRemove()
+    expect(state.pictureStatus.get()).toBe("success")
+    expect(state.pictureUrl.get()).toBe("")
+    expect(state.user.get()?.profile.picture).toBeUndefined()
+  })
+
+  test("rejects an unsupported or oversized picture before calling the adapter", async () => {
+    const adapter = accountDemoAdapterCreate(() => "success")
+    let uploads = 0
+    const state = accountPageStateCreate({
+      adapter: {
+        ...adapter,
+        profilePictureUpload: async (file) => {
+          uploads += 1
+          return adapter.profilePictureUpload(file)
+        },
+      },
+      initialStatus: "ready",
+      kind: "profile",
     })
 
-    state.pictureRemove()
-    await state.profileSubmit(submitEvent)
-    expect(state.user.get()?.profile.picture).toBeUndefined()
+    await state.pictureUpload(new File([new Uint8Array([1])], "avatar.svg", { type: "image/svg+xml" }))
+    expect(uploads).toBe(0)
+    expect(state.pictureStatus.get()).toBe("error")
+    expect(state.pictureErrorMessage.get()).toBe("Choose a JPEG, PNG, WebP, or GIF image.")
+
+    await state.pictureUpload(new File([new Uint8Array(512 * 1024 + 1)], "avatar.png", { type: "image/png" }))
+    expect(uploads).toBe(0)
+    expect(state.pictureErrorMessage.get()).toBe("Choose an image of at most 512 KiB.")
   })
 
   test("does not replace general profile validation with picture feedback", async () => {

@@ -130,11 +130,15 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.pictureContentType,Picture content type
-account.profile.pictureHint,Use an HTTPS URL for an image hosted by your application.
-account.profile.pictureInvalid,Enter a valid HTTPS picture URL.
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
-account.profile.pictureUrl,Picture URL
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -730,6 +734,7 @@ admin.users.nickName,Nickname
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,Guardar perfil
 admin.users.profileSaved,El perfil del usuario se ha guardado.
+admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Perfil
 admin.users.search,Buscar usuarios
 admin.users.searchPlaceholder,"Filtrar por nombre de usuario, correo o identificador"
@@ -1096,7 +1101,10 @@ login.mfa.totp,Aplicación de autenticación
 login.mfa.totpDescription,Introduzca el código de seis dígitos de su aplicación de autenticación.
 login.mfa.verificationCode,Código de verificación
 login.mfa.verify,Verificar
+login.passkey.canceled,Se canceló el inicio de sesión con clave de acceso o se agotó el tiempo de espera. Inténtelo de nuevo.
+login.passkey.ceremonyFailure,No se pudo completar el inicio de sesión con clave de acceso. Inténtelo de nuevo.
 login.passkey.description,"Confirme con el bloqueo de pantalla, su huella digital o una llave de seguridad."
+login.passkey.permissionDenied,Se denegó el acceso a la clave de acceso. Permita el acceso a las claves de acceso para este sitio e inténtelo de nuevo.
 login.passkey.submit,Continuar con la clave de acceso
 login.passkey.title,Iniciar sesión con una clave de acceso
 login.passkey.unsupported,Este navegador o dispositivo no puede usar claves de acceso. Elija otro método de inicio de sesión.
@@ -1247,6 +1255,7 @@ login.recovery.completeDescriptionReference,"Inicie sesión con su nueva contras
 login.recovery.completeTitleReference,Su contraseña ha cambiado
 login.recovery.invalidLinkTitle,Este enlace de restablecimiento ya no es válido
 login.recovery.invalidLinkError,Este enlace para restablecer la contraseña no es válido o ha caducado.
+login.recovery.policyRejected,Elija una contraseña que cumpla los requisitos.
 login.recovery.loading,Cargando la recuperación de contraseña...
 login.recovery.resetSubmitReference,Establecer nueva contraseña
 login.recovery.saving,Guardando...

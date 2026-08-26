@@ -10,11 +10,13 @@ import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
-import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
-import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
-import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
-import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
-import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import {
+  realmAdministratorContextAuthorize,
+  realmBootstrapAdminAuthenticate,
+  realmSystemContextCreate,
+  realmTenantContextResolve,
+} from "../../realms/server/index.js"
+import type { RealmTenantContext } from "../../realms/server/index.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { userAuthenticationMethodsAdministratorGet } from "../actions/userAuthenticationMethodsAdministratorGet.js"
@@ -35,6 +37,8 @@ import { userGet } from "../actions/userGet.js"
 import { userLifecycleSet } from "../actions/userLifecycleSet.js"
 import { userList } from "../actions/userList.js"
 import { userProfileUpdate } from "../actions/userProfileUpdate.js"
+import { userProfilePictureUpload } from "../actions/userProfilePictureUpload.js"
+import { userProfilePictureRemove } from "../actions/userProfilePictureRemove.js"
 import { userRealmReadCapabilityResolve } from "../actions/userRealmReadCapabilityResolve.js"
 import { userCreateRequestSchema } from "../public/userCreateRequestSchema.js"
 import { userEmailAddressAddResendRequestSchema } from "../public/userEmailAddressAddResendRequestSchema.js"
@@ -50,6 +54,7 @@ import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVer
 import { userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
 import { userProfileUpdateRequestSchema } from "../public/userProfileUpdateRequestSchema.js"
 import { userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
+import type { R2ObjectStorage } from "../../../platform/storage/r2/r2ObjectStorage.js"
 
 type UserServerAppCreateOptions = {
   readonly clientIpResolve?: (context: { readonly req: { readonly raw: Request } }) => string | undefined
@@ -58,6 +63,8 @@ type UserServerAppCreateOptions = {
   readonly onEmailChangeDelivery?: (delivery: UserEmailChangeDelivery) => void | Promise<void>
   readonly onEmailChangeNotification?: (notification: UserEmailChangeNotification) => void | Promise<void>
   readonly publicOrigin?: string
+  readonly profilePicturePublicOrigin?: string
+  readonly profilePictureStorage?: R2ObjectStorage
   readonly rateLimitSecret?: Secret | string
   readonly systemSecret?: Secret | string
 }
@@ -222,14 +229,16 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.delete("/system/realms/:realmId/users/:userId", (context) => {
+  app.delete("/system/realms/:realmId/users/:userId", async (context) => {
     const authorization = userSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
     if (!authorization.success) return userErrorResponseCreate(context, authorization)
     return userResultResponseCreate(
       context,
-      userDelete({
+      await userDelete({
         context: systemContext,
         database: options.database,
+        profilePicturePublicOrigin: options.profilePicturePublicOrigin,
+        profilePictureStorage: options.profilePictureStorage,
         realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
@@ -534,14 +543,52 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.delete("/realms/:realmId/me", protectedMiddleware, (context) => {
+  app.put("/realms/:realmId/me/profile-picture", authenticatedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    const body = await userProfilePictureBodyRead(context)
+    if (!body.success) return userErrorResponseCreate(context, body)
+    return userResultResponseCreate(
+      context,
+      await userProfilePictureUpload({
+        body: body.data,
+        contentType: context.req.header("content-type") ?? "",
+        context: subject.data,
+        database: options.database,
+        publicOrigin: options.profilePicturePublicOrigin,
+        realmId: context.req.param("realmId"),
+        storage: options.profilePictureStorage,
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/me/profile-picture", authenticatedMiddleware, async (context) => {
     const subject = userSubjectContextResolve(context, context.req.param("realmId"))
     if (!subject.success) return userErrorResponseCreate(context, subject)
     return userResultResponseCreate(
       context,
-      userDelete({
+      await userProfilePictureRemove({
         context: subject.data,
         database: options.database,
+        publicOrigin: options.profilePicturePublicOrigin,
+        realmId: context.req.param("realmId"),
+        storage: options.profilePictureStorage,
+        userId: subject.data.actorId,
+      }),
+    )
+  })
+
+  app.delete("/realms/:realmId/me", protectedMiddleware, async (context) => {
+    const subject = userSubjectContextResolve(context, context.req.param("realmId"))
+    if (!subject.success) return userErrorResponseCreate(context, subject)
+    return userResultResponseCreate(
+      context,
+      await userDelete({
+        context: subject.data,
+        database: options.database,
+        profilePicturePublicOrigin: options.profilePicturePublicOrigin,
+        profilePictureStorage: options.profilePictureStorage,
         realmId: context.req.param("realmId"),
         userId: subject.data.actorId,
       }),
@@ -707,7 +754,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     )
   })
 
-  app.delete("/realms/:realmId/users/:userId", userManageMiddleware, (context) => {
+  app.delete("/realms/:realmId/users/:userId", userManageMiddleware, async (context) => {
     const authenticated = userAdministratorAuthorize(
       context,
       options.database,
@@ -717,9 +764,11 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     return userResultResponseCreate(
       context,
-      userDelete({
+      await userDelete({
         context: authenticated.data,
         database: options.database,
+        profilePicturePublicOrigin: options.profilePicturePublicOrigin,
+        profilePictureStorage: options.profilePictureStorage,
         realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
@@ -771,6 +820,74 @@ async function userRequestJsonRead(context: { req: { json: <T>() => Promise<T> }
       success: false as const,
     }
   }
+}
+
+async function userProfilePictureBodyRead(context: {
+  readonly req: {
+    readonly header: (name: string) => string | undefined
+    readonly raw: Request
+  }
+}) {
+  const op = "userProfilePictureBodyRead"
+  const maximumBytes = 512 * 1024
+  const contentLength = context.req.header("content-length")
+  if (contentLength !== undefined && /^\d+$/.test(contentLength)) {
+    const length = Number(contentLength)
+    if (Number.isSafeInteger(length) && length > maximumBytes)
+      return {
+        code: "users.invalid",
+        errorMessage: "The user picture must not exceed 512 KiB.",
+        op,
+        success: false as const,
+      }
+  }
+  const body = context.req.raw.body
+  if (body === null) return { data: new Uint8Array(), success: true as const }
+  const reader = body.getReader()
+  const chunks: Uint8Array[] = []
+  let length = 0
+  try {
+    while (true) {
+      const chunk = await reader.read()
+      if (chunk.done) break
+      if (!(chunk.value instanceof Uint8Array)) {
+        await reader.cancel().catch(() => undefined)
+        return {
+          code: "users.invalid",
+          errorMessage: "The user picture body is invalid.",
+          op,
+          success: false as const,
+        }
+      }
+      length += chunk.value.byteLength
+      if (length > maximumBytes) {
+        await reader.cancel().catch(() => undefined)
+        return {
+          code: "users.invalid",
+          errorMessage: "The user picture must not exceed 512 KiB.",
+          op,
+          success: false as const,
+        }
+      }
+      chunks.push(chunk.value)
+    }
+  } catch (_error) {
+    return {
+      code: "users.invalid",
+      errorMessage: "The user picture body is invalid.",
+      op,
+      success: false as const,
+    }
+  } finally {
+    reader.releaseLock()
+  }
+  const result = new Uint8Array(length)
+  let offset = 0
+  for (const chunk of chunks) {
+    result.set(chunk, offset)
+    offset += chunk.byteLength
+  }
+  return { data: result, success: true as const }
 }
 
 function userSystemAuthorizationGet(authorization: string | undefined, configuredSecret: Secret | string | undefined) {

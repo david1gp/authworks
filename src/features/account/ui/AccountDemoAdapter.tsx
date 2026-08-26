@@ -89,9 +89,8 @@ export function AccountDemoAdapter(props: {
             onPhoneResend={page.phoneChangeResend}
             onPhoneStart={page.phoneChangeStart}
             onPhoneVerify={page.phoneChangeVerify}
-            onPictureContentTypeInput={page.pictureContentType.set}
-            onPictureRemove={page.pictureRemove}
-            onPictureUrlInput={page.pictureUrl.set}
+            onPictureRemove={() => void page.pictureRemove()}
+            onPictureUpload={(file) => void page.pictureUpload(file)}
             onRetry={page.load}
             onSubmit={page.profileSubmit}
             preferredLanguage={page.preferredLanguage.get()}
@@ -103,7 +102,8 @@ export function AccountDemoAdapter(props: {
             phoneStatus={page.phoneStatus.get()}
             phoneValidationMessage={page.phoneValidationMessage.get()}
             phoneVerified={page.user.get()?.phoneNumberVerifiedAt !== undefined}
-            pictureContentType={page.pictureContentType.get()}
+            pictureErrorMessage={page.pictureErrorMessage.get()}
+            pictureStatus={page.pictureStatus.get()}
             pictureUrl={page.pictureUrl.get()}
             status={page.status.get()}
             userName={page.user.get()?.userName ?? ""}

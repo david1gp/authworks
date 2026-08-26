@@ -43,6 +43,11 @@ type ExternalIdentityCallbackOptions = {
   readonly realmId: string
   readonly providerId: string
   readonly providerPorts: ExternalIdentityProviderPorts
+  readonly profilePictureImport?: (input: {
+    readonly pictureUrl: string
+    readonly realmId: string
+    readonly userId: string
+  }) => Promise<Result<void>>
   readonly state: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -152,6 +157,12 @@ export async function externalIdentityCallback(
       }),
     )
     if (!committed.success) return committed
+    await externalIdentityPictureImportRun({
+      identity: identity.data,
+      importPicture: options.profilePictureImport,
+      realmId: options.realmId,
+      userId: transactionRow.userId,
+    })
     return resultCreate({
       confirmationToken,
       expiresAt: transactionRow.expiresAt,
@@ -184,7 +195,31 @@ export async function externalIdentityCallback(
     }),
   )
   if (!committed.success) return committed
+  await externalIdentityPictureImportRun({
+    identity: identity.data,
+    importPicture: options.profilePictureImport,
+    realmId: options.realmId,
+    userId: committed.data.authentication.userId,
+  })
   return resultCreate(committed.data)
+}
+
+async function externalIdentityPictureImportRun(options: {
+  readonly identity: ExternalIdentityProviderIdentity
+  readonly importPicture?: ExternalIdentityCallbackOptions["profilePictureImport"]
+  readonly realmId: string
+  readonly userId: string | null
+}): Promise<void> {
+  if (options.identity.picture === undefined || options.importPicture === undefined || options.userId === null) return
+  try {
+    await options.importPicture({
+      pictureUrl: options.identity.picture,
+      realmId: options.realmId,
+      userId: options.userId,
+    })
+  } catch (_error) {
+    return
+  }
 }
 
 type ExternalIdentityLinkCallbackCommitOptions = {
@@ -284,7 +319,7 @@ type ExternalIdentitySignInCommitOptions = {
 
 function externalIdentitySignInCommit(
   options: ExternalIdentitySignInCommitOptions,
-): Result<ExternalIdentityCallbackResponse> {
+): Result<Extract<ExternalIdentityCallbackResponse, { readonly kind: "authenticated" }>> {
   const op = "externalIdentityCallback"
   const repository = externalIdentityRepositoryCreate(options.database)
   const loginContext = organizationLoginContextValidate({

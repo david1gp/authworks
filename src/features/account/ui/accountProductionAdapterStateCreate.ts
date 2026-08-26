@@ -62,6 +62,8 @@ export function accountProductionAdapterStateCreate(
       phoneChangeResend: async (input) => whatsappOtp.whatsappOtpPhoneChangeResend(await realmIdResolve(), input),
       phoneChangeStart: async (input) => whatsappOtp.whatsappOtpPhoneChangeStart(await realmIdResolve(), input),
       phoneChangeVerify: async (input) => whatsappOtp.whatsappOtpPhoneChangeVerify(await realmIdResolve(), input),
+      profilePictureRemove: async () => users.userMeProfilePictureRemove(await realmIdResolve()),
+      profilePictureUpload: async (file) => users.userMeProfilePictureUpload(await realmIdResolve(), file),
       updatePassword: async (input) => passwords.passwordMeChange(await realmIdResolve(), input),
       updateProfile: async (input) => users.userMeProfileUpdate(await realmIdResolve(), input),
     },

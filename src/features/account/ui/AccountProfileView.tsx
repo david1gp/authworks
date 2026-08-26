@@ -12,10 +12,14 @@ import type { SignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
+import { userPictureConstraints } from "../../users/public/userPictureConstraints.js"
 import { AccountEmailAddressView } from "./AccountEmailAddressView.js"
 import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
+import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
+
+const accountPictureAcceptAttribute = userPictureConstraints.contentTypes.join(",")
 
 type AccountProfileViewProps = {
   readonly displayName: string
@@ -54,9 +58,8 @@ type AccountProfileViewProps = {
   readonly onPhoneResend: () => void
   readonly onPhoneStart: (event: SubmitEvent) => void
   readonly onPhoneVerify: (event: SubmitEvent) => void
-  readonly onPictureContentTypeInput: (value: string) => void
   readonly onPictureRemove: () => void
-  readonly onPictureUrlInput: (value: string) => void
+  readonly onPictureUpload: (file: File) => void
   readonly onRetry: () => void
   readonly onSubmit: (event: SubmitEvent) => void
   readonly preferredLanguage: string
@@ -68,7 +71,8 @@ type AccountProfileViewProps = {
   readonly phoneStatus: AccountPhoneViewStatus
   readonly phoneValidationMessage?: string
   readonly phoneVerified: boolean
-  readonly pictureContentType: string
+  readonly pictureErrorMessage?: string
+  readonly pictureStatus: AccountPictureViewStatus
   readonly pictureUrl: string
   readonly status: AccountViewStatus
   readonly userName: string
@@ -350,38 +354,62 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                   onInput={(event) => props.onPreferredLanguageInput(event.currentTarget.value)}
                 />
               </label>
-              <label class="grid gap-2 text-sm font-medium sm:col-span-2">
-                {messageTranslate("account.profile.pictureUrl")}
-                <input
-                  class="rounded-lg border border-line bg-background px-3 py-2.5"
-                  type="url"
-                  value={props.pictureUrl}
-                  onInput={(event) => props.onPictureUrlInput(event.currentTarget.value)}
-                />
+              <div class="grid gap-3 text-sm font-medium sm:col-span-2">
+                <span>{messageTranslate("account.profile.picture")}</span>
+                <div class="flex flex-wrap items-center gap-4">
+                  <Show when={props.pictureUrl.length > 0}>
+                    <img
+                      alt={messageTranslate("account.profile.pictureAlt")}
+                      class="h-20 w-20 rounded-full border border-line object-cover"
+                      src={props.pictureUrl}
+                    />
+                  </Show>
+                  <label class="grid gap-2">
+                    <span class="sr-only">{messageTranslate("account.profile.pictureChoose")}</span>
+                    <input
+                      accept={accountPictureAcceptAttribute}
+                      class="text-sm font-normal"
+                      disabled={props.pictureStatus === "uploading" || props.pictureStatus === "removing"}
+                      type="file"
+                      onChange={(event) => {
+                        const file = event.currentTarget.files?.[0]
+                        event.currentTarget.value = ""
+                        if (file !== undefined) props.onPictureUpload(file)
+                      }}
+                    />
+                  </label>
+                  <Show when={props.pictureUrl.length > 0}>
+                    <button
+                      class="rounded-lg border border-line px-4 py-2.5 font-semibold disabled:opacity-60"
+                      disabled={props.pictureStatus === "uploading" || props.pictureStatus === "removing"}
+                      type="button"
+                      onClick={props.onPictureRemove}
+                    >
+                      {messageTranslate("account.profile.pictureRemove")}
+                    </button>
+                  </Show>
+                </div>
                 <span class="text-xs font-normal text-muted-foreground">
                   {messageTranslate("account.profile.pictureHint")}
                 </span>
-              </label>
-              <label class="grid gap-2 text-sm font-medium">
-                {messageTranslate("account.profile.pictureContentType")}
-                <input
-                  class="rounded-lg border border-line bg-background px-3 py-2.5"
-                  maxlength={128}
-                  value={props.pictureContentType}
-                  onInput={(event) => props.onPictureContentTypeInput(event.currentTarget.value)}
-                />
-              </label>
-              <Show when={props.pictureUrl.length > 0}>
-                <div class="flex items-end">
-                  <button
-                    class="rounded-lg border border-line px-4 py-2.5 font-semibold"
-                    type="button"
-                    onClick={props.onPictureRemove}
-                  >
-                    {messageTranslate("account.profile.pictureRemove")}
-                  </button>
-                </div>
-              </Show>
+                <Show when={props.pictureErrorMessage}>
+                  {(message) => (
+                    <p class="text-sm font-normal text-danger" role="alert">
+                      {message()}
+                    </p>
+                  )}
+                </Show>
+                <Show when={props.pictureStatus === "uploading"}>
+                  <p class="text-sm font-normal text-muted-foreground" role="status">
+                    {messageTranslate("account.profile.pictureUploading")}
+                  </p>
+                </Show>
+                <Show when={props.pictureStatus === "success"}>
+                  <p class="text-sm font-medium text-success" role="status">
+                    {messageTranslate("account.profile.pictureSaved")}
+                  </p>
+                </Show>
+              </div>
             </div>
             <Show when={props.validationMessage}>
               {(message) => <p class="mt-4 text-sm text-danger">{message()}</p>}

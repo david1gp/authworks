@@ -1,10 +1,10 @@
 import { Hono } from "hono"
 import { type Result } from "#result"
+import { accountServerAppCreate } from "../features/account/server/accountServerAppCreate.js"
 import type { MailDeliveryPort } from "../features/email/domain/mailDeliveryPort.js"
 import { emailDeliveryCallbacksCreate } from "../features/email/server/emailDeliveryCallbacksCreate.js"
 import type { EmailGeneratorServerConfiguration } from "../features/email/server/emailGeneratorServerConfiguration.js"
 import { emailOtpServerAppCreate } from "../features/emailOtp/server/emailOtpServerAppCreate.js"
-import { accountServerAppCreate } from "../features/account/server/accountServerAppCreate.js"
 import { eventServerAppCreate } from "../features/events/server/eventServerAppCreate.js"
 import type { ExternalIdentityProviderPorts } from "../features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { externalIdentityServerAppCreate } from "../features/externalIdentities/server/externalIdentityServerAppCreate.js"
@@ -24,6 +24,8 @@ import { projectServerAppCreate } from "../features/projects/server/projectServe
 import { realmServerAppCreate } from "../features/realms/server/realmServerAppCreate.js"
 import { sessionPasswordCreate } from "../features/sessions/actions/sessionPasswordCreate.js"
 import { sessionServerAppCreate } from "../features/sessions/server/sessionServerAppCreate.js"
+import { userProfilePictureImport } from "../features/users/actions/userProfilePictureImport.js"
+import { userProfilePictureCleanupRetryLifecycleCreate } from "../features/users/server/userProfilePictureCleanupRetryLifecycleCreate.js"
 import { userServerAppCreate } from "../features/users/server/userServerAppCreate.js"
 import type { WahaDeliveryPort } from "../features/waha/domain/wahaDeliveryPort.js"
 import { wahaHealthCandidateRepositoryCreate } from "../features/waha/persistence/wahaHealthCandidateRepositoryCreate.js"
@@ -37,10 +39,12 @@ import { wahaTextDeliveryCreate } from "../features/waha/server/wahaTextDelivery
 import type { WhatsappOtpAvailabilityPort } from "../features/whatsappOtp/domain/whatsappOtpAvailabilityPort.js"
 import { whatsappOtpAvailabilityCreate } from "../features/whatsappOtp/server/whatsappOtpAvailabilityCreate.js"
 import { whatsappOtpServerAppCreate } from "../features/whatsappOtp/server/whatsappOtpServerAppCreate.js"
+import type { R2Configuration } from "../platform/configuration/r2ConfigurationSchema.js"
 import { resultCreate } from "../platform/errors/resultCreate.js"
 import { healthServerAppCreate } from "../platform/http/healthServerAppCreate.js"
 import { uiStaticServerAppCreate } from "../platform/http/uiStaticServerAppCreate.js"
 import { runtimeCreate } from "../platform/runtime/runtimeCreate.js"
+import { r2ObjectStorageCreate } from "../platform/storage/r2/r2ObjectStorageCreate.js"
 import { storageDatabaseOpen } from "../platform/storage/storageDatabaseOpen.js"
 
 type ServerApplicationCreateOptions = {
@@ -56,6 +60,7 @@ type ServerApplicationCreateOptions = {
   readonly passkeyRpId?: string
   readonly passkeyRpName?: string
   readonly publicOrigin?: string
+  readonly r2Configuration?: R2Configuration
   readonly clientIpResolve?: (request: Request) => string | undefined
   readonly trustedProxyAddresses?: readonly string[]
   readonly uiDirectory?: string
@@ -81,6 +86,29 @@ export function serverApplicationCreate(
   if (!database.success) return database
   const publicOrigin = options.publicOrigin ?? "http://127.0.0.1:3000"
   const accountUiOrigin = options.accountUiOrigin ?? (options.production === true ? undefined : publicOrigin)
+  const r2Configuration = options.r2Configuration
+  const profilePictureStorage = r2Configuration === undefined ? undefined : r2ObjectStorageCreate(r2Configuration)
+  const profilePictureImport =
+    profilePictureStorage === undefined || r2Configuration === undefined
+      ? undefined
+      : (input: { readonly pictureUrl: string; readonly realmId: string; readonly userId: string }) =>
+          userProfilePictureImport({
+            database: database.data,
+            publicOrigin: r2Configuration.publicOrigin,
+            sourceUrl: input.pictureUrl,
+            storage: profilePictureStorage,
+            realmId: input.realmId,
+            userId: input.userId,
+          })
+  const profilePictureCleanupLifecycle =
+    profilePictureStorage === undefined
+      ? undefined
+      : userProfilePictureCleanupRetryLifecycleCreate({
+          database: database.data,
+          publicOrigin: r2Configuration?.publicOrigin,
+          storage: profilePictureStorage,
+        })
+  void profilePictureCleanupLifecycle?.start()
   const passkeyRpId = options.passkeyRpId ?? new URL(publicOrigin).hostname
   const emailDeliveryCallbacks =
     options.emailGenerator === undefined || options.mailDelivery === undefined
@@ -167,6 +195,7 @@ export function serverApplicationCreate(
       accountUiOrigin,
       browserMode: options.browserMode,
       database: database.data,
+      profilePictureImport,
       providerPorts: options.externalIdentityProviderPorts,
       publicOrigin,
       systemSecret: options.systemSecret,
@@ -226,6 +255,8 @@ export function serverApplicationCreate(
       onEmailChangeDelivery: emailDeliveryCallbacks?.onEmailChangeDelivery,
       onEmailChangeNotification: emailDeliveryCallbacks?.onEmailChangeNotification,
       publicOrigin,
+      profilePicturePublicOrigin: options.r2Configuration?.publicOrigin,
+      profilePictureStorage,
       rateLimitSecret: options.systemSecret,
       systemSecret: options.systemSecret,
     }),
@@ -257,6 +288,7 @@ export function serverApplicationCreate(
   const stop = (): void => {
     if (stopped) return
     stopped = true
+    profilePictureCleanupLifecycle?.stop()
     wahaHealthLifecycle?.stop()
     database.data.close()
   }

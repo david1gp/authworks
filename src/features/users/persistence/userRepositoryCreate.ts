@@ -1,4 +1,4 @@
-import { and, asc, eq, isNotNull, ne, sql } from "drizzle-orm"
+import { and, asc, eq, isNotNull, isNull, ne, sql } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -420,6 +420,41 @@ export function userRepositoryCreate(database: StorageExecutor) {
         return resultCreate({ ...user, profile })
       } catch (_error) {
         return resultErrorCreate("userProfileUpdate", "The user profile could not be updated.", "users.write-failed")
+      }
+    },
+
+    userProfilePictureUpdateIfMissing(
+      realmId: string,
+      userId: string,
+      input: UserProfileUpdate,
+    ): Result<UserRecord | null> {
+      try {
+        const profile = database
+          .update(userProfileTable)
+          .set(input)
+          .where(
+            and(
+              eq(userProfileTable.userId, userId),
+              eq(userProfileTable.realmId, realmId),
+              isNull(userProfileTable.pictureUrl),
+            ),
+          )
+          .returning()
+          .get()
+        if (profile === undefined) return resultCreate(null)
+        const user = database
+          .select()
+          .from(userTable)
+          .where(and(eq(userTable.id, userId), eq(userTable.realmId, realmId)))
+          .get()
+        if (user === undefined) return resultCreate(null)
+        return resultCreate({ ...user, profile })
+      } catch (_error) {
+        return resultErrorCreate(
+          "userProfilePictureUpdateIfMissing",
+          "The user profile picture could not be updated.",
+          "users.write-failed",
+        )
       }
     },
   }

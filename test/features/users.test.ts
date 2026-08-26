@@ -179,7 +179,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
     })
     expect(locked.success).toBe(true)
 
-    const deleted = userDelete({
+    const deleted = await userDelete({
       context: system,
       database,
       realmId: alpha.id,
@@ -200,7 +200,7 @@ test("users, profiles, verification, lifecycle, and deletion are tenant scoped",
       .filter((event) => event.aggregateId === created.data.user.id)
     expect(deletedEvents.at(-1)?.eventType).toBe(userEventTypes.deleted)
     const deletedEventCount = database.db.select().from(storageEventTable).all().length
-    expect(userDelete({ context: system, database, realmId: alpha.id, userId: created.data.user.id })).toEqual({
+    expect(await userDelete({ context: system, database, realmId: alpha.id, userId: created.data.user.id })).toEqual({
       code: "users.already-deleted",
       errorMessage: "The user has already been deleted.",
       op: "userDelete",

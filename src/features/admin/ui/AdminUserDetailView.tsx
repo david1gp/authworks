@@ -60,11 +60,22 @@ export function AdminUserDetailView(props: {
             <>
               <header class="rounded-2xl border border-line bg-surface p-6 shadow-sm">
                 <div class="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h2 class="text-2xl font-semibold tracking-tight">
-                      {user().profile.displayName ?? user().userName}
-                    </h2>
-                    <p class="mt-1 font-mono text-xs text-muted-foreground">{user().id}</p>
+                  <div class="flex items-center gap-4">
+                    <Show when={user().profile.picture?.url}>
+                      {(url) => (
+                        <img
+                          alt={messageTranslate("admin.users.pictureAlt")}
+                          class="h-14 w-14 rounded-full border border-line object-cover"
+                          src={url()}
+                        />
+                      )}
+                    </Show>
+                    <div>
+                      <h2 class="text-2xl font-semibold tracking-tight">
+                        {user().profile.displayName ?? user().userName}
+                      </h2>
+                      <p class="mt-1 font-mono text-xs text-muted-foreground">{user().id}</p>
+                    </div>
                   </div>
                   <div class="flex flex-wrap gap-2">
                     <Badge variant={user().emailVerified ? "filledGreen" : "subtle"}>

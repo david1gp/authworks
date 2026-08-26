@@ -319,6 +319,37 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         schema: userResponseSchema,
       })
     },
+    userMeProfilePictureUpload(realmId: string, file: Blob): Promise<Result<UserResponse>> {
+      const path = `/realms/${encodeURIComponent(realmId)}/me/profile-picture`
+      const init = {
+        body: file,
+        headers: { "content-type": file.type },
+        method: "PUT",
+      }
+      if (options.token !== undefined) return request(path, init, userResponseSchema)
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init,
+        op: "userMeProfilePictureUpload",
+        path,
+        realmId,
+        schema: userResponseSchema,
+      })
+    },
+    userMeProfilePictureRemove(realmId: string): Promise<Result<UserResponse>> {
+      const path = `/realms/${encodeURIComponent(realmId)}/me/profile-picture`
+      if (options.token !== undefined) return request(path, { method: "DELETE" }, userResponseSchema)
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "DELETE" },
+        op: "userMeProfilePictureRemove",
+        path,
+        realmId,
+        schema: userResponseSchema,
+      })
+    },
     userProfileUpdate(realmId: string, userId: string, input: UserProfileUpdateRequest): Promise<Result<UserResponse>> {
       const parsed = v.safeParse(userProfileUpdateRequestSchema, input)
       if (!parsed.success)

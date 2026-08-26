@@ -1,8 +1,10 @@
-import { expect, test } from "bun:test"
 import { Database } from "bun:sqlite"
+import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { userEmailTable } from "../../src/features/users/persistence/userEmailTable.js"
+import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../src/platform/errors/resultErrorCreate.js"
 import { storageCurrentStateSet } from "../../src/platform/storage/storageCurrentStateSet.js"
@@ -12,8 +14,6 @@ import { storageEventAppend } from "../../src/platform/storage/storageEventAppen
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
 import { storageTransactionRun } from "../../src/platform/storage/storageTransactionRun.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
-import { userEmailTable } from "../../src/features/users/persistence/userEmailTable.js"
-import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 
 async function withStorage<T>(operation: (path: string) => Promise<T>): Promise<T> {
   const directory = await mkdtemp(join(tmpdir(), "authworks-storage-"))
@@ -332,6 +332,10 @@ test("event rows are append-only and reset reconstructs an empty current schema"
     expect(opened.data.sqlite.query("SELECT COUNT(*) AS count FROM events").get()).toEqual({ count: 0 })
     expect(opened.data.sqlite.query("SELECT COUNT(*) AS count FROM current_state").get()).toEqual({ count: 0 })
     expect(opened.data.sqlite.query("SELECT COUNT(*) AS count FROM user_emails").get()).toEqual({ count: 0 })
+    expect(opened.data.sqlite.query("SELECT COUNT(*) AS count FROM user_profile_picture_cleanup").get()).toEqual({
+      count: 0,
+    })
+    expect(opened.data.sqlite.query("PRAGMA foreign_key_list(user_profile_picture_cleanup)").all()).toEqual([])
     opened.data.close()
 
     const reopened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
@@ -339,6 +343,9 @@ test("event rows are append-only and reset reconstructs an empty current schema"
     if (!reopened.success) return
     expect(reopened.data.sqlite.query("SELECT COUNT(*) AS count FROM events").get()).toEqual({ count: 0 })
     expect(reopened.data.sqlite.query("SELECT COUNT(*) AS count FROM current_state").get()).toEqual({ count: 0 })
+    expect(reopened.data.sqlite.query("SELECT COUNT(*) AS count FROM user_profile_picture_cleanup").get()).toEqual({
+      count: 0,
+    })
     expect(
       reopened.data.sqlite
         .query(

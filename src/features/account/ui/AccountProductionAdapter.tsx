@@ -75,9 +75,8 @@ export function AccountProductionAdapter(props: {
           onPhoneResend={state.phoneChangeResend}
           onPhoneStart={state.phoneChangeStart}
           onPhoneVerify={state.phoneChangeVerify}
-          onPictureContentTypeInput={state.pictureContentType.set}
-          onPictureRemove={state.pictureRemove}
-          onPictureUrlInput={state.pictureUrl.set}
+          onPictureRemove={() => void state.pictureRemove()}
+          onPictureUpload={(file) => void state.pictureUpload(file)}
           onRetry={state.load}
           onSubmit={state.profileSubmit}
           preferredLanguage={state.preferredLanguage.get()}
@@ -89,7 +88,8 @@ export function AccountProductionAdapter(props: {
           phoneStatus={state.phoneStatus.get()}
           phoneValidationMessage={state.phoneValidationMessage.get()}
           phoneVerified={state.user.get()?.phoneNumberVerifiedAt !== undefined}
-          pictureContentType={state.pictureContentType.get()}
+          pictureErrorMessage={state.pictureErrorMessage.get()}
+          pictureStatus={state.pictureStatus.get()}
           pictureUrl={state.pictureUrl.get()}
           status={state.status.get()}
           userName={state.user.get()?.userName ?? ""}

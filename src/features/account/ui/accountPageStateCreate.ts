@@ -15,10 +15,8 @@ import type { UserEmailAddressListResponse } from "../../users/public/userEmailA
 import type { UserEmailAddressPrimarySetResponse } from "../../users/public/userEmailAddressPrimarySetResponseSchema.js"
 import type { UserEmailAddressRemoveResponse } from "../../users/public/userEmailAddressRemoveResponseSchema.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
-import {
-  type UserProfileUpdateRequest,
-  userProfileUpdateRequestSchema,
-} from "../../users/public/userProfileUpdateRequestSchema.js"
+import { userPictureConstraints } from "../../users/public/userPictureConstraints.js"
+import type { UserProfileUpdateRequest } from "../../users/public/userProfileUpdateRequestSchema.js"
 import type { UserResponse } from "../../users/public/userResponseSchema.js"
 import type { User } from "../../users/public/userSchema.js"
 import { whatsappOtpPhoneChangeStartRequestSchema } from "../../whatsappOtp/public/whatsappOtpPhoneChangeStartRequestSchema.js"
@@ -26,6 +24,7 @@ import type { WhatsappOtpPhoneChangeStartResponse } from "../../whatsappOtp/publ
 import { whatsappOtpPhoneChangeVerifyRequestSchema } from "../../whatsappOtp/public/whatsappOtpPhoneChangeVerifyRequestSchema.js"
 import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
+import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 
 type AccountPageAdapter = {
@@ -52,6 +51,8 @@ type AccountPageAdapter = {
     code: string
     phoneNumber: string
   }) => Promise<Result<UserResponse>>
+  readonly profilePictureRemove: () => Promise<Result<UserResponse>>
+  readonly profilePictureUpload: (file: Blob) => Promise<Result<UserResponse>>
   readonly updatePassword: (input: {
     currentPassword: string
     newPassword: string
@@ -73,7 +74,8 @@ export function accountPageStateCreate(options: {
   const gender = createSignalObject("")
   const lastName = createSignalObject("")
   const nickName = createSignalObject("")
-  const pictureContentType = createSignalObject("")
+  const pictureErrorMessage = createSignalObject<string | undefined>(undefined)
+  const pictureStatus = createSignalObject<AccountPictureViewStatus>("idle")
   const pictureUrl = createSignalObject("")
   const preferredLanguage = createSignalObject("")
   const currentPassword = createSignalObject("")
@@ -118,13 +120,48 @@ export function accountPageStateCreate(options: {
     gender.set(nextUser.profile.gender ?? "")
     lastName.set(nextUser.profile.lastName ?? "")
     nickName.set(nextUser.profile.nickName ?? "")
-    pictureContentType.set(nextUser.profile.picture?.contentType ?? "")
     pictureUrl.set(nextUser.profile.picture?.url ?? "")
     preferredLanguage.set(nextUser.profile.preferredLanguage ?? "")
   }
-  const pictureRemove = () => {
-    pictureContentType.set("")
-    pictureUrl.set("")
+  /** Mirrors the server validator so an unusable file never reaches the upload route. */
+  const pictureFileValidate = (file: File) => {
+    if (!(userPictureConstraints.contentTypes as readonly string[]).includes(file.type))
+      return messageTranslate("account.profile.pictureTypeInvalid")
+    if (file.size === 0 || file.size > userPictureConstraints.maximumBytes)
+      return messageTranslate("account.profile.pictureTooLarge")
+    return undefined
+  }
+  const pictureUpload = async (file: File) => {
+    pictureErrorMessage.set(undefined)
+    const invalid = pictureFileValidate(file)
+    if (invalid !== undefined) {
+      pictureErrorMessage.set(invalid)
+      pictureStatus.set("error")
+      return
+    }
+    pictureStatus.set("uploading")
+    const result = await options.adapter.profilePictureUpload(file)
+    if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
+      pictureErrorMessage.set(result.errorMessage)
+      pictureStatus.set("error")
+      return
+    }
+    userApply(result.data.user)
+    pictureStatus.set("success")
+  }
+  const pictureRemove = async () => {
+    pictureErrorMessage.set(undefined)
+    pictureStatus.set("removing")
+    const result = await options.adapter.profilePictureRemove()
+    if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
+      pictureErrorMessage.set(result.errorMessage)
+      pictureStatus.set("error")
+      return
+    }
+    userApply(result.data.user)
+    pictureStatus.set("success")
   }
   const load = async (force = false) => {
     if (options.initialStatus === "loading" && !force) return
@@ -160,29 +197,14 @@ export function accountPageStateCreate(options: {
       validationMessage.set(messageTranslate("account.profile.displayNameRequired"))
       return
     }
-    const picture = pictureUrl.get().trim()
+    // The picture is owned by the dedicated upload and removal endpoints, so it never travels with this patch.
     const profileInput = {
       displayName: displayName.get().trim(),
       firstName: firstName.get().trim() || null,
       gender: gender.get().trim() || null,
       lastName: lastName.get().trim() || null,
       nickName: nickName.get().trim() || null,
-      picture:
-        picture.length === 0
-          ? null
-          : {
-              ...(pictureContentType.get().trim().length === 0 ? {} : { contentType: pictureContentType.get().trim() }),
-              url: picture,
-            },
       preferredLanguage: preferredLanguage.get().trim() || null,
-    }
-    const parsed = v.safeParse(userProfileUpdateRequestSchema, profileInput)
-    if (!parsed.success) {
-      const pictureIsInvalid = parsed.issues.some((issue) => issue.path?.[0]?.key === "picture")
-      if (pictureIsInvalid) {
-        validationMessage.set(messageTranslate("account.profile.pictureInvalid"))
-        return
-      }
     }
     status.set("loading")
     const result = await options.adapter.updateProfile(profileInput)
@@ -486,8 +508,10 @@ export function accountPageStateCreate(options: {
     phoneErrorMessage,
     phoneStatus,
     phoneValidationMessage,
-    pictureContentType,
+    pictureErrorMessage,
     pictureRemove,
+    pictureStatus,
+    pictureUpload,
     pictureUrl,
     preferredLanguage,
     profileSubmit,
