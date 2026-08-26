@@ -50,7 +50,7 @@ Complete the high-priority self-service account settings by adding user pictures
 - [x] 11. Apply effective required-MFA and assurance policy to session issuance and organization-protected operations; prove primary passkeys do not incorrectly gain multi-factor assurance, successful distinct factors do, and insufficient sessions receive step-up rather than unauthorized elevation.
 - [x] 12. Add realm/organization-admin controls for inherited and overridden MFA requirement, factor allowlist/order, and minimum assurance, including validation feedback, localization, demo/production adapters, and browser coverage for inheritance, invalid states, enforcement, enrollment remediation, responsive layout, and keyboard use.
 - [x] 13. Complete public subpath, client, server, and CLI output composition plus focused account/admin regression coverage.
-- [ ] 14. Run `bun run check` and `bun run test:e2e`, then address only regressions caused by this plan.
+- [x] 14. Run `bun run check` and `bun run test:e2e`, then address only regressions caused by this plan.
 
 ## Paths
 
