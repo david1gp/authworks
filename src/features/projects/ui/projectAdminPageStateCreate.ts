@@ -46,7 +46,6 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
     error.set(result.errorMessage)
     if (result.statusCode === 403 || result.code?.endsWith(".forbidden")) return status.set("permission-denied")
     if (result.code?.endsWith(".tenant-mismatch")) return status.set("cross-tenant")
-    if (result.statusCode === 404 && options.screen() !== "projects") return status.set("cross-tenant")
     status.set("error")
   }
 
