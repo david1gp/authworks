@@ -5,6 +5,7 @@ export const passwordsErrorCatalog = [
   { code: "passwords.unauthorized", httpStatus: 401, retryable: false },
   { code: "passwords.forbidden", httpStatus: 403, retryable: false },
   { code: "passwords.invalid", httpStatus: 400, retryable: false },
+  { code: "passwords.policy-rejected", httpStatus: 400, retryable: false },
   { code: "passwords.invalid-timestamp", httpStatus: 400, retryable: false },
   { code: "passwords.conflict", httpStatus: 409, retryable: false },
   { code: "passwords.whatsapp-unavailable", httpStatus: 503, retryable: true },

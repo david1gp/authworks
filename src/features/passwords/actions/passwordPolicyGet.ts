@@ -29,7 +29,7 @@ export function passwordPolicyGet(options: PasswordPolicyGetOptions): Result<{ p
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
   if (realm.data.realm.status !== "active")
-    return resultErrorCreate(op, "The realm is not active.", "passwords.invalid")
+    return resultErrorCreate(op, "The realm is not active.", "passwords.not-active")
   const row = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.realmId)
   if (!row.success) return row
   return resultCreate({ policy: row.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(row.data) })

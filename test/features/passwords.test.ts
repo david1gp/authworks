@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { passwordChange } from "../../src/features/passwords/actions/passwordChange.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
+import { passwordPolicyGet } from "../../src/features/passwords/actions/passwordPolicyGet.js"
 import { passwordPolicySet } from "../../src/features/passwords/actions/passwordPolicySet.js"
 import { passwordRecoveryComplete } from "../../src/features/passwords/actions/passwordRecoveryComplete.js"
 import { passwordRecoveryRequest } from "../../src/features/passwords/actions/passwordRecoveryRequest.js"
@@ -13,6 +14,7 @@ import { passwordApiClientCreate } from "../../src/features/passwords/client/pas
 import { passwordEventTypes } from "../../src/features/passwords/events/passwordEventTypes.js"
 import { passwordServerAppCreate } from "../../src/features/passwords/server/passwordServerAppCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
+import { realmUpdate } from "../../src/features/realms/actions/realmUpdate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
@@ -816,6 +818,62 @@ test("password policy enforces each required character class at the exact length
   })
 })
 
+test("inactive realms return passwords.not-active for registration and policy APIs", async () => {
+  await withDatabase(async (database) => {
+    const domain = "passwords-inactive.example.com"
+    const realm = await createRealm(database, domain)
+    const system = realmSystemContextCreate("system")
+    const tenant = realmTenantContextCreate(realm.id, "anonymous")
+    const policyInput = {
+      lockoutDurationMs: 60_000,
+      maximumAttempts: 5,
+      minimumLength: 12,
+      requireLowercase: false,
+      requireNumber: false,
+      requireSymbol: false,
+      requireUppercase: false,
+    }
+    const inactive = realmUpdate({ context: system, database, input: { status: "disabled" }, realmId: realm.id })
+    expect(inactive.success).toBe(true)
+
+    expect(
+      passwordRegister({ context: tenant, database, input: registrationInput(), realmId: realm.id }),
+    ).toMatchObject({ code: "passwords.not-active", success: false })
+    expect(passwordPolicyGet({ context: tenant, database, realmId: realm.id })).toMatchObject({
+      code: "passwords.not-active",
+      success: false,
+    })
+    expect(passwordPolicySet({ context: system, database, input: policyInput, realmId: realm.id })).toMatchObject({
+      code: "passwords.not-active",
+      success: false,
+    })
+
+    const app = passwordServerAppCreate({ database, systemSecret: "inactive-realm-system-secret" })
+    const registerResponse = await app.request(`https://${domain}/realms/${realm.id}/password/register`, {
+      body: JSON.stringify(registrationInput()),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    expect(registerResponse.status).toBe(409)
+    expect(await registerResponse.json()).toMatchObject({ error: { code: "passwords.not-active", status: 409 } })
+
+    const policyGetResponse = await app.request(`https://${domain}/realms/${realm.id}/password-policy`)
+    expect(policyGetResponse.status).toBe(409)
+    expect(await policyGetResponse.json()).toMatchObject({ error: { code: "passwords.not-active", status: 409 } })
+
+    const policySetResponse = await app.request(`https://${domain}/system/realms/${realm.id}/password-policy`, {
+      body: JSON.stringify(policyInput),
+      headers: {
+        authorization: "Bearer inactive-realm-system-secret",
+        "content-type": "application/json",
+      },
+      method: "PATCH",
+    })
+    expect(policySetResponse.status).toBe(409)
+    expect(await policySetResponse.json()).toMatchObject({ error: { code: "passwords.not-active", status: 409 } })
+  })
+})
+
 test("password recovery invalidates the previous token and remains one-time", async () => {
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "passwords-recovery.example.com")
@@ -878,6 +936,118 @@ test("password recovery invalidates the previous token and remains one-time", as
         realmId: realm.id,
       }),
     ).toEqual({ data: { changed: true }, success: true })
+  })
+})
+
+test("password recovery distinguishes policy rejection from invalid tokens without consuming a valid token", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "passwords-recovery-policy.example.com")
+    const system = realmSystemContextCreate("system")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    expect(
+      passwordPolicySet({
+        context: system,
+        database,
+        input: {
+          lockoutDurationMs: 60_000,
+          maximumAttempts: 5,
+          minimumLength: 14,
+          requireLowercase: false,
+          requireNumber: false,
+          requireSymbol: false,
+          requireUppercase: false,
+        },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+
+    let verificationToken = ""
+    expect(
+      passwordRegister({
+        context,
+        database,
+        input: registrationInput(),
+        realmId: realm.id,
+        onVerificationToken: ({ token }) => {
+          verificationToken = token
+        },
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
+    ).toBe(true)
+
+    let recoveryToken = ""
+    expect(
+      passwordRecoveryRequest({
+        context,
+        database,
+        input: { email: "ada@example.com" },
+        realmId: realm.id,
+        onRecoveryToken: ({ token }) => {
+          recoveryToken = token
+        },
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "short", token: recoveryToken },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({
+      code: "passwords.policy-rejected",
+      errorMessage: "The password does not meet the password policy.",
+      success: false,
+    })
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "Recovered Horse 12", token: recoveryToken },
+        realmId: realm.id,
+      }),
+    ).toEqual({ data: { changed: true }, success: true })
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "short", token: recoveryToken },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({ code: "passwords.invalid", success: false })
+
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "short", token: "x".repeat(43) },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({ code: "passwords.invalid", success: false })
+
+    let expiredToken = ""
+    expect(
+      passwordRecoveryRequest({
+        context,
+        database,
+        input: { email: "ada@example.com" },
+        realmId: realm.id,
+        onRecoveryToken: ({ token }) => {
+          expiredToken = token
+        },
+      }).success,
+    ).toBe(true)
+    testkit.advance(60 * 60 * 1_000)
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "short", token: expiredToken },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({ code: "passwords.invalid", success: false })
   })
 })
 

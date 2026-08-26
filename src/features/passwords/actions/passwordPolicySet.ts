@@ -39,7 +39,7 @@ export function passwordPolicySet(options: PasswordPolicySetOptions): Result<{ p
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
   if (realm.data.realm.status !== "active")
-    return resultErrorCreate(op, "The realm is not active.", "passwords.invalid")
+    return resultErrorCreate(op, "The realm is not active.", "passwords.not-active")
   const runtime = options.runtime ?? options.database.runtime
   const updatedAt = runtime.now()
   if (!Number.isSafeInteger(updatedAt) || updatedAt < 0)

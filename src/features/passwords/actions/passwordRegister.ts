@@ -117,7 +117,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   const realm = realmGet({ context: options.context, database: options.database, realmId: options.realmId })
   if (!realm.success) return realm
   if (realm.data.realm.status !== "active")
-    return resultErrorCreate(op, "The realm is not active.", "passwords.invalid")
+    return resultErrorCreate(op, "The realm is not active.", "passwords.not-active")
   const loginPolicy = organizationLoginPolicyEnforce({
     database: options.database,
     realmId: options.realmId,

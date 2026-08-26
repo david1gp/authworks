@@ -58,10 +58,6 @@ export function passwordRecoveryComplete(
   const policyRow = repository.passwordPolicyGet(options.realmId)
   if (!policyRow.success) return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
   const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
-  const policyCheck = passwordPolicyCheck(parsed.output.newPassword, policy)
-  if (!policyCheck.success) return policyCheck
-  const hash = passwordHashCreate(parsed.output.newPassword, options.runtime ?? options.database.runtime)
-  if (!hash.success) return hash
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
@@ -91,6 +87,10 @@ export function passwordRecoveryComplete(
     const credential = txRepository.passwordCredentialGet(options.realmId, user.data.id)
     if (!credential.success || credential.data === null)
       return resultErrorCreate(op, "The recovery token is invalid.", "passwords.invalid")
+    const policyCheck = passwordPolicyCheck(parsed.output.newPassword, policy)
+    if (!policyCheck.success) return resultErrorCreate(op, policyCheck.errorMessage, "passwords.policy-rejected")
+    const hash = passwordHashCreate(parsed.output.newPassword, runtime)
+    if (!hash.success) return hash
     const consumed = txRepository.passwordChallengeConsume(challenge.data.id, now)
     if (!consumed.success || consumed.data === null)
       return resultErrorCreate(op, "The recovery token is invalid.", "passwords.write-failed")
