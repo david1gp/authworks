@@ -9,12 +9,13 @@ import type { WahaEndpointConfiguration } from "./wahaEndpointConfiguration.js"
 const defaultFreshnessTtlMs = 90_000
 const defaultRefreshIntervalMs = 30_000
 const wahaEndpointIdPattern = /^[A-Za-z0-9](?:[A-Za-z0-9._-]{0,126}[A-Za-z0-9])?$/
-const wahaEndpointFields = new Set(["apiKey", "baseUrl", "id", "retries", "session", "timeoutMs"])
+const wahaEndpointFields = new Set(["apiKey", "baseUrl", "id", "retries", "senderSessions", "session", "timeoutMs"])
 const wahaEndpointSchema = v.strictObject({
   apiKey: v.optional(v.string()),
   baseUrl: v.pipe(v.string(), v.minLength(1)),
   id: v.string(),
   retries: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  senderSessions: v.optional(v.pipe(v.array(v.pipe(v.string(), v.minLength(1))), v.minLength(1))),
   session: v.optional(v.string()),
   timeoutMs: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
 })
@@ -96,7 +97,7 @@ function wahaEndpointParse(value: unknown, index: number): Result<WahaEndpointCo
     )
   }
 
-  const { apiKey, baseUrl, id, retries, session, timeoutMs } = parsed.output
+  const { apiKey, baseUrl, id, retries, senderSessions, session, timeoutMs } = parsed.output
   if (!wahaEndpointIdPattern.test(id))
     return resultErrorCreate(
       op,
@@ -104,6 +105,11 @@ function wahaEndpointParse(value: unknown, index: number): Result<WahaEndpointCo
     )
   if (!urlValid(baseUrl))
     return resultErrorCreate(op, `WAHA configuration is invalid: endpoint ${index + 1}.baseUrl is invalid.`)
+  if (senderSessions !== undefined && new Set(senderSessions).size !== senderSessions.length)
+    return resultErrorCreate(
+      op,
+      `WAHA configuration is invalid: endpoint ${index + 1}.senderSessions must contain unique session names.`,
+    )
 
   const clientInput: WahaClientConfigInput = {
     baseUrl,
@@ -115,13 +121,18 @@ function wahaEndpointParse(value: unknown, index: number): Result<WahaEndpointCo
   const client = wahaClientConfig(clientInput)
   if (!client.success)
     return resultErrorCreate(op, `WAHA configuration is invalid: endpoint ${index + 1}.baseUrl is invalid.`)
-  return resultCreate({ client: client.data, id })
+  return resultCreate({
+    client: client.data,
+    id,
+    ...(senderSessions === undefined ? {} : { senderSessions }),
+  })
 }
 
 function wahaEndpointIssueField(issues: readonly { path?: readonly { key?: unknown }[] }[]): string | undefined {
-  const path = issues[0]?.path
-  const key = path?.[path.length - 1]?.key
-  return typeof key === "string" && wahaEndpointFields.has(key) ? key : undefined
+  for (const item of issues[0]?.path ?? []) {
+    if (typeof item.key === "string" && wahaEndpointFields.has(item.key)) return item.key
+  }
+  return undefined
 }
 
 function positiveIntegerParse(value: string | undefined, defaultValue: number, name: string): Result<number> {

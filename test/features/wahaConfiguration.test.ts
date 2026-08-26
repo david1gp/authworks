@@ -13,7 +13,13 @@ test("WAHA configuration parses multiple server-only endpoints and defaults", ()
   const result = wahaConfigurationParse({
     AUTHWORKS_WAHA_ENABLED: "true",
     AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([
-      { apiKey: "secret-one", baseUrl: "https://waha-one.example.test/", id: "primary", session: "default" },
+      {
+        apiKey: "secret-one",
+        baseUrl: "https://waha-one.example.test/",
+        id: "primary",
+        senderSessions: ["sender-one", "sender-two"],
+        session: "default",
+      },
       { apiKey: "secret-two", baseUrl: "https://waha-two.example.test", id: "secondary", session: "otp" },
     ]),
   })
@@ -24,6 +30,7 @@ test("WAHA configuration parses multiple server-only endpoints and defaults", ()
         {
           client: { apiKey: "secret-one", baseUrl: "https://waha-one.example.test", session: "default" },
           id: "primary",
+          senderSessions: ["sender-one", "sender-two"],
         },
         {
           client: { apiKey: "secret-two", baseUrl: "https://waha-two.example.test", session: "otp" },
@@ -35,6 +42,29 @@ test("WAHA configuration parses multiple server-only endpoints and defaults", ()
     },
     success: true,
   })
+})
+
+test("WAHA sender session allowlists require nonempty unique names and remain optional", () => {
+  const omitted = wahaConfigurationParse({
+    AUTHWORKS_WAHA_ENABLED: "true",
+    AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([{ baseUrl: "https://waha.example.test", id: "primary" }]),
+  })
+  expect(omitted.success).toBe(true)
+  if (!omitted.success) return
+  expect(omitted.data?.endpoints[0]?.senderSessions).toBeUndefined()
+
+  for (const senderSessions of [[], [""], ["sender", "sender"]]) {
+    const invalid = wahaConfigurationParse({
+      AUTHWORKS_WAHA_ENABLED: "true",
+      AUTHWORKS_WAHA_ENDPOINTS: JSON.stringify([
+        { baseUrl: "https://waha.example.test", id: "primary", senderSessions },
+      ]),
+    })
+    expect(invalid.success).toBe(false)
+    if (invalid.success) continue
+    expect(invalid.errorMessage).toContain("endpoint 1.senderSessions")
+    expect(String(invalid.errorData ?? "")).not.toContain("sender")
+  }
 })
 
 test("WAHA configuration accepts explicit refresh and freshness values only when the TTL covers the interval", () => {

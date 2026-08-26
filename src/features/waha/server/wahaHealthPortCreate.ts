@@ -30,8 +30,12 @@ export function wahaHealthPortCreate(options: WahaHealthPortCreateOptions): Waha
       if (!sessions.success)
         return resultErrorCodedCreate("wahaHealthPortCheck", "The WAHA session list failed.", "waha.health-failed")
 
+      const listedSessions =
+        endpoint.senderSessions === undefined
+          ? sessions.data
+          : sessions.data.filter(({ name }) => endpoint.senderSessions?.includes(name))
       return resultCreate({
-        sessions: sessions.data.map(({ name, status }) => ({ name, status })),
+        sessions: listedSessions.map(({ name, status }) => ({ name, status })),
         status: "ok",
       })
     },

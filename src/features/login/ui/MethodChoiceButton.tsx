@@ -1,6 +1,7 @@
 import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
 import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
 import { mdiKeyOutline } from "@adaptive-ds/mdi/mdiKeyOutline.js"
+import { mdiWhatsapp } from "@adaptive-ds/mdi/mdiWhatsapp.js"
 import { Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -37,9 +38,11 @@ export function MethodChoiceButton(props: MethodChoiceButtonProps) {
             path={
               props.method === "email-otp"
                 ? mdiEmailOutline
-                : props.method === "passkey"
-                  ? mdiFingerprint
-                  : mdiKeyOutline
+                : props.method === "whatsapp-otp"
+                  ? mdiWhatsapp
+                  : props.method === "passkey"
+                    ? mdiFingerprint
+                    : mdiKeyOutline
             }
           />
         }

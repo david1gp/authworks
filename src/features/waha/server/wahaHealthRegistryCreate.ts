@@ -7,6 +7,7 @@ import type { WahaHealthPortResult } from "../domain/wahaHealthPortResult.js"
 import { wahaHealthCandidateRepositoryCreate } from "../persistence/wahaHealthCandidateRepositoryCreate.js"
 import type { WahaHealthCandidateRow } from "../persistence/wahaHealthCandidateTable.js"
 import type { WahaConfiguration } from "./wahaConfiguration.js"
+import type { WahaEndpointConfiguration } from "./wahaEndpointConfiguration.js"
 
 type WahaHealthRegistryCreateOptions = {
   readonly configuration: WahaConfiguration
@@ -71,23 +72,27 @@ export function wahaHealthRegistryCreate(options: WahaHealthRegistryCreateOption
     if (!reconciled.success) return reconciled
 
     for (const endpoint of options.configuration.endpoints) {
-      const refreshed = await refreshEndpoint(endpoint.id, now)
+      const refreshed = await refreshEndpoint(endpoint, now)
       if (!refreshed.success) return refreshed
     }
     return resultCreate(undefined)
   }
 
-  async function refreshEndpoint(endpointId: string, checkedAt: number): Promise<Result<void>> {
-    const health = await healthCheck(endpointId)
+  async function refreshEndpoint(endpoint: WahaEndpointConfiguration, checkedAt: number): Promise<Result<void>> {
+    const health = await healthCheck(endpoint.id)
     const rows = options.repository.wahaHealthCandidateList()
     if (!rows.success) return rows
-    const endpointRows = rows.data.filter((row) => row.endpointId === endpointId)
+    const endpointRows = rows.data.filter((row) => row.endpointId === endpoint.id)
 
     if (!health.success) {
       return endpointRowsMarkUnhealthy(endpointRows, checkedAt, "The WAHA health check failed.")
     }
 
-    const sessions = new Map(health.data.sessions.map((session) => [session.name, session]))
+    const sessions = new Map(
+      health.data.sessions
+        .filter(({ name }) => endpoint.senderSessions === undefined || endpoint.senderSessions.includes(name))
+        .map((session) => [session.name, session]),
+    )
     for (const row of endpointRows) {
       if (sessions.has(row.sessionName)) continue
       const updated = candidateMarkUnhealthy(row, checkedAt, "The WAHA session was not returned by WAHA.", true)
@@ -99,7 +104,7 @@ export function wahaHealthRegistryCreate(options: WahaHealthRegistryCreateOption
       if (existing !== undefined && candidateDeliveryFailureIsNew(existing, checkedAt)) continue
       const input = {
         checkedAt,
-        endpointId,
+        endpointId: endpoint.id,
         expiresAt: checkedAt + options.configuration.freshnessTtlMs,
         failureAt: health.data.status === "ok" && session.status === "WORKING" ? null : checkedAt,
         failureCode: health.data.status === "ok" && session.status === "WORKING" ? null : "waha.health-failed",
@@ -120,7 +125,7 @@ export function wahaHealthRegistryCreate(options: WahaHealthRegistryCreateOption
               createdAt: checkedAt,
               version: 1,
             })
-          : options.repository.wahaHealthCandidateUpdate(endpointId, session.name, existing.version, input)
+          : options.repository.wahaHealthCandidateUpdate(endpoint.id, session.name, existing.version, input)
       if (!written.success && written.code === "waha.conflict") continue
       if (!written.success) return written
     }

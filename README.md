@@ -133,16 +133,20 @@ replace the dependency with a published package before deployment.
 WAHA is disabled unless `AUTHWORKS_WAHA_ENABLED` is `1`, `true`, or `yes`.
 When enabled, `AUTHWORKS_WAHA_ENDPOINTS` is a required JSON array with one or
 more endpoints. Each endpoint has a stable `id` and an HTTP(S) `baseUrl`
-without credentials; it may also have `apiKey`, `session`, `timeoutMs`, and
-`retries`. `apiKey` and `AUTHWORKS_SYSTEM_SECRET` are server-only secrets and
-must not be exposed to clients or committed. A non-empty
+without credentials; it may also have `apiKey`, `session`, `senderSessions`,
+`timeoutMs`, and `retries`. `senderSessions`, when present, must be a non-empty
+array of unique session names and limits that endpoint to those WAHA sender
+sessions. If omitted, all `WORKING` sessions remain eligible for backward
+compatibility. `session` remains the WAHA client default and is not an implicit
+sender allowlist. `apiKey` and `AUTHWORKS_SYSTEM_SECRET` are server-only
+secrets and must not be exposed to clients or committed. A non-empty
 `AUTHWORKS_SYSTEM_SECRET` is required for WhatsApp registration and OTP rate
 limiting:
 
 ```dotenv
 AUTHWORKS_SYSTEM_SECRET=replace-with-a-secret
 AUTHWORKS_WAHA_ENABLED=true
-AUTHWORKS_WAHA_ENDPOINTS='[{"id":"local","baseUrl":"http://localhost:3000","session":"default","apiKey":"replace-with-a-secret"}]'
+AUTHWORKS_WAHA_ENDPOINTS='[{"id":"local","baseUrl":"http://localhost:3000","session":"default","senderSessions":["default"],"apiKey":"replace-with-a-secret"}]'
 # Optional; defaults shown in milliseconds.
 AUTHWORKS_WAHA_REFRESH_INTERVAL_MS=30000
 AUTHWORKS_WAHA_FRESHNESS_TTL_MS=90000
@@ -227,7 +231,7 @@ a reachable endpoint and a `WORKING` session:
 ```bash
 AUTHWORKS_WAHA_LIVE_TEST=true \
 AUTHWORKS_WAHA_ENABLED=true \
-AUTHWORKS_WAHA_ENDPOINTS='[{"id":"local","baseUrl":"http://localhost:3000","session":"default"}]' \
+AUTHWORKS_WAHA_ENDPOINTS='[{"id":"local","baseUrl":"http://localhost:3000","session":"default","senderSessions":["default"]}]' \
 bun test test/integration/wahaLive.test.ts
 ```
 

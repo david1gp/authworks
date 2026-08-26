@@ -78,6 +78,40 @@ test("WAHA health adapter checks server health before listing sessions", async (
   }
 })
 
+test("WAHA health adapter filters session results to configured sender sessions", async () => {
+  const originalFetch = globalThis.fetch
+  const endpointConfiguration: WahaConfiguration = {
+    ...configuration,
+    endpoints: [{ ...configuration.endpoints[0]!, senderSessions: ["sender-working", "sender-stopped"] }],
+  }
+  globalThis.fetch = (async (input) => {
+    if (input.toString().endsWith("/health")) return Response.json({ status: "ok" })
+    return Response.json([
+      { name: "sender-working", status: "WORKING" },
+      { name: "sender-stopped", status: "STOPPED" },
+      { name: "recipient", status: "WORKING" },
+    ])
+  }) as typeof fetch
+
+  try {
+    const checked = await wahaHealthPortCreate({ configuration: endpointConfiguration }).check({
+      endpointId: "primary",
+    })
+    expect(checked).toEqual({
+      data: {
+        sessions: [
+          { name: "sender-working", status: "WORKING" },
+          { name: "sender-stopped", status: "STOPPED" },
+        ],
+        status: "ok",
+      },
+      success: true,
+    })
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
 test("WAHA health refresh scans every endpoint and persists only working sessions", async () => {
   await withDatabase(async (database) => {
     const now = 1_700_000_000_000
@@ -156,6 +190,68 @@ test("WAHA health refresh scans every endpoint and persists only working session
     } finally {
       globalThis.fetch = originalFetch
     }
+  })
+})
+
+test("WAHA health refresh expires persisted disallowed sessions and keeps non-working allowed sessions unavailable", async () => {
+  await withDatabase(async (database) => {
+    const now = 1_700_000_000_000
+    const endpointConfiguration: WahaConfiguration = {
+      ...configuration,
+      endpoints: [
+        { ...configuration.endpoints[0]!, senderSessions: ["sender-working", "sender-stopped", "sender-missing"] },
+      ],
+    }
+    const repository = wahaHealthCandidateRepositoryCreate(database.db)
+    for (const sessionName of ["recipient", "sender-missing"]) {
+      expect(
+        repository.wahaHealthCandidateCreate({
+          checkedAt: now,
+          createdAt: now,
+          endpointId: "primary",
+          expiresAt: now + 60_000,
+          failureAt: null,
+          failureCode: null,
+          failureMessage: null,
+          sessionName,
+          status: "healthy",
+          updatedAt: now,
+          version: 1,
+        }),
+      ).toMatchObject({ success: true })
+    }
+
+    const registry = wahaHealthRegistryCreate({
+      configuration: endpointConfiguration,
+      healthPort: {
+        check: async () =>
+          resultCreate({
+            sessions: [
+              { name: "sender-working", status: "WORKING" },
+              { name: "sender-stopped", status: "STOPPED" },
+              { name: "recipient", status: "WORKING" },
+            ],
+            status: "ok",
+          }),
+      },
+      repository,
+      runtime: { now: () => now },
+    })
+
+    expect(await registry.refresh()).toEqual({ success: true, data: undefined })
+    expect(repository.wahaHealthCandidateListFreshHealthy(now)).toMatchObject({
+      success: true,
+      data: [{ endpointId: "primary", sessionName: "sender-working", status: "healthy" }],
+    })
+    expect(repository.wahaHealthCandidateList()).toMatchObject({
+      success: true,
+      data: [
+        { endpointId: "primary", expiresAt: now, sessionName: "recipient", status: "unhealthy" },
+        { endpointId: "primary", expiresAt: now, sessionName: "sender-missing", status: "unhealthy" },
+        { endpointId: "primary", expiresAt: now + 60_000, sessionName: "sender-stopped", status: "unhealthy" },
+        { endpointId: "primary", expiresAt: now + 60_000, sessionName: "sender-working", status: "healthy" },
+      ],
+    })
   })
 })
 

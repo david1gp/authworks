@@ -14,6 +14,7 @@ import { userRepositoryCreate } from "../../src/features/users/persistence/userR
 import { wahaHealthCandidateRepositoryCreate } from "../../src/features/waha/persistence/wahaHealthCandidateRepositoryCreate.js"
 import { wahaHealthCandidateReaderCreate } from "../../src/features/waha/server/wahaHealthCandidateReaderCreate.js"
 import type { WahaConfiguration } from "../../src/features/waha/server/wahaConfiguration.js"
+import { wahaHealthRegistryCreate } from "../../src/features/waha/server/wahaHealthRegistryCreate.js"
 import { whatsappOtpResend } from "../../src/features/whatsappOtp/actions/whatsappOtpResend.js"
 import { whatsappOtpStart } from "../../src/features/whatsappOtp/actions/whatsappOtpStart.js"
 import { whatsappOtpVerify } from "../../src/features/whatsappOtp/actions/whatsappOtpVerify.js"
@@ -22,6 +23,7 @@ import type { WhatsappOtpAvailabilityPort } from "../../src/features/whatsappOtp
 import { whatsappOtpAvailabilityCreate } from "../../src/features/whatsappOtp/server/whatsappOtpAvailabilityCreate.js"
 import { whatsappOtpAvailabilityPredicate } from "../../src/features/whatsappOtp/domain/whatsappOtpAvailabilityPredicate.js"
 import { whatsappOtpServerAppCreate } from "../../src/features/whatsappOtp/server/whatsappOtpServerAppCreate.js"
+import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
@@ -125,6 +127,53 @@ test("WhatsApp availability requires configuration, policy, and a fresh configur
     ).toMatchObject({ success: true })
     expect(availability.whatsappOtpAvailabilityGet({ realmId: realm.id })).toEqual({
       data: { available: true },
+      success: true,
+    })
+  })
+})
+
+test("WhatsApp availability ignores a persisted recipient session after sender filtering refreshes", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "whatsapp-availability-sender-filter.example.com")
+    const endpointConfiguration: WahaConfiguration = {
+      ...configuration,
+      endpoints: [{ ...configuration.endpoints[0]!, senderSessions: ["sender"] }],
+    }
+    const repository = wahaHealthCandidateRepositoryCreate(database.db)
+    const now = testkit.runtime.now()
+    expect(
+      repository.wahaHealthCandidateCreate({
+        checkedAt: now,
+        createdAt: now,
+        endpointId: "primary",
+        expiresAt: now + endpointConfiguration.freshnessTtlMs,
+        failureAt: null,
+        failureCode: null,
+        failureMessage: null,
+        sessionName: "recipient",
+        status: "healthy",
+        updatedAt: now,
+        version: 1,
+      }),
+    ).toMatchObject({ success: true })
+    const registry = wahaHealthRegistryCreate({
+      configuration: endpointConfiguration,
+      healthPort: {
+        check: async () => resultCreate({ sessions: [{ name: "recipient", status: "WORKING" }], status: "ok" }),
+      },
+      repository,
+      runtime: testkit.runtime,
+    })
+    expect(await registry.refresh()).toMatchObject({ success: true })
+
+    const availability = whatsappOtpAvailabilityCreate({
+      configuration: endpointConfiguration,
+      database,
+      reader: wahaHealthCandidateReaderCreate({ repository }),
+      runtime: testkit.runtime,
+    })
+    expect(availability.whatsappOtpAvailabilityGet({ realmId: realm.id })).toEqual({
+      data: { available: false },
       success: true,
     })
   })

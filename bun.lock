@@ -8,7 +8,7 @@
         "@adaptive-ds/mdi": "^0.1.2",
         "@adaptive-ds/solid-ui": "^0.19.1",
         "@adaptive-ds/utils": "^0.12.0",
-        "@adaptive-ds/waha-client": "^0.2.1",
+        "@adaptive-ds/waha-client": "^0.3.0",
         "@corvu/dialog": "^0.2.4",
         "@corvu/popover": "^0.2.0",
         "@simplewebauthn/server": "^13.2.2",
@@ -53,7 +53,7 @@
 
     "@adaptive-ds/utils": ["@adaptive-ds/utils@0.12.0", "", { "peerDependencies": { "@adaptive-ds/result": "^0.4.0", "valibot": "^1.2.0" } }, "sha512-KpUN/rrxLp5uTPIoO7VonKh9OKh8ISysca+mvmHCxyRYFqI01GLRnBYhVN+OGEZHnK7lRpRU/XS0x7+VVSEhRQ=="],
 
-    "@adaptive-ds/waha-client": ["@adaptive-ds/waha-client@0.2.1", "", { "dependencies": { "@stricli/core": "^1.2.5" }, "peerDependencies": { "@adaptive-ds/result": ">=0.4.0", "valibot": "^1.2.0" }, "bin": { "waha-client": "dist/cli.js" } }, "sha512-SXZ3AighCPlESCYsUOqkk1NutKr5kQWaPIskI8DhKSVc5Fxx2elfyF9O/fGVgo6HipeUwBcdeuw0pp8mDrL4IQ=="],
+    "@adaptive-ds/waha-client": ["@adaptive-ds/waha-client@0.3.0", "", { "dependencies": { "@stricli/core": "^1.2.5" }, "peerDependencies": { "@adaptive-ds/result": ">=0.4.0", "valibot": "^1.2.0" }, "bin": { "waha-client": "dist/cli.js" } }, "sha512-w/1T5rRMXo3XKaXkdiUxnJbQT9f+I/iX6uaYSXoMaT7jfUjAK8Hy0t7fvWKtyJDJ9F8CdYiQNgTOsGBoG0Y/rw=="],
 
     "@axe-core/playwright": ["@axe-core/playwright@4.13.0", "", { "dependencies": { "axe-core": "~4.13.0" }, "peerDependencies": { "playwright-core": ">= 1.0.0" } }, "sha512-6YLx+kxXu5GJceG4ozFg+33a2EMTdjYwWGloJ3sb9Kta5pp+ZNS53uxGVog5JetIY8s++P5UrtX+cri+u0VAVg=="],
 
