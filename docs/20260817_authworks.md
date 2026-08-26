@@ -57,7 +57,7 @@ Build `/home/david/adaptive/authworks` as an alpha, backend-first identity platf
 - [x] 18. Implement admin impersonation with explicit authorization, session marking, limits, and audit events.
 - [x] 19. Complete public library feature subpaths, all API clients, and all `@stricli/core` command trees against the running server.
 - [x] 20. Run full cross-feature conformance, isolation, event atomicity, API-client, CLI subprocess, and security regression suites; verify all three distributable outputs from a clean checkout.
-- [ ] 21. Implement local named CLI connection profiles for server, token, realm, and organization defaults according to `docs/20260825_cli_connection_profiles.md`.
+- [x] 21. Implement local named CLI connection profiles for server, token, realm, and organization defaults according to `docs/20260825_cli_connection_profiles.md`.
 
 ## Paths
 

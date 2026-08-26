@@ -35,7 +35,7 @@ Improve the CLI experience for operators who switch between Authworks instances,
 - [x] 5. Integrate profile resolution into the remaining CLI commands; keep system-secret inputs exclusively flag/environment sourced and token values out of output and errors.
   - [x] OIDC, MFA, impersonation, and passkeys.
   - [x] Machine users, projects, WhatsApp OTP, and ZITADEL migration.
-- [ ] 6. Update CLI documentation and regression coverage, verify distributable CLI composition, and run `bun run check` with test concurrency limited to one.
+- [x] 6. Update CLI documentation and regression coverage, verify distributable CLI composition, and run `bun run check` with test concurrency limited to one.
 
 ## Paths
 
