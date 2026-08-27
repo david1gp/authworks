@@ -11,6 +11,7 @@ import { mfaRecoveryCodesGenerate } from "../../src/features/mfa/actions/mfaReco
 import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
 import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { mfaLoginChallengeContextGet } from "../../src/features/mfa/server/mfaLoginChallengeContextGet.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { organizationLoginPolicyFactorOrderResolve } from "../../src/features/organizations/domain/organizationLoginPolicyFactorOrderResolve.js"
@@ -450,5 +451,223 @@ test("Task 10 returns enrollment remediation and never creates a session without
     }
     expect(details.remediation).toEqual({ action: "enroll_mfa_factor", factors: ["passkey"] })
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM sessions").get()).toEqual({ count: 0 })
+  })
+})
+
+test("Task 6 resolves multiple factors, allows explicit permitted selection, and exposes safe challenge context", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "task6-context")
+    const organization = await createOrganization(database, fixture.realm.id, "Task 6 context")
+    await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
+    database.sqlite
+      .query(
+        "INSERT INTO passkey_credentials (aaguid, backed_up, counter, created_at, credential_id, device_type, id, realm_id, last_used_at, public_key, revoked_at, rp_id, transports, user_id, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        "task6-aaguid",
+        0,
+        0,
+        testkit.runtime.now(),
+        "task6-credential",
+        "singleDevice",
+        "task6-passkey-id",
+        fixture.realm.id,
+        null,
+        Buffer.from([1, 2, 3]),
+        null,
+        "example.com",
+        JSON.stringify(["internal"]),
+        fixture.userId,
+        1,
+      )
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate("system"),
+        database,
+        input: {
+          allowedFactors: ["totp", "email_otp", "passkey"],
+          preferredFactorOrder: ["email_otp", "passkey", "totp"],
+        },
+        realmId: fixture.realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      await setOrganizationPolicy(database, fixture.realm.id, organization.id, {
+        allowedFactors: ["totp", "email_otp", "passkey"],
+        preferredFactorOrder: ["passkey", "totp", "email_otp"],
+      }),
+    ).toMatchObject({
+      allowedFactors: ["totp", "email_otp", "passkey"],
+      preferredFactorOrder: ["passkey", "totp", "email_otp"],
+    })
+
+    const started = mfaLoginChallengeStart({
+      database,
+      organizationId: organization.id,
+      policyDatabase: database,
+      primaryAuthenticationMethod: "password",
+      purpose: "login",
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(started).toMatchObject({
+      data: { challenge: { availableFactors: ["passkey", "totp", "email_otp"], factor: "passkey" } },
+      success: true,
+    })
+    if (!started.success) return
+
+    const context = mfaLoginChallengeContextGet({
+      executor: database.db,
+      now: testkit.runtime.now(),
+      realmId: fixture.realm.id,
+      token: started.data.token,
+    })
+    expect(context).toMatchObject({
+      data: {
+        availableFactors: ["passkey", "totp", "email_otp"],
+        challengeId: started.data.challenge.id,
+        factor: "passkey",
+        organizationId: organization.id,
+        primaryAuthenticationMethod: "password",
+        purpose: "login",
+        realmId: fixture.realm.id,
+        userId: fixture.userId,
+      },
+      success: true,
+    })
+    expect(JSON.stringify(context.success ? context.data : {})).not.toContain(started.data.token)
+
+    const selected = mfaChallengeFactorSelect({
+      database,
+      factor: "email_otp",
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      token: started.data.token,
+    })
+    expect(selected).toMatchObject({
+      data: { challenge: { availableFactors: ["passkey", "totp", "email_otp"], factor: "email_otp" } },
+      success: true,
+    })
+  })
+})
+
+test("Task 6 distinguishes permitted-unavailable factors from disallowed factors across realm and organization policy", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "task6-policy")
+    const organization = await createOrganization(database, fixture.realm.id, "Task 6 policy")
+    await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate("system"),
+        database,
+        input: {
+          allowedFactors: ["totp", "email_otp", "passkey"],
+          preferredFactorOrder: ["passkey", "email_otp", "totp"],
+        },
+        realmId: fixture.realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      await setOrganizationPolicy(database, fixture.realm.id, organization.id, {
+        allowedFactors: ["totp", "email_otp"],
+        preferredFactorOrder: ["email_otp", "totp"],
+      }),
+    ).toMatchObject({ allowedFactors: ["totp", "email_otp"], preferredFactorOrder: ["email_otp", "totp"] })
+
+    const effective = mfaLoginChallengeStart({
+      database,
+      factor: "totp",
+      organizationId: organization.id,
+      policyDatabase: database,
+      primaryAuthenticationMethod: "password",
+      purpose: "login",
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(effective).toMatchObject({
+      data: { challenge: { availableFactors: ["email_otp", "totp"], factor: "totp" } },
+      success: true,
+    })
+
+    const disallowed = mfaLoginChallengeStart({
+      database,
+      factor: "passkey",
+      organizationId: organization.id,
+      policyDatabase: database,
+      primaryAuthenticationMethod: "password",
+      purpose: "login",
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(disallowed).toMatchObject({ code: "mfa.factor-disabled", success: false })
+
+    expect(
+      await setOrganizationPolicy(database, fixture.realm.id, organization.id, {
+        allowedFactors: ["totp", "email_otp", "passkey"],
+        preferredFactorOrder: ["passkey", "email_otp", "totp"],
+      }),
+    ).toMatchObject({ allowedFactors: ["totp", "email_otp", "passkey"] })
+    const permittedButUnavailable = mfaLoginChallengeStart({
+      database,
+      factor: "passkey",
+      organizationId: organization.id,
+      policyDatabase: database,
+      primaryAuthenticationMethod: "password",
+      purpose: "login",
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(permittedButUnavailable).toMatchObject({ code: "mfa.factor-unavailable", success: false })
+  })
+})
+
+test("Task 6 uses a recovery code as an unordered fallback for a selected MFA method", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "task6-recovery")
+    await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate("system"),
+        database,
+        input: { allowedFactors: ["totp", "email_otp"], preferredFactorOrder: ["email_otp", "totp"] },
+        realmId: fixture.realm.id,
+      }).success,
+    ).toBe(true)
+    const generated = mfaRecoveryCodesGenerate({
+      database,
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(generated.success).toBe(true)
+    if (!generated.success) return
+    const started = mfaLoginChallengeStart({
+      database,
+      policyDatabase: database,
+      primaryAuthenticationMethod: "password",
+      purpose: "login",
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(started).toMatchObject({ data: { challenge: { factor: "email_otp" } }, success: true })
+    if (!started.success) return
+    const completed = mfaChallengeComplete({
+      database,
+      input: { code: generated.data.codes[0]!, token: started.data.token },
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+    })
+    expect(completed).toMatchObject({ data: { session: { session: { mfaMethod: "recovery_code" } } }, success: true })
+    expect(database.sqlite.query("SELECT consumed_at AS consumedAt FROM mfa_recovery_codes").all()).toHaveLength(10)
+    expect(
+      database.sqlite
+        .query("SELECT consumed_at AS consumedAt FROM mfa_recovery_codes WHERE consumed_at IS NOT NULL")
+        .all(),
+    ).toHaveLength(1)
   })
 })

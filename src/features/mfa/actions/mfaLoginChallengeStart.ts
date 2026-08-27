@@ -179,10 +179,22 @@ function mfaLoginChallengeStartTransaction(
     if (!resolved.success) return resolved
     organizationPolicy = resolved.data
   }
+  const permittedFactors = organizationPolicy?.allowedFactors ?? (["totp"] as const)
+  if (options.factor !== undefined && !permittedFactors.includes(options.factor))
+    return resultErrorCreate(
+      "mfaLoginChallengeStart",
+      "The requested MFA factor is disabled for this organization.",
+      "mfa.factor-disabled",
+    )
+  if (options.factor !== undefined && !available.data.includes(options.factor))
+    return resultErrorCreate(
+      "mfaLoginChallengeStart",
+      "The requested MFA factor is unavailable.",
+      "mfa.factor-unavailable",
+    )
   const orderedFactors =
     organizationPolicy?.preferredFactorOrder ?? (available.data.includes("totp") ? (["totp"] as const) : ([] as const))
   if (orderedFactors.length === 0) {
-    const permittedFactors = organizationPolicy?.allowedFactors ?? (["totp"] as const)
     return resultErrorCreate(
       "mfaLoginChallengeStart",
       "No permitted MFA factor is currently enrolled.",
