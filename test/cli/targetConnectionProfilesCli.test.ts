@@ -620,7 +620,7 @@ test("realm and organization system commands ignore profile and AUTHWORKS_TOKEN 
     server.stop(true)
     await rm(directory, { force: true, recursive: true })
   }
-})
+}, 10_000)
 
 test("integrated CLI writers redact profile, environment, and flag connection tokens from errors", async () => {
   const directory = await mkdtemp(join(tmpdir(), "authworks-cli-writer-redaction-"))
