@@ -205,4 +205,10 @@ test("path diagnostics redact dynamic values by route position even when they ma
   expect(httpDiagnosticPathCreate("https://identity.example.test/realms/realm-one/me?userId=users")).toBe(
     "/realms/[redacted]/me",
   )
+  expect(httpDiagnosticPathCreate("https://identity.example.test/realms/realm-one/sessions/recent")).toBe(
+    "/realms/[redacted]/sessions/recent",
+  )
+  expect(httpDiagnosticPathCreate("https://identity.example.test/realms/realm-one/me/refresh-tokens")).toBe(
+    "/realms/[redacted]/me/refresh-tokens",
+  )
 })
