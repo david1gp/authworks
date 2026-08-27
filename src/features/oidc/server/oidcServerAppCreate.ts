@@ -57,6 +57,7 @@ import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import { oidcInteractionOrganizationContextSet } from "./oidcInteractionOrganizationContextSet.js"
+import { oidcClientContextValidate } from "./oidcClientContextValidate.js"
 import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import { oidcAuthorizationConsentRequestSchema } from "../public/oidcAuthorizationConsentRequestSchema.js"
 import { oidcAuthorizationConsentRequiredSchema } from "../public/oidcAuthorizationConsentRequiredSchema.js"
@@ -241,7 +242,13 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
         })
         if (!interaction.success) return oidcErrorResponseCreate(context, interaction)
         if (!browser.success) return oidcErrorResponseCreate(context, browser)
-        const bound = oidcInteractionBind(options.database, realm.data.realmId, interaction.data.handle, browser.data)
+        const bound = oidcInteractionBind(
+          options.database,
+          realm.data.realmId,
+          interaction.data.handle,
+          input.output.client_id,
+          browser.data,
+        )
         if (!bound.success) return oidcErrorResponseCreate(context, bound)
         const requestId = oidcAuthorizationRequestIdGet(authorization)
         if (requestId === undefined) return oidcErrorResponseCreate(context, authorization)
@@ -640,7 +647,7 @@ function oidcAuthorizationInteractionResume(
       errorMessage: "The OIDC interaction is invalid.",
       op: "oidcAuthorizationInteractionResume",
     })
-  const bound = oidcInteractionBind(options.database, realmId, handle, browser.data)
+  const bound = oidcInteractionBind(options.database, realmId, handle, interaction.data.input.client_id, browser.data)
   if (!bound.success) return oidcErrorResponseCreate(context, bound)
   if (interaction.data.interaction.authorizationRequestId !== null)
     return oidcConsentRedirectCreateHosted(
@@ -785,6 +792,7 @@ function oidcInteractionBind(
   database: StorageDatabase,
   realmId: string,
   handle: string,
+  clientId: string,
   session: OidcBrowserSession,
 ): Result<void> {
   const existing = oidcRepositoryCreate(database.db).interactionGetByHandleHash(realmId, oidcHashCreate(handle))
@@ -792,9 +800,27 @@ function oidcInteractionBind(
   if (existing.data === null) return resultErrorCreate("oidcInteractionBind", "The OIDC interaction is invalid.")
   if (existing.data.completedAt !== null || existing.data.expiresAt <= database.runtime.now())
     return resultErrorCreate("oidcInteractionBind", "The OIDC interaction is invalid.")
+  const client = oidcRepositoryCreate(database.db).clientGet(realmId, clientId)
+  if (!client.success) return client
+  if (client.data === null || client.data.status !== "active")
+    return resultErrorCreate("oidcInteractionBind", "The OIDC interaction is invalid.")
+  const clientContext = oidcClientContextValidate({
+    applicationId: client.data.applicationId,
+    executor: database.db,
+    organizationId:
+      session.actor.organizationId ??
+      session.session.impersonationOrganizationId ??
+      session.session.organizationId ??
+      null,
+    projectId: client.data.projectId,
+    realmId,
+  })
+  if (!clientContext.success) return resultErrorCreate("oidcInteractionBind", "The OIDC interaction is invalid.")
+  const organizationId =
+    session.actor.organizationId ?? session.session.impersonationOrganizationId ?? session.session.organizationId
   const loginContext = organizationLoginContextValidate({
     context: {
-      ...(session.session.organizationId === null ? {} : { organizationId: session.session.organizationId }),
+      ...(organizationId === undefined ? {} : { organizationId }),
       realmId: session.session.realmId,
     },
     executor: database.db,

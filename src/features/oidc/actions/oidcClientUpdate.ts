@@ -18,6 +18,7 @@ import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import type { OidcClientResponse } from "../public/oidcClientResponseSchema.js"
 import { type OidcClientUpdateRequest, oidcClientUpdateRequestSchema } from "../public/oidcClientUpdateRequestSchema.js"
+import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
 type OidcClientUpdateOptions = {
   readonly clientId: string
@@ -48,6 +49,13 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
       return resultErrorCodedCreate(op, "The OIDC client was not found.", "oidc.not-found")
     const configuration = oidcClientUpdateConfigurationValidate(parsed.data, current.data)
     if (!configuration.success) return configuration
+    const clientContext = oidcClientContextValidate({
+      applicationId: parsed.data.applicationId === undefined ? current.data.applicationId : parsed.data.applicationId,
+      executor: transaction,
+      projectId: parsed.data.projectId === undefined ? current.data.projectId : parsed.data.projectId,
+      realmId: options.realmId,
+    })
+    if (!clientContext.success) return clientContext
     const updated = repository.clientUpdate(options.realmId, options.clientId, {
       allowedScopes: JSON.stringify(configuration.data.allowedScopes),
       applicationId: parsed.data.applicationId === undefined ? current.data.applicationId : parsed.data.applicationId,

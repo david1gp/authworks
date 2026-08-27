@@ -18,6 +18,7 @@ import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import { oidcResourceOwnerClaim } from "../public/oidcResourceOwnerClaim.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 import type { OidcUserInfo } from "../public/oidcUserInfoSchema.js"
+import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
 type OidcUserInfoGetOptions = {
   readonly database: StorageDatabase
@@ -79,6 +80,18 @@ export function oidcUserInfoGet(options: OidcUserInfoGetOptions): Result<OidcUse
       .get()
     if (user === undefined || user.state !== "active" || user.deletedAt !== null)
       return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")
+    const client = repository.clientGet(options.realmId, access.data.clientId)
+    if (!client.success) return client
+    if (client.data === null || client.data.status !== "active")
+      return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")
+    const clientContext = oidcClientContextValidate({
+      applicationId: client.data.applicationId,
+      executor: transaction,
+      organizationId: session.impersonationOrganizationId ?? session.organizationId,
+      projectId: client.data.projectId,
+      realmId: options.realmId,
+    })
+    if (!clientContext.success) return resultErrorCreate("oidcUserInfoInvalidToken", "The access token is invalid.")
     const profile =
       transaction
         .select()

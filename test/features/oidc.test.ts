@@ -23,6 +23,7 @@ import { oidcLogout } from "../../src/features/oidc/actions/oidcLogout.js"
 import { oidcSigningKeyCreate } from "../../src/features/oidc/actions/oidcSigningKeyCreate.js"
 import { oidcSigningKeyList } from "../../src/features/oidc/actions/oidcSigningKeyList.js"
 import { oidcTokenIssue } from "../../src/features/oidc/actions/oidcTokenIssue.js"
+import { oidcUserInfoGet } from "../../src/features/oidc/actions/oidcUserInfoGet.js"
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
 import { oidcClientSecretMatches } from "../../src/features/oidc/domain/oidcClientSecretMatches.js"
 import { oidcJwtSign } from "../../src/features/oidc/domain/oidcJwtSign.js"
@@ -45,6 +46,9 @@ import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/rea
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
+import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
+import { projectApplicationCreate } from "../../src/features/projects/actions/projectApplicationCreate.js"
+import { projectCreate } from "../../src/features/projects/actions/projectCreate.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
@@ -280,6 +284,24 @@ function refreshTokenFamilyInsert(
       userId: input.userId ?? fixture.authenticated.userId,
     })
     .run()
+}
+
+function oidcArtifactSnapshot(database: StorageDatabase) {
+  const count = (table: string) =>
+    (database.sqlite.query(`SELECT COUNT(*) AS count FROM ${table}`).get() as { count: number }).count
+  return {
+    accessTokens: count("oidc_access_tokens"),
+    authorizationCodes: count("oidc_authorization_codes"),
+    authorizationRequests: count("oidc_authorization_requests"),
+    consents: count("oidc_consents"),
+    events: (
+      database.sqlite.query("SELECT COUNT(*) AS count FROM events WHERE event_type LIKE 'oidc.%'").get() as {
+        count: number
+      }
+    ).count,
+    interactions: count("oidc_interactions"),
+    refreshTokens: count("oidc_refresh_tokens"),
+  }
 }
 
 test("redirect URI matching is exact and rejects unsafe registrations", () => {
@@ -2287,6 +2309,301 @@ test("account refresh-token management returns safe family metadata and invalida
       userId: allFixture.authenticated.userId,
     })
     expect(allAgain).toEqual({ data: { revoked: false }, success: true })
+  })
+})
+
+test("OIDC context denials are centralized and atomic across protocol stages", async () => {
+  await withDatabase(async (database) => {
+    const authenticated = await createAuthenticatedSession(database, "oidc-context-security.example.com")
+    const context = realmTenantContextCreate(authenticated.realm.id, "anonymous")
+    const firstOrganization = organizationCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { name: "OIDC context first organization", ownerUserId: authenticated.userId },
+      realmId: authenticated.realm.id,
+    })
+    const secondOrganization = organizationCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { name: "OIDC context second organization", ownerUserId: authenticated.userId },
+      realmId: authenticated.realm.id,
+    })
+    expect(firstOrganization.success).toBe(true)
+    expect(secondOrganization.success).toBe(true)
+    if (!firstOrganization.success || !secondOrganization.success) return
+
+    const loginForOrganization = (organizationId: string) =>
+      passwordLogin({
+        context,
+        database,
+        input: { identifier: "oidc-context-security-example-com", password: "Correct Horse 12" },
+        organizationId,
+        realmId: authenticated.realm.id,
+        sessionCreate: sessionPasswordCreate(),
+      })
+    const firstLogin = loginForOrganization(firstOrganization.data.organization.id)
+    const secondLogin = loginForOrganization(secondOrganization.data.organization.id)
+    expect(firstLogin.success).toBe(true)
+    expect(secondLogin.success).toBe(true)
+    if (!firstLogin.success || !secondLogin.success || firstLogin.data.session === undefined) return
+
+    const firstProject = projectCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { name: "OIDC first project", organizationId: firstOrganization.data.organization.id },
+      realmId: authenticated.realm.id,
+    })
+    const secondProject = projectCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { name: "OIDC second project", organizationId: secondOrganization.data.organization.id },
+      realmId: authenticated.realm.id,
+    })
+    expect(firstProject.success).toBe(true)
+    expect(secondProject.success).toBe(true)
+    if (!firstProject.success || !secondProject.success) return
+    const oidcApplication = projectApplicationCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { applicationType: "oidc", name: "OIDC application" },
+      projectId: firstProject.data.project.id,
+      realmId: authenticated.realm.id,
+    })
+    const apiApplication = projectApplicationCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { applicationType: "api", name: "API application" },
+      projectId: firstProject.data.project.id,
+      realmId: authenticated.realm.id,
+    })
+    expect(oidcApplication.success).toBe(true)
+    expect(apiApplication.success).toBe(true)
+    if (!oidcApplication.success || !apiApplication.success) return
+
+    const client = oidcClientCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        applicationId: oidcApplication.data.application.id,
+        clientType: "public",
+        name: "OIDC context client",
+        projectId: firstProject.data.project.id,
+        redirectUris: ["https://client.example/callback"],
+        trusted: true,
+      },
+      realmId: authenticated.realm.id,
+    })
+    const audienceClient = oidcClientCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        clientType: "public",
+        name: "OIDC audience client",
+        redirectUris: ["https://client.example/callback"],
+        trusted: true,
+      },
+      realmId: authenticated.realm.id,
+    })
+    const consentClient = oidcClientCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        clientType: "public",
+        name: "OIDC consent context client",
+        projectId: firstProject.data.project.id,
+        redirectUris: ["https://client.example/callback"],
+        requireConsent: true,
+      },
+      realmId: authenticated.realm.id,
+    })
+    expect(client.success).toBe(true)
+    expect(audienceClient.success).toBe(true)
+    expect(consentClient.success).toBe(true)
+    if (!client.success || !audienceClient.success || !consentClient.success) return
+
+    const verifier = "verifier-abcdefghijklmnopqrstuvwxyz-0123456789._~"
+    const requestCreate = (clientId: string, state: string) =>
+      oidcAuthorizationRequestAuthorize({
+        database,
+        input: {
+          client_id: clientId,
+          code_challenge: pkceChallengeCreate(verifier),
+          code_challenge_method: "S256",
+          redirect_uri: "https://client.example/callback",
+          response_type: "code",
+          scope: "openid",
+          state,
+        },
+        realmId: authenticated.realm.id,
+        sessionToken: firstLogin.data.session?.token ?? "",
+      })
+
+    const baseline = oidcArtifactSnapshot(database)
+    expect(
+      oidcAuthorizationRequestAuthorize({
+        database,
+        input: {
+          client_id: client.data.client.id,
+          code_challenge: pkceChallengeCreate(verifier),
+          code_challenge_method: "S256",
+          redirect_uri: "https://client.example/callback",
+          response_type: "code",
+          scope: "openid",
+          state: "wrong-organization",
+        },
+        realmId: authenticated.realm.id,
+        sessionToken: secondLogin.success && secondLogin.data.session ? secondLogin.data.session.token : "",
+      }).success,
+    ).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(baseline)
+
+    database.sqlite
+      .query("UPDATE oidc_clients SET application_id = ? WHERE id = ?")
+      .run(apiApplication.data.application.id, client.data.client.id)
+    expect(requestCreate(client.data.client.id, "wrong-resource").success).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(baseline)
+    database.sqlite
+      .query("UPDATE oidc_clients SET application_id = NULL, project_id = ? WHERE id = ?")
+      .run(secondProject.data.project.id, client.data.client.id)
+    expect(requestCreate(client.data.client.id, "wrong-project").success).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(baseline)
+    database.sqlite
+      .query("UPDATE oidc_clients SET application_id = ?, project_id = ? WHERE id = ?")
+      .run(oidcApplication.data.application.id, firstProject.data.project.id, client.data.client.id)
+
+    const pending = oidcAuthorizationRequestAuthorize({
+      database,
+      input: {
+        client_id: consentClient.data.client.id,
+        code_challenge: pkceChallengeCreate(verifier),
+        code_challenge_method: "S256",
+        redirect_uri: "https://client.example/callback",
+        response_type: "code",
+        scope: "openid",
+        state: "consent-context",
+      },
+      realmId: authenticated.realm.id,
+      sessionToken: firstLogin.data.session.token,
+    })
+    expect(pending.success).toBe(false)
+    if (pending.success) return
+    const required = JSON.parse(pending.errorData ?? "{}") as { request_id?: string }
+    expect(required.request_id).toBeString()
+    const pendingSnapshot = oidcArtifactSnapshot(database)
+    database.sqlite
+      .query("UPDATE sessions SET organization_id = ? WHERE id = ?")
+      .run(secondOrganization.data.organization.id, firstLogin.data.session.session.id)
+    expect(
+      database.sqlite
+        .query("SELECT organization_id FROM sessions WHERE id = ?")
+        .get(firstLogin.data.session.session.id),
+    ).toEqual({ organization_id: secondOrganization.data.organization.id })
+    expect(
+      oidcAuthorizationRequestConsent({
+        database,
+        input: { decision: "approve", request_id: required.request_id ?? "" },
+        realmId: authenticated.realm.id,
+        sessionToken: firstLogin.data.session.token,
+      }).success,
+    ).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(pendingSnapshot)
+    expect(database.sqlite.query("SELECT approved_at FROM oidc_authorization_requests").get()).toEqual({
+      approved_at: null,
+    })
+    database.sqlite
+      .query("UPDATE sessions SET organization_id = ? WHERE id = ?")
+      .run(firstOrganization.data.organization.id, firstLogin.data.session.session.id)
+
+    const authorization = requestCreate(client.data.client.id, "context-code")
+    expect(authorization.success).toBe(true)
+    if (!authorization.success) return
+    const codeSnapshot = oidcArtifactSnapshot(database)
+    database.sqlite
+      .query("UPDATE sessions SET organization_id = ? WHERE id = ?")
+      .run(secondOrganization.data.organization.id, firstLogin.data.session.session.id)
+    expect(
+      oidcAuthorizationCodeRedeem({
+        database,
+        input: {
+          client_id: client.data.client.id,
+          code: authorization.data.code,
+          code_verifier: verifier,
+          redirect_uri: authorization.data.redirect_uri,
+        },
+        realmId: authenticated.realm.id,
+      }).success,
+    ).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(codeSnapshot)
+    expect(database.sqlite.query("SELECT used_at FROM oidc_authorization_codes").get()).toEqual({ used_at: null })
+
+    const wrongAudience = oidcTokenIssue({
+      database,
+      input: {
+        client_id: audienceClient.data.client.id,
+        code: authorization.data.code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: authorization.data.redirect_uri,
+      },
+      realmId: authenticated.realm.id,
+    })
+    expect(wrongAudience.success).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(codeSnapshot)
+    const wrongGrant = oidcTokenIssue({
+      database,
+      input: { client_id: client.data.client.id, grant_type: "refresh_token", refresh_token: authorization.data.code },
+      realmId: authenticated.realm.id,
+    })
+    expect(wrongGrant.success).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(codeSnapshot)
+
+    const wrongOrganizationToken = oidcTokenIssue({
+      database,
+      input: {
+        client_id: client.data.client.id,
+        code: authorization.data.code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: authorization.data.redirect_uri,
+      },
+      realmId: authenticated.realm.id,
+    })
+    expect(wrongOrganizationToken.success).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(codeSnapshot)
+    database.sqlite
+      .query("UPDATE sessions SET organization_id = ? WHERE id = ?")
+      .run(firstOrganization.data.organization.id, firstLogin.data.session.session.id)
+
+    const key = oidcSigningKeyCreate({
+      context: realmSystemContextCreate(),
+      database,
+      encryptionSecret: "oidc-context-security-secret",
+      realmId: authenticated.realm.id,
+    })
+    expect(key.success).toBe(true)
+    if (!key.success) return
+    const issued = oidcTokenIssue({
+      database,
+      encryptionSecret: "oidc-context-security-secret",
+      input: {
+        client_id: client.data.client.id,
+        code: authorization.data.code,
+        code_verifier: verifier,
+        grant_type: "authorization_code",
+        redirect_uri: authorization.data.redirect_uri,
+      },
+      realmId: authenticated.realm.id,
+    })
+    expect(issued.success).toBe(true)
+    if (!issued.success) return
+    const tokenSnapshot = oidcArtifactSnapshot(database)
+    database.sqlite
+      .query("UPDATE oidc_clients SET application_id = ? WHERE id = ?")
+      .run(apiApplication.data.application.id, client.data.client.id)
+    expect(
+      oidcUserInfoGet({ database, realmId: authenticated.realm.id, token: issued.data.access_token }).success,
+    ).toBe(false)
+    expect(oidcArtifactSnapshot(database)).toEqual(tokenSnapshot)
   })
 })
 

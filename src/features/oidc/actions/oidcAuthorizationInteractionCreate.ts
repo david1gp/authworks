@@ -18,6 +18,7 @@ import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import type { OidcAuthorizationRequest } from "../public/oidcAuthorizationRequestSchema.js"
 import { oidcAuthorizationRequestSchema } from "../public/oidcAuthorizationRequestSchema.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
+import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
 const oidcAuthorizationInteractionLifetimeMs = 10 * 60 * 1_000
 
@@ -48,6 +49,13 @@ export function oidcAuthorizationInteractionCreate(options: OidcAuthorizationInt
   if (!client.success) return client
   if (client.data === null || client.data.status !== "active")
     return resultErrorCreate(op, "The OIDC client was not found.")
+  const clientContext = oidcClientContextValidate({
+    applicationId: client.data.applicationId,
+    executor: options.database.db,
+    projectId: client.data.projectId,
+    realmId: options.realmId,
+  })
+  if (!clientContext.success) return resultErrorCreate(op, "The OIDC authorization request is invalid.")
   const redirectUris = oidcStringArrayParse(client.data.redirectUris)
   if (!redirectUris.success) return resultErrorCreate(op, "The OIDC client configuration is invalid.")
   if (!oidcRedirectUriMatches(parsed.output.redirect_uri, redirectUris.data).success)

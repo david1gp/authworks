@@ -22,6 +22,7 @@ import type { OidcAuthorizationCodeRedeemRequest } from "../public/oidcAuthoriza
 import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import type { OidcAuthorizationCodeRedeemResponse } from "../public/oidcAuthorizationCodeRedeemResponseSchema.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
+import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
 type OidcAuthorizationCodeRedeemOptions = {
   readonly database: StorageDatabase
@@ -80,7 +81,12 @@ export function oidcAuthorizationCodeRedeem(
       return resultErrorCreate(op, "The authorization code is invalid.")
 
     const session = transaction
-      .select({ expiresAt: sessionTable.expiresAt, revokedAt: sessionTable.revokedAt })
+      .select({
+        expiresAt: sessionTable.expiresAt,
+        impersonationOrganizationId: sessionTable.impersonationOrganizationId,
+        organizationId: sessionTable.organizationId,
+        revokedAt: sessionTable.revokedAt,
+      })
       .from(sessionTable)
       .where(
         and(
@@ -92,6 +98,14 @@ export function oidcAuthorizationCodeRedeem(
       .get()
     if (session === undefined || session.revokedAt !== null || session.expiresAt <= now)
       return resultErrorCreate(op, "The authorization code is invalid.")
+    const clientContext = oidcClientContextValidate({
+      applicationId: client.data.applicationId,
+      executor: transaction,
+      organizationId: session.impersonationOrganizationId ?? session.organizationId,
+      projectId: client.data.projectId,
+      realmId: options.realmId,
+    })
+    if (!clientContext.success) return resultErrorCreate(op, "The authorization code is invalid.")
 
     const pkce = oidcPkceVerify(parsed.output.code_verifier, code.data.codeChallenge, code.data.codeChallengeMethod)
     if (!pkce.success) return resultErrorCreate(op, "The authorization code is invalid.")

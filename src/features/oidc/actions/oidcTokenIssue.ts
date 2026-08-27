@@ -40,6 +40,7 @@ import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
 import type { OidcTokenRequest } from "../public/oidcTokenRequestSchema.js"
 import { oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
 import type { OidcTokenResponse } from "../public/oidcTokenResponseSchema.js"
+import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
 const oidcAccessTokenLifetimeMs = 5 * 60 * 1_000
 const oidcRefreshTokenLifetimeMs = 30 * 24 * 60 * 60 * 1_000
@@ -311,6 +312,14 @@ function oidcTokenAuthorizationCodeExchange(options: OidcTokenExchangeOptions): 
     options.onStage,
   )
   if (!subject.success) return subject
+  const clientContext = oidcClientContextValidate({
+    applicationId: options.client.applicationId,
+    executor: options.transaction,
+    organizationId: subject.data.session.impersonationOrganizationId ?? subject.data.session.organizationId,
+    projectId: options.client.projectId,
+    realmId: options.realmId,
+  })
+  if (!clientContext.success) return oidcTokenStageError(options, "code_state")
   const consumed = options.repository.authorizationCodeConsume(
     options.realmId,
     options.client.id,
@@ -430,6 +439,14 @@ function oidcTokenRefreshExchange(options: OidcTokenExchangeOptions): Result<Oid
     scope.data,
   )
   if (!subject.success) return subject
+  const clientContext = oidcClientContextValidate({
+    applicationId: options.client.applicationId,
+    executor: options.transaction,
+    organizationId: subject.data.session.impersonationOrganizationId ?? subject.data.session.organizationId,
+    projectId: options.client.projectId,
+    realmId: options.realmId,
+  })
+  if (!clientContext.success) return resultErrorCreate("oidcTokenInvalidGrant", "The refresh token is invalid.")
   const nextRefresh = oidcRefreshTokenCreate(options.runtime)
   if (!nextRefresh.success) return nextRefresh
   const rotated = options.repository.refreshTokenRotate(

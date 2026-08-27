@@ -25,6 +25,7 @@ import type { OidcAuthorizationConsentRequest } from "../public/oidcAuthorizatio
 import { oidcAuthorizationConsentRequestSchema } from "../public/oidcAuthorizationConsentRequestSchema.js"
 import type { OidcAuthorizationConsentResponse } from "../public/oidcAuthorizationConsentResponseSchema.js"
 import { oidcScopeSchema } from "../public/oidcScopeSchema.js"
+import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
 const oidcAuthorizationCodeLifetimeMs = 60 * 1_000
 
@@ -90,7 +91,10 @@ export function oidcAuthorizationRequestConsent(
       })
       if (!interactionContext.success) return resultErrorCreate(op, "The OIDC consent request is invalid.")
       const session = transaction
-        .select({ organizationId: sessionTable.organizationId })
+        .select({
+          impersonationOrganizationId: sessionTable.impersonationOrganizationId,
+          organizationId: sessionTable.organizationId,
+        })
         .from(sessionTable)
         .where(
           and(
@@ -101,9 +105,10 @@ export function oidcAuthorizationRequestConsent(
         )
         .get()
       if (session === undefined) return resultErrorCreate(op, "The OIDC consent request is invalid.")
+      const sessionOrganizationId = session.impersonationOrganizationId ?? session.organizationId ?? undefined
       const sessionContext = organizationLoginContextValidate({
         context: {
-          ...(session.organizationId === null ? {} : { organizationId: session.organizationId }),
+          ...(sessionOrganizationId === undefined ? {} : { organizationId: sessionOrganizationId }),
           realmId: options.realmId,
         },
         executor: transaction,
@@ -116,6 +121,18 @@ export function oidcAuthorizationRequestConsent(
     if (!client.success) return client
     if (client.data === null || client.data.status !== "active")
       return resultErrorCreate(op, "The OIDC consent request is invalid.")
+    const clientContext = oidcClientContextValidate({
+      applicationId: client.data.applicationId,
+      executor: transaction,
+      organizationId:
+        authenticated.data.actor.organizationId ??
+        authenticated.data.session.impersonationOrganizationId ??
+        authenticated.data.session.organizationId ??
+        null,
+      projectId: client.data.projectId,
+      realmId: options.realmId,
+    })
+    if (!clientContext.success) return resultErrorCreate(op, "The OIDC consent request is invalid.")
     const scope = oidcScopeParse(request.data.scope)
     if (!scope.success) return resultErrorCreate(op, "The OIDC consent request is invalid.")
     const state =

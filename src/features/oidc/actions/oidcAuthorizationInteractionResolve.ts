@@ -13,6 +13,7 @@ import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import type { OidcAuthorizationRequest } from "../public/oidcAuthorizationRequestSchema.js"
 import { oidcAuthorizationRequestSchema } from "../public/oidcAuthorizationRequestSchema.js"
+import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
 type OidcAuthorizationInteractionResolveOptions = {
   readonly binding?: string
@@ -60,6 +61,18 @@ export function oidcAuthorizationInteractionResolve(options: OidcAuthorizationIn
   try {
     const input = v.safeParse(oidcAuthorizationRequestSchema, JSON.parse(decrypted.data))
     if (!input.success) return resultErrorCreate(op, "The OIDC interaction is invalid.")
+    const client = oidcRepositoryCreate(options.database.db).clientGet(options.realmId, input.output.client_id)
+    if (!client.success) return client
+    if (client.data === null || client.data.status !== "active")
+      return resultErrorCreate(op, "The OIDC interaction is invalid.")
+    const clientContext = oidcClientContextValidate({
+      applicationId: client.data.applicationId,
+      executor: options.database.db,
+      ...(row.data.organizationId === null ? {} : { organizationId: row.data.organizationId }),
+      projectId: client.data.projectId,
+      realmId: options.realmId,
+    })
+    if (!clientContext.success) return resultErrorCreate(op, "The OIDC interaction is invalid.")
     return resultCreate({ input: input.output, interaction: row.data })
   } catch (_error) {
     return resultErrorCreate(op, "The OIDC interaction is invalid.")

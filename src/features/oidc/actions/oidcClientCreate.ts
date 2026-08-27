@@ -20,6 +20,7 @@ import { oidcEventTypes } from "../events/oidcEventTypes.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
 import { type OidcClientCreateRequest, oidcClientCreateRequestSchema } from "../public/oidcClientCreateRequestSchema.js"
 import type { OidcClientCreateResponse } from "../public/oidcClientCreateResponseSchema.js"
+import { oidcClientContextValidate } from "../server/oidcClientContextValidate.js"
 
 type OidcClientCreateOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
@@ -62,6 +63,13 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
   }
   return storageTransactionRun(options.database, (transaction) => {
     const repository = oidcRepositoryCreate(transaction)
+    const clientContext = oidcClientContextValidate({
+      applicationId: parsed.output.applicationId,
+      executor: transaction,
+      projectId: parsed.output.projectId,
+      realmId: options.realmId,
+    })
+    if (!clientContext.success) return clientContext
     const created = repository.clientCreate({
       allowedScopes: JSON.stringify(configuration.data.allowedScopes),
       applicationId: parsed.output.applicationId ?? null,
