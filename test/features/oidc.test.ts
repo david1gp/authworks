@@ -4,6 +4,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import * as v from "valibot"
+import { accountAccessApiCreate } from "../../src/features/account/ui/accountAccessApiCreate.js"
 import { oidcAuthorizationCodeRedeem } from "../../src/features/oidc/actions/oidcAuthorizationCodeRedeem.js"
 import { oidcAuthorizationRequestAuthorize } from "../../src/features/oidc/actions/oidcAuthorizationRequestAuthorize.js"
 import { oidcAuthorizationRequestConsent } from "../../src/features/oidc/actions/oidcAuthorizationRequestConsent.js"
@@ -15,6 +16,7 @@ import { oidcClientSecretRotate } from "../../src/features/oidc/actions/oidcClie
 import { oidcClientUpdate } from "../../src/features/oidc/actions/oidcClientUpdate.js"
 import { oidcConsentRevoke } from "../../src/features/oidc/actions/oidcConsentRevoke.js"
 import { oidcDiscoveryGet } from "../../src/features/oidc/actions/oidcDiscoveryGet.js"
+import { oidcAuthorizationCodeRedeemResponseSchema } from "../../src/features/oidc/public/oidcAuthorizationCodeRedeemResponseSchema.js"
 import { oidcRefreshTokenFamiliesMeRevokeAll } from "../../src/features/oidc/actions/oidcRefreshTokenFamiliesMeRevokeAll.js"
 import { oidcRefreshTokenFamilyMeRevoke } from "../../src/features/oidc/actions/oidcRefreshTokenFamilyMeRevoke.js"
 import { oidcRefreshTokenMeList } from "../../src/features/oidc/actions/oidcRefreshTokenMeList.js"
@@ -51,6 +53,7 @@ import { projectApplicationCreate } from "../../src/features/projects/actions/pr
 import { projectCreate } from "../../src/features/projects/actions/projectCreate.js"
 import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -1949,6 +1952,107 @@ test("subject-bound consent contracts paginate, redact persistence fields, rejec
     expect(browserRevoked.status).toBe(200)
     expect(await browserRevoked.json()).toEqual({ revoked: true })
   })
+})
+
+test("subject-bound consent lists accept migrated numeric user IDs for empty and valid account responses", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "consent-migrated-user.example.com")
+    const userId = "12345678901234567890"
+    const createdAt = testkit.runtime.now()
+    database.sqlite
+      .query(
+        "INSERT INTO users (id, realm_id, user_name, email, state, email_verified_at, phone_number, phone_number_verified_at, registration_verified_at, registration_verification_method, deleted_at, created_at, updated_at, version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        userId,
+        realm.id,
+        "migrated-user",
+        "migrated-user@example.com",
+        "active",
+        createdAt,
+        null,
+        null,
+        createdAt,
+        "email",
+        null,
+        createdAt,
+        createdAt,
+        1,
+      )
+    const session = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: realm.id,
+      runtime: testkit.runtime,
+      userId,
+    })
+    expect(session.success).toBe(true)
+    if (!session.success) return
+    const client = oidcClientCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        clientType: "public",
+        name: "Migrated user consent client",
+        redirectUris: ["https://client.example/callback"],
+      },
+      realmId: realm.id,
+    })
+    expect(client.success).toBe(true)
+    if (!client.success) return
+    const app = oidcServerAppCreate({ database, publicOrigin: "https://consent-migrated-user.example.com" })
+    const empty = await app.request(`https://consent-migrated-user.example.com/realms/${realm.id}/me/consents`, {
+      headers: { cookie: `session=${session.data.token}` },
+    })
+    expect(empty.status).toBe(200)
+    expect(await empty.json()).toEqual({ items: [] })
+
+    database.sqlite
+      .query(
+        "INSERT INTO oidc_consents (client_id, created_at, realm_id, scope, updated_at, user_id) VALUES (?, ?, ?, ?, ?, ?)",
+      )
+      .run(client.data.client.id, createdAt, realm.id, JSON.stringify(["openid", "profile"]), createdAt, userId)
+
+    const accountApi = accountAccessApiCreate({
+      baseUrl: "https://consent-migrated-user.example.com",
+      fetch: async (input, init) =>
+        app.request(input.toString(), {
+          ...init,
+          headers: { ...Object.fromEntries(new Headers(init?.headers)), cookie: `session=${session.data.token}` },
+        }),
+    })
+    const valid = await accountApi.consentList(realm.id)
+    expect(valid).toEqual({
+      data: {
+        items: [
+          {
+            clientId: client.data.client.id,
+            createdAt,
+            realmId: realm.id,
+            scope: ["openid", "profile"],
+            updatedAt: createdAt,
+            userId,
+          },
+        ],
+      },
+      success: true,
+    })
+  })
+})
+
+test("OIDC authorization-code redeem responses accept migrated numeric user IDs", () => {
+  const parsed = v.safeParse(oidcAuthorizationCodeRedeemResponseSchema, {
+    client_id: "01900000-0000-7000-8000-000000000031",
+    nonce: null,
+    realm_id: "01900000-0000-7000-8000-000000000001",
+    redirect_uri: "https://client.example/callback",
+    scope: ["openid"],
+    session_id: "01900000-0000-7000-8000-000000000032",
+    user_id: "12345678901234567890",
+  })
+
+  expect(parsed.success).toBe(true)
 })
 
 test("RP-initiated logout validates exact redirects, revokes the session and OIDC artifacts, and preserves state", async () => {
