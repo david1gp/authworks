@@ -27,7 +27,7 @@ Create deterministic, replayable production account tests using dedicated `AUTHW
 - [x] 2. Add replayable authenticated account/tab regression and reproduce the defect.
 - [x] 3. Fix the diagnosed production invalid response and add focused lower-level coverage.
 - [x] 4. Add privacy-safe correlated browser diagnostics for invalid API responses.
-- [ ] 5. Verify checks and production E2E, commit, release, deploy, and verify production.
+- [x] 5. Verify checks and production E2E, commit, release, deploy, and verify production.
 
 ## Paths
 
