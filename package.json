@@ -1,6 +1,6 @@
 {
   "name": "@adaptive-ds/authworks",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Backend-first identity platform: Hono server, typed API client library, and CLI. Users, orgs, OIDC, MFA, and events on SQLite.",
   "keywords": [
     "authworks",
