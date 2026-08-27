@@ -8,12 +8,21 @@ import { productionRouteGuardStateCreate } from "./productionRouteGuardStateCrea
 import { productionRouteParamGet } from "./productionRouteParamGet.js"
 import { productionRouteScreenSelect } from "./productionRouteScreenSelect.js"
 import { productionSessionContextGet } from "./productionSessionContextGet.js"
+import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
 import { productionShellKindSelect } from "./productionShellKindSelect.js"
 
-export function productionRouteAppStateCreate(route: Accessor<ProductionRouteContract>) {
+type ProductionRouteAppStateCreateOptions = {
+  readonly location?: Pick<Location, "hash" | "pathname" | "search">
+  readonly session?: ProductionSessionContextValue
+}
+
+export function productionRouteAppStateCreate(
+  route: Accessor<ProductionRouteContract>,
+  options: ProductionRouteAppStateCreateOptions = {},
+) {
   const api = productionApiContextGet()
-  const location = useLocation()
-  const session = productionSessionContextGet()
+  const location = options.location ?? useLocation()
+  const session = options.session ?? productionSessionContextGet()
   const screen = () => productionRouteScreenSelect(route(), location.pathname)
   const guardState = () => productionRouteGuardStateCreate(screen()?.guard ?? route().guard, session.guard)
 

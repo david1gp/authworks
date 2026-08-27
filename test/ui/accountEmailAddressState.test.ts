@@ -1,24 +1,21 @@
-import { describe, expect, mock, test } from "bun:test"
+import { afterEach, describe, expect, test } from "bun:test"
+import { createRoot } from "solid-js"
+import { accountDemoAdapterCreate } from "../../src/features/account/ui/accountDemoAdapterCreate.js"
+import { accountPageStateCreate } from "../../src/features/account/ui/accountPageStateCreate.js"
 
-mock.module("solid-js", () => ({
-  createSignal: <T>(initial: T) => {
-    let value = initial
-    return [() => value, (next: T) => (value = next)] as const
-  },
-  onMount: () => {},
-}))
-
-const [{ accountDemoAdapterCreate }, { accountPageStateCreate }] = await Promise.all([
-  import("../../src/features/account/ui/accountDemoAdapterCreate.js"),
-  import("../../src/features/account/ui/accountPageStateCreate.js"),
-])
+const cleanups: (() => void)[] = []
 
 const submitEvent = { preventDefault: () => {} } as SubmitEvent
+
+afterEach(async () => {
+  await new Promise<void>((resolve) => setTimeout(resolve, 0))
+  for (const cleanup of cleanups.splice(0)) cleanup()
+})
 
 describe("account email-address state", () => {
   test("lists addresses and adds a verified secondary address", async () => {
     const adapter = accountDemoAdapterCreate(() => "success")
-    const state = accountPageStateCreate({ adapter, initialStatus: "ready", kind: "email" })
+    const state = stateCreate({ adapter, initialStatus: "ready", kind: "email" })
     await state.load(true)
 
     expect(state.emailAddresses.get()).toMatchObject([
@@ -46,7 +43,7 @@ describe("account email-address state", () => {
   test("promotes a verified secondary and refuses to remove the primary", async () => {
     const adapter = accountDemoAdapterCreate(() => "success")
     let removeCalls = 0
-    const state = accountPageStateCreate({
+    const state = stateCreate({
       adapter: {
         ...adapter,
         emailAddressRemove: async (emailId) => {
@@ -78,7 +75,7 @@ describe("account email-address state", () => {
     const adapter = accountDemoAdapterCreate(() => "success")
     let starts = 0
     let verifies = 0
-    const state = accountPageStateCreate({
+    const state = stateCreate({
       adapter: {
         ...adapter,
         emailAddressAddStart: async (input) => {
@@ -108,3 +105,16 @@ describe("account email-address state", () => {
     expect(state.emailValidationMessage.get()).toBe("Enter the verification token from the email.")
   })
 })
+
+function stateCreate(options: Parameters<typeof accountPageStateCreate>[0]) {
+  let dispose: (() => void) | undefined
+  const state = createRoot((rootDispose) => {
+    dispose = rootDispose
+    return accountPageStateCreate({ ...options, initialStatus: "loading" })
+  })
+  if (dispose === undefined) throw new Error("Account page state root did not provide a disposer.")
+  if (options.initialStatus !== undefined && options.initialStatus !== "loading")
+    state.status.set(options.initialStatus)
+  cleanups.push(dispose)
+  return state
+}

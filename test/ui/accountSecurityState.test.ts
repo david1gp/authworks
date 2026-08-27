@@ -1,23 +1,14 @@
 import { afterEach, describe, expect, mock, test } from "bun:test"
-
-mock.module("solid-js", () => ({
-  createEffect: (effect: () => unknown) => effect(),
-  createSignal: <T>(initial: T) => {
-    let value = initial
-    return [() => value, (next: T) => (value = next)] as const
-  },
-  on: (dependency: () => unknown, handler: (value: unknown) => unknown) => () => handler(dependency()),
-  onCleanup: () => undefined,
-}))
-
-const { accountSecurityProductionStateCreate } = await import(
-  "../../src/features/account/ui/accountSecurityProductionStateCreate.js"
-)
+import { createRoot } from "solid-js"
+import { accountSecurityProductionStateCreate } from "../../src/features/account/ui/accountSecurityProductionStateCreate.js"
 
 const originalFetch = globalThis.fetch
 const originalWindow = globalThis.window
+const cleanups: (() => void)[] = []
 
-afterEach(() => {
+afterEach(async () => {
+  await new Promise<void>((resolve) => setTimeout(resolve, 0))
+  for (const cleanup of cleanups.splice(0)) cleanup()
   globalThis.fetch = originalFetch
   Object.defineProperty(globalThis, "window", { configurable: true, value: originalWindow })
 })
@@ -113,12 +104,11 @@ describe("account security external identity state", () => {
       })
     }) as typeof fetch
 
-    const state = accountSecurityProductionStateCreate({
+    const state = await stateCreate({
       apiBaseUrl: "https://api.example.test",
       realmId: () => "realm-one",
       screen: () => "identities",
     })
-    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(state.identityProviders().map((provider) => provider.id)).toEqual(["provider-google"])
     expect(state.identityProviderLinked("provider-google")).toBe(false)
 
@@ -208,16 +198,14 @@ describe("account security external identity state", () => {
       return jsonResponse({ revoked: true })
     }) as typeof fetch
 
-    const state = accountSecurityProductionStateCreate({
+    const state = await stateCreate({
       apiBaseUrl: "https://api.example.test",
       realmId: () => "realm-one",
       screen: () => "refresh-tokens",
     })
-    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(state.refreshTokens()).toHaveLength(1)
     expect(state.refreshTokens()[0]).not.toHaveProperty("tokenHash")
     await state.refreshTokenRevoke("01900000-0000-7000-8000-000000000032")
-    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(state.refreshTokens()[0]?.status).toBe("revoked")
   })
 
@@ -247,12 +235,11 @@ describe("account security external identity state", () => {
       })
     }) as typeof fetch
 
-    const state = accountSecurityProductionStateCreate({
+    const state = await stateCreate({
       apiBaseUrl: "https://api.example.test",
       realmId: () => "realm-one",
       screen: () => "security-history",
     })
-    await new Promise((resolve) => setTimeout(resolve, 0))
     expect(state.securityHistory()).toEqual([
       { category: "sessions", displayCode: "session.created", id: "history-1", occurredAt: 2 },
     ])
@@ -263,6 +250,26 @@ describe("account security external identity state", () => {
     expect(state.securityHistoryNextPageToken()).toBeUndefined()
   })
 })
+
+async function stateCreate(options: Parameters<typeof accountSecurityProductionStateCreate>[0]) {
+  let dispose: (() => void) | undefined
+  const state = createRoot((rootDispose) => {
+    dispose = rootDispose
+    return accountSecurityProductionStateCreate(options)
+  })
+  if (dispose === undefined) throw new Error("Account security state root did not provide a disposer.")
+  cleanups.push(dispose)
+  await waitFor(() => state.status() === "ready")
+  return state
+}
+
+async function waitFor(predicate: () => boolean) {
+  for (let attempt = 0; attempt < 10 && !predicate(); attempt += 1)
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0)
+    })
+  expect(predicate()).toBe(true)
+}
 
 function jsonResponse(body: unknown) {
   return new Response(JSON.stringify(body), { headers: { "content-type": "application/json" }, status: 200 })

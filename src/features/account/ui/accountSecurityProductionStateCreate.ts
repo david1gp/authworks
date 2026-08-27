@@ -253,7 +253,7 @@ export function accountSecurityProductionStateCreate(options: {
     reload: () => void load(),
     refreshTokenRevoke: (familyId: string) => {
       if (!window.confirm(messageTranslate("account.refreshTokens.revokeConfirm"))) return
-      void mutate(`refresh-token:${familyId}`, () => api.refreshTokenRevoke(options.realmId(), familyId))
+      return mutate(`refresh-token:${familyId}`, () => api.refreshTokenRevoke(options.realmId(), familyId))
     },
     refreshTokens: refreshTokens.get,
     refreshTokensRevokeAll: () => {

@@ -1,28 +1,25 @@
-import { describe, expect, mock, test } from "bun:test"
+import { afterEach, describe, expect, test } from "bun:test"
+import { createRoot } from "solid-js"
 import { resultErrorCodedCreate } from "../../src/platform/errors/resultErrorCodedCreate.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { accountDemoUserFixture } from "../../src/features/account/ui/accountDemoUserFixture.js"
+import { accountDemoAdapterCreate } from "../../src/features/account/ui/accountDemoAdapterCreate.js"
+import { accountPageStateCreate } from "../../src/features/account/ui/accountPageStateCreate.js"
 
-mock.module("solid-js", () => ({
-  createSignal: <T>(initial: T) => {
-    let value = initial
-    return [() => value, (next: T) => (value = next)] as const
-  },
-  onMount: () => {},
-}))
-
-const [{ accountDemoAdapterCreate }, { accountPageStateCreate }] = await Promise.all([
-  import("../../src/features/account/ui/accountDemoAdapterCreate.js"),
-  import("../../src/features/account/ui/accountPageStateCreate.js"),
-])
+const cleanups: (() => void)[] = []
 
 const submitEvent = { preventDefault: () => {} } as SubmitEvent
+
+afterEach(async () => {
+  await new Promise<void>((resolve) => setTimeout(resolve, 0))
+  for (const cleanup of cleanups.splice(0)) cleanup()
+})
 
 describe("account phone-change state", () => {
   test("submits gender without the picture and uploads or removes the picture separately", async () => {
     const adapter = accountDemoAdapterCreate(() => "success")
     let submitted: Record<string, unknown> = {}
-    const state = accountPageStateCreate({
+    const state = stateCreate({
       adapter: {
         ...adapter,
         updateProfile: async (input) => {
@@ -58,7 +55,7 @@ describe("account phone-change state", () => {
   test("rejects an unsupported or oversized picture before calling the adapter", async () => {
     const adapter = accountDemoAdapterCreate(() => "success")
     let uploads = 0
-    const state = accountPageStateCreate({
+    const state = stateCreate({
       adapter: {
         ...adapter,
         profilePictureUpload: async (file) => {
@@ -84,7 +81,7 @@ describe("account phone-change state", () => {
     const adapter = accountDemoAdapterCreate(() => "success")
     const updateProfile = adapter.updateProfile
     let submittedGender = ""
-    const state = accountPageStateCreate({
+    const state = stateCreate({
       adapter: {
         ...adapter,
         updateProfile: async (input) => {
@@ -109,7 +106,7 @@ describe("account phone-change state", () => {
     const calls: { name: string; input: unknown }[] = []
     const replacement = "+14155552672"
     const adapter = accountDemoAdapterCreate(() => "success")
-    const state = accountPageStateCreate({
+    const state = stateCreate({
       adapter: {
         ...adapter,
         phoneChangeStart: async (input) => {
@@ -149,7 +146,7 @@ describe("account phone-change state", () => {
   test("clears phone-change state after a successful user reload", async () => {
     const refreshedUser = { ...accountDemoUserFixture, phoneNumber: "+14155552672" }
     const adapter = accountDemoAdapterCreate(() => "success")
-    const state = accountPageStateCreate({
+    const state = stateCreate({
       adapter: {
         ...adapter,
         loadUser: async () => resultCreate({ user: refreshedUser }),
@@ -179,7 +176,7 @@ describe("account phone-change state", () => {
   test("validates inputs before adapter calls and supports deterministic resend", async () => {
     let calls = 0
     const adapter = accountDemoAdapterCreate(() => "success")
-    const state = accountPageStateCreate({
+    const state = stateCreate({
       adapter: new Proxy(adapter, {
         get(target, property, receiver) {
           const value = Reflect.get(target, property, receiver)
@@ -219,7 +216,7 @@ describe("account phone-change state", () => {
     }) as unknown as typeof fetch
     try {
       const adapter = accountDemoAdapterCreate(() => "error")
-      const state = accountPageStateCreate({ adapter, initialStatus: "ready", kind: "profile" })
+      const state = stateCreate({ adapter, initialStatus: "ready", kind: "profile" })
       state.phoneCandidate.set("+14155552672")
 
       await state.phoneChangeStart(submitEvent)
@@ -247,18 +244,18 @@ describe("account phone-change state", () => {
       phoneChangeVerify: async () => sessionExpired(),
     }
 
-    const startState = accountPageStateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    const startState = stateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
     startState.phoneCandidate.set("+14155552672")
     await startState.phoneChangeStart(submitEvent)
     expect(startState.status.get()).toBe("expired")
 
-    const resendState = accountPageStateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    const resendState = stateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
     resendState.phoneCandidate.set("+14155552672")
     resendState.phoneChallengeId.set("challenge")
     await resendState.phoneChangeResend()
     expect(resendState.status.get()).toBe("expired")
 
-    const verifyState = accountPageStateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
+    const verifyState = stateCreate({ adapter: expiredAdapter, initialStatus: "ready", kind: "profile" })
     verifyState.phoneCandidate.set("+14155552672")
     verifyState.phoneChallengeId.set("challenge")
     verifyState.phoneCode.set("123456")
@@ -266,3 +263,16 @@ describe("account phone-change state", () => {
     expect(verifyState.status.get()).toBe("expired")
   })
 })
+
+function stateCreate(options: Parameters<typeof accountPageStateCreate>[0]) {
+  let dispose: (() => void) | undefined
+  const state = createRoot((rootDispose) => {
+    dispose = rootDispose
+    return accountPageStateCreate({ ...options, initialStatus: "loading" })
+  })
+  if (dispose === undefined) throw new Error("Account page state root did not provide a disposer.")
+  if (options.initialStatus !== undefined && options.initialStatus !== "loading")
+    state.status.set(options.initialStatus)
+  cleanups.push(dispose)
+  return state
+}

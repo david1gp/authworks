@@ -3,28 +3,19 @@ import type { ProductionRouteContract } from "./productionRouteContract.js"
 import type { ProductionRouteGuardContext } from "./productionRouteGuardContext.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
 
-const solidRuntimePath = "../../../node_modules/solid-js/dist/dev.js"
-mock.module("solid-js", () => import(solidRuntimePath))
-
 let mockLocation: Pick<Location, "hash" | "pathname" | "search"> = {
   hash: "",
   pathname: "/account",
   search: "",
 }
-let mockSession: ProductionSessionContextValue
 
 mock.module("@solidjs/router", () => ({
   useLocation: () => mockLocation,
 }))
-mock.module("./productionSessionContextGet.js", () => ({
-  productionSessionContextGet: () => mockSession,
-}))
-
-type ProductionRouteAppStateCreate =
-  typeof import("./productionRouteAppStateCreate.js")["productionRouteAppStateCreate"]
-
+const previousWindow = globalThis.window
+const cleanups: Array<() => void> = []
 let createRoot: typeof import("solid-js").createRoot
-let productionRouteAppStateCreate: ProductionRouteAppStateCreate
+let productionRouteAppStateCreate: typeof import("./productionRouteAppStateCreate.js")["productionRouteAppStateCreate"]
 
 beforeAll(async () => {
   createRoot = (await import("solid-js")).createRoot
@@ -33,12 +24,10 @@ beforeAll(async () => {
 
 afterAll(() => mock.restore())
 
-const previousWindow = globalThis.window
-const cleanups: Array<() => void> = []
-
-afterEach(() => {
+afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) cleanup()
-  globalThis.window = previousWindow
+  Object.defineProperty(globalThis, "window", { configurable: true, value: previousWindow })
+  await new Promise<void>((resolve) => setTimeout(resolve, 0))
 })
 
 const sessionCreate = (
@@ -60,18 +49,20 @@ const sessionCreate = (
 
 const stateObserve = async (route: ProductionRouteContract, session: ProductionSessionContextValue) => {
   const assignments: string[] = []
-  mockSession = session
-  globalThis.window = {
-    location: {
-      ...mockLocation,
-      assign: (url: string | URL) => assignments.push(String(url)),
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: {
+      location: {
+        ...mockLocation,
+        assign: (url: string | URL) => assignments.push(String(url)),
+      },
     },
-  } as unknown as Window & typeof globalThis
+  })
 
   let dispose: (() => void) | undefined
   const state = createRoot((rootDispose) => {
     dispose = rootDispose
-    return productionRouteAppStateCreate(() => route)
+    return productionRouteAppStateCreate(() => route, { location: mockLocation, session })
   })
   cleanups.push(() => dispose?.())
   await Promise.resolve()

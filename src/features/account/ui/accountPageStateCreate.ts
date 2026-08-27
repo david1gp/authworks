@@ -1,4 +1,4 @@
-import { onMount } from "solid-js"
+import { type Accessor, onMount } from "solid-js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
@@ -63,8 +63,15 @@ type AccountPageAdapter = {
 export function accountPageStateCreate(options: {
   readonly adapter: AccountPageAdapter
   readonly initialStatus?: AccountViewStatus
-  readonly kind: "delete" | "email" | "overview" | "password" | "profile"
+  readonly kind:
+    | "delete"
+    | "email"
+    | "overview"
+    | "password"
+    | "profile"
+    | Accessor<"delete" | "email" | "overview" | "password" | "profile">
 }) {
+  const kind = typeof options.kind === "function" ? options.kind : () => options.kind
   const status = createSignalObject<AccountViewStatus>(options.initialStatus ?? "loading")
   const user = createSignalObject<User | undefined>(undefined)
   const errorMessage = createSignalObject<string | undefined>(undefined)
@@ -96,6 +103,7 @@ export function accountPageStateCreate(options: {
   const emailValidationMessage = createSignalObject<string | undefined>(undefined)
   const emailAddresses = createSignalObject<readonly UserEmailAddress[]>([])
   const emailActionId = createSignalObject<string | undefined>(undefined)
+  let loadGeneration = 0
 
   const resultIsExpired = (result: {
     readonly code?: string
@@ -165,16 +173,21 @@ export function accountPageStateCreate(options: {
   }
   const load = async (force = false) => {
     if (options.initialStatus === "loading" && !force) return
+    const loadGenerationSnapshot = ++loadGeneration
+    const loadKind = kind()
     status.set("loading")
     errorMessage.set(undefined)
     const userResult = await options.adapter.loadUser()
+    if (loadGenerationSnapshot !== loadGeneration) return
     if (!userResult.success) return resultFail(userResult)
     userApply(userResult.data.user)
-    if (options.kind === "email") {
+    if (loadKind === "email") {
       const addressResult = await options.adapter.emailAddressList()
+      if (loadGenerationSnapshot !== loadGeneration) return
       if (!addressResult.success) return resultFail(addressResult)
       emailAddresses.set(addressResult.data.items)
     }
+    if (loadGenerationSnapshot !== loadGeneration) return
     phoneCandidate.set("")
     phoneChallengeId.set(undefined)
     phoneCode.set("")
