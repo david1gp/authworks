@@ -2,7 +2,9 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { passwordChange } from "../../src/features/passwords/actions/passwordChange.js"
+import { passwordCredentialReplace } from "../../src/features/passwords/actions/passwordCredentialReplace.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
 import { passwordPolicyGet } from "../../src/features/passwords/actions/passwordPolicyGet.js"
@@ -18,11 +20,14 @@ import { realmUpdate } from "../../src/features/realms/actions/realmUpdate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
+import { sessionPasswordCreate } from "../../src/features/sessions/actions/sessionPasswordCreate.js"
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
+import { userLifecycleSet } from "../../src/features/users/actions/userLifecycleSet.js"
 import { userEventTypes } from "../../src/features/users/events/userEventTypes.js"
 import { userEmailRepositoryCreate } from "../../src/features/users/persistence/userEmailRepositoryCreate.js"
 import { userRepositoryCreate } from "../../src/features/users/persistence/userRepositoryCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
+import { Secret } from "../../src/platform/secrets/Secret.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
@@ -229,6 +234,338 @@ test("password registration, email verification, login, change, recovery, and lo
     expect(passwordEvents.map((event) => event.aggregateVersion)).toEqual(
       passwordEvents.map((_event, index) => index + 1),
     )
+  })
+})
+
+test("password email verification replaces challenges without mutating state on failure", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "passwords-email-replacement.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    let firstToken = ""
+    passwordRegister({
+      context,
+      database,
+      input: registrationInput(),
+      onVerificationToken: ({ token }) => {
+        firstToken = token
+      },
+      realmId: realm.id,
+    })
+    const user = database.sqlite
+      .query("SELECT id, email_verified_at, registration_verified_at, state FROM users")
+      .get() as {
+      email_verified_at: number | null
+      id: string
+      registration_verified_at: number | null
+      state: string
+    }
+    const firstChallenge = database.sqlite
+      .query("SELECT consumed_at, id FROM password_challenges WHERE user_id = ?")
+      .get(user.id) as { consumed_at: number | null; id: string }
+    let newestToken = ""
+    const resent = passwordRegister({
+      context,
+      database,
+      input: registrationInput(),
+      onVerificationToken: ({ token }) => {
+        newestToken = token
+      },
+      realmId: realm.id,
+    })
+    expect(resent).toEqual({ data: { accepted: true, verificationRequired: true }, success: true })
+    expect(newestToken).toHaveLength(43)
+    expect(newestToken).not.toBe(firstToken)
+
+    const challengesAfterResend = database.sqlite
+      .query("SELECT consumed_at, id FROM password_challenges WHERE user_id = ?")
+      .all(user.id) as Array<{ consumed_at: number | null; id: string }>
+    expect(challengesAfterResend).toHaveLength(2)
+    expect(challengesAfterResend.find((challenge) => challenge.id === firstChallenge.id)?.consumed_at).not.toBeNull()
+    const newestChallenge = challengesAfterResend.find((challenge) => challenge.id !== firstChallenge.id)
+    expect(newestChallenge?.consumed_at).toBeNull()
+    if (newestChallenge === undefined) throw new Error("The newest password verification challenge is missing.")
+    expect(
+      database.sqlite
+        .query("SELECT email_verified_at, registration_verified_at, state FROM users WHERE id = ?")
+        .get(user.id),
+    ).toEqual({ email_verified_at: null, registration_verified_at: null, state: "initial" })
+
+    const stateBeforeFailures = database.sqlite
+      .query("SELECT email_verified_at, registration_verified_at, state FROM users WHERE id = ?")
+      .get(user.id)
+    const wrong = passwordEmailVerify({
+      context,
+      database,
+      input: { token: "wrong-verification-token-which-is-long-enough" },
+      realmId: realm.id,
+    })
+    expect(wrong.success).toBe(false)
+    expect(
+      database.sqlite
+        .query("SELECT email_verified_at, registration_verified_at, state FROM users WHERE id = ?")
+        .get(user.id),
+    ).toEqual(stateBeforeFailures)
+    expect(
+      database.sqlite.query("SELECT consumed_at FROM password_challenges WHERE id = ?").get(newestChallenge?.id),
+    ).toEqual({ consumed_at: null })
+
+    expect(passwordEmailVerify({ context, database, input: { token: firstToken }, realmId: realm.id }).success).toBe(
+      false,
+    )
+    expect(
+      database.sqlite
+        .query("SELECT email_verified_at, registration_verified_at, state FROM users WHERE id = ?")
+        .get(user.id),
+    ).toEqual(stateBeforeFailures)
+    expect(
+      database.sqlite.query("SELECT consumed_at FROM password_challenges WHERE id = ?").get(newestChallenge?.id),
+    ).toEqual({ consumed_at: null })
+
+    expect(passwordEmailVerify({ context, database, input: { token: newestToken }, realmId: realm.id }).success).toBe(
+      true,
+    )
+    expect(passwordEmailVerify({ context, database, input: { token: newestToken }, realmId: realm.id }).success).toBe(
+      false,
+    )
+  })
+})
+
+test("password login is enumeration-resistant across identity and policy states", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "passwords-login-enumeration.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    const system = realmSystemContextCreate("system")
+
+    const register = (userName: string, verified: boolean) => {
+      let verificationToken = ""
+      const registered = passwordRegister({
+        context,
+        database,
+        input: registrationInput(`${userName}@example.com`, userName),
+        onVerificationToken: ({ token }) => {
+          verificationToken = token
+        },
+        realmId: realm.id,
+      })
+      expect(registered.success).toBe(true)
+      if (verified) {
+        expect(
+          passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
+        ).toBe(true)
+      }
+    }
+
+    register("ada", true)
+    register("unverified", false)
+    register("inactive", true)
+    register("locked", true)
+    register("policy-denied", true)
+
+    const users = database.sqlite
+      .query("SELECT id, user_name FROM users WHERE realm_id = ? ORDER BY user_name")
+      .all(realm.id) as Array<{ id: string; user_name: string }>
+    const userIdGet = (userName: string) => users.find((user) => user.user_name === userName)?.id ?? ""
+    expect(
+      userLifecycleSet({
+        context: system,
+        database,
+        input: { state: "inactive" },
+        realmId: realm.id,
+        userId: userIdGet("inactive"),
+      }).success,
+    ).toBe(true)
+    expect(
+      userLifecycleSet({
+        context: system,
+        database,
+        input: { state: "locked" },
+        realmId: realm.id,
+        userId: userIdGet("locked"),
+      }).success,
+    ).toBe(true)
+
+    const app = passwordServerAppCreate({ database })
+    const request = (input: unknown) =>
+      app.request(`https://passwords-login-enumeration.example.com/realms/${realm.id}/password/login`, {
+        body: JSON.stringify(input),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      })
+    const responseContractRead = async (response: Response) => {
+      const body = (await response.json()) as { error?: Record<string, unknown> } & Record<string, unknown>
+      return {
+        bodyKeys: Object.keys(body).sort(),
+        code: body.error?.code,
+        errorKeys: body.error === undefined ? [] : Object.keys(body.error).sort(),
+        message: body.error?.message,
+        status: response.status,
+      }
+    }
+
+    const existing = await request({ identifier: "ada", password: "Correct Horse 12" })
+    expect(await responseContractRead(existing)).toEqual({
+      bodyKeys: ["authentication", "session"],
+      code: undefined,
+      errorKeys: [],
+      message: undefined,
+      status: 200,
+    })
+
+    const invalidIdentityInputs = [
+      { identifier: "missing", password: "Correct Horse 12" },
+      { identifier: " ", password: "Correct Horse 12" },
+      { identifier: "unverified", password: "Correct Horse 12" },
+      { identifier: "inactive", password: "Correct Horse 12" },
+      { identifier: "locked", password: "Correct Horse 12" },
+    ]
+    const invalidIdentityContracts = []
+    for (const input of invalidIdentityInputs) {
+      invalidIdentityContracts.push(await responseContractRead(await request(input)))
+    }
+    expect(invalidIdentityContracts).toEqual(
+      invalidIdentityInputs.map(() => ({
+        bodyKeys: ["error"],
+        code: "passwords.unauthorized",
+        errorKeys: ["code", "message", "op", "requestId", "retryable", "status"],
+        message: "The credentials are invalid.",
+        status: 401,
+      })),
+    )
+
+    expect(
+      organizationLoginPolicySet({
+        context: system,
+        database,
+        input: { allowPassword: false },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    const policyDenied = await request({ identifier: "policy-denied", password: "Correct Horse 12" })
+    expect(await responseContractRead(policyDenied)).toEqual({
+      bodyKeys: ["error"],
+      code: "passwords.unauthorized",
+      errorKeys: ["code", "message", "op", "requestId", "retryable", "status"],
+      message: "The credentials are invalid.",
+      status: 401,
+    })
+  })
+})
+
+test("password recovery is enumeration-resistant across identity and policy states", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "passwords-recovery-enumeration.example.com")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    const system = realmSystemContextCreate("system")
+
+    const register = (userName: string, verified: boolean) => {
+      let verificationToken = ""
+      const registered = passwordRegister({
+        context,
+        database,
+        input: registrationInput(`${userName}@example.com`, userName),
+        onVerificationToken: ({ token }) => {
+          verificationToken = token
+        },
+        realmId: realm.id,
+      })
+      expect(registered.success).toBe(true)
+      if (verified) {
+        expect(
+          passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
+        ).toBe(true)
+      }
+    }
+
+    register("existing", true)
+    register("unverified", false)
+    register("inactive", true)
+    register("locked", true)
+    register("policy-denied", true)
+
+    const users = database.sqlite
+      .query("SELECT id, user_name FROM users WHERE realm_id = ? ORDER BY user_name")
+      .all(realm.id) as Array<{ id: string; user_name: string }>
+    const userIdGet = (userName: string) => users.find((user) => user.user_name === userName)?.id ?? ""
+    expect(
+      userLifecycleSet({
+        context: system,
+        database,
+        input: { state: "inactive" },
+        realmId: realm.id,
+        userId: userIdGet("inactive"),
+      }).success,
+    ).toBe(true)
+    expect(
+      userLifecycleSet({
+        context: system,
+        database,
+        input: { state: "locked" },
+        realmId: realm.id,
+        userId: userIdGet("locked"),
+      }).success,
+    ).toBe(true)
+
+    const app = passwordServerAppCreate({ database })
+    const request = (input: unknown) =>
+      app.request(`https://passwords-recovery-enumeration.example.com/realms/${realm.id}/password/recovery/request`, {
+        body: JSON.stringify(input),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      })
+    const responseContractRead = async (response: Response) => {
+      const body = (await response.json()) as {
+        accepted?: unknown
+        error?: Record<string, unknown>
+      } & Record<string, unknown>
+      return {
+        accepted: body.accepted,
+        bodyKeys: Object.keys(body).sort(),
+        code: body.error?.code,
+        errorKeys: body.error === undefined ? [] : Object.keys(body.error).sort(),
+        message: body.error?.message,
+        status: response.status,
+      }
+    }
+
+    const contracts = []
+    for (const input of [
+      { email: "existing@example.com" },
+      { email: "missing@example.com" },
+      { email: "not-an-email" },
+      { email: "unverified@example.com" },
+      { email: "inactive@example.com" },
+      { email: "locked@example.com" },
+    ]) {
+      contracts.push(await responseContractRead(await request(input)))
+    }
+    expect(contracts).toEqual(
+      contracts.map(() => ({
+        accepted: true,
+        bodyKeys: ["accepted"],
+        code: undefined,
+        errorKeys: [],
+        message: undefined,
+        status: 200,
+      })),
+    )
+
+    expect(
+      organizationLoginPolicySet({
+        context: system,
+        database,
+        input: { allowPasswordRecovery: false },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    const policyDenied = await request({ email: "policy-denied@example.com" })
+    expect(await responseContractRead(policyDenied)).toEqual({
+      accepted: true,
+      bodyKeys: ["accepted"],
+      code: undefined,
+      errorKeys: [],
+      message: undefined,
+      status: 200,
+    })
   })
 })
 
@@ -769,7 +1106,7 @@ test("password registration treats normalized duplicate identifiers as accepted 
         },
       }),
     ).toEqual({ data: { accepted: true, verificationRequired: true }, success: true })
-    expect(deliveries).toBe(1)
+    expect(deliveries).toBe(2)
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()).toEqual({ count: 1 })
   })
 })
@@ -815,6 +1152,337 @@ test("password policy enforces each required character class at the exact length
       }).success,
     ).toBe(true)
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()).toEqual({ count: 1 })
+  })
+})
+
+test("password policy boundaries apply to registration, change, recovery, and replacement", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "passwords-policy-boundaries.example.com")
+    const system = realmSystemContextCreate("system")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    const policy = {
+      lockoutDurationMs: 60_000,
+      maximumAttempts: 5,
+      minimumLength: 12,
+      requireLowercase: false,
+      requireNumber: false,
+      requireSymbol: false,
+      requireUppercase: false,
+    }
+
+    for (const input of [
+      { ...policy, minimumLength: 0 },
+      { ...policy, minimumLength: 73 },
+      { ...policy, maximumAttempts: 0 },
+      { ...policy, maximumAttempts: 101 },
+      { ...policy, lockoutDurationMs: 999 },
+      { ...policy, lockoutDurationMs: 31_536_000_001 },
+    ]) {
+      expect(passwordPolicySet({ context: system, database, input, realmId: realm.id })).toMatchObject({
+        code: "passwords.invalid",
+        success: false,
+      })
+    }
+    expect(
+      passwordPolicySet({
+        context: system,
+        database,
+        input: { ...policy, lockoutDurationMs: 1_000, maximumAttempts: 1, minimumLength: 1 },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordPolicySet({
+        context: system,
+        database,
+        input: { ...policy, lockoutDurationMs: 31_536_000_000, maximumAttempts: 100, minimumLength: 72 },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    expect(passwordPolicySet({ context: system, database, input: policy, realmId: realm.id }).success).toBe(true)
+
+    const tooShort = passwordRegister({
+      context,
+      database,
+      input: registrationInput("too-short@example.com", "too-short", "p".repeat(11)),
+      realmId: realm.id,
+    })
+    expect(tooShort).toMatchObject({ code: "passwords.invalid", success: false })
+
+    let verificationToken = ""
+    expect(
+      passwordRegister({
+        context,
+        database,
+        input: registrationInput("boundary-policy@example.com", "boundary-policy", "p".repeat(12)),
+        onVerificationToken: ({ token }) => {
+          verificationToken = token
+        },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
+    ).toBe(true)
+    const user = database.sqlite.query("SELECT id FROM users WHERE realm_id = ?").get(realm.id) as { id: string }
+
+    expect(
+      passwordPolicySet({ context: system, database, input: { ...policy, minimumLength: 13 }, realmId: realm.id })
+        .success,
+    ).toBe(true)
+    expect(
+      passwordChange({
+        context,
+        database,
+        input: { currentPassword: "p".repeat(12), newPassword: "p".repeat(12) },
+        realmId: realm.id,
+        userId: user.id,
+      }),
+    ).toMatchObject({ code: "passwords.invalid", success: false })
+    expect(
+      passwordChange({
+        context,
+        database,
+        input: { currentPassword: "p".repeat(12), newPassword: "p".repeat(13) },
+        realmId: realm.id,
+        userId: user.id,
+      }).success,
+    ).toBe(true)
+
+    expect(
+      passwordPolicySet({ context: system, database, input: { ...policy, minimumLength: 14 }, realmId: realm.id })
+        .success,
+    ).toBe(true)
+    let recoveryToken = ""
+    expect(
+      passwordRecoveryRequest({
+        context,
+        database,
+        input: { email: "boundary-policy@example.com" },
+        onRecoveryToken: ({ token }) => {
+          recoveryToken = token
+        },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "p".repeat(13), token: recoveryToken },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({ code: "passwords.policy-rejected", success: false })
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "p".repeat(14), token: recoveryToken },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+
+    expect(
+      passwordPolicySet({ context: system, database, input: { ...policy, minimumLength: 15 }, realmId: realm.id })
+        .success,
+    ).toBe(true)
+    expect(
+      passwordCredentialReplace({
+        context: system,
+        database,
+        password: new Secret("p".repeat(14)),
+        realmId: realm.id,
+        userId: user.id,
+      }),
+    ).toMatchObject({ code: "passwords.invalid", success: false })
+    expect(
+      passwordCredentialReplace({
+        context: system,
+        database,
+        password: new Secret("p".repeat(15)),
+        realmId: realm.id,
+        userId: user.id,
+      }).success,
+    ).toBe(true)
+  })
+})
+
+test("forced password changes restrict login, expire recovery challenges, clear state, and gate sessions", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "passwords-forced-change.example.com")
+    const system = realmSystemContextCreate("system")
+    const context = realmTenantContextCreate(realm.id, "anonymous")
+    let verificationToken = ""
+    const registration = passwordRegister({
+      context,
+      database,
+      input: registrationInput("forced-user@example.com", "forced-user", "Temporary Password 12"),
+      onVerificationToken: ({ token }) => {
+        verificationToken = token
+      },
+      realmId: realm.id,
+    })
+    expect(registration.success).toBe(true)
+    expect(
+      passwordEmailVerify({ context, database, input: { token: verificationToken }, realmId: realm.id }).success,
+    ).toBe(true)
+    const user = database.sqlite.query("SELECT id FROM users WHERE email = ?").get("forced-user@example.com") as {
+      id: string
+    }
+    expect(
+      database.sqlite.query("SELECT password_change_required FROM password_credentials WHERE user_id = ?").get(user.id),
+    ).toEqual({
+      password_change_required: 0,
+    })
+
+    expect(
+      passwordCredentialReplace({
+        context: system,
+        database,
+        password: new Secret("Temporary Password 12"),
+        passwordChangeRequired: true,
+        realmId: realm.id,
+        userId: user.id,
+      }),
+    ).toEqual({ data: { changed: true }, success: true })
+    expect(
+      database.sqlite.query("SELECT password_change_required FROM password_credentials WHERE user_id = ?").get(user.id),
+    ).toEqual({
+      password_change_required: 1,
+    })
+
+    const restricted = passwordLogin({
+      context,
+      database,
+      input: { identifier: "forced-user", password: "Temporary Password 12" },
+      realmId: realm.id,
+      sessionCreate: sessionPasswordCreate(),
+    })
+    expect(restricted).toMatchObject({
+      data: { authentication: { userId: user.id }, passwordChangeRequired: true },
+      success: true,
+    })
+    if (restricted.success) expect(restricted.data.session).toBeUndefined()
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM sessions").get()).toEqual({ count: 0 })
+
+    expect(
+      passwordChange({
+        context,
+        database,
+        input: { currentPassword: "Temporary Password 12", newPassword: "Changed Password 12" },
+        realmId: realm.id,
+        userId: user.id,
+      }),
+    ).toEqual({ data: { changed: true }, success: true })
+    expect(
+      database.sqlite.query("SELECT password_change_required FROM password_credentials WHERE user_id = ?").get(user.id),
+    ).toEqual({
+      password_change_required: 0,
+    })
+    const changedLogin = passwordLogin({
+      context,
+      database,
+      input: { identifier: "forced-user", password: "Changed Password 12" },
+      realmId: realm.id,
+      sessionCreate: sessionPasswordCreate(),
+    })
+    expect(changedLogin.success).toBe(true)
+    if (changedLogin.success) expect(changedLogin.data.session?.token).toHaveLength(43)
+    expect(database.sqlite.query("SELECT COUNT(*) AS count FROM sessions").get()).toEqual({ count: 1 })
+
+    expect(
+      passwordCredentialReplace({
+        context: system,
+        database,
+        password: new Secret("Changed Password 12"),
+        passwordChangeRequired: true,
+        realmId: realm.id,
+        userId: user.id,
+      }).success,
+    ).toBe(true)
+    let expiredRecoveryToken = ""
+    expect(
+      passwordRecoveryRequest({
+        context,
+        database,
+        input: { email: "forced-user@example.com" },
+        onRecoveryToken: ({ token }) => {
+          expiredRecoveryToken = token
+        },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    testkit.advance(60 * 60 * 1_000)
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "Expired Recovery 12", token: expiredRecoveryToken },
+        realmId: realm.id,
+      }),
+    ).toMatchObject({ code: "passwords.invalid", success: false })
+    expect(
+      database.sqlite.query("SELECT password_change_required FROM password_credentials WHERE user_id = ?").get(user.id),
+    ).toEqual({
+      password_change_required: 1,
+    })
+    expect(
+      database.sqlite
+        .query("SELECT consumed_at FROM password_challenges WHERE realm_id = ? AND user_id = ? AND kind = 'recovery'")
+        .get(realm.id, user.id),
+    ).toEqual({ consumed_at: null })
+
+    let recoveryToken = ""
+    expect(
+      passwordRecoveryRequest({
+        context,
+        database,
+        input: { email: "forced-user@example.com" },
+        onRecoveryToken: ({ token }) => {
+          recoveryToken = token
+        },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordRecoveryComplete({
+        context,
+        database,
+        input: { newPassword: "Recovered Password 12", token: recoveryToken },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      database.sqlite.query("SELECT password_change_required FROM password_credentials WHERE user_id = ?").get(user.id),
+    ).toEqual({
+      password_change_required: 0,
+    })
+
+    expect(
+      passwordCredentialReplace({
+        context: system,
+        database,
+        password: new Secret("Recovered Password 12"),
+        passwordChangeRequired: true,
+        realmId: realm.id,
+        userId: user.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      passwordCredentialReplace({
+        context: system,
+        database,
+        password: new Secret("Recovered Password 12"),
+        passwordChangeRequired: false,
+        realmId: realm.id,
+        userId: user.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      database.sqlite.query("SELECT password_change_required FROM password_credentials WHERE user_id = ?").get(user.id),
+    ).toEqual({
+      password_change_required: 0,
+    })
   })
 })
 

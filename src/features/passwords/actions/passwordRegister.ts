@@ -26,6 +26,7 @@ import type { UserProfile } from "../../users/public/userProfileSchema.js"
 import { passwordHashCreate } from "../domain/passwordHashCreate.js"
 import { passwordPolicyCheck } from "../domain/passwordPolicyCheck.js"
 import { passwordPolicyDefaults } from "../domain/passwordPolicyDefaults.js"
+import { passwordPolicyViewCreate } from "../domain/passwordPolicyViewCreate.js"
 import { passwordRegistrationCodeCreate } from "../domain/passwordRegistrationCodeCreate.js"
 import { passwordRegistrationCodeHashCreate } from "../domain/passwordRegistrationCodeHashCreate.js"
 import { passwordRegistrationRateLimitSecretValidate } from "../domain/passwordRegistrationRateLimitSecretValidate.js"
@@ -79,7 +80,12 @@ type PasswordRegisterOptions = PasswordRegisterSharedOptions &
   )
 
 type PasswordRegisterCommit =
-  | { readonly duplicate: true; readonly response: PasswordRegistrationResponse }
+  | {
+      readonly duplicate: true
+      readonly response: PasswordRegistrationResponse
+      readonly token?: string
+      readonly userId?: string
+    }
   | { readonly rateLimited: true; readonly retryAt: number }
   | {
       readonly duplicate: false
@@ -151,18 +157,7 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
   }
   const policyRow = passwordRepositoryCreate(options.database.db).passwordPolicyGet(options.realmId)
   if (!policyRow.success) return policyRow
-  const policy =
-    policyRow.data === null
-      ? passwordPolicyDefaults
-      : {
-          lockoutDurationMs: policyRow.data.lockoutDurationMs,
-          maximumAttempts: policyRow.data.maximumAttempts,
-          minimumLength: policyRow.data.minimumLength,
-          requireLowercase: policyRow.data.requireLowercase === 1,
-          requireNumber: policyRow.data.requireNumber === 1,
-          requireSymbol: policyRow.data.requireSymbol === 1,
-          requireUppercase: policyRow.data.requireUppercase === 1,
-        }
+  const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
   const checked = passwordPolicyCheck(parsed.output.password, policy)
   if (!checked.success) return checked
   const runtime = options.runtime ?? options.database.runtime
@@ -215,7 +210,16 @@ export function passwordRegister(options: PasswordRegisterOptions): Result<Passw
     return resultErrorCreate(op, "Too many registration requests.", "passwords.rate-limited", {
       retryAfterSeconds: Math.max(1, Math.ceil((committed.data.retryAt - now) / 1_000)),
     })
-  if (committed.data.duplicate) return resultCreate(committed.data.response)
+  if (committed.data.duplicate) {
+    if (committed.data.token !== undefined && committed.data.userId !== undefined)
+      passwordVerificationTokenInvoke(options.onVerificationToken, {
+        email: email.data,
+        realmId: options.realmId,
+        token: committed.data.token,
+        userId: committed.data.userId,
+      })
+    return resultCreate(committed.data.response)
+  }
   if (committed.data.token !== undefined)
     passwordVerificationTokenInvoke(options.onVerificationToken, {
       email: email.data,
@@ -324,6 +328,7 @@ function passwordRegisterTransaction(options: PasswordRegisterTransactionOptions
     changedAt: options.now,
     createdAt: options.now,
     hash: options.hash,
+    passwordChangeRequired: 0,
     realmId: options.realmId,
     userId: options.userId,
     version: 1,
@@ -510,11 +515,39 @@ function passwordRegisterDuplicateCommit(
   repository: ReturnType<typeof passwordRepositoryCreate>,
   options: PasswordRegisterTransactionOptions,
 ): Result<PasswordRegisterCommit> {
-  if (options.method === "email")
+  if (options.method === "email") {
+    const existing = repository.passwordUserFindByIdentifier(options.realmId, options.email)
+    if (!existing.success) return existing
+    if (existing.data === null || existing.data.emailVerifiedAt !== null || existing.data.state === "deleted")
+      return resultCreate({
+        duplicate: true,
+        response: { accepted: true, verificationRequired: true },
+      })
+    const expired = repository.passwordChallengeExpirePrevious(
+      options.realmId,
+      existing.data.id,
+      "verification",
+      options.now,
+    )
+    if (!expired.success) return expired
+    const challenge = repository.passwordChallengeCreate({
+      createdAt: options.now,
+      expiresAt: options.now + 24 * 60 * 60 * 1_000,
+      id: options.challengeId,
+      kind: "verification",
+      realmId: options.realmId,
+      tokenHash: passwordTokenHashCreate(options.token ?? ""),
+      userId: existing.data.id,
+      version: 1,
+    })
+    if (!challenge.success) return challenge
     return resultCreate({
       duplicate: true,
       response: { accepted: true, verificationRequired: true },
+      token: options.token,
+      userId: existing.data.id,
     })
+  }
   if (options.identityHash === undefined || options.code === undefined)
     return resultErrorCreate(
       "passwordRegister",

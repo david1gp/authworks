@@ -97,6 +97,7 @@ export function passwordRecoveryComplete(
     const updatedCredential = txRepository.passwordCredentialUpdate(options.realmId, user.data.id, {
       changedAt: now,
       hash: hash.data,
+      passwordChangeRequired: 0,
       version: credential.data.version + 1,
     })
     if (!updatedCredential.success || updatedCredential.data === null)

@@ -119,7 +119,7 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
   const passwordPolicy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
 
-  const authenticated = storageTransactionRun(options.database, (transaction) => {
+  const authenticated = storageTransactionRun<PasswordLoginResponse>(options.database, (transaction) => {
     const currentRepository = passwordRepositoryCreate(transaction)
     const current = currentRepository.passwordUserGet(options.realmId, userRow.id)
     if (!current.success || current.data === null)
@@ -236,6 +236,8 @@ export function passwordLogin(options: PasswordLoginOptions): Result<PasswordLog
       realmId: options.realmId,
       userId: currentUser.id,
     }
+    if (currentCredential.data.passwordChangeRequired === 1)
+      return resultCreate({ authentication, passwordChangeRequired: true as const })
     const authenticationResult = mfaPrimaryAuthenticationComplete({
       actorId: options.context.actorId,
       deviceMetadata: options.deviceMetadata,

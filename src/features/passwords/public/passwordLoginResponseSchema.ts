@@ -6,6 +6,7 @@ import { passwordAuthenticationSchema } from "./passwordAuthenticationSchema.js"
 export const passwordLoginResponseSchema = v.strictObject({
   authentication: passwordAuthenticationSchema,
   challenge: v.optional(mfaChallengeResponseSchema),
+  passwordChangeRequired: v.optional(v.literal(true)),
   session: v.optional(sessionCredentialResponseSchema),
 })
 

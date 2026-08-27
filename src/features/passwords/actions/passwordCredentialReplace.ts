@@ -24,6 +24,7 @@ type PasswordCredentialReplaceOptions = {
   readonly context: RealmSystemContext
   readonly database: StorageDatabase
   readonly password: Secret
+  readonly passwordChangeRequired?: boolean
   readonly realmId: string
   readonly userId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -45,6 +46,7 @@ export function passwordCredentialReplace(
   if (!policyRow.success) return resultErrorCreate(op, "The password could not be replaced.", "passwords.write-failed")
   const policy = policyRow.data === null ? passwordPolicyDefaults : passwordPolicyViewCreate(policyRow.data)
   const password = options.password.valueGet()
+  const passwordChangeRequired = options.passwordChangeRequired === true ? 1 : 0
   const checked = passwordPolicyCheck(password, policy)
   if (!checked.success) return checked
   const currentCredential = repository.passwordCredentialGet(options.realmId, options.userId)
@@ -82,6 +84,7 @@ export function passwordCredentialReplace(
               changedAt: now,
               createdAt: now,
               hash: replacementHash.data,
+              passwordChangeRequired,
               realmId: options.realmId,
               userId: options.userId,
               version: 1,
@@ -89,9 +92,18 @@ export function passwordCredentialReplace(
           : txRepository.passwordCredentialUpdate(options.realmId, options.userId, {
               changedAt: now,
               hash: replacementHash.data,
+              passwordChangeRequired,
               version: existing.data.version + 1,
             })
       if (!replaced.success || replaced.data === null)
+        return resultErrorCreate(op, "The password could not be replaced.", "passwords.write-failed")
+      credentialChanged = true
+    } else if (existing.data !== null && existing.data.passwordChangeRequired !== passwordChangeRequired) {
+      const updated = txRepository.passwordCredentialUpdate(options.realmId, options.userId, {
+        passwordChangeRequired,
+        version: existing.data.version + 1,
+      })
+      if (!updated.success || updated.data === null)
         return resultErrorCreate(op, "The password could not be replaced.", "passwords.write-failed")
       credentialChanged = true
     }

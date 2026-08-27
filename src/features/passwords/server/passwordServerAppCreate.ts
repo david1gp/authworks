@@ -321,6 +321,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
         context: systemContext,
         database: options.database,
         password: new Secret(input.output.password),
+        passwordChangeRequired: input.output.passwordChangeRequired,
         realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),
@@ -586,6 +587,7 @@ function passwordBrowserLoginResponseCreate(context: PasswordRouteContext, resul
     data: {
       authentication: browser.data.authentication,
       ...(browser.data.challenge === undefined ? {} : { challenge: browser.data.challenge }),
+      ...(browser.data.passwordChangeRequired === true ? { passwordChangeRequired: true as const } : {}),
     },
     success: true,
   })

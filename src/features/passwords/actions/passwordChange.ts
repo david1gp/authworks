@@ -78,6 +78,7 @@ export function passwordChange(options: PasswordChangeOptions): Result<PasswordC
     const updated = txRepository.passwordCredentialUpdate(options.realmId, options.userId, {
       changedAt: now,
       hash: hash.data,
+      passwordChangeRequired: 0,
       version: existing.data.version + 1,
     })
     if (!updated.success || updated.data === null)
