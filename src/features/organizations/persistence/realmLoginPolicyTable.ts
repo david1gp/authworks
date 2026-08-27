@@ -5,6 +5,7 @@ export const realmLoginPolicyTable = sqliteTable("realm_login_policies", {
   allowEmailOtp: integer("allow_email_otp", { mode: "boolean" }).notNull(),
   allowWhatsappOtp: integer("allow_whatsapp_otp", { mode: "boolean" }).notNull(),
   allowExternalIdentity: integer("allow_external_identity", { mode: "boolean" }).notNull(),
+  allowExternalIdentityAutoLinking: integer("allow_external_identity_auto_linking", { mode: "boolean" }).notNull(),
   allowPassword: integer("allow_password", { mode: "boolean" }).notNull(),
   allowPasswordRecovery: integer("allow_password_recovery", { mode: "boolean" }).notNull(),
   allowPasskey: integer("allow_passkey", { mode: "boolean" }).notNull(),

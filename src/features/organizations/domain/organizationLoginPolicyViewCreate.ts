@@ -63,6 +63,10 @@ export function organizationLoginPolicyViewCreate(
       organization?.allowExternalIdentity ??
       realm?.allowExternalIdentity ??
       organizationLoginPolicyDefaults.allowExternalIdentity,
+    allowExternalIdentityAutoLinking:
+      organization?.allowExternalIdentityAutoLinking ??
+      realm?.allowExternalIdentityAutoLinking ??
+      organizationLoginPolicyDefaults.allowExternalIdentityAutoLinking,
     allowPassword: organization?.allowPassword ?? realm?.allowPassword ?? organizationLoginPolicyDefaults.allowPassword,
     allowPasswordRecovery:
       organization?.allowPasswordRecovery ??

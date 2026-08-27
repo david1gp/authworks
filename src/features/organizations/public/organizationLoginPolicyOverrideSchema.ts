@@ -15,6 +15,7 @@ export const organizationLoginPolicyOverrideSchema = v.strictObject({
   allowEmailOtp: v.optional(v.nullable(v.boolean())),
   allowWhatsappOtp: v.optional(v.nullable(v.boolean())),
   allowExternalIdentity: v.optional(v.nullable(v.boolean())),
+  allowExternalIdentityAutoLinking: v.optional(v.nullable(v.boolean())),
   allowPassword: v.optional(v.nullable(v.boolean())),
   allowPasswordRecovery: v.optional(v.nullable(v.boolean())),
   allowPasskey: v.optional(v.nullable(v.boolean())),

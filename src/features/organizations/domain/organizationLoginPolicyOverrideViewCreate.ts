@@ -28,6 +28,9 @@ export function organizationLoginPolicyOverrideViewCreate(
     ...(policy.allowExternalIdentity === null || policy.allowExternalIdentity === undefined
       ? {}
       : { allowExternalIdentity: policy.allowExternalIdentity }),
+    ...(policy.allowExternalIdentityAutoLinking === null || policy.allowExternalIdentityAutoLinking === undefined
+      ? {}
+      : { allowExternalIdentityAutoLinking: policy.allowExternalIdentityAutoLinking }),
     ...(policy.allowPassword === null || policy.allowPassword === undefined
       ? {}
       : { allowPassword: policy.allowPassword }),

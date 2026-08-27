@@ -16,6 +16,7 @@ const discovery = {
     allowDomainDiscovery: true,
     allowEmailOtp: true,
     allowExternalIdentity: true,
+    allowExternalIdentityAutoLinking: false,
     allowPassword: true,
     allowPasswordRecovery: true,
     allowPasskey: true,

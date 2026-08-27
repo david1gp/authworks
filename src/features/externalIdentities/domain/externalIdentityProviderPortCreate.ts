@@ -195,25 +195,30 @@ async function githubIdentityFetch(
     if (subject === null) throw new Error("invalid subject")
     let email = providerStringGet(raw, "email")
     let emailVerified = false
-    if (email === null) {
-      const emailsResponse = await fetcher("https://api.github.com/user/emails", {
-        headers: {
-          accept: "application/vnd.github+json",
-          authorization: `Bearer ${accessToken}`,
-          "user-agent": "authworks",
-        },
-        signal: AbortSignal.timeout(timeoutMs),
-      })
-      const emails = (await emailsResponse.json().catch(() => undefined)) as unknown
-      if (emailsResponse.ok && Array.isArray(emails)) {
-        const primary = emails.find(
-          (candidate) =>
-            typeof candidate === "object" && candidate !== null && providerBooleanGet(candidate, "primary"),
-        )
-        if (primary !== undefined && typeof primary === "object" && primary !== null) {
-          email = providerStringGet(primary, "email")
-          emailVerified = providerBooleanGet(primary, "verified")
-        }
+    const emailsResponse = await fetcher("https://api.github.com/user/emails", {
+      headers: {
+        accept: "application/vnd.github+json",
+        authorization: `Bearer ${accessToken}`,
+        "user-agent": "authworks",
+      },
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+    const emails = (await emailsResponse.json().catch(() => undefined)) as unknown
+    if (emailsResponse.ok && Array.isArray(emails)) {
+      const verified = emails.find(
+        (candidate) =>
+          typeof candidate === "object" &&
+          candidate !== null &&
+          providerStringGet(candidate, "email") !== null &&
+          providerBooleanGet(candidate, "verified"),
+      )
+      const primary = emails.find(
+        (candidate) => typeof candidate === "object" && candidate !== null && providerBooleanGet(candidate, "primary"),
+      )
+      const selected = verified ?? primary
+      if (selected !== undefined && typeof selected === "object" && selected !== null) {
+        email = providerStringGet(selected, "email") ?? email
+        emailVerified = providerBooleanGet(selected, "verified")
       }
     }
     const picture = providerPictureGet(raw, "avatar_url")

@@ -15,6 +15,7 @@ export const organizationLoginPolicySchema = v.strictObject({
   allowEmailOtp: v.boolean(),
   allowWhatsappOtp: v.optional(v.boolean()),
   allowExternalIdentity: v.boolean(),
+  allowExternalIdentityAutoLinking: v.boolean(),
   allowPassword: v.boolean(),
   allowPasswordRecovery: v.boolean(),
   allowPasskey: v.boolean(),

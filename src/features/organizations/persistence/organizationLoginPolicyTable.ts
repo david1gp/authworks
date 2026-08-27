@@ -5,6 +5,7 @@ export const organizationLoginPolicyTable = sqliteTable("organization_login_poli
   allowEmailOtp: integer("allow_email_otp", { mode: "boolean" }),
   allowWhatsappOtp: integer("allow_whatsapp_otp", { mode: "boolean" }),
   allowExternalIdentity: integer("allow_external_identity", { mode: "boolean" }),
+  allowExternalIdentityAutoLinking: integer("allow_external_identity_auto_linking", { mode: "boolean" }),
   allowPassword: integer("allow_password", { mode: "boolean" }),
   allowPasswordRecovery: integer("allow_password_recovery", { mode: "boolean" }),
   allowPasskey: integer("allow_passkey", { mode: "boolean" }),

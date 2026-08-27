@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm"
+import { and, eq, isNull } from "drizzle-orm"
 import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
@@ -11,10 +11,12 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { mfaPrimaryAuthenticationComplete } from "../../mfa/actions/mfaPrimaryAuthenticationComplete.js"
 import { organizationLoginPolicyEnforce } from "../../organizations/actions/organizationLoginPolicyEnforce.js"
+import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import { oidcInteractionOrganizationContextValidate } from "../../oidc/server/oidcInteractionOrganizationContextValidate.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import type { SessionDeviceMetadata } from "../../sessions/public/sessionDeviceMetadataSchema.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { userEmailNormalize } from "../../users/domain/userEmailNormalize.js"
 import { userNameNormalize } from "../../users/domain/userNameNormalize.js"
 import { userCreatedEventPayloadSchema } from "../../users/events/userCreatedEventPayloadSchema.js"
@@ -338,8 +340,10 @@ function externalIdentitySignInCommit(
     options.identity.externalSubject,
   )
   if (!existing.success) return existing
-  let userId: string
+  let userId: string | undefined
   let identityRow = existing.data
+  let autoLinked = false
+  let normalizedEmail: string | undefined
   if (identityRow !== null) {
     if (identityRow.realmId !== options.realmId)
       return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
@@ -356,12 +360,6 @@ function externalIdentitySignInCommit(
       )
     userId = user.id
   } else {
-    if (!options.provider.allowAccountCreation)
-      return resultErrorCreate(
-        op,
-        "External account creation is disabled for this provider.",
-        "external-identities.conflict",
-      )
     const email =
       options.identity.email === undefined
         ? resultErrorCreate(
@@ -376,79 +374,118 @@ function externalIdentitySignInCommit(
         "The external identity did not provide a verified email address.",
         "external-identities.invalid",
       )
+    normalizedEmail = email.data
     const existingEmail = options.database
       .select({ id: userTable.id })
       .from(userTable)
       .where(and(eq(userTable.realmId, options.realmId), eq(userTable.email, email.data)))
       .get()
-    if (existingEmail !== undefined)
-      return resultErrorCreate(
-        op,
-        "An account already exists for this email. Sign in and link this provider.",
-        "external-identities.already-exists",
+    if (existingEmail !== undefined) {
+      const eligibleEmail = options.database
+        .select({ id: userTable.id })
+        .from(userTable)
+        .where(
+          and(
+            eq(userTable.realmId, options.realmId),
+            eq(userTable.email, email.data),
+            eq(userTable.state, "active"),
+            isNull(userTable.deletedAt),
+          ),
+        )
+        .get()
+      const providerSupportsAutoLinking = options.provider.type === "google" || options.provider.type === "github"
+      if (eligibleEmail !== undefined && providerSupportsAutoLinking) {
+        const policy = organizationLoginPolicyResolve({
+          database: options.policyDatabase,
+          executor: options.database,
+          organizationId,
+          realmId: options.realmId,
+        })
+        if (!policy.success)
+          return resultErrorCreate(op, "The external identity policy is unavailable.", "external-identities.invalid")
+        if (policy.data.allowExternalIdentityAutoLinking && options.identity.emailVerified) {
+          userId = eligibleEmail.id
+          autoLinked = true
+        }
+      }
+      if (!autoLinked)
+        return resultErrorCreate(
+          op,
+          "An account already exists for this email. Sign in and link this provider.",
+          "external-identities.already-exists",
+        )
+    } else {
+      if (!options.provider.allowAccountCreation)
+        return resultErrorCreate(
+          op,
+          "External account creation is disabled for this provider.",
+          "external-identities.conflict",
+        )
+      userId = uuidv7Create(options.runtime)
+      const userName = externalIdentityUserNameCreate(options.database, options.realmId, options.identity, email.data)
+      if (!userName.success) return userName
+      const user = userRepositoryCreate(options.database).userCreate(
+        {
+          createdAt: options.now,
+          deletedAt: null,
+          email: email.data,
+          emailVerifiedAt: options.now,
+          id: userId,
+          phoneNumber: null,
+          phoneNumberVerifiedAt: null,
+          realmId: options.realmId,
+          registrationVerifiedAt: options.now,
+          registrationVerificationMethod: "email",
+          state: "active",
+          updatedAt: options.now,
+          userName: userName.data,
+          version: 1,
+        },
+        {
+          displayName: options.identity.displayName ?? null,
+          firstName: null,
+          gender: null,
+          realmId: options.realmId,
+          lastName: null,
+          nickName: null,
+          preferredLanguage: null,
+          updatedAt: options.now,
+          userId,
+        },
       )
-    userId = uuidv7Create(options.runtime)
-    const userName = externalIdentityUserNameCreate(options.database, options.realmId, options.identity, email.data)
-    if (!userName.success) return userName
-    const user = userRepositoryCreate(options.database).userCreate(
-      {
-        createdAt: options.now,
-        deletedAt: null,
-        email: email.data,
-        emailVerifiedAt: options.now,
-        id: userId,
-        phoneNumber: null,
-        phoneNumberVerifiedAt: null,
-        realmId: options.realmId,
-        registrationVerifiedAt: options.now,
+      if (!user.success)
+        return resultErrorCreate(op, "The external account could not be created.", "external-identities.write-failed")
+      const userPayload = v.safeParse(userCreatedEventPayloadSchema, {
+        emailVerified: true,
+        phoneNumberVerified: false,
+        registrationVerified: true,
         registrationVerificationMethod: "email",
         state: "active",
-        updatedAt: options.now,
-        userName: userName.data,
-        version: 1,
-      },
-      {
-        displayName: options.identity.displayName ?? null,
-        firstName: null,
-        gender: null,
-        realmId: options.realmId,
-        lastName: null,
-        nickName: null,
-        preferredLanguage: null,
-        updatedAt: options.now,
-        userId,
-      },
-    )
-    if (!user.success)
-      return resultErrorCreate(op, "The external account could not be created.", "external-identities.write-failed")
-    const userPayload = v.safeParse(userCreatedEventPayloadSchema, {
-      emailVerified: true,
-      phoneNumberVerified: false,
-      registrationVerified: true,
-      registrationVerificationMethod: "email",
-      state: "active",
-    })
-    if (!userPayload.success)
-      return resultErrorCreate(op, "The user event payload is invalid.", "external-identities.event-invalid")
-    const userEvent = storageEventAppend(
-      options.database,
-      {
-        actorId: null,
-        aggregateId: userId,
-        aggregateType: "user",
-        aggregateVersion: 1,
-        commandIndex: 0,
-        correlationId: options.correlationId,
-        eventType: userEventTypes.created,
-        realmId: options.realmId,
-        metadata: { auditSafe: true, source: "external_identities" },
-        occurredAt: options.now,
-        payload: userPayload.output,
-      },
-      options.runtime,
-    )
-    if (!userEvent.success) return userEvent
+      })
+      if (!userPayload.success)
+        return resultErrorCreate(op, "The user event payload is invalid.", "external-identities.event-invalid")
+      const userEvent = storageEventAppend(
+        options.database,
+        {
+          actorId: null,
+          aggregateId: userId,
+          aggregateType: "user",
+          aggregateVersion: 1,
+          commandIndex: 0,
+          correlationId: options.correlationId,
+          eventType: userEventTypes.created,
+          realmId: options.realmId,
+          metadata: { auditSafe: true, source: "external_identities" },
+          occurredAt: options.now,
+          payload: userPayload.output,
+        },
+        options.runtime,
+      )
+      if (!userEvent.success) return userEvent
+    }
   }
+  if (userId === undefined)
+    return resultErrorCreate(op, "The external account could not be resolved.", "external-identities.invalid")
   const consumed = repository.externalIdentityOAuthTransactionConsume(
     options.transaction.id,
     options.transaction.version,
@@ -461,7 +498,7 @@ function externalIdentitySignInCommit(
     const created = repository.externalIdentityCreate({
       createdAt: options.now,
       displayName: options.identity.displayName ?? null,
-      email: options.identity.email ?? null,
+      email: autoLinked ? (normalizedEmail ?? null) : (options.identity.email ?? null),
       emailVerified: options.identity.emailVerified,
       externalSubject: options.identity.externalSubject,
       id: uuidv7Create(options.runtime),
@@ -476,7 +513,7 @@ function externalIdentitySignInCommit(
       return resultErrorCreate(op, "The external identity could not be linked.", "external-identities.write-failed")
     identityRow = created.data
     const identityPayload = v.safeParse(externalIdentityEventPayloadSchema, {
-      action: "account_created",
+      action: autoLinked ? "linked" : "account_created",
       externalSubject: options.identity.externalSubject,
       identityId: identityRow.id,
       providerId: options.provider.id,
@@ -489,23 +526,42 @@ function externalIdentitySignInCommit(
         "The external identity event payload is invalid.",
         "external-identities.event-invalid",
       )
-    const identityEvent = storageEventAppend(
-      options.database,
-      {
-        actorId: null,
-        aggregateId: identityRow.id,
-        aggregateType: "external_identity",
-        aggregateVersion: 1,
-        commandIndex: 0,
-        correlationId: options.correlationId,
-        eventType: externalIdentityEventTypes.accountCreated,
-        realmId: options.realmId,
-        metadata: { auditSafe: true, source: "external_identities" },
-        occurredAt: options.now,
-        payload: identityPayload.output,
-      },
-      options.runtime,
-    )
+    const identityEvent = autoLinked
+      ? eventSecurityEventAppend(
+          options.database,
+          {
+            actorId: null,
+            aggregateId: identityRow.id,
+            aggregateType: "external_identity",
+            aggregateVersion: 1,
+            commandIndex: 0,
+            correlationId: options.correlationId,
+            eventType: externalIdentityEventTypes.linked,
+            realmId: options.realmId,
+            metadata: { auditSafe: true, source: "external_identities" },
+            occurredAt: options.now,
+            payload: identityPayload.output,
+            userSubjectId: userId,
+          },
+          options.runtime,
+        )
+      : storageEventAppend(
+          options.database,
+          {
+            actorId: null,
+            aggregateId: identityRow.id,
+            aggregateType: "external_identity",
+            aggregateVersion: 1,
+            commandIndex: 0,
+            correlationId: options.correlationId,
+            eventType: externalIdentityEventTypes.accountCreated,
+            realmId: options.realmId,
+            metadata: { auditSafe: true, source: "external_identities" },
+            occurredAt: options.now,
+            payload: identityPayload.output,
+          },
+          options.runtime,
+        )
     if (!identityEvent.success) return identityEvent
   }
   const authPayload = v.safeParse(externalIdentityEventPayloadSchema, {

@@ -44,6 +44,7 @@ export function organizationAdminDemoAdapterCreate(fixtureState: () => DemoFixtu
     allowDomainDiscovery: true,
     allowEmailOtp: true,
     allowExternalIdentity: true,
+    allowExternalIdentityAutoLinking: true,
     allowPasskey: true,
     allowPassword: true,
     allowPasswordRecovery: true,

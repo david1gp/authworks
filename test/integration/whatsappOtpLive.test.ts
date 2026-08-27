@@ -677,6 +677,7 @@ function liveTestOrganizationDiscoveryFoundCreate(
       allowDomainDiscovery: true,
       allowEmailOtp: true,
       allowExternalIdentity: true,
+      allowExternalIdentityAutoLinking: true,
       allowPassword: true,
       allowPasswordRecovery: true,
       allowPasskey: true,

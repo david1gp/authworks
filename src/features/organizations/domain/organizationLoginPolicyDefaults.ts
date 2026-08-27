@@ -6,6 +6,7 @@ export const organizationLoginPolicyDefaults: OrganizationLoginPolicy = {
   allowEmailOtp: true,
   allowWhatsappOtp: true,
   allowExternalIdentity: true,
+  allowExternalIdentityAutoLinking: true,
   allowPassword: true,
   allowPasswordRecovery: true,
   allowPasskey: true,

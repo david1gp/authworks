@@ -2,7 +2,7 @@ export const eventSecurityEventDefinitionByType = {
   "external_identity.linked": {
     category: "linked_identities",
     displayCode: "linked_identity.linked",
-    productionIntegrations: ["externalIdentityLinkComplete"],
+    productionIntegrations: ["externalIdentityCallback", "externalIdentityLinkComplete"],
     subject: "user",
   },
   "external_identity.unlinked": {

@@ -73,6 +73,9 @@ test("account library publishes only account contracts and client methods", () =
 
 test("public contracts include the previously omitted transport schemas", () => {
   expect(organizations.organizationBrandingThemeSchema).toBeDefined()
+  expect(organizations.organizationLoginPolicySchema).toBeDefined()
+  expect(organizations.organizationLoginPolicyOverrideSchema).toBeDefined()
+  expect(organizations.organizationLoginPolicySetRequestSchema).toBeDefined()
   expect(machineUsers.machineApiKeyCreateRequestSchema).toBeDefined()
   expect(machineUsers.machinePersonalAccessTokenCreateRequestSchema).toBeDefined()
   expect(machineUsers.machineProtectedApiResponseSchema).toBeDefined()

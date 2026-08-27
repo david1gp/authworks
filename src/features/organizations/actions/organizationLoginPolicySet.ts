@@ -220,6 +220,9 @@ function organizationLoginPolicyOverrideValues(input: OrganizationLoginPolicySet
     ...(input.allowEmailOtp === undefined ? {} : { allowEmailOtp: input.allowEmailOtp }),
     ...(input.allowWhatsappOtp === undefined ? {} : { allowWhatsappOtp: input.allowWhatsappOtp }),
     ...(input.allowExternalIdentity === undefined ? {} : { allowExternalIdentity: input.allowExternalIdentity }),
+    ...(input.allowExternalIdentityAutoLinking === undefined
+      ? {}
+      : { allowExternalIdentityAutoLinking: input.allowExternalIdentityAutoLinking }),
     ...(input.allowPassword === undefined ? {} : { allowPassword: input.allowPassword }),
     ...(input.allowPasswordRecovery === undefined ? {} : { allowPasswordRecovery: input.allowPasswordRecovery }),
     ...(input.allowPasskey === undefined ? {} : { allowPasskey: input.allowPasskey }),
@@ -250,6 +253,8 @@ function organizationLoginPolicyRealmValues(
     allowEmailOtp: input.allowEmailOtp ?? current.allowEmailOtp,
     allowWhatsappOtp: input.allowWhatsappOtp ?? current.allowWhatsappOtp ?? true,
     allowExternalIdentity: input.allowExternalIdentity ?? current.allowExternalIdentity,
+    allowExternalIdentityAutoLinking:
+      input.allowExternalIdentityAutoLinking ?? current.allowExternalIdentityAutoLinking,
     allowPassword: input.allowPassword ?? current.allowPassword,
     allowPasswordRecovery: input.allowPasswordRecovery ?? current.allowPasswordRecovery,
     allowPasskey: input.allowPasskey ?? current.allowPasskey,

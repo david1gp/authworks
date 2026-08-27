@@ -14,7 +14,9 @@ import { externalIdentityUnlink } from "../../src/features/externalIdentities/ac
 import { externalIdentityApiClientCreate } from "../../src/features/externalIdentities/client/externalIdentityApiClientCreate.js"
 import type { ExternalIdentityProviderPort } from "../../src/features/externalIdentities/domain/externalIdentityProviderPort.js"
 import { externalIdentityProviderPortCreate } from "../../src/features/externalIdentities/domain/externalIdentityProviderPortCreate.js"
+import type { ExternalIdentityProviderType } from "../../src/features/externalIdentities/public/externalIdentityProviderTypeSchema.js"
 import { externalIdentityOAuthTransactionTable } from "../../src/features/externalIdentities/persistence/externalIdentityOAuthTransactionTable.js"
+import { externalIdentityTable } from "../../src/features/externalIdentities/persistence/externalIdentityTable.js"
 import { externalIdentityRepositoryCreate } from "../../src/features/externalIdentities/persistence/externalIdentityRepositoryCreate.js"
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
@@ -22,6 +24,8 @@ import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
 import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
 import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
+import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { passkeyCredentialTable } from "../../src/features/passkeys/persistence/passkeyCredentialTable.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordLogin } from "../../src/features/passwords/actions/passwordLogin.js"
@@ -40,6 +44,7 @@ import type { StorageDatabase } from "../../src/platform/storage/storageDatabase
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
+import { userTable } from "../../src/features/users/persistence/userTable.js"
 
 async function withDatabase<T>(
   operation: (database: StorageDatabase, testkit: ReturnType<typeof platformTestkitCreate>) => Promise<T>,
@@ -64,7 +69,14 @@ async function createRealm(database: StorageDatabase, domain: string) {
   return created.data.realm
 }
 
-function testPort(email = "new@example.com"): ExternalIdentityProviderPort {
+function testPort(
+  email = "new@example.com",
+  options: {
+    readonly emailVerified?: boolean
+    readonly externalSubject?: string
+    readonly providerType?: ExternalIdentityProviderType
+  } = {},
+): ExternalIdentityProviderPort {
   return {
     authorizationUrlCreate(_configuration, input) {
       return resultCreate(
@@ -76,10 +88,10 @@ function testPort(email = "new@example.com"): ExternalIdentityProviderPort {
         resultCreate({
           displayName: "External User",
           email,
-          emailVerified: true,
-          externalSubject: "subject-1",
+          emailVerified: options.emailVerified ?? true,
+          externalSubject: options.externalSubject ?? "subject-1",
           ...(input.nonce === undefined ? {} : { nonce: input.nonce }),
-          providerType: "google" as const,
+          providerType: options.providerType ?? "google",
           username: "external-user",
         }),
       )
@@ -100,7 +112,13 @@ function providerFetchCreate(
   return Object.assign(handler, { preconnect: fetch.preconnect })
 }
 
-async function createProvider(database: StorageDatabase, realmId: string, allowAccountCreation = true) {
+async function createProvider(
+  database: StorageDatabase,
+  realmId: string,
+  allowAccountCreation = true,
+  type: ExternalIdentityProviderType = "google",
+  organizationId?: string,
+) {
   const created = externalIdentityProviderCreate({
     context: realmSystemContextCreate(),
     database,
@@ -108,15 +126,79 @@ async function createProvider(database: StorageDatabase, realmId: string, allowA
       allowAccountCreation,
       clientId: "client-id",
       clientSecret: "client-secret",
-      displayName: "Google",
+      displayName: type === "google" ? "Google" : type === "github" ? "GitHub" : "Microsoft",
+      ...(organizationId === undefined ? {} : { organizationId }),
       redirectUri: "https://app.test/callback",
-      type: "google",
+      type,
     },
     realmId,
   })
   expect(created.success).toBe(true)
   if (!created.success) throw new Error(created.errorMessage)
   return created.data.provider
+}
+
+async function createVerifiedUser(
+  database: StorageDatabase,
+  testkit: ReturnType<typeof platformTestkitCreate>,
+  realmId: string,
+  email: string,
+  userName: string,
+) {
+  const context = realmTenantContextCreate(realmId, "anonymous")
+  let token = ""
+  const registered = passwordRegister({
+    context,
+    database,
+    input: { email, password: "Correct Horse 12", profile: {}, userName },
+    onVerificationToken: ({ token: verificationToken }) => {
+      token = verificationToken
+    },
+    realmId,
+    runtime: testkit.runtime,
+  })
+  expect(registered.success).toBe(true)
+  if (!registered.success) throw new Error(registered.errorMessage)
+  const verified = passwordEmailVerify({
+    context,
+    database,
+    input: { token },
+    realmId,
+    runtime: testkit.runtime,
+  })
+  expect(verified.success).toBe(true)
+  if (!verified.success) throw new Error(verified.errorMessage)
+  return verified.data.user
+}
+
+async function externalIdentityLogin(
+  database: StorageDatabase,
+  testkit: ReturnType<typeof platformTestkitCreate>,
+  realmId: string,
+  providerId: string,
+  providerPorts: Parameters<typeof externalIdentityCallback>[0]["providerPorts"],
+  input: { readonly organizationId?: string } = {},
+) {
+  const started = externalIdentityStart({
+    database,
+    input,
+    realmId,
+    providerId,
+    providerPorts,
+    runtime: testkit.runtime,
+  })
+  expect(started.success).toBe(true)
+  if (!started.success) throw new Error(started.errorMessage)
+  const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
+  return externalIdentityCallback({
+    code: "provider-code",
+    database,
+    realmId,
+    providerId,
+    providerPorts,
+    state,
+    runtime: testkit.runtime,
+  })
 }
 
 test("external identity provider PATCH rejects an empty patch with a stable code", async () => {
@@ -585,10 +667,18 @@ test("required MFA turns external identity authentication into a TOTP challenge"
   })
 })
 
-test("external identities never auto-link by email and linking requires confirmation", async () => {
+test("disabled external identity auto-linking preserves confirmation linking", async () => {
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "external-link.example.com")
     const provider = await createProvider(database, realm.id)
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { allowExternalIdentityAutoLinking: false },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
     const ports = { google: testPort("existing@example.com") }
     const anonymous = realmTenantContextCreate(realm.id, "anonymous")
     let token = ""
@@ -725,11 +815,353 @@ test("external identities never auto-link by email and linking requires confirma
   })
 })
 
+test("verified Google identities honor realm and organization auto-link policy precedence", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "external-auto-link-policy.example.com")
+    const organizationResult = organizationCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { name: "External auto-link organization" },
+      realmId: realm.id,
+    })
+    expect(organizationResult.success).toBe(true)
+    if (!organizationResult.success) return
+    const organization = organizationResult.data.organization
+    const provider = await createProvider(database, realm.id, true, "google", organization.id)
+
+    const defaultUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "default-link@example.com",
+      "default-link",
+    )
+    const defaultCallback = await externalIdentityLogin(
+      database,
+      testkit,
+      realm.id,
+      provider.id,
+      { google: testPort("DEFAULT-LINK@EXAMPLE.COM", { externalSubject: "default-link" }) },
+      { organizationId: organization.id },
+    )
+    expect(defaultCallback).toMatchObject({
+      data: { authentication: { userId: defaultUser.id }, kind: "authenticated" },
+      success: true,
+    })
+    expect(
+      database.db
+        .select()
+        .from(externalIdentityTable)
+        .where(eq(externalIdentityTable.externalSubject, "default-link"))
+        .get(),
+    ).toMatchObject({ email: "default-link@example.com", userId: defaultUser.id })
+
+    const inheritedUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "inherited-link@example.com",
+      "inherited-link",
+    )
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { allowExternalIdentityAutoLinking: null },
+        organizationId: organization.id,
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    const inheritedCallback = await externalIdentityLogin(
+      database,
+      testkit,
+      realm.id,
+      provider.id,
+      { google: testPort("inherited-link@example.com", { externalSubject: "inherited-link" }) },
+      { organizationId: organization.id },
+    )
+    expect(inheritedCallback).toMatchObject({
+      data: { authentication: { userId: inheritedUser.id }, kind: "authenticated" },
+      success: true,
+    })
+
+    const organizationDisabledUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "organization-disabled-link@example.com",
+      "organization-disabled-link",
+    )
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { allowExternalIdentityAutoLinking: false },
+        organizationId: organization.id,
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    const organizationDisabledCallback = await externalIdentityLogin(
+      database,
+      testkit,
+      realm.id,
+      provider.id,
+      { google: testPort("organization-disabled-link@example.com", { externalSubject: "organization-disabled" }) },
+      { organizationId: organization.id },
+    )
+    expect(organizationDisabledCallback).toMatchObject({
+      code: "external-identities.already-exists",
+      success: false,
+    })
+    expect(
+      database.db
+        .select()
+        .from(externalIdentityTable)
+        .where(eq(externalIdentityTable.userId, organizationDisabledUser.id))
+        .all(),
+    ).toHaveLength(0)
+
+    const inheritedDisabledUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "inherited-disabled-link@example.com",
+      "inherited-disabled-link",
+    )
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { allowExternalIdentityAutoLinking: null },
+        organizationId: organization.id,
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { allowExternalIdentityAutoLinking: false },
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    const inheritedDisabledCallback = await externalIdentityLogin(
+      database,
+      testkit,
+      realm.id,
+      provider.id,
+      { google: testPort("inherited-disabled-link@example.com", { externalSubject: "inherited-disabled" }) },
+      { organizationId: organization.id },
+    )
+    expect(inheritedDisabledCallback).toMatchObject({
+      code: "external-identities.already-exists",
+      success: false,
+    })
+    expect(
+      database.db
+        .select()
+        .from(externalIdentityTable)
+        .where(eq(externalIdentityTable.userId, inheritedDisabledUser.id))
+        .all(),
+    ).toHaveLength(0)
+
+    const organizationEnabledUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "organization-enabled-link@example.com",
+      "organization-enabled-link",
+    )
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { allowExternalIdentityAutoLinking: true },
+        organizationId: organization.id,
+        realmId: realm.id,
+      }).success,
+    ).toBe(true)
+    const organizationEnabledCallback = await externalIdentityLogin(
+      database,
+      testkit,
+      realm.id,
+      provider.id,
+      { google: testPort("organization-enabled-link@example.com", { externalSubject: "organization-enabled" }) },
+      { organizationId: organization.id },
+    )
+    expect(organizationEnabledCallback).toMatchObject({
+      data: { authentication: { userId: organizationEnabledUser.id }, kind: "authenticated" },
+      success: true,
+    })
+  })
+})
+
+test("only eligible verified Google and GitHub identities auto-link within their realm", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "external-auto-link-eligibility.example.com")
+    const googleProvider = await createProvider(database, realm.id)
+    const googleUnverifiedUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "google-unverified@example.com",
+      "google-unverified",
+    )
+    const googleUnverified = await externalIdentityLogin(database, testkit, realm.id, googleProvider.id, {
+      google: testPort("google-unverified@example.com", { emailVerified: false, externalSubject: "google-unverified" }),
+    })
+    expect(googleUnverified.success).toBe(false)
+    expect(
+      database.db
+        .select()
+        .from(externalIdentityTable)
+        .where(eq(externalIdentityTable.userId, googleUnverifiedUser.id))
+        .all(),
+    ).toHaveLength(0)
+
+    const microsoftProvider = await createProvider(database, realm.id, true, "microsoft")
+    const microsoftUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "microsoft@example.com",
+      "microsoft-user",
+    )
+    const microsoft = await externalIdentityLogin(database, testkit, realm.id, microsoftProvider.id, {
+      microsoft: testPort("microsoft@example.com", { externalSubject: "microsoft", providerType: "microsoft" }),
+    })
+    expect(microsoft).toMatchObject({ code: "external-identities.already-exists", success: false })
+    expect(
+      database.db.select().from(externalIdentityTable).where(eq(externalIdentityTable.userId, microsoftUser.id)).all(),
+    ).toHaveLength(0)
+
+    const githubProvider = await createProvider(database, realm.id, true, "github")
+    const githubVerifiedUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "github-verified@example.com",
+      "github-verified",
+    )
+    const githubVerified = await externalIdentityLogin(database, testkit, realm.id, githubProvider.id, {
+      github: testPort("github-verified@example.com", { externalSubject: "github-verified", providerType: "github" }),
+    })
+    expect(githubVerified).toMatchObject({
+      data: { authentication: { userId: githubVerifiedUser.id }, kind: "authenticated" },
+      success: true,
+    })
+    const githubUnverifiedUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "github-unverified@example.com",
+      "github-unverified",
+    )
+    const githubUnverified = await externalIdentityLogin(database, testkit, realm.id, githubProvider.id, {
+      github: testPort("github-unverified@example.com", {
+        emailVerified: false,
+        externalSubject: "github-unverified",
+        providerType: "github",
+      }),
+    })
+    expect(githubUnverified.success).toBe(false)
+    expect(
+      database.db
+        .select()
+        .from(externalIdentityTable)
+        .where(eq(externalIdentityTable.userId, githubUnverifiedUser.id))
+        .all(),
+    ).toHaveLength(0)
+    const inactiveUser = await createVerifiedUser(database, testkit, realm.id, "inactive@example.com", "inactive-user")
+    database.db.update(userTable).set({ state: "inactive" }).where(eq(userTable.id, inactiveUser.id)).run()
+    const inactive = await externalIdentityLogin(database, testkit, realm.id, githubProvider.id, {
+      github: testPort("inactive@example.com", { externalSubject: "inactive", providerType: "github" }),
+    })
+    expect(inactive).toMatchObject({ code: "external-identities.already-exists", success: false })
+
+    const deletedUser = await createVerifiedUser(database, testkit, realm.id, "deleted@example.com", "deleted-user")
+    database.db
+      .update(userTable)
+      .set({ deletedAt: testkit.runtime.now(), state: "deleted" })
+      .where(eq(userTable.id, deletedUser.id))
+      .run()
+    const deleted = await externalIdentityLogin(database, testkit, realm.id, githubProvider.id, {
+      github: testPort("deleted@example.com", { externalSubject: "deleted", providerType: "github" }),
+    })
+    expect(deleted).toMatchObject({ code: "external-identities.already-exists", success: false })
+
+    const otherRealm = await createRealm(database, "external-auto-link-other-realm.example.com")
+    const otherRealmProvider = await createProvider(database, otherRealm.id)
+    const wrongRealmUser = await createVerifiedUser(
+      database,
+      testkit,
+      realm.id,
+      "wrong-realm@example.com",
+      "wrong-realm-user",
+    )
+    const wrongRealm = await externalIdentityLogin(database, testkit, otherRealm.id, otherRealmProvider.id, {
+      google: testPort("wrong-realm@example.com", { externalSubject: "wrong-realm" }),
+    })
+    expect(wrongRealm.success).toBe(true)
+    if (!wrongRealm.success || !("authentication" in wrongRealm.data)) return
+    const wrongRealmUserId = wrongRealm.data.authentication.userId
+    expect(wrongRealmUserId).not.toBe(wrongRealmUser.id)
+    expect(
+      database.db
+        .select()
+        .from(externalIdentityTable)
+        .where(eq(externalIdentityTable.externalSubject, "wrong-realm"))
+        .get(),
+    ).toMatchObject({ realmId: otherRealm.id, userId: wrongRealmUserId })
+  })
+})
+
+test("an existing external provider subject remains bound to its original account", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "external-existing-link.example.com")
+    const provider = await createProvider(database, realm.id)
+    const original = await createVerifiedUser(database, testkit, realm.id, "original@example.com", "original-user")
+    const other = await createVerifiedUser(database, testkit, realm.id, "other@example.com", "other-user")
+    const created = externalIdentityRepositoryCreate(database.db).externalIdentityCreate({
+      createdAt: testkit.runtime.now(),
+      displayName: "Original external identity",
+      email: original.email,
+      emailVerified: true,
+      externalSubject: "already-linked",
+      id: "already-linked-identity",
+      providerId: provider.id,
+      realmId: realm.id,
+      updatedAt: testkit.runtime.now(),
+      userId: original.id,
+      username: "original",
+      version: 1,
+    })
+    expect(created.success).toBe(true)
+    const callback = await externalIdentityLogin(database, testkit, realm.id, provider.id, {
+      google: testPort(other.email, { externalSubject: "already-linked" }),
+    })
+    expect(callback.success).toBe(true)
+    if (!callback.success || callback.data.kind !== "authenticated") throw new Error("Expected authenticated callback")
+    expect(callback).toMatchObject({
+      data: { authentication: { userId: original.id }, kind: "authenticated" },
+      success: true,
+    })
+    expect(
+      database.db
+        .select()
+        .from(externalIdentityTable)
+        .where(eq(externalIdentityTable.externalSubject, "already-linked"))
+        .get(),
+    ).toMatchObject({ email: original.email, userId: original.id })
+  })
+})
+
 test("external identity account and event writes roll back together", async () => {
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "external-atomic.example.com")
     const provider = await createProvider(database, realm.id)
-    const ports = { google: testPort() }
+    const existing = await createVerifiedUser(database, testkit, realm.id, "atomic-link@example.com", "atomic-link")
+    const ports = { google: testPort("atomic-link@example.com", { externalSubject: "atomic-link" }) }
     const started = externalIdentityStart({
       database,
       input: {},
@@ -741,6 +1173,8 @@ test("external identity account and event writes roll back together", async () =
     expect(started.success).toBe(true)
     if (!started.success) return
     const state = new URL(started.data.authorizationUrl).searchParams.get("state") ?? ""
+    const transaction = database.db.select().from(externalIdentityOAuthTransactionTable).get()
+    expect(transaction).not.toBeUndefined()
     database.sqlite.run(
       "CREATE TRIGGER reject_external_identity_events BEFORE INSERT ON events WHEN NEW.aggregate_type = 'external_identity' BEGIN SELECT RAISE(ABORT, 'event rejected'); END",
     )
@@ -758,6 +1192,16 @@ test("external identity account and event writes roll back together", async () =
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM users").get()).toEqual(before)
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM external_identities").get()).toEqual({ count: 0 })
     expect(database.sqlite.query("SELECT COUNT(*) AS count FROM sessions").get()).toEqual({ count: 0 })
+    expect(
+      database.db
+        .select({ consumedAt: externalIdentityOAuthTransactionTable.consumedAt })
+        .from(externalIdentityOAuthTransactionTable)
+        .where(eq(externalIdentityOAuthTransactionTable.id, transaction?.id ?? ""))
+        .get(),
+    ).toEqual({ consumedAt: null })
+    expect(
+      database.db.select().from(externalIdentityTable).where(eq(externalIdentityTable.userId, existing.id)).all(),
+    ).toHaveLength(0)
   })
 })
 
@@ -842,7 +1286,7 @@ test("provider adapters preserve OAuth security parameters for Google, GitHub, a
   }
 })
 
-test("provider adapters reject incomplete token responses and safely handle GitHub email fallback", async () => {
+test("provider adapters reject incomplete token responses and require authoritative GitHub email verification", async () => {
   const incompleteTokenFetcher = providerFetchCreate(async () => providerJsonResponse({ access_token: "access-token" }))
   const incompletePorts = externalIdentityProviderPortCreate({ fetch: incompleteTokenFetcher })
   for (const type of ["google", "microsoft"] as const) {
@@ -890,13 +1334,45 @@ test("provider adapters reject incomplete token responses and safely handle GitH
   )
   expect(identity).toMatchObject({
     data: {
-      email: "primary@example.com",
-      emailVerified: false,
+      email: "secondary@example.com",
+      emailVerified: true,
       externalSubject: "42",
       providerType: "github",
     },
     success: true,
   })
+
+  let profileEmailEndpointCalled = false
+  const profileEmailFetcher = providerFetchCreate(async (input) => {
+    const url = input.toString()
+    if (url === "https://github.com/login/oauth/access_token")
+      return providerJsonResponse({ access_token: "access-token" })
+    if (url === "https://api.github.com/user")
+      return providerJsonResponse({ id: 43, login: "profile-email", email: "profile@example.com" })
+    if (url === "https://api.github.com/user/emails") {
+      profileEmailEndpointCalled = true
+      return providerJsonResponse([])
+    }
+    return providerJsonResponse({}, 404)
+  })
+  const profileEmailGithub = externalIdentityProviderPortCreate({ fetch: profileEmailFetcher }).github
+  expect(profileEmailGithub).toBeDefined()
+  if (profileEmailGithub === undefined) return
+  const profileEmailIdentity = await profileEmailGithub.callbackExchange(
+    {
+      clientId: "client-id",
+      clientSecret: "client-secret",
+      redirectUri: "https://app.test/callback",
+      scopes: ["user:email"],
+      type: "github",
+    },
+    { code: "code", pkceVerifier: "verifier" },
+  )
+  expect(profileEmailIdentity).toMatchObject({
+    data: { email: "profile@example.com", emailVerified: false, externalSubject: "43" },
+    success: true,
+  })
+  expect(profileEmailEndpointCalled).toBe(true)
 })
 
 test("external identity HTTP, client, and CLI surfaces keep configuration and session contracts public-safe", async () => {

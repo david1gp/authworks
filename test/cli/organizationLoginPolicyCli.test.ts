@@ -65,6 +65,7 @@ test("CLI executes realm and organization login-policy administration safely", a
       realmId,
       "--policy",
       JSON.stringify({
+        allowExternalIdentityAutoLinking: false,
         allowedFactors: ["totp", "passkey"],
         minimumStepUpAssurance: "multi_factor",
         preferredFactorOrder: ["passkey", "totp"],
@@ -74,6 +75,7 @@ test("CLI executes realm and organization login-policy administration safely", a
     expect(realmSet.exitCode).toBe(0)
     expect(JSON.parse(realmSet.stdout)).toMatchObject({
       policy: {
+        allowExternalIdentityAutoLinking: false,
         allowedFactors: ["totp", "passkey"],
         minimumStepUpAssurance: "multi_factor",
         preferredFactorOrder: ["passkey", "totp"],
@@ -114,6 +116,7 @@ test("CLI executes realm and organization login-policy administration safely", a
       organizationId,
       "--policy",
       JSON.stringify({
+        allowExternalIdentityAutoLinking: true,
         allowedFactors: ["totp"],
         minimumStepUpAssurance: "multi_factor",
         preferredFactorOrder: ["totp"],
@@ -137,12 +140,14 @@ test("CLI executes realm and organization login-policy administration safely", a
     expect(organizationGet.exitCode).toBe(0)
     expect(JSON.parse(organizationGet.stdout)).toMatchObject({
       overrides: {
+        allowExternalIdentityAutoLinking: true,
         allowedFactors: ["totp"],
         minimumStepUpAssurance: "multi_factor",
         preferredFactorOrder: ["totp"],
         requiredMfa: true,
       },
       policy: {
+        allowExternalIdentityAutoLinking: true,
         allowedFactors: ["totp"],
         minimumStepUpAssurance: "multi_factor",
         preferredFactorOrder: ["totp"],
@@ -163,6 +168,7 @@ test("CLI executes realm and organization login-policy administration safely", a
       organizationId,
       "--policy",
       JSON.stringify({
+        allowExternalIdentityAutoLinking: null,
         allowedFactors: null,
         minimumStepUpAssurance: null,
         preferredFactorOrder: null,
@@ -173,6 +179,7 @@ test("CLI executes realm and organization login-policy administration safely", a
     expect(JSON.parse(inherited.stdout)).toMatchObject({
       overrides: {},
       policy: {
+        allowExternalIdentityAutoLinking: false,
         allowedFactors: ["totp", "passkey"],
         minimumStepUpAssurance: "multi_factor",
         preferredFactorOrder: ["passkey", "totp"],

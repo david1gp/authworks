@@ -91,6 +91,7 @@ describe("organization administration browser API", () => {
             allowDomainDiscovery: true,
             allowEmailOtp: true,
             allowExternalIdentity: true,
+            allowExternalIdentityAutoLinking: true,
             allowPasskey: true,
             allowPassword: true,
             allowPasswordRecovery: true,

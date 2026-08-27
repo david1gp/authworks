@@ -58,6 +58,97 @@ test("security policy contracts reject unknown and duplicate factors", () => {
   ).toBe(false)
 })
 
+test("security policy defaults and precedence control external identity auto-linking", async () => {
+  await withDatabase(async (database) => {
+    const { organization, realm } = await realmAndOrganizationCreate(database, "external-auto-link-policy")
+    const initial = organizationRealmLoginPolicyGet({ database, realmId: realm.id })
+    expect(initial).toMatchObject({ data: { policy: { allowExternalIdentityAutoLinking: true } }, success: true })
+
+    const realmDisabled = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { allowExternalIdentityAutoLinking: false },
+      realmId: realm.id,
+    })
+    expect(realmDisabled).toMatchObject({
+      data: {
+        overrides: { allowExternalIdentityAutoLinking: false },
+        policy: { allowExternalIdentityAutoLinking: false },
+      },
+      success: true,
+    })
+
+    const organizationInherited = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { allowExternalIdentityAutoLinking: null },
+      organizationId: organization.id,
+      realmId: realm.id,
+    })
+    expect(organizationInherited).toMatchObject({
+      data: { overrides: {}, policy: { allowExternalIdentityAutoLinking: false } },
+      success: true,
+    })
+
+    const organizationEnabled = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { allowExternalIdentityAutoLinking: true },
+      organizationId: organization.id,
+      realmId: realm.id,
+    })
+    expect(organizationEnabled).toMatchObject({
+      data: {
+        overrides: { allowExternalIdentityAutoLinking: true },
+        policy: { allowExternalIdentityAutoLinking: true },
+      },
+      success: true,
+    })
+
+    const realmEnabled = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { allowExternalIdentityAutoLinking: true },
+      realmId: realm.id,
+    })
+    expect(realmEnabled.success).toBe(true)
+
+    const organizationDisabled = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { allowExternalIdentityAutoLinking: false },
+      organizationId: organization.id,
+      realmId: realm.id,
+    })
+    expect(organizationDisabled).toMatchObject({
+      data: { policy: { allowExternalIdentityAutoLinking: false } },
+      success: true,
+    })
+
+    const organizationCleared = organizationLoginPolicySet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { allowExternalIdentityAutoLinking: null },
+      organizationId: organization.id,
+      realmId: realm.id,
+    })
+    expect(organizationCleared).toMatchObject({
+      data: { overrides: {}, policy: { allowExternalIdentityAutoLinking: true } },
+      success: true,
+    })
+    expect(
+      database.sqlite
+        .query("SELECT allow_external_identity_auto_linking FROM realm_login_policies WHERE realm_id = ?")
+        .get(realm.id),
+    ).toEqual({ allow_external_identity_auto_linking: 1 })
+    expect(
+      database.sqlite
+        .query("SELECT allow_external_identity_auto_linking FROM organization_login_policies WHERE organization_id = ?")
+        .get(organization.id),
+    ).toEqual({ allow_external_identity_auto_linking: null })
+  })
+})
+
 test("security policy resolution fails closed for malformed persisted factor lists", async () => {
   await withDatabase(async (database) => {
     const { realm } = await realmAndOrganizationCreate(database, "malformed-security-policy")
@@ -205,25 +296,33 @@ test("security policy persistence, events, routes, clients, and tenant isolation
       token: "security-policy-secret",
     })
     const updated = await client.organizationRealmLoginPolicySet(first.realm.id, {
+      allowExternalIdentityAutoLinking: false,
       allowedFactors: ["passkey"],
       minimumStepUpAssurance: "multi_factor",
       preferredFactorOrder: ["passkey"],
       requiredMfa: true,
     })
     expect(updated.success).toBe(true)
+    expect(updated).toMatchObject({ data: { policy: { allowExternalIdentityAutoLinking: false } }, success: true })
     const organization = await client.organizationLoginPolicySet(first.realm.id, first.organization.id, {
+      allowExternalIdentityAutoLinking: true,
       allowedFactors: ["passkey"],
     })
     expect(organization).toMatchObject({
-      data: { policy: { allowedFactors: ["passkey"], requiredMfa: true } },
+      data: { policy: { allowExternalIdentityAutoLinking: true, allowedFactors: ["passkey"], requiredMfa: true } },
       success: true,
     })
     expect(
       await client.organizationLoginPolicySet(second.realm.id, first.organization.id, { requiredMfa: true }),
     ).toMatchObject({ success: false })
-    expect(database.sqlite.query("SELECT allowed_factors, required_mfa FROM realm_login_policies").get()).toEqual({
+    expect(
+      database.sqlite
+        .query("SELECT allowed_factors, required_mfa, allow_external_identity_auto_linking FROM realm_login_policies")
+        .get(),
+    ).toEqual({
       allowed_factors: '["passkey"]',
       required_mfa: 1,
+      allow_external_identity_auto_linking: 0,
     })
     const event = database.sqlite
       .query(

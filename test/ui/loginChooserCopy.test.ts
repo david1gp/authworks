@@ -23,6 +23,7 @@ describe("login chooser reference copy", () => {
       allowDomainDiscovery: true,
       allowEmailOtp: true,
       allowExternalIdentity: true,
+      allowExternalIdentityAutoLinking: true,
       allowPassword: true,
       allowPasswordRecovery: true,
       allowPasskey: true,
