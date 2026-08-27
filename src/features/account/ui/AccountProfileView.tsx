@@ -1,12 +1,23 @@
+import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
+import { mdiAccountEditOutline } from "@adaptive-ds/mdi/mdiAccountEditOutline.js"
+import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
+import { mdiCameraOutline } from "@adaptive-ds/mdi/mdiCameraOutline.js"
+import { mdiCellphone } from "@adaptive-ds/mdi/mdiCellphone.js"
+import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
+import { mdiClockOutline } from "@adaptive-ds/mdi/mdiClockOutline.js"
 import { mdiGenderFemale } from "@adaptive-ds/mdi/mdiGenderFemale.js"
 import { mdiGenderMale } from "@adaptive-ds/mdi/mdiGenderMale.js"
 import { mdiGenderNonBinary } from "@adaptive-ds/mdi/mdiGenderNonBinary.js"
 import { mdiHelpCircleOutline } from "@adaptive-ds/mdi/mdiHelpCircleOutline.js"
+import { mdiShieldAccountOutline } from "@adaptive-ds/mdi/mdiShieldAccountOutline.js"
+import { mdiTrashCanOutline } from "@adaptive-ds/mdi/mdiTrashCanOutline.js"
+import { mdiUploadOutline } from "@adaptive-ds/mdi/mdiUploadOutline.js"
 import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { SelectSingle } from "#ui/input/select/SelectSingle.jsx"
 import type { SelectSingleEntry } from "#ui/input/select/SelectSingleEntry.js"
 import { selectSingleTextDefault } from "#ui/input/select/SelectSingleTexts.js"
+import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -92,16 +103,64 @@ export function AccountProfileView(props: AccountProfileViewProps) {
         />
       }
     >
-      <div class="grid max-w-4xl gap-6">
+      <div class="grid max-w-4xl gap-6 sm:gap-8">
         <Show when={props.kind !== "email"}>
-          <section class="rounded-xl border border-line bg-surface p-5 shadow-sm sm:p-7">
+          {/* User overview hero card */}
+          <section class="overflow-hidden rounded-2xl border border-line bg-surface p-6 shadow-xs transition-colors sm:p-8">
+            <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-5">
+                <div class="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-line bg-muted ring-2 ring-line/50 sm:size-20">
+                  <div class="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                    <Icon class="size-10" path={mdiAccountCircleOutline} />
+                  </div>
+                  <Show when={props.pictureUrl.length > 0}>
+                    <img
+                      aria-hidden="true"
+                      class="relative size-full object-cover"
+                      role="presentation"
+                      src={props.pictureUrl}
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none"
+                      }}
+                    />
+                  </Show>
+                </div>
+                <div class="min-w-0">
+                  <h2 class="truncate text-xl font-bold tracking-tight sm:text-2xl">
+                    {props.displayName || props.userName || props.email}
+                  </h2>
+                  <p class="truncate text-sm text-muted-foreground">@{props.userName || props.email}</p>
+                  <div class="mt-2 flex flex-wrap items-center gap-2">
+                    <span
+                      class={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        props.emailVerified
+                          ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300"
+                          : "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
+                      }`}
+                    >
+                      <Icon class="size-3.5" path={props.emailVerified ? mdiCheckCircleOutline : mdiClockOutline} />
+                      {props.emailVerified
+                        ? messageTranslate("account.profile.verified")
+                        : messageTranslate("account.profile.verificationPending")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Sign-in details */}
+          <section class="rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h2 class="text-xl font-semibold">
-                  {props.kind === "email"
-                    ? messageTranslate("account.profile.emailTitle")
-                    : messageTranslate("account.profile.signInTitle")}
-                </h2>
+                <div class="flex items-center gap-2">
+                  <Icon class="size-5 text-accent" path={mdiShieldAccountOutline} />
+                  <h2 class="text-xl font-semibold tracking-tight">
+                    {props.kind === "email"
+                      ? messageTranslate("account.profile.emailTitle")
+                      : messageTranslate("account.profile.signInTitle")}
+                  </h2>
+                </div>
                 <p class="mt-1 text-sm text-muted-foreground">
                   {props.kind === "email"
                     ? messageTranslate("account.profile.emailDescription")
@@ -109,27 +168,30 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                 </p>
               </div>
               <span
-                class={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  props.emailVerified ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                  props.emailVerified
+                    ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300"
+                    : "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
                 }`}
               >
+                <Icon class="size-3.5" path={props.emailVerified ? mdiCheckCircleOutline : mdiClockOutline} />
                 {props.emailVerified
                   ? messageTranslate("account.profile.verified")
                   : messageTranslate("account.profile.verificationPending")}
               </span>
             </div>
-            <dl class="mt-6 grid gap-4 sm:grid-cols-2">
-              <div>
-                <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <dl class="mt-6 grid gap-4 rounded-xl border border-line/70 bg-muted/40 p-4 sm:grid-cols-2">
+              <div class="rounded-lg bg-surface p-3.5 shadow-2xs">
+                <dt class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {messageTranslate("account.profile.userName")}
                 </dt>
-                <dd class="mt-1 break-all font-medium">{props.userName}</dd>
+                <dd class="mt-1 break-all font-mono text-sm font-medium">{props.userName}</dd>
               </div>
-              <div>
-                <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <div class="rounded-lg bg-surface p-3.5 shadow-2xs">
+                <dt class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   {messageTranslate("account.profile.email")}
                 </dt>
-                <dd class="mt-1 break-all font-medium">{props.email}</dd>
+                <dd class="mt-1 break-all text-sm font-medium">{props.email}</dd>
               </div>
             </dl>
           </section>
@@ -158,29 +220,38 @@ export function AccountProfileView(props: AccountProfileViewProps) {
         </Show>
 
         <Show when={props.kind !== "email"}>
-          <section class="rounded-xl border border-line bg-surface p-5 shadow-sm sm:p-7">
+          {/* WhatsApp phone number section */}
+          <section class="rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h2 class="text-xl font-semibold">{messageTranslate("account.profile.phoneTitle")}</h2>
-                <p class="mt-1 text-sm text-muted-foreground">{messageTranslate("account.profile.phoneDescription")}</p>
+                <div class="flex items-center gap-2">
+                  <Icon class="size-5 text-accent" path={mdiCellphone} />
+                  <h2 class="text-xl font-semibold tracking-tight">{messageTranslate("account.profile.phoneTitle")}</h2>
+                </div>
+                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  {messageTranslate("account.profile.phoneDescription")}
+                </p>
               </div>
               <Show when={props.phoneNumber}>
                 <span
-                  class={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    props.phoneVerified ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+                  class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
+                    props.phoneVerified
+                      ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300"
+                      : "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
                   }`}
                 >
+                  <Icon class="size-3.5" path={props.phoneVerified ? mdiCheckCircleOutline : mdiClockOutline} />
                   {props.phoneVerified
                     ? messageTranslate("account.profile.verified")
                     : messageTranslate("account.profile.verificationPending")}
                 </span>
               </Show>
             </div>
-            <div class="mt-6">
-              <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div class="mt-6 rounded-xl border border-line/70 bg-muted/40 p-4">
+              <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {messageTranslate("account.profile.phoneNumber")}
               </p>
-              <p class="mt-1 break-all font-medium">
+              <p class="mt-1 break-all font-mono text-sm font-medium">
                 {props.phoneNumber ?? messageTranslate("account.profile.phoneNotAdded")}
               </p>
             </div>
@@ -194,7 +265,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                       : messageTranslate("account.profile.phoneNumber")}
                     <input
                       autocomplete="tel"
-                      class="rounded-lg border border-line bg-background px-3 py-2.5"
+                      class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
                       inputmode="tel"
                       maxlength={16}
                       placeholder={messageTranslate("account.profile.phonePlaceholder")}
@@ -208,30 +279,29 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     </span>
                   </label>
                   <div class="flex justify-end">
-                    <button
-                      class="rounded-lg bg-accent px-4 py-2.5 font-semibold text-accent-contrast disabled:opacity-60"
-                      disabled={props.phoneStatus === "sending"}
-                      type="submit"
-                    >
+                    <Button disabled={props.phoneStatus === "sending"} type="submit" variant="filledBlue">
                       {props.phoneStatus === "sending"
                         ? messageTranslate("account.profile.phoneSending")
                         : props.phoneNumber
                           ? messageTranslate("account.profile.phoneChange")
                           : messageTranslate("account.profile.phoneAdd")}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               }
             >
-              <form class="mt-6 grid gap-4" onSubmit={props.onPhoneVerify}>
-                <p class="text-sm text-muted-foreground">
+              <form
+                class="mt-6 grid gap-4 rounded-xl border border-accent/30 bg-accent/5 p-5"
+                onSubmit={props.onPhoneVerify}
+              >
+                <p class="text-sm font-medium text-foreground">
                   {messageTranslate("account.profile.phoneCodeSent", { phoneNumber: props.phoneCandidate })}
                 </p>
                 <label class="grid gap-2 text-sm font-medium">
                   {messageTranslate("account.profile.phoneCode")}
                   <input
                     autocomplete="one-time-code"
-                    class="rounded-lg border border-line bg-background px-3 py-2.5"
+                    class="rounded-xl border border-line bg-background px-3.5 py-2.5 font-mono text-base tracking-widest transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
                     inputmode="numeric"
                     maxlength={6}
                     pattern="[0-9]{6}"
@@ -240,61 +310,82 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     onInput={(event) => props.onPhoneCodeInput(event.currentTarget.value)}
                   />
                 </label>
-                <div class="flex flex-wrap justify-end gap-3">
-                  <button
-                    class="rounded-lg border border-line px-4 py-2.5 font-semibold"
-                    type="button"
-                    onClick={props.onPhoneCancel}
-                  >
+                <div class="flex flex-wrap justify-end gap-3 pt-2">
+                  <Button onClick={props.onPhoneCancel} type="button" variant="ghost">
                     {messageTranslate("account.profile.phoneDifferent")}
-                  </button>
-                  <button
-                    class="rounded-lg border border-line px-4 py-2.5 font-semibold"
+                  </Button>
+                  <Button
                     disabled={props.phoneStatus === "sending" || props.phoneStatus === "verifying"}
-                    type="button"
                     onClick={props.onPhoneResend}
+                    type="button"
+                    variant="outline"
                   >
                     {props.phoneStatus === "sending"
                       ? messageTranslate("account.profile.phoneSending")
                       : messageTranslate("account.profile.phoneResend")}
-                  </button>
-                  <button
-                    class="rounded-lg bg-accent px-4 py-2.5 font-semibold text-accent-contrast disabled:opacity-60"
+                  </Button>
+                  <Button
                     disabled={props.phoneStatus === "verifying" || props.phoneStatus === "sending"}
                     type="submit"
+                    variant="filledBlue"
                   >
                     {props.phoneStatus === "verifying"
                       ? messageTranslate("account.profile.phoneVerifying")
                       : messageTranslate("account.profile.phoneVerify")}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </Show>
             <Show when={props.phoneValidationMessage}>
-              {(message) => <p class="mt-4 text-sm text-danger">{message()}</p>}
+              {(message) => (
+                <div
+                  class="mt-4 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/5 p-3.5 text-sm text-danger"
+                  role="alert"
+                >
+                  <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
+                  <span>{message()}</span>
+                </div>
+              )}
             </Show>
             <Show when={props.phoneErrorMessage}>
               {(message) => (
-                <p class="mt-4 text-sm text-danger" role="alert">
-                  {message()}
-                </p>
+                <div
+                  class="mt-4 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/5 p-3.5 text-sm text-danger"
+                  role="alert"
+                >
+                  <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
+                  <span>{message()}</span>
+                </div>
               )}
             </Show>
             <Show when={props.phoneStatus === "success"}>
-              <p class="mt-4 text-sm font-medium text-success" role="status">
-                {messageTranslate("account.profile.phoneSaved")}
-              </p>
+              <div
+                class="mt-4 flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 p-3.5 text-sm font-medium text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+                role="status"
+              >
+                <Icon class="size-4 shrink-0" path={mdiCheckCircleOutline} />
+                <span>{messageTranslate("account.profile.phoneSaved")}</span>
+              </div>
             </Show>
           </section>
 
-          <form class="rounded-xl border border-line bg-surface p-5 shadow-sm sm:p-7" onSubmit={props.onSubmit}>
-            <h2 class="text-xl font-semibold">{messageTranslate("account.profile.personalInformation")}</h2>
-            <p class="mt-1 text-sm text-muted-foreground">{messageTranslate("account.profile.personalDescription")}</p>
+          {/* Personal information form */}
+          <form class="rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8" onSubmit={props.onSubmit}>
+            <div class="flex items-center gap-2">
+              <Icon class="size-5 text-accent" path={mdiAccountEditOutline} />
+              <h2 class="text-xl font-semibold tracking-tight">
+                {messageTranslate("account.profile.personalInformation")}
+              </h2>
+            </div>
+            <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {messageTranslate("account.profile.personalDescription")}
+            </p>
+
             <div class="mt-6 grid gap-5 sm:grid-cols-2">
               <label class="grid gap-2 text-sm font-medium sm:col-span-2">
                 {messageTranslate("account.profile.displayName")}
                 <input
-                  class="rounded-lg border border-line bg-background px-3 py-2.5"
+                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
                   maxlength={128}
                   value={props.displayName}
                   onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
@@ -303,7 +394,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
               <label class="grid gap-2 text-sm font-medium">
                 {messageTranslate("account.profile.firstName")}
                 <input
-                  class="rounded-lg border border-line bg-background px-3 py-2.5"
+                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
                   maxlength={128}
                   value={props.firstName}
                   onInput={(event) => props.onFirstNameInput(event.currentTarget.value)}
@@ -312,7 +403,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
               <label class="grid gap-2 text-sm font-medium">
                 {messageTranslate("account.profile.lastName")}
                 <input
-                  class="rounded-lg border border-line bg-background px-3 py-2.5"
+                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
                   maxlength={128}
                   value={props.lastName}
                   onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
@@ -321,7 +412,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
               <div class="grid gap-2 text-sm font-medium">
                 <span>{messageTranslate("account.profile.gender")}</span>
                 <SelectSingle
-                  buttonProps={{ class: "w-full justify-between", variant: "outline" }}
+                  buttonProps={{ class: "w-full justify-between rounded-xl", variant: "outline" }}
                   class="w-full"
                   getOptions={() => accountGenderOptionsGet(props.genderSignal.get())}
                   renderItem={accountGenderItemRender}
@@ -336,7 +427,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
               <label class="grid gap-2 text-sm font-medium">
                 {messageTranslate("account.profile.nickName")}
                 <input
-                  class="rounded-lg border border-line bg-background px-3 py-2.5"
+                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
                   maxlength={128}
                   value={props.nickName}
                   onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
@@ -348,27 +439,32 @@ export function AccountProfileView(props: AccountProfileViewProps) {
               <label class="grid gap-2 text-sm font-medium">
                 {messageTranslate("account.profile.preferredLanguage")}
                 <input
-                  class="rounded-lg border border-line bg-background px-3 py-2.5"
+                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
                   maxlength={16}
                   value={props.preferredLanguage}
                   onInput={(event) => props.onPreferredLanguageInput(event.currentTarget.value)}
                 />
               </label>
-              <div class="grid gap-3 text-sm font-medium sm:col-span-2">
-                <span>{messageTranslate("account.profile.picture")}</span>
-                <div class="flex flex-wrap items-center gap-4">
+              <div class="grid gap-3 text-sm font-medium sm:col-span-2 rounded-xl border border-line/70 bg-muted/30 p-4 sm:p-5">
+                <div class="flex items-center gap-2">
+                  <Icon class="size-4 text-accent" path={mdiCameraOutline} />
+                  <span>{messageTranslate("account.profile.picture")}</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-4 pt-1">
                   <Show when={props.pictureUrl.length > 0}>
                     <img
                       alt={messageTranslate("account.profile.pictureAlt")}
-                      class="h-20 w-20 rounded-full border border-line object-cover"
+                      class="size-16 rounded-full border-2 border-line object-cover shadow-xs"
                       src={props.pictureUrl}
                     />
                   </Show>
-                  <label class="grid gap-2">
-                    <span class="sr-only">{messageTranslate("account.profile.pictureChoose")}</span>
+                  <label class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium transition-colors hover:bg-muted active:scale-[0.98]">
+                    <Icon class="size-4 text-muted-foreground" path={mdiUploadOutline} />
+                    <span>{messageTranslate("account.profile.pictureChoose")}</span>
                     <input
                       accept={accountPictureAcceptAttribute}
-                      class="text-sm font-normal"
+                      aria-label={messageTranslate("account.profile.pictureChoose")}
+                      class="sr-only"
                       disabled={props.pictureStatus === "uploading" || props.pictureStatus === "removing"}
                       type="file"
                       onChange={(event) => {
@@ -379,14 +475,15 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     />
                   </label>
                   <Show when={props.pictureUrl.length > 0}>
-                    <button
-                      class="rounded-lg border border-line px-4 py-2.5 font-semibold disabled:opacity-60"
+                    <Button
                       disabled={props.pictureStatus === "uploading" || props.pictureStatus === "removing"}
-                      type="button"
                       onClick={props.onPictureRemove}
+                      type="button"
+                      variant="outlineRed"
                     >
+                      <Icon class="mr-1.5 size-4" path={mdiTrashCanOutline} />
                       {messageTranslate("account.profile.pictureRemove")}
-                    </button>
+                    </Button>
                   </Show>
                 </div>
                 <span class="text-xs font-normal text-muted-foreground">
@@ -394,9 +491,13 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                 </span>
                 <Show when={props.pictureErrorMessage}>
                   {(message) => (
-                    <p class="text-sm font-normal text-danger" role="alert">
-                      {message()}
-                    </p>
+                    <div
+                      class="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm text-danger"
+                      role="alert"
+                    >
+                      <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
+                      <span>{message()}</span>
+                    </div>
                   )}
                 </Show>
                 <Show when={props.pictureStatus === "uploading"}>
@@ -405,24 +506,40 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                   </p>
                 </Show>
                 <Show when={props.pictureStatus === "success"}>
-                  <p class="text-sm font-medium text-success" role="status">
-                    {messageTranslate("account.profile.pictureSaved")}
-                  </p>
+                  <div
+                    class="flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm font-medium text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+                    role="status"
+                  >
+                    <Icon class="size-4 shrink-0" path={mdiCheckCircleOutline} />
+                    <span>{messageTranslate("account.profile.pictureSaved")}</span>
+                  </div>
                 </Show>
               </div>
             </div>
             <Show when={props.validationMessage}>
-              {(message) => <p class="mt-4 text-sm text-danger">{message()}</p>}
+              {(message) => (
+                <div
+                  class="mt-4 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/5 p-3.5 text-sm text-danger"
+                  role="alert"
+                >
+                  <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
+                  <span>{message()}</span>
+                </div>
+              )}
             </Show>
             <Show when={props.status === "success"}>
-              <p class="mt-4 text-sm font-medium text-success" role="status">
-                {messageTranslate("account.profile.saved")}
-              </p>
+              <div
+                class="mt-4 flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 p-3.5 text-sm font-medium text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
+                role="status"
+              >
+                <Icon class="size-4 shrink-0" path={mdiCheckCircleOutline} />
+                <span>{messageTranslate("account.profile.saved")}</span>
+              </div>
             </Show>
             <div class="mt-6 flex justify-end">
-              <button class="rounded-lg bg-accent px-4 py-2.5 font-semibold text-accent-contrast" type="submit">
+              <Button type="submit" variant="filledBlue">
                 {messageTranslate("account.profile.save")}
-              </button>
+              </Button>
             </div>
           </form>
         </Show>
