@@ -12,13 +12,25 @@ type HttpResultResponseContext = {
   }
 }
 
+type HttpResultResponseMetadataContext = HttpResultResponseContext & {
+  readonly get?: (name: string) => unknown
+  readonly set?: (name: string, value: unknown) => void
+}
+
 export function httpResultResponseCreate<T>(
   context: HttpResultResponseContext,
   result: Result<T>,
   status = 200,
   lastModified?: Date,
 ): Response {
-  const requestId = httpRequestIdGet(context.req.header("x-request-id"), () => crypto.randomUUID())
+  const metadataContext = context as HttpResultResponseMetadataContext
+  const contextualRequestId = metadataContext.get?.("httpRequestId")
+  const requestId =
+    typeof contextualRequestId === "string"
+      ? httpRequestIdGet(contextualRequestId, () => crypto.randomUUID())
+      : crypto.randomUUID()
+  metadataContext.set?.("httpRequestId", requestId)
+  if (!result.success) metadataContext.set?.("httpOperation", result.op)
   if (!result.success) {
     const mapped = httpErrorResultCreate({ requestId, result })
     const response = context.json(mapped.body, mapped.status as ContentfulStatusCode)

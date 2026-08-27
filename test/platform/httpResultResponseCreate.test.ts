@@ -21,6 +21,23 @@ function contextCreate(input: { ifModifiedSince?: string; method?: string } = {}
   return { context, jsonCalls: () => jsonCalls }
 }
 
+test("server responses do not adopt a client-supplied request ID", () => {
+  const context = {
+    json: (body: unknown, status = 200) => Response.json(body, { status }),
+    req: {
+      header: (name: string) => (name === "x-request-id" ? "client-request-id" : undefined),
+      method: "GET",
+    },
+  }
+
+  const response = httpResultResponseCreate(context, resultCreate({ value: "current" }))
+
+  expect(response.headers.get("x-request-id")).toMatch(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+  )
+  expect(response.headers.get("x-request-id")).not.toBe("client-request-id")
+})
+
 test("success without lastModified returns JSON and request ID only", async () => {
   const { context } = contextCreate()
 

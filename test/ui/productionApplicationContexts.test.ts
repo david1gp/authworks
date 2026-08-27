@@ -13,7 +13,9 @@ afterEach(() => {
 })
 
 describe("production application contexts", () => {
-  test("consumes the account organization response with migrated string IDs", async () => {
+  test("repeats authenticated bootstrap with a fresh, uncached /me response", async () => {
+    const mePath = `/realms/${realmId}/me`
+    const meRequestCaches: RequestCache[] = []
     const responses: Record<string, unknown> = {
       "/organization-discovery": {
         branding: {
@@ -111,8 +113,9 @@ describe("production application contexts", () => {
     }
     Object.defineProperty(globalThis, "fetch", {
       configurable: true,
-      value: async (input: string | URL | Request) => {
+      value: async (input: string | URL | Request, init?: RequestInit) => {
         const path = new URL(String(input), "https://auth.example").pathname
+        if (path === mePath) meRequestCaches.push(init?.cache ?? "default")
         const body = responses[path]
         return body === undefined ? Response.json({}, { status: 404 }) : Response.json(body)
       },
@@ -128,5 +131,22 @@ describe("production application contexts", () => {
     expect(contexts.session.guard.organization).toEqual({ organizationId, status: "available" })
     expect(contexts.session.guard.authentication).toEqual({ status: "authenticated", userId })
     expect(contexts.session.guard.permission).toBe("denied")
+
+    const firstMeResponse = responses[mePath]
+    if (firstMeResponse === undefined || typeof firstMeResponse !== "object" || firstMeResponse === null)
+      throw new Error("The /me test response was not configured.")
+    const firstMeObject = firstMeResponse as {
+      readonly capabilities: { readonly realmRead: boolean }
+      readonly user: { readonly profile: { readonly displayName: string } }
+    }
+    responses[mePath] = {
+      ...firstMeObject,
+      user: { ...firstMeObject.user, profile: { displayName: "Refreshed User" } },
+    }
+
+    const refreshed = await productionApplicationContextsCreate()
+
+    expect(refreshed.session.actorLabel).toBe("Refreshed User")
+    expect(meRequestCaches).toEqual(["no-store", "no-store"])
   })
 })

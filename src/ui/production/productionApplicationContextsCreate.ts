@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { httpApiClientRequest } from "../../platform/http/httpApiClientRequest.js"
 import { organizationDiscoveryResponseSchema } from "../../features/organizations/public/organizationDiscoveryResponseSchema.js"
 import { organizationMeListResponseSchema } from "../../features/organizations/public/organizationMeListResponseSchema.js"
 import { organizationResourceIdSchema } from "../../features/organizations/public/organizationResourceIdSchema.js"
@@ -14,13 +15,18 @@ export async function productionApplicationContextsCreate(): Promise<{
   readonly api: ProductionApiContextValue
   readonly session: ProductionSessionContextValue
 }> {
-  const discovery = await productionJsonGet("/organization-discovery", organizationDiscoveryResponseSchema)
+  const discovery = await productionJsonGet(
+    "/organization-discovery",
+    organizationDiscoveryResponseSchema,
+    "productionOrganizationDiscoveryGet",
+  )
   if (discovery === undefined || !discovery.found) return productionAnonymousContextsCreate()
 
   const realmId = discovery.organization.realmId
   const current = await productionJsonGet(
     `/realms/${encodeURIComponent(realmId)}/sessions/current`,
     sessionCurrentResponseSchema,
+    "productionSessionCurrentGet",
   )
   if (current === undefined) {
     return productionContextsCreate({
@@ -32,16 +38,26 @@ export async function productionApplicationContextsCreate(): Promise<{
   const session = current.session
   const user =
     session.subjectType === "user"
-      ? await productionJsonGet(`/realms/${encodeURIComponent(realmId)}/me`, userCurrentResponseSchema)
+      ? await productionJsonGet(
+          `/realms/${encodeURIComponent(realmId)}/me`,
+          userCurrentResponseSchema,
+          "productionUserMeGet",
+          { cache: "no-store" },
+        )
       : undefined
   const memberships =
     session.subjectType === "user"
       ? await productionJsonGet(
           `/realms/${encodeURIComponent(realmId)}/me/organizations`,
           organizationMeListResponseSchema,
+          "productionOrganizationMeList",
         )
       : undefined
-  const realm = await productionJsonGet(`/realms/${encodeURIComponent(realmId)}`, realmResponseSchema)
+  const realm = await productionJsonGet(
+    `/realms/${encodeURIComponent(realmId)}`,
+    realmResponseSchema,
+    "productionRealmGet",
+  )
   const organizations = memberships?.items.map((item) => ({
     id: item.organization.id,
     label: item.organization.name,
@@ -96,15 +112,20 @@ export async function productionApplicationContextsCreate(): Promise<{
   })
 }
 
-async function productionJsonGet<T>(path: string, schema: v.GenericSchema<T>): Promise<T | undefined> {
-  try {
-    const response = await fetch(path, { credentials: "include" })
-    if (!response.ok) return undefined
-    const parsed = v.safeParse(schema, await response.json())
-    return parsed.success ? parsed.output : undefined
-  } catch (_error) {
-    return undefined
-  }
+async function productionJsonGet<T>(
+  path: string,
+  schema: v.GenericSchema<T>,
+  op: string,
+  options: Pick<RequestInit, "cache"> = {},
+): Promise<T | undefined> {
+  const result = await httpApiClientRequest({
+    baseUrl: new URL(window.location.href).origin,
+    init: { ...options, credentials: "include", method: "GET" },
+    op,
+    path,
+    schema,
+  })
+  return result.success ? result.data : undefined
 }
 
 function productionAnonymousContextsCreate() {

@@ -1,5 +1,4 @@
 export function httpRequestIdGet(headerValue: string | undefined, fallbackCreate: () => string): string {
-  if (headerValue !== undefined && headerValue.length > 0 && headerValue.length <= 128 && !/\s/.test(headerValue))
-    return headerValue
+  if (headerValue !== undefined && /^[a-z0-9._:-]{1,128}$/i.test(headerValue)) return headerValue
   return fallbackCreate()
 }

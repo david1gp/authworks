@@ -42,6 +42,7 @@ import { whatsappOtpServerAppCreate } from "../features/whatsappOtp/server/whats
 import type { R2Configuration } from "../platform/configuration/r2ConfigurationSchema.js"
 import { resultCreate } from "../platform/errors/resultCreate.js"
 import { healthServerAppCreate } from "../platform/http/healthServerAppCreate.js"
+import { httpServerDiagnosticsMiddlewareCreate } from "../platform/http/httpServerDiagnosticsMiddlewareCreate.js"
 import { uiStaticServerAppCreate } from "../platform/http/uiStaticServerAppCreate.js"
 import { runtimeCreate } from "../platform/runtime/runtimeCreate.js"
 import { r2ObjectStorageCreate } from "../platform/storage/r2/r2ObjectStorageCreate.js"
@@ -119,6 +120,7 @@ export function serverApplicationCreate(
           publicOrigin,
         })
   const application = new Hono()
+  application.use("*", httpServerDiagnosticsMiddlewareCreate({ enabled: options.production === true }))
   const wahaRepository = wahaHealthCandidateRepositoryCreate(database.data.db)
   const wahaCandidateReader = wahaHealthCandidateReaderCreate({ repository: wahaRepository })
   const whatsappAvailability =

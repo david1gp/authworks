@@ -2,11 +2,19 @@ import * as v from "valibot"
 import type { ResultErr } from "#result"
 import { errorCatalogHttpMappingGet } from "../errors/errorCatalogHttpMappingGet.js"
 import { resultErrorCodedCreate } from "../errors/resultErrorCodedCreate.js"
+import { httpApiInvalidResponseDiagnosticLog } from "./httpApiInvalidResponseDiagnosticLog.js"
 import { httpErrorResponseSchema } from "./httpErrorResponseSchema.js"
 import { httpRequestIdGet } from "./httpRequestIdGet.js"
 
 type HttpApiClientErrorResultCreateOptions = {
   readonly body: unknown
+  readonly diagnostic?: {
+    readonly bodyParseFailed: boolean
+    readonly log?: (diagnostic: Record<string, unknown>) => void
+    readonly reason?: "unexpected-304"
+    readonly requestId?: string
+    readonly url: string | URL
+  }
   readonly op: string
   readonly response: Response
   readonly responseErrorMessageGet?: (body: unknown, status: number) => string | undefined
@@ -34,6 +42,22 @@ export function httpApiClientErrorResultCreate(options: HttpApiClientErrorResult
     result.statusCode = options.response.status
     return result
   }
+
+  if (options.diagnostic !== undefined)
+    httpApiInvalidResponseDiagnosticLog({
+      issues:
+        options.diagnostic.reason === "unexpected-304" || options.diagnostic.bodyParseFailed
+          ? undefined
+          : parsedError.issues,
+      log: options.diagnostic.log,
+      op: options.op,
+      reason: options.diagnostic.reason ?? (options.diagnostic.bodyParseFailed ? "invalid-json" : "invalid-schema"),
+      requestId:
+        options.diagnostic.requestId ??
+        httpRequestIdGet(options.response.headers.get("x-request-id") ?? undefined, () => crypto.randomUUID()),
+      status: options.response.status,
+      url: options.diagnostic.url,
+    })
 
   const customMessage = options.responseErrorMessageGet?.(options.body, options.response.status)
   if (customMessage !== undefined) {

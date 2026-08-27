@@ -95,3 +95,24 @@ test("string ifModifiedSince is sent as-is", async () => {
 
   expect(request?.headers.get("if-modified-since")).toBe(ifModifiedSince)
 })
+
+test("no-store removes an inherited If-Modified-Since header", async () => {
+  let request: Request | undefined
+  await httpApiClientGetRequest({
+    baseUrl: "https://identity.example.test",
+    fetch: async (input, init) => {
+      request = new Request(input, init)
+      return Response.json({ value: "current" })
+    },
+    init: {
+      cache: "no-store",
+      headers: { "if-modified-since": "Wed, 19 Aug 2026 12:34:56 GMT" },
+    },
+    path: "/resource",
+    op: "resourceGet",
+    schema,
+  })
+
+  expect(request?.cache).toBe("no-store")
+  expect(request?.headers.get("if-modified-since")).toBeNull()
+})

@@ -89,12 +89,13 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
     schema: v.GenericSchema<T>,
     getOptions?: HttpGetOptions,
     token: Secret | string | undefined | typeof tokenFallback | typeof tokenNoFallback = tokenFallback,
+    init: RequestInit = { method: "GET" },
   ): Promise<HttpGetResult<T>> =>
     httpApiClientGetRequest({
       baseUrl: options.baseUrl,
       fetch: options.fetch,
       ifModifiedSince: getOptions?.ifModifiedSince,
-      init: { method: "GET" },
+      init,
       op: "userApiClientRequest",
       path,
       schema,
@@ -171,7 +172,13 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
       )
     },
     userMeGet(realmId: string, getOptions?: HttpGetOptions): Promise<HttpGetResult<UserCurrentResponse>> {
-      return getRequest(`/realms/${encodeURIComponent(realmId)}/me`, userCurrentResponseSchema, getOptions)
+      return getRequest(
+        `/realms/${encodeURIComponent(realmId)}/me`,
+        userCurrentResponseSchema,
+        getOptions,
+        tokenFallback,
+        { cache: "no-store", method: "GET" },
+      )
     },
     userMeAuthenticationMethodsGet(
       realmId: string,

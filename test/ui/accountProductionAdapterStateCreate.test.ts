@@ -57,9 +57,15 @@ afterEach(async () => {
 })
 
 describe("account production adapter state", () => {
-  test("loads /me without an adapter conditional cache for every account page kind", async () => {
+  test("loads /me without browser cache revalidation for every account page kind", async () => {
     const kinds = ["overview", "profile", "email", "password", "delete"] as const
-    const requests: { readonly ifModifiedSince: string | null; readonly method: string; readonly path: string }[] = []
+    const requests: {
+      readonly cache: RequestCache
+      readonly ifModifiedSince: string | null
+      readonly method: string
+      readonly path: string
+    }[] = []
+    let browserCacheHasCurrentMe = false
 
     Object.defineProperty(globalThis, "window", {
       configurable: true,
@@ -71,10 +77,13 @@ describe("account production adapter state", () => {
       if (url.pathname === "/organization-discovery") return Response.json({ found: false })
       if (url.pathname === `/realms/${realmId}/me`) {
         requests.push({
+          cache: request.cache,
           ifModifiedSince: request.headers.get("if-modified-since"),
           method: request.method,
           path: url.pathname,
         })
+        if (browserCacheHasCurrentMe && request.cache !== "no-store") return new Response(null, { status: 304 })
+        browserCacheHasCurrentMe = true
         return Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse)
       }
       if (url.pathname === `/realms/${realmId}/me/emails`) return Response.json({ items: [] })
@@ -95,6 +104,7 @@ describe("account production adapter state", () => {
     const userRequests = requests.filter((request) => request.path === `/realms/${realmId}/me`)
     expect(userRequests).toHaveLength(kinds.length * 2)
     expect(userRequests.every((request) => request.method === "GET")).toBe(true)
+    expect(userRequests.every((request) => request.cache === "no-store")).toBe(true)
     expect(userRequests.every((request) => request.ifModifiedSince === null)).toBe(true)
   })
 
