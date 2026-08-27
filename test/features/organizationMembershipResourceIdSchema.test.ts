@@ -24,6 +24,9 @@ const invalidMembershipIds = [
   "membership-1\\2",
   "membership-1.2",
   "membership-1\u0000",
+  "0",
+  "01",
+  "123456789012345678901",
   "zitadel-membership-0-1",
   "zitadel-membership-01-1",
   "zitadel-membership-1-01",
@@ -42,6 +45,7 @@ const invalidMembershipIds = [
 test("membership resource IDs accept only the Authworks and migrated grammars", () => {
   const valid = [
     "018f0000-0000-7000-8000-000000000001",
+    "12345678901234567890",
     "membership-1",
     "membership-12345678901234567890",
     "zitadel-membership-1-1",
