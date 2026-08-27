@@ -1,4 +1,9 @@
 import { defineConfig, devices } from "@playwright/test"
+import { productionE2eConfigurationResolve } from "./e2e/productionE2eConfigurationResolve.js"
+
+const { productionE2e, testIgnore, testMatch } = productionE2eConfigurationResolve()
+const localOrigin = "http://127.0.0.1:5174"
+const productionOrigin = "https://authworks.contentoren.de"
 
 export default defineConfig({
   testDir: "./e2e",
@@ -6,19 +11,24 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: "list",
+  testMatch,
+  testIgnore,
   retries: 0,
+  timeout: productionE2e ? 180_000 : undefined,
   expect: {
     timeout: 15_000,
   },
   use: {
-    baseURL: "http://127.0.0.1:5174",
+    baseURL: productionE2e ? productionOrigin : localOrigin,
     trace: "off",
     ...devices["Desktop Chrome"],
   },
-  webServer: {
-    command: "env UI_PORT=5174 bunx vite --host 127.0.0.1",
-    url: "http://127.0.0.1:5174/demo",
-    reuseExistingServer: true,
-    timeout: 60_000,
-  },
+  webServer: productionE2e
+    ? undefined
+    : {
+        command: "env UI_PORT=5174 bunx vite --host 127.0.0.1",
+        url: `${localOrigin}/demo`,
+        reuseExistingServer: true,
+        timeout: 60_000,
+      },
 })
