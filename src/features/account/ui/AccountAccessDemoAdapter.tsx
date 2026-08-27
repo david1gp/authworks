@@ -1,4 +1,9 @@
+import { useLocation } from "@solidjs/router"
 import { Match, Switch } from "solid-js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { ttc } from "../../../ui/i18n/model/ttc.js"
+import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
+import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import { AccountConsentsView } from "./AccountConsentsView.js"
 import { AccountEffectiveAccessView } from "./AccountEffectiveAccessView.js"
@@ -9,10 +14,26 @@ import { accountAccessDemoStateCreate } from "./accountAccessDemoStateCreate.js"
 import type { AccountAccessScreen } from "./accountAccessScreenSchema.js"
 
 export function AccountAccessDemoAdapter(props: { readonly screen: AccountAccessScreen }) {
+  const location = useLocation()
   const state = accountAccessDemoStateCreate(() => props.screen)
+  const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   return (
-    <div class="mx-auto grid max-w-5xl gap-6">
-      <DemoFixtureStateSelector options={state.stateOptions()} />
+    <div class="mx-auto max-w-5xl">
+      <header class="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8">
+        <span class="rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {messageTranslate("demo.fixture.preview")}
+        </span>
+        <h1 class="mt-5 text-3xl font-semibold tracking-tight">{ttc(scenario()?.title ?? "Access")}</h1>
+        <p class="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
+          {ttc(scenario()?.description ?? "Account access")}
+        </p>
+        <div class="mt-6">
+          <p class="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {messageTranslate("demo.fixture.state")}
+          </p>
+          <DemoFixtureStateSelector options={state.stateOptions()} />
+        </div>
+      </header>
       <Switch>
         <Match when={props.screen === "organizations"}>
           <AccountOrganizationsView
