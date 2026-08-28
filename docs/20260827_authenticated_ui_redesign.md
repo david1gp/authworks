@@ -19,7 +19,7 @@ Redesign every authenticated admin, account, and invitation page into one beauti
 
 ## Approach
 
-- Current context: the shared foundation and compact shells are complete. All 48 reachable authenticated demo routes and every production route family use the cohesive dense system. The exhaustive desktop/mobile sweep found and resolved remaining legacy presentation, duplicate landmarks/headings, contrast, responsive technical-value, email, dialog, and state-surface issues.
+- Current context: complete. All 48 reachable authenticated demo routes and every production route family use the cohesive dense system. Full repository checks pass, the complete serial Playwright suite passes aside from one isolated timing flake that passes alone, and final desktop/mobile browser signoff passes with no outstanding redesign defects.
 - Establish the shared visual tokens and compact authenticated primitives first.
 - Redesign the shell, navigation, page header, organization context, and responsive behavior as one coherent frame.
 - Migrate each feature family page-by-page onto the shared section, toolbar, panel, list, and table language.
@@ -37,7 +37,7 @@ Redesign every authenticated admin, account, and invitation page into one beauti
 - [x] 7. Redesign machine identity admin pages: machine users, detail, and credentials.
 - [x] 8. Redesign all authenticated user pages: account overview/profile/email/password/delete, organizations/access/consents, sessions/passkeys/factors/recovery codes/identities/tokens/security history, and invitation overview/acceptance.
 - [x] 9. Sweep every authenticated demo and production route for legacy styling, reduce or consolidate redundant presentation, and correct responsive, dark-theme, accessibility, and visual consistency issues.
-- [ ] 10. Run route-level browser verification and the full repository check; fix all regressions until every authenticated route is reworked and passing.
+- [x] 10. Run route-level browser verification and the full repository check; fix all regressions until every authenticated route is reworked and passing.
 
 ## Paths
 
