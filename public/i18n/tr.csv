@@ -7,21 +7,19 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Effective access
 account.access.email,Email
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.loadMore,Load more access
-account.access.organizationAccess,Organization access
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
 account.access.invitationDeclineConfirm,Bu davet reddedilsin mi?
@@ -30,8 +28,10 @@ account.access.invitationEmpty,There are no pending invitations for this account
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
 account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.membership,Membership roles
 account.access.loadMore,Load more access
+account.access.loadMore,Load more access
+account.access.membership,Membership roles
+account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
@@ -62,11 +62,11 @@ account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
 account.factors.verificationCode,Verification code
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
@@ -100,28 +100,28 @@ account.profile.emailAddressDescription,Verified addresses can be used for sign-
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailUpdating,Updating…
-account.profile.emailDescription,Review the verified address used for sign-in and account communication.
-account.profile.emailTitle,Email address and verification
 account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
+account.profile.emailMakePrimary,Make primary
 account.profile.emailNew,New email address
+account.profile.emailPrimary,Primary
+account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
+account.profile.emailRefresh,Refresh addresses
+account.profile.emailRemove,Remove
+account.profile.emailRemoving,Removing…
 account.profile.emailResend,Resend verification email
 account.profile.emailSaved,Your verified email address was updated.
 account.profile.emailSending,Sending verification email…
+account.profile.emailTitle,Email address and verification
 account.profile.emailToken,Verification token
 account.profile.emailTokenInvalid,Enter the verification token from the email.
+account.profile.emailUpdating,Updating…
 account.profile.emailVerify,Verify email address
 account.profile.emailVerifying,Verifying…
 account.profile.firstName,First name
@@ -130,15 +130,6 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
-account.profile.pictureChoose,Choose a picture file
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
-account.profile.pictureRemove,Remove picture
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -163,6 +154,15 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneTitle,WhatsApp phone number
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureRemove,Remove picture
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
@@ -193,6 +193,55 @@ account.refreshTokens.revokedAt,İptal zamanı: {date}
 account.refreshTokens.scope,Kapsamlar: {scope}
 account.refreshTokens.title,Yenileme belirteci aileleri
 account.security.label,Account security management
+account.securityHistory.category.emailChanges,Email changes
+account.securityHistory.category.impersonation,Impersonation
+account.securityHistory.category.linkedIdentities,Linked identities
+account.securityHistory.category.mfa,Multi-factor authentication
+account.securityHistory.category.passkeys,Passkeys
+account.securityHistory.category.passwords,Passwords
+account.securityHistory.category.refreshTokens,Refresh tokens
+account.securityHistory.category.sessions,Sessions
+account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
+account.securityHistory.empty,No security activity is available
+account.securityHistory.event.accessTokenRevoked,An access token was revoked
+account.securityHistory.event.emailChangeFailed,An email address change failed
+account.securityHistory.event.emailChangeRequested,An email address change was requested
+account.securityHistory.event.emailChangeVerified,A new email address was verified
+account.securityHistory.event.emailChanged,The account email address changed
+account.securityHistory.event.identityLinked,An external identity was linked
+account.securityHistory.event.identityUnlinked,An external identity was unlinked
+account.securityHistory.event.impersonationEnded,An impersonation session ended
+account.securityHistory.event.impersonationStarted,An impersonation session started
+account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
+account.securityHistory.event.mfaFailed,A multi-factor challenge failed
+account.securityHistory.event.mfaStarted,A multi-factor challenge started
+account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
+account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
+account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
+account.securityHistory.event.passkeyCredentialUsed,A passkey was used
+account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
+account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
+account.securityHistory.event.passwordChanged,The password changed
+account.securityHistory.event.passwordEmailVerified,The password email address was verified
+account.securityHistory.event.passwordLocked,The password account was locked
+account.securityHistory.event.passwordLoginFailed,A password sign-in failed
+account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
+account.securityHistory.event.passwordRecovered,The password was recovered
+account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
+account.securityHistory.event.passwordUnlocked,The password account was unlocked
+account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
+account.securityHistory.event.recoveryCodeUsed,A recovery code was used
+account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
+account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
+account.securityHistory.event.sessionCreated,A session was created
+account.securityHistory.event.sessionRevoked,A session was revoked
+account.securityHistory.event.sessionRotated,A session was renewed
+account.securityHistory.event.sessionsRevoked,All sessions were revoked
+account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
+account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
+account.securityHistory.event.totpRemoved,An authenticator was removed
+account.securityHistory.event.totpVerified,An authenticator challenge succeeded
+account.securityHistory.loadMore,Load more security activity
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
@@ -361,6 +410,7 @@ admin.oidc.clients.description,Bu alanda kişileri OpenID Connect üzerinden do�
 admin.oidc.clients.detailTitle,OIDC istemci ayrıntısı
 admin.oidc.clients.empty,Bu alanda henüz kayıtlı bir OpenID Connect istemcisi yok.
 admin.oidc.clients.exactMatchHint,Satır başına bir URI. Her yönlendirme tam olarak eşleştirilir; bu nedenle joker karakterler ve sondaki farklılıklar reddedilir.
+admin.oidc.clients.identifier,İstemci tanımlayıcısı
 admin.oidc.clients.invalid,"Bir istemci adı, en az bir tam yönlendirme URI'si ve en az bir kapsam girin."
 admin.oidc.clients.lifecycleChanged,İstemcinin durumu değiştirildi.
 admin.oidc.clients.missingId,Bu hedef için bir OIDC istemcisi seçilmiş olmalıdır.
@@ -374,6 +424,9 @@ admin.oidc.clients.scopes,İzin verilen kapsamlar
 admin.oidc.clients.search,İstemci ara
 admin.oidc.clients.settingsDescription,"İstemci adını, tam yönlendirme URI'lerini, izin verilen kapsamları ve onayın nasıl işleneceğini yönetin."
 admin.oidc.clients.settingsTitle,İstemci ayarları
+admin.oidc.clients.statusValue.active,Etkin
+admin.oidc.clients.statusValue.inactive,Etkin değil
+admin.oidc.clients.statusValue.removed,Kaldırıldı
 admin.oidc.clients.title,OpenID Connect istemcileri
 admin.oidc.clients.trusted,Güvenilir
 admin.oidc.clients.trustedHint,Güvenilir bir istemci onay ekranını tamamen atlar. Yalnızca kendi uygulamalarınızı güvenilir olarak işaretleyin.
@@ -424,12 +477,12 @@ admin.oidc.keys.retiredAt,Kullanımdan kaldırılma
 admin.oidc.keys.rotate,Anahtarı döndür
 admin.oidc.keys.rotateConfirm,İmzalama anahtarı döndürülsün mü? Yeni bir anahtar yayınlanır ve mevcut anahtar emekli edilir.
 admin.oidc.keys.rotated,İmzalama anahtarı döndürüldü.
+admin.oidc.keys.statusValue.active,Etkin
+admin.oidc.keys.statusValue.retired,Kullanımdan kaldırıldı
 admin.oidc.keys.title,İmzalama anahtarları
 admin.oidc.lifecycle.activate,Etkinleştir
 admin.oidc.lifecycle.deactivate,Devre dışı bırak
 admin.oidc.lifecycle.remove,İstemciyi kaldır
-admin.oidc.pageNext,Sonraki sayfa
-admin.oidc.pagePrevious,Önceki sayfa
 admin.oidc.permissionDenied,Bu alandaki OpenID Connect ayarlarını görüntüleme veya değiştirme izniniz yok.
 admin.oidc.permissionDeniedTitle,Erişim kullanılamıyor
 admin.oidc.secret.acknowledge,Gizli anahtarı sakladım
@@ -548,17 +601,56 @@ admin.organizations.pageNext,Sonraki sayfa
 admin.organizations.pagePrevious,Önceki sayfa
 admin.organizations.permissionDenied,Bu kuruluşu görüntüleme veya değiştirme izniniz yok.
 admin.organizations.permissionDeniedTitle,Erişim kullanılamıyor
+admin.organizations.policy.allowedFactors,Allowed MFA factors
+admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
+admin.organizations.policy.assurance.authenticated,Authenticated session
+admin.organizations.policy.assurance.multi_factor,Multi-factor session
+admin.organizations.policy.assurance.none,No assurance requirement
 admin.organizations.policy.description,Kişilerin hangi oturum açma yöntemlerini kullanabileceğini ve hangi yapılandırılmış sağlayıcıların görüneceğini seçin.
 admin.organizations.policy.domainDiscovery,Kuruluşu bir e-posta alan adından tanı
+admin.organizations.policy.down,Down
+admin.organizations.policy.effectiveValue,Effective value: {value}
 admin.organizations.policy.emailOtp,E-posta ile tek kullanımlık kod
+admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
+admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
+admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
+admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
+admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
+admin.organizations.policy.enforcementTitle,Effective enforcement
 admin.organizations.policy.externalIdentity,Harici kimlik sağlayıcıları
+admin.organizations.policy.factor.emailOtp,Email one-time code
+admin.organizations.policy.factor.passkey,Passkey
+admin.organizations.policy.factor.totp,Authenticator app (TOTP)
 admin.organizations.policy.inherited,Realm'den devralındı
+admin.organizations.policy.minimumAssurance,Minimum step-up assurance
+admin.organizations.policy.moveDown,Move {factor} down
+admin.organizations.policy.moveUp,Move {factor} up
+admin.organizations.policy.notRequired,Not required
+admin.organizations.policy.organizationOverrides,Organization overrides
+admin.organizations.policy.organizationValue,Organization override
+admin.organizations.policy.overrideRealm,Override the realm value
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Şifre
 admin.organizations.policy.passwordRecovery,Parola kurtarma
+admin.organizations.policy.preferredOrder,Preferred factor order
+admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
+admin.organizations.policy.realmDefaults,Realm defaults
+admin.organizations.policy.realmValue,Realm value
 admin.organizations.policy.registration,Self servis kayıt
+admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
+admin.organizations.policy.required,Required
+admin.organizations.policy.requiredMfa,Required MFA
 admin.organizations.policy.saved,Oturum açma politikası kaydedildi.
+admin.organizations.policy.scopeLabel,Policy scope
+admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
+admin.organizations.policy.securityTitle,MFA and assurance
 admin.organizations.policy.title,Oturum açma politikası
+admin.organizations.policy.up,Up
+admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
+admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
+admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
+admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
+admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
 admin.organizations.providers.allowAccountCreation,Yeni kişiler için otomatik olarak hesap oluştur
 admin.organizations.providers.clientId,İstemci kimliği
 admin.organizations.providers.clientSecret,İstemci gizli anahtarı
@@ -605,6 +697,7 @@ admin.projects.crossTenant,Bu kaynak başka bir realm'e ait ve burada kullanıla
 admin.projects.deleteConfirm,"Bu proje silinsin mi? Uygulamalar, roller ve hak atamaları onunla birlikte silinir."
 admin.projects.detail.authorizationRequired,Yetkilendirme gerekli
 admin.projects.detail.created,Oluşturulma
+admin.projects.detail.identifier,Proje tanımlayıcısı
 admin.projects.detail.organization,Kuruluş
 admin.projects.detail.projectAccessRequired,Proje erişimi gerekli
 admin.projects.detail.settingsDescription,Proje adını ve erişimin nasıl uygulandığını yönetin.
@@ -615,6 +708,7 @@ admin.projects.grants.create,Kuruluş erişimi ver
 admin.projects.grants.description,Başka bir kuruluşa bu projeye erişim verin ve hangi rolleri alacağını seçin.
 admin.projects.grants.empty,Bu projeye hiçbir kuruluşa erişim verilmedi.
 admin.projects.grants.grantedOrganization,Yetkilendirilen kuruluş
+admin.projects.grants.invalid,Bir kuruluş ve en az bir rol seçin.
 admin.projects.grants.revokeConfirm,Bu organizasyon ataması iptal edilsin mi? Üyeler proje erişimini kaybedecek.
 admin.projects.grants.roleKeys,Verilen roller
 admin.projects.grants.title,Kuruluş yetkileri
@@ -630,8 +724,6 @@ admin.projects.list.name,Proje adı
 admin.projects.list.search,Projeleri ara
 admin.projects.list.title,Projeler
 admin.projects.missingId,Bu hedef için bir proje seçilmiş olmalıdır.
-admin.projects.pageNext,Sonraki sayfa
-admin.projects.pagePrevious,Önceki sayfa
 admin.projects.permissionDenied,Bu proje bilgilerini görüntüleme veya değiştirme izniniz yok.
 admin.projects.roles.create,Rol oluştur
 admin.projects.roles.deleteConfirm,Bu proje rolü silinsin mi? Ona atıfta bulunan atamalar rolü kaybeder.
@@ -639,10 +731,14 @@ admin.projects.roles.description,Bu projenin kuruluşlara ve üyelerine atayabil
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,Bu proje henüz rol tanımlamıyor.
 admin.projects.roles.group,Grup
+admin.projects.roles.invalid,Bir rol anahtarı ve görünen ad girin.
 admin.projects.roles.key,Rol anahtarı
 admin.projects.roles.title,Proje rolleri
 admin.projects.saved,{name} kaydedildi.
 admin.projects.status,Durum
+admin.projects.statusValue.active,Etkin
+admin.projects.statusValue.inactive,Etkin değil
+admin.projects.statusValue.removed,Kaldırıldı
 admin.realm.confirmLabel,Onaylamak için {name} yazın
 admin.realm.confirmMismatch,Alan adı eşleşmiyor.
 admin.realm.created,Oluşturulma
@@ -697,6 +793,7 @@ admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
 admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.users.backToDirectory,Kullanıcılara dön
 admin.users.count,{count} kullanıcı
 admin.users.create,Kullanıcı oluştur
 admin.users.createDescription,Geçerli realm'e bir insan kullanıcı ekleyin.
@@ -715,6 +812,7 @@ admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.empty,Geçerli filtreyle eşleşen kullanıcı yok.
 admin.users.firstName,First name
+admin.users.identifier,Kullanıcı tanımlayıcısı
 admin.users.invalid,Geçerli bir e-posta adresi ve kullanıcı adı girin.
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Etkin
@@ -731,10 +829,10 @@ admin.users.markUnverified,Doğrulanmamış olarak işaretle
 admin.users.markVerified,Doğrulanmış olarak işaretle
 admin.users.missingId,Bu kullanıcı adresten çözümlenemedi.
 admin.users.nickName,Nickname
+admin.users.pictureAlt,User profile picture
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,Profili kaydet
 admin.users.profileSaved,Kullanıcı profili kaydedildi.
-admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Profil
 admin.users.search,Kullanıcıları ara
 admin.users.searchPlaceholder,"Kullanıcı adına, e-postaya veya tanımlayıcıya göre filtrele"
@@ -772,6 +870,9 @@ common.enabled,Açık
 common.error,Bir şeyler ters gitti.
 common.language,Dil
 common.loading,Yükleniyor
+common.next,İleri
+common.pagination,Sayfalama
+common.previous,Geri
 common.retry,Tekrar deneyin
 common.revoke,Revoke
 common.save,Kaydet
@@ -909,6 +1010,7 @@ demo.fixture.accepted,kabul edildi
 demo.fixture.accountError,Hesabın belirlenimci test verileri yüklenemedi.
 demo.fixture.active,aktif
 demo.fixture.assuranceRequired,güvence gerekli
+demo.fixture.continuing,devam ediyor
 demo.fixture.crossTenant,kiracılar arası
 demo.fixture.declined,reddedildi
 demo.fixture.empty,boş
@@ -916,13 +1018,19 @@ demo.fixture.ended,sonlandırıldı
 demo.fixture.error,hata
 demo.fixture.expired,süresi doldu
 demo.fixture.expiring,süresi doluyor
+demo.fixture.fatal,kritik hata
 demo.fixture.loading,yükleniyor
 demo.fixture.nestedRejected,iç içe reddedildi
 demo.fixture.oneTime,tek kullanımlık
+demo.fixture.passwordChangeExpired,şifre süresi doldu
 demo.fixture.permissionDenied,erişim engellendi
 demo.fixture.preview,Durumsuz veri önizlemesi
+demo.fixture.recoveryFatal,kurtarma kullanılamıyor
+demo.fixture.recoveryLoading,kurtarma yükleniyor
 demo.fixture.redacted,gizlendi
 demo.fixture.replayed,yeniden oynatıldı
+demo.fixture.resetInvalid,sıfırlama bağlantısı geçersiz
+demo.fixture.resetLoading,sıfırlama bağlantısı yükleniyor
 demo.fixture.state,Veri durumu
 demo.fixture.success,başarılı
 demo.hub.accountDescription,"Self servis profil, kuruluş ve güvenlik hedeflerini keşfedin."
@@ -1049,11 +1157,11 @@ email.preview.text,Metin alternatifi
 email.preview.verification,E-posta doğrulaması
 login.chooser.accountOrMethodTitle,Bir hesap veya yöntem seçin
 login.chooser.description,{organization}'da nasıl oturum açmak istediğinizi seçin.
+login.chooser.emailOtpDetail,E-postayla tek seferlik kod alın
+login.chooser.emailOtpLabel,E-posta kodu
 login.chooser.lastUsed,Son kullanım
 login.chooser.methodTitle,Bir yöntem seçin
 login.chooser.orChooseMethod,Veya bir yöntem seçin
-login.chooser.emailOtpDetail,E-postayla tek seferlik kod alın
-login.chooser.emailOtpLabel,E-posta kodu
 login.chooser.passkeyDetail,Cihazınızın ekran kilidini veya güvenlik anahtarını kullanın
 login.chooser.passkeyLabel,Geçiş anahtarı
 login.chooser.passwordDetail,Hesap şifrenizi kullanın
@@ -1063,24 +1171,39 @@ login.chooser.providerLabel,{provider} ile devam et
 login.chooser.register,Bir hesap oluşturun
 login.chooser.title,Oturum aç
 login.chooser.useRecent,Yeni bir hesap kullan
+login.chooser.whatsappOtpDetail,WhatsApp üzerinden tek kullanımlık kod alın
+login.chooser.whatsappOtpLabel,WhatsApp kodu
 login.common.back,Oturum açma seçeneklerine geri dön
 login.common.legal,Devam ederek {terms} ve {privacy}'yi kabul etmiş olursunuz.
 login.common.privacy,Gizlilik Politikası
 login.common.terms,Hizmet Şartları
 login.common.working,Çalışma…
+login.emailOtp.back,Yöntemlere dön
+login.emailOtp.changeEmail,E-postayı değiştir
 login.emailOtp.codeDescription,{email}'a gönderdiğimiz altı haneli kodu girin.
+login.emailOtp.codeHelp,6 hane girin.
 login.emailOtp.codeTitle,E-posta kodunuzu girin
 login.emailOtp.description,Şifre istemek yerine size e-postayla tek kullanımlık kod göndereceğiz.
+login.emailOtp.remember,Bu e-postayı hatırla
 login.emailOtp.resend,Yeni bir kod gönder
+login.emailOtp.resendCountdown,{seconds} saniye içinde yeni bir kod gönderilebilir.
+login.emailOtp.resent,Yeni bir kod gönderildi.
 login.emailOtp.send,Kodu gönder
+login.emailOtp.sending,Gönderiliyor...
 login.emailOtp.title,Bir e-posta koduyla oturum açın
 login.emailOtp.verify,Kodu doğrula
+login.emailOtp.verifying,Doğrulanıyor...
 login.error.codeRequired,Altı haneli doğrulama kodunu girin.
+login.error.credentialsInvalid,Kullanıcı adı veya şifre yanlış.
 login.error.credentialsRequired,Kullanıcı adınızı ve şifrenizi girin.
+login.error.emailRecoveryRequired,Hesabınızın e-posta adresini girin.
 login.error.emailRequired,Geçerli bir e-posta adresi girin.
 login.error.enrollmentMissing,Bir kodu onaylamadan önce kimlik doğrulama kurulumunu başlatın.
+login.error.identifierRequired,Kullanıcı adınızı veya e-posta adresinizi girin.
 login.error.nameRequired,Hesabınızda gösterilecek adı girin.
+login.error.newPasswordRequired,Yeni bir şifre girin.
 login.error.passwordMismatch,Şifreler eşleşmiyor.
+login.error.passwordRequired,Şifrenizi girin.
 login.error.passwordTooShort,Şifre en az 8 karakter içermelidir.
 login.error.recoveryCodeRequired,Kaydedilen kurtarma kodlarınızdan birini girin.
 login.error.tokenMissing,Devam etmek için e-postanızdaki bağlantının tamamını açın.
@@ -1089,16 +1212,65 @@ login.logout.doneDescription,{organization} oturumunuz kapatıldı.
 login.logout.doneTitle,Oturumu kapattım
 login.logout.submit,oturumu Kapat
 login.logout.title,{organization} oturumunu kapatın
+login.mfa.backToChoices,İki adımlı doğrulama seçeneklerine dön
+login.mfa.backToMethods,Yöntemlere dön
+login.mfa.continue,Girişe devam et
 login.mfa.description,Kimliğinizi nasıl doğrulayacağınızı seçin.
 login.mfa.emailOtp,E-posta kodu
+login.mfa.emailOtpCodeTitle,E-posta doğrulama kodu
 login.mfa.emailOtpDescription,E-posta adresinize gönderdiğimiz altı haneli kodu girin.
+login.mfa.emailOtpDetail,E-posta ile tek kullanımlık doğrulama kodu alın.
+login.mfa.emailOtpEnroll,E-posta kodlarını ayarla
+login.mfa.emailOtpEnrollDescription,Doğrulama kodları hesabınızın e-posta adresine gönderilecek.
+login.mfa.emailOtpEnrollNotice,Hesabınızın e-postasını ikinci faktör olarak kullanmak için e-posta kodlarını ayarlayın.
+login.mfa.emailOtpEnrollSent,E-posta kodları ayarlandı. Adresinize gönderilen kodu girin.
+login.mfa.emailOtpEnrollTitle,E-posta kodlarını ayarla
+login.mfa.emailOtpResent,E-posta adresinize yeni bir doğrulama kodu gönderildi.
+login.mfa.emailOtpSend,Kod gönder
+login.mfa.emailOtpSendDescription,Hesabınızın e-posta adresine altı haneli doğrulama kodu gönderin.
+login.mfa.emailOtpSent,E-posta adresinize doğrulama kodu gönderildi.
+login.mfa.emailOtpUnavailableDescription,E-posta ile ikinci faktör doğrulaması bu giriş akışında kullanılamıyor.
+login.mfa.emailOtpUnavailableNotice,E-posta MFA aktarımı bu Authworks giriş isteği için yapılandırılmamış.
+login.mfa.emailOtpUnavailableTitle,E-posta kodu kullanılamıyor
+login.mfa.enrollDescription,Hesabınız için iki adımlı doğrulamayı ayarlamak üzere bir yöntem seçin.
+login.mfa.enrollTitle,İki adımlı doğrulamayı ayarla
+login.mfa.enterRecoveryCode,Kaydedilmiş bir kurtarma kodu girin.
+login.mfa.enterSixDigits,6 hane girin.
+login.mfa.factorUnavailable,Bu faktör mevcut giriş sözleşmesinde kullanılamıyor.
+login.mfa.loadingOptions,İki adımlı doğrulama seçenekleri yükleniyor...
+login.mfa.loadingOptionsDescription,Kullanılabilir ikinci faktör seçenekleri alınıyor.
+login.mfa.optionalDescription,Ek güvenlik için iki adımlı doğrulamayı ayarlayın veya şimdilik atlayın.
+login.mfa.optionalTitle,İsteğe bağlı iki adımlı doğrulama
+login.mfa.optionsUnavailableDescription,Kullanılabilir ikinci faktör seçenekleri yüklenemedi.
+login.mfa.optionsUnavailableTitle,İki adımlı doğrulama kullanılamıyor
 login.mfa.passkey,Geçiş anahtarı
+login.mfa.passkeyDescription,"Cihaz ekran kilidi veya biyometriyle bir geçiş anahtarı kullanarak onaylayın."
+login.mfa.passkeyDetail,Geçiş anahtarı veya cihaz biyometrisiyle doğrulayın.
+login.mfa.passkeyEnrollmentUnavailableDescription,Barındırılan giriş sözleşmesi geçiş anahtarı kaydını sunmuyor.
+login.mfa.passkeyEnrollmentUnavailableNotice,Geçiş anahtarı kurulumunu kimliği doğrulanmış hesap güvenliği sayfasından tamamlayıp girişe dönün.
+login.mfa.passkeyEnrollmentUnavailableTitle,Geçiş anahtarı kurulumu kullanılamıyor
+login.mfa.passkeyUnavailableDescription,İkinci faktör olarak geçiş anahtarı doğrulaması bu giriş akışında kullanılamıyor.
+login.mfa.passkeyUnavailableNotice,Geçiş anahtarı MFA aktarımı bu Authworks isteği için yapılandırılmamış.
+login.mfa.passkeyUnavailableTitle,Geçiş anahtarı kullanılamıyor
+login.mfa.passkeyVerify,Geçiş anahtarıyla doğrula
 login.mfa.recoveryCode,Kurtarma kodu
 login.mfa.recoveryCodeDescription,Doğrulamayı ayarlarken kaydettiğiniz tek kullanımlık kodlardan birini kullanın.
+login.mfa.recoveryCodeDetail,Kaydettiğiniz tek kullanımlık kurtarma kodlarından birini kullanın.
 login.mfa.recoveryCodeLabel,Kurtarma kodu
+login.mfa.resend,Kodu yeniden gönder
+login.mfa.resendIn,{seconds} saniye içinde yeniden gönder
+login.mfa.retryOptions,Seçenekleri yüklemeyi yeniden dene
+login.mfa.satisfiedDescription,Girişiniz zaten iki adımlı doğrulama politikasını karşılıyor.
+login.mfa.satisfiedTitle,İki adımlı doğrulama karşılandı
+login.mfa.setupFactor,{factor} ayarla
+login.mfa.skip,Şimdilik atla
+login.mfa.skipping,Atlanıyor...
 login.mfa.title,2 adımlı doğrulama
 login.mfa.totp,Kimlik doğrulayıcı uygulaması
+login.mfa.totpChallengeTitle,Kimlik doğrulayıcı kodu
 login.mfa.totpDescription,Kimlik doğrulayıcı uygulamanızdan altı haneli kodu girin.
+login.mfa.totpDetail,Kimlik doğrulayıcı uygulamanızdaki kodu kullanın.
+login.mfa.unavailable,Kullanılamıyor
 login.mfa.verificationCode,Doğrulama kodu
 login.mfa.verify,Doğrulamak
 login.passkey.canceled,Geçiş anahtarıyla oturum açma iptal edildi veya zaman aşımına uğradı. Tekrar deneyin.
@@ -1108,37 +1280,69 @@ login.passkey.permissionDenied,Geçiş anahtarı erişimi reddedildi. Bu site i�
 login.passkey.submit,Şifreyle devam et
 login.passkey.title,Şifre anahtarıyla oturum açın
 login.passkey.unsupported,Bu tarayıcı veya cihaz şifre anahtarlarını kullanamaz. Başka bir oturum açma yöntemi seçin.
+login.passkey.unsupportedTitle,Geçiş anahtarı desteklenmiyor
+login.password.back,Yöntemlere dön
 login.password.changeDescription,Devam etmeden önce yeni bir şifre seçin.
+login.password.changeRequiredDescription,Devam etmeden önce şifreniz değiştirilmelidir.
+login.password.changeRequiredTitle,Şifrenizi değiştirin
+login.password.changeSubmit,Şifreyi değiştir
 login.password.changeTitle,Şifrenizi güncelleyin
 login.password.confirm,Şifreyi onayla
 login.password.current,Mevcut Şifre
+login.password.currentRequired,Mevcut şifrenizi girin.
 login.password.description,{organization} hesabınızın kimlik bilgilerini girin.
+login.password.expiredDescription,Şifrenizin süresi doldu. Devam etmek için yeni bir şifre belirleyin.
 login.password.forgot,Parolanızı mı unuttunuz?
 login.password.hide,Şifreyi gizle
 login.password.identifier,Kullanıcı adı veya e-posta
 login.password.label,Şifre
 login.password.new,Yeni Şifre
+login.password.passwordRequired,Şifrenizi girin.
+login.password.rememberIdentifier,Bu tanımlayıcıyı hatırla
+login.password.saving,Kaydediliyor...
 login.password.show,Şifreyi göster
+login.password.signInTitle,Şifreyle giriş yap
+login.password.signingIn,Giriş yapılıyor...
 login.password.submit,Oturum aç
 login.password.title,Şifrenizi girin
+login.provider.accountNotFoundDescription,"Bu {provider} hesabına bağlı bir Authworks hesabı yok. Hesap bağlama ve kendi kendine kayıt henüz etkin değil."
+login.provider.accountNotFoundTitle,Bağlı hesap yok
 login.provider.description,{provider} adresinden devam edecek ve işiniz bittiğinde buraya döneceksiniz.
+login.provider.failureDescription,{provider} ile giriş tamamlanamadı. Lütfen tekrar deneyin.
+login.provider.linkingFailedDescription,Hesap bağlama tamamlanamadı. Başka bir giriş yöntemi deneyin.
+login.provider.linkingFailedTitle,Hesap bağlanamadı
 login.provider.submit,{provider} ile devam et
 login.provider.title,{provider} ile devam et
 login.recent.description,Bu cihazda kullandığınız hesapla devam edin.
 login.recent.heading,Son kullanılan hesaplar
-login.recent.useAnother,Başka bir yöntem veya hesap kullanın
 login.recent.other,Başka bir hesap kullan
 login.recent.title,Bir hesap seçin
+login.recent.useAnother,Başka bir yöntem veya hesap kullanın
+login.recovery.back,Girişe dön
+login.recovery.checkingLink,Sıfırlama bağlantısı kontrol ediliyor...
+login.recovery.choosePasswordTitle,Yeni bir şifre seçin
 login.recovery.completeDescription,Yeni şifrenizle oturum açın.
+login.recovery.completeDescriptionReference,Yeni şifrenizle giriş yaparak devam edin.
 login.recovery.completeTitle,Şifre güncellendi
+login.recovery.completeTitleReference,Şifreniz değiştirildi
 login.recovery.description,E-posta adresinizi girin; bir hesap mevcutsa kurtarma talimatlarını göndereceğiz.
+login.recovery.invalidLinkError,Bu şifre sıfırlama bağlantısı geçersiz veya süresi dolmuş.
+login.recovery.invalidLinkTitle,Bu sıfırlama bağlantısı artık geçerli değil
+login.recovery.loading,Şifre kurtarma yükleniyor...
+login.recovery.policyRejected,Gereksinimleri karşılayan bir şifre seçin.
 login.recovery.resetDescription,Hesabınız için yeni bir şifre seçin.
 login.recovery.resetSubmit,Şifreyi güncelle
+login.recovery.resetSubmitReference,Yeni şifre belirle
 login.recovery.resetTitle,Yeni bir şifre belirleyin
+login.recovery.saving,Kaydediliyor...
+login.recovery.sending,Gönderiliyor...
 login.recovery.sentDescription,Bir hesap bu adresle eşleşirse kurtarma talimatları yolda olacaktır. Bağlantı kısa sürede sona eriyor.
 login.recovery.sentTitle,E-postanızı kontrol edin
 login.recovery.submit,Kurtarma talimatlarını gönder
+login.recovery.submitReference,Sıfırlama bağlantısı gönder
 login.recovery.title,Şifrenizi sıfırlayın
+login.recovery.unavailableDescription,Şifre kurtarma geçici olarak kullanılamıyor.
+login.recovery.unavailableTitle,Şifre kurtarma kullanılamıyor
 login.register.description,{organization} için bir hesap oluşturun.
 login.register.displayName,Ad Soyad
 login.register.doneDescription,{email} adresine gönderdiğimiz bağlantıyı kullanarak e-posta adresinizi doğrulayın.
@@ -1150,127 +1354,41 @@ login.register.title,Hesabınızı oluşturun
 login.register.userName,Kullanıcı adı
 login.signedIn.description,{organization}'da oturum açtınız.
 login.signedIn.title,Oturum açıldı
+login.status.continuing,Girişe devam ediliyor...
+login.status.fatalTitle,Girişi yeniden başlat
 login.status.loading,Oturum açma işlemi hazırlanıyor
 login.status.unavailableDescription,Bu oturum açma isteği tamamlanamıyor. Uygulamaya dönün ve tekrar deneyin.
 login.status.unavailableTitle,Oturum açma kullanılamıyor
 login.totpEnroll.description,Bu kurulum anahtarını kimlik doğrulama uygulamanıza ekleyin ve ardından oluşturduğu kodu girin. Anahtar yalnızca şimdi gösterilir.
-login.totpEnroll.start,Kurulum anahtarını göster
-login.totpEnroll.submit,Kurulumu bitir
-login.totpEnroll.title,Bir kimlik doğrulayıcı uygulaması kurun
-login.verify.description,Hesabınızın e-posta adresini onaylayın.
-login.verify.submit,E
-login.verify.title,E-posta adresinizi doğrulayın
-login.verify.verifiedDescription,{email} onaylandı. Şimdi oturum açabilirsiniz.
-login.verify.verifiedTitle,E-posta adresi onaylandı
-demo.fixture.continuing,devam ediyor
-demo.fixture.fatal,kritik hata
-demo.fixture.passwordChangeExpired,şifre süresi doldu
-demo.fixture.recoveryFatal,kurtarma kullanılamıyor
-demo.fixture.recoveryLoading,kurtarma yükleniyor
-demo.fixture.resetInvalid,sıfırlama bağlantısı geçersiz
-demo.fixture.resetLoading,sıfırlama bağlantısı yükleniyor
-login.emailOtp.codeHelp,6 hane girin.
-login.emailOtp.back,Yöntemlere dön
-login.emailOtp.changeEmail,E-postayı değiştir
-login.emailOtp.resendCountdown,{seconds} saniye içinde yeni bir kod gönderilebilir.
-login.emailOtp.resent,Yeni bir kod gönderildi.
-login.emailOtp.remember,Bu e-postayı hatırla
-login.emailOtp.sending,Gönderiliyor...
-login.emailOtp.verifying,Doğrulanıyor...
-login.error.credentialsInvalid,Kullanıcı adı veya şifre yanlış.
-login.error.emailRecoveryRequired,Hesabınızın e-posta adresini girin.
-login.error.identifierRequired,Kullanıcı adınızı veya e-posta adresinizi girin.
-login.error.newPasswordRequired,Yeni bir şifre girin.
-login.error.passwordRequired,Şifrenizi girin.
-login.mfa.backToChoices,İki adımlı doğrulama seçeneklerine dön
-login.mfa.backToMethods,Yöntemlere dön
-login.mfa.continue,Girişe devam et
-login.mfa.emailOtpCodeTitle,E-posta doğrulama kodu
-login.mfa.emailOtpDetail,E-posta ile tek kullanımlık doğrulama kodu alın.
-login.mfa.emailOtpEnroll,E-posta kodlarını ayarla
-login.mfa.emailOtpEnrollDescription,Doğrulama kodları hesabınızın e-posta adresine gönderilecek.
-login.mfa.emailOtpEnrollNotice,Hesabınızın e-postasını ikinci faktör olarak kullanmak için e-posta kodlarını ayarlayın.
-login.mfa.emailOtpEnrollSent,E-posta kodları ayarlandı. Adresinize gönderilen kodu girin.
-login.mfa.emailOtpEnrollTitle,E-posta kodlarını ayarla
-login.mfa.emailOtpSend,Kod gönder
-login.mfa.emailOtpSendDescription,Hesabınızın e-posta adresine altı haneli doğrulama kodu gönderin.
-login.mfa.emailOtpSent,E-posta adresinize doğrulama kodu gönderildi.
-login.mfa.emailOtpResent,E-posta adresinize yeni bir doğrulama kodu gönderildi.
-login.mfa.emailOtpUnavailableDescription,E-posta ile ikinci faktör doğrulaması bu giriş akışında kullanılamıyor.
-login.mfa.emailOtpUnavailableNotice,E-posta MFA aktarımı bu Authworks giriş isteği için yapılandırılmamış.
-login.mfa.emailOtpUnavailableTitle,E-posta kodu kullanılamıyor
-login.mfa.enterRecoveryCode,Kaydedilmiş bir kurtarma kodu girin.
-login.mfa.enterSixDigits,6 hane girin.
-login.mfa.enrollDescription,Hesabınız için iki adımlı doğrulamayı ayarlamak üzere bir yöntem seçin.
-login.mfa.enrollTitle,İki adımlı doğrulamayı ayarla
-login.mfa.factorUnavailable,Bu faktör mevcut giriş sözleşmesinde kullanılamıyor.
-login.mfa.loadingOptions,İki adımlı doğrulama seçenekleri yükleniyor...
-login.mfa.loadingOptionsDescription,Kullanılabilir ikinci faktör seçenekleri alınıyor.
-login.mfa.optionalDescription,Ek güvenlik için iki adımlı doğrulamayı ayarlayın veya şimdilik atlayın.
-login.mfa.optionalTitle,İsteğe bağlı iki adımlı doğrulama
-login.mfa.optionsUnavailableDescription,Kullanılabilir ikinci faktör seçenekleri yüklenemedi.
-login.mfa.optionsUnavailableTitle,İki adımlı doğrulama kullanılamıyor
-login.mfa.passkeyDescription,"Cihaz ekran kilidi veya biyometriyle bir geçiş anahtarı kullanarak onaylayın."
-login.mfa.passkeyDetail,Geçiş anahtarı veya cihaz biyometrisiyle doğrulayın.
-login.mfa.passkeyEnrollmentUnavailableDescription,Barındırılan giriş sözleşmesi geçiş anahtarı kaydını sunmuyor.
-login.mfa.passkeyEnrollmentUnavailableNotice,Geçiş anahtarı kurulumunu kimliği doğrulanmış hesap güvenliği sayfasından tamamlayıp girişe dönün.
-login.mfa.passkeyEnrollmentUnavailableTitle,Geçiş anahtarı kurulumu kullanılamıyor
-login.mfa.passkeyUnavailableDescription,İkinci faktör olarak geçiş anahtarı doğrulaması bu giriş akışında kullanılamıyor.
-login.mfa.passkeyUnavailableNotice,Geçiş anahtarı MFA aktarımı bu Authworks isteği için yapılandırılmamış.
-login.mfa.passkeyUnavailableTitle,Geçiş anahtarı kullanılamıyor
-login.mfa.passkeyVerify,Geçiş anahtarıyla doğrula
-login.mfa.resend,Kodu yeniden gönder
-login.mfa.resendIn,{seconds} saniye içinde yeniden gönder
-login.mfa.recoveryCodeDetail,Kaydettiğiniz tek kullanımlık kurtarma kodlarından birini kullanın.
-login.mfa.totpChallengeTitle,Kimlik doğrulayıcı kodu
-login.mfa.totpDetail,Kimlik doğrulayıcı uygulamanızdaki kodu kullanın.
-login.mfa.retryOptions,Seçenekleri yüklemeyi yeniden dene
-login.mfa.setupFactor,{factor} ayarla
-login.mfa.skip,Şimdilik atla
-login.mfa.skipping,Atlanıyor...
-login.mfa.satisfiedDescription,Girişiniz zaten iki adımlı doğrulama politikasını karşılıyor.
-login.mfa.satisfiedTitle,İki adımlı doğrulama karşılandı
-login.mfa.unavailable,Kullanılamıyor
-login.passkey.unsupportedTitle,Geçiş anahtarı desteklenmiyor
-login.password.changeRequiredDescription,Devam etmeden önce şifreniz değiştirilmelidir.
-login.password.changeRequiredTitle,Şifrenizi değiştirin
-login.password.changeSubmit,Şifreyi değiştir
-login.password.expiredDescription,Şifrenizin süresi doldu. Devam etmek için yeni bir şifre belirleyin.
-login.password.currentRequired,Mevcut şifrenizi girin.
-login.password.back,Yöntemlere dön
-login.password.passwordRequired,Şifrenizi girin.
-login.password.rememberIdentifier,Bu tanımlayıcıyı hatırla
-login.password.signInTitle,Şifreyle giriş yap
-login.password.signingIn,Giriş yapılıyor...
-login.password.saving,Kaydediliyor...
-login.provider.accountNotFoundDescription,"Bu {provider} hesabına bağlı bir Authworks hesabı yok. Hesap bağlama ve kendi kendine kayıt henüz etkin değil."
-login.provider.accountNotFoundTitle,Bağlı hesap yok
-login.provider.failureDescription,{provider} ile giriş tamamlanamadı. Lütfen tekrar deneyin.
-login.provider.linkingFailedDescription,Hesap bağlama tamamlanamadı. Başka bir giriş yöntemi deneyin.
-login.provider.linkingFailedTitle,Hesap bağlanamadı
-login.recovery.back,Girişe dön
-login.recovery.checkingLink,Sıfırlama bağlantısı kontrol ediliyor...
-login.recovery.choosePasswordTitle,Yeni bir şifre seçin
-login.recovery.completeDescriptionReference,Yeni şifrenizle giriş yaparak devam edin.
-login.recovery.completeTitleReference,Şifreniz değiştirildi
-login.recovery.invalidLinkTitle,Bu sıfırlama bağlantısı artık geçerli değil
-login.recovery.invalidLinkError,Bu şifre sıfırlama bağlantısı geçersiz veya süresi dolmuş.
-login.recovery.policyRejected,Gereksinimleri karşılayan bir şifre seçin.
-login.recovery.loading,Şifre kurtarma yükleniyor...
-login.recovery.resetSubmitReference,Yeni şifre belirle
-login.recovery.saving,Kaydediliyor...
-login.recovery.sending,Gönderiliyor...
-login.recovery.submitReference,Sıfırlama bağlantısı gönder
-login.recovery.unavailableDescription,Şifre kurtarma geçici olarak kullanılamıyor.
-login.recovery.unavailableTitle,Şifre kurtarma kullanılamıyor
-login.status.continuing,Girişe devam ediliyor...
-login.status.fatalTitle,Girişi yeniden başlat
 login.totpEnroll.hideSetupKey,Kurulum anahtarını gizle
 login.totpEnroll.qrLabel,Kimlik doğrulayıcı uygulama kurulumu için QR kodu
 login.totpEnroll.scanDescription,QR kodunu kimlik doğrulayıcı uygulamanızla tarayın ve gösterilen altı haneli kodu girin.
 login.totpEnroll.setupKeyLabel,Kurulum anahtarı (tarayamıyorsanız)
 login.totpEnroll.showSetupKey,Kurulum anahtarını göster
+login.totpEnroll.start,Kurulum anahtarını göster
+login.totpEnroll.submit,Kurulumu bitir
+login.totpEnroll.title,Bir kimlik doğrulayıcı uygulaması kurun
 login.totpEnroll.unavailableDescription,Kimlik doğrulayıcı kurulumu burada hazırlanamadı. Kurulum ayrıntıları yeniden yüklemeden sonra geri yüklenemez.
+login.verify.description,Hesabınızın e-posta adresini onaylayın.
+login.verify.submit,E
+login.verify.title,E-posta adresinizi doğrulayın
+login.verify.verifiedDescription,{email} onaylandı. Şimdi oturum açabilirsiniz.
+login.verify.verifiedTitle,E-posta adresi onaylandı
+login.whatsappOtp.codeDescription,{phoneNumber} numarasına WhatsApp üzerinden gönderilen kodu girin.
+login.whatsappOtp.codeError,WhatsApp kodu yanlış.
+login.whatsappOtp.codeTitle,WhatsApp doğrulama kodu
+login.whatsappOtp.description,"Parola istemek yerine WhatsApp üzerinden tek kullanımlık bir kod göndereceğiz."
+login.whatsappOtp.differentNumber,Farklı bir numara kullan
+login.whatsappOtp.phoneHint,"Uluslararası E.164 biçimini kullanın, örneğin +14155552671."
+login.whatsappOtp.phoneInvalid,E.164 biçiminde geçerli bir telefon numarası girin.
+login.whatsappOtp.phoneNumber,WhatsApp telefon numarası
+login.whatsappOtp.phonePlaceholder,+905321234567
+login.whatsappOtp.resend,Kodu yeniden gönder
+login.whatsappOtp.send,WhatsApp kodu gönder
+login.whatsappOtp.sendError,WhatsApp kodu gönderilemedi.
+login.whatsappOtp.sending,Kod gönderiliyor…
+login.whatsappOtp.title,WhatsApp ile oturum aç
+login.whatsappOtp.verifying,Doğrulanıyor…
 shell.guard.accessUnavailable,Erişim kullanılamıyor
 shell.guard.contextRequired,Bağlam gerekli
 shell.guard.contextRequiredDetail,Devam etmeden önce gerekli realm veya organizasyonu seçin.
@@ -1332,6 +1450,7 @@ shell.nav.refreshTokens,Yenileme belirteçleri
 shell.nav.registration,Kayıt
 shell.nav.rolesGrants,Roller ve yetkiler
 shell.nav.security,Güvenlik
+shell.nav.securityHistory,Güvenlik geçmişi
 shell.nav.sessions,Oturumlar
 shell.nav.sessionsDevices,Oturumlar ve cihazlar
 shell.nav.signingKeys,İmzalama anahtarları
@@ -1343,109 +1462,3 @@ shell.state.loadingDetail,Bu sayfa ve güvenlik bağlamı hazırlanıyor.
 shell.state.nothingHere,Henüz burada bir şey yok
 shell.state.pageUnavailable,Bu sayfa kullanılamıyor
 shell.state.readyDetail,Bu sayfa özellik içeriği için hazır.
-login.chooser.whatsappOtpDetail,WhatsApp üzerinden tek kullanımlık kod alın
-login.chooser.whatsappOtpLabel,WhatsApp kodu
-login.whatsappOtp.codeError,WhatsApp kodu yanlış.
-login.whatsappOtp.codeDescription,{phoneNumber} numarasına WhatsApp üzerinden gönderilen kodu girin.
-login.whatsappOtp.codeTitle,WhatsApp doğrulama kodu
-login.whatsappOtp.description,"Parola istemek yerine WhatsApp üzerinden tek kullanımlık bir kod göndereceğiz."
-login.whatsappOtp.differentNumber,Farklı bir numara kullan
-login.whatsappOtp.phoneHint,"Uluslararası E.164 biçimini kullanın, örneğin +14155552671."
-login.whatsappOtp.phoneInvalid,E.164 biçiminde geçerli bir telefon numarası girin.
-login.whatsappOtp.phoneNumber,WhatsApp telefon numarası
-login.whatsappOtp.phonePlaceholder,+905321234567
-login.whatsappOtp.resend,Kodu yeniden gönder
-login.whatsappOtp.send,WhatsApp kodu gönder
-login.whatsappOtp.sendError,WhatsApp kodu gönderilemedi.
-login.whatsappOtp.sending,Kod gönderiliyor…
-login.whatsappOtp.title,WhatsApp ile oturum aç
-login.whatsappOtp.verifying,Doğrulanıyor…
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
-account.securityHistory.empty,No security activity is available
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-shell.nav.securityHistory,Güvenlik geçmişi
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.

@@ -7,21 +7,19 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Effective access
 account.access.email,Email
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.loadMore,Load more access
-account.access.organizationAccess,Organization access
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
 account.access.invitationDeclineConfirm,この招待を辞退しますか？
@@ -30,8 +28,10 @@ account.access.invitationEmpty,There are no pending invitations for this account
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
 account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.membership,Membership roles
 account.access.loadMore,Load more access
+account.access.loadMore,Load more access
+account.access.membership,Membership roles
+account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
@@ -62,11 +62,11 @@ account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
 account.factors.verificationCode,Verification code
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
@@ -100,28 +100,28 @@ account.profile.emailAddressDescription,Verified addresses can be used for sign-
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailUpdating,Updating…
-account.profile.emailDescription,Review the verified address used for sign-in and account communication.
-account.profile.emailTitle,Email address and verification
 account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
+account.profile.emailMakePrimary,Make primary
 account.profile.emailNew,New email address
+account.profile.emailPrimary,Primary
+account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
+account.profile.emailRefresh,Refresh addresses
+account.profile.emailRemove,Remove
+account.profile.emailRemoving,Removing…
 account.profile.emailResend,Resend verification email
 account.profile.emailSaved,Your verified email address was updated.
 account.profile.emailSending,Sending verification email…
+account.profile.emailTitle,Email address and verification
 account.profile.emailToken,Verification token
 account.profile.emailTokenInvalid,Enter the verification token from the email.
+account.profile.emailUpdating,Updating…
 account.profile.emailVerify,Verify email address
 account.profile.emailVerifying,Verifying…
 account.profile.firstName,First name
@@ -130,15 +130,6 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
-account.profile.pictureChoose,Choose a picture file
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
-account.profile.pictureRemove,Remove picture
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -163,6 +154,15 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneTitle,WhatsApp phone number
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureRemove,Remove picture
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
@@ -193,6 +193,55 @@ account.refreshTokens.revokedAt,失効日時 {date}
 account.refreshTokens.scope,スコープ: {scope}
 account.refreshTokens.title,リフレッシュトークンファミリー
 account.security.label,Account security management
+account.securityHistory.category.emailChanges,Email changes
+account.securityHistory.category.impersonation,Impersonation
+account.securityHistory.category.linkedIdentities,Linked identities
+account.securityHistory.category.mfa,Multi-factor authentication
+account.securityHistory.category.passkeys,Passkeys
+account.securityHistory.category.passwords,Passwords
+account.securityHistory.category.refreshTokens,Refresh tokens
+account.securityHistory.category.sessions,Sessions
+account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
+account.securityHistory.empty,No security activity is available
+account.securityHistory.event.accessTokenRevoked,An access token was revoked
+account.securityHistory.event.emailChangeFailed,An email address change failed
+account.securityHistory.event.emailChangeRequested,An email address change was requested
+account.securityHistory.event.emailChangeVerified,A new email address was verified
+account.securityHistory.event.emailChanged,The account email address changed
+account.securityHistory.event.identityLinked,An external identity was linked
+account.securityHistory.event.identityUnlinked,An external identity was unlinked
+account.securityHistory.event.impersonationEnded,An impersonation session ended
+account.securityHistory.event.impersonationStarted,An impersonation session started
+account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
+account.securityHistory.event.mfaFailed,A multi-factor challenge failed
+account.securityHistory.event.mfaStarted,A multi-factor challenge started
+account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
+account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
+account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
+account.securityHistory.event.passkeyCredentialUsed,A passkey was used
+account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
+account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
+account.securityHistory.event.passwordChanged,The password changed
+account.securityHistory.event.passwordEmailVerified,The password email address was verified
+account.securityHistory.event.passwordLocked,The password account was locked
+account.securityHistory.event.passwordLoginFailed,A password sign-in failed
+account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
+account.securityHistory.event.passwordRecovered,The password was recovered
+account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
+account.securityHistory.event.passwordUnlocked,The password account was unlocked
+account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
+account.securityHistory.event.recoveryCodeUsed,A recovery code was used
+account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
+account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
+account.securityHistory.event.sessionCreated,A session was created
+account.securityHistory.event.sessionRevoked,A session was revoked
+account.securityHistory.event.sessionRotated,A session was renewed
+account.securityHistory.event.sessionsRevoked,All sessions were revoked
+account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
+account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
+account.securityHistory.event.totpRemoved,An authenticator was removed
+account.securityHistory.event.totpVerified,An authenticator challenge succeeded
+account.securityHistory.loadMore,Load more security activity
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
@@ -361,6 +410,7 @@ admin.oidc.clients.description,このレルムで OpenID Connect を通じて人
 admin.oidc.clients.detailTitle,OIDC クライアントの詳細
 admin.oidc.clients.empty,このレルムにはまだ OpenID Connect クライアントが登録されていません。
 admin.oidc.clients.exactMatchHint,1 行につき 1 つの URI。すべてのリダイレクトは完全一致で照合されるため、ワイルドカードや末尾の差異は拒否されます。
+admin.oidc.clients.identifier,クライアント識別子
 admin.oidc.clients.invalid,クライアント名、完全一致のリダイレクト URI を 1 つ以上、スコープを 1 つ以上入力してください。
 admin.oidc.clients.lifecycleChanged,クライアントの状態を変更しました。
 admin.oidc.clients.missingId,この宛先にはOIDCクライアントの選択が必要です。
@@ -374,6 +424,9 @@ admin.oidc.clients.scopes,許可されたスコープ
 admin.oidc.clients.search,クライアントを検索
 admin.oidc.clients.settingsDescription,クライアント名、完全一致のリダイレクト URI、許可されたスコープ、同意の扱いを設定します。
 admin.oidc.clients.settingsTitle,クライアント設定
+admin.oidc.clients.statusValue.active,有効
+admin.oidc.clients.statusValue.inactive,非アクティブ
+admin.oidc.clients.statusValue.removed,削除済み
 admin.oidc.clients.title,OpenID Connect クライアント
 admin.oidc.clients.trusted,信頼済み
 admin.oidc.clients.trustedHint,信頼済みクライアントは同意画面を完全にスキップします。自社のアプリケーションのみを信頼済みにしてください。
@@ -424,12 +477,12 @@ admin.oidc.keys.retiredAt,退役日時
 admin.oidc.keys.rotate,鍵をローテーション
 admin.oidc.keys.rotateConfirm,署名鍵をローテーションしますか？新しい鍵が公開され、現在の鍵は廃止されます。
 admin.oidc.keys.rotated,署名鍵をローテーションしました。
+admin.oidc.keys.statusValue.active,有効
+admin.oidc.keys.statusValue.retired,退役済み
 admin.oidc.keys.title,署名鍵
 admin.oidc.lifecycle.activate,有効化
 admin.oidc.lifecycle.deactivate,無効化
 admin.oidc.lifecycle.remove,クライアントを削除
-admin.oidc.pageNext,次のページ
-admin.oidc.pagePrevious,前のページ
 admin.oidc.permissionDenied,このレルムの OpenID Connect 設定を表示または変更する権限がありません。
 admin.oidc.permissionDeniedTitle,アクセスできません
 admin.oidc.secret.acknowledge,シークレットを保存しました
@@ -548,17 +601,56 @@ admin.organizations.pageNext,次のページ
 admin.organizations.pagePrevious,前のページ
 admin.organizations.permissionDenied,この組織を表示または変更する権限がありません。
 admin.organizations.permissionDeniedTitle,アクセスできません
+admin.organizations.policy.allowedFactors,Allowed MFA factors
+admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
+admin.organizations.policy.assurance.authenticated,Authenticated session
+admin.organizations.policy.assurance.multi_factor,Multi-factor session
+admin.organizations.policy.assurance.none,No assurance requirement
 admin.organizations.policy.description,利用できるサインイン方法と、表示する構成済みプロバイダーを選択します。
 admin.organizations.policy.domainDiscovery,メールドメインから組織を判別する
+admin.organizations.policy.down,Down
+admin.organizations.policy.effectiveValue,Effective value: {value}
 admin.organizations.policy.emailOtp,メールワンタイムコード
+admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
+admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
+admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
+admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
+admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
+admin.organizations.policy.enforcementTitle,Effective enforcement
 admin.organizations.policy.externalIdentity,外部 ID プロバイダー
+admin.organizations.policy.factor.emailOtp,Email one-time code
+admin.organizations.policy.factor.passkey,Passkey
+admin.organizations.policy.factor.totp,Authenticator app (TOTP)
 admin.organizations.policy.inherited,レルムから継承
+admin.organizations.policy.minimumAssurance,Minimum step-up assurance
+admin.organizations.policy.moveDown,Move {factor} down
+admin.organizations.policy.moveUp,Move {factor} up
+admin.organizations.policy.notRequired,Not required
+admin.organizations.policy.organizationOverrides,Organization overrides
+admin.organizations.policy.organizationValue,Organization override
+admin.organizations.policy.overrideRealm,Override the realm value
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,パスワード
 admin.organizations.policy.passwordRecovery,パスワードの復旧
+admin.organizations.policy.preferredOrder,Preferred factor order
+admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
+admin.organizations.policy.realmDefaults,Realm defaults
+admin.organizations.policy.realmValue,Realm value
 admin.organizations.policy.registration,セルフサービス登録
+admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
+admin.organizations.policy.required,Required
+admin.organizations.policy.requiredMfa,Required MFA
 admin.organizations.policy.saved,サインインポリシーを保存しました。
+admin.organizations.policy.scopeLabel,Policy scope
+admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
+admin.organizations.policy.securityTitle,MFA and assurance
 admin.organizations.policy.title,サインインポリシー
+admin.organizations.policy.up,Up
+admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
+admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
+admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
+admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
+admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
 admin.organizations.providers.allowAccountCreation,新しい人のアカウントを自動的に作成する
 admin.organizations.providers.clientId,クライアント ID
 admin.organizations.providers.clientSecret,クライアントシークレット
@@ -605,6 +697,7 @@ admin.projects.crossTenant,このリソースは別のレルムに属してお�
 admin.projects.deleteConfirm,このプロジェクトを削除しますか？アプリケーション、ロール、付与も一緒に削除されます。
 admin.projects.detail.authorizationRequired,認可が必要です
 admin.projects.detail.created,作成日時
+admin.projects.detail.identifier,プロジェクト識別子
 admin.projects.detail.organization,組織
 admin.projects.detail.projectAccessRequired,プロジェクトへのアクセスが必要です
 admin.projects.detail.settingsDescription,プロジェクト名とアクセスの適用方法を管理します。
@@ -615,6 +708,7 @@ admin.projects.grants.create,組織にアクセス権を付与
 admin.projects.grants.description,このプロジェクトへのアクセス権を別の組織に付与し、受け取るロールを選択します。
 admin.projects.grants.empty,このプロジェクトへのアクセス権を付与された組織はありません。
 admin.projects.grants.grantedOrganization,付与先の組織
+admin.projects.grants.invalid,組織と少なくとも1つのロールを選択してください。
 admin.projects.grants.revokeConfirm,この組織への付与を取り消しますか？メンバーはプロジェクトへのアクセスを失います。
 admin.projects.grants.roleKeys,付与されたロール
 admin.projects.grants.title,組織への付与
@@ -630,8 +724,6 @@ admin.projects.list.name,プロジェクト名
 admin.projects.list.search,プロジェクトを検索
 admin.projects.list.title,プロジェクト
 admin.projects.missingId,この宛先にはプロジェクトの選択が必要です。
-admin.projects.pageNext,次のページ
-admin.projects.pagePrevious,前のページ
 admin.projects.permissionDenied,このプロジェクト情報を表示または変更する権限がありません。
 admin.projects.roles.create,ロールを作成
 admin.projects.roles.deleteConfirm,このプロジェクトロールを削除しますか？参照している付与はロールを失います。
@@ -639,10 +731,14 @@ admin.projects.roles.description,このプロジェクトが組織とそのメ�
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,このプロジェクトにはまだロールが定義されていません。
 admin.projects.roles.group,グループ
+admin.projects.roles.invalid,ロールキーと表示名を入力してください。
 admin.projects.roles.key,ロールキー
 admin.projects.roles.title,プロジェクトロール
 admin.projects.saved,{name} を保存しました。
 admin.projects.status,状態
+admin.projects.statusValue.active,有効
+admin.projects.statusValue.inactive,非アクティブ
+admin.projects.statusValue.removed,削除済み
 admin.realm.confirmLabel,確認のため {name} と入力してください
 admin.realm.confirmMismatch,レルム名が一致しません。
 admin.realm.created,作成日時
@@ -697,6 +793,7 @@ admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
 admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.users.backToDirectory,ユーザー一覧に戻る
 admin.users.count,{count} 人のユーザー
 admin.users.create,ユーザーを作成
 admin.users.createDescription,現在のレルムに人間のユーザーを追加します。
@@ -715,6 +812,7 @@ admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.empty,現在のフィルターに一致するユーザーはいません。
 admin.users.firstName,First name
+admin.users.identifier,ユーザー識別子
 admin.users.invalid,有効なメールアドレスとユーザー名を入力してください。
 admin.users.lastName,Last name
 admin.users.lifecycle.active,有効
@@ -731,10 +829,10 @@ admin.users.markUnverified,未検証としてマーク
 admin.users.markVerified,検証済みとしてマーク
 admin.users.missingId,アドレスからこのユーザーを解決できませんでした。
 admin.users.nickName,Nickname
+admin.users.pictureAlt,User profile picture
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,プロフィールを保存
 admin.users.profileSaved,ユーザープロフィールを保存しました。
-admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,プロフィール
 admin.users.search,ユーザーを検索
 admin.users.searchPlaceholder,ユーザー名、メール、識別子で絞り込む
@@ -772,6 +870,9 @@ common.enabled,有効
 common.error,問題が発生しました。
 common.language,言語
 common.loading,読み込み中
+common.next,次へ
+common.pagination,ページ送り
+common.previous,戻る
 common.retry,もう一度お試しください
 common.revoke,Revoke
 common.save,保存
@@ -909,6 +1010,7 @@ demo.fixture.accepted,承諾済み
 demo.fixture.accountError,アカウントの決定論的なテストデータを読み込めませんでした。
 demo.fixture.active,アクティブ
 demo.fixture.assuranceRequired,保証が必要
+demo.fixture.continuing,続行中
 demo.fixture.crossTenant,テナント間
 demo.fixture.declined,辞退済み
 demo.fixture.empty,空
@@ -916,13 +1018,19 @@ demo.fixture.ended,終了
 demo.fixture.error,エラー
 demo.fixture.expired,期限切れ
 demo.fixture.expiring,期限切れ間近
+demo.fixture.fatal,致命的なエラー
 demo.fixture.loading,読み込み中
 demo.fixture.nestedRejected,ネスト拒否
 demo.fixture.oneTime,ワンタイム
+demo.fixture.passwordChangeExpired,パスワードの有効期限切れ
 demo.fixture.permissionDenied,権限拒否
 demo.fixture.preview,ステートレスフィクスチャプレビュー
+demo.fixture.recoveryFatal,リカバリーを利用できません
+demo.fixture.recoveryLoading,リカバリーを読み込み中
 demo.fixture.redacted,墨消し済み
 demo.fixture.replayed,再実行済み
+demo.fixture.resetInvalid,リセットリンクが無効です
+demo.fixture.resetLoading,リセットリンクを読み込み中
 demo.fixture.state,フィクスチャ状態
 demo.fixture.success,成功
 demo.hub.accountDescription,セルフサービスのプロファイル、組織、およびセキュリティの遷移先を探索します。
@@ -1049,11 +1157,11 @@ email.preview.text,テキスト版
 email.preview.verification,メールアドレスの確認
 login.chooser.accountOrMethodTitle,アカウントまたは方法を選択
 login.chooser.description,{organization} へのログイン方法を選択してください
+login.chooser.emailOtpDetail,メールでワンタイムコードを受け取る
+login.chooser.emailOtpLabel,メールコード
 login.chooser.lastUsed,最終使用
 login.chooser.methodTitle,方法を選択
 login.chooser.orChooseMethod,または方法を選択
-login.chooser.emailOtpDetail,メールでワンタイムコードを受け取る
-login.chooser.emailOtpLabel,メールコード
 login.chooser.passkeyDetail,デバイスの画面ロックまたはセキュリティキーを使用
 login.chooser.passkeyLabel,パスキー
 login.chooser.passwordDetail,アカウントのパスワードを使用
@@ -1063,24 +1171,39 @@ login.chooser.providerLabel,{provider} で続行
 login.chooser.register,アカウントを作成
 login.chooser.title,ログイン
 login.chooser.useRecent,最近使用したアカウントを使う
+login.chooser.whatsappOtpDetail,WhatsAppでワンタイムコードを受け取る
+login.chooser.whatsappOtpLabel,WhatsAppコード
 login.common.back,ログイン方法の選択に戻る
 login.common.legal,続行すると、{terms} と {privacy} に同意したものとみなされます。
 login.common.privacy,プライバシーポリシー
 login.common.terms,利用規約
 login.common.working,処理中…
+login.emailOtp.back,方法に戻る
+login.emailOtp.changeEmail,メールアドレスを変更
 login.emailOtp.codeDescription,{email} に送信した6桁のコードを入力してください。
+login.emailOtp.codeHelp,6桁を入力してください。
 login.emailOtp.codeTitle,メールコードを入力
 login.emailOtp.description,パスワードの代わりに、1回限り使用できるコードをメールで送信します。
+login.emailOtp.remember,このメールアドレスを記憶する
 login.emailOtp.resend,新しいコードを送信
+login.emailOtp.resendCountdown,{seconds}秒後に新しいコードを送信できます。
+login.emailOtp.resent,新しいコードを送信しました。
 login.emailOtp.send,コードを送信
+login.emailOtp.sending,送信中...
 login.emailOtp.title,メールコードでログイン
 login.emailOtp.verify,コードを確認
+login.emailOtp.verifying,確認中...
 login.error.codeRequired,6桁の確認コードを入力してください。
+login.error.credentialsInvalid,ユーザー名またはパスワードが正しくありません。
 login.error.credentialsRequired,ユーザー名とパスワードを入力してください。
+login.error.emailRecoveryRequired,アカウントのメールアドレスを入力してください。
 login.error.emailRequired,有効なメールアドレスを入力してください。
 login.error.enrollmentMissing,コードを確認する前に認証アプリの設定を開始してください。
+login.error.identifierRequired,ユーザー名またはメールアドレスを入力してください。
 login.error.nameRequired,アカウントに表示する名前を入力してください。
+login.error.newPasswordRequired,新しいパスワードを入力してください。
 login.error.passwordMismatch,パスワードが一致しません。
+login.error.passwordRequired,パスワードを入力してください。
 login.error.passwordTooShort,パスワードは8文字以上で入力してください。
 login.error.recoveryCodeRequired,保存した復旧コードのいずれかを入力してください。
 login.error.tokenMissing,続行するには、メールに記載された完全なリンクを開いてください。
@@ -1089,16 +1212,65 @@ login.logout.doneDescription,{organization} からログアウトしました。
 login.logout.doneTitle,ログアウトしました
 login.logout.submit,ログアウト
 login.logout.title,{organization} からログアウト
+login.mfa.backToChoices,2段階認証の選択肢に戻る
+login.mfa.backToMethods,方法に戻る
+login.mfa.continue,サインインを続行
 login.mfa.description,本人確認の方法を選択してください。
 login.mfa.emailOtp,メールコード
+login.mfa.emailOtpCodeTitle,メール確認コード
 login.mfa.emailOtpDescription,メールアドレスに送信した6桁のコードを入力してください。
+login.mfa.emailOtpDetail,メールでワンタイム確認コードを受け取る。
+login.mfa.emailOtpEnroll,メールコードを設定
+login.mfa.emailOtpEnrollDescription,確認コードはアカウントのメールアドレスに送信されます。
+login.mfa.emailOtpEnrollNotice,アカウントのメールアドレスを2つ目の認証要素として使うメールコードを設定します。
+login.mfa.emailOtpEnrollSent,メールコードを設定しました。メールアドレスに送信されたコードを入力してください。
+login.mfa.emailOtpEnrollTitle,メールコードを設定
+login.mfa.emailOtpResent,メールアドレスに新しい確認コードを送信しました。
+login.mfa.emailOtpSend,コードを送信
+login.mfa.emailOtpSendDescription,アカウントのメールアドレスに6桁の確認コードを送信します。
+login.mfa.emailOtpSent,メールアドレスに確認コードを送信しました。
+login.mfa.emailOtpUnavailableDescription,このログインフローではメールによる2つ目の要素の確認を利用できません。
+login.mfa.emailOtpUnavailableNotice,このAuthworksログイン要求ではメールMFAの通信が設定されていません。
+login.mfa.emailOtpUnavailableTitle,メールコードを利用できません
+login.mfa.enrollDescription,アカウントの2段階認証を設定する方法を選択してください。
+login.mfa.enrollTitle,2段階認証を設定
+login.mfa.enterRecoveryCode,保存したリカバリーコードを入力してください。
+login.mfa.enterSixDigits,6桁を入力してください。
+login.mfa.factorUnavailable,現在のログイン契約ではこの要素を利用できません。
+login.mfa.loadingOptions,2段階認証の選択肢を読み込み中...
+login.mfa.loadingOptionsDescription,利用可能な2つ目の認証要素を取得しています。
+login.mfa.optionalDescription,セキュリティを高めるため2段階認証を設定するか、今はスキップできます。
+login.mfa.optionalTitle,任意の2段階認証
+login.mfa.optionsUnavailableDescription,利用可能な2つ目の認証要素を読み込めませんでした。
+login.mfa.optionsUnavailableTitle,2段階認証を利用できません
 login.mfa.passkey,パスキー
+login.mfa.passkeyDescription,"パスキー、デバイスの画面ロック、または生体認証で確認します。"
+login.mfa.passkeyDetail,パスキーまたはデバイスの生体認証で確認します。
+login.mfa.passkeyEnrollmentUnavailableDescription,ホスト型ログイン契約ではパスキー登録を利用できません。
+login.mfa.passkeyEnrollmentUnavailableNotice,認証済みのアカウントセキュリティページでパスキーの設定を完了してから、サインインに戻ってください。
+login.mfa.passkeyEnrollmentUnavailableTitle,パスキー設定を利用できません
+login.mfa.passkeyUnavailableDescription,このログインフローではパスキーによる2つ目の要素の確認を利用できません。
+login.mfa.passkeyUnavailableNotice,このAuthworksログイン要求ではパスキーMFAの通信が設定されていません。
+login.mfa.passkeyUnavailableTitle,パスキーを利用できません
+login.mfa.passkeyVerify,パスキーで確認
 login.mfa.recoveryCode,復旧コード
 login.mfa.recoveryCodeDescription,確認の設定時に保存した1回限り使用できるコードのいずれかを使用してください。
+login.mfa.recoveryCodeDetail,保存したワンタイムリカバリーコードのいずれかを使います。
 login.mfa.recoveryCodeLabel,復旧コード
+login.mfa.resend,コードを再送信
+login.mfa.resendIn,{seconds}秒後に再送信
+login.mfa.retryOptions,選択肢の読み込みを再試行
+login.mfa.satisfiedDescription,このサインインはすでに2段階認証ポリシーを満たしています。
+login.mfa.satisfiedTitle,2段階認証済み
+login.mfa.setupFactor,{factor}を設定
+login.mfa.skip,今はスキップ
+login.mfa.skipping,スキップ中...
 login.mfa.title,2段階認証
 login.mfa.totp,認証アプリ
+login.mfa.totpChallengeTitle,認証アプリのコード
 login.mfa.totpDescription,認証アプリに表示された6桁のコードを入力してください。
+login.mfa.totpDetail,認証アプリのコードを使います。
+login.mfa.unavailable,利用不可
 login.mfa.verificationCode,確認コード
 login.mfa.verify,確認
 login.passkey.canceled,パスキーでのサインインがキャンセルされたかタイムアウトしました。もう一度お試しください。
@@ -1108,37 +1280,69 @@ login.passkey.permissionDenied,パスキーへのアクセスが拒否されま�
 login.passkey.submit,パスキーで続行
 login.passkey.title,パスキーでログイン
 login.passkey.unsupported,このブラウザまたはデバイスはパスキーに対応していません。別のログイン方法を選択してください。
+login.passkey.unsupportedTitle,パスキーに対応していません
+login.password.back,方法に戻る
 login.password.changeDescription,続行する前に新しいパスワードを選択してください。
+login.password.changeRequiredDescription,続行するにはパスワードを変更する必要があります。
+login.password.changeRequiredTitle,パスワードを変更
+login.password.changeSubmit,パスワードを変更
 login.password.changeTitle,パスワードを更新
 login.password.confirm,パスワード（確認）
 login.password.current,現在のパスワード
+login.password.currentRequired,現在のパスワードを入力してください。
 login.password.description,{organization} アカウントの認証情報を入力してください。
+login.password.expiredDescription,パスワードの有効期限が切れています。続行するには新しいパスワードを設定してください。
 login.password.forgot,パスワードをお忘れですか？
 login.password.hide,パスワードを隠す
 login.password.identifier,ユーザー名またはメールアドレス
 login.password.label,パスワード
 login.password.new,新しいパスワード
+login.password.passwordRequired,パスワードを入力してください。
+login.password.rememberIdentifier,この識別子を記憶する
+login.password.saving,保存中...
 login.password.show,パスワードを表示
+login.password.signInTitle,パスワードでサインイン
+login.password.signingIn,サインイン中...
 login.password.submit,ログイン
 login.password.title,パスワードを入力
+login.provider.accountNotFoundDescription,この{provider}アカウントにリンクされたAuthworksアカウントはありません。アカウントのリンクとセルフサービス登録はまだ有効になっていません。
+login.provider.accountNotFoundTitle,リンクされたアカウントがありません
 login.provider.description,{provider} で続行し、完了するとここに戻ります。
+login.provider.failureDescription,{provider}でのサインインを完了できませんでした。もう一度お試しください。
+login.provider.linkingFailedDescription,アカウントをリンクできませんでした。別のサインイン方法をお試しください。
+login.provider.linkingFailedTitle,アカウントをリンクできません
 login.provider.submit,{provider} で続行
 login.provider.title,{provider} で続行
 login.recent.description,このデバイスで使用したアカウントで続行
 login.recent.heading,最近のアカウント
-login.recent.useAnother,別の方法またはアカウントを使う
 login.recent.other,別のアカウントを使う
 login.recent.title,アカウントを選択
+login.recent.useAnother,別の方法またはアカウントを使う
+login.recovery.back,サインインに戻る
+login.recovery.checkingLink,リセットリンクを確認中...
+login.recovery.choosePasswordTitle,新しいパスワードを選択
 login.recovery.completeDescription,新しいパスワードでログインしてください。
+login.recovery.completeDescriptionReference,新しいパスワードでサインインして続行してください。
 login.recovery.completeTitle,パスワードを更新しました
+login.recovery.completeTitleReference,パスワードを変更しました
 login.recovery.description,メールアドレスを入力してください。アカウントが存在する場合は、復旧手順を送信します。
+login.recovery.invalidLinkError,このパスワードリセットリンクは無効か、有効期限が切れています。
+login.recovery.invalidLinkTitle,このリセットリンクは無効になりました
+login.recovery.loading,パスワードリカバリーを読み込み中...
+login.recovery.policyRejected,要件を満たすパスワードを選択してください。
 login.recovery.resetDescription,アカウントの新しいパスワードを選択してください。
 login.recovery.resetSubmit,パスワードを更新
+login.recovery.resetSubmitReference,新しいパスワードを設定
 login.recovery.resetTitle,新しいパスワードを設定
+login.recovery.saving,保存中...
+login.recovery.sending,送信中...
 login.recovery.sentDescription,そのアドレスに一致するアカウントがある場合は、復旧手順を送信しました。リンクはまもなく期限切れになります。
 login.recovery.sentTitle,メールを確認
 login.recovery.submit,復旧手順を送信
+login.recovery.submitReference,リセットリンクを送信
 login.recovery.title,パスワードをリセット
+login.recovery.unavailableDescription,パスワードリカバリーは一時的に利用できません。
+login.recovery.unavailableTitle,パスワードリカバリーを利用できません
 login.register.description,{organization} のアカウントを作成
 login.register.displayName,氏名
 login.register.doneDescription,{email} に送信したリンクでメールアドレスを確認してください。
@@ -1150,127 +1354,41 @@ login.register.title,アカウントを作成
 login.register.userName,ユーザー名
 login.signedIn.description,{organization} にログインしています。
 login.signedIn.title,ログイン済み
+login.status.continuing,サインインを続行中...
+login.status.fatalTitle,サインインをやり直す
 login.status.loading,ログインを準備中
 login.status.unavailableDescription,このサインインリクエストは完了できません。アプリケーションに戻ってやり直してください。
 login.status.unavailableTitle,サインインを利用できません
 login.totpEnroll.description,この設定キーを認証アプリに追加し、生成されたコードを入力してください。キーは今だけ表示されます。
-login.totpEnroll.start,設定キーを表示
-login.totpEnroll.submit,設定を完了
-login.totpEnroll.title,認証アプリを設定
-login.verify.description,アカウントのメールアドレスを確認してください。
-login.verify.submit,メールアドレスを確認
-login.verify.title,メールアドレスを確認
-login.verify.verifiedDescription,{email} を確認しました。これでログインできます。
-login.verify.verifiedTitle,メールアドレスを確認しました
-demo.fixture.continuing,続行中
-demo.fixture.fatal,致命的なエラー
-demo.fixture.passwordChangeExpired,パスワードの有効期限切れ
-demo.fixture.recoveryFatal,リカバリーを利用できません
-demo.fixture.recoveryLoading,リカバリーを読み込み中
-demo.fixture.resetInvalid,リセットリンクが無効です
-demo.fixture.resetLoading,リセットリンクを読み込み中
-login.emailOtp.codeHelp,6桁を入力してください。
-login.emailOtp.back,方法に戻る
-login.emailOtp.changeEmail,メールアドレスを変更
-login.emailOtp.resendCountdown,{seconds}秒後に新しいコードを送信できます。
-login.emailOtp.resent,新しいコードを送信しました。
-login.emailOtp.remember,このメールアドレスを記憶する
-login.emailOtp.sending,送信中...
-login.emailOtp.verifying,確認中...
-login.error.credentialsInvalid,ユーザー名またはパスワードが正しくありません。
-login.error.emailRecoveryRequired,アカウントのメールアドレスを入力してください。
-login.error.identifierRequired,ユーザー名またはメールアドレスを入力してください。
-login.error.newPasswordRequired,新しいパスワードを入力してください。
-login.error.passwordRequired,パスワードを入力してください。
-login.mfa.backToChoices,2段階認証の選択肢に戻る
-login.mfa.backToMethods,方法に戻る
-login.mfa.continue,サインインを続行
-login.mfa.emailOtpCodeTitle,メール確認コード
-login.mfa.emailOtpDetail,メールでワンタイム確認コードを受け取る。
-login.mfa.emailOtpEnroll,メールコードを設定
-login.mfa.emailOtpEnrollDescription,確認コードはアカウントのメールアドレスに送信されます。
-login.mfa.emailOtpEnrollNotice,アカウントのメールアドレスを2つ目の認証要素として使うメールコードを設定します。
-login.mfa.emailOtpEnrollSent,メールコードを設定しました。メールアドレスに送信されたコードを入力してください。
-login.mfa.emailOtpEnrollTitle,メールコードを設定
-login.mfa.emailOtpSend,コードを送信
-login.mfa.emailOtpSendDescription,アカウントのメールアドレスに6桁の確認コードを送信します。
-login.mfa.emailOtpSent,メールアドレスに確認コードを送信しました。
-login.mfa.emailOtpResent,メールアドレスに新しい確認コードを送信しました。
-login.mfa.emailOtpUnavailableDescription,このログインフローではメールによる2つ目の要素の確認を利用できません。
-login.mfa.emailOtpUnavailableNotice,このAuthworksログイン要求ではメールMFAの通信が設定されていません。
-login.mfa.emailOtpUnavailableTitle,メールコードを利用できません
-login.mfa.enterRecoveryCode,保存したリカバリーコードを入力してください。
-login.mfa.enterSixDigits,6桁を入力してください。
-login.mfa.enrollDescription,アカウントの2段階認証を設定する方法を選択してください。
-login.mfa.enrollTitle,2段階認証を設定
-login.mfa.factorUnavailable,現在のログイン契約ではこの要素を利用できません。
-login.mfa.loadingOptions,2段階認証の選択肢を読み込み中...
-login.mfa.loadingOptionsDescription,利用可能な2つ目の認証要素を取得しています。
-login.mfa.optionalDescription,セキュリティを高めるため2段階認証を設定するか、今はスキップできます。
-login.mfa.optionalTitle,任意の2段階認証
-login.mfa.optionsUnavailableDescription,利用可能な2つ目の認証要素を読み込めませんでした。
-login.mfa.optionsUnavailableTitle,2段階認証を利用できません
-login.mfa.passkeyDescription,"パスキー、デバイスの画面ロック、または生体認証で確認します。"
-login.mfa.passkeyDetail,パスキーまたはデバイスの生体認証で確認します。
-login.mfa.passkeyEnrollmentUnavailableDescription,ホスト型ログイン契約ではパスキー登録を利用できません。
-login.mfa.passkeyEnrollmentUnavailableNotice,認証済みのアカウントセキュリティページでパスキーの設定を完了してから、サインインに戻ってください。
-login.mfa.passkeyEnrollmentUnavailableTitle,パスキー設定を利用できません
-login.mfa.passkeyUnavailableDescription,このログインフローではパスキーによる2つ目の要素の確認を利用できません。
-login.mfa.passkeyUnavailableNotice,このAuthworksログイン要求ではパスキーMFAの通信が設定されていません。
-login.mfa.passkeyUnavailableTitle,パスキーを利用できません
-login.mfa.passkeyVerify,パスキーで確認
-login.mfa.resend,コードを再送信
-login.mfa.resendIn,{seconds}秒後に再送信
-login.mfa.recoveryCodeDetail,保存したワンタイムリカバリーコードのいずれかを使います。
-login.mfa.totpChallengeTitle,認証アプリのコード
-login.mfa.totpDetail,認証アプリのコードを使います。
-login.mfa.retryOptions,選択肢の読み込みを再試行
-login.mfa.setupFactor,{factor}を設定
-login.mfa.skip,今はスキップ
-login.mfa.skipping,スキップ中...
-login.mfa.satisfiedDescription,このサインインはすでに2段階認証ポリシーを満たしています。
-login.mfa.satisfiedTitle,2段階認証済み
-login.mfa.unavailable,利用不可
-login.passkey.unsupportedTitle,パスキーに対応していません
-login.password.changeRequiredDescription,続行するにはパスワードを変更する必要があります。
-login.password.changeRequiredTitle,パスワードを変更
-login.password.changeSubmit,パスワードを変更
-login.password.expiredDescription,パスワードの有効期限が切れています。続行するには新しいパスワードを設定してください。
-login.password.currentRequired,現在のパスワードを入力してください。
-login.password.back,方法に戻る
-login.password.passwordRequired,パスワードを入力してください。
-login.password.rememberIdentifier,この識別子を記憶する
-login.password.signInTitle,パスワードでサインイン
-login.password.signingIn,サインイン中...
-login.password.saving,保存中...
-login.provider.accountNotFoundDescription,この{provider}アカウントにリンクされたAuthworksアカウントはありません。アカウントのリンクとセルフサービス登録はまだ有効になっていません。
-login.provider.accountNotFoundTitle,リンクされたアカウントがありません
-login.provider.failureDescription,{provider}でのサインインを完了できませんでした。もう一度お試しください。
-login.provider.linkingFailedDescription,アカウントをリンクできませんでした。別のサインイン方法をお試しください。
-login.provider.linkingFailedTitle,アカウントをリンクできません
-login.recovery.back,サインインに戻る
-login.recovery.checkingLink,リセットリンクを確認中...
-login.recovery.choosePasswordTitle,新しいパスワードを選択
-login.recovery.completeDescriptionReference,新しいパスワードでサインインして続行してください。
-login.recovery.completeTitleReference,パスワードを変更しました
-login.recovery.invalidLinkTitle,このリセットリンクは無効になりました
-login.recovery.invalidLinkError,このパスワードリセットリンクは無効か、有効期限が切れています。
-login.recovery.policyRejected,要件を満たすパスワードを選択してください。
-login.recovery.loading,パスワードリカバリーを読み込み中...
-login.recovery.resetSubmitReference,新しいパスワードを設定
-login.recovery.saving,保存中...
-login.recovery.sending,送信中...
-login.recovery.submitReference,リセットリンクを送信
-login.recovery.unavailableDescription,パスワードリカバリーは一時的に利用できません。
-login.recovery.unavailableTitle,パスワードリカバリーを利用できません
-login.status.continuing,サインインを続行中...
-login.status.fatalTitle,サインインをやり直す
 login.totpEnroll.hideSetupKey,設定キーを隠す
 login.totpEnroll.qrLabel,認証アプリ設定用QRコード
 login.totpEnroll.scanDescription,認証アプリでQRコードをスキャンし、表示された6桁のコードを入力してください。
 login.totpEnroll.setupKeyLabel,設定キー（スキャンできない場合）
 login.totpEnroll.showSetupKey,設定キーを表示
+login.totpEnroll.start,設定キーを表示
+login.totpEnroll.submit,設定を完了
+login.totpEnroll.title,認証アプリを設定
 login.totpEnroll.unavailableDescription,ここでは認証アプリの設定を準備できませんでした。再読み込み後に設定の詳細を復元することはできません。
+login.verify.description,アカウントのメールアドレスを確認してください。
+login.verify.submit,メールアドレスを確認
+login.verify.title,メールアドレスを確認
+login.verify.verifiedDescription,{email} を確認しました。これでログインできます。
+login.verify.verifiedTitle,メールアドレスを確認しました
+login.whatsappOtp.codeDescription,{phoneNumber}にWhatsAppで送信されたコードを入力してください。
+login.whatsappOtp.codeError,WhatsAppコードが正しくありません。
+login.whatsappOtp.codeTitle,WhatsApp確認コード
+login.whatsappOtp.description,パスワードを入力する代わりにWhatsAppでワンタイムコードを送信します。
+login.whatsappOtp.differentNumber,別の番号を使用
+login.whatsappOtp.phoneHint,国際E.164形式を使用してください（例：+14155552671）。
+login.whatsappOtp.phoneInvalid,有効な電話番号をE.164形式で入力してください。
+login.whatsappOtp.phoneNumber,WhatsApp電話番号
+login.whatsappOtp.phonePlaceholder,+819012345678
+login.whatsappOtp.resend,コードを再送信
+login.whatsappOtp.send,WhatsAppコードを送信
+login.whatsappOtp.sendError,WhatsAppコードを送信できませんでした。
+login.whatsappOtp.sending,コードを送信中…
+login.whatsappOtp.title,WhatsAppでログイン
+login.whatsappOtp.verifying,確認中…
 shell.guard.accessUnavailable,アクセスできません
 shell.guard.contextRequired,コンテキストが必要です
 shell.guard.contextRequiredDetail,続行する前に必要なレルムまたは組織を選択してください。
@@ -1332,6 +1450,7 @@ shell.nav.refreshTokens,リフレッシュトークン
 shell.nav.registration,登録
 shell.nav.rolesGrants,ロールと権限付与
 shell.nav.security,セキュリティ
+shell.nav.securityHistory,セキュリティ履歴
 shell.nav.sessions,セッション
 shell.nav.sessionsDevices,セッションとデバイス
 shell.nav.signingKeys,署名鍵
@@ -1343,109 +1462,3 @@ shell.state.loadingDetail,このページとセキュリティコンテキスト
 shell.state.nothingHere,ここにはまだ何もありません
 shell.state.pageUnavailable,このページは利用できません
 shell.state.readyDetail,このページはコンテンツを表示する準備ができています。
-login.chooser.whatsappOtpDetail,WhatsAppでワンタイムコードを受け取る
-login.chooser.whatsappOtpLabel,WhatsAppコード
-login.whatsappOtp.codeError,WhatsAppコードが正しくありません。
-login.whatsappOtp.codeDescription,{phoneNumber}にWhatsAppで送信されたコードを入力してください。
-login.whatsappOtp.codeTitle,WhatsApp確認コード
-login.whatsappOtp.description,パスワードを入力する代わりにWhatsAppでワンタイムコードを送信します。
-login.whatsappOtp.differentNumber,別の番号を使用
-login.whatsappOtp.phoneHint,国際E.164形式を使用してください（例：+14155552671）。
-login.whatsappOtp.phoneInvalid,有効な電話番号をE.164形式で入力してください。
-login.whatsappOtp.phoneNumber,WhatsApp電話番号
-login.whatsappOtp.phonePlaceholder,+819012345678
-login.whatsappOtp.resend,コードを再送信
-login.whatsappOtp.send,WhatsAppコードを送信
-login.whatsappOtp.sendError,WhatsAppコードを送信できませんでした。
-login.whatsappOtp.sending,コードを送信中…
-login.whatsappOtp.title,WhatsAppでログイン
-login.whatsappOtp.verifying,確認中…
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
-account.securityHistory.empty,No security activity is available
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-shell.nav.securityHistory,セキュリティ履歴
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.

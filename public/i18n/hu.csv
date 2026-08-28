@@ -7,21 +7,19 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Effective access
 account.access.email,Email
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.loadMore,Load more access
-account.access.organizationAccess,Organization access
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
 account.access.invitationDeclineConfirm,Elutasítja ezt a meghívást?
@@ -30,8 +28,10 @@ account.access.invitationEmpty,There are no pending invitations for this account
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
 account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.membership,Membership roles
 account.access.loadMore,Load more access
+account.access.loadMore,Load more access
+account.access.membership,Membership roles
+account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
@@ -62,11 +62,11 @@ account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
 account.factors.verificationCode,Verification code
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
@@ -100,28 +100,28 @@ account.profile.emailAddressDescription,Verified addresses can be used for sign-
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailUpdating,Updating…
-account.profile.emailDescription,Review the verified address used for sign-in and account communication.
-account.profile.emailTitle,Email address and verification
 account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
+account.profile.emailMakePrimary,Make primary
 account.profile.emailNew,New email address
+account.profile.emailPrimary,Primary
+account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
+account.profile.emailRefresh,Refresh addresses
+account.profile.emailRemove,Remove
+account.profile.emailRemoving,Removing…
 account.profile.emailResend,Resend verification email
 account.profile.emailSaved,Your verified email address was updated.
 account.profile.emailSending,Sending verification email…
+account.profile.emailTitle,Email address and verification
 account.profile.emailToken,Verification token
 account.profile.emailTokenInvalid,Enter the verification token from the email.
+account.profile.emailUpdating,Updating…
 account.profile.emailVerify,Verify email address
 account.profile.emailVerifying,Verifying…
 account.profile.firstName,First name
@@ -130,15 +130,6 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
-account.profile.pictureChoose,Choose a picture file
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
-account.profile.pictureRemove,Remove picture
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -163,6 +154,15 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneTitle,WhatsApp phone number
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureRemove,Remove picture
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
@@ -193,6 +193,55 @@ account.refreshTokens.revokedAt,Visszavonva: {date}
 account.refreshTokens.scope,Hatókörök: {scope}
 account.refreshTokens.title,Frissítésitoken-családok
 account.security.label,Account security management
+account.securityHistory.category.emailChanges,Email changes
+account.securityHistory.category.impersonation,Impersonation
+account.securityHistory.category.linkedIdentities,Linked identities
+account.securityHistory.category.mfa,Multi-factor authentication
+account.securityHistory.category.passkeys,Passkeys
+account.securityHistory.category.passwords,Passwords
+account.securityHistory.category.refreshTokens,Refresh tokens
+account.securityHistory.category.sessions,Sessions
+account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
+account.securityHistory.empty,No security activity is available
+account.securityHistory.event.accessTokenRevoked,An access token was revoked
+account.securityHistory.event.emailChangeFailed,An email address change failed
+account.securityHistory.event.emailChangeRequested,An email address change was requested
+account.securityHistory.event.emailChangeVerified,A new email address was verified
+account.securityHistory.event.emailChanged,The account email address changed
+account.securityHistory.event.identityLinked,An external identity was linked
+account.securityHistory.event.identityUnlinked,An external identity was unlinked
+account.securityHistory.event.impersonationEnded,An impersonation session ended
+account.securityHistory.event.impersonationStarted,An impersonation session started
+account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
+account.securityHistory.event.mfaFailed,A multi-factor challenge failed
+account.securityHistory.event.mfaStarted,A multi-factor challenge started
+account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
+account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
+account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
+account.securityHistory.event.passkeyCredentialUsed,A passkey was used
+account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
+account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
+account.securityHistory.event.passwordChanged,The password changed
+account.securityHistory.event.passwordEmailVerified,The password email address was verified
+account.securityHistory.event.passwordLocked,The password account was locked
+account.securityHistory.event.passwordLoginFailed,A password sign-in failed
+account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
+account.securityHistory.event.passwordRecovered,The password was recovered
+account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
+account.securityHistory.event.passwordUnlocked,The password account was unlocked
+account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
+account.securityHistory.event.recoveryCodeUsed,A recovery code was used
+account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
+account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
+account.securityHistory.event.sessionCreated,A session was created
+account.securityHistory.event.sessionRevoked,A session was revoked
+account.securityHistory.event.sessionRotated,A session was renewed
+account.securityHistory.event.sessionsRevoked,All sessions were revoked
+account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
+account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
+account.securityHistory.event.totpRemoved,An authenticator was removed
+account.securityHistory.event.totpVerified,An authenticator challenge succeeded
+account.securityHistory.loadMore,Load more security activity
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
@@ -361,6 +410,7 @@ admin.oidc.clients.description,"Alkalmazások, amelyek OpenID Connect használat
 admin.oidc.clients.detailTitle,OIDC-kliens részletei
 admin.oidc.clients.empty,Ebben a tartományban még nincs regisztrált OpenID Connect kliens.
 admin.oidc.clients.exactMatchHint,"Soronként egy URI. Minden átirányítás pontos egyezéssel kerül összehasonlításra, ezért a helyettesítő karakterek és a végződésbeli eltérések elutasításra kerülnek."
+admin.oidc.clients.identifier,Ügyfél-azonosító
 admin.oidc.clients.invalid,"Adjon meg ügyfélnevet, legalább egy pontos átirányítási URI-t és legalább egy hatókört."
 admin.oidc.clients.lifecycleChanged,A kliens állapota megváltozott.
 admin.oidc.clients.missingId,Ehhez a célhoz ki kell választani egy OIDC-ügyfelet.
@@ -374,6 +424,9 @@ admin.oidc.clients.scopes,Engedélyezett hatókörök
 admin.oidc.clients.search,Kliensek keresése
 admin.oidc.clients.settingsDescription,"Szabályozza a kliens nevét, a pontos átirányítási URI-ket, az engedélyezett hatóköröket és a hozzájárulás kezelését."
 admin.oidc.clients.settingsTitle,Kliensbeállítások
+admin.oidc.clients.statusValue.active,Aktív
+admin.oidc.clients.statusValue.inactive,Inaktív
+admin.oidc.clients.statusValue.removed,Eltávolítva
 admin.oidc.clients.title,OpenID Connect kliensek
 admin.oidc.clients.trusted,Megbízható
 admin.oidc.clients.trustedHint,A megbízható kliens teljesen kihagyja a hozzájárulási képernyőt. Csak a saját alkalmazásait jelölje megbízhatóként.
@@ -424,12 +477,12 @@ admin.oidc.keys.retiredAt,Visszavonva
 admin.oidc.keys.rotate,Kulcs rotálása
 admin.oidc.keys.rotateConfirm,"Elforgatja az aláíró kulcsot? Új kulcs kerül közzétételre, a jelenlegi pedig visszavonásra kerül."
 admin.oidc.keys.rotated,Az aláíró kulcs rotálva lett.
+admin.oidc.keys.statusValue.active,Aktív
+admin.oidc.keys.statusValue.retired,Visszavonva
 admin.oidc.keys.title,Aláíró kulcsok
 admin.oidc.lifecycle.activate,Aktiválás
 admin.oidc.lifecycle.deactivate,Deaktiválás
 admin.oidc.lifecycle.remove,Kliens eltávolítása
-admin.oidc.pageNext,Következő oldal
-admin.oidc.pagePrevious,Előző oldal
 admin.oidc.permissionDenied,Nincs jogosultsága megtekinteni vagy módosítani az OpenID Connect beállításokat ebben a tartományban.
 admin.oidc.permissionDeniedTitle,A hozzáférés nem érhető el
 admin.oidc.secret.acknowledge,Elmentettem a titkot
@@ -548,17 +601,56 @@ admin.organizations.pageNext,Következő oldal
 admin.organizations.pagePrevious,Előző oldal
 admin.organizations.permissionDenied,Nincs jogosultsága megtekinteni vagy módosítani ezt a szervezetet.
 admin.organizations.permissionDeniedTitle,A hozzáférés nem érhető el
+admin.organizations.policy.allowedFactors,Allowed MFA factors
+admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
+admin.organizations.policy.assurance.authenticated,Authenticated session
+admin.organizations.policy.assurance.multi_factor,Multi-factor session
+admin.organizations.policy.assurance.none,No assurance requirement
 admin.organizations.policy.description,"Válassza ki, mely bejelentkezési módokat használhatják az emberek, és mely beállított szolgáltatók jelenjenek meg."
 admin.organizations.policy.domainDiscovery,A szervezet felismerése e-mail-tartomány alapján
+admin.organizations.policy.down,Down
+admin.organizations.policy.effectiveValue,Effective value: {value}
 admin.organizations.policy.emailOtp,Egyszeri kód e-mailben
+admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
+admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
+admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
+admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
+admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
+admin.organizations.policy.enforcementTitle,Effective enforcement
 admin.organizations.policy.externalIdentity,Külső identitásszolgáltatók
+admin.organizations.policy.factor.emailOtp,Email one-time code
+admin.organizations.policy.factor.passkey,Passkey
+admin.organizations.policy.factor.totp,Authenticator app (TOTP)
 admin.organizations.policy.inherited,A realmből örökölve
+admin.organizations.policy.minimumAssurance,Minimum step-up assurance
+admin.organizations.policy.moveDown,Move {factor} down
+admin.organizations.policy.moveUp,Move {factor} up
+admin.organizations.policy.notRequired,Not required
+admin.organizations.policy.organizationOverrides,Organization overrides
+admin.organizations.policy.organizationValue,Organization override
+admin.organizations.policy.overrideRealm,Override the realm value
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Jelszó
 admin.organizations.policy.passwordRecovery,Jelszó-helyreállítás
+admin.organizations.policy.preferredOrder,Preferred factor order
+admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
+admin.organizations.policy.realmDefaults,Realm defaults
+admin.organizations.policy.realmValue,Realm value
 admin.organizations.policy.registration,Önkiszolgáló regisztráció
+admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
+admin.organizations.policy.required,Required
+admin.organizations.policy.requiredMfa,Required MFA
 admin.organizations.policy.saved,A bejelentkezési szabályzat mentve.
+admin.organizations.policy.scopeLabel,Policy scope
+admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
+admin.organizations.policy.securityTitle,MFA and assurance
 admin.organizations.policy.title,Bejelentkezési szabályzat
+admin.organizations.policy.up,Up
+admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
+admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
+admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
+admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
+admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
 admin.organizations.providers.allowAccountCreation,Automatikusan hozzon létre fiókot az új személyeknek
 admin.organizations.providers.clientId,Ügyfél-azonosító
 admin.organizations.providers.clientSecret,Ügyféltitok
@@ -605,6 +697,7 @@ admin.projects.crossTenant,"Ez az erőforrás egy másik realmhez tartozik, és 
 admin.projects.deleteConfirm,"Törli ezt a projektet? Az alkalmazások, szerepek és hozzárendelések együtt törlődnek."
 admin.projects.detail.authorizationRequired,Engedélyezés szükséges
 admin.projects.detail.created,Létrehozva
+admin.projects.detail.identifier,Projektazonosító
 admin.projects.detail.organization,Szervezet
 admin.projects.detail.projectAccessRequired,Projekthozzáférés szükséges
 admin.projects.detail.settingsDescription,Szabályozza a projekt nevét és a hozzáférés érvényesítésének módját.
@@ -615,6 +708,7 @@ admin.projects.grants.create,Szervezeti hozzáférés megadása
 admin.projects.grants.description,"Adjon hozzáférést egy másik szervezetnek ehhez a projekthez, és válassza ki, mely szerepköröket kapja."
 admin.projects.grants.empty,Egyetlen szervezet sem kapott hozzáférést ehhez a projekthez.
 admin.projects.grants.grantedOrganization,Jogosult szervezet
+admin.projects.grants.invalid,Válasszon egy szervezetet és legalább egy szerepkört.
 admin.projects.grants.revokeConfirm,Visszavonja ezt a szervezeti hozzárendelést? A tagok elveszítik a projekthez való hozzáférést.
 admin.projects.grants.roleKeys,Megadott szerepkörök
 admin.projects.grants.title,Szervezeti hozzáférések
@@ -630,8 +724,6 @@ admin.projects.list.name,Projekt neve
 admin.projects.list.search,Projektek keresése
 admin.projects.list.title,Projektek
 admin.projects.missingId,Ehhez a célhoz ki kell választani egy projektet.
-admin.projects.pageNext,Következő oldal
-admin.projects.pagePrevious,Előző oldal
 admin.projects.permissionDenied,Nincs jogosultsága megtekinteni vagy módosítani ezeket a projektinformációkat.
 admin.projects.roles.create,Szerepkör létrehozása
 admin.projects.roles.deleteConfirm,Törli ezt a projekt-szerepet? A rá hivatkozó hozzárendelések elveszítik a szerepet.
@@ -639,10 +731,14 @@ admin.projects.roles.description,"Azok a szerepkörök, amelyeket ez a projekt s
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,Ez a projekt még nem határoz meg szerepköröket.
 admin.projects.roles.group,Csoport
+admin.projects.roles.invalid,Adjon meg egy szerepkörkulcsot és egy megjelenítendő nevet.
 admin.projects.roles.key,Szerepkörkulcs
 admin.projects.roles.title,Projektszerepkörök
 admin.projects.saved,A(z) {name} mentve.
 admin.projects.status,Állapot
+admin.projects.statusValue.active,Aktív
+admin.projects.statusValue.inactive,Inaktív
+admin.projects.statusValue.removed,Eltávolítva
 admin.realm.confirmLabel,Írja be a megerősítéshez: {name}
 admin.realm.confirmMismatch,A tartomány neve nem egyezik.
 admin.realm.created,Létrehozva
@@ -697,6 +793,7 @@ admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
 admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.users.backToDirectory,Vissza a felhasználókhoz
 admin.users.count,{count} felhasználó
 admin.users.create,Felhasználó létrehozása
 admin.users.createDescription,Adjon hozzá egy emberi felhasználót a jelenlegi realmhez.
@@ -715,6 +812,7 @@ admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.empty,Egyetlen felhasználó sem felel meg a jelenlegi szűrőnek.
 admin.users.firstName,First name
+admin.users.identifier,Felhasználóazonosító
 admin.users.invalid,Adjon meg érvényes e-mail-címet és felhasználónevet.
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Aktív
@@ -731,10 +829,10 @@ admin.users.markUnverified,Megjelölés nem ellenőrzöttként
 admin.users.markVerified,Megjelölés ellenőrzöttként
 admin.users.missingId,Ez a felhasználó nem azonosítható a címből.
 admin.users.nickName,Nickname
+admin.users.pictureAlt,User profile picture
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,Profil mentése
 admin.users.profileSaved,A felhasználói profil mentve.
-admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Profil
 admin.users.search,Felhasználók keresése
 admin.users.searchPlaceholder,"Szűrés felhasználónév, e-mail vagy azonosító szerint"
@@ -772,6 +870,9 @@ common.enabled,Bekapcsolva
 common.error,Valami hiba történt.
 common.language,Nyelv
 common.loading,Betöltés
+common.next,Következő
+common.pagination,Lapozás
+common.previous,Vissza
 common.retry,Próbálja újra
 common.revoke,Revoke
 common.save,Mentés
@@ -909,6 +1010,7 @@ demo.fixture.accepted,elfogadva
 demo.fixture.accountError,A fiók determinisztikus tesztadatai nem tölthetők be.
 demo.fixture.active,aktív
 demo.fixture.assuranceRequired,megerősítés szükséges
+demo.fixture.continuing,folytatás
 demo.fixture.crossTenant,bérlők közötti
 demo.fixture.declined,elutasítva
 demo.fixture.empty,üres
@@ -916,13 +1018,19 @@ demo.fixture.ended,befejezve
 demo.fixture.error,hiba
 demo.fixture.expired,lejárt
 demo.fixture.expiring,lejáróban
+demo.fixture.fatal,végzetes hiba
 demo.fixture.loading,betöltés
 demo.fixture.nestedRejected,beágyazott elutasítva
 demo.fixture.oneTime,egyszeri
+demo.fixture.passwordChangeExpired,lejárt jelszó
 demo.fixture.permissionDenied,hozzáférés megtagadva
 demo.fixture.preview,Állapotmentes minta-előnézet
+demo.fixture.recoveryFatal,a helyreállítás nem érhető el
+demo.fixture.recoveryLoading,helyreállítás betöltése
 demo.fixture.redacted,kitakart
 demo.fixture.replayed,újrajátszott
+demo.fixture.resetInvalid,érvénytelen visszaállítási hivatkozás
+demo.fixture.resetLoading,visszaállítási hivatkozás betöltése
 demo.fixture.state,Minta állapota
 demo.fixture.success,sikeres
 demo.hub.accountDescription,"Fedezze fel az önkiszolgáló profil-, szervezet- és biztonsági célokat."
@@ -1049,11 +1157,11 @@ email.preview.text,Szöveges változat
 email.preview.verification,E-mail-ellenőrzés
 login.chooser.accountOrMethodTitle,Válasszon fiókot vagy módot
 login.chooser.description,"Válassza ki, hogyan szeretne bejelentkezni a {organization} szolgáltatásba."
+login.chooser.emailOtpDetail,Kapjon egy egyszeri kódot e-mailben
+login.chooser.emailOtpLabel,E-mail kód
 login.chooser.lastUsed,Legutóbb használva
 login.chooser.methodTitle,Válasszon módot
 login.chooser.orChooseMethod,Vagy válasszon módot
-login.chooser.emailOtpDetail,Kapjon egy egyszeri kódot e-mailben
-login.chooser.emailOtpLabel,E-mail kód
 login.chooser.passkeyDetail,Használja eszköze képernyőzárát vagy biztonsági kulcsát
 login.chooser.passkeyLabel,Passkey
 login.chooser.passwordDetail,Használja fiókja jelszavát
@@ -1063,24 +1171,39 @@ login.chooser.providerLabel,Folytatás ezzel: {provider}
 login.chooser.register,Hozzon létre egy fiókot
 login.chooser.title,Jelentkezzen be
 login.chooser.useRecent,Használjon friss fiókot
+login.chooser.whatsappOtpDetail,Egyszer használatos kód fogadása WhatsAppon
+login.chooser.whatsappOtpLabel,WhatsApp-kód
 login.common.back,Vissza a bejelentkezési lehetőségekhez
 login.common.legal,A folytatással tudomásul veszi a {terms} és a {privacy}.
 login.common.privacy,Adatvédelmi szabályzat
 login.common.terms,Szolgáltatási feltételek
 login.common.working,Dolgozó…
+login.emailOtp.back,Vissza a módokhoz
+login.emailOtp.changeEmail,E-mail módosítása
 login.emailOtp.codeDescription,"Írja be a hatjegyű kódot, amelyet a {email} címre küldtünk."
+login.emailOtp.codeHelp,Adjon meg 6 számjegyet.
 login.emailOtp.codeTitle,Írja be az e-mail kódját
 login.emailOtp.description,Jelszókérés helyett egy egyszer használatos kódot küldünk Önnek e-mailben.
+login.emailOtp.remember,E-mail megjegyzése
 login.emailOtp.resend,Új kód küldése
+login.emailOtp.resendCountdown,Új kód {seconds} másodperc múlva küldhető.
+login.emailOtp.resent,Új kódot küldtünk.
 login.emailOtp.send,Kód küldése
+login.emailOtp.sending,Küldés...
 login.emailOtp.title,Jelentkezzen be egy e-mail kóddal
 login.emailOtp.verify,Ellenőrizze a kódot
+login.emailOtp.verifying,Ellenőrzés...
 login.error.codeRequired,Írja be a hatjegyű ellenőrző kódot.
+login.error.credentialsInvalid,Helytelen felhasználónév vagy jelszó.
 login.error.credentialsRequired,Adja meg felhasználónevét és jelszavát.
+login.error.emailRecoveryRequired,Adja meg a fiókjához tartozó e-mail-címet.
 login.error.emailRequired,Adjon meg egy érvényes e-mail címet.
 login.error.enrollmentMissing,A kód megerősítése előtt indítsa el a hitelesítő beállítását.
+login.error.identifierRequired,Adja meg felhasználónevét vagy e-mail-címét.
 login.error.nameRequired,Adja meg a fiókjában megjelenítendő nevet.
+login.error.newPasswordRequired,Adjon meg új jelszót.
 login.error.passwordMismatch,A jelszavak nem egyeznek.
+login.error.passwordRequired,Adja meg jelszavát.
 login.error.passwordTooShort,A jelszónak legalább 8 karakterből kell állnia.
 login.error.recoveryCodeRequired,Adja meg az egyik mentett helyreállítási kódot.
 login.error.tokenMissing,A folytatáshoz nyissa meg az e-mailben található teljes linket.
@@ -1089,16 +1212,65 @@ login.logout.doneDescription,Kijelentkezett a következőből: {organization}.
 login.logout.doneTitle,Kijelentkezve
 login.logout.submit,Jelentkezzen ki
 login.logout.title,Kijelentkezés: {organization}
+login.mfa.backToChoices,Vissza a kétlépcsős ellenőrzés lehetőségeihez
+login.mfa.backToMethods,Vissza a módokhoz
+login.mfa.continue,Bejelentkezés folytatása
 login.mfa.description,Válassza ki a személyazonosság megerősítésének módját.
 login.mfa.emailOtp,E-mail kód
+login.mfa.emailOtpCodeTitle,E-mailes ellenőrzőkód
 login.mfa.emailOtpDescription,"Adja meg a hatjegyű kódot, amelyet e-mail címére küldtünk."
+login.mfa.emailOtpDetail,E-mailben küldött egyszer használatos ellenőrzőkód fogadása.
+login.mfa.emailOtpEnroll,E-mail-kódok beállítása
+login.mfa.emailOtpEnrollDescription,Az ellenőrzőkódokat a fiók e-mail-címére küldjük.
+login.mfa.emailOtpEnrollNotice,Állítson be e-mail-kódokat a fiók e-mail-címének második tényezőként való használatához.
+login.mfa.emailOtpEnrollSent,Az e-mail-kódok be vannak állítva. Adja meg az e-mail-címére küldött kódot.
+login.mfa.emailOtpEnrollTitle,E-mail-kódok beállítása
+login.mfa.emailOtpResent,Új ellenőrzőkódot küldtünk e-mail-címére.
+login.mfa.emailOtpSend,Kód küldése
+login.mfa.emailOtpSendDescription,Hatszámjegyű ellenőrzőkód küldése a fiók e-mail-címére.
+login.mfa.emailOtpSent,Ellenőrzőkódot küldtünk e-mail-címére.
+login.mfa.emailOtpUnavailableDescription,Az e-mailes második tényezős ellenőrzés ebben a bejelentkezési folyamatban nem érhető el.
+login.mfa.emailOtpUnavailableNotice,Az e-mailes MFA-átvitel nincs beállítva ehhez az Authworks-bejelentkezési kéréshez.
+login.mfa.emailOtpUnavailableTitle,Az e-mail-kód nem érhető el
+login.mfa.enrollDescription,Válasszon módot a kétlépcsős ellenőrzés beállításához.
+login.mfa.enrollTitle,Kétlépcsős ellenőrzés beállítása
+login.mfa.enterRecoveryCode,Adjon meg egy mentett helyreállítási kódot.
+login.mfa.enterSixDigits,Adjon meg 6 számjegyet.
+login.mfa.factorUnavailable,Ez a tényező a jelenlegi bejelentkezési szerződésben nem érhető el.
+login.mfa.loadingOptions,A kétlépcsős ellenőrzés lehetőségeinek betöltése...
+login.mfa.loadingOptionsDescription,Az elérhető második tényezők lekérése.
+login.mfa.optionalDescription,"A nagyobb biztonságért állítson be kétlépcsős ellenőrzést, vagy ugorja át most."
+login.mfa.optionalTitle,Opcionális kétlépcsős ellenőrzés
+login.mfa.optionsUnavailableDescription,Az elérhető második tényezők nem tölthetők be.
+login.mfa.optionsUnavailableTitle,A kétlépcsős ellenőrzés nem érhető el
 login.mfa.passkey,Passkey
+login.mfa.passkeyDescription,"Erősítse meg passkey-jel, az eszköz képernyőzárával vagy biometrikus adatokkal."
+login.mfa.passkeyDetail,Ellenőrzés passkey-jel vagy az eszköz biometrikus azonosításával.
+login.mfa.passkeyEnrollmentUnavailableDescription,A tárolt bejelentkezési szerződés nem biztosít passkey-regisztrációt.
+login.mfa.passkeyEnrollmentUnavailableNotice,"Fejezze be a passkey beállítását egy hitelesített fiókbiztonsági oldalon, majd térjen vissza a bejelentkezéshez."
+login.mfa.passkeyEnrollmentUnavailableTitle,A passkey beállítása nem érhető el
+login.mfa.passkeyUnavailableDescription,A passkey mint második tényező ebben a bejelentkezési folyamatban nem érhető el.
+login.mfa.passkeyUnavailableNotice,A passkey-MFA-átvitel nincs beállítva ehhez az Authworks-kéréshez.
+login.mfa.passkeyUnavailableTitle,A passkey nem érhető el
+login.mfa.passkeyVerify,Ellenőrzés passkey-jel
 login.mfa.recoveryCode,Helyreállítási kód
 login.mfa.recoveryCodeDescription,Használja az ellenőrzés beállításakor mentett egyszer használatos kódok egyikét.
+login.mfa.recoveryCodeDetail,"Használja egyik elmentett, egyszer használatos helyreállítási kódját."
 login.mfa.recoveryCodeLabel,Helyreállítási kód
+login.mfa.resend,Kód újraküldése
+login.mfa.resendIn,Újraküldés {seconds} másodperc múlva
+login.mfa.retryOptions,A lehetőségek betöltésének újrapróbálása
+login.mfa.satisfiedDescription,A bejelentkezése már megfelel a kétlépcsős ellenőrzési szabályzatnak.
+login.mfa.satisfiedTitle,A kétlépcsős ellenőrzés teljesítve
+login.mfa.setupFactor,{factor} beállítása
+login.mfa.skip,Átugrás most
+login.mfa.skipping,Átugrás...
 login.mfa.title,2 lépéses ellenőrzés
 login.mfa.totp,Hitelesítő alkalmazás
+login.mfa.totpChallengeTitle,Hitelesítő kód
 login.mfa.totpDescription,Írja be a hatjegyű kódot a hitelesítő alkalmazásból.
+login.mfa.totpDetail,Használja a hitelesítő alkalmazás kódját.
+login.mfa.unavailable,Nem érhető el
 login.mfa.verificationCode,Ellenőrző kód
 login.mfa.verify,Ellenőrizze
 login.passkey.canceled,A passkeyes bejelentkezést megszakították vagy lejárt az időkorlát. Próbálja újra.
@@ -1108,37 +1280,69 @@ login.passkey.permissionDenied,A passkey hozzáférését megtagadták. Engedél
 login.passkey.submit,Folytassa a jelszóval
 login.passkey.title,Jelentkezzen be jelszóval
 login.passkey.unsupported,Ez a böngésző vagy eszköz nem használhat jelszót. Válasszon másik bejelentkezési módot.
+login.passkey.unsupportedTitle,A passkey nem támogatott
+login.password.back,Vissza a módokhoz
 login.password.changeDescription,A folytatás előtt válasszon új jelszót.
+login.password.changeRequiredDescription,"A folytatás előtt meg kell változtatnia a jelszavát."
+login.password.changeRequiredTitle,Jelszó módosítása
+login.password.changeSubmit,Jelszó módosítása
 login.password.changeTitle,Frissítse jelszavát
 login.password.confirm,Erősítse meg a jelszót
 login.password.current,Jelenlegi jelszó
+login.password.currentRequired,Adja meg jelenlegi jelszavát.
 login.password.description,Adja meg {organization}-fiókjának hitelesítő adatait.
+login.password.expiredDescription,"A jelszava lejárt. A folytatáshoz állítson be újat."
 login.password.forgot,Elfelejtetted a jelszavad?
 login.password.hide,Jelszó elrejtése
 login.password.identifier,Felhasználónév vagy email
 login.password.label,Jelszó
 login.password.new,Új jelszó
+login.password.passwordRequired,Adja meg jelszavát.
+login.password.rememberIdentifier,Az azonosító megjegyzése
+login.password.saving,Mentés...
 login.password.show,Jelszó megjelenítése
+login.password.signInTitle,Bejelentkezés jelszóval
+login.password.signingIn,Bejelentkezés...
 login.password.submit,Jelentkezzen be
 login.password.title,Adja meg jelszavát
+login.provider.accountNotFoundDescription,"Ehhez a {provider}-fiókhoz nincs Authworks-fiók kapcsolva. A fiók-összekapcsolás és az önálló regisztráció még nincs engedélyezve."
+login.provider.accountNotFoundTitle,Nincs kapcsolt fiók
 login.provider.description,"A következő helyen folytatja: {provider}, és visszatér ide, ha végzett."
+login.provider.failureDescription,A {provider} használatával történő bejelentkezés nem fejeződött be. Próbálja újra.
+login.provider.linkingFailedDescription,A fiók összekapcsolása nem sikerült. Próbáljon másik bejelentkezési módot.
+login.provider.linkingFailedTitle,A fiók nem kapcsolható össze
 login.provider.submit,Folytatás ezzel: {provider}
 login.provider.title,Folytatás ezzel: {provider}
 login.recent.description,Folytassa az eszközön használt fiókkal.
 login.recent.heading,Legutóbbi fiókok
-login.recent.useAnother,Másik mód vagy fiók használata
 login.recent.other,Használjon másik fiókot
 login.recent.title,Válasszon egy fiókot
+login.recent.useAnother,Másik mód vagy fiók használata
+login.recovery.back,Vissza a bejelentkezéshez
+login.recovery.checkingLink,A visszaállítási hivatkozás ellenőrzése...
+login.recovery.choosePasswordTitle,Válasszon új jelszót
 login.recovery.completeDescription,Jelentkezzen be új jelszavával.
+login.recovery.completeDescriptionReference,"A folytatáshoz jelentkezzen be új jelszavával."
 login.recovery.completeTitle,Jelszó frissítve
+login.recovery.completeTitleReference,A jelszava megváltozott
 login.recovery.description,"Adja meg e-mail címét, és elküldjük a helyreállítási utasításokat, ha létezik fiók."
+login.recovery.invalidLinkError,Ez a jelszó-visszaállítási hivatkozás érvénytelen vagy lejárt.
+login.recovery.invalidLinkTitle,Ez a visszaállítási hivatkozás már nem érvényes
+login.recovery.loading,Jelszó-helyreállítás betöltése...
+login.recovery.policyRejected,Válasszon a követelményeknek megfelelő jelszót.
 login.recovery.resetDescription,Válasszon új jelszót a fiókjához.
 login.recovery.resetSubmit,Frissítse a jelszót
+login.recovery.resetSubmitReference,Új jelszó beállítása
 login.recovery.resetTitle,Állítson be új jelszót
+login.recovery.saving,Mentés...
+login.recovery.sending,Küldés...
 login.recovery.sentDescription,"Ha egy fiók megegyezik a címmel, a helyreállítási utasítások úton vannak. A link hamarosan lejár."
 login.recovery.sentTitle,Ellenőrizze az e-mailjét
 login.recovery.submit,Küldje el a helyreállítási utasításokat
+login.recovery.submitReference,Visszaállítási hivatkozás küldése
 login.recovery.title,Állítsa vissza jelszavát
+login.recovery.unavailableDescription,A jelszó-helyreállítás átmenetileg nem érhető el.
+login.recovery.unavailableTitle,A jelszó-helyreállítás nem érhető el
 login.register.description,Hozzon létre egy fiókot a {organization} számára.
 login.register.displayName,Teljes név
 login.register.doneDescription,Erősítse meg e-mail címét a {email} címre küldött link segítségével.
@@ -1150,127 +1354,41 @@ login.register.title,Hozd létre a fiókodat
 login.register.userName,Felhasználónév
 login.signedIn.description,Ön bejelentkezett ide: {organization}.
 login.signedIn.title,Bejelentkezve
+login.status.continuing,Bejelentkezés folytatása...
+login.status.fatalTitle,Bejelentkezés újrakezdése
 login.status.loading,Bejelentkezés előkészítése
 login.status.unavailableDescription,"A bejelentkezési kérés nem teljesíthető. Térjen vissza az alkalmazásba, és próbálja újra."
 login.status.unavailableTitle,A bejelentkezés nem érhető el
 login.totpEnroll.description,"Adja hozzá ezt a beállítási kulcsot a hitelesítő alkalmazáshoz, majd írja be a generált kódot. A kulcs csak most látható."
-login.totpEnroll.start,Beállítási kulcs megjelenítése
-login.totpEnroll.submit,Fejezze be a beállítást
-login.totpEnroll.title,Állítson be egy hitelesítő alkalmazást
-login.verify.description,Erősítse meg fiókja e-mail címét.
-login.verify.submit,Erősítse meg az e-mail címet
-login.verify.title,Igazolja e-mail címét
-login.verify.verifiedDescription,{email} megerősítve. Most már bejelentkezhet.
-login.verify.verifiedTitle,E-mail cím megerősítve
-demo.fixture.continuing,folytatás
-demo.fixture.fatal,végzetes hiba
-demo.fixture.passwordChangeExpired,lejárt jelszó
-demo.fixture.recoveryFatal,a helyreállítás nem érhető el
-demo.fixture.recoveryLoading,helyreállítás betöltése
-demo.fixture.resetInvalid,érvénytelen visszaállítási hivatkozás
-demo.fixture.resetLoading,visszaállítási hivatkozás betöltése
-login.emailOtp.codeHelp,Adjon meg 6 számjegyet.
-login.emailOtp.back,Vissza a módokhoz
-login.emailOtp.changeEmail,E-mail módosítása
-login.emailOtp.resendCountdown,Új kód {seconds} másodperc múlva küldhető.
-login.emailOtp.resent,Új kódot küldtünk.
-login.emailOtp.remember,E-mail megjegyzése
-login.emailOtp.sending,Küldés...
-login.emailOtp.verifying,Ellenőrzés...
-login.error.credentialsInvalid,Helytelen felhasználónév vagy jelszó.
-login.error.emailRecoveryRequired,Adja meg a fiókjához tartozó e-mail-címet.
-login.error.identifierRequired,Adja meg felhasználónevét vagy e-mail-címét.
-login.error.newPasswordRequired,Adjon meg új jelszót.
-login.error.passwordRequired,Adja meg jelszavát.
-login.mfa.backToChoices,Vissza a kétlépcsős ellenőrzés lehetőségeihez
-login.mfa.backToMethods,Vissza a módokhoz
-login.mfa.continue,Bejelentkezés folytatása
-login.mfa.emailOtpCodeTitle,E-mailes ellenőrzőkód
-login.mfa.emailOtpDetail,E-mailben küldött egyszer használatos ellenőrzőkód fogadása.
-login.mfa.emailOtpEnroll,E-mail-kódok beállítása
-login.mfa.emailOtpEnrollDescription,Az ellenőrzőkódokat a fiók e-mail-címére küldjük.
-login.mfa.emailOtpEnrollNotice,Állítson be e-mail-kódokat a fiók e-mail-címének második tényezőként való használatához.
-login.mfa.emailOtpEnrollSent,Az e-mail-kódok be vannak állítva. Adja meg az e-mail-címére küldött kódot.
-login.mfa.emailOtpEnrollTitle,E-mail-kódok beállítása
-login.mfa.emailOtpSend,Kód küldése
-login.mfa.emailOtpSendDescription,Hatszámjegyű ellenőrzőkód küldése a fiók e-mail-címére.
-login.mfa.emailOtpSent,Ellenőrzőkódot küldtünk e-mail-címére.
-login.mfa.emailOtpResent,Új ellenőrzőkódot küldtünk e-mail-címére.
-login.mfa.emailOtpUnavailableDescription,Az e-mailes második tényezős ellenőrzés ebben a bejelentkezési folyamatban nem érhető el.
-login.mfa.emailOtpUnavailableNotice,Az e-mailes MFA-átvitel nincs beállítva ehhez az Authworks-bejelentkezési kéréshez.
-login.mfa.emailOtpUnavailableTitle,Az e-mail-kód nem érhető el
-login.mfa.enterRecoveryCode,Adjon meg egy mentett helyreállítási kódot.
-login.mfa.enterSixDigits,Adjon meg 6 számjegyet.
-login.mfa.enrollDescription,Válasszon módot a kétlépcsős ellenőrzés beállításához.
-login.mfa.enrollTitle,Kétlépcsős ellenőrzés beállítása
-login.mfa.factorUnavailable,Ez a tényező a jelenlegi bejelentkezési szerződésben nem érhető el.
-login.mfa.loadingOptions,A kétlépcsős ellenőrzés lehetőségeinek betöltése...
-login.mfa.loadingOptionsDescription,Az elérhető második tényezők lekérése.
-login.mfa.optionalDescription,"A nagyobb biztonságért állítson be kétlépcsős ellenőrzést, vagy ugorja át most."
-login.mfa.optionalTitle,Opcionális kétlépcsős ellenőrzés
-login.mfa.optionsUnavailableDescription,Az elérhető második tényezők nem tölthetők be.
-login.mfa.optionsUnavailableTitle,A kétlépcsős ellenőrzés nem érhető el
-login.mfa.passkeyDescription,"Erősítse meg passkey-jel, az eszköz képernyőzárával vagy biometrikus adatokkal."
-login.mfa.passkeyDetail,Ellenőrzés passkey-jel vagy az eszköz biometrikus azonosításával.
-login.mfa.passkeyEnrollmentUnavailableDescription,A tárolt bejelentkezési szerződés nem biztosít passkey-regisztrációt.
-login.mfa.passkeyEnrollmentUnavailableNotice,"Fejezze be a passkey beállítását egy hitelesített fiókbiztonsági oldalon, majd térjen vissza a bejelentkezéshez."
-login.mfa.passkeyEnrollmentUnavailableTitle,A passkey beállítása nem érhető el
-login.mfa.passkeyUnavailableDescription,A passkey mint második tényező ebben a bejelentkezési folyamatban nem érhető el.
-login.mfa.passkeyUnavailableNotice,A passkey-MFA-átvitel nincs beállítva ehhez az Authworks-kéréshez.
-login.mfa.passkeyUnavailableTitle,A passkey nem érhető el
-login.mfa.passkeyVerify,Ellenőrzés passkey-jel
-login.mfa.resend,Kód újraküldése
-login.mfa.resendIn,Újraküldés {seconds} másodperc múlva
-login.mfa.recoveryCodeDetail,"Használja egyik elmentett, egyszer használatos helyreállítási kódját."
-login.mfa.totpChallengeTitle,Hitelesítő kód
-login.mfa.totpDetail,Használja a hitelesítő alkalmazás kódját.
-login.mfa.retryOptions,A lehetőségek betöltésének újrapróbálása
-login.mfa.setupFactor,{factor} beállítása
-login.mfa.skip,Átugrás most
-login.mfa.skipping,Átugrás...
-login.mfa.satisfiedDescription,A bejelentkezése már megfelel a kétlépcsős ellenőrzési szabályzatnak.
-login.mfa.satisfiedTitle,A kétlépcsős ellenőrzés teljesítve
-login.mfa.unavailable,Nem érhető el
-login.passkey.unsupportedTitle,A passkey nem támogatott
-login.password.changeRequiredDescription,"A folytatás előtt meg kell változtatnia a jelszavát."
-login.password.changeRequiredTitle,Jelszó módosítása
-login.password.changeSubmit,Jelszó módosítása
-login.password.expiredDescription,"A jelszava lejárt. A folytatáshoz állítson be újat."
-login.password.currentRequired,Adja meg jelenlegi jelszavát.
-login.password.back,Vissza a módokhoz
-login.password.passwordRequired,Adja meg jelszavát.
-login.password.rememberIdentifier,Az azonosító megjegyzése
-login.password.signInTitle,Bejelentkezés jelszóval
-login.password.signingIn,Bejelentkezés...
-login.password.saving,Mentés...
-login.provider.accountNotFoundDescription,"Ehhez a {provider}-fiókhoz nincs Authworks-fiók kapcsolva. A fiók-összekapcsolás és az önálló regisztráció még nincs engedélyezve."
-login.provider.accountNotFoundTitle,Nincs kapcsolt fiók
-login.provider.failureDescription,A {provider} használatával történő bejelentkezés nem fejeződött be. Próbálja újra.
-login.provider.linkingFailedDescription,A fiók összekapcsolása nem sikerült. Próbáljon másik bejelentkezési módot.
-login.provider.linkingFailedTitle,A fiók nem kapcsolható össze
-login.recovery.back,Vissza a bejelentkezéshez
-login.recovery.checkingLink,A visszaállítási hivatkozás ellenőrzése...
-login.recovery.choosePasswordTitle,Válasszon új jelszót
-login.recovery.completeDescriptionReference,"A folytatáshoz jelentkezzen be új jelszavával."
-login.recovery.completeTitleReference,A jelszava megváltozott
-login.recovery.invalidLinkTitle,Ez a visszaállítási hivatkozás már nem érvényes
-login.recovery.invalidLinkError,Ez a jelszó-visszaállítási hivatkozás érvénytelen vagy lejárt.
-login.recovery.policyRejected,Válasszon a követelményeknek megfelelő jelszót.
-login.recovery.loading,Jelszó-helyreállítás betöltése...
-login.recovery.resetSubmitReference,Új jelszó beállítása
-login.recovery.saving,Mentés...
-login.recovery.sending,Küldés...
-login.recovery.submitReference,Visszaállítási hivatkozás küldése
-login.recovery.unavailableDescription,A jelszó-helyreállítás átmenetileg nem érhető el.
-login.recovery.unavailableTitle,A jelszó-helyreállítás nem érhető el
-login.status.continuing,Bejelentkezés folytatása...
-login.status.fatalTitle,Bejelentkezés újrakezdése
 login.totpEnroll.hideSetupKey,A beállítási kulcs elrejtése
 login.totpEnroll.qrLabel,QR-kód a hitelesítő alkalmazás beállításához
 login.totpEnroll.scanDescription,"Olvassa be a QR-kódot a hitelesítő alkalmazással, majd adja meg a megjelenő hatjegyű kódot."
 login.totpEnroll.setupKeyLabel,Beállítási kulcs (ha nem tudja beolvasni)
 login.totpEnroll.showSetupKey,A beállítási kulcs megjelenítése
+login.totpEnroll.start,Beállítási kulcs megjelenítése
+login.totpEnroll.submit,Fejezze be a beállítást
+login.totpEnroll.title,Állítson be egy hitelesítő alkalmazást
 login.totpEnroll.unavailableDescription,A hitelesítő beállítása itt nem készíthető elő. Az adatok újratöltés után nem állíthatók helyre.
+login.verify.description,Erősítse meg fiókja e-mail címét.
+login.verify.submit,Erősítse meg az e-mail címet
+login.verify.title,Igazolja e-mail címét
+login.verify.verifiedDescription,{email} megerősítve. Most már bejelentkezhet.
+login.verify.verifiedTitle,E-mail cím megerősítve
+login.whatsappOtp.codeDescription,Adja meg a(z) {phoneNumber} számra WhatsAppon küldött kódot.
+login.whatsappOtp.codeError,A WhatsApp-kód helytelen.
+login.whatsappOtp.codeTitle,WhatsApp ellenőrző kód
+login.whatsappOtp.description,"Jelszó kérése helyett egyszer használatos kódot küldünk WhatsAppon."
+login.whatsappOtp.differentNumber,Másik szám használata
+login.whatsappOtp.phoneHint,"Használja a nemzetközi E.164 formátumot, például: +14155552671."
+login.whatsappOtp.phoneInvalid,Adjon meg egy érvényes telefonszámot E.164 formátumban.
+login.whatsappOtp.phoneNumber,WhatsApp-telefonszám
+login.whatsappOtp.phonePlaceholder,+36301234567
+login.whatsappOtp.resend,Kód újraküldése
+login.whatsappOtp.send,WhatsApp-kód küldése
+login.whatsappOtp.sendError,A WhatsApp-kódot nem sikerült elküldeni.
+login.whatsappOtp.sending,Kód küldése…
+login.whatsappOtp.title,Bejelentkezés WhatsAppal
+login.whatsappOtp.verifying,Ellenőrzés…
 shell.guard.accessUnavailable,A hozzáférés nem érhető el
 shell.guard.contextRequired,Kontextus szükséges
 shell.guard.contextRequiredDetail,Válassza ki a szükséges realm-et vagy szervezetet a folytatás előtt.
@@ -1332,6 +1450,7 @@ shell.nav.refreshTokens,Frissítési tokenek
 shell.nav.registration,Regisztráció
 shell.nav.rolesGrants,Szerepkörök és jogosultságok
 shell.nav.security,Biztonság
+shell.nav.securityHistory,Biztonsági előzmények
 shell.nav.sessions,Munkamenetek
 shell.nav.sessionsDevices,Munkamenetek és eszközök
 shell.nav.signingKeys,Aláíró kulcsok
@@ -1343,109 +1462,3 @@ shell.state.loadingDetail,Az oldal és a biztonsági környezet előkészítése
 shell.state.nothingHere,Itt még nincs semmi
 shell.state.pageUnavailable,Ez az oldal nem érhető el
 shell.state.readyDetail,Ez az oldal készen áll a tartalomra.
-login.chooser.whatsappOtpDetail,Egyszer használatos kód fogadása WhatsAppon
-login.chooser.whatsappOtpLabel,WhatsApp-kód
-login.whatsappOtp.codeError,A WhatsApp-kód helytelen.
-login.whatsappOtp.codeDescription,Adja meg a(z) {phoneNumber} számra WhatsAppon küldött kódot.
-login.whatsappOtp.codeTitle,WhatsApp ellenőrző kód
-login.whatsappOtp.description,"Jelszó kérése helyett egyszer használatos kódot küldünk WhatsAppon."
-login.whatsappOtp.differentNumber,Másik szám használata
-login.whatsappOtp.phoneHint,"Használja a nemzetközi E.164 formátumot, például: +14155552671."
-login.whatsappOtp.phoneInvalid,Adjon meg egy érvényes telefonszámot E.164 formátumban.
-login.whatsappOtp.phoneNumber,WhatsApp-telefonszám
-login.whatsappOtp.phonePlaceholder,+36301234567
-login.whatsappOtp.resend,Kód újraküldése
-login.whatsappOtp.send,WhatsApp-kód küldése
-login.whatsappOtp.sendError,A WhatsApp-kódot nem sikerült elküldeni.
-login.whatsappOtp.sending,Kód küldése…
-login.whatsappOtp.title,Bejelentkezés WhatsAppal
-login.whatsappOtp.verifying,Ellenőrzés…
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
-account.securityHistory.empty,No security activity is available
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-shell.nav.securityHistory,Biztonsági előzmények
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.

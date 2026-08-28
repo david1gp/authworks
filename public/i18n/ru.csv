@@ -7,21 +7,19 @@ account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
 account.access.created,Granted {date}
 account.access.declined,Invitation declined
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveEmpty,This account has no active organization or project access.
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectiveMembership,Membership roles: {roles}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectivePermissions,Permissions: {permissions}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveSource,Access source: {source}
+account.access.effectiveTitle,Effective access
+account.access.effectiveTitle,Effective access
 account.access.email,Email
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.effectiveDescription,"Review the active organizations, projects, roles, and permissions available to this account."
-account.access.effectiveEmpty,This account has no active organization or project access.
-account.access.effectiveMembership,Membership roles: {roles}
-account.access.effectivePermissions,Permissions: {permissions}
-account.access.effectiveSource,Access source: {source}
-account.access.effectiveTitle,Effective access
-account.access.loadMore,Load more access
-account.access.organizationAccess,Organization access
 account.access.error,This account information could not be loaded.
 account.access.expired,This invitation has expired.
 account.access.invitationDeclineConfirm,Отклонить это приглашение?
@@ -30,8 +28,10 @@ account.access.invitationEmpty,There are no pending invitations for this account
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
 account.access.invitationReplay,This invitation was already used or is no longer available.
-account.access.membership,Membership roles
 account.access.loadMore,Load more access
+account.access.loadMore,Load more access
+account.access.membership,Membership roles
+account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
@@ -62,11 +62,11 @@ account.factors.removeTotp,Remove authenticator
 account.factors.totp,Authenticator app
 account.factors.totpSecretOnce,"Add this secret to your authenticator, then enter its six-digit code. This setup secret is only shown now."
 account.factors.verificationCode,Verification code
-account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
@@ -100,28 +100,28 @@ account.profile.emailAddressDescription,Verified addresses can be used for sign-
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
-account.profile.emailMakePrimary,Make primary
-account.profile.emailPrimary,Primary
-account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
-account.profile.emailRefresh,Refresh addresses
-account.profile.emailRemove,Remove
-account.profile.emailRemoving,Removing…
-account.profile.emailUpdating,Updating…
-account.profile.emailDescription,Review the verified address used for sign-in and account communication.
-account.profile.emailTitle,Email address and verification
 account.profile.emailChange,Change email address
 account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
 account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
+account.profile.emailDescription,Review the verified address used for sign-in and account communication.
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
+account.profile.emailMakePrimary,Make primary
 account.profile.emailNew,New email address
+account.profile.emailPrimary,Primary
+account.profile.emailPrimaryRemoveBlocked,The primary email address cannot be removed.
+account.profile.emailRefresh,Refresh addresses
+account.profile.emailRemove,Remove
+account.profile.emailRemoving,Removing…
 account.profile.emailResend,Resend verification email
 account.profile.emailSaved,Your verified email address was updated.
 account.profile.emailSending,Sending verification email…
+account.profile.emailTitle,Email address and verification
 account.profile.emailToken,Verification token
 account.profile.emailTokenInvalid,Enter the verification token from the email.
+account.profile.emailUpdating,Updating…
 account.profile.emailVerify,Verify email address
 account.profile.emailVerifying,Verifying…
 account.profile.firstName,First name
@@ -130,15 +130,6 @@ account.profile.gender.man,Man
 account.profile.gender.nonBinary,Non-binary
 account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
-account.profile.picture,Profile picture
-account.profile.pictureAlt,Current profile picture
-account.profile.pictureChoose,Choose a picture file
-account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
-account.profile.pictureRemove,Remove picture
-account.profile.pictureSaved,Profile picture updated.
-account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
-account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
-account.profile.pictureUploading,Uploading the picture…
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
 account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
@@ -163,6 +154,15 @@ account.profile.phoneSending,Sending code…
 account.profile.phoneTitle,WhatsApp phone number
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
+account.profile.picture,Profile picture
+account.profile.pictureAlt,Current profile picture
+account.profile.pictureChoose,Choose a picture file
+account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.pictureRemove,Remove picture
+account.profile.pictureSaved,Profile picture updated.
+account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
+account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
@@ -193,6 +193,55 @@ account.refreshTokens.revokedAt,Отозвано {date}
 account.refreshTokens.scope,Области: {scope}
 account.refreshTokens.title,Семейства токенов обновления
 account.security.label,Account security management
+account.securityHistory.category.emailChanges,Email changes
+account.securityHistory.category.impersonation,Impersonation
+account.securityHistory.category.linkedIdentities,Linked identities
+account.securityHistory.category.mfa,Multi-factor authentication
+account.securityHistory.category.passkeys,Passkeys
+account.securityHistory.category.passwords,Passwords
+account.securityHistory.category.refreshTokens,Refresh tokens
+account.securityHistory.category.sessions,Sessions
+account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
+account.securityHistory.empty,No security activity is available
+account.securityHistory.event.accessTokenRevoked,An access token was revoked
+account.securityHistory.event.emailChangeFailed,An email address change failed
+account.securityHistory.event.emailChangeRequested,An email address change was requested
+account.securityHistory.event.emailChangeVerified,A new email address was verified
+account.securityHistory.event.emailChanged,The account email address changed
+account.securityHistory.event.identityLinked,An external identity was linked
+account.securityHistory.event.identityUnlinked,An external identity was unlinked
+account.securityHistory.event.impersonationEnded,An impersonation session ended
+account.securityHistory.event.impersonationStarted,An impersonation session started
+account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
+account.securityHistory.event.mfaFailed,A multi-factor challenge failed
+account.securityHistory.event.mfaStarted,A multi-factor challenge started
+account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
+account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
+account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
+account.securityHistory.event.passkeyCredentialUsed,A passkey was used
+account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
+account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
+account.securityHistory.event.passwordChanged,The password changed
+account.securityHistory.event.passwordEmailVerified,The password email address was verified
+account.securityHistory.event.passwordLocked,The password account was locked
+account.securityHistory.event.passwordLoginFailed,A password sign-in failed
+account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
+account.securityHistory.event.passwordRecovered,The password was recovered
+account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
+account.securityHistory.event.passwordUnlocked,The password account was unlocked
+account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
+account.securityHistory.event.recoveryCodeUsed,A recovery code was used
+account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
+account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
+account.securityHistory.event.sessionCreated,A session was created
+account.securityHistory.event.sessionRevoked,A session was revoked
+account.securityHistory.event.sessionRotated,A session was renewed
+account.securityHistory.event.sessionsRevoked,All sessions were revoked
+account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
+account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
+account.securityHistory.event.totpRemoved,An authenticator was removed
+account.securityHistory.event.totpVerified,An authenticator challenge succeeded
+account.securityHistory.loadMore,Load more security activity
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
@@ -361,6 +410,7 @@ admin.oidc.clients.description,"Приложения, которые аутен�
 admin.oidc.clients.detailTitle,Сведения о клиенте OIDC
 admin.oidc.clients.empty,В этой области ещё не зарегистрировано ни одного клиента OpenID Connect.
 admin.oidc.clients.exactMatchHint,"По одному URI в строке. Каждое перенаправление сверяется точно, поэтому подстановочные знаки и различия в окончании отклоняются."
+admin.oidc.clients.identifier,Идентификатор клиента
 admin.oidc.clients.invalid,"Введите имя клиента, хотя бы один точный URI перенаправления и хотя бы одну область."
 admin.oidc.clients.lifecycleChanged,Состояние клиента изменено.
 admin.oidc.clients.missingId,Для этого раздела необходимо выбрать клиента OIDC.
@@ -374,6 +424,9 @@ admin.oidc.clients.scopes,Разрешённые области доступа
 admin.oidc.clients.search,Поиск клиентов
 admin.oidc.clients.settingsDescription,"Управляйте именем клиента, точными URI перенаправления, разрешёнными областями доступа и обработкой согласия."
 admin.oidc.clients.settingsTitle,Настройки клиента
+admin.oidc.clients.statusValue.active,Активна
+admin.oidc.clients.statusValue.inactive,Неактивен
+admin.oidc.clients.statusValue.removed,Удалена
 admin.oidc.clients.title,Клиенты OpenID Connect
 admin.oidc.clients.trusted,Доверенный
 admin.oidc.clients.trustedHint,Доверенный клиент полностью пропускает экран согласия. Отмечайте как доверенные только собственные приложения.
@@ -424,12 +477,12 @@ admin.oidc.keys.retiredAt,Выведен из обращения
 admin.oidc.keys.rotate,Ротировать ключ
 admin.oidc.keys.rotateConfirm,"Ротировать ключ подписи? Будет опубликован новый ключ, а текущий будет выведен из использования."
 admin.oidc.keys.rotated,Ключ подписи ротирован.
+admin.oidc.keys.statusValue.active,Активна
+admin.oidc.keys.statusValue.retired,Выведен из обращения
 admin.oidc.keys.title,Ключи подписи
 admin.oidc.lifecycle.activate,Активировать
 admin.oidc.lifecycle.deactivate,Деактивировать
 admin.oidc.lifecycle.remove,Удалить клиента
-admin.oidc.pageNext,Следующая страница
-admin.oidc.pagePrevious,Предыдущая страница
 admin.oidc.permissionDenied,У вас нет разрешения просматривать или изменять настройки OpenID Connect в этой области.
 admin.oidc.permissionDeniedTitle,Доступ недоступен
 admin.oidc.secret.acknowledge,Я сохранил секрет
@@ -548,17 +601,56 @@ admin.organizations.pageNext,Следующая страница
 admin.organizations.pagePrevious,Предыдущая страница
 admin.organizations.permissionDenied,У вас нет разрешения просматривать или изменять эту организацию.
 admin.organizations.permissionDeniedTitle,Доступ недоступен
+admin.organizations.policy.allowedFactors,Allowed MFA factors
+admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
+admin.organizations.policy.assurance.authenticated,Authenticated session
+admin.organizations.policy.assurance.multi_factor,Multi-factor session
+admin.organizations.policy.assurance.none,No assurance requirement
 admin.organizations.policy.description,"Выберите, какие способы входа доступны людям и какие настроенные провайдеры отображаются."
 admin.organizations.policy.domainDiscovery,Определять организацию по домену электронной почты
+admin.organizations.policy.down,Down
+admin.organizations.policy.effectiveValue,Effective value: {value}
 admin.organizations.policy.emailOtp,Одноразовый код по электронной почте
+admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
+admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
+admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
+admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
+admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
+admin.organizations.policy.enforcementTitle,Effective enforcement
 admin.organizations.policy.externalIdentity,Внешние провайдеры идентификации
+admin.organizations.policy.factor.emailOtp,Email one-time code
+admin.organizations.policy.factor.passkey,Passkey
+admin.organizations.policy.factor.totp,Authenticator app (TOTP)
 admin.organizations.policy.inherited,Унаследовано от realm
+admin.organizations.policy.minimumAssurance,Minimum step-up assurance
+admin.organizations.policy.moveDown,Move {factor} down
+admin.organizations.policy.moveUp,Move {factor} up
+admin.organizations.policy.notRequired,Not required
+admin.organizations.policy.organizationOverrides,Organization overrides
+admin.organizations.policy.organizationValue,Organization override
+admin.organizations.policy.overrideRealm,Override the realm value
 admin.organizations.policy.passkey,Passkeys
 admin.organizations.policy.password,Пароль
 admin.organizations.policy.passwordRecovery,Восстановление пароля
+admin.organizations.policy.preferredOrder,Preferred factor order
+admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
+admin.organizations.policy.realmDefaults,Realm defaults
+admin.organizations.policy.realmValue,Realm value
 admin.organizations.policy.registration,Самостоятельная регистрация
+admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
+admin.organizations.policy.required,Required
+admin.organizations.policy.requiredMfa,Required MFA
 admin.organizations.policy.saved,Политика входа сохранена.
+admin.organizations.policy.scopeLabel,Policy scope
+admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
+admin.organizations.policy.securityTitle,MFA and assurance
 admin.organizations.policy.title,Политика входа
+admin.organizations.policy.up,Up
+admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
+admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
+admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
+admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
+admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
 admin.organizations.providers.allowAccountCreation,Автоматически создавать учётные записи для новых людей
 admin.organizations.providers.clientId,Идентификатор клиента
 admin.organizations.providers.clientSecret,Секрет клиента
@@ -605,6 +697,7 @@ admin.projects.crossTenant,Этот ресурс принадлежит друг
 admin.projects.deleteConfirm,"Удалить этот проект? Приложения, роли и выдачи прав будут удалены вместе с ним."
 admin.projects.detail.authorizationRequired,Требуется авторизация
 admin.projects.detail.created,Создано
+admin.projects.detail.identifier,Идентификатор проекта
 admin.projects.detail.organization,Организация
 admin.projects.detail.projectAccessRequired,Требуется доступ к проекту
 admin.projects.detail.settingsDescription,"Управляйте названием проекта и тем, как применяется доступ."
@@ -615,6 +708,7 @@ admin.projects.grants.create,Предоставить доступ органи�
 admin.projects.grants.description,"Предоставьте другой организации доступ к этому проекту и выберите, какие роли она получит."
 admin.projects.grants.empty,Ни одной организации не предоставлен доступ к этому проекту.
 admin.projects.grants.grantedOrganization,Организация-получатель
+admin.projects.grants.invalid,Выберите организацию и хотя бы одну роль.
 admin.projects.grants.revokeConfirm,Отозвать эту выдачу прав организации? Участники потеряют доступ к проекту.
 admin.projects.grants.roleKeys,Предоставленные роли
 admin.projects.grants.title,Предоставления организации
@@ -630,8 +724,6 @@ admin.projects.list.name,Название проекта
 admin.projects.list.search,Поиск проектов
 admin.projects.list.title,Проекты
 admin.projects.missingId,Для этого раздела необходимо выбрать проект.
-admin.projects.pageNext,Следующая страница
-admin.projects.pagePrevious,Предыдущая страница
 admin.projects.permissionDenied,У вас нет разрешения просматривать или изменять эти сведения о проекте.
 admin.projects.roles.create,Создать роль
 admin.projects.roles.deleteConfirm,"Удалить эту роль проекта? Выдачи прав, ссылающиеся на неё, потеряют эту роль."
@@ -639,10 +731,14 @@ admin.projects.roles.description,"Роли, которые этот проект
 admin.projects.roles.displayName,Display name
 admin.projects.roles.empty,В этом проекте пока не определены роли.
 admin.projects.roles.group,Группа
+admin.projects.roles.invalid,Введите ключ роли и отображаемое имя.
 admin.projects.roles.key,Ключ роли
 admin.projects.roles.title,Роли проекта
 admin.projects.saved,{name} сохранён.
 admin.projects.status,Состояние
+admin.projects.statusValue.active,Активна
+admin.projects.statusValue.inactive,Неактивен
+admin.projects.statusValue.removed,Удалена
 admin.realm.confirmLabel,Введите {name} для подтверждения
 admin.realm.confirmMismatch,Имя области не совпадает.
 admin.realm.created,Создано
@@ -697,6 +793,7 @@ admin.users.authentication.recoveryCodes,Recovery codes
 admin.users.authentication.recoveryCount,{count} codes remaining
 admin.users.authentication.title,Authentication methods
 admin.users.authentication.totpMetadata,{label} · confirmed {confirmed}
+admin.users.backToDirectory,Назад к пользователям
 admin.users.count,Пользователей: {count}
 admin.users.create,Создать пользователя
 admin.users.createDescription,Добавьте человека-пользователя в текущий realm.
@@ -715,6 +812,7 @@ admin.users.displayNameRequired,Enter a display name.
 admin.users.email,Email address
 admin.users.empty,Ни один пользователь не соответствует текущему фильтру.
 admin.users.firstName,First name
+admin.users.identifier,Идентификатор пользователя
 admin.users.invalid,Введите действительный адрес электронной почты и имя пользователя.
 admin.users.lastName,Last name
 admin.users.lifecycle.active,Активна
@@ -731,10 +829,10 @@ admin.users.markUnverified,Отметить как неподтверждённ�
 admin.users.markVerified,Отметить как подтверждённый
 admin.users.missingId,Не удалось определить этого пользователя по адресу.
 admin.users.nickName,Nickname
+admin.users.pictureAlt,User profile picture
 admin.users.preferredLanguage,Preferred language
 admin.users.profileSave,Сохранить профиль
 admin.users.profileSaved,Профиль пользователя сохранён.
-admin.users.pictureAlt,User profile picture
 admin.users.profileTitle,Профиль
 admin.users.search,Поиск пользователей
 admin.users.searchPlaceholder,"Фильтр по имени пользователя, электронной почте или идентификатору"
@@ -772,6 +870,9 @@ common.enabled,Включено
 common.error,Что-то пошло не так.
 common.language,Язык
 common.loading,Загрузка
+common.next,Далее
+common.pagination,Постраничная навигация
+common.previous,Назад
 common.retry,Повторить
 common.revoke,Revoke
 common.save,Сохранить
@@ -909,6 +1010,7 @@ demo.fixture.accepted,принято
 demo.fixture.accountError,Не удалось загрузить детерминированные тестовые данные учётной записи.
 demo.fixture.active,активно
 demo.fixture.assuranceRequired,требуется подтверждение
+demo.fixture.continuing,продолжение
 demo.fixture.crossTenant,межтенантный
 demo.fixture.declined,отклонено
 demo.fixture.empty,пусто
@@ -916,13 +1018,19 @@ demo.fixture.ended,завершено
 demo.fixture.error,ошибка
 demo.fixture.expired,истекло
 demo.fixture.expiring,истекает
+demo.fixture.fatal,критическая ошибка
 demo.fixture.loading,загрузка
 demo.fixture.nestedRejected,вложенный отказ
 demo.fixture.oneTime,одноразовый
+demo.fixture.passwordChangeExpired,пароль истёк
 demo.fixture.permissionDenied,в доступе отказано
 demo.fixture.preview,Предпросмотр данных без состояния
+demo.fixture.recoveryFatal,восстановление недоступно
+demo.fixture.recoveryLoading,загрузка восстановления
 demo.fixture.redacted,скрыто
 demo.fixture.replayed,повторно воспроизведено
+demo.fixture.resetInvalid,недействительная ссылка сброса
+demo.fixture.resetLoading,загрузка ссылки сброса
 demo.fixture.state,Состояние данных
 demo.fixture.success,успешно
 demo.hub.accountDescription,"Исследуйте назначения самообслуживания для профиля, организации и безопасности."
@@ -1049,11 +1157,11 @@ email.preview.text,Текстовая версия
 email.preview.verification,Подтверждение электронной почты
 login.chooser.accountOrMethodTitle,Выберите аккаунт или способ
 login.chooser.description,"Выберите, как вы хотите войти в {organization}."
+login.chooser.emailOtpDetail,Получите одноразовый код на электронную почту
+login.chooser.emailOtpLabel,Код электронной почты
 login.chooser.lastUsed,Использовалось недавно
 login.chooser.methodTitle,Выберите способ
 login.chooser.orChooseMethod,Или выберите способ
-login.chooser.emailOtpDetail,Получите одноразовый код на электронную почту
-login.chooser.emailOtpLabel,Код электронной почты
 login.chooser.passkeyDetail,Используйте блокировку экрана вашего устройства или ключ безопасности.
 login.chooser.passkeyLabel,Ключ доступа
 login.chooser.passwordDetail,Используйте пароль своей учетной записи
@@ -1063,24 +1171,39 @@ login.chooser.providerLabel,Продолжить с {provider}
 login.chooser.register,Завести аккаунт
 login.chooser.title,Войти
 login.chooser.useRecent,Использовать недавнюю учетную запись
+login.chooser.whatsappOtpDetail,Получить одноразовый код в WhatsApp
+login.chooser.whatsappOtpLabel,Код WhatsApp
 login.common.back,Вернуться к параметрам входа
 login.common.legal,"Продолжая, вы подтверждаете {terms} и {privacy}."
 login.common.privacy,политика конфиденциальности
 login.common.terms,Условия использования
 login.common.working,Работающий…
+login.emailOtp.back,Вернуться к способам
+login.emailOtp.changeEmail,Изменить электронную почту
 login.emailOtp.codeDescription,"Введите шестизначный код, который мы отправили на {email}."
+login.emailOtp.codeHelp,Введите 6 цифр.
 login.emailOtp.codeTitle,Введите свой адрес электронной почты
 login.emailOtp.description,Мы отправим вам по электронной почте одноразовый код вместо запроса пароля.
+login.emailOtp.remember,Запомнить этот адрес
 login.emailOtp.resend,Отправить новый код
+login.emailOtp.resendCountdown,Новый код можно будет отправить через {seconds} секунд.
+login.emailOtp.resent,Новый код отправлен.
 login.emailOtp.send,Отправить код
+login.emailOtp.sending,Отправка...
 login.emailOtp.title,Войдите с помощью кода электронной почты
 login.emailOtp.verify,Подтвердите код
+login.emailOtp.verifying,Проверка...
 login.error.codeRequired,Введите шестизначный код подтверждения.
+login.error.credentialsInvalid,Неверное имя пользователя или пароль.
 login.error.credentialsRequired,Введите свое имя пользователя и пароль.
+login.error.emailRecoveryRequired,Введите адрес электронной почты аккаунта.
 login.error.emailRequired,Введите действительный адрес электронной почты.
 login.error.enrollmentMissing,Запустите настройку аутентификатора перед подтверждением кода.
+login.error.identifierRequired,Введите имя пользователя или адрес электронной почты.
 login.error.nameRequired,"Введите имя, которое будет отображаться в вашей учетной записи."
+login.error.newPasswordRequired,Введите новый пароль.
 login.error.passwordMismatch,Пароли не совпадают.
+login.error.passwordRequired,Введите пароль.
 login.error.passwordTooShort,Пароль должен содержать не менее 8 символов.
 login.error.recoveryCodeRequired,Введите один из сохраненных кодов восстановления.
 login.error.tokenMissing,"Откройте полную ссылку из письма, чтобы продолжить."
@@ -1089,16 +1212,65 @@ login.logout.doneDescription,Вы вышли из {organization}.
 login.logout.doneTitle,Вышел из системы
 login.logout.submit,выход
 login.logout.title,Выйдите из {organization}
+login.mfa.backToChoices,Вернуться к вариантам двухэтапной проверки
+login.mfa.backToMethods,Вернуться к способам
+login.mfa.continue,Продолжить вход
 login.mfa.description,"Выберите, как подтвердить, что это вы."
 login.mfa.emailOtp,Код электронной почты
+login.mfa.emailOtpCodeTitle,Код подтверждения по электронной почте
 login.mfa.emailOtpDescription,"Введите шестизначный код, который мы отправили на ваш адрес электронной почты."
+login.mfa.emailOtpDetail,Получить одноразовый код подтверждения по электронной почте.
+login.mfa.emailOtpEnroll,Настроить коды электронной почты
+login.mfa.emailOtpEnrollDescription,Коды подтверждения будут отправляться на адрес электронной почты аккаунта.
+login.mfa.emailOtpEnrollNotice,"Настройте коды электронной почты, чтобы использовать адрес аккаунта как второй фактор."
+login.mfa.emailOtpEnrollSent,"Коды электронной почты настроены. Введите код, отправленный на ваш адрес."
+login.mfa.emailOtpEnrollTitle,Настройка кодов электронной почты
+login.mfa.emailOtpResent,Новый код подтверждения отправлен на ваш адрес электронной почты.
+login.mfa.emailOtpSend,Отправить код
+login.mfa.emailOtpSendDescription,Отправить шестизначный код подтверждения на адрес электронной почты аккаунта.
+login.mfa.emailOtpSent,Код подтверждения отправлен на ваш адрес электронной почты.
+login.mfa.emailOtpUnavailableDescription,Проверка по электронной почте как второй фактор недоступна в этом процессе входа.
+login.mfa.emailOtpUnavailableNotice,Транспорт MFA по электронной почте не настроен для этого запроса Authworks.
+login.mfa.emailOtpUnavailableTitle,Код электронной почты недоступен
+login.mfa.enrollDescription,Выберите способ настройки двухэтапной проверки для аккаунта.
+login.mfa.enrollTitle,Настроить двухэтапную проверку
+login.mfa.enterRecoveryCode,Введите сохранённый код восстановления.
+login.mfa.enterSixDigits,Введите 6 цифр.
+login.mfa.factorUnavailable,Этот фактор недоступен в текущем контракте входа.
+login.mfa.loadingOptions,Загрузка вариантов двухэтапной проверки...
+login.mfa.loadingOptionsDescription,Получение доступных вариантов второго фактора.
+login.mfa.optionalDescription,Настройте двухэтапную проверку для дополнительной защиты или пропустите её сейчас.
+login.mfa.optionalTitle,Необязательная двухэтапная проверка
+login.mfa.optionsUnavailableDescription,Не удалось загрузить доступные варианты второго фактора.
+login.mfa.optionsUnavailableTitle,Двухэтапная проверка недоступна
 login.mfa.passkey,Ключ доступа
+login.mfa.passkeyDescription,"Подтвердите с помощью ключа доступа, блокировки экрана устройства или биометрии."
+login.mfa.passkeyDetail,Подтвердите с помощью ключа доступа или биометрии устройства.
+login.mfa.passkeyEnrollmentUnavailableDescription,Размещённый контракт входа не предоставляет регистрацию ключей доступа.
+login.mfa.passkeyEnrollmentUnavailableNotice,"Завершите настройку ключа доступа на аутентифицированной странице безопасности аккаунта, затем вернитесь ко входу."
+login.mfa.passkeyEnrollmentUnavailableTitle,Настройка ключа доступа недоступна
+login.mfa.passkeyUnavailableDescription,Проверка ключом доступа как вторым фактором недоступна в этом процессе входа.
+login.mfa.passkeyUnavailableNotice,Транспорт MFA ключа доступа не настроен для этого запроса Authworks.
+login.mfa.passkeyUnavailableTitle,Ключ доступа недоступен
+login.mfa.passkeyVerify,Подтвердить ключом доступа
 login.mfa.recoveryCode,Код восстановления
 login.mfa.recoveryCodeDescription,"Используйте один из одноразовых кодов, которые вы сохранили при настройке проверки."
+login.mfa.recoveryCodeDetail,Используйте один из сохранённых одноразовых кодов восстановления.
 login.mfa.recoveryCodeLabel,Код восстановления
+login.mfa.resend,Отправить код повторно
+login.mfa.resendIn,Повторная отправка через {seconds} секунд
+login.mfa.retryOptions,Повторить загрузку вариантов
+login.mfa.satisfiedDescription,Ваш вход уже соответствует политике двухэтапной проверки.
+login.mfa.satisfiedTitle,Двухэтапная проверка выполнена
+login.mfa.setupFactor,Настроить {factor}
+login.mfa.skip,Пропустить сейчас
+login.mfa.skipping,Пропуск...
 login.mfa.title,двухэтапная проверка
 login.mfa.totp,Приложение для аутентификации
+login.mfa.totpChallengeTitle,Код приложения-аутентификатора
 login.mfa.totpDescription,Введите шестизначный код из приложения для аутентификации.
+login.mfa.totpDetail,Используйте код из приложения-аутентификатора.
+login.mfa.unavailable,Недоступно
 login.mfa.verificationCode,Проверочный код
 login.mfa.verify,Проверять
 login.passkey.canceled,Вход с помощью ключа доступа отменён или время ожидания истекло. Повторите попытку.
@@ -1108,37 +1280,69 @@ login.passkey.permissionDenied,Доступ к ключу доступа зап�
 login.passkey.submit,Продолжить с ключом доступа
 login.passkey.title,Войти с помощью пароля
 login.passkey.unsupported,Этот браузер или устройство не может использовать ключи доступа. Выберите другой способ входа.
+login.passkey.unsupportedTitle,Ключ доступа не поддерживается
+login.password.back,Вернуться к способам
 login.password.changeDescription,"Прежде чем продолжить, выберите новый пароль."
+login.password.changeRequiredDescription,Перед продолжением необходимо изменить пароль.
+login.password.changeRequiredTitle,Изменить пароль
+login.password.changeSubmit,Изменить пароль
 login.password.changeTitle,Обновите свой пароль
 login.password.confirm,Подтвердите пароль
 login.password.current,Текущий пароль
+login.password.currentRequired,Введите текущий пароль.
 login.password.description,Введите учетные данные для своей учетной записи {organization}.
+login.password.expiredDescription,"Срок действия пароля истёк. Задайте новый пароль, чтобы продолжить."
 login.password.forgot,Забыли пароль?
 login.password.hide,Скрыть пароль
 login.password.identifier,Имя пользователя или адрес электронной почты
 login.password.label,Пароль
 login.password.new,Новый пароль
+login.password.passwordRequired,Введите пароль.
+login.password.rememberIdentifier,Запомнить идентификатор
+login.password.saving,Сохранение...
 login.password.show,Показать пароль
+login.password.signInTitle,Войти с паролем
+login.password.signingIn,Выполняется вход...
 login.password.submit,Войти
 login.password.title,Введите свой пароль
+login.provider.accountNotFoundDescription,"С этим аккаунтом {provider} не связан аккаунт Authworks. Связывание аккаунтов и самостоятельная регистрация пока не включены."
+login.provider.accountNotFoundTitle,Связанный аккаунт не найден
 login.provider.description,"Вы продолжите работу с {provider} и вернетесь сюда, когда закончите."
+login.provider.failureDescription,Вход через {provider} не завершён. Попробуйте ещё раз.
+login.provider.linkingFailedDescription,Не удалось завершить связывание аккаунта. Попробуйте другой способ входа.
+login.provider.linkingFailedTitle,Не удалось связать аккаунт
 login.provider.submit,Продолжить с {provider}
 login.provider.title,Продолжить с {provider}
 login.recent.description,"Продолжайте использовать учетную запись, которую вы использовали на этом устройстве."
 login.recent.heading,Недавние аккаунты
-login.recent.useAnother,Использовать другой способ или аккаунт
 login.recent.other,Использовать другую учетную запись
 login.recent.title,Выберите учетную запись
+login.recent.useAnother,Использовать другой способ или аккаунт
+login.recovery.back,Вернуться ко входу
+login.recovery.checkingLink,Проверка ссылки сброса...
+login.recovery.choosePasswordTitle,Выберите новый пароль
 login.recovery.completeDescription,"Войдите в систему, используя новый пароль."
+login.recovery.completeDescriptionReference,"Войдите с новым паролем, чтобы продолжить."
 login.recovery.completeTitle,Пароль обновлен
+login.recovery.completeTitleReference,Пароль изменён
 login.recovery.description,"Введите свой адрес электронной почты, и мы вышлем инструкции по восстановлению, если учетная запись существует."
+login.recovery.invalidLinkError,Эта ссылка сброса пароля недействительна или устарела.
+login.recovery.invalidLinkTitle,Эта ссылка сброса больше недействительна
+login.recovery.loading,Загрузка восстановления пароля...
+login.recovery.policyRejected,"Выберите пароль, соответствующий требованиям."
 login.recovery.resetDescription,Выберите новый пароль для своей учетной записи.
 login.recovery.resetSubmit,Обновить пароль
+login.recovery.resetSubmitReference,Задать новый пароль
 login.recovery.resetTitle,Установить новый пароль
+login.recovery.saving,Сохранение...
+login.recovery.sending,Отправка...
 login.recovery.sentDescription,"Если учетная запись соответствует этому адресу, инструкции по восстановлению уже в пути. Срок действия ссылки истекает в ближайшее время."
 login.recovery.sentTitle,Проверьте свою электронную почту
 login.recovery.submit,Отправить инструкции по восстановлению
+login.recovery.submitReference,Отправить ссылку сброса
 login.recovery.title,Сбросить пароль
+login.recovery.unavailableDescription,Восстановление пароля временно недоступно.
+login.recovery.unavailableTitle,Восстановление пароля недоступно
 login.register.description,Создайте учетную запись для {organization}.
 login.register.displayName,Полное имя
 login.register.doneDescription,"Подтвердите свой адрес электронной почты, используя ссылку, которую мы отправили на {email}."
@@ -1150,127 +1354,41 @@ login.register.title,Создайте свою учетную запись
 login.register.userName,Имя пользователя
 login.signedIn.description,Вы вошли в систему {organization}.
 login.signedIn.title,Вошёл в систему
+login.status.continuing,Продолжение входа...
+login.status.fatalTitle,Начать вход заново
 login.status.loading,Подготовка входа в систему
 login.status.unavailableDescription,Этот запрос на вход не может быть выполнен. Вернитесь в приложение и повторите попытку.
 login.status.unavailableTitle,Вход недоступен
 login.totpEnroll.description,"Добавьте этот ключ настройки в приложение аутентификации, затем введите созданный код. Ключ показывается только сейчас."
-login.totpEnroll.start,Показать ключ настройки
-login.totpEnroll.submit,Завершить настройку
-login.totpEnroll.title,Настройте приложение для аутентификации
-login.verify.description,Подтвердите адрес электронной почты для вашей учетной записи.
-login.verify.submit,Подтвердите адрес электронной почты
-login.verify.title,Подтвердите свой адрес электронной почты
-login.verify.verifiedDescription,{email} подтвержден. Вы можете войти в систему сейчас.
-login.verify.verifiedTitle,Адрес электронной почты подтвержден
-demo.fixture.continuing,продолжение
-demo.fixture.fatal,критическая ошибка
-demo.fixture.passwordChangeExpired,пароль истёк
-demo.fixture.recoveryFatal,восстановление недоступно
-demo.fixture.recoveryLoading,загрузка восстановления
-demo.fixture.resetInvalid,недействительная ссылка сброса
-demo.fixture.resetLoading,загрузка ссылки сброса
-login.emailOtp.codeHelp,Введите 6 цифр.
-login.emailOtp.back,Вернуться к способам
-login.emailOtp.changeEmail,Изменить электронную почту
-login.emailOtp.resendCountdown,Новый код можно будет отправить через {seconds} секунд.
-login.emailOtp.resent,Новый код отправлен.
-login.emailOtp.remember,Запомнить этот адрес
-login.emailOtp.sending,Отправка...
-login.emailOtp.verifying,Проверка...
-login.error.credentialsInvalid,Неверное имя пользователя или пароль.
-login.error.emailRecoveryRequired,Введите адрес электронной почты аккаунта.
-login.error.identifierRequired,Введите имя пользователя или адрес электронной почты.
-login.error.newPasswordRequired,Введите новый пароль.
-login.error.passwordRequired,Введите пароль.
-login.mfa.backToChoices,Вернуться к вариантам двухэтапной проверки
-login.mfa.backToMethods,Вернуться к способам
-login.mfa.continue,Продолжить вход
-login.mfa.emailOtpCodeTitle,Код подтверждения по электронной почте
-login.mfa.emailOtpDetail,Получить одноразовый код подтверждения по электронной почте.
-login.mfa.emailOtpEnroll,Настроить коды электронной почты
-login.mfa.emailOtpEnrollDescription,Коды подтверждения будут отправляться на адрес электронной почты аккаунта.
-login.mfa.emailOtpEnrollNotice,"Настройте коды электронной почты, чтобы использовать адрес аккаунта как второй фактор."
-login.mfa.emailOtpEnrollSent,"Коды электронной почты настроены. Введите код, отправленный на ваш адрес."
-login.mfa.emailOtpEnrollTitle,Настройка кодов электронной почты
-login.mfa.emailOtpSend,Отправить код
-login.mfa.emailOtpSendDescription,Отправить шестизначный код подтверждения на адрес электронной почты аккаунта.
-login.mfa.emailOtpSent,Код подтверждения отправлен на ваш адрес электронной почты.
-login.mfa.emailOtpResent,Новый код подтверждения отправлен на ваш адрес электронной почты.
-login.mfa.emailOtpUnavailableDescription,Проверка по электронной почте как второй фактор недоступна в этом процессе входа.
-login.mfa.emailOtpUnavailableNotice,Транспорт MFA по электронной почте не настроен для этого запроса Authworks.
-login.mfa.emailOtpUnavailableTitle,Код электронной почты недоступен
-login.mfa.enterRecoveryCode,Введите сохранённый код восстановления.
-login.mfa.enterSixDigits,Введите 6 цифр.
-login.mfa.enrollDescription,Выберите способ настройки двухэтапной проверки для аккаунта.
-login.mfa.enrollTitle,Настроить двухэтапную проверку
-login.mfa.factorUnavailable,Этот фактор недоступен в текущем контракте входа.
-login.mfa.loadingOptions,Загрузка вариантов двухэтапной проверки...
-login.mfa.loadingOptionsDescription,Получение доступных вариантов второго фактора.
-login.mfa.optionalDescription,Настройте двухэтапную проверку для дополнительной защиты или пропустите её сейчас.
-login.mfa.optionalTitle,Необязательная двухэтапная проверка
-login.mfa.optionsUnavailableDescription,Не удалось загрузить доступные варианты второго фактора.
-login.mfa.optionsUnavailableTitle,Двухэтапная проверка недоступна
-login.mfa.passkeyDescription,"Подтвердите с помощью ключа доступа, блокировки экрана устройства или биометрии."
-login.mfa.passkeyDetail,Подтвердите с помощью ключа доступа или биометрии устройства.
-login.mfa.passkeyEnrollmentUnavailableDescription,Размещённый контракт входа не предоставляет регистрацию ключей доступа.
-login.mfa.passkeyEnrollmentUnavailableNotice,"Завершите настройку ключа доступа на аутентифицированной странице безопасности аккаунта, затем вернитесь ко входу."
-login.mfa.passkeyEnrollmentUnavailableTitle,Настройка ключа доступа недоступна
-login.mfa.passkeyUnavailableDescription,Проверка ключом доступа как вторым фактором недоступна в этом процессе входа.
-login.mfa.passkeyUnavailableNotice,Транспорт MFA ключа доступа не настроен для этого запроса Authworks.
-login.mfa.passkeyUnavailableTitle,Ключ доступа недоступен
-login.mfa.passkeyVerify,Подтвердить ключом доступа
-login.mfa.resend,Отправить код повторно
-login.mfa.resendIn,Повторная отправка через {seconds} секунд
-login.mfa.recoveryCodeDetail,Используйте один из сохранённых одноразовых кодов восстановления.
-login.mfa.totpChallengeTitle,Код приложения-аутентификатора
-login.mfa.totpDetail,Используйте код из приложения-аутентификатора.
-login.mfa.retryOptions,Повторить загрузку вариантов
-login.mfa.setupFactor,Настроить {factor}
-login.mfa.skip,Пропустить сейчас
-login.mfa.skipping,Пропуск...
-login.mfa.satisfiedDescription,Ваш вход уже соответствует политике двухэтапной проверки.
-login.mfa.satisfiedTitle,Двухэтапная проверка выполнена
-login.mfa.unavailable,Недоступно
-login.passkey.unsupportedTitle,Ключ доступа не поддерживается
-login.password.changeRequiredDescription,Перед продолжением необходимо изменить пароль.
-login.password.changeRequiredTitle,Изменить пароль
-login.password.changeSubmit,Изменить пароль
-login.password.expiredDescription,"Срок действия пароля истёк. Задайте новый пароль, чтобы продолжить."
-login.password.currentRequired,Введите текущий пароль.
-login.password.back,Вернуться к способам
-login.password.passwordRequired,Введите пароль.
-login.password.rememberIdentifier,Запомнить идентификатор
-login.password.signInTitle,Войти с паролем
-login.password.signingIn,Выполняется вход...
-login.password.saving,Сохранение...
-login.provider.accountNotFoundDescription,"С этим аккаунтом {provider} не связан аккаунт Authworks. Связывание аккаунтов и самостоятельная регистрация пока не включены."
-login.provider.accountNotFoundTitle,Связанный аккаунт не найден
-login.provider.failureDescription,Вход через {provider} не завершён. Попробуйте ещё раз.
-login.provider.linkingFailedDescription,Не удалось завершить связывание аккаунта. Попробуйте другой способ входа.
-login.provider.linkingFailedTitle,Не удалось связать аккаунт
-login.recovery.back,Вернуться ко входу
-login.recovery.checkingLink,Проверка ссылки сброса...
-login.recovery.choosePasswordTitle,Выберите новый пароль
-login.recovery.completeDescriptionReference,"Войдите с новым паролем, чтобы продолжить."
-login.recovery.completeTitleReference,Пароль изменён
-login.recovery.invalidLinkTitle,Эта ссылка сброса больше недействительна
-login.recovery.invalidLinkError,Эта ссылка сброса пароля недействительна или устарела.
-login.recovery.policyRejected,"Выберите пароль, соответствующий требованиям."
-login.recovery.loading,Загрузка восстановления пароля...
-login.recovery.resetSubmitReference,Задать новый пароль
-login.recovery.saving,Сохранение...
-login.recovery.sending,Отправка...
-login.recovery.submitReference,Отправить ссылку сброса
-login.recovery.unavailableDescription,Восстановление пароля временно недоступно.
-login.recovery.unavailableTitle,Восстановление пароля недоступно
-login.status.continuing,Продолжение входа...
-login.status.fatalTitle,Начать вход заново
 login.totpEnroll.hideSetupKey,Скрыть ключ настройки
 login.totpEnroll.qrLabel,QR-код для настройки приложения-аутентификатора
 login.totpEnroll.scanDescription,Отсканируйте QR-код приложением-аутентификатором и введите показанный шестизначный код.
 login.totpEnroll.setupKeyLabel,Ключ настройки (если сканирование невозможно)
 login.totpEnroll.showSetupKey,Показать ключ настройки
+login.totpEnroll.start,Показать ключ настройки
+login.totpEnroll.submit,Завершить настройку
+login.totpEnroll.title,Настройте приложение для аутентификации
 login.totpEnroll.unavailableDescription,Не удалось подготовить настройку аутентификатора. Данные настройки нельзя восстановить после перезагрузки.
+login.verify.description,Подтвердите адрес электронной почты для вашей учетной записи.
+login.verify.submit,Подтвердите адрес электронной почты
+login.verify.title,Подтвердите свой адрес электронной почты
+login.verify.verifiedDescription,{email} подтвержден. Вы можете войти в систему сейчас.
+login.verify.verifiedTitle,Адрес электронной почты подтвержден
+login.whatsappOtp.codeDescription,"Введите код, отправленный на номер {phoneNumber} в WhatsApp."
+login.whatsappOtp.codeError,Неверный код WhatsApp.
+login.whatsappOtp.codeTitle,Код подтверждения WhatsApp
+login.whatsappOtp.description,"Вместо пароля мы отправим вам одноразовый код в WhatsApp."
+login.whatsappOtp.differentNumber,Использовать другой номер
+login.whatsappOtp.phoneHint,"Используйте международный формат E.164, например +14155552671."
+login.whatsappOtp.phoneInvalid,Введите действительный номер телефона в формате E.164.
+login.whatsappOtp.phoneNumber,Номер телефона WhatsApp
+login.whatsappOtp.phonePlaceholder,+79161234567
+login.whatsappOtp.resend,Отправить код повторно
+login.whatsappOtp.send,Отправить код WhatsApp
+login.whatsappOtp.sendError,Не удалось отправить код WhatsApp.
+login.whatsappOtp.sending,Отправка кода…
+login.whatsappOtp.title,Войти через WhatsApp
+login.whatsappOtp.verifying,Проверка…
 shell.guard.accessUnavailable,Доступ недоступен
 shell.guard.contextRequired,Требуется контекст
 shell.guard.contextRequiredDetail,Выберите необходимый realm или организацию перед продолжением.
@@ -1332,6 +1450,7 @@ shell.nav.refreshTokens,Токены обновления
 shell.nav.registration,Регистрация
 shell.nav.rolesGrants,Роли и разрешения
 shell.nav.security,Безопасность
+shell.nav.securityHistory,История безопасности
 shell.nav.sessions,Сессии
 shell.nav.sessionsDevices,Сеансы и устройства
 shell.nav.signingKeys,Ключи подписи
@@ -1343,109 +1462,3 @@ shell.state.loadingDetail,Подготовка этой страницы и ко
 shell.state.nothingHere,Здесь пока ничего нет
 shell.state.pageUnavailable,Эта страница недоступна
 shell.state.readyDetail,Эта страница готова к отображению содержимого.
-login.chooser.whatsappOtpDetail,Получить одноразовый код в WhatsApp
-login.chooser.whatsappOtpLabel,Код WhatsApp
-login.whatsappOtp.codeError,Неверный код WhatsApp.
-login.whatsappOtp.codeDescription,"Введите код, отправленный на номер {phoneNumber} в WhatsApp."
-login.whatsappOtp.codeTitle,Код подтверждения WhatsApp
-login.whatsappOtp.description,"Вместо пароля мы отправим вам одноразовый код в WhatsApp."
-login.whatsappOtp.differentNumber,Использовать другой номер
-login.whatsappOtp.phoneHint,"Используйте международный формат E.164, например +14155552671."
-login.whatsappOtp.phoneInvalid,Введите действительный номер телефона в формате E.164.
-login.whatsappOtp.phoneNumber,Номер телефона WhatsApp
-login.whatsappOtp.phonePlaceholder,+79161234567
-login.whatsappOtp.resend,Отправить код повторно
-login.whatsappOtp.send,Отправить код WhatsApp
-login.whatsappOtp.sendError,Не удалось отправить код WhatsApp.
-login.whatsappOtp.sending,Отправка кода…
-login.whatsappOtp.title,Войти через WhatsApp
-login.whatsappOtp.verifying,Проверка…
-account.securityHistory.category.emailChanges,Email changes
-account.securityHistory.category.impersonation,Impersonation
-account.securityHistory.category.linkedIdentities,Linked identities
-account.securityHistory.category.mfa,Multi-factor authentication
-account.securityHistory.category.passwords,Passwords
-account.securityHistory.category.passkeys,Passkeys
-account.securityHistory.category.refreshTokens,Refresh tokens
-account.securityHistory.category.sessions,Sessions
-account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
-account.securityHistory.empty,No security activity is available
-account.securityHistory.event.accessTokenRevoked,An access token was revoked
-account.securityHistory.event.emailChangeFailed,An email address change failed
-account.securityHistory.event.emailChangeRequested,An email address change was requested
-account.securityHistory.event.emailChangeVerified,A new email address was verified
-account.securityHistory.event.emailChanged,The account email address changed
-account.securityHistory.event.identityLinked,An external identity was linked
-account.securityHistory.event.identityUnlinked,An external identity was unlinked
-account.securityHistory.event.impersonationEnded,An impersonation session ended
-account.securityHistory.event.impersonationStarted,An impersonation session started
-account.securityHistory.event.mfaCompleted,A multi-factor challenge was completed
-account.securityHistory.event.mfaFailed,A multi-factor challenge failed
-account.securityHistory.event.mfaStarted,A multi-factor challenge started
-account.securityHistory.event.passkeyAuthenticationCompleted,A passkey authentication completed
-account.securityHistory.event.passkeyAuthenticationStarted,A passkey authentication started
-account.securityHistory.event.passkeyCredentialRevoked,A passkey was revoked
-account.securityHistory.event.passkeyCredentialUsed,A passkey was used
-account.securityHistory.event.passkeyRegistrationCompleted,A passkey registration completed
-account.securityHistory.event.passkeyRegistrationStarted,A passkey registration started
-account.securityHistory.event.passwordChanged,The password changed
-account.securityHistory.event.passwordEmailVerified,The password email address was verified
-account.securityHistory.event.passwordLocked,The password account was locked
-account.securityHistory.event.passwordLoginFailed,A password sign-in failed
-account.securityHistory.event.passwordLoginSucceeded,A password sign-in succeeded
-account.securityHistory.event.passwordRecovered,The password was recovered
-account.securityHistory.event.passwordRecoveryRequested,Password recovery was requested
-account.securityHistory.event.passwordUnlocked,The password account was unlocked
-account.securityHistory.event.passwordWhatsappVerified,The WhatsApp sign-in number was verified
-account.securityHistory.event.recoveryCodeUsed,A recovery code was used
-account.securityHistory.event.recoveryCodesGenerated,Recovery codes were generated
-account.securityHistory.event.refreshTokenFamilyRevoked,A refresh-token family was revoked
-account.securityHistory.event.sessionCreated,A session was created
-account.securityHistory.event.sessionRevoked,A session was revoked
-account.securityHistory.event.sessionsRevoked,All sessions were revoked
-account.securityHistory.event.sessionRotated,A session was renewed
-account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
-account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
-account.securityHistory.event.totpRemoved,An authenticator was removed
-account.securityHistory.event.totpVerified,An authenticator challenge succeeded
-account.securityHistory.loadMore,Load more security activity
-shell.nav.securityHistory,История безопасности
-admin.organizations.policy.allowedFactors,Allowed MFA factors
-admin.organizations.policy.allowedFactorsDescription,Only these factors may complete MFA. WhatsApp sign-in and recovery codes are not configurable factors.
-admin.organizations.policy.assurance.authenticated,Authenticated session
-admin.organizations.policy.assurance.multi_factor,Multi-factor session
-admin.organizations.policy.assurance.none,No assurance requirement
-admin.organizations.policy.down,Down
-admin.organizations.policy.effectiveValue,Effective value: {value}
-admin.organizations.policy.enforcementAuthenticated,Protected organization operations require an authenticated session.
-admin.organizations.policy.enforcementMultiFactor,Protected organization operations require a multi-factor session and prompt for step-up when needed.
-admin.organizations.policy.enforcementNone,Protected organization operations do not add an assurance requirement.
-admin.organizations.policy.enforcementOptional,Login can complete without an additional MFA factor.
-admin.organizations.policy.enforcementRequired,Login cannot complete until a permitted MFA factor succeeds.
-admin.organizations.policy.enforcementTitle,Effective enforcement
-admin.organizations.policy.factor.emailOtp,Email one-time code
-admin.organizations.policy.factor.passkey,Passkey
-admin.organizations.policy.factor.totp,Authenticator app (TOTP)
-admin.organizations.policy.minimumAssurance,Minimum step-up assurance
-admin.organizations.policy.moveDown,Move {factor} down
-admin.organizations.policy.moveUp,Move {factor} up
-admin.organizations.policy.notRequired,Not required
-admin.organizations.policy.organizationOverrides,Organization overrides
-admin.organizations.policy.organizationValue,Organization override
-admin.organizations.policy.overrideRealm,Override the realm value
-admin.organizations.policy.preferredOrder,Preferred factor order
-admin.organizations.policy.preferredOrderDescription,Use the Up and Down buttons to set the keyboard-accessible factor preference.
-admin.organizations.policy.realmDefaults,Realm defaults
-admin.organizations.policy.realmValue,Realm value
-admin.organizations.policy.remediation,People without an enrolled permitted factor are sent to enrollment and remediation instead of being locked out.
-admin.organizations.policy.required,Required
-admin.organizations.policy.requiredMfa,Required MFA
-admin.organizations.policy.scopeLabel,Policy scope
-admin.organizations.policy.securityDescription,Set login MFA and the assurance required for protected organization operations.
-admin.organizations.policy.securityTitle,MFA and assurance
-admin.organizations.policy.up,Up
-admin.organizations.policy.validation.assuranceWeaker,The organization assurance requirement cannot be weaker than the realm value.
-admin.organizations.policy.validation.factorNarrowing,Organization factors must be a subset of the realm factor allowlist.
-admin.organizations.policy.validation.order,The preferred order may contain only allowed factors.
-admin.organizations.policy.validation.requiredFactors,Required MFA needs at least one allowed factor.
-admin.organizations.policy.validation.requiredMfaWeaker,The organization cannot turn off MFA required by the realm.
