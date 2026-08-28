@@ -2,12 +2,13 @@ import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
-import { Badge } from "#ui/static/badge/Badge.jsx"
-import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
+import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationDomain } from "../public/organizationDomainSchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
-import { OrganizationAdminPagination } from "./OrganizationAdminPagination.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
 
@@ -36,142 +37,155 @@ export function OrganizationAdminDomainsView(props: {
   readonly validationMessage?: string
 }) {
   return (
-    <section class="grid gap-5">
-      <div>
-        <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.organizations.domains.title")}</h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-          {messageTranslate("admin.organizations.domains.description")}
-        </p>
-      </div>
+    <section
+      aria-label={messageTranslate("admin.organizations.domains.title")}
+      class="grid min-w-0 gap-3 [&>*]:min-w-0"
+    >
       <OrganizationAdminNotice notice={props.notice} />
-      <CardWrapper>
-        <h3 class="text-lg font-semibold">{messageTranslate("admin.organizations.domains.claim")}</h3>
-        <form class="mt-4 grid gap-4" onSubmit={props.onClaimSubmit}>
-          <div class="grid gap-2">
-            <Label for="domain-claim">{messageTranslate("admin.organizations.domains.domain")}</Label>
-            <Input
-              class="max-w-md"
-              id="domain-claim"
-              onInput={(event) => props.onClaimDomainInput(event.currentTarget.value)}
-              placeholder={messageTranslate("admin.organizations.domains.placeholder")}
-              value={props.claimDomain}
-            />
-          </div>
-          <label class="flex items-center gap-2 text-sm" for="domain-claim-primary">
-            <input
-              checked={props.claimPrimary}
-              class="size-4 rounded border-line"
-              id="domain-claim-primary"
-              onChange={props.onClaimPrimaryToggle}
-              type="checkbox"
-            />
-            {messageTranslate("admin.organizations.domains.primary")}
-          </label>
-          <Show when={props.validationMessage}>
-            {(message) => (
-              <p class="text-sm text-danger" role="alert">
-                {message()}
-              </p>
-            )}
-          </Show>
-          <div>
-            <Button disabled={props.pendingId === "domain:claim"} type="submit" variant="filledBlue">
-              {messageTranslate("admin.organizations.domains.claim")}
-            </Button>
-          </div>
-        </form>
-      </CardWrapper>
+
+      <div class="grid min-w-0 gap-3 lg:grid-cols-2 [&>*]:min-w-0">
+        <AuthenticatedSection
+          description={messageTranslate("admin.organizations.domains.description")}
+          title={messageTranslate("admin.organizations.domains.claim")}
+        >
+          <form class="grid gap-3 px-3 py-3" onSubmit={props.onClaimSubmit}>
+            <div class="grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <div class="grid min-w-0 gap-1">
+                <Label for="domain-claim">{messageTranslate("admin.organizations.domains.domain")}</Label>
+                <Input
+                  id="domain-claim"
+                  onInput={(event) => props.onClaimDomainInput(event.currentTarget.value)}
+                  placeholder={messageTranslate("admin.organizations.domains.placeholder")}
+                  value={props.claimDomain}
+                />
+              </div>
+              <Button disabled={props.pendingId === "domain:claim"} size="sm" type="submit">
+                {messageTranslate("admin.organizations.domains.claim")}
+              </Button>
+            </div>
+            <label class="flex items-center gap-2 text-xs font-medium" for="domain-claim-primary">
+              <input
+                checked={props.claimPrimary}
+                class="size-4 rounded border-line"
+                id="domain-claim-primary"
+                onChange={props.onClaimPrimaryToggle}
+                type="checkbox"
+              />
+              {messageTranslate("admin.organizations.domains.primary")}
+            </label>
+            <Show when={props.validationMessage}>
+              {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+            </Show>
+          </form>
+        </AuthenticatedSection>
+
+        <AuthenticatedSection
+          description={messageTranslate("admin.organizations.domains.discoveryDescription")}
+          title={messageTranslate("admin.organizations.domains.discovery")}
+        >
+          <form class="grid gap-3 px-3 py-3" onSubmit={props.onDiscoverySubmit}>
+            <div class="grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <div class="grid min-w-0 gap-1">
+                <Label for="domain-discovery">{messageTranslate("admin.organizations.domains.domain")}</Label>
+                <Input
+                  id="domain-discovery"
+                  onInput={(event) => props.onDiscoveryDomainInput(event.currentTarget.value)}
+                  placeholder={messageTranslate("admin.organizations.domains.placeholder")}
+                  value={props.discoveryDomain}
+                />
+              </div>
+              <Button disabled={props.pendingId === "domain:discover"} size="sm" type="submit" variant="outline">
+                {messageTranslate("admin.organizations.domains.discovery")}
+              </Button>
+            </div>
+            <Show when={props.discoveryMessage}>
+              {(message) => (
+                <p
+                  class="rounded-control border border-line-subtle bg-muted px-2 py-1.5 text-xs text-muted-foreground"
+                  role="status"
+                >
+                  {message()}
+                </p>
+              )}
+            </Show>
+          </form>
+        </AuthenticatedSection>
+      </div>
+
       <OrganizationAdminState
         emptyDetail={messageTranslate("admin.organizations.domains.empty")}
         error={props.error}
         onRetry={props.onRetry}
         status={props.status}
       >
-        <div class="grid gap-4">
-          <For each={props.domains}>
-            {(domain) => (
-              <CardWrapper>
-                <div class="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <div class="flex flex-wrap items-center gap-2">
-                      <h3 class="font-semibold">{domain.domain}</h3>
-                      <Badge variant={domain.verified ? "filledGreen" : "filledYellow"}>
-                        {domain.verified
-                          ? messageTranslate("admin.organizations.domains.verified")
-                          : messageTranslate("admin.organizations.domains.unverified")}
-                      </Badge>
+        <AuthenticatedSection title={messageTranslate("admin.organizations.domains.title")}>
+          <ul aria-label={messageTranslate("admin.organizations.domains.title")} class="divide-y divide-line-subtle">
+            <For each={props.domains}>
+              {(domain) => (
+                <li class="grid min-w-0 gap-2 px-3 py-2.5">
+                  <div class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
+                    <div class="flex min-w-0 flex-wrap items-center gap-2">
+                      <h3 class="min-w-0 truncate text-sm font-medium">{domain.domain}</h3>
+                      <AuthenticatedStatus
+                        label={
+                          domain.verified
+                            ? messageTranslate("admin.organizations.domains.verified")
+                            : messageTranslate("admin.organizations.domains.unverified")
+                        }
+                        tone={domain.verified ? "success" : "warning"}
+                      />
                       <Show when={domain.isPrimary}>
-                        <Badge variant="filledBlue">{messageTranslate("admin.organizations.domains.primary")}</Badge>
+                        <AuthenticatedStatus
+                          label={messageTranslate("admin.organizations.domains.primary")}
+                          tone="accent"
+                        />
                       </Show>
                     </div>
-                    <Show when={domain.verification}>
-                      {(verification) => (
-                        <div class="mt-3 rounded-lg bg-muted p-3 text-xs">
-                          <p class="text-muted-foreground">
-                            {messageTranslate("admin.organizations.domains.verificationRecord")}
-                          </p>
-                          <p class="mt-2 break-all font-mono">
-                            {verification().recordType} {verification().recordName} {verification().recordValue}
-                          </p>
-                        </div>
-                      )}
-                    </Show>
-                  </div>
-                  <div class="flex flex-wrap gap-2">
-                    <Show when={!domain.verified}>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <Show when={!domain.verified}>
+                        <Button
+                          disabled={props.pendingId === `domain:${domain.domain}`}
+                          onClick={() => props.onVerify(domain.domain)}
+                          size="sm"
+                        >
+                          {messageTranslate("admin.organizations.domains.verify")}
+                        </Button>
+                      </Show>
                       <Button
                         disabled={props.pendingId === `domain:${domain.domain}`}
-                        onClick={() => props.onVerify(domain.domain)}
+                        onClick={() => props.onRemove(domain.domain)}
+                        size="sm"
+                        variant="outline"
                       >
-                        {messageTranslate("admin.organizations.domains.verify")}
+                        {messageTranslate("admin.organizations.domains.remove")}
                       </Button>
-                    </Show>
-                    <Button
-                      disabled={props.pendingId === `domain:${domain.domain}`}
-                      onClick={() => props.onRemove(domain.domain)}
-                      variant="outline"
-                    >
-                      {messageTranslate("admin.organizations.domains.remove")}
-                    </Button>
+                    </div>
                   </div>
-                </div>
-              </CardWrapper>
-            )}
-          </For>
-          <OrganizationAdminPagination
+                  <Show when={domain.verification}>
+                    {(verification) => (
+                      <div class="min-w-0 rounded-control border border-line-subtle bg-muted px-2 py-1.5">
+                        <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
+                          {messageTranslate("admin.organizations.domains.verificationRecord")}
+                        </p>
+                        <p class="mt-0.5 break-all font-mono text-xs">
+                          {verification().recordType} {verification().recordName} {verification().recordValue}
+                        </p>
+                      </div>
+                    )}
+                  </Show>
+                </li>
+              )}
+            </For>
+          </ul>
+
+          <AuthenticatedPagination
             nextAvailable={props.nextPageAvailable}
             onNext={props.onNextPage}
             onPrevious={props.onPreviousPage}
             previousAvailable={props.previousPageAvailable}
           />
-        </div>
+        </AuthenticatedSection>
       </OrganizationAdminState>
-      <CardWrapper>
-        <h3 class="text-lg font-semibold">{messageTranslate("admin.organizations.domains.discovery")}</h3>
-        <p class="mt-1 text-sm text-muted-foreground">
-          {messageTranslate("admin.organizations.domains.discoveryDescription")}
-        </p>
-        <form class="mt-4 flex flex-wrap items-end gap-3" onSubmit={props.onDiscoverySubmit}>
-          <div class="grid flex-1 gap-2">
-            <Label for="domain-discovery">{messageTranslate("admin.organizations.domains.domain")}</Label>
-            <Input
-              id="domain-discovery"
-              onInput={(event) => props.onDiscoveryDomainInput(event.currentTarget.value)}
-              value={props.discoveryDomain}
-            />
-          </div>
-          <Button disabled={props.pendingId === "domain:discover"} type="submit" variant="outline">
-            {messageTranslate("admin.organizations.domains.discovery")}
-          </Button>
-        </form>
-        <Show when={props.discoveryMessage}>
-          {(message) => (
-            <p class="mt-4 rounded-lg border border-line bg-muted px-4 py-3 text-sm" role="status">
-              {message()}
-            </p>
-          )}
-        </Show>
-      </CardWrapper>
     </section>
   )
 }

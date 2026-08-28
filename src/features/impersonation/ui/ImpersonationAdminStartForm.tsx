@@ -2,6 +2,7 @@ import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { impersonationAdminDurationOptions } from "./impersonationAdminDurationOptions.js"
 import type { ImpersonationAdminPageState } from "./impersonationAdminPageStateCreate.js"
@@ -14,16 +15,16 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
   const state = props.state
   return (
     <form
-      class="grid gap-4"
+      class="grid max-w-2xl gap-3"
       onSubmit={(event) => {
         event.preventDefault()
         void state.impersonationStart()
       }}
     >
-      <div class="grid gap-2">
+      <div class="grid gap-1">
         <Label for="impersonation-target">{messageTranslate("admin.impersonation.target")}</Label>
         <select
-          class="rounded-md border border-line bg-surface px-3 py-2 text-sm text-foreground"
+          class="h-9 rounded-control border border-line bg-surface px-2 text-sm text-foreground"
           id="impersonation-target"
           onChange={(event) => state.targetUserId.set(event.currentTarget.value)}
           value={state.targetUserId.get()}
@@ -38,10 +39,10 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
         </select>
       </div>
 
-      <div class="grid gap-2">
+      <div class="grid gap-1">
         <Label for="impersonation-organization">{messageTranslate("admin.impersonation.organization")}</Label>
         <select
-          class="rounded-md border border-line bg-surface px-3 py-2 text-sm text-foreground"
+          class="h-9 rounded-control border border-line bg-surface px-2 text-sm text-foreground"
           id="impersonation-organization"
           onChange={(event) => state.organizationId.set(event.currentTarget.value)}
           value={state.organizationId.get()}
@@ -54,7 +55,7 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
         <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.organizationHint")}</p>
       </div>
 
-      <div class="grid gap-2">
+      <div class="grid gap-1">
         <Label for="impersonation-reason">{messageTranslate("admin.impersonation.reason")}</Label>
         <Input
           id="impersonation-reason"
@@ -66,10 +67,10 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
         <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.reasonHint")}</p>
       </div>
 
-      <div class="grid gap-2">
+      <div class="grid gap-1">
         <Label for="impersonation-duration">{messageTranslate("admin.impersonation.duration")}</Label>
         <select
-          class="rounded-md border border-line bg-surface px-3 py-2 text-sm text-foreground"
+          class="h-9 rounded-control border border-line bg-surface px-2 text-sm text-foreground"
           id="impersonation-duration"
           onChange={(event) => state.durationSeconds.set(Number(event.currentTarget.value))}
           value={String(state.durationSeconds.get())}
@@ -86,17 +87,14 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
       </div>
 
       <Show when={state.validationMessage()}>
-        {(message) => (
-          <p class="text-sm text-danger" role="alert">
-            {message()}
-          </p>
-        )}
+        {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
       </Show>
 
       {/* The base amber fill is too light for white text; use the variant's accessible hover shade. */}
       <Button
-        class="bg-amber-700 hover:bg-amber-800 dark:bg-amber-800 dark:hover:bg-amber-700"
+        class="justify-self-start bg-amber-700 hover:bg-amber-800 dark:bg-amber-800 dark:hover:bg-amber-700"
         disabled={state.pendingId() !== undefined}
+        size="sm"
         type="submit"
         variant="filledAmber"
       >

@@ -21,36 +21,46 @@ export function OidcAdminSecretPanel(props: {
   return (
     <article
       aria-live="polite"
-      class="min-w-0 rounded-2xl border border-amber-400 bg-amber-50 p-5 shadow-sm"
+      class="grid min-w-0 gap-2 rounded-panel border border-warning/45 bg-warning-soft px-3 py-2.5"
       data-one-time-secret="oidc-client"
     >
-      <h3 class="font-semibold text-amber-950">
-        {props.kind === "created"
-          ? messageTranslate("admin.oidc.secret.createdTitle")
-          : messageTranslate("admin.oidc.secret.rotatedTitle")}
-      </h3>
-      <p class="mt-2 text-sm text-amber-900">
-        {messageTranslate("admin.oidc.secret.once", { client: props.clientName })}
-      </p>
+      <div class="grid min-w-0 gap-0.5">
+        <h2 class="text-sm font-semibold tracking-tight">
+          {props.kind === "created"
+            ? messageTranslate("admin.oidc.secret.createdTitle")
+            : messageTranslate("admin.oidc.secret.rotatedTitle")}
+        </h2>
+        <p class="text-xs text-muted-foreground">
+          {messageTranslate("admin.oidc.secret.once", { client: props.clientName })}
+        </p>
+      </div>
       {/* The secret wraps rather than widening the page, so it stays fully readable on a phone. */}
-      <code class="mt-4 block max-w-full break-all rounded-lg bg-white p-3 font-mono text-sm" data-secret-value>
+      <code
+        class="block max-w-full break-all rounded-control border border-line bg-surface px-2 py-1.5 font-mono text-xs leading-5"
+        data-secret-value
+      >
         {props.secret}
       </code>
-      <div class="mt-5 flex flex-wrap items-center gap-3">
-        <Button onClick={state.copy} variant="outline">
+      <div class="flex flex-wrap items-center gap-2">
+        <Button onClick={state.copy} size="sm" variant="outline">
           {messageTranslate("admin.oidc.secret.copy")}
         </Button>
         {/* Acknowledgement stays reachable when the clipboard is denied, so the value is never trapped. */}
-        <Button disabled={!state.copied() && !state.copyFailed()} onClick={state.acknowledge} variant="filledBlue">
+        <Button
+          disabled={!state.copied() && !state.copyFailed()}
+          onClick={state.acknowledge}
+          size="sm"
+          variant="filledBlue"
+        >
           {messageTranslate("admin.oidc.secret.acknowledge")}
         </Button>
         <Show when={state.copied()}>
-          <span class="text-sm font-medium text-green-800" role="status">
+          <span class="text-xs font-medium text-success" role="status">
             {messageTranslate("admin.oidc.secret.copied")}
           </span>
         </Show>
         <Show when={state.copyFailed()}>
-          <span class="text-sm font-medium text-danger" role="alert">
+          <span class="text-xs font-medium text-danger" role="alert">
             {messageTranslate("admin.oidc.secret.copyFailed")}
           </span>
         </Show>

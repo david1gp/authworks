@@ -3,22 +3,22 @@ import { Checkbox } from "#ui/input/check/Checkbox.jsx"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
-import { Badge } from "#ui/static/badge/Badge.jsx"
-import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
+import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProjectAdminStateBoundary } from "./ProjectAdminStateBoundary.js"
 import type { projectAdminDetailViewStateCreate } from "./projectAdminDetailViewStateCreate.js"
-import { projectStatusBadgeVariant } from "./projectStatusBadgeVariant.js"
+import { projectAdminStatusTone } from "./projectAdminStatusTone.js"
 
 export function ProjectAdminDetailView(props: {
   readonly state: ReturnType<typeof projectAdminDetailViewStateCreate>
 }) {
   const state = props.state
   return (
-    <section class="grid min-w-0 gap-6">
-      {/* The page heading stays outside the data boundary, so every fixture state has one h1. */}
-      <h1 class="text-2xl font-semibold tracking-tight">{messageTranslate("admin.projects.detailTitle")}</h1>
+    <section aria-label={messageTranslate("admin.projects.detailTitle")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <ProjectAdminStateBoundary
         emptyDetail={messageTranslate("admin.projects.list.empty")}
         error={state.page.error()}
@@ -27,76 +27,91 @@ export function ProjectAdminDetailView(props: {
       >
         <Show when={state.page.project()}>
           {(project) => (
-            <section class="grid min-w-0 gap-6">
-              <div class="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h2 class="break-words text-2xl font-semibold tracking-tight">{project().name}</h2>
-                  <p class="mt-1 font-mono text-xs text-muted-foreground">{project().id}</p>
-                </div>
-                <Badge variant={projectStatusBadgeVariant(project().status)}>{project().status}</Badge>
-              </div>
+            <>
+              <AuthenticatedSection
+                actions={
+                  <AuthenticatedStatus
+                    label={messageTranslate(`admin.projects.statusValue.${project().status}`)}
+                    tone={projectAdminStatusTone(project().status)}
+                  />
+                }
+                padded
+                title={project().name}
+              >
+                <AuthenticatedFieldList
+                  columns={3}
+                  fields={[
+                    {
+                      identifier: true,
+                      label: messageTranslate("admin.projects.detail.identifier"),
+                      value: project().id,
+                    },
+                    {
+                      label: messageTranslate("admin.projects.detail.organization"),
+                      value: state.page.organizationName(project().organizationId),
+                    },
+                    {
+                      label: messageTranslate("admin.projects.detail.created"),
+                      value: localeDateFormat(project().createdAt, { dateStyle: "medium", timeStyle: "short" }),
+                    },
+                    {
+                      label: messageTranslate("admin.projects.detail.updated"),
+                      value: localeDateFormat(project().updatedAt, { dateStyle: "medium", timeStyle: "short" }),
+                    },
+                  ]}
+                />
+              </AuthenticatedSection>
 
-              <CardWrapper class="min-w-0">
-                <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <DetailItem
-                    label={messageTranslate("admin.projects.detail.organization")}
-                    value={state.page.organizationName(project().organizationId)}
-                  />
-                  <DetailItem
-                    label={messageTranslate("admin.projects.detail.created")}
-                    value={localeDateFormat(project().createdAt, { dateStyle: "medium", timeStyle: "short" })}
-                  />
-                  <DetailItem
-                    label={messageTranslate("admin.projects.detail.updated")}
-                    value={localeDateFormat(project().updatedAt, { dateStyle: "medium", timeStyle: "short" })}
-                  />
-                  <DetailItem label={messageTranslate("admin.projects.status")} value={project().status} />
-                </dl>
-              </CardWrapper>
-
-              <CardWrapper class="min-w-0">
-                <h3 class="text-xl font-semibold">{messageTranslate("admin.projects.detail.settingsTitle")}</h3>
-                <p class="mt-1 text-sm text-muted-foreground">
-                  {messageTranslate("admin.projects.detail.settingsDescription")}
-                </p>
-                <form class="mt-5 grid max-w-xl gap-4" onSubmit={state.settingsSubmit}>
-                  <div class="grid gap-2">
-                    <Label for="project-detail-name">{messageTranslate("admin.projects.list.name")}</Label>
-                    <Input
-                      id="project-detail-name"
-                      onInput={(event) => state.name.set(event.currentTarget.value)}
-                      value={state.name.get()}
-                    />
+              <AuthenticatedSection
+                description={messageTranslate("admin.projects.detail.settingsDescription")}
+                title={messageTranslate("admin.projects.detail.settingsTitle")}
+              >
+                <form class="grid gap-3 px-3 py-3" onSubmit={state.settingsSubmit}>
+                  <div class="grid items-end gap-3 sm:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
+                    <div class="grid min-w-0 gap-1">
+                      <Label for="project-detail-name">{messageTranslate("admin.projects.list.name")}</Label>
+                      <Input
+                        id="project-detail-name"
+                        onInput={(event) => state.name.set(event.currentTarget.value)}
+                        value={state.name.get()}
+                      />
+                    </div>
+                    <div class="grid gap-1.5">
+                      <Checkbox
+                        checked={state.authorizationRequired.get()}
+                        id="project-authorization-required"
+                        onChange={state.authorizationRequired.set}
+                      >
+                        {messageTranslate("admin.projects.detail.authorizationRequired")}
+                      </Checkbox>
+                      <Checkbox
+                        checked={state.projectAccessRequired.get()}
+                        id="project-access-required"
+                        onChange={state.projectAccessRequired.set}
+                      >
+                        {messageTranslate("admin.projects.detail.projectAccessRequired")}
+                      </Checkbox>
+                    </div>
                   </div>
-                  <Checkbox
-                    checked={state.authorizationRequired.get()}
-                    id="project-authorization-required"
-                    onChange={state.authorizationRequired.set}
-                  >
-                    {messageTranslate("admin.projects.detail.authorizationRequired")}
-                  </Checkbox>
-                  <Checkbox
-                    checked={state.projectAccessRequired.get()}
-                    id="project-access-required"
-                    onChange={state.projectAccessRequired.set}
-                  >
-                    {messageTranslate("admin.projects.detail.projectAccessRequired")}
-                  </Checkbox>
                   <Show when={state.page.notice()}>
                     {(name) => (
-                      <p class="text-sm text-success" role="status">
-                        {messageTranslate("admin.projects.saved", { name: name() })}
-                      </p>
+                      <AuthenticatedNotice message={messageTranslate("admin.projects.saved", { name: name() })} />
                     )}
                   </Show>
-                  <div class="flex flex-wrap gap-2">
-                    <Button disabled={state.page.pendingId() !== undefined} type="submit" variant="filledBlue">
+                  <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
+                    <Button
+                      disabled={state.page.pendingId() !== undefined}
+                      size="sm"
+                      type="submit"
+                      variant="filledBlue"
+                    >
                       {messageTranslate("common.save")}
                     </Button>
                     <Show when={project().status === "active"}>
                       <Button
                         disabled={state.page.pendingId() !== undefined}
                         onClick={() => state.page.projectLifecycleSet(project().id, "inactive")}
+                        size="sm"
                         type="button"
                         variant="outline"
                       >
@@ -107,6 +122,7 @@ export function ProjectAdminDetailView(props: {
                       <Button
                         disabled={state.page.pendingId() !== undefined}
                         onClick={() => state.page.projectLifecycleSet(project().id, "active")}
+                        size="sm"
                         type="button"
                         variant="outline"
                       >
@@ -116,6 +132,7 @@ export function ProjectAdminDetailView(props: {
                     <Button
                       disabled={state.page.pendingId() !== undefined}
                       onClick={() => void state.projectDelete(project().id)}
+                      size="sm"
                       type="button"
                       variant="filledRed"
                     >
@@ -123,20 +140,11 @@ export function ProjectAdminDetailView(props: {
                     </Button>
                   </div>
                 </form>
-              </CardWrapper>
-            </section>
+              </AuthenticatedSection>
+            </>
           )}
         </Show>
       </ProjectAdminStateBoundary>
     </section>
-  )
-}
-
-function DetailItem(props: { readonly label: string; readonly value: string }) {
-  return (
-    <div>
-      <dt class="text-sm text-muted-foreground">{props.label}</dt>
-      <dd class="mt-1 break-all text-sm">{props.value}</dd>
-    </div>
   )
 }

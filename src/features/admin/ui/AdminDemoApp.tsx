@@ -1,10 +1,13 @@
+import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
 import { A } from "@solidjs/router"
-import type { JSX } from "solid-js"
+import { For, type JSX } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
+import { authenticatedNavigationClasses } from "../../../ui/authenticated/authenticatedNavigationClasses.js"
+import { authenticatedNavigationLinkClassGet } from "../../../ui/authenticated/authenticatedNavigationLinkClassGet.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ttc } from "../../../ui/i18n/model/ttc.js"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
@@ -12,76 +15,86 @@ import { adminDemoAppStateCreate } from "./adminDemoAppStateCreate.js"
 
 export function AdminDemoApp(props: { children?: JSX.Element }) {
   const state = adminDemoAppStateCreate()
+  const navigation = (
+    <div class={authenticatedNavigationClasses.frame}>
+      <div class={authenticatedNavigationClasses.brandRow}>
+        <A class={authenticatedNavigationClasses.brandLink} href="/demo/admin" onClick={state.destinationSelect}>
+          {messageTranslate("app.name")}
+        </A>
+        <SidebarToggle {...state.sidebar} variant="ghost" />
+      </div>
+      <nav aria-label={messageTranslate("admin.navigation.label")} class={authenticatedNavigationClasses.nav}>
+        <A
+          class={`${authenticatedNavigationClasses.link} ${authenticatedNavigationClasses.linkInactive} mb-1`}
+          href="/demo"
+          onClick={state.destinationSelect}
+        >
+          <Icon path={mdiArrowLeft} />
+          <span class="truncate">{messageTranslate("demo.nav.label")}</span>
+        </A>
+        <For each={state.navigationGroups}>
+          {(group) => (
+            <section class={authenticatedNavigationClasses.groupSection}>
+              <h2 class={authenticatedNavigationClasses.groupHeading}>
+                <Icon path={group.icon} />
+                <span class="truncate">{ttc(group.label)}</span>
+              </h2>
+              <div class="grid">
+                <For each={group.items}>
+                  {(item) => (
+                    <A
+                      aria-current={state.isActive(item.href) ? "page" : undefined}
+                      class={authenticatedNavigationLinkClassGet(state.isActive(item.href))}
+                      href={item.href}
+                      onClick={state.destinationSelect}
+                    >
+                      <Icon path={item.icon} />
+                      <span class="truncate">{ttc(item.label)}</span>
+                    </A>
+                  )}
+                </For>
+              </div>
+            </section>
+          )}
+        </For>
+      </nav>
+      <div class={authenticatedNavigationClasses.footer}>
+        <Button
+          class="h-7 w-full justify-start text-xs"
+          variant="ghost"
+          onClick={() => state.sidebar.openDesktop.set(false)}
+        >
+          {messageTranslate("admin.navigation.hide")}
+        </Button>
+      </div>
+    </div>
+  )
+
   return (
-    <div class="min-h-dvh bg-gray-50 dark:bg-gray-950">
+    <div class="min-h-dvh bg-muted">
       <Sidebar
         state={state.sidebar}
         title={messageTranslate("admin.navigation.title")}
         description={messageTranslate("admin.navigation.description")}
-        desktopChildren={
-          <aside class="fixed inset-y-0 z-20 w-64 overflow-y-auto overscroll-contain border-gray-200 bg-white p-4 ltr:left-0 ltr:border-r rtl:right-0 rtl:border-l dark:border-gray-800 dark:bg-gray-900">
-            <AdminSidebarContent state={state} />
-          </aside>
-        }
-        mobileChildren={<AdminSidebarContent state={state} />}
+        desktopChildren={<aside class={authenticatedNavigationClasses.aside}>{navigation}</aside>}
+        mobileChildren={navigation}
       />
       <main
         class="min-h-dvh transition-[margin] [&_section>*]:min-w-0"
-        classList={{
-          "lg:ltr:ml-64": state.sidebar.openDesktop.get(),
-          "lg:rtl:mr-64": state.sidebar.openDesktop.get(),
-        }}
+        classList={{ [authenticatedNavigationClasses.contentOffset]: state.sidebar.openDesktop.get() }}
       >
-        <header class="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
+        <header class={`sticky top-0 z-10 justify-between bg-surface ${authenticatedNavigationClasses.brandRow}`}>
           <SidebarToggle {...state.sidebar} variant="ghost" />
-          <div class="flex items-center gap-2">
+          <div class="flex min-w-0 items-center gap-2">
             <LanguageSelector />
             <ThemeButton />
-            <A class="text-sm text-muted-foreground hover:underline" href="/demo">
+            <A class="text-[0.8125rem] text-muted-foreground hover:text-foreground" href="/demo">
               {messageTranslate("demo.nav.label")}
             </A>
           </div>
         </header>
-        <div class="p-4 sm:p-6">{props.children}</div>
+        <div class="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6 sm:py-6">{props.children}</div>
       </main>
-    </div>
-  )
-}
-
-function AdminSidebarContent(props: { state: ReturnType<typeof adminDemoAppStateCreate> }) {
-  return (
-    <div class="grid gap-2">
-      <div class="flex items-center justify-between gap-2 px-2 py-2">
-        <div>
-          <p class="text-lg font-semibold">{messageTranslate("app.name")}</p>
-          <p class="text-xs text-muted-foreground">{messageTranslate("admin.navigation.label")}</p>
-        </div>
-      </div>
-      <A class="mb-2 px-2 text-sm text-muted-foreground hover:underline" href="/demo">
-        <span aria-hidden="true">←</span> {messageTranslate("demo.nav.label")}
-      </A>
-      <nav aria-label={messageTranslate("admin.navigation.label")} class="grid gap-4">
-        {props.state.navigationGroups.map((group) => (
-          <div class="grid gap-1">
-            <p class="flex items-center gap-2 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              <Icon path={group.icon} />
-              {ttc(group.label)}
-            </p>
-            {group.items.map((item) => (
-              <A
-                class={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium ${props.state.isActive(item.href) ? "bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-100" : "hover:bg-gray-100 dark:hover:bg-gray-800"}`}
-                href={item.href}
-              >
-                <Icon path={item.icon} />
-                {ttc(item.label)}
-              </A>
-            ))}
-          </div>
-        ))}
-      </nav>
-      <Button class="mt-4 justify-start" variant="ghost" onClick={() => props.state.sidebar.openDesktop.set(false)}>
-        {messageTranslate("admin.navigation.hide")}
-      </Button>
     </div>
   )
 }

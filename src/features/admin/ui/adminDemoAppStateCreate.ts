@@ -18,6 +18,7 @@ import { mdiViewDashboardOutline } from "@adaptive-ds/mdi/mdiViewDashboardOutlin
 import { mdiWeb } from "@adaptive-ds/mdi/mdiWeb.js"
 import { useLocation } from "@solidjs/router"
 import { createSidebarState } from "#ui/interactive/sidebar/createSidebarState.jsx"
+import { authenticatedSidebarDestinationSelect } from "../../../ui/authenticated/authenticatedSidebarDestinationSelect.js"
 
 /**
  * Groups the demo destinations the same way the production administration shell does,
@@ -77,6 +78,7 @@ export function adminDemoAppStateCreate() {
   const sidebar = createSidebarState()
 
   return {
+    destinationSelect: () => authenticatedSidebarDestinationSelect(sidebar),
     isActive: (href: string) =>
       location.pathname === href || (href !== "/demo/admin" && location.pathname.startsWith(`${href}/`)),
     navigationGroups,

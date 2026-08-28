@@ -21,7 +21,7 @@ export function ImpersonationAdminBanner(props: {
   return (
     <aside
       aria-label={messageTranslate("admin.impersonation.bannerLabel")}
-      class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-amber-300 bg-amber-100 px-4 py-2 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-50"
+      class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-b border-amber-300 bg-amber-100 px-3 py-1.5 text-xs text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-50"
       data-impersonation-banner
     >
       <p class="min-w-0 font-medium" data-impersonation-summary>
@@ -31,16 +31,16 @@ export function ImpersonationAdminBanner(props: {
           subject: props.session.subjectLabel,
         })}
       </p>
-      <div class="flex flex-wrap items-center gap-3">
+      <div class="flex flex-wrap items-center gap-2.5">
         <Show when={props.remainingSeconds < 60}>
-          <span class="text-xs font-semibold uppercase tracking-wider" role="status">
+          <span class="text-2xs font-semibold uppercase tracking-[0.12em]" role="status">
             {messageTranslate("admin.impersonation.expiringSoon")}
           </span>
         </Show>
-        <A class="text-sm font-medium underline underline-offset-2" href={props.eventsHref}>
+        <A class="text-xs font-medium underline underline-offset-2" href={props.eventsHref}>
           {messageTranslate("admin.impersonation.auditLink")}
         </A>
-        <Button disabled={props.pending} onClick={props.onEnd} size="sm" variant="outline">
+        <Button class="h-7 text-xs" disabled={props.pending} onClick={props.onEnd} size="sm" variant="outline">
           {messageTranslate("admin.impersonation.end")}
         </Button>
       </div>

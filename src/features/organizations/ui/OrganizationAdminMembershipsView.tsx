@@ -2,14 +2,18 @@ import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
-import { CardWrapper } from "#ui/static/card/CardWrapper.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
+import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
+import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationMembership } from "../public/organizationMembershipSchema.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 import type { OrganizationRole } from "../public/organizationRoleSchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
-import { OrganizationAdminPagination } from "./OrganizationAdminPagination.js"
 import { OrganizationAdminRoleChooser } from "./OrganizationAdminRoleChooser.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
@@ -36,65 +40,98 @@ export function OrganizationAdminMembershipsView(props: {
   readonly validationMessage?: string
 }) {
   return (
-    <section class="grid gap-5">
-      <div>
-        <h1 class="text-2xl font-semibold tracking-tight">
-          {messageTranslate("admin.organizations.memberships.title")}
-        </h1>
-        <p class="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-          {messageTranslate("admin.organizations.memberships.description")}
-        </p>
-      </div>
+    <section
+      aria-label={messageTranslate("admin.organizations.memberships.title")}
+      class="grid min-w-0 gap-3 [&>*]:min-w-0"
+    >
       <OrganizationAdminNotice notice={props.notice} />
-      <CardWrapper>
-        <h3 class="text-lg font-semibold">{messageTranslate("admin.organizations.memberships.add")}</h3>
-        <form class="mt-4 grid gap-4" onSubmit={props.onAddSubmit}>
-          <div class="grid gap-2">
-            <Label for="membership-user-id">{messageTranslate("admin.organizations.memberships.userId")}</Label>
-            <Input
-              class="max-w-md"
-              id="membership-user-id"
-              onInput={(event) => props.onAddUserIdInput(event.currentTarget.value)}
-              value={props.addUserId}
+
+      <AuthenticatedSection
+        description={messageTranslate("admin.organizations.memberships.description")}
+        title={messageTranslate("admin.organizations.memberships.add")}
+      >
+        <form class="grid gap-3 px-3 py-3" onSubmit={props.onAddSubmit}>
+          <div class="grid items-end gap-3 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)_auto]">
+            <div class="grid min-w-0 gap-1">
+              <Label for="membership-user-id">{messageTranslate("admin.organizations.memberships.userId")}</Label>
+              <Input
+                id="membership-user-id"
+                onInput={(event) => props.onAddUserIdInput(event.currentTarget.value)}
+                value={props.addUserId}
+              />
+            </div>
+            <OrganizationAdminRoleChooser
+              idPrefix="membership-add"
+              legend={messageTranslate("admin.organizations.memberships.roles")}
+              onToggle={props.onAddRoleToggle}
+              roles={props.roles}
+              selected={props.addRoles}
             />
-          </div>
-          <OrganizationAdminRoleChooser
-            idPrefix="membership-add"
-            legend={messageTranslate("admin.organizations.memberships.roles")}
-            onToggle={props.onAddRoleToggle}
-            roles={props.roles}
-            selected={props.addRoles}
-          />
-          <Show when={props.validationMessage}>
-            {(message) => (
-              <p class="text-sm text-danger" role="alert">
-                {message()}
-              </p>
-            )}
-          </Show>
-          <div>
-            <Button disabled={props.pendingId === "membership:create"} type="submit" variant="filledBlue">
+            <Button disabled={props.pendingId === "membership:create"} size="sm" type="submit">
               {messageTranslate("admin.organizations.memberships.add")}
             </Button>
           </div>
+          <Show when={props.validationMessage}>
+            {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+          </Show>
         </form>
-      </CardWrapper>
+      </AuthenticatedSection>
+
       <OrganizationAdminState
         emptyDetail={messageTranslate("admin.organizations.memberships.empty")}
         error={props.error}
         onRetry={props.onRetry}
         status={props.status}
       >
-        <CardWrapper>
-          <p class="mb-4 text-sm text-muted-foreground">
-            {messageTranslate("admin.organizations.memberships.rolesFixed")}
-          </p>
-          <Table aria-label={messageTranslate("admin.organizations.memberships.title")} tabIndex={0}>
-            <TableHeader>
+        <AuthenticatedSection
+          description={messageTranslate("admin.organizations.memberships.rolesFixed")}
+          title={messageTranslate("admin.organizations.memberships.title")}
+        >
+          <AuthenticatedRecordList label={messageTranslate("admin.organizations.memberships.title")}>
+            <For each={props.memberships}>
+              {(membership) => (
+                <AuthenticatedRecordItem
+                  actions={
+                    <Button
+                      disabled={props.pendingId === `membership:${membership.id}`}
+                      onClick={() => props.onRemove(membership.id, membership.userId)}
+                      size="sm"
+                      variant="outline"
+                    >
+                      {messageTranslate("admin.organizations.memberships.remove")}
+                    </Button>
+                  }
+                  fields={[]}
+                  title={<span class="font-mono text-xs">{membership.userId}</span>}
+                >
+                  <OrganizationAdminRoleChooser
+                    disabled={props.pendingId === `membership:${membership.id}`}
+                    idPrefix={`membership-record-${membership.id}`}
+                    legend={messageTranslate("admin.organizations.memberships.roles")}
+                    legendHidden
+                    onToggle={(role) => props.onRoleToggle(membership, role)}
+                    roles={props.roles}
+                    selected={membership.roles}
+                  />
+                </AuthenticatedRecordItem>
+              )}
+            </For>
+          </AuthenticatedRecordList>
+
+          <Table
+            aria-label={messageTranslate("admin.organizations.memberships.title")}
+            class={authenticatedTableClasses.tableWide}
+            tabIndex={0}
+          >
+            <TableHeader class={authenticatedTableClasses.header}>
               <TableRow>
-                <TableHead>{messageTranslate("admin.organizations.memberships.userId")}</TableHead>
-                <TableHead>{messageTranslate("admin.organizations.memberships.roles")}</TableHead>
-                <TableHead class="text-right">
+                <TableHead class={authenticatedTableClasses.head}>
+                  {messageTranslate("admin.organizations.memberships.userId")}
+                </TableHead>
+                <TableHead class={authenticatedTableClasses.head}>
+                  {messageTranslate("admin.organizations.memberships.roles")}
+                </TableHead>
+                <TableHead class={authenticatedTableClasses.head}>
                   <span class="sr-only">{messageTranslate("admin.organizations.memberships.remove")}</span>
                 </TableHead>
               </TableRow>
@@ -102,9 +139,9 @@ export function OrganizationAdminMembershipsView(props: {
             <TableBody>
               <For each={props.memberships}>
                 {(membership) => (
-                  <TableRow>
-                    <TableCell class="font-mono text-xs">{membership.userId}</TableCell>
-                    <TableCell>
+                  <TableRow class={authenticatedTableClasses.row}>
+                    <TableCell class={authenticatedTableClasses.identifier}>{membership.userId}</TableCell>
+                    <TableCell class={authenticatedTableClasses.cell}>
                       <OrganizationAdminRoleChooser
                         disabled={props.pendingId === `membership:${membership.id}`}
                         idPrefix={`membership-${membership.id}`}
@@ -115,10 +152,11 @@ export function OrganizationAdminMembershipsView(props: {
                         selected={membership.roles}
                       />
                     </TableCell>
-                    <TableCell class="text-right">
+                    <TableCell class={authenticatedTableClasses.action}>
                       <Button
                         disabled={props.pendingId === `membership:${membership.id}`}
                         onClick={() => props.onRemove(membership.id, membership.userId)}
+                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.memberships.remove")}
@@ -129,13 +167,14 @@ export function OrganizationAdminMembershipsView(props: {
               </For>
             </TableBody>
           </Table>
-          <OrganizationAdminPagination
+
+          <AuthenticatedPagination
             nextAvailable={props.nextPageAvailable}
             onNext={props.onNextPage}
             onPrevious={props.onPreviousPage}
             previousAvailable={props.previousPageAvailable}
           />
-        </CardWrapper>
+        </AuthenticatedSection>
       </OrganizationAdminState>
     </section>
   )

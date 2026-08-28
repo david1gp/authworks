@@ -1,6 +1,8 @@
 import { useLocation, useParams } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoAdminScenarioGroups } from "../../demo/demoAdminScenarioGroups.js"
+import { demoAdminScenarioMessageKeyGet } from "../../demo/public/demoAdminScenarioMessageKeyGet.js"
 import { demoFixtureScenarioHrefBuild } from "../../demo/demoFixtureScenarioHrefBuild.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
@@ -48,8 +50,21 @@ export function organizationAdminDemoStateCreate(screen: () => OrganizationAdmin
   })
   const screenState = organizationAdminScreenStateCreate({ basePath: "/demo/admin", confirmState, page })
 
+  const scenarioMessage = (kind: "description" | "title") => {
+    const key = scenario()?.key
+    return key === undefined ? undefined : demoAdminScenarioMessageKeyGet(key, kind)
+  }
+
   return {
     ...screenState,
+    scenarioDescription: () => {
+      const key = scenarioMessage("description")
+      return key === undefined ? messageTranslate("demo.admin.eyebrow") : messageTranslate(key)
+    },
+    scenarioTitle: () => {
+      const key = scenarioMessage("title")
+      return key === undefined ? messageTranslate("admin.organizations.detailTitle") : messageTranslate(key)
+    },
     stateOptions: () =>
       (scenario()?.states ?? ["success"]).map((state) => ({
         href: demoFixtureScenarioHrefBuild(location.pathname, state),

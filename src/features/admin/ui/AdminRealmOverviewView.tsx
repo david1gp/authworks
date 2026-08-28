@@ -1,16 +1,17 @@
 import { For, Show } from "solid-js"
-import { Badge } from "#ui/static/badge/Badge.jsx"
+import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
+import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
 
 /** Read-only overview of the current realm identity, domains, lifecycle, and admin session. */
 export function AdminRealmOverviewView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
   return (
-    <section aria-label={messageTranslate("admin.overview.title")} class="grid gap-5">
-      <p class="max-w-2xl text-sm leading-6 text-muted-foreground">{messageTranslate("admin.overview.description")}</p>
-
+    <section aria-label={messageTranslate("admin.overview.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <Show
         when={props.state.status() === "ready" && props.state.realm()}
         fallback={
@@ -21,71 +22,79 @@ export function AdminRealmOverviewView(props: { readonly state: ReturnType<typeo
                 : props.state.error()
             }
             onRetry={props.state.status() === "error" ? props.state.reload : undefined}
-            state={
-              props.state.status() === "loading"
-                ? "loading"
-                : props.state.status() === "permission-denied" || props.state.status() === "expired"
-                  ? "inaccessible"
-                  : "error"
-            }
+            state={adminViewStatusPanelState(props.state.status())}
             title={props.state.status() === "expired" ? messageTranslate("admin.session.expired") : undefined}
           />
         }
       >
         {(realm) => (
           <>
-            <header class="rounded-2xl border border-line bg-surface p-6 shadow-sm">
-              <div class="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h2 class="text-2xl font-semibold tracking-tight">{realm().name}</h2>
-                  <p class="mt-1 font-mono text-xs break-all text-muted-foreground">{realm().id}</p>
-                </div>
-                <Badge variant={realm().status === "active" ? "filledGreen" : "filledRed"}>
-                  {realm().status === "active"
-                    ? messageTranslate("admin.realm.statusActive")
-                    : messageTranslate("admin.realm.statusDisabled")}
-                </Badge>
-              </div>
-              <dl class="mt-6 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {messageTranslate("admin.realm.primaryDomain")}
-                  </dt>
-                  <dd class="mt-1 break-all font-medium">{realm().domain}</dd>
-                </div>
-                <div>
-                  <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {messageTranslate("admin.realm.created")}
-                  </dt>
-                  <dd class="mt-1 font-medium">{localeDateFormat(realm().createdAt, { dateStyle: "medium" })}</dd>
-                </div>
-              </dl>
-            </header>
+            <AuthenticatedSection
+              actions={
+                <AuthenticatedStatus
+                  label={
+                    realm().status === "active"
+                      ? messageTranslate("admin.realm.statusActive")
+                      : messageTranslate("admin.realm.statusDisabled")
+                  }
+                  tone={realm().status === "active" ? "success" : "danger"}
+                />
+              }
+              description={messageTranslate("admin.overview.description")}
+              padded
+              title={realm().name}
+            >
+              <AuthenticatedFieldList
+                columns={3}
+                fields={[
+                  { identifier: true, label: messageTranslate("admin.realm.identifier"), value: realm().id },
+                  { label: messageTranslate("admin.realm.primaryDomain"), value: realm().domain },
+                  {
+                    label: messageTranslate("admin.realm.created"),
+                    value: localeDateFormat(realm().createdAt, { dateStyle: "medium" }),
+                  },
+                ]}
+              />
+            </AuthenticatedSection>
 
-            <section class="rounded-2xl border border-line bg-surface p-6 shadow-sm">
-              <h3 class="font-semibold">{messageTranslate("admin.realm.domains")}</h3>
-              <ul class="mt-4 grid gap-2">
-                <For each={realm().domains}>
-                  {(domain) => <li class="rounded-lg bg-muted px-3 py-2 font-mono text-sm break-all">{domain}</li>}
-                </For>
-              </ul>
-            </section>
+            <div class="grid min-w-0 gap-3 lg:grid-cols-2 [&>*]:min-w-0">
+              <AuthenticatedSection title={messageTranslate("admin.realm.domains")}>
+                <ul class="divide-y divide-line-subtle">
+                  <For each={realm().domains}>
+                    {(domain) => (
+                      <li class="truncate px-3 py-1.5 font-mono text-xs text-muted-foreground" title={domain}>
+                        {domain}
+                      </li>
+                    )}
+                  </For>
+                </ul>
+              </AuthenticatedSection>
 
-            <Show when={props.state.session()}>
-              {(session) => (
-                <section class="rounded-2xl border border-line bg-surface p-6 shadow-sm">
-                  <h3 class="font-semibold">{messageTranslate("admin.overview.sessionTitle")}</h3>
-                  <p class="mt-2 text-sm text-muted-foreground">
-                    {messageTranslate("admin.signIn.expiresAt", {
-                      date: localeDateFormat(session().expiresAt, { dateStyle: "medium", timeStyle: "short" }),
-                    })}
-                  </p>
-                  <p class="mt-1 break-all text-sm text-muted-foreground">
-                    {messageTranslate("admin.signIn.subject")}: {session().subjectId}
-                  </p>
-                </section>
-              )}
-            </Show>
+              <Show when={props.state.session()}>
+                {(session) => (
+                  <AuthenticatedSection padded title={messageTranslate("admin.overview.sessionTitle")}>
+                    <AuthenticatedFieldList
+                      fields={[
+                        {
+                          identifier: true,
+                          label: messageTranslate("admin.signIn.subject"),
+                          value: session().subjectId,
+                        },
+                        {
+                          label: messageTranslate("admin.signIn.subjectType"),
+                          value: session().subjectType,
+                        },
+                        {
+                          label: messageTranslate("admin.users.sessions.expires"),
+                          value: localeDateFormat(session().expiresAt, { dateStyle: "medium", timeStyle: "short" }),
+                          wide: true,
+                        },
+                      ]}
+                    />
+                  </AuthenticatedSection>
+                )}
+              </Show>
+            </div>
           </>
         )}
       </Show>

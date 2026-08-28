@@ -14,27 +14,27 @@ import type { accountDemoAppStateCreate } from "./accountDemoAppStateCreate.js"
 
 export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoAppStateCreate> }) {
   return (
-    <div class="min-h-dvh bg-muted/40 transition-colors">
+    <div class="min-h-dvh bg-muted transition-colors">
       <header class="sticky top-0 z-20 border-b border-line bg-surface/90 backdrop-blur">
-        <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div class="flex min-w-0 items-center gap-4">
-            <A class="font-bold tracking-tight text-foreground" href="/demo">
+        <div class="mx-auto flex h-12 max-w-[1400px] items-center justify-between gap-3 px-4 sm:px-6">
+          <div class="flex min-w-0 items-center gap-3">
+            <A class="truncate text-sm font-semibold tracking-tight text-foreground" href="/demo">
               {messageTranslate("app.name")}
             </A>
             <span class="hidden h-4 w-px bg-line sm:block" />
-            <span class="hidden text-sm font-medium text-muted-foreground sm:block">
+            <span class="hidden truncate text-[0.8125rem] font-medium text-muted-foreground sm:block">
               {messageTranslate("demo.account.title")}
             </span>
           </div>
-          <div class="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div class="flex min-w-0 items-center gap-2">
             <A
-              class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
+              class="hidden text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/login"
             >
               {messageTranslate("demo.nav.login")}
             </A>
             <A
-              class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
+              class="hidden text-[0.8125rem] font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/admin"
             >
               {messageTranslate("demo.nav.admin")}
@@ -44,7 +44,7 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
           </div>
         </div>
       </header>
-      <main class="px-4 py-8 sm:px-6 sm:py-12">
+      <main class="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6 sm:py-6">
         <Show when={props.state.isDirectory()} fallback={<AccountDemoDestination state={props.state} />}>
           <DemoDirectory
             eyebrow={() => messageTranslate("demo.account.eyebrow")}
@@ -61,9 +61,9 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
 function AccountDemoDestination(props: { state: ReturnType<typeof accountDemoAppStateCreate> }) {
   return (
     <div class="mx-auto max-w-5xl">
-      <div class="mb-5">
+      <div class="mb-3">
         <A
-          class="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+          class="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-accent hover:underline"
           href="/demo/account"
         >
           <span>←</span>

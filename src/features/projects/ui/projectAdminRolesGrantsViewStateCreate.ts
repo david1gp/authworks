@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { projectGrantCreateRequestSchema } from "../public/projectGrantCreateRequestSchema.js"
 import { projectRoleCreateRequestSchema } from "../public/projectRoleCreateRequestSchema.js"
 import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
@@ -36,7 +37,7 @@ export function projectAdminRolesGrantsViewStateCreate(options: {
       key: roleKey.get(),
     })
     if (!parsed.success) {
-      roleFormError.set("Enter a role key and display name.")
+      roleFormError.set(messageTranslate("admin.projects.roles.invalid"))
       return
     }
     roleFormError.set(undefined)
@@ -61,7 +62,7 @@ export function projectAdminRolesGrantsViewStateCreate(options: {
       roleKeys: [...grantRoleKeys.get()],
     })
     if (!parsed.success || parsed.output.roleKeys.length === 0) {
-      grantFormError.set("Choose an organization and at least one role.")
+      grantFormError.set(messageTranslate("admin.projects.grants.invalid"))
       return
     }
     grantFormError.set(undefined)
