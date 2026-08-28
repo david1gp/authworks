@@ -699,6 +699,8 @@ admin.projects.applications.title,Aplikacje
 admin.projects.applications.type,Typ aplikacji
 admin.projects.crossTenant,Ten zasób należy do innego realmu i nie jest tutaj dostępny.
 admin.projects.deleteConfirm,"Usunąć ten projekt? Aplikacje, role i przydziały zostaną usunięte wraz z nim."
+admin.projects.deleteConfirmAccept,Usuń projekt
+admin.projects.deleteConfirmTitle,Usuń ten projekt
 admin.projects.detail.authorizationRequired,Wymagana autoryzacja
 admin.projects.detail.created,Utworzono
 admin.projects.detail.identifier,Identyfikator projektu
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,Aktywuj
 admin.projects.lifecycle.deactivate,Dezaktywuj
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Usunąć ten projekt?
+admin.projects.lifecycle.removeConfirmAccept,Wycofaj projekt
+admin.projects.lifecycle.removeConfirmTitle,Wycofaj ten projekt
 admin.projects.list.create,Utwórz projekt
 admin.projects.list.description,"Projekty grupują aplikacje, role i przydziały organizacji."
 admin.projects.list.empty,W tym realmie nie istnieją jeszcze żadne projekty.

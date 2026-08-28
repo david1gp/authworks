@@ -699,6 +699,8 @@ admin.projects.applications.title,Приложения
 admin.projects.applications.type,Тип приложения
 admin.projects.crossTenant,Этот ресурс принадлежит другому realm и здесь недоступен.
 admin.projects.deleteConfirm,"Удалить этот проект? Приложения, роли и выдачи прав будут удалены вместе с ним."
+admin.projects.deleteConfirmAccept,Удалить проект
+admin.projects.deleteConfirmTitle,Удалить этот проект
 admin.projects.detail.authorizationRequired,Требуется авторизация
 admin.projects.detail.created,Создано
 admin.projects.detail.identifier,Идентификатор проекта
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,Активировать
 admin.projects.lifecycle.deactivate,Деактивировать
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Удалить этот проект?
+admin.projects.lifecycle.removeConfirmAccept,Убрать проект
+admin.projects.lifecycle.removeConfirmTitle,Убрать этот проект
 admin.projects.list.create,Создать проект
 admin.projects.list.description,"Проекты объединяют приложения, роли и предоставления организации."
 admin.projects.list.empty,В этом realm ещё нет проектов.

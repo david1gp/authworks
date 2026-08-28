@@ -699,6 +699,8 @@ admin.projects.applications.title,Alkalmazások
 admin.projects.applications.type,Alkalmazás típusa
 admin.projects.crossTenant,"Ez az erőforrás egy másik realmhez tartozik, és itt nem érhető el."
 admin.projects.deleteConfirm,"Törli ezt a projektet? Az alkalmazások, szerepek és hozzárendelések együtt törlődnek."
+admin.projects.deleteConfirmAccept,Projekt törlése
+admin.projects.deleteConfirmTitle,A projekt törlése
 admin.projects.detail.authorizationRequired,Engedélyezés szükséges
 admin.projects.detail.created,Létrehozva
 admin.projects.detail.identifier,Projektazonosító
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,Aktiválás
 admin.projects.lifecycle.deactivate,Deaktiválás
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Eltávolítja ezt a projektet?
+admin.projects.lifecycle.removeConfirmAccept,Projekt eltávolítása
+admin.projects.lifecycle.removeConfirmTitle,A projekt eltávolítása
 admin.projects.list.create,Projekt létrehozása
 admin.projects.list.description,"A projektek csoportosítják egy szervezet alkalmazásait, szerepköreit és hozzáféréseit."
 admin.projects.list.empty,Ebben a realmben még nincs projekt.

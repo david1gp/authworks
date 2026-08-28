@@ -1,6 +1,16 @@
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 
-type PendingConfirmation = { readonly message: string; readonly settle: (confirmed: boolean) => void }
+/**
+ * A destructive action may name itself, so the prompt can read "Remove this project" / "Remove
+ * project" instead of the generic fallback title and "Continue".
+ */
+export type ConfirmRequest = {
+  readonly acceptLabel?: string
+  readonly message: string
+  readonly title?: string
+}
+
+type PendingConfirmation = ConfirmRequest & { readonly settle: (confirmed: boolean) => void }
 
 /**
  * The single in-app confirmation state shared by every feature that guards a destructive
@@ -20,11 +30,12 @@ export function confirmStateCreate() {
   return {
     accept: () => settle(true),
     cancel: () => settle(false),
-    confirm: (message: string) =>
+    acceptLabel: () => pending.get()?.acceptLabel,
+    confirm: (request: ConfirmRequest | string) =>
       new Promise<boolean>((resolve) => {
         // A superseded request is declined, so no caller is ever left waiting.
         settle(false)
-        pending.set({ message, settle: resolve })
+        pending.set({ ...(typeof request === "string" ? { message: request } : request), settle: resolve })
       }),
     /**
      * Declines an open prompt because the dialog rendering it went away. A screen that
@@ -33,6 +44,7 @@ export function confirmStateCreate() {
     dispose: () => settle(false),
     message: () => pending.get()?.message,
     open: () => pending.get() !== undefined,
+    title: () => pending.get()?.title,
   }
 }
 

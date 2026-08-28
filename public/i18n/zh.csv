@@ -699,6 +699,8 @@ admin.projects.applications.title,应用
 admin.projects.applications.type,应用类型
 admin.projects.crossTenant,此资源属于其他领域，在此不可用。
 admin.projects.deleteConfirm,删除此项目？应用、角色和授权将一并被删除。
+admin.projects.deleteConfirmAccept,删除项目
+admin.projects.deleteConfirmTitle,删除此项目
 admin.projects.detail.authorizationRequired,需要授权
 admin.projects.detail.created,创建时间
 admin.projects.detail.identifier,项目标识符
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,启用
 admin.projects.lifecycle.deactivate,停用
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,移除此项目？
+admin.projects.lifecycle.removeConfirmAccept,移除项目
+admin.projects.lifecycle.removeConfirmTitle,移除此项目
 admin.projects.list.create,创建项目
 admin.projects.list.description,项目将一个组织的应用、角色和授权归为一组。
 admin.projects.list.empty,此领域中尚不存在任何项目。

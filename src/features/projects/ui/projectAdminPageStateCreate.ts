@@ -1,6 +1,8 @@
 import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import type { ConfirmRequest } from "../../../ui/confirm/confirmStateCreate.js"
+import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ProjectApplication } from "../public/projectApplicationSchema.js"
 import type { ProjectGrant } from "../public/projectGrantSchema.js"
@@ -15,7 +17,7 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 
 type ProjectAdminPageStateCreateOptions = {
   readonly adapter: ProjectAdminAdapter
-  readonly confirm: (message: string) => boolean | Promise<boolean>
+  readonly confirm: (request: ConfirmRequest) => boolean | Promise<boolean>
   readonly projectId: () => string | undefined
   readonly screen: () => ProjectAdminScreen
 }
@@ -129,8 +131,17 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
   }
 
   // Every destructive guard awaits the same in-app prompt, so cancel is always non-destructive.
-  const confirmed = async (key: Parameters<typeof messageTranslate>[0]) =>
-    (await options.confirm(messageTranslate(key))) === true
+  // A guard may name the action so the prompt is project-specific rather than generic.
+  const confirmed = async (
+    key: MessageKey,
+    labels?: { readonly acceptKey: MessageKey; readonly titleKey: MessageKey },
+  ) =>
+    (await options.confirm({
+      message: messageTranslate(key),
+      ...(labels === undefined
+        ? {}
+        : { acceptLabel: messageTranslate(labels.acceptKey), title: messageTranslate(labels.titleKey) }),
+    })) === true
 
   const mutate = async <T>(id: string, operation: () => Promise<Result<T>>): Promise<T | undefined> => {
     pendingId.set(id)
@@ -224,14 +235,26 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       return true
     },
     projectDelete: async (projectId: string) => {
-      if (!(await confirmed("admin.projects.deleteConfirm"))) return false
+      const accepted = await confirmed("admin.projects.deleteConfirm", {
+        acceptKey: "admin.projects.deleteConfirmAccept",
+        titleKey: "admin.projects.deleteConfirmTitle",
+      })
+      if (!accepted) return false
       const deleted = await mutate(`project:${projectId}`, () => adapter.projectDelete(projectId))
       if (deleted === undefined) return false
       projects.set(projects.get().filter((item) => item.id !== projectId))
       return true
     },
     projectLifecycleSet: async (projectId: string, nextStatus: "active" | "inactive" | "removed") => {
-      if (nextStatus === "removed" && !(await confirmed("admin.projects.lifecycle.removeConfirm"))) return
+      if (
+        nextStatus === "removed" &&
+        !(await confirmed("admin.projects.lifecycle.removeConfirm", {
+          acceptKey: "admin.projects.lifecycle.removeConfirmAccept",
+          titleKey: "admin.projects.lifecycle.removeConfirmTitle",
+        }))
+      ) {
+        return
+      }
       const updated = await mutate(`project:${projectId}`, () =>
         adapter.projectLifecycleSet(projectId, { status: nextStatus }),
       )

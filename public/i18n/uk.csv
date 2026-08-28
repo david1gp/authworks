@@ -699,6 +699,8 @@ admin.projects.applications.title,Застосунки
 admin.projects.applications.type,Тип застосунку
 admin.projects.crossTenant,Цей ресурс належить до іншого realm і тут недоступний.
 admin.projects.deleteConfirm,"Видалити цей проєкт? Застосунки, ролі та видані права буде видалено разом із ним."
+admin.projects.deleteConfirmAccept,Видалити проєкт
+admin.projects.deleteConfirmTitle,Видалити цей проєкт
 admin.projects.detail.authorizationRequired,Потрібна авторизація
 admin.projects.detail.created,Створено
 admin.projects.detail.identifier,Ідентифікатор проєкту
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,Активувати
 admin.projects.lifecycle.deactivate,Деактивувати
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Видалити цей проєкт?
+admin.projects.lifecycle.removeConfirmAccept,Прибрати проєкт
+admin.projects.lifecycle.removeConfirmTitle,Прибрати цей проєкт
 admin.projects.list.create,Створити проєкт
 admin.projects.list.description,"Проєкти об'єднують застосунки, ролі та надання організації."
 admin.projects.list.empty,У цьому realm ще немає проєктів.

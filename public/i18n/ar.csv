@@ -699,6 +699,8 @@ admin.projects.applications.title,التطبيقات
 admin.projects.applications.type,نوع التطبيق
 admin.projects.crossTenant,ينتمي هذا المورد إلى نطاق آخر وغير متاح هنا.
 admin.projects.deleteConfirm,هل تريد حذف هذا المشروع؟ ستُحذف التطبيقات والأدوار والمنح معه.
+admin.projects.deleteConfirmAccept,حذف المشروع
+admin.projects.deleteConfirmTitle,حذف هذا المشروع
 admin.projects.detail.authorizationRequired,التفويض مطلوب
 admin.projects.detail.created,تاريخ الإنشاء
 admin.projects.detail.identifier,معرّف المشروع
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,تفعيل
 admin.projects.lifecycle.deactivate,إلغاء التفعيل
 admin.projects.lifecycle.remove,إزالة
 admin.projects.lifecycle.removeConfirm,هل تريد إزالة هذا المشروع؟
+admin.projects.lifecycle.removeConfirmAccept,إزالة المشروع
+admin.projects.lifecycle.removeConfirmTitle,إزالة هذا المشروع
 admin.projects.list.create,إنشاء مشروع
 admin.projects.list.description,تجمع المشاريع تطبيقات المؤسسة وأدوارها ومنحها.
 admin.projects.list.empty,لا توجد مشاريع في هذا النطاق بعد.

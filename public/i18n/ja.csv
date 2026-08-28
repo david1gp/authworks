@@ -699,6 +699,8 @@ admin.projects.applications.title,アプリケーション
 admin.projects.applications.type,アプリケーションの種類
 admin.projects.crossTenant,このリソースは別のレルムに属しており、ここでは利用できません。
 admin.projects.deleteConfirm,このプロジェクトを削除しますか？アプリケーション、ロール、付与も一緒に削除されます。
+admin.projects.deleteConfirmAccept,プロジェクトを削除
+admin.projects.deleteConfirmTitle,このプロジェクトを削除
 admin.projects.detail.authorizationRequired,認可が必要です
 admin.projects.detail.created,作成日時
 admin.projects.detail.identifier,プロジェクト識別子
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,有効化
 admin.projects.lifecycle.deactivate,無効化
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,このプロジェクトを削除しますか？
+admin.projects.lifecycle.removeConfirmAccept,プロジェクトを除去
+admin.projects.lifecycle.removeConfirmTitle,このプロジェクトを除去
 admin.projects.list.create,プロジェクトを作成
 admin.projects.list.description,プロジェクトは、組織のアプリケーション、ロール、付与をまとめます。
 admin.projects.list.empty,このレルムにはまだプロジェクトがありません。

@@ -50,7 +50,10 @@ const organizationPageCreate = (confirm: (message: string) => boolean | Promise<
     screen: () => "organization-detail",
   })
 
-const projectPageCreate = (confirm: (message: string) => boolean | Promise<boolean>, calls: string[]) =>
+const projectPageCreate = (
+  confirm: (request: { readonly message: string }) => boolean | Promise<boolean>,
+  calls: string[],
+) =>
   projectAdminPageStateCreate({
     adapter: adapterRecord(
       projectAdminDemoAdapterCreate(() => "success"),

@@ -83,8 +83,9 @@ export function ConfirmDialog(props: { readonly state: ConfirmState; readonly ti
           role="alertdialog"
           tabIndex={-1}
         >
+          {/* A request that names itself replaces the generic feature-owned fallback title. */}
           <h2 class="text-sm font-semibold tracking-tight" id={`${id}-title`}>
-            {messageTranslate(props.titleKey)}
+            {state.title() ?? messageTranslate(props.titleKey)}
           </h2>
           <p class="mt-1 break-words text-xs text-muted-foreground" id={`${id}-message`}>
             {state.message()}
@@ -94,7 +95,7 @@ export function ConfirmDialog(props: { readonly state: ConfirmState; readonly ti
               {messageTranslate("common.cancel")}
             </Button>
             <Button data-confirm-accept onClick={state.accept} variant="filledRed">
-              {messageTranslate("common.continue")}
+              {state.acceptLabel() ?? messageTranslate("common.continue")}
             </Button>
           </div>
         </div>

@@ -8,8 +8,9 @@ import { demoFixtureStateLabel } from "../demoFixtureStateLabel.js"
 export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario }) {
   return (
     <article class="flex flex-col rounded-panel border border-line bg-surface p-3 transition-colors hover:border-line-strong">
-      <div class="flex items-start justify-between gap-2">
+      <div class="flex min-w-0 items-start justify-between gap-2">
         <AuthenticatedStatus
+          class="shrink-0"
           label={
             props.scenario.availability === "available"
               ? messageTranslate("demo.directory.available")
@@ -17,7 +18,8 @@ export function DemoDirectoryScenarioCard(props: { scenario: DemoFixtureScenario
           }
           tone={props.scenario.availability === "available" ? "success" : "neutral"}
         />
-        <span class="truncate font-mono text-2xs text-muted-foreground">
+        {/* A flex item defaults to `min-width: auto`, so the un-wrapping path would widen the whole page. */}
+        <span class="min-w-0 truncate font-mono text-2xs text-muted-foreground">
           {props.scenario.path.replace(/^\/demo\//, "/")}
         </span>
       </div>

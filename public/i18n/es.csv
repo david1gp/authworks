@@ -699,6 +699,8 @@ admin.projects.applications.title,Aplicaciones
 admin.projects.applications.type,Tipo de aplicación
 admin.projects.crossTenant,Este recurso pertenece a otro realm y no está disponible aquí.
 admin.projects.deleteConfirm,"¿Eliminar este proyecto? Las aplicaciones, los roles y las concesiones se eliminan con él."
+admin.projects.deleteConfirmAccept,Eliminar proyecto
+admin.projects.deleteConfirmTitle,Eliminar este proyecto
 admin.projects.detail.authorizationRequired,Autorización requerida
 admin.projects.detail.created,Creado
 admin.projects.detail.identifier,Identificador del proyecto
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,Activar
 admin.projects.lifecycle.deactivate,Desactivar
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,¿Eliminar este proyecto?
+admin.projects.lifecycle.removeConfirmAccept,Quitar proyecto
+admin.projects.lifecycle.removeConfirmTitle,Quitar este proyecto
 admin.projects.list.create,Crear proyecto
 admin.projects.list.description,"Los proyectos agrupan las aplicaciones, los roles y las concesiones de una organización."
 admin.projects.list.empty,Todavía no existe ningún proyecto en este realm.

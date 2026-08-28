@@ -699,6 +699,8 @@ admin.projects.applications.title,Applicaties
 admin.projects.applications.type,Applicatietype
 admin.projects.crossTenant,Deze resource hoort bij een ander realm en is hier niet beschikbaar.
 admin.projects.deleteConfirm,"Dit project verwijderen? Toepassingen, rollen en grants worden ermee verwijderd."
+admin.projects.deleteConfirmAccept,Project verwijderen
+admin.projects.deleteConfirmTitle,Dit project verwijderen
 admin.projects.detail.authorizationRequired,Autorisatie vereist
 admin.projects.detail.created,Aangemaakt
 admin.projects.detail.identifier,Project-identificatie
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,Activeren
 admin.projects.lifecycle.deactivate,Deactiveren
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Dit project verwijderen?
+admin.projects.lifecycle.removeConfirmAccept,Project intrekken
+admin.projects.lifecycle.removeConfirmTitle,Dit project intrekken
 admin.projects.list.create,Project aanmaken
 admin.projects.list.description,"Projecten groeperen de applicaties, rollen en toekenningen van een organisatie."
 admin.projects.list.empty,Er bestaan nog geen projecten in dit realm.

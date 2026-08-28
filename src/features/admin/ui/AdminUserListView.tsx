@@ -3,8 +3,8 @@ import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
-import { CorvuDialog } from "#ui/interactive/dialog/CorvuDialog.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -27,13 +27,13 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
     <section aria-label={messageTranslate("admin.users.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
       <AuthenticatedToolbar
         actions={
-          <CorvuDialog
-            buttonChildren={messageTranslate("admin.users.create")}
+          <AuthenticatedDialog
             class="h-8 text-xs"
             description={messageTranslate("admin.users.createDescription")}
             onOpenChange={props.state.createOpen.set}
             open={props.state.createOpen.get()}
             title={messageTranslate("admin.users.create")}
+            triggerLabel={messageTranslate("admin.users.create")}
             variant="filledBlue"
           >
             <form class="grid gap-3" onSubmit={props.state.userCreateSubmit}>
@@ -69,7 +69,7 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
                 {messageTranslate("admin.users.createSubmit")}
               </Button>
             </form>
-          </CorvuDialog>
+          </AuthenticatedDialog>
         }
         label={messageTranslate("admin.users.title")}
         summary={messageTranslate("admin.users.count", { count: props.state.users().length })}

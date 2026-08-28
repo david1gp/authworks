@@ -699,6 +699,8 @@ admin.projects.applications.title,Uygulamalar
 admin.projects.applications.type,Uygulama türü
 admin.projects.crossTenant,Bu kaynak başka bir realm'e ait ve burada kullanılamıyor.
 admin.projects.deleteConfirm,"Bu proje silinsin mi? Uygulamalar, roller ve hak atamaları onunla birlikte silinir."
+admin.projects.deleteConfirmAccept,Projeyi sil
+admin.projects.deleteConfirmTitle,Bu projeyi sil
 admin.projects.detail.authorizationRequired,Yetkilendirme gerekli
 admin.projects.detail.created,Oluşturulma
 admin.projects.detail.identifier,Proje tanımlayıcısı
@@ -720,6 +722,8 @@ admin.projects.lifecycle.activate,Etkinleştir
 admin.projects.lifecycle.deactivate,Devre dışı bırak
 admin.projects.lifecycle.remove,Remove
 admin.projects.lifecycle.removeConfirm,Bu proje kaldırılsın mı?
+admin.projects.lifecycle.removeConfirmAccept,Projeyi kaldır
+admin.projects.lifecycle.removeConfirmTitle,Bu projeyi kaldır
 admin.projects.list.create,Proje oluştur
 admin.projects.list.description,"Projeler bir kuruluşun uygulamalarını, rollerini ve yetkilerini gruplar."
 admin.projects.list.empty,Bu realm'de henüz proje yok.
