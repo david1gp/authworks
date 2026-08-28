@@ -21,7 +21,7 @@ export function ImpersonationAdminBanner(props: {
   return (
     <aside
       aria-label={messageTranslate("admin.impersonation.bannerLabel")}
-      class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-b border-amber-300 bg-amber-100 px-3 py-1.5 text-xs text-amber-950 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-50"
+      class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-b border-warning/35 bg-warning-soft px-3 py-1.5 text-xs text-warning"
       data-impersonation-banner
     >
       <p class="min-w-0 font-medium" data-impersonation-summary>

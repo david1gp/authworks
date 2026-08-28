@@ -124,7 +124,7 @@ export function OidcAdminClientListView(props: {
                     { label: messageTranslate("admin.oidc.clients.consent"), value: consentLabel(client) },
                     {
                       label: messageTranslate("admin.oidc.clients.redirectUris"),
-                      value: <OidcAdminUriList uris={client.redirectUris} />,
+                      value: <OidcAdminUriList uris={client.redirectUris} wrap />,
                       wide: true,
                     },
                     {

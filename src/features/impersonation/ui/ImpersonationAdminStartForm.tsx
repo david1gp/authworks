@@ -3,6 +3,7 @@ import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { authenticatedWarningOutlineButtonClass } from "../../../ui/authenticated/authenticatedWarningOutlineButtonClass.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { impersonationAdminDurationOptions } from "./impersonationAdminDurationOptions.js"
 import type { ImpersonationAdminPageState } from "./impersonationAdminPageStateCreate.js"
@@ -90,13 +91,12 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
         {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
       </Show>
 
-      {/* The base amber fill is too light for white text; use the variant's accessible hover shade. */}
       <Button
-        class="justify-self-start bg-amber-700 hover:bg-amber-800 dark:bg-amber-800 dark:hover:bg-amber-700"
+        class={`justify-self-start ${authenticatedWarningOutlineButtonClass}`}
         disabled={state.pendingId() !== undefined}
         size="sm"
         type="submit"
-        variant="filledAmber"
+        variant="outline"
       >
         {messageTranslate("admin.impersonation.start")}
       </Button>

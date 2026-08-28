@@ -30,9 +30,8 @@ export function OidcAdminSecretPanel(props: {
             ? messageTranslate("admin.oidc.secret.createdTitle")
             : messageTranslate("admin.oidc.secret.rotatedTitle")}
         </h2>
-        <p class="text-xs text-muted-foreground">
-          {messageTranslate("admin.oidc.secret.once", { client: props.clientName })}
-        </p>
+        {/* Muted grey fails contrast on the warning tint, so panel prose uses the warning token. */}
+        <p class="text-xs text-warning">{messageTranslate("admin.oidc.secret.once", { client: props.clientName })}</p>
       </div>
       {/* The secret wraps rather than widening the page, so it stays fully readable on a phone. */}
       <code

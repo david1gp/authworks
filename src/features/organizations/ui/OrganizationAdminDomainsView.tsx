@@ -4,6 +4,7 @@ import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -37,10 +38,7 @@ export function OrganizationAdminDomainsView(props: {
   readonly validationMessage?: string
 }) {
   return (
-    <section
-      aria-label={messageTranslate("admin.organizations.domains.title")}
-      class="grid min-w-0 gap-3 [&>*]:min-w-0"
-    >
+    <AuthenticatedPageBody>
       <OrganizationAdminNotice notice={props.notice} />
 
       <div class="grid min-w-0 gap-3 lg:grid-cols-2 [&>*]:min-w-0">
@@ -186,6 +184,6 @@ export function OrganizationAdminDomainsView(props: {
           />
         </AuthenticatedSection>
       </OrganizationAdminState>
-    </section>
+    </AuthenticatedPageBody>
   )
 }

@@ -7,6 +7,7 @@ import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNoti
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -44,10 +45,7 @@ export function OrganizationAdminInvitationsView(props: {
   readonly validationMessage?: string
 }) {
   return (
-    <section
-      aria-label={messageTranslate("admin.organizations.invitations.title")}
-      class="grid min-w-0 gap-3 [&>*]:min-w-0"
-    >
+    <AuthenticatedPageBody>
       <OrganizationAdminNotice notice={props.notice} />
 
       <Show when={props.invitationToken}>
@@ -215,6 +213,6 @@ export function OrganizationAdminInvitationsView(props: {
           />
         </AuthenticatedSection>
       </OrganizationAdminState>
-    </section>
+    </AuthenticatedPageBody>
   )
 }

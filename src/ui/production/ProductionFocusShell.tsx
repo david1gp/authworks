@@ -15,22 +15,22 @@ export function ProductionFocusShell(props: { readonly children: JSX.Element; re
         <ThemeButton />
       </header>
       <main class="w-full max-w-xl" data-shell="focus">
-        <CardWrapper class="overflow-hidden border-line p-0 shadow-xl shadow-black/5">
-          <header class="border-b border-line bg-surface px-6 py-6 sm:px-9">
-            <div class="mb-5 flex items-center gap-3">
-              <span class="grid size-10 place-items-center rounded-xl bg-accent text-lg font-bold text-accent-contrast">
+        <CardWrapper class="overflow-hidden rounded-panel border-line p-0 shadow-sm shadow-black/5">
+          <header class="border-b border-line bg-surface px-5 py-4 sm:px-6">
+            <div class="mb-3 flex items-center gap-2.5">
+              <span class="grid size-8 place-items-center rounded-control bg-accent text-sm font-bold text-accent-contrast">
                 A
               </span>
-              <div>
-                <p class="font-semibold">{messageTranslate("app.name")}</p>
-                <p class="text-xs text-muted-foreground">{state.realmLabel()}</p>
+              <div class="min-w-0">
+                <p class="truncate text-sm font-semibold">{messageTranslate("app.name")}</p>
+                <p class="truncate text-2xs text-muted-foreground">{state.realmLabel()}</p>
               </div>
             </div>
-            <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">{props.title}</h1>
+            <h1 class="text-lg font-semibold tracking-tight sm:text-xl">{props.title}</h1>
           </header>
-          <div class="bg-surface p-5 sm:p-8">{props.children}</div>
+          <div class="bg-surface px-5 py-4 sm:px-6 sm:py-5">{props.children}</div>
         </CardWrapper>
-        <p class="mt-5 text-center text-xs text-muted-foreground">{messageTranslate("app.tagline")}</p>
+        <p class="mt-3 text-center text-2xs text-muted-foreground">{messageTranslate("app.tagline")}</p>
       </main>
     </PageWrapper>
   )

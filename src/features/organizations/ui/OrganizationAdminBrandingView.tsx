@@ -3,6 +3,7 @@ import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -43,10 +44,7 @@ export function OrganizationAdminBrandingView(props: {
 }) {
   const theme = (key: ThemeKey) => props.branding[key] as OrganizationBrandingTheme
   return (
-    <section
-      aria-label={messageTranslate("admin.organizations.branding.title")}
-      class="grid min-w-0 gap-3 [&>*]:min-w-0"
-    >
+    <AuthenticatedPageBody>
       <OrganizationAdminNotice notice={props.notice} />
 
       <OrganizationAdminState
@@ -151,7 +149,6 @@ export function OrganizationAdminBrandingView(props: {
             }
             description={messageTranslate("admin.organizations.branding.description")}
             padded
-            title={messageTranslate("admin.organizations.branding.title")}
           >
             <div class="grid gap-2.5 sm:grid-cols-3">
               <div class="grid min-w-0 gap-1">
@@ -202,6 +199,6 @@ export function OrganizationAdminBrandingView(props: {
           </AuthenticatedSection>
         </form>
       </OrganizationAdminState>
-    </section>
+    </AuthenticatedPageBody>
   )
 }

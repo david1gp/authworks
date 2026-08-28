@@ -6,6 +6,7 @@ import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -18,7 +19,7 @@ import type { adminPageStateCreate } from "./adminPageStateCreate.js"
  */
 export function AdminSignInView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
   return (
-    <section aria-label={messageTranslate("admin.signIn.title")} class="grid min-w-0 max-w-3xl gap-3 [&>*]:min-w-0">
+    <AuthenticatedPageBody class="max-w-3xl">
       <Show when={props.state.status() === "loading"}>
         <ProductionStatePanel state="loading" />
       </Show>
@@ -72,10 +73,9 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
           props.state.status() === "signed-out"
         }
       >
-        <AuthenticatedSection
-          description={messageTranslate("admin.signIn.description")}
-          title={messageTranslate("admin.signIn.title")}
-        >
+        {/* The page heading already reads "Administrator sign-in", so the panel keeps only its
+            description instead of repeating that title as a second visible heading. */}
+        <AuthenticatedSection description={messageTranslate("admin.signIn.description")}>
           <form class="grid gap-3 px-3 py-3" onSubmit={props.state.adminSignInSubmit}>
             <div class="grid gap-1">
               <Label for="admin-bootstrap-secret">{messageTranslate("admin.signIn.credential")}</Label>
@@ -104,6 +104,6 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
           </form>
         </AuthenticatedSection>
       </Show>
-    </section>
+    </AuthenticatedPageBody>
   )
 }

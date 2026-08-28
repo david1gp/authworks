@@ -60,7 +60,7 @@ export function ConfirmDialog(props: { readonly state: ConfirmState; readonly ti
           aria-describedby={`${id}-message`}
           aria-labelledby={`${id}-title`}
           aria-modal="true"
-          class="relative w-full max-w-md rounded-lg border border-line bg-surface p-6 shadow-lg"
+          class="relative w-full max-w-md rounded-panel border border-line bg-surface px-4 py-3.5 shadow-sm"
           data-confirm-dialog
           onKeyDown={(event) => {
             if (event.key === "Escape") {
@@ -83,13 +83,13 @@ export function ConfirmDialog(props: { readonly state: ConfirmState; readonly ti
           role="alertdialog"
           tabIndex={-1}
         >
-          <h2 class="text-lg font-semibold" id={`${id}-title`}>
+          <h2 class="text-sm font-semibold tracking-tight" id={`${id}-title`}>
             {messageTranslate(props.titleKey)}
           </h2>
-          <p class="mt-2 break-words text-sm text-muted-foreground" id={`${id}-message`}>
+          <p class="mt-1 break-words text-xs text-muted-foreground" id={`${id}-message`}>
             {state.message()}
           </p>
-          <div class="mt-6 flex flex-wrap justify-end gap-2">
+          <div class="mt-3.5 flex flex-wrap justify-end gap-2">
             <Button autofocus data-confirm-cancel onClick={state.cancel} ref={cancel} variant="outline">
               {messageTranslate("common.cancel")}
             </Button>

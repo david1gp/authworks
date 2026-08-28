@@ -8,6 +8,7 @@ import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDial
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -67,7 +68,7 @@ export function ProjectAdminRolesGrantsView(props: {
   )
 
   return (
-    <section aria-label={messageTranslate("admin.projects.roles.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <AuthenticatedPageBody>
       <ProjectAdminProjectContext page={state.page} />
 
       <ProjectAdminStateBoundary
@@ -334,6 +335,6 @@ export function ProjectAdminRolesGrantsView(props: {
           </Show>
         </AuthenticatedSection>
       </ProjectAdminStateBoundary>
-    </section>
+    </AuthenticatedPageBody>
   )
 }

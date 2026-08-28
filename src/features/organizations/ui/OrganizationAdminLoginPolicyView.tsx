@@ -4,6 +4,7 @@ import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedNavigationLinkClassGet } from "../../../ui/authenticated/authenticatedNavigationLinkClassGet.js"
@@ -79,7 +80,7 @@ export function OrganizationAdminLoginPolicyView(props: {
   readonly validationMessage?: string
 }) {
   return (
-    <section aria-label={messageTranslate("admin.organizations.policy.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <AuthenticatedPageBody>
       <nav aria-label={messageTranslate("admin.organizations.policy.scopeLabel")} class="flex flex-wrap gap-1.5">
         <a
           aria-current={props.policyScope === "realm" ? "page" : undefined}
@@ -347,6 +348,6 @@ export function OrganizationAdminLoginPolicyView(props: {
           </AuthenticatedSection>
         </div>
       </OrganizationAdminState>
-    </section>
+    </AuthenticatedPageBody>
   )
 }
