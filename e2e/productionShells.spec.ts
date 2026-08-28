@@ -135,12 +135,12 @@ test("production focus and authenticated shells render without network adapters"
   for (const label of ["Security", "Access"]) {
     await expect(navigation.locator("h2").filter({ hasText: label }).locator("svg")).toHaveCount(1)
   }
-  await expect(page.getByLabel("Realm").locator("..").locator("svg")).toHaveCount(1)
-  await expect(page.getByLabel("Organization").locator("..").locator("svg")).toHaveCount(1)
+  // The product has a single realm, so the shell no longer renders a realm chooser. The organization
+  // control only appears when the signed-in user actually belongs to more than one organization.
+  await expect(page.getByLabel("Realm")).toHaveCount(0)
+  await expect(page.getByLabel("Organization")).toHaveCount(0)
   await expect(page.getByLabel("Language").locator("..").locator("svg")).toHaveCount(1)
-  await expect(page.getByText("Signed in", { exact: true }).locator("svg")).toHaveCount(1)
   await expect(page.getByRole("link", { name: "Sign out", exact: true }).locator("svg")).toHaveCount(1)
-  await expect(page.getByLabel("Realm")).toHaveValue(realmId)
 
   await page.goto("/invitations")
   await expect(page.getByRole("heading", { name: "Invitations", exact: true })).toBeVisible()
@@ -192,14 +192,14 @@ test("desktop sidebar collapse releases production content space", async ({ page
   await page.goto("/account")
 
   const content = page.locator("main").locator("..")
-  await expect(content).toHaveCSS("margin-left", "288px")
+  await expect(content).toHaveCSS("margin-left", "240px")
   await page.getByRole("button", { name: "Close sidebar" }).click()
   await expect(page.locator("aside")).toHaveCount(0)
   await expect(content).toHaveCSS("margin-left", "0px")
 
   await page.getByRole("button", { name: "Open sidebar" }).click()
   await expect(page.locator("aside")).toHaveCount(1)
-  await expect(content).toHaveCSS("margin-left", "288px")
+  await expect(content).toHaveCSS("margin-left", "240px")
 })
 
 test("representative production login, account, and administration views have no serious axe violations", async ({

@@ -4,7 +4,7 @@ const organizationPath = "/demo/admin/organizations/01900000-0000-7000-8000-0000
 
 test("organization administration demo destinations render fixture-backed content", async ({ page }) => {
   await page.goto("/demo/admin/organizations")
-  await expect(page.getByRole("link", { name: "Acme Corporation", exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByRole("link", { name: "Acme Corporation", exact: true })).toBeVisible()
 
   await page.goto(organizationPath)
   await expect(page.getByRole("heading", { name: "Organization settings", exact: true })).toBeVisible()
@@ -15,7 +15,8 @@ test("organization administration demo destinations render fixture-backed conten
   await expect(page.getByText("Roles are fixed by Authworks and cannot be renamed.")).toBeVisible()
 
   await page.goto("/demo/admin/invitations")
-  await expect(page.getByText("rowan@example.com", { exact: true })).toBeVisible()
+  // Invitations render as a wide table on desktop and as a stacked record list on mobile; assert the visible one.
+  await expect(page.getByRole("table").getByText("rowan@example.com", { exact: true })).toBeVisible()
 
   await page.goto("/demo/admin/domains")
   await expect(page.getByRole("heading", { name: "acme.example", exact: true })).toBeVisible()
@@ -25,7 +26,7 @@ test("organization administration demo destinations render fixture-backed conten
   await expect(page.getByRole("heading", { name: "Light theme" }).first()).toBeVisible()
 
   await page.goto("/demo/admin/login-policy")
-  await expect(page.getByRole("heading", { level: 1, name: "Login policy", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Login and identity providers", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Google Workspace", exact: true })).toBeVisible()
 })
 
@@ -75,7 +76,7 @@ test("an invitation link is shown once and is not repeated in the list", async (
 
   await onceOnly.getByRole("button", { name: "I saved this link", exact: true }).click()
   await expect(onceOnly).toHaveCount(0)
-  await expect(page.getByText("newcomer@example.com", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("newcomer@example.com", { exact: true })).toBeVisible()
 })
 
 test("destructive organization actions require confirmation", async ({ page }) => {

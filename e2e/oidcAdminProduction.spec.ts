@@ -63,8 +63,9 @@ test("the production client list reads the realm-scoped tenant API", async ({ pa
 
   await page.goto("/admin/oidc-clients")
 
-  await expect(page.getByText("Acme Web Portal", { exact: true })).toBeVisible()
-  await expect(page.getByText("https://portal.acme.example/callback", { exact: true })).toBeVisible()
+  // Clients render as a wide table on desktop and as a stacked record list on mobile.
+  await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("https://portal.acme.example/callback", { exact: true })).toBeVisible()
   expect(requested).toContain(`/realms/${realmId}/oidc/clients`)
   // The browser must never reach the operator-only system surface.
   expect(requested.every((pathname) => !pathname.startsWith("/system/"))).toBe(true)
@@ -87,7 +88,7 @@ test("registering a client sends a CSRF-protected mutation and shows the secret 
   })
 
   await page.goto("/admin/oidc-clients")
-  await expect(page.getByText("Acme Web Portal", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
 
   await page.getByRole("button", { name: "Register client", exact: true }).click()
   const dialog = page.getByRole("dialog")
@@ -143,7 +144,7 @@ test("signing key rotation is confirmed before the mutation is sent", async ({ p
   })
 
   await page.goto("/admin/signing-keys")
-  await expect(page.getByText(keyId, { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText(keyId, { exact: true })).toBeVisible()
 
   // A canceled confirmation must not send the destructive mutation.
   const confirmation = page.getByRole("alertdialog")
@@ -182,7 +183,7 @@ test("consent revocation posts to the subject's tenant path", async ({ page }) =
   })
 
   await page.goto("/admin/oidc-consents")
-  await expect(page.getByText("Acme Web Portal", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
 
   const confirmation = page.getByRole("alertdialog")
   await page.getByRole("button", { name: "Revoke", exact: true }).click()

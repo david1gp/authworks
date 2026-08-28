@@ -55,7 +55,8 @@ test("production membership role changes send a CSRF-protected PATCH", async ({ 
   })
 
   await page.goto("/admin/memberships")
-  await expect(page.getByText("user-1", { exact: true })).toBeVisible()
+  // Memberships render as a wide table on desktop and as a stacked record list on mobile.
+  await expect(page.getByRole("table").getByText("user-1", { exact: true })).toBeVisible()
 
   await page
     .getByRole("row", { name: /user-1/ })
@@ -110,7 +111,7 @@ test("production organization creation posts through the realm-scoped browser ro
   await dialog.getByLabel("Organization name", { exact: true }).fill("Northwind Labs")
   await dialog.getByRole("button", { name: "Save", exact: true }).click()
 
-  await expect(page.getByRole("link", { name: "Northwind Labs", exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByRole("link", { name: "Northwind Labs", exact: true })).toBeVisible()
   expect(createdNames).toEqual(["Northwind Labs"])
 })
 

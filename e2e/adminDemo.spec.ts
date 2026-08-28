@@ -5,21 +5,22 @@ test("desktop sidebar collapse releases demo content space", async ({ page }) =>
   await page.goto("/demo/admin")
 
   const main = page.locator("main")
-  await expect(main).toHaveCSS("margin-left", "256px")
+  await expect(main).toHaveCSS("margin-left", "240px")
   await page.getByRole("button", { name: "Hide sidebar", exact: true }).click()
   await expect(page.locator("aside")).toHaveCount(0)
   await expect(main).toHaveCSS("margin-left", "0px")
 
   await page.getByRole("button", { name: "Open sidebar" }).click()
   await expect(page.locator("aside")).toHaveCount(1)
-  await expect(main).toHaveCSS("margin-left", "256px")
+  await expect(main).toHaveCSS("margin-left", "240px")
 })
 
 test("the administration demo navigates through its list pages", async ({ page }) => {
   await page.goto("/demo/admin")
 
-  await expect(page.getByRole("heading", { name: "Administration directory", exact: true })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "OpenID Connect", exact: true })).toBeVisible()
+  const content = page.locator("main")
+  await expect(content.getByRole("heading", { name: "Administration directory", exact: true })).toBeVisible()
+  await expect(content.getByRole("heading", { name: "OpenID Connect", exact: true })).toBeVisible()
 
   const navigation = page.getByRole("navigation", { name: "Administration" })
   for (const label of [
@@ -44,8 +45,9 @@ test("the administration demo navigates through its list pages", async ({ page }
   }
   await expect(page.getByLabel("Language").locator("..").locator("svg")).toHaveCount(1)
   await navigation.getByRole("link", { name: "Organizations", exact: true }).click()
-  await expect(page.getByRole("heading", { name: "Organizations", exact: true })).toBeVisible()
-  await expect(page.getByText("Acme Corporation", { exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Organization directory", exact: true })).toBeVisible()
+  // Organizations render as a wide table on desktop and as a stacked record list on mobile.
+  await expect(page.getByRole("table").getByText("Acme Corporation", { exact: true })).toBeVisible()
 
   await expect(navigation.getByRole("link", { name: "Users", exact: true })).toBeVisible()
   await expect(navigation.getByRole("link", { name: "Projects", exact: true })).toBeVisible()
@@ -54,14 +56,15 @@ test("the administration demo navigates through its list pages", async ({ page }
 
   await navigation.getByRole("link", { name: "Users", exact: true }).click()
   await expect(page).toHaveURL(/\/demo\/admin\/users$/)
-  await expect(page.getByText("alex.morgan", { exact: true })).toBeVisible()
+  // Users render as a wide table on desktop and as a stacked record list on mobile; assert the visible one.
+  await expect(page.getByRole("table").getByText("alex.morgan", { exact: true })).toBeVisible()
 
   await page.getByLabel("Search users", { exact: true }).fill("alex")
   await expect(page).toHaveURL(/q=alex/)
 
   await navigation.getByRole("link", { name: "Projects", exact: true }).click()
   await expect(page).toHaveURL(/\/demo\/admin\/projects$/)
-  await expect(page.getByText("Acme Portal", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Acme Portal", { exact: true })).toBeVisible()
 
   await navigation.getByRole("link", { name: "Sessions", exact: true }).click()
   await expect(page).toHaveURL(/\/demo\/admin\/sessions$/)
@@ -69,7 +72,7 @@ test("the administration demo navigates through its list pages", async ({ page }
 
   await navigation.getByRole("link", { name: "Events", exact: true }).click()
   await expect(page).toHaveURL(/\/demo\/admin\/events$/)
-  await expect(page.getByText("organization.created", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("organization.created", { exact: true })).toBeVisible()
 
   await page.goto("/demo/admin/organizations/01900000-0000-7000-8000-000000000011")
   await expect(page.getByRole("heading", { name: "Acme Corporation", exact: true })).toBeVisible()
@@ -125,6 +128,6 @@ test("an organization can be created from the demo list", async ({ page }) => {
   await dialog.getByLabel("Organization name", { exact: true }).fill("E2E Org")
   await dialog.getByRole("button", { name: "Save", exact: true }).click()
 
-  await expect(page.getByRole("link", { name: "E2E Org", exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByRole("link", { name: "E2E Org", exact: true })).toBeVisible()
   await expect(page).not.toHaveURL(/create=/)
 })

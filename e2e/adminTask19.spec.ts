@@ -78,7 +78,7 @@ test.describe("task 19 administration browser fixes", () => {
 
       if (viewport.name === "desktop") {
         await expect(page.locator("aside")).toHaveCSS("right", "0px")
-        await expect(page.locator("main")).toHaveCSS("margin-right", "256px")
+        await expect(page.locator("main")).toHaveCSS("margin-right", "240px")
       }
 
       const accessibility = await new AxeBuilder({ page }).analyze()

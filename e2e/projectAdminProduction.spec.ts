@@ -59,7 +59,7 @@ test("the production project list reads the realm-scoped tenant API", async ({ p
 
   await page.goto("/admin/projects")
 
-  await expect(page.getByText("Acme Portal", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Acme Portal", { exact: true })).toBeVisible()
   await expect(page.getByRole("cell", { name: "Acme Corporation", exact: true })).toBeVisible()
   expect(requested).toContain(`/realms/${realmId}/projects`)
   // The browser must never reach the operator-only system surface.
@@ -83,14 +83,14 @@ test("creating an application sends a CSRF-protected tenant mutation", async ({ 
   })
 
   await page.goto(`/admin/projects/${projectId}/applications`)
-  await expect(page.getByText("Acme Web Portal", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
 
   await page.getByRole("button", { name: "Add application", exact: true }).click()
   const dialog = page.getByRole("dialog")
   await dialog.getByLabel("Application name", { exact: true }).fill("Production App")
   await dialog.getByRole("button", { name: "Save", exact: true }).click()
 
-  await expect(page.getByText("Production App", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Production App", { exact: true })).toBeVisible()
   expect(createHadCsrf).toBe(true)
 })
 

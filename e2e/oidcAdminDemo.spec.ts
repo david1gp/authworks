@@ -6,13 +6,14 @@ const clientBase = `/demo/admin/oidc-clients/${clientId}`
 test("the client directory lists fixtures and registers a client without a network call", async ({ page }) => {
   await page.goto("/demo/admin/oidc-clients")
 
-  await expect(page.getByRole("heading", { name: "OpenID Connect clients", exact: true })).toBeVisible()
-  await expect(page.getByText("Acme Web Portal", { exact: true })).toBeVisible()
-  await expect(page.getByText("Acme Mobile App", { exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "OIDC clients", exact: true })).toBeVisible()
+  // Clients render as a wide table on desktop and as a stacked record list on mobile; assert the visible one.
+  await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Acme Mobile App", { exact: true })).toBeVisible()
 
   await page.getByLabel("Search clients", { exact: true }).fill("mobile")
   await expect(page).toHaveURL(/q=mobile/)
-  await expect(page.getByText("Acme Web Portal", { exact: true })).toHaveCount(0)
+  await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toHaveCount(0)
 
   await page.getByLabel("Search clients", { exact: true }).fill("")
   await page.getByRole("button", { name: "Register client", exact: true }).click()
@@ -22,7 +23,7 @@ test("the client directory lists fixtures and registers a client without a netwo
   await dialog.getByLabel("Redirect URIs", { exact: true }).fill("https://e2e.example/callback")
   await dialog.getByRole("button", { name: "Save", exact: true }).click()
 
-  await expect(page.getByText("E2E Client", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("E2E Client", { exact: true })).toBeVisible()
   await expect(page).not.toHaveURL(/dialog=/)
 })
 
@@ -61,7 +62,7 @@ test("a public client is registered without any secret", async ({ page }) => {
   await dialog.getByLabel("Redirect URIs", { exact: true }).fill("com.public://callback")
   await dialog.getByRole("button", { name: "Save", exact: true }).click()
 
-  await expect(page.getByText("Public Client", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Public Client", { exact: true })).toBeVisible()
   await expect(page.locator("[data-one-time-secret='oidc-client']")).toHaveCount(0)
 })
 
@@ -129,9 +130,9 @@ test("client lifecycle changes are reflected immediately", async ({ page }) => {
 test("signing keys expose only public metadata and support guarded rotation", async ({ page }) => {
   await page.goto("/demo/admin/signing-keys")
 
-  await expect(page.getByRole("heading", { name: "Signing keys", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Signing keys", exact: true })).toBeVisible()
   await expect(page.getByText("Only public key metadata is shown", { exact: false })).toBeVisible()
-  await expect(page.getByText("RS256", { exact: true }).first()).toBeVisible()
+  await expect(page.getByRole("table").getByText("RS256", { exact: true }).first()).toBeVisible()
 
   await page.getByRole("button", { name: "Rotate key", exact: true }).click()
   const confirmation = page.getByRole("alertdialog")
@@ -154,8 +155,8 @@ test("signing keys expose only public metadata and support guarded rotation", as
 test("administrator consent review lists and revokes an approved application", async ({ page }) => {
   await page.goto("/demo/admin/oidc-consents")
 
-  await expect(page.getByRole("heading", { name: "Application consents", exact: true })).toBeVisible()
-  await expect(page.getByText("Acme Web Portal", { exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Application consents", exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toBeVisible()
 
   const row = page.getByRole("row").filter({ hasText: "Acme Web Portal" })
   await row.getByRole("button", { name: "Revoke", exact: true }).click()
@@ -171,13 +172,13 @@ test("administrator consent review lists and revokes an approved application", a
   await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page.getByRole("status")).toContainText("revoked")
-  await expect(page.getByText("Acme Web Portal", { exact: true })).toHaveCount(0)
+  await expect(page.getByRole("table").getByText("Acme Web Portal", { exact: true })).toHaveCount(0)
 })
 
 test("protocol documents are read-only and suppress unreachable endpoint links", async ({ page }) => {
   await page.goto("/demo/admin/protocol-documents")
 
-  await expect(page.getByRole("heading", { name: "Protocol documents", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Protocol documents", exact: true })).toBeVisible()
   await expect(page.locator("[data-read-only-notice]")).toContainText("cannot be edited here")
   await expect(page.getByRole("heading", { name: "Discovery document", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "JSON Web Key Set", exact: true })).toBeVisible()
@@ -227,7 +228,8 @@ for (const path of ["/demo/admin/oidc-clients", "/demo/admin/signing-keys", "/de
 test("OIDC destinations are reachable from the demo directory", async ({ page }) => {
   await page.goto("/demo/admin")
 
-  await expect(page.getByRole("heading", { name: "OpenID Connect", exact: true })).toBeVisible()
+  const group = page.getByLabel("OpenID Connect")
+  await expect(group.getByRole("heading", { name: "OpenID Connect", exact: true })).toBeVisible()
   for (const title of [
     "OIDC clients",
     "OIDC client settings",
@@ -235,6 +237,6 @@ test("OIDC destinations are reachable from the demo directory", async ({ page })
     "Application consents",
     "Protocol documents",
   ]) {
-    await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible()
+    await expect(group.getByRole("heading", { name: title, exact: true })).toBeVisible()
   }
 })
