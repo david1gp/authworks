@@ -147,16 +147,22 @@ export function machineAdminPageStateCreate(options: MachineAdminPageStateCreate
     })
   }
 
+  // URL-only changes that leave the subject, screen, page, and fixture identical — closing the
+  // issue dialog, typing in the search box — re-run this effect even though nothing was reloaded.
+  // Comparing the key explicitly keeps those from discarding a secret that was just issued and
+  // has not been acknowledged yet, which previously closed the flow with no usable value.
+  const reloadKey = () =>
+    `${options.screen()}:${options.machineUserId() ?? ""}:${pageTokens.get().length}:${options.reloadKey?.() ?? ""}`
+  let loadedKey: string | undefined
   createEffect(
-    on(
-      () =>
-        `${options.screen()}:${options.machineUserId() ?? ""}:${pageTokens.get().length}:${options.reloadKey?.() ?? ""}`,
-      () => {
-        secretAcknowledged.set(false)
-        issuedSecret.set(undefined)
-        void load()
-      },
-    ),
+    on(reloadKey, () => {
+      const key = reloadKey()
+      if (key === loadedKey) return
+      loadedKey = key
+      secretAcknowledged.set(false)
+      issuedSecret.set(undefined)
+      void load()
+    }),
   )
 
   return {

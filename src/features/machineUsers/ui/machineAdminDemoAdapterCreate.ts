@@ -1,8 +1,6 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
-import { demoAdminMachineCredentials } from "../../demo/demoAdminMachineCredentials.js"
-import { demoAdminMachineUsers } from "../../demo/demoAdminMachineUsers.js"
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoRealmId } from "../../demo/demoRealmId.js"
 import { demoResourceIdGenerate } from "../../demo/demoResourceIdGenerate.js"
@@ -10,6 +8,7 @@ import type { MachineCredentialKind } from "../public/machineCredentialKindSchem
 import type { MachineCredential } from "../public/machineCredentialSchema.js"
 import type { MachineUser } from "../public/machineUserSchema.js"
 import type { MachineAdminAdapter } from "./machineAdminAdapter.js"
+import { machineAdminDemoRecordStore } from "./machineAdminDemoRecordStore.js"
 
 const neverResolves = <T>(): Promise<Result<T>> => new Promise<Result<T>>(() => undefined)
 
@@ -22,8 +21,10 @@ const demoSecretGenerate = () => `demo-secret-${demoResourceIdGenerate().replace
  * from the URL-selected fixture state so each demo destination is deterministic.
  */
 export function machineAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState): MachineAdminAdapter {
-  const machineUsers = demoAdminMachineUsers.map((machineUser) => ({ ...machineUser }))
-  const credentials = demoAdminMachineCredentials.map((credential) => ({ ...credential }))
+  // Shared across adapter instances so a machine user created in the directory is still resolvable
+  // on its generated detail route, which mounts a new adapter.
+  const machineUsers = machineAdminDemoRecordStore.machineUsers
+  const credentials = machineAdminDemoRecordStore.credentials
   const timestamp = 1_755_782_400_000
 
   const gate = <T>(value: () => Result<T>): Promise<Result<T>> => {

@@ -26,48 +26,67 @@ export function MachineAdminSecretPanel(props: {
   return (
     <article
       aria-live="polite"
-      class="min-w-0 rounded-2xl border border-amber-400 bg-amber-50 p-5 shadow-sm"
+      class="grid min-w-0 gap-2 rounded-panel border border-warning/45 bg-warning-soft px-3 py-2.5"
       data-one-time-secret="machine-credential"
     >
-      <h3 class="font-semibold text-amber-950">{title()}</h3>
-      <p class="mt-2 text-sm text-amber-900">
-        {messageTranslate("admin.machine.secret.once", { name: props.issued.machineUserName })}
-      </p>
+      <div class="grid min-w-0 gap-0.5">
+        <h2 class="text-sm font-semibold tracking-tight">{title()}</h2>
+        {/* Muted grey fails contrast on the warning tint, so panel prose uses the warning token. */}
+        <p class="text-xs text-warning">
+          {messageTranslate("admin.machine.secret.once", { name: props.issued.machineUserName })}
+        </p>
+      </div>
+
       {/* A client-credentials pair is only usable together, so the identifier is shown alongside. */}
       <Show when={props.issued.clientId}>
         {(clientId) => (
-          <div class="mt-4">
-            <p class="text-xs font-semibold uppercase tracking-wider text-amber-900">
+          <div class="grid min-w-0 gap-1">
+            <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-warning">
               {messageTranslate("admin.machine.secret.clientId")}
             </p>
-            <code class="mt-1 block max-w-full break-all rounded-lg bg-white p-3 font-mono text-sm" data-client-id>
+            <code
+              class="block max-w-full break-all rounded-control border border-line bg-surface px-2 py-1.5 font-mono text-xs leading-5"
+              data-client-id
+            >
               {clientId()}
             </code>
           </div>
         )}
       </Show>
-      <p class="mt-4 text-xs font-semibold uppercase tracking-wider text-amber-900">
-        {messageTranslate("admin.machine.secret.value")}
-      </p>
-      {/* The secret wraps rather than widening the page, so it stays fully readable on a phone. */}
-      <code class="mt-1 block max-w-full break-all rounded-lg bg-white p-3 font-mono text-sm" data-secret-value>
-        {props.issued.secret}
-      </code>
-      <div class="mt-5 flex flex-wrap items-center gap-3">
-        <Button onClick={state.copy} variant="outline">
+
+      <div class="grid min-w-0 gap-1">
+        <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-warning">
+          {messageTranslate("admin.machine.secret.value")}
+        </p>
+        {/* The secret wraps rather than widening the page, so it stays fully readable on a phone. */}
+        <code
+          class="block max-w-full break-all rounded-control border border-line bg-surface px-2 py-1.5 font-mono text-xs leading-5"
+          data-secret-value
+        >
+          {props.issued.secret}
+        </code>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <Button onClick={state.copy} size="sm" variant="outline">
           {messageTranslate("admin.machine.secret.copy")}
         </Button>
         {/* Acknowledgement stays reachable when the clipboard is denied, so the value is never trapped. */}
-        <Button disabled={!state.copied() && !state.copyFailed()} onClick={state.acknowledge} variant="filledBlue">
+        <Button
+          disabled={!state.copied() && !state.copyFailed()}
+          onClick={state.acknowledge}
+          size="sm"
+          variant="filledBlue"
+        >
           {messageTranslate("admin.machine.secret.acknowledge")}
         </Button>
         <Show when={state.copied()}>
-          <span class="text-sm font-medium text-green-800" role="status">
+          <span class="text-xs font-medium text-success" role="status">
             {messageTranslate("admin.machine.secret.copied")}
           </span>
         </Show>
         <Show when={state.copyFailed()}>
-          <span class="text-sm font-medium text-danger" role="alert">
+          <span class="text-xs font-medium text-danger" role="alert">
             {messageTranslate("admin.machine.secret.copyFailed")}
           </span>
         </Show>
