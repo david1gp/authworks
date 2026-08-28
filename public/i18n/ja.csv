@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,招待を開く
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,プロフィール画像を読み込めませんでした
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,無効化すると、すべての資格情�
 admin.machine.lifecycle.remove,マシンユーザーを削除
 admin.machine.lifecycle.removeConfirm,このマシンユーザーを削除しますか？所有するすべての資格情報が即座に動作しなくなり、復元できません。
 admin.machine.lifecycle.title,ライフサイクル
-admin.machine.pageNext,次のページ
-admin.machine.pagePrevious,前のページ
 admin.machine.permissionDenied,このレルムのマシンユーザーを表示または変更する権限がありません。
 admin.machine.permissionDeniedTitle,アクセスできません
 admin.machine.secret.acknowledge,シークレットを保存しました
@@ -375,6 +375,9 @@ admin.machine.secret.title,クライアントシークレット
 admin.machine.secret.tokenTitle,新しい個人アクセストークン
 admin.machine.secret.value,シークレットの値
 admin.machine.status,ステータス
+admin.machine.statusValue.active,有効
+admin.machine.statusValue.inactive,非アクティブ
+admin.machine.statusValue.removed,削除済み
 admin.machine.updated,最終更新
 admin.machine.users.create,マシンユーザーを作成
 admin.machine.users.createDescription,サービスまたは連携のための非人間 ID を作成します。そのクライアントシークレットは一度だけ表示されます。
@@ -384,6 +387,7 @@ admin.machine.users.description,このレルムでクライアント資格情報
 admin.machine.users.detailTitle,マシンユーザーの詳細
 admin.machine.users.displayName,表示名
 admin.machine.users.empty,このレルムにはまだマシンユーザーが存在しません。
+admin.machine.users.identifier,マシンユーザー識別子
 admin.machine.users.invalid,表示名とユーザー名を入力し、有効なスコープ値のみを使用してください。
 admin.machine.users.lifecycleChanged,マシンユーザーのステータスを変更しました。
 admin.machine.users.missingId,この宛先にはマシンユーザーの選択が必要です。

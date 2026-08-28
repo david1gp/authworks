@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,Meghívó megnyitása
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,A profilkép nem tölthető be
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,"A deaktiválás megakadályozza, hogy bárm
 admin.machine.lifecycle.remove,Gépi felhasználó eltávolítása
 admin.machine.lifecycle.removeConfirm,"Eltávolítja ezt a gépi felhasználót? Minden hitelesítési adata azonnal leáll, és nem állítható helyre."
 admin.machine.lifecycle.title,Életciklus
-admin.machine.pageNext,Következő oldal
-admin.machine.pagePrevious,Előző oldal
 admin.machine.permissionDenied,Nincs jogosultsága a realm gépi felhasználóinak megtekintésére vagy módosítására.
 admin.machine.permissionDeniedTitle,A hozzáférés nem érhető el
 admin.machine.secret.acknowledge,Elmentettem a titkot
@@ -375,6 +375,9 @@ admin.machine.secret.title,Ügyfél-titok
 admin.machine.secret.tokenTitle,Új személyes hozzáférési token
 admin.machine.secret.value,A titok értéke
 admin.machine.status,Állapot
+admin.machine.statusValue.active,Aktív
+admin.machine.statusValue.inactive,Inaktív
+admin.machine.statusValue.removed,Eltávolítva
 admin.machine.updated,Utoljára frissítve
 admin.machine.users.create,Gépi felhasználó létrehozása
 admin.machine.users.createDescription,Hozzon létre nem emberi identitást egy szolgáltatáshoz vagy integrációhoz. Az ügyfél-titka egyszer jelenik meg.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Nem emberi identitások, amelyek ügyfél-hitel
 admin.machine.users.detailTitle,Gépi felhasználó részletei
 admin.machine.users.displayName,Megjelenítendő név
 admin.machine.users.empty,Ebben a realmben még nincs gépi felhasználó.
+admin.machine.users.identifier,Gépi felhasználó azonosítója
 admin.machine.users.invalid,"Adjon meg megjelenítendő nevet és felhasználónevet, és csak érvényes hatóköri értékeket használjon."
 admin.machine.users.lifecycleChanged,A gépi felhasználó állapota megváltozott.
 admin.machine.users.missingId,Ehhez a célhoz ki kell választani egy gépi felhasználót.

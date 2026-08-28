@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,Otwórz zaproszenie
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,Nie można załadować zdjęcia profilowego
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,Dezaktywacja uniemożliwia uwierzytelnianie 
 admin.machine.lifecycle.remove,Usuń użytkownika maszynowego
 admin.machine.lifecycle.removeConfirm,Usunąć tego użytkownika maszynowego? Wszystkie jego poświadczenia natychmiast przestaną działać i nie będzie można ich przywrócić.
 admin.machine.lifecycle.title,Cykl życia
-admin.machine.pageNext,Następna strona
-admin.machine.pagePrevious,Poprzednia strona
 admin.machine.permissionDenied,Nie masz uprawnień do przeglądania ani zmieniania użytkowników maszynowych w tym realmie.
 admin.machine.permissionDeniedTitle,Dostęp niedostępny
 admin.machine.secret.acknowledge,Zapisałem sekret
@@ -375,6 +375,9 @@ admin.machine.secret.title,Sekret klienta
 admin.machine.secret.tokenTitle,Nowy osobisty token dostępu
 admin.machine.secret.value,Wartość sekretu
 admin.machine.status,Status
+admin.machine.statusValue.active,Aktywny
+admin.machine.statusValue.inactive,Nieaktywny
+admin.machine.statusValue.removed,Usunięty
 admin.machine.updated,Ostatnia aktualizacja
 admin.machine.users.create,Utwórz użytkownika maszynowego
 admin.machine.users.createDescription,Utwórz tożsamość nieosobową dla usługi lub integracji. Jej sekret klienta jest pokazywany jeden raz.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Tożsamości nieosobowe, które uwierzytelniaj�
 admin.machine.users.detailTitle,Szczegóły użytkownika maszynowego
 admin.machine.users.displayName,Nazwa wyświetlana
 admin.machine.users.empty,W tym realmie nie istnieje jeszcze żaden użytkownik maszynowy.
+admin.machine.users.identifier,Identyfikator użytkownika maszynowego
 admin.machine.users.invalid,Podaj nazwę wyświetlaną i nazwę użytkownika oraz używaj wyłącznie prawidłowych wartości zakresów.
 admin.machine.users.lifecycleChanged,Status użytkownika maszynowego został zmieniony.
 admin.machine.users.missingId,Dla tego miejsca docelowego należy wybrać użytkownika maszynowego.

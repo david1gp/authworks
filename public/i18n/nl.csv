@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,Uitnodiging openen
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,Profielfoto kon niet worden geladen
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,Deactiveren zorgt ervoor dat geen enkele ref
 admin.machine.lifecycle.remove,Machinegebruiker verwijderen
 admin.machine.lifecycle.removeConfirm,Deze machinegebruiker verwijderen? Alle credentials ervan werken onmiddellijk niet meer en kunnen niet worden hersteld.
 admin.machine.lifecycle.title,Levenscyclus
-admin.machine.pageNext,Volgende pagina
-admin.machine.pagePrevious,Vorige pagina
 admin.machine.permissionDenied,U hebt geen toestemming om machinegebruikers in dit realm te bekijken of te wijzigen.
 admin.machine.permissionDeniedTitle,Toegang niet beschikbaar
 admin.machine.secret.acknowledge,Ik heb het geheim opgeslagen
@@ -375,6 +375,9 @@ admin.machine.secret.title,Clientgeheim
 admin.machine.secret.tokenTitle,Nieuw persoonlijk toegangstoken
 admin.machine.secret.value,Waarde van het geheim
 admin.machine.status,Status
+admin.machine.statusValue.active,Actief
+admin.machine.statusValue.inactive,Inactief
+admin.machine.statusValue.removed,Verwijderd
 admin.machine.updated,Laatst bijgewerkt
 admin.machine.users.create,Machinegebruiker aanmaken
 admin.machine.users.createDescription,Maak een niet-menselijke identiteit voor een dienst of integratie. Het clientgeheim wordt eenmalig getoond.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Niet-menselijke identiteiten die zich in dit re
 admin.machine.users.detailTitle,Machinegebruikersdetails
 admin.machine.users.displayName,Weergavenaam
 admin.machine.users.empty,Er bestaat nog geen machinegebruiker in dit realm.
+admin.machine.users.identifier,Machinegebruikers-ID
 admin.machine.users.invalid,Voer een weergavenaam en een gebruikersnaam in en gebruik alleen geldige scopewaarden.
 admin.machine.users.lifecycleChanged,De status van de machinegebruiker is gewijzigd.
 admin.machine.users.missingId,Er moet een machinegebruiker zijn geselecteerd voor deze bestemming.

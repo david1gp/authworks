@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,打开邀请
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,无法加载头像
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,停用后所有凭据都无法再进行身�
 admin.machine.lifecycle.remove,删除机器用户
 admin.machine.lifecycle.removeConfirm,移除此机器用户？其拥有的所有凭据将立即失效且无法恢复。
 admin.machine.lifecycle.title,生命周期
-admin.machine.pageNext,下一页
-admin.machine.pagePrevious,上一页
 admin.machine.permissionDenied,您没有权限查看或更改此 realm 中的机器用户。
 admin.machine.permissionDeniedTitle,无法访问
 admin.machine.secret.acknowledge,我已保存该密钥
@@ -375,6 +375,9 @@ admin.machine.secret.title,客户端密钥
 admin.machine.secret.tokenTitle,新的个人访问令牌
 admin.machine.secret.value,密钥值
 admin.machine.status,状态
+admin.machine.statusValue.active,启用中
+admin.machine.statusValue.inactive,未激活
+admin.machine.statusValue.removed,已移除
 admin.machine.updated,最后更新
 admin.machine.users.create,创建机器用户
 admin.machine.users.createDescription,为服务或集成创建非人类身份。其客户端密钥仅显示一次。
@@ -384,6 +387,7 @@ admin.machine.users.description,在此 realm 中使用客户端凭据、令牌�
 admin.machine.users.detailTitle,机器用户详情
 admin.machine.users.displayName,显示名称
 admin.machine.users.empty,此 realm 中尚不存在机器用户。
+admin.machine.users.identifier,机器用户标识符
 admin.machine.users.invalid,请输入显示名称和用户名，并且仅使用有效的作用域值。
 admin.machine.users.lifecycleChanged,机器用户的状态已更改。
 admin.machine.users.missingId,此目的地必须选择机器用户。

@@ -27,6 +27,7 @@ account.access.invitationDescription,Prüfen Sie Organisation und Rollen vor Ihr
 account.access.invitationEmpty,Für dieses Konto liegen keine Einladungen vor.
 account.access.invitationFor,Einladung für {email}
 account.access.invitationMissing,Öffnen Sie den vollständigen Einladungslink.
+account.access.invitationOpen,Einladung öffnen
 account.access.invitationReplay,Diese Einladung wurde bereits verwendet oder ist nicht mehr verfügbar.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,Profilbild konnte nicht geladen werden
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Bevorzugte Sprache
 account.profile.save,Änderungen speichern
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,Durch die Deaktivierung können sich keine A
 admin.machine.lifecycle.remove,Maschinenbenutzer entfernen
 admin.machine.lifecycle.removeConfirm,Diesen Maschinenbenutzer entfernen? Alle seine Berechtigungen funktionieren sofort nicht mehr und können nicht wiederhergestellt werden.
 admin.machine.lifecycle.title,Lebenszyklus
-admin.machine.pageNext,Nächste Seite
-admin.machine.pagePrevious,Vorherige Seite
 admin.machine.permissionDenied,"Sie haben keine Berechtigung, Maschinenbenutzer in diesem Realm anzusehen oder zu ändern."
 admin.machine.permissionDeniedTitle,Zugriff nicht verfügbar
 admin.machine.secret.acknowledge,Ich habe das Secret gespeichert
@@ -375,6 +375,9 @@ admin.machine.secret.title,Client-Secret
 admin.machine.secret.tokenTitle,Neues persönliches Zugriffstoken
 admin.machine.secret.value,Secret-Wert
 admin.machine.status,Status
+admin.machine.statusValue.active,Aktiv
+admin.machine.statusValue.inactive,Inaktiv
+admin.machine.statusValue.removed,Entfernt
 admin.machine.updated,Zuletzt aktualisiert
 admin.machine.users.create,Maschinenbenutzer erstellen
 admin.machine.users.createDescription,Erstellen Sie eine nicht-menschliche Identität für einen Dienst oder eine Integration. Ihr Client-Secret wird einmalig angezeigt.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Nicht-menschliche Identitäten, die sich in die
 admin.machine.users.detailTitle,Maschinenbenutzerdetails
 admin.machine.users.displayName,Anzeigename
 admin.machine.users.empty,In diesem Realm existiert noch kein Maschinenbenutzer.
+admin.machine.users.identifier,Maschinenbenutzer-Kennung
 admin.machine.users.invalid,Geben Sie einen Anzeigenamen und einen Benutzernamen ein und verwenden Sie nur gültige Scope-Werte.
 admin.machine.users.lifecycleChanged,Der Status des Maschinenbenutzers wurde geändert.
 admin.machine.users.missingId,Für dieses Ziel muss ein Maschinenbenutzer ausgewählt sein.

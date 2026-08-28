@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,Открыть приглашение
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,Не удалось загрузить фото профиля
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,Деактивация лишает все �
 admin.machine.lifecycle.remove,Удалить машинного пользователя
 admin.machine.lifecycle.removeConfirm,Удалить этого машинного пользователя? Все его учётные данные сразу перестанут работать и не могут быть восстановлены.
 admin.machine.lifecycle.title,Жизненный цикл
-admin.machine.pageNext,Следующая страница
-admin.machine.pagePrevious,Предыдущая страница
 admin.machine.permissionDenied,У вас нет разрешения просматривать или изменять машинных пользователей в этом realm.
 admin.machine.permissionDeniedTitle,Доступ недоступен
 admin.machine.secret.acknowledge,Я сохранил секрет
@@ -375,6 +375,9 @@ admin.machine.secret.title,Секрет клиента
 admin.machine.secret.tokenTitle,Новый персональный токен доступа
 admin.machine.secret.value,Значение секрета
 admin.machine.status,Статус
+admin.machine.statusValue.active,Активен
+admin.machine.statusValue.inactive,Неактивен
+admin.machine.statusValue.removed,Удалён
 admin.machine.updated,Последнее обновление
 admin.machine.users.create,Создать машинного пользователя
 admin.machine.users.createDescription,Создайте нечеловеческую личность для службы или интеграции. Её секрет клиента показывается один раз.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Нечеловеческие личности, 
 admin.machine.users.detailTitle,Сведения о машинном пользователе
 admin.machine.users.displayName,Отображаемое имя
 admin.machine.users.empty,В этом realm пока нет машинных пользователей.
+admin.machine.users.identifier,Идентификатор машинного пользователя
 admin.machine.users.invalid,Введите отображаемое имя и имя пользователя и используйте только допустимые значения областей.
 admin.machine.users.lifecycleChanged,Статус машинного пользователя изменён.
 admin.machine.users.missingId,Для этого раздела необходимо выбрать машинного пользователя.

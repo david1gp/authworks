@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,Ouvrir l'invitation
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,Impossible de charger la photo de profil
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,La désactivation empêche tout identifiant 
 admin.machine.lifecycle.remove,Supprimer l'utilisateur machine
 admin.machine.lifecycle.removeConfirm,Supprimer cet utilisateur machine ? Tous ses identifiants cessent immédiatement de fonctionner et ne peuvent pas être restaurés.
 admin.machine.lifecycle.title,Cycle de vie
-admin.machine.pageNext,Page suivante
-admin.machine.pagePrevious,Page précédente
 admin.machine.permissionDenied,Vous n'avez pas l'autorisation de consulter ou de modifier les utilisateurs machine de ce realm.
 admin.machine.permissionDeniedTitle,Accès indisponible
 admin.machine.secret.acknowledge,J'ai enregistré le secret
@@ -375,6 +375,9 @@ admin.machine.secret.title,Secret client
 admin.machine.secret.tokenTitle,Nouveau jeton d'accès personnel
 admin.machine.secret.value,Valeur du secret
 admin.machine.status,Statut
+admin.machine.statusValue.active,Actif
+admin.machine.statusValue.inactive,Inactif
+admin.machine.statusValue.removed,Supprimé
 admin.machine.updated,Dernière mise à jour
 admin.machine.users.create,Créer un utilisateur machine
 admin.machine.users.createDescription,Créez une identité non humaine pour un service ou une intégration. Son secret client est affiché une seule fois.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Identités non humaines qui s'authentifient ave
 admin.machine.users.detailTitle,Détail de l'utilisateur machine
 admin.machine.users.displayName,Nom affiché
 admin.machine.users.empty,Aucun utilisateur machine n'existe encore dans ce realm.
+admin.machine.users.identifier,Identifiant de l'utilisateur machine
 admin.machine.users.invalid,"Saisissez un nom affiché et un nom d'utilisateur, et n'utilisez que des valeurs de portée valides."
 admin.machine.users.lifecycleChanged,Le statut de l'utilisateur machine a été modifié.
 admin.machine.users.missingId,Un utilisateur machine doit être sélectionné pour cette destination.

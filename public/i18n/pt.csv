@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,Abrir convite
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,Não foi possível carregar a foto do perfil
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,A desativação impede que qualquer credenci
 admin.machine.lifecycle.remove,Remover utilizador de máquina
 admin.machine.lifecycle.removeConfirm,Remover este utilizador de máquina? Todas as suas credenciais deixam de funcionar imediatamente e não podem ser restauradas.
 admin.machine.lifecycle.title,Ciclo de vida
-admin.machine.pageNext,Página seguinte
-admin.machine.pagePrevious,Página anterior
 admin.machine.permissionDenied,Não tem permissão para ver ou alterar utilizadores de máquina neste realm.
 admin.machine.permissionDeniedTitle,Acesso indisponível
 admin.machine.secret.acknowledge,Guardei o segredo
@@ -375,6 +375,9 @@ admin.machine.secret.title,Segredo do cliente
 admin.machine.secret.tokenTitle,Novo token de acesso pessoal
 admin.machine.secret.value,Valor do segredo
 admin.machine.status,Estado
+admin.machine.statusValue.active,Ativo
+admin.machine.statusValue.inactive,Inativo
+admin.machine.statusValue.removed,Removido
 admin.machine.updated,Última atualização
 admin.machine.users.create,Criar utilizador de máquina
 admin.machine.users.createDescription,Crie uma identidade não humana para um serviço ou integração. O seu segredo do cliente é mostrado uma única vez.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Identidades não humanas que se autenticam com 
 admin.machine.users.detailTitle,Detalhe do utilizador máquina
 admin.machine.users.displayName,Nome a apresentar
 admin.machine.users.empty,Ainda não existe nenhum utilizador de máquina neste realm.
+admin.machine.users.identifier,Identificador do utilizador de máquina
 admin.machine.users.invalid,Introduza um nome a apresentar e um nome de utilizador e utilize apenas valores de âmbito válidos.
 admin.machine.users.lifecycleChanged,O estado do utilizador de máquina foi alterado.
 admin.machine.users.missingId,Um utilizador de máquina tem de estar selecionado para este destino.

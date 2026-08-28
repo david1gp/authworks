@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,Apri l'invito
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,Impossibile caricare l'immagine del profilo
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,La disattivazione impedisce a ogni credenzia
 admin.machine.lifecycle.remove,Rimuovi utente macchina
 admin.machine.lifecycle.removeConfirm,Rimuovere questo utente macchina? Tutte le sue credenziali smettono immediatamente di funzionare e non possono essere ripristinate.
 admin.machine.lifecycle.title,Ciclo di vita
-admin.machine.pageNext,Pagina successiva
-admin.machine.pagePrevious,Pagina precedente
 admin.machine.permissionDenied,Non hai il permesso di visualizzare o modificare gli utenti macchina in questo realm.
 admin.machine.permissionDeniedTitle,Accesso non disponibile
 admin.machine.secret.acknowledge,Ho salvato il secret
@@ -375,6 +375,9 @@ admin.machine.secret.title,Secret del client
 admin.machine.secret.tokenTitle,Nuovo token di accesso personale
 admin.machine.secret.value,Valore del secret
 admin.machine.status,Stato
+admin.machine.statusValue.active,Attivo
+admin.machine.statusValue.inactive,Inattivo
+admin.machine.statusValue.removed,Rimosso
 admin.machine.updated,Ultimo aggiornamento
 admin.machine.users.create,Crea utente macchina
 admin.machine.users.createDescription,Crea un'identità non umana per un servizio o un'integrazione. Il suo secret del client viene mostrato una sola volta.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Identità non umane che si autenticano con cred
 admin.machine.users.detailTitle,Dettagli dell'utente macchina
 admin.machine.users.displayName,Nome visualizzato
 admin.machine.users.empty,In questo realm non esiste ancora alcun utente macchina.
+admin.machine.users.identifier,Identificativo dell'utente macchina
 admin.machine.users.invalid,Inserisci un nome visualizzato e un nome utente e usa solo valori di ambito validi.
 admin.machine.users.lifecycleChanged,Lo stato dell'utente macchina è stato modificato.
 admin.machine.users.missingId,Per questa destinazione deve essere selezionato un utente macchina.

@@ -27,6 +27,7 @@ account.access.invitationDescription,Review the organization and roles before yo
 account.access.invitationEmpty,There are no pending invitations for this account.
 account.access.invitationFor,Invitation for {email}
 account.access.invitationMissing,Open the complete invitation link to continue.
+account.access.invitationOpen,Daveti aç
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,Profil resmi yüklenemedi
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
 account.profile.save,Save changes
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,Devre dışı bırakmak tüm kimlik bilgiler
 admin.machine.lifecycle.remove,Makine kullanıcısını kaldır
 admin.machine.lifecycle.removeConfirm,Bu makine kullanıcısı kaldırılsın mı? Sahip olduğu tüm kimlik bilgileri anında çalışmayı durdurur ve geri yüklenemez.
 admin.machine.lifecycle.title,Yaşam döngüsü
-admin.machine.pageNext,Sonraki sayfa
-admin.machine.pagePrevious,Önceki sayfa
 admin.machine.permissionDenied,Bu realm'deki makine kullanıcılarını görüntüleme veya değiştirme izniniz yok.
 admin.machine.permissionDeniedTitle,Erişim kullanılamıyor
 admin.machine.secret.acknowledge,Parolayı sakladım
@@ -375,6 +375,9 @@ admin.machine.secret.title,İstemci parolası
 admin.machine.secret.tokenTitle,Yeni kişisel erişim belirteci
 admin.machine.secret.value,Parola değeri
 admin.machine.status,Durum
+admin.machine.statusValue.active,Etkin
+admin.machine.statusValue.inactive,Etkin değil
+admin.machine.statusValue.removed,Kaldırıldı
 admin.machine.updated,Son güncelleme
 admin.machine.users.create,Makine kullanıcısı oluştur
 admin.machine.users.createDescription,Bir hizmet veya entegrasyon için insan olmayan bir kimlik oluşturun. İstemci parolası yalnızca bir kez gösterilir.
@@ -384,6 +387,7 @@ admin.machine.users.description,"Bu realm'de istemci kimlik bilgileri, belirteç
 admin.machine.users.detailTitle,Makine kullanıcısı ayrıntısı
 admin.machine.users.displayName,Görünen ad
 admin.machine.users.empty,Bu realm'de henüz makine kullanıcısı yok.
+admin.machine.users.identifier,Makine kullanıcısı tanımlayıcısı
 admin.machine.users.invalid,Bir görünen ad ve bir kullanıcı adı girin ve yalnızca geçerli kapsam değerleri kullanın.
 admin.machine.users.lifecycleChanged,Makine kullanıcısının durumu değiştirildi.
 admin.machine.users.missingId,Bu hedef için bir makine kullanıcısı seçilmiş olmalıdır.

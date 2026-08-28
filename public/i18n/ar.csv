@@ -27,6 +27,7 @@ account.access.invitationDescription,راجع المنظمة والأدوار ق
 account.access.invitationEmpty,لا توجد دعوات معلقة لهذا الحساب.
 account.access.invitationFor,دعوة إلى {email}
 account.access.invitationMissing,افتح رابط الدعوة الكامل للمتابعة.
+account.access.invitationOpen,فتح الدعوة
 account.access.invitationReplay,تم استخدام هذه الدعوة بالفعل أو لم تعد متاحة.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
@@ -162,6 +163,7 @@ account.profile.pictureRemove,Remove picture
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
+account.profile.pictureUnavailable,تعذر تحميل صورة الملف الشخصي
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,اللغة المفضلة
 account.profile.save,حفظ التغييرات
@@ -354,8 +356,6 @@ admin.machine.lifecycle.description,يمنع التعطيل جميع بيانا�
 admin.machine.lifecycle.remove,إزالة مستخدم الجهاز
 admin.machine.lifecycle.removeConfirm,هل تريد إزالة هذا المستخدم الآلي؟ ستتوقف جميع بيانات اعتماده عن العمل فوراً ولا يمكن استعادتها.
 admin.machine.lifecycle.title,دورة الحياة
-admin.machine.pageNext,الصفحة التالية
-admin.machine.pagePrevious,الصفحة السابقة
 admin.machine.permissionDenied,ليس لديك إذن لعرض مستخدمي الأجهزة في هذا النطاق أو تغييرهم.
 admin.machine.permissionDeniedTitle,الوصول غير متاح
 admin.machine.secret.acknowledge,لقد حفظت السر
@@ -375,6 +375,9 @@ admin.machine.secret.title,سر العميل
 admin.machine.secret.tokenTitle,رمز وصول شخصي جديد
 admin.machine.secret.value,قيمة السر
 admin.machine.status,الحالة
+admin.machine.statusValue.active,نشط
+admin.machine.statusValue.inactive,غير نشط
+admin.machine.statusValue.removed,مُزال
 admin.machine.updated,آخر تحديث
 admin.machine.users.create,إنشاء مستخدم جهاز
 admin.machine.users.createDescription,أنشئ هوية غير بشرية لخدمة أو تكامل. يظهر سر العميل الخاص بها مرة واحدة فقط.
@@ -384,6 +387,7 @@ admin.machine.users.description,هويات غير بشرية تُصادق في �
 admin.machine.users.detailTitle,تفاصيل مستخدم الآلة
 admin.machine.users.displayName,الاسم المعروض
 admin.machine.users.empty,لا يوجد بعد أي مستخدم جهاز في هذا النطاق.
+admin.machine.users.identifier,معرّف مستخدم الجهاز
 admin.machine.users.invalid,أدخل اسم عرض واسم مستخدم، واستخدم قيم نطاقات صالحة فقط.
 admin.machine.users.lifecycleChanged,تم تغيير حالة مستخدم الجهاز.
 admin.machine.users.missingId,يجب اختيار مستخدم آلي لهذه الوجهة.
