@@ -61,8 +61,9 @@ test("a reasoned impersonation exposes its outcome, audit events, and end action
     .first()
   await expect(auditLink).toHaveAttribute("href", `/demo/admin/events?q=${sessionId}`)
   await auditLink.click()
-  await expect(page.getByText("impersonation.started", { exact: true })).toBeVisible()
-  await expect(page.getByText("impersonation.ended", { exact: true })).toBeVisible()
+  // Events render as a table on desktop and as a stacked record list on mobile; assert the visible one.
+  await expect(page.getByRole("cell", { name: "impersonation.started", exact: true })).toBeVisible()
+  await expect(page.getByRole("cell", { name: "impersonation.ended", exact: true })).toBeVisible()
 
   await page.goto("/demo/admin/impersonation?state=active")
   const endButton = page.locator("[data-impersonation-banner]").getByRole("button", { name: "End impersonation" })

@@ -235,7 +235,8 @@ test("task 17 composed production account increment consumes captured links and 
     await page.goto("/account/organizations")
     await page.reload()
     await expect(page.getByRole("heading", { name: fixture.organization.name, exact: true })).toBeVisible()
-    const secondaryOrganization = page.locator("article").filter({ hasText: fixture.secondaryOrganization.name })
+    // The redesigned access pages present each record as a list item rather than a standalone card.
+    const secondaryOrganization = page.locator("li").filter({ hasText: fixture.secondaryOrganization.name })
     await expect(secondaryOrganization).toBeVisible()
     const organizationSwitchResponsePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/me/organizations/switch"),
@@ -250,7 +251,7 @@ test("task 17 composed production account increment consumes captured links and 
     await page.goto("/account/sessions")
     await page.reload()
     const revocableSession = page
-      .locator("article")
+      .locator("li")
       .filter({ has: page.getByRole("button", { name: "Revoke session", exact: true }) })
       .first()
     await expect(revocableSession).toBeVisible()

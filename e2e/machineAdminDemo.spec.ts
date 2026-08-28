@@ -6,14 +6,15 @@ const detailBase = `/demo/admin/machine-users/${machineUserId}`
 test("the machine user directory lists fixtures and creates a service identity offline", async ({ page }) => {
   await page.goto("/demo/admin/machine-users")
 
-  await expect(page.getByRole("heading", { name: "Machine users", exact: true })).toBeVisible()
-  await expect(page.getByText("Billing Sync Service", { exact: true })).toBeVisible()
-  await expect(page.getByText("Nightly Report Exporter", { exact: true })).toBeVisible()
-  await expect(page.getByText("Legacy Provisioning Agent", { exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Machine user directory", exact: true })).toBeVisible()
+  // Machine users render as a wide table on desktop and as a stacked record list on mobile; assert the visible one.
+  await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Nightly Report Exporter", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Legacy Provisioning Agent", { exact: true })).toBeVisible()
 
   await page.getByLabel("Search machine users", { exact: true }).fill("report")
   await expect(page).toHaveURL(/q=report/)
-  await expect(page.getByText("Billing Sync Service", { exact: true })).toHaveCount(0)
+  await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toHaveCount(0)
 
   await page.getByLabel("Search machine users", { exact: true }).fill("")
   await page.getByRole("button", { name: "Create machine user", exact: true }).click()
@@ -24,7 +25,7 @@ test("the machine user directory lists fixtures and creates a service identity o
   await dialog.getByLabel("Scopes", { exact: true }).fill("reports.read")
   await dialog.getByRole("button", { name: "Save", exact: true }).click()
 
-  await expect(page.getByText("E2E Service", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("E2E Service", { exact: true })).toBeVisible()
   await expect(page).not.toHaveURL(/dialog=/)
 })
 
@@ -52,6 +53,46 @@ test("creating a machine user shows the client credentials once and gates acknow
   await expect(panel).toHaveCount(0)
   // The issued value is not recoverable: it never reappears after acknowledgement.
   await expect(page.locator("[data-secret-value]")).toHaveCount(0)
+})
+
+test("a machine user created in the directory opens on its generated detail route", async ({ page }) => {
+  await page.goto("/demo/admin/machine-users")
+
+  await page.getByRole("button", { name: "Create machine user", exact: true }).click()
+  const dialog = page.getByRole("dialog")
+  await dialog.getByLabel("Display name", { exact: true }).fill("Routed Service")
+  await dialog.getByLabel("User name", { exact: true }).fill("routed-service")
+  await dialog.getByRole("button", { name: "Save", exact: true }).click()
+
+  const panel = page.locator("[data-one-time-secret='machine-credential']")
+  await panel.getByRole("button", { name: "Copy secret", exact: true }).click()
+  await panel.getByRole("button", { name: "I have stored the secret", exact: true }).click()
+
+  // The generated identifier must resolve: the directory and the detail route share one demo state.
+  await page.getByRole("table").getByRole("button", { name: "Routed Service", exact: true }).click()
+  await expect(page.getByRole("heading", { name: "Routed Service", exact: true })).toBeVisible()
+  await expect(page.locator("[data-content-state='error']")).toHaveCount(0)
+  await expect(page.getByText("routed-service", { exact: true }).first()).toBeVisible()
+})
+
+test("issuing a credential from the overview presents the value, copy, and acknowledgement", async ({ page }) => {
+  await page.goto("/demo/admin/machine-credentials")
+
+  await page.getByRole("button", { name: "Issue credential", exact: true }).click()
+  const dialog = page.getByRole("dialog")
+  await dialog.getByLabel("Name", { exact: true }).fill("Overview Token")
+  await dialog.getByRole("button", { name: "Issue credential", exact: true }).click()
+
+  // Closing the issue dialog only changes the URL, so it must not discard the one-time value.
+  await expect(page).not.toHaveURL(/dialog=/)
+  const panel = page.locator("[data-one-time-secret='machine-credential']")
+  await expect(panel).toBeVisible()
+  await expect(panel.locator("[data-secret-value]")).toContainText("demo-secret-")
+  await expect(panel.getByRole("button", { name: "I have stored the secret", exact: true })).toBeDisabled()
+
+  await panel.getByRole("button", { name: "Copy secret", exact: true }).click()
+  await panel.getByRole("button", { name: "I have stored the secret", exact: true }).click()
+  await expect(panel).toHaveCount(0)
 })
 
 test("the machine user detail keeps the stored client secret redacted until rotation", async ({ page }) => {
@@ -212,20 +253,20 @@ test("removing a machine user returns to the directory", async ({ page }) => {
   await confirmation.getByRole("button", { name: "Continue", exact: true }).click()
 
   await expect(page).toHaveURL(/\/demo\/admin\/machine-users$/)
-  await expect(page.getByRole("heading", { name: "Machine users", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Machine user directory", exact: true })).toBeVisible()
 })
 
 test("the credential overview scopes the list to a selected machine user", async ({ page }) => {
   await page.goto("/demo/admin/machine-credentials")
 
-  await expect(page.getByRole("heading", { name: "Credentials and tokens", exact: true })).toBeVisible()
-  await expect(page.getByText("Deployment pipeline token", { exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Credentials and tokens", exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Deployment pipeline token", { exact: true })).toBeVisible()
 
   await page.getByLabel("Machine user", { exact: true }).selectOption({ label: "Nightly Report Exporter" })
   await expect(page).toHaveURL(/machineUserId=/)
 
   // Only the selected subject's credentials remain listed.
-  await expect(page.getByText("Deployment pipeline token", { exact: true })).toHaveCount(0)
+  await expect(page.getByRole("table").getByText("Deployment pipeline token", { exact: true })).toHaveCount(0)
 })
 
 test("the one-time demo state renders an already issued secret directly from the URL", async ({ page }) => {

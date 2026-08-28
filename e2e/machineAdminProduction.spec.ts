@@ -46,8 +46,9 @@ test("the production machine user list reads the realm-scoped tenant API", async
 
   await page.goto("/admin/machine-users")
 
-  await expect(page.getByText("Billing Sync Service", { exact: true })).toBeVisible()
-  await expect(page.getByText("billing-sync", { exact: true })).toBeVisible()
+  // Machine users render as a wide table on desktop and as a stacked record list on mobile.
+  await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("billing-sync", { exact: true })).toBeVisible()
   expect(requested).toContain(`/realms/${realmId}/machine-users`)
   // The browser must never reach the operator-only system surface.
   expect(requested.every((pathname) => !pathname.startsWith("/system/"))).toBe(true)
@@ -74,7 +75,7 @@ test("creating a machine user sends a CSRF-protected mutation and shows the cred
   })
 
   await page.goto("/admin/machine-users")
-  await expect(page.getByText("Billing Sync Service", { exact: true })).toBeVisible()
+  await expect(page.getByRole("table").getByText("Billing Sync Service", { exact: true })).toBeVisible()
 
   await page.getByRole("button", { name: "Create machine user", exact: true }).click()
   const dialog = page.getByRole("dialog")

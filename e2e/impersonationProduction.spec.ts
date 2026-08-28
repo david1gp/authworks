@@ -113,7 +113,8 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     const auditContextPage = await auxiliaryPageCreate(browser, fixture, auxiliaryContexts, responseBodies, requestUrls)
     await adminSignIn(auditContextPage, fixture.bootstrapAdmin.secret)
     await auditContextPage.goto(`/admin/events?q=${encodeURIComponent(impersonationSessionId)}`)
-    await expect(auditContextPage.getByText("impersonation.started", { exact: true })).toBeVisible()
+    // Events render as a table on desktop and as a stacked record list on mobile; assert the visible one.
+    await expect(auditContextPage.getByRole("cell", { name: "impersonation.started", exact: true })).toBeVisible()
     await auditContextPage.getByRole("button", { name: "Show payload", exact: true }).first().click()
     await expect(auditContextPage.locator("body")).toContainText("Ticket IMP-17: investigate the support report.")
 
@@ -155,8 +156,8 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     expect(endedSession.status).toBe(401)
 
     await auditContextPage.reload()
-    await expect(auditContextPage.getByText("impersonation.started", { exact: true })).toBeVisible()
-    await expect(auditContextPage.getByText("impersonation.ended", { exact: true })).toBeVisible()
+    await expect(auditContextPage.getByRole("cell", { name: "impersonation.started", exact: true })).toBeVisible()
+    await expect(auditContextPage.getByRole("cell", { name: "impersonation.ended", exact: true })).toBeVisible()
 
     await auditContextPage.goto(`/admin/impersonation?userId=${fixture.administrator.id}`)
     await auditContextPage.getByLabel("Reason", { exact: true }).fill("Ticket IMP-17: verify automatic expiry.")

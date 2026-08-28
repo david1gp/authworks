@@ -35,9 +35,19 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
 
   await page.goto("/demo/account/profile")
   await expect(page.getByRole("heading", { name: "Personal information" })).toBeVisible()
+
+  // The fixture avatar host never resolves, so the surface degrades to a labelled placeholder
+  // instead of leaving a broken image on the page.
+  await expect(page.getByRole("img", { name: "Profile picture could not be loaded" })).toBeVisible()
+  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveCount(0)
+
   await page.getByLabel("Display name", { exact: true }).fill("Avery Example")
-  await page.getByRole("button", { name: "Unspecified", exact: true }).click()
+  const genderTrigger = page.getByRole("button", { name: "Unspecified", exact: true })
+  // A closed select must not reference a listbox id that is absent from the document.
+  await expect(genderTrigger).not.toHaveAttribute("aria-controls", /.+/)
+  await genderTrigger.click()
   await page.getByRole("option", { name: "Woman", exact: true }).click()
+  await expect(page.getByRole("button", { name: "Woman", exact: true })).not.toHaveAttribute("aria-controls", /.+/)
   await expect(
     page.getByText(
       "Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.",
@@ -65,12 +75,10 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
     accountPictureFileFixture({ bytes: 4096, mimeType: "image/png", name: "avery-example.png" }),
   )
   await expect(page.getByText("Profile picture updated.")).toBeVisible()
-  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveAttribute(
-    "src",
-    "https://assets.example.com/user-pictures/avery.stone_demo.png",
-  )
+  // The replacement URL is attempted again rather than inheriting the previous load failure.
+  await expect(page.getByRole("img", { name: "Profile picture could not be loaded" })).toBeVisible()
   await page.getByRole("button", { name: "Remove picture" }).click()
-  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveCount(0)
+  await expect(page.getByRole("img", { name: "Profile picture could not be loaded" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Remove picture" })).toHaveCount(0)
 
   await page.goto("/demo/account/password")
@@ -131,6 +139,9 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
     }
     await route.fulfill({ json: { capabilities: { realmRead: true }, user: currentUser } })
   })
+
+  // The hosted avatar is served so the reachable path is asserted rather than the fallback.
+  await pictureAssetHostInstall(page)
 
   await page.goto("/account/profile")
   await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("Avery Stone")
@@ -483,6 +494,17 @@ test("production password presents an API rejection", async ({ page }) => {
   await page.getByRole("button", { name: "Change password" }).click()
   await expect(page.getByText("The current password is incorrect.")).toBeVisible()
 })
+
+const pictureAssetBody = Buffer.from(
+  "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='#0f172a'/></svg>",
+)
+
+/** Serves the fixture avatar host so a reachable picture renders instead of the fallback. */
+async function pictureAssetHostInstall(page: Page) {
+  await page.route("https://assets.example.com/**", (route) =>
+    route.fulfill({ body: pictureAssetBody, contentType: "image/svg+xml" }),
+  )
+}
 
 async function accountApiRoutesInstall(page: Page, accountRoute: (route: Route, method: string) => Promise<void>) {
   await page.route(`**/realms/${realmId}/**`, async (route) => {

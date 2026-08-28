@@ -90,29 +90,44 @@ test.describe("task 19 administration browser fixes", () => {
     await page.setViewportSize({ height: 844, width: 390 })
     await page.goto("/demo/admin/oidc-clients")
 
-    const redirectCell = page.getByRole("cell", { name: /https:\/\/portal\.acme\.example\/callback/ }).first()
-    await expect(redirectCell).toBeVisible()
-    expect(await contentClips(redirectCell)).toBe(false)
-    await expect(page.getByRole("table", { name: "OpenID Connect clients" })).toHaveAttribute("tabindex", "0")
+    // Below `md` the dense table is replaced by a stacked record list, so redirect URIs wrap in full
+    // rather than truncating inside a column.
+    const clientList = page.getByRole("list", { name: "OpenID Connect clients" })
+    await expect(clientList).toBeVisible()
+    const redirectUri = clientList.getByText("https://portal.acme.example/callback", { exact: true }).first()
+    await expect(redirectUri).toBeVisible()
+    expect(await contentClips(redirectUri)).toBe(false)
 
     await page.goto(`/demo/admin/oidc-clients/${oidcClientId}`)
     expect(await contentClips(page.getByLabel("Redirect URIs", { exact: true }))).toBe(false)
     expect(await contentClips(page.getByText("offline_access", { exact: true }))).toBe(false)
   })
 
-  test("mobile machine-user tables expose complete scope content", async ({ page }) => {
+  test("mobile machine-user records expose complete scope content", async ({ page }) => {
     await page.setViewportSize({ height: 844, width: 390 })
     await page.goto("/demo/admin/machine-users")
 
-    const userScopes = page.getByRole("cell", { name: "billing.read, billing.write", exact: true })
+    // Below `md` the dense table is replaced by a stacked record list, so scopes stay unclipped.
+    const directoryList = page.getByRole("list", { name: "Machine users" })
+    await expect(directoryList).toBeVisible()
+    const userScopes = directoryList.getByText("billing.read, billing.write", { exact: true }).first()
     await expect(userScopes).toBeVisible()
     expect(await contentClips(userScopes)).toBe(false)
+
+    await page.goto(`/demo/admin/machine-users/${machineUserId}`)
+    const credentialList = page.getByRole("list", { name: "Credentials and tokens" })
+    await expect(credentialList).toBeVisible()
+    const credentialScopes = credentialList.getByText("billing.read, billing.write", { exact: true }).first()
+    await expect(credentialScopes).toBeVisible()
+    expect(await contentClips(credentialScopes)).toBe(false)
+  })
+
+  test("desktop machine-user tables stay keyboard reachable", async ({ page }) => {
+    await page.setViewportSize({ height: 900, width: 1440 })
+    await page.goto("/demo/admin/machine-users")
     await expect(page.getByRole("table", { name: "Machine users" })).toHaveAttribute("tabindex", "0")
 
     await page.goto(`/demo/admin/machine-users/${machineUserId}`)
-    const credentialScopes = page.getByRole("cell", { name: "billing.read, billing.write", exact: true }).first()
-    await expect(credentialScopes).toBeVisible()
-    expect(await contentClips(credentialScopes)).toBe(false)
     await expect(page.getByRole("table", { name: "Credentials and tokens" })).toHaveAttribute("tabindex", "0")
   })
 

@@ -32,6 +32,13 @@ test("organization, invitation, and consent demos are interactive and network-fr
   await page.getByRole("button", { name: "Revoke" }).first().click()
   await expect(page.getByRole("status")).toContainText("revoked")
 
+  // The overview must lead to the accept destination instead of only describing a missing link.
+  await page.goto("/demo/invitations")
+  await expect(page.getByText("Open the complete invitation link to continue.")).toHaveCount(0)
+  await page.getByRole("link", { name: "Open invitation", exact: true }).click()
+  await expect(page).toHaveURL(/\/demo\/invitations\/accept$/)
+  await expect(page.getByRole("button", { name: "Continue" })).toBeVisible()
+
   await page.goto("/demo/invitations/accept?state=expired")
   await expect(page.getByText("This invitation has expired.")).toBeVisible()
   await page.goto("/demo/invitations/accept?state=success")
