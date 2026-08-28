@@ -1,36 +1,30 @@
-import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
-import { mdiAccountEditOutline } from "@adaptive-ds/mdi/mdiAccountEditOutline.js"
-import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
-import { mdiCameraOutline } from "@adaptive-ds/mdi/mdiCameraOutline.js"
-import { mdiCellphone } from "@adaptive-ds/mdi/mdiCellphone.js"
-import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
-import { mdiClockOutline } from "@adaptive-ds/mdi/mdiClockOutline.js"
-import { mdiGenderFemale } from "@adaptive-ds/mdi/mdiGenderFemale.js"
-import { mdiGenderMale } from "@adaptive-ds/mdi/mdiGenderMale.js"
-import { mdiGenderNonBinary } from "@adaptive-ds/mdi/mdiGenderNonBinary.js"
-import { mdiHelpCircleOutline } from "@adaptive-ds/mdi/mdiHelpCircleOutline.js"
-import { mdiShieldAccountOutline } from "@adaptive-ds/mdi/mdiShieldAccountOutline.js"
-import { mdiTrashCanOutline } from "@adaptive-ds/mdi/mdiTrashCanOutline.js"
-import { mdiUploadOutline } from "@adaptive-ds/mdi/mdiUploadOutline.js"
-import type { JSX } from "solid-js"
 import { Show } from "solid-js"
+import { Input } from "#ui/input/input/Input.jsx"
+import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingle } from "#ui/input/select/SelectSingle.jsx"
-import type { SelectSingleEntry } from "#ui/input/select/SelectSingleEntry.js"
 import { selectSingleTextDefault } from "#ui/input/select/SelectSingleTexts.js"
 import { Button } from "#ui/interactive/button/Button.jsx"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
+import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { authenticatedSelectStateCreate } from "../../../ui/authenticated/authenticatedSelectStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
-import { userPictureConstraints } from "../../users/public/userPictureConstraints.js"
 import { AccountEmailAddressView } from "./AccountEmailAddressView.js"
+import { AccountProfileIdentityStrip } from "./AccountProfileIdentityStrip.js"
+import { AccountProfilePhoneSection } from "./AccountProfilePhoneSection.js"
+import { AccountProfilePictureField } from "./AccountProfilePictureField.js"
+import { AccountStateBoundary } from "./AccountStateBoundary.js"
+import { accountGenderItemRender } from "./accountGenderItemRender.js"
+import { accountGenderOptionsGet } from "./accountGenderOptionsGet.js"
+import { accountGenderValueText } from "./accountGenderValueText.js"
+import { accountViewBoundaryStateGet } from "./accountViewBoundaryStateGet.js"
 import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
 import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
-
-const accountPictureAcceptAttribute = userPictureConstraints.contentTypes.join(",")
 
 type AccountProfileViewProps = {
   readonly displayName: string
@@ -91,112 +85,16 @@ type AccountProfileViewProps = {
 }
 
 export function AccountProfileView(props: AccountProfileViewProps) {
+  const genderSelect = authenticatedSelectStateCreate()
+  const boundary = () => accountViewBoundaryStateGet(props.status, props.errorMessage)
   return (
-    <Show
-      when={props.status !== "loading" && props.status !== "error" && props.status !== "expired"}
-      fallback={
-        <ProductionStatePanel
-          detail={props.errorMessage}
-          onRetry={props.status === "error" ? props.onRetry : undefined}
-          state={props.status === "loading" ? "loading" : props.status === "expired" ? "inaccessible" : "error"}
-          title={props.status === "expired" ? messageTranslate("account.sessionExpired") : undefined}
-        />
-      }
+    <AccountStateBoundary
+      detail={boundary().detail}
+      onRetry={props.onRetry}
+      state={boundary().state}
+      title={boundary().title}
     >
-      <div class="grid max-w-4xl gap-6 sm:gap-8">
-        <Show when={props.kind !== "email"}>
-          {/* User overview hero card */}
-          <section class="overflow-hidden rounded-2xl border border-line bg-surface p-6 shadow-xs transition-colors sm:p-8">
-            <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex items-center gap-5">
-                <div class="relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-line bg-muted ring-2 ring-line/50 sm:size-20">
-                  <div class="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                    <Icon class="size-10" path={mdiAccountCircleOutline} />
-                  </div>
-                  <Show when={props.pictureUrl.length > 0}>
-                    <img
-                      aria-hidden="true"
-                      class="relative size-full object-cover"
-                      role="presentation"
-                      src={props.pictureUrl}
-                      onError={(event) => {
-                        event.currentTarget.style.display = "none"
-                      }}
-                    />
-                  </Show>
-                </div>
-                <div class="min-w-0">
-                  <h2 class="truncate text-xl font-bold tracking-tight sm:text-2xl">
-                    {props.displayName || props.userName || props.email}
-                  </h2>
-                  <p class="truncate text-sm text-muted-foreground">@{props.userName || props.email}</p>
-                  <div class="mt-2 flex flex-wrap items-center gap-2">
-                    <span
-                      class={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        props.emailVerified
-                          ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300"
-                          : "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
-                      }`}
-                    >
-                      <Icon class="size-3.5" path={props.emailVerified ? mdiCheckCircleOutline : mdiClockOutline} />
-                      {props.emailVerified
-                        ? messageTranslate("account.profile.verified")
-                        : messageTranslate("account.profile.verificationPending")}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Sign-in details */}
-          <section class="rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div class="flex items-center gap-2">
-                  <Icon class="size-5 text-accent" path={mdiShieldAccountOutline} />
-                  <h2 class="text-xl font-semibold tracking-tight">
-                    {props.kind === "email"
-                      ? messageTranslate("account.profile.emailTitle")
-                      : messageTranslate("account.profile.signInTitle")}
-                  </h2>
-                </div>
-                <p class="mt-1 text-sm text-muted-foreground">
-                  {props.kind === "email"
-                    ? messageTranslate("account.profile.emailDescription")
-                    : messageTranslate("account.profile.signInDescription")}
-                </p>
-              </div>
-              <span
-                class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                  props.emailVerified
-                    ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300"
-                    : "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
-                }`}
-              >
-                <Icon class="size-3.5" path={props.emailVerified ? mdiCheckCircleOutline : mdiClockOutline} />
-                {props.emailVerified
-                  ? messageTranslate("account.profile.verified")
-                  : messageTranslate("account.profile.verificationPending")}
-              </span>
-            </div>
-            <dl class="mt-6 grid gap-4 rounded-xl border border-line/70 bg-muted/40 p-4 sm:grid-cols-2">
-              <div class="rounded-lg bg-surface p-3.5 shadow-2xs">
-                <dt class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {messageTranslate("account.profile.userName")}
-                </dt>
-                <dd class="mt-1 break-all font-mono text-sm font-medium">{props.userName}</dd>
-              </div>
-              <div class="rounded-lg bg-surface p-3.5 shadow-2xs">
-                <dt class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {messageTranslate("account.profile.email")}
-                </dt>
-                <dd class="mt-1 break-all text-sm font-medium">{props.email}</dd>
-              </div>
-            </dl>
-          </section>
-        </Show>
-
+      <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
         <Show when={props.kind === "email"}>
           <AccountEmailAddressView
             actionId={props.emailActionId}
@@ -220,364 +118,157 @@ export function AccountProfileView(props: AccountProfileViewProps) {
         </Show>
 
         <Show when={props.kind !== "email"}>
-          {/* WhatsApp phone number section */}
-          <section class="rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8">
-            <div class="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div class="flex items-center gap-2">
-                  <Icon class="size-5 text-accent" path={mdiCellphone} />
-                  <h2 class="text-xl font-semibold tracking-tight">{messageTranslate("account.profile.phoneTitle")}</h2>
-                </div>
-                <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
-                  {messageTranslate("account.profile.phoneDescription")}
-                </p>
-              </div>
-              <Show when={props.phoneNumber}>
-                <span
-                  class={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                    props.phoneVerified
-                      ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      : "border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-300"
-                  }`}
-                >
-                  <Icon class="size-3.5" path={props.phoneVerified ? mdiCheckCircleOutline : mdiClockOutline} />
-                  {props.phoneVerified
-                    ? messageTranslate("account.profile.verified")
-                    : messageTranslate("account.profile.verificationPending")}
-                </span>
-              </Show>
-            </div>
-            <div class="mt-6 rounded-xl border border-line/70 bg-muted/40 p-4">
-              <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {messageTranslate("account.profile.phoneNumber")}
-              </p>
-              <p class="mt-1 break-all font-mono text-sm font-medium">
-                {props.phoneNumber ?? messageTranslate("account.profile.phoneNotAdded")}
-              </p>
-            </div>
-            <Show
-              when={props.phoneChallengeActive}
-              fallback={
-                <form class="mt-6 grid gap-4" onSubmit={props.onPhoneStart}>
-                  <label class="grid gap-2 text-sm font-medium">
-                    {props.phoneNumber
-                      ? messageTranslate("account.profile.phoneNew")
-                      : messageTranslate("account.profile.phoneNumber")}
-                    <input
-                      autocomplete="tel"
-                      class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-                      inputmode="tel"
-                      maxlength={16}
-                      placeholder={messageTranslate("account.profile.phonePlaceholder")}
-                      required
-                      type="tel"
-                      value={props.phoneCandidate}
-                      onInput={(event) => props.onPhoneInput(event.currentTarget.value)}
-                    />
-                    <span class="text-xs font-normal text-muted-foreground">
-                      {messageTranslate("account.profile.phoneHint")}
-                    </span>
-                  </label>
-                  <div class="flex justify-end">
-                    <Button disabled={props.phoneStatus === "sending"} type="submit" variant="filledBlue">
-                      {props.phoneStatus === "sending"
-                        ? messageTranslate("account.profile.phoneSending")
-                        : props.phoneNumber
-                          ? messageTranslate("account.profile.phoneChange")
-                          : messageTranslate("account.profile.phoneAdd")}
-                    </Button>
-                  </div>
-                </form>
+          <AccountProfileIdentityStrip
+            displayName={props.displayName}
+            email={props.email}
+            emailVerified={props.emailVerified}
+            pictureUrl={props.pictureUrl}
+            userName={props.userName}
+          />
+
+          {/* Sign-in identity and the phone factor are both short read-mostly panels, so they share a row. */}
+          <div class="grid min-w-0 gap-3 xl:grid-cols-2 [&>*]:min-w-0">
+            <AuthenticatedSection
+              actions={
+                <AuthenticatedStatus
+                  label={
+                    props.emailVerified
+                      ? messageTranslate("account.profile.verified")
+                      : messageTranslate("account.profile.verificationPending")
+                  }
+                  tone={props.emailVerified ? "success" : "warning"}
+                />
               }
+              description={messageTranslate("account.profile.signInDescription")}
+              padded
+              title={messageTranslate("account.profile.signInTitle")}
             >
-              <form
-                class="mt-6 grid gap-4 rounded-xl border border-accent/30 bg-accent/5 p-5"
-                onSubmit={props.onPhoneVerify}
-              >
-                <p class="text-sm font-medium text-foreground">
-                  {messageTranslate("account.profile.phoneCodeSent", { phoneNumber: props.phoneCandidate })}
-                </p>
-                <label class="grid gap-2 text-sm font-medium">
-                  {messageTranslate("account.profile.phoneCode")}
-                  <input
-                    autocomplete="one-time-code"
-                    class="rounded-xl border border-line bg-background px-3.5 py-2.5 font-mono text-base tracking-widest transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-                    inputmode="numeric"
-                    maxlength={6}
-                    pattern="[0-9]{6}"
-                    required
-                    value={props.phoneCode}
-                    onInput={(event) => props.onPhoneCodeInput(event.currentTarget.value)}
+              <AuthenticatedFieldList
+                fields={[
+                  { identifier: true, label: messageTranslate("account.profile.userName"), value: props.userName },
+                  { identifier: true, label: messageTranslate("account.profile.email"), value: props.email },
+                ]}
+              />
+            </AuthenticatedSection>
+
+            <AccountProfilePhoneSection
+              candidate={props.phoneCandidate}
+              challengeActive={props.phoneChallengeActive}
+              code={props.phoneCode}
+              errorMessage={props.phoneErrorMessage}
+              onCancel={props.onPhoneCancel}
+              onCodeInput={props.onPhoneCodeInput}
+              onInput={props.onPhoneInput}
+              onResend={props.onPhoneResend}
+              onStart={props.onPhoneStart}
+              onVerify={props.onPhoneVerify}
+              phoneNumber={props.phoneNumber}
+              status={props.phoneStatus}
+              validationMessage={props.phoneValidationMessage}
+              verified={props.phoneVerified}
+            />
+          </div>
+
+          <AuthenticatedSection
+            description={messageTranslate("account.profile.personalDescription")}
+            title={messageTranslate("account.profile.personalInformation")}
+          >
+            <form class="grid gap-2.5 px-3 py-3" onSubmit={props.onSubmit}>
+              <div class="grid min-w-0 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="grid min-w-0 gap-1 sm:col-span-2 lg:col-span-1">
+                  <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
+                  <Input
+                    id="account-display-name"
+                    maxlength={128}
+                    onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
+                    value={props.displayName}
                   />
-                </label>
-                <div class="flex flex-wrap justify-end gap-3 pt-2">
-                  <Button onClick={props.onPhoneCancel} type="button" variant="ghost">
-                    {messageTranslate("account.profile.phoneDifferent")}
-                  </Button>
-                  <Button
-                    disabled={props.phoneStatus === "sending" || props.phoneStatus === "verifying"}
-                    onClick={props.onPhoneResend}
-                    type="button"
-                    variant="outline"
-                  >
-                    {props.phoneStatus === "sending"
-                      ? messageTranslate("account.profile.phoneSending")
-                      : messageTranslate("account.profile.phoneResend")}
-                  </Button>
-                  <Button
-                    disabled={props.phoneStatus === "verifying" || props.phoneStatus === "sending"}
-                    type="submit"
-                    variant="filledBlue"
-                  >
-                    {props.phoneStatus === "verifying"
-                      ? messageTranslate("account.profile.phoneVerifying")
-                      : messageTranslate("account.profile.phoneVerify")}
-                  </Button>
                 </div>
-              </form>
-            </Show>
-            <Show when={props.phoneValidationMessage}>
-              {(message) => (
-                <div
-                  class="mt-4 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/5 p-3.5 text-sm text-danger"
-                  role="alert"
-                >
-                  <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
-                  <span>{message()}</span>
+                <div class="grid min-w-0 gap-1">
+                  <Label for="account-first-name">{messageTranslate("account.profile.firstName")}</Label>
+                  <Input
+                    id="account-first-name"
+                    maxlength={128}
+                    onInput={(event) => props.onFirstNameInput(event.currentTarget.value)}
+                    value={props.firstName}
+                  />
                 </div>
-              )}
-            </Show>
-            <Show when={props.phoneErrorMessage}>
-              {(message) => (
-                <div
-                  class="mt-4 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/5 p-3.5 text-sm text-danger"
-                  role="alert"
-                >
-                  <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
-                  <span>{message()}</span>
+                <div class="grid min-w-0 gap-1">
+                  <Label for="account-last-name">{messageTranslate("account.profile.lastName")}</Label>
+                  <Input
+                    id="account-last-name"
+                    maxlength={128}
+                    onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
+                    value={props.lastName}
+                  />
                 </div>
-              )}
-            </Show>
-            <Show when={props.phoneStatus === "success"}>
-              <div
-                class="mt-4 flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 p-3.5 text-sm font-medium text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-                role="status"
-              >
-                <Icon class="size-4 shrink-0" path={mdiCheckCircleOutline} />
-                <span>{messageTranslate("account.profile.phoneSaved")}</span>
+                {/* The gender select is wrapped so its trigger never keeps a dangling
+                    `aria-controls` reference while the vendored listbox is unmounted. */}
+                <div class="grid min-w-0 gap-1" ref={genderSelect.containerSet}>
+                  <Label>{messageTranslate("account.profile.gender")}</Label>
+                  <SelectSingle
+                    buttonProps={{
+                      class: "h-9 w-full justify-between",
+                      onOpenChange: genderSelect.openChange,
+                      variant: "outline",
+                    }}
+                    class="w-full"
+                    getOptions={() => accountGenderOptionsGet(props.genderSignal.get())}
+                    renderItem={accountGenderItemRender}
+                    texts={{
+                      ...selectSingleTextDefault,
+                      selectEntry: messageTranslate("account.profile.gender.unspecified"),
+                    }}
+                    valueSignal={props.genderSignal}
+                    valueText={accountGenderValueText}
+                  />
+                </div>
+                <div class="grid min-w-0 gap-1">
+                  <Label for="account-nick-name">{messageTranslate("account.profile.nickName")}</Label>
+                  <Input
+                    id="account-nick-name"
+                    maxlength={128}
+                    onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
+                    value={props.nickName}
+                  />
+                  <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.nickNameHint")}</p>
+                </div>
+                <div class="grid min-w-0 gap-1">
+                  <Label for="account-preferred-language">
+                    {messageTranslate("account.profile.preferredLanguage")}
+                  </Label>
+                  <Input
+                    id="account-preferred-language"
+                    maxlength={16}
+                    onInput={(event) => props.onPreferredLanguageInput(event.currentTarget.value)}
+                    value={props.preferredLanguage}
+                  />
+                </div>
               </div>
-            </Show>
-          </section>
 
-          {/* Personal information form */}
-          <form class="rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8" onSubmit={props.onSubmit}>
-            <div class="flex items-center gap-2">
-              <Icon class="size-5 text-accent" path={mdiAccountEditOutline} />
-              <h2 class="text-xl font-semibold tracking-tight">
-                {messageTranslate("account.profile.personalInformation")}
-              </h2>
-            </div>
-            <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {messageTranslate("account.profile.personalDescription")}
-            </p>
+              <AccountProfilePictureField
+                errorMessage={props.pictureErrorMessage}
+                onRemove={props.onPictureRemove}
+                onUpload={props.onPictureUpload}
+                status={props.pictureStatus}
+                url={props.pictureUrl}
+              />
 
-            <div class="mt-6 grid gap-5 sm:grid-cols-2">
-              <label class="grid gap-2 text-sm font-medium sm:col-span-2">
-                {messageTranslate("account.profile.displayName")}
-                <input
-                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-                  maxlength={128}
-                  value={props.displayName}
-                  onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
-                />
-              </label>
-              <label class="grid gap-2 text-sm font-medium">
-                {messageTranslate("account.profile.firstName")}
-                <input
-                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-                  maxlength={128}
-                  value={props.firstName}
-                  onInput={(event) => props.onFirstNameInput(event.currentTarget.value)}
-                />
-              </label>
-              <label class="grid gap-2 text-sm font-medium">
-                {messageTranslate("account.profile.lastName")}
-                <input
-                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-                  maxlength={128}
-                  value={props.lastName}
-                  onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
-                />
-              </label>
-              <div class="grid gap-2 text-sm font-medium">
-                <span>{messageTranslate("account.profile.gender")}</span>
-                <SelectSingle
-                  buttonProps={{ class: "w-full justify-between rounded-xl", variant: "outline" }}
-                  class="w-full"
-                  getOptions={() => accountGenderOptionsGet(props.genderSignal.get())}
-                  renderItem={accountGenderItemRender}
-                  valueSignal={props.genderSignal}
-                  valueText={accountGenderValueText}
-                  texts={{
-                    ...selectSingleTextDefault,
-                    selectEntry: messageTranslate("account.profile.gender.unspecified"),
-                  }}
-                />
+              <Show when={props.validationMessage}>
+                {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+              </Show>
+              <Show when={props.status === "success"}>
+                <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
+              </Show>
+              <div>
+                <Button size="sm" type="submit">
+                  {messageTranslate("account.profile.save")}
+                </Button>
               </div>
-              <label class="grid gap-2 text-sm font-medium">
-                {messageTranslate("account.profile.nickName")}
-                <input
-                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-                  maxlength={128}
-                  value={props.nickName}
-                  onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
-                />
-                <span class="text-xs font-normal text-muted-foreground">
-                  {messageTranslate("account.profile.nickNameHint")}
-                </span>
-              </label>
-              <label class="grid gap-2 text-sm font-medium">
-                {messageTranslate("account.profile.preferredLanguage")}
-                <input
-                  class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-                  maxlength={16}
-                  value={props.preferredLanguage}
-                  onInput={(event) => props.onPreferredLanguageInput(event.currentTarget.value)}
-                />
-              </label>
-              <div class="grid gap-3 text-sm font-medium sm:col-span-2 rounded-xl border border-line/70 bg-muted/30 p-4 sm:p-5">
-                <div class="flex items-center gap-2">
-                  <Icon class="size-4 text-accent" path={mdiCameraOutline} />
-                  <span>{messageTranslate("account.profile.picture")}</span>
-                </div>
-                <div class="flex flex-wrap items-center gap-4 pt-1">
-                  <Show when={props.pictureUrl.length > 0}>
-                    <img
-                      alt={messageTranslate("account.profile.pictureAlt")}
-                      class="size-16 rounded-full border-2 border-line object-cover shadow-xs"
-                      src={props.pictureUrl}
-                    />
-                  </Show>
-                  <label class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-sm font-medium transition-colors hover:bg-muted active:scale-[0.98]">
-                    <Icon class="size-4 text-muted-foreground" path={mdiUploadOutline} />
-                    <span>{messageTranslate("account.profile.pictureChoose")}</span>
-                    <input
-                      accept={accountPictureAcceptAttribute}
-                      aria-label={messageTranslate("account.profile.pictureChoose")}
-                      class="sr-only"
-                      disabled={props.pictureStatus === "uploading" || props.pictureStatus === "removing"}
-                      type="file"
-                      onChange={(event) => {
-                        const file = event.currentTarget.files?.[0]
-                        event.currentTarget.value = ""
-                        if (file !== undefined) props.onPictureUpload(file)
-                      }}
-                    />
-                  </label>
-                  <Show when={props.pictureUrl.length > 0}>
-                    <Button
-                      disabled={props.pictureStatus === "uploading" || props.pictureStatus === "removing"}
-                      onClick={props.onPictureRemove}
-                      type="button"
-                      variant="outlineRed"
-                    >
-                      <Icon class="mr-1.5 size-4" path={mdiTrashCanOutline} />
-                      {messageTranslate("account.profile.pictureRemove")}
-                    </Button>
-                  </Show>
-                </div>
-                <span class="text-xs font-normal text-muted-foreground">
-                  {messageTranslate("account.profile.pictureHint")}
-                </span>
-                <Show when={props.pictureErrorMessage}>
-                  {(message) => (
-                    <div
-                      class="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/5 p-3 text-sm text-danger"
-                      role="alert"
-                    >
-                      <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
-                      <span>{message()}</span>
-                    </div>
-                  )}
-                </Show>
-                <Show when={props.pictureStatus === "uploading"}>
-                  <p class="text-sm font-normal text-muted-foreground" role="status">
-                    {messageTranslate("account.profile.pictureUploading")}
-                  </p>
-                </Show>
-                <Show when={props.pictureStatus === "success"}>
-                  <div
-                    class="flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm font-medium text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-                    role="status"
-                  >
-                    <Icon class="size-4 shrink-0" path={mdiCheckCircleOutline} />
-                    <span>{messageTranslate("account.profile.pictureSaved")}</span>
-                  </div>
-                </Show>
-              </div>
-            </div>
-            <Show when={props.validationMessage}>
-              {(message) => (
-                <div
-                  class="mt-4 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/5 p-3.5 text-sm text-danger"
-                  role="alert"
-                >
-                  <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
-                  <span>{message()}</span>
-                </div>
-              )}
-            </Show>
-            <Show when={props.status === "success"}>
-              <div
-                class="mt-4 flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 p-3.5 text-sm font-medium text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-                role="status"
-              >
-                <Icon class="size-4 shrink-0" path={mdiCheckCircleOutline} />
-                <span>{messageTranslate("account.profile.saved")}</span>
-              </div>
-            </Show>
-            <div class="mt-6 flex justify-end">
-              <Button type="submit" variant="filledBlue">
-                {messageTranslate("account.profile.save")}
-              </Button>
-            </div>
-          </form>
+            </form>
+          </AuthenticatedSection>
         </Show>
       </div>
-    </Show>
-  )
-}
-
-const accountGenderValues = ["unspecified", "woman", "man", "non-binary"] as const
-
-function accountGenderOptionsGet(currentValue: string): SelectSingleEntry[] {
-  const options: SelectSingleEntry[] = accountGenderValues.map((value) => ({ type: "item", value }))
-  if (currentValue.length > 0 && !accountGenderValues.includes(currentValue as (typeof accountGenderValues)[number])) {
-    options.push({ type: "item", value: currentValue })
-  }
-  return options
-}
-
-function accountGenderValueText(value: string): string {
-  if (value === "unspecified") return messageTranslate("account.profile.gender.unspecified")
-  if (value === "woman") return messageTranslate("account.profile.gender.woman")
-  if (value === "man") return messageTranslate("account.profile.gender.man")
-  if (value === "non-binary") return messageTranslate("account.profile.gender.nonBinary")
-  return value
-}
-
-function accountGenderIconPathGet(value: string): string {
-  if (value === "woman") return mdiGenderFemale
-  if (value === "man") return mdiGenderMale
-  if (value === "non-binary") return mdiGenderNonBinary
-  return mdiHelpCircleOutline
-}
-
-function accountGenderItemRender(value: string): JSX.Element {
-  return (
-    <span class="flex items-center gap-2">
-      <Icon path={accountGenderIconPathGet(value)} />
-      <span>{accountGenderValueText(value)}</span>
-    </span>
+    </AccountStateBoundary>
   )
 }

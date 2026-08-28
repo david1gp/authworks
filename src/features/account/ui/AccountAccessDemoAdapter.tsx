@@ -1,11 +1,9 @@
 import { useLocation } from "@solidjs/router"
 import { Match, Switch } from "solid-js"
-import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ttc } from "../../../ui/i18n/model/ttc.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
-import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import { AccountConsentsView } from "./AccountConsentsView.js"
+import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountEffectiveAccessView } from "./AccountEffectiveAccessView.js"
 import { AccountInvitationsView } from "./AccountInvitationsView.js"
 import { AccountInvitationView } from "./AccountInvitationView.js"
@@ -18,22 +16,12 @@ export function AccountAccessDemoAdapter(props: { readonly screen: AccountAccess
   const state = accountAccessDemoStateCreate(() => props.screen)
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   return (
-    <div class="mx-auto max-w-5xl">
-      <header class="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8">
-        <span class="rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {messageTranslate("demo.fixture.preview")}
-        </span>
-        <h1 class="mt-5 text-3xl font-semibold tracking-tight">{ttc(scenario()?.title ?? "Access")}</h1>
-        <p class="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-          {ttc(scenario()?.description ?? "Account access")}
-        </p>
-        <div class="mt-6">
-          <p class="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {messageTranslate("demo.fixture.state")}
-          </p>
-          <DemoFixtureStateSelector options={state.stateOptions()} />
-        </div>
-      </header>
+    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+      <AccountDemoFixtureHeader
+        description={scenario()?.description ?? ""}
+        stateOptions={state.stateOptions()}
+        title={scenario()?.title ?? ""}
+      />
       <Switch>
         <Match when={props.screen === "organizations"}>
           <AccountOrganizationsView
@@ -72,6 +60,7 @@ export function AccountAccessDemoAdapter(props: { readonly screen: AccountAccess
         <Match when={props.screen === "invitations"}>
           <AccountInvitationsView
             error={state.error()}
+            invitationHref="/demo/invitations/accept"
             invitations={state.invitations()}
             onRetry={state.reload}
             organizationsHref="/demo/account/organizations"

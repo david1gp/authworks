@@ -1,12 +1,10 @@
 import { useLocation } from "@solidjs/router"
 import { Match, Switch } from "solid-js"
-import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ttc } from "../../../ui/i18n/model/ttc.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
-import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import { demoScenarioPlaceholderStateCreate } from "../../demo/ui/demoScenarioPlaceholderStateCreate.js"
 import { AccountDeleteView } from "./AccountDeleteView.js"
+import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountPasswordView } from "./AccountPasswordView.js"
 import { AccountProfileView } from "./AccountProfileView.js"
 import { accountDemoAdapterStateCreate } from "./accountDemoAdapterStateCreate.js"
@@ -21,22 +19,12 @@ export function AccountDemoAdapter(props: {
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   const page = state.page
   return (
-    <div class="mx-auto max-w-5xl">
-      <header class="mb-6 rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8">
-        <span class="rounded-full bg-muted px-3 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {messageTranslate("demo.fixture.preview")}
-        </span>
-        <h1 class="mt-5 text-3xl font-semibold tracking-tight">{ttc(scenario()?.title ?? "Account")}</h1>
-        <p class="mt-3 max-w-2xl leading-relaxed text-muted-foreground">
-          {ttc(scenario()?.description ?? "Account settings")}
-        </p>
-        <div class="mt-6">
-          <p class="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {messageTranslate("demo.fixture.state")}
-          </p>
-          <DemoFixtureStateSelector options={fixture.stateOptions()} />
-        </div>
-      </header>
+    <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+      <AccountDemoFixtureHeader
+        description={scenario()?.description ?? ""}
+        stateOptions={fixture.stateOptions()}
+        title={scenario()?.title ?? ""}
+      />
       <Switch>
         <Match when={props.kind === "password"}>
           <AccountPasswordView

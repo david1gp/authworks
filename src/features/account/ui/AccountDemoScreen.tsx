@@ -60,14 +60,10 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
 
 function AccountDemoDestination(props: { state: ReturnType<typeof accountDemoAppStateCreate> }) {
   return (
-    <div class="mx-auto max-w-5xl">
-      <div class="mb-3">
-        <A
-          class="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-accent hover:underline"
-          href="/demo/account"
-        >
-          <span>←</span>
-          <span>{messageTranslate("demo.directory.back")}</span>
+    <div class="mx-auto grid min-w-0 max-w-6xl gap-3 [&>*]:min-w-0">
+      <div>
+        <A class="text-[0.8125rem] font-medium text-accent hover:underline" href="/demo/account">
+          {messageTranslate("demo.directory.back")}
         </A>
       </div>
       <Show

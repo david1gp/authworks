@@ -1,11 +1,12 @@
-import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
-import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
-import { mdiLockOutline } from "@adaptive-ds/mdi/mdiLockOutline.js"
 import { Show } from "solid-js"
+import { Input } from "#ui/input/input/Input.jsx"
+import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
-import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
+import { AccountStateBoundary } from "./AccountStateBoundary.js"
+import { accountViewBoundaryStateGet } from "./accountViewBoundaryStateGet.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 
 type AccountPasswordViewProps = {
@@ -23,89 +24,71 @@ type AccountPasswordViewProps = {
 }
 
 export function AccountPasswordView(props: AccountPasswordViewProps) {
+  const boundary = () => accountViewBoundaryStateGet(props.status, props.errorMessage)
   return (
-    <Show
-      when={props.status !== "loading" && props.status !== "error" && props.status !== "expired"}
-      fallback={
-        <ProductionStatePanel
-          detail={props.errorMessage}
-          onRetry={props.status === "error" ? props.onRetry : undefined}
-          state={props.status === "loading" ? "loading" : props.status === "expired" ? "inaccessible" : "error"}
-          title={props.status === "expired" ? messageTranslate("account.sessionExpired") : undefined}
-        />
-      }
+    <AccountStateBoundary
+      detail={boundary().detail}
+      onRetry={props.onRetry}
+      state={boundary().state}
+      title={boundary().title}
     >
-      <form class="max-w-2xl rounded-2xl border border-line bg-surface p-6 shadow-xs sm:p-8" onSubmit={props.onSubmit}>
-        <div class="flex items-center gap-2">
-          <Icon class="size-5 text-accent" path={mdiLockOutline} />
-          <h2 class="text-xl font-semibold tracking-tight">{messageTranslate("account.password.title")}</h2>
-        </div>
-        <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
-          {messageTranslate("account.password.description")}
-        </p>
-        <div class="mt-6 grid gap-5">
-          <label class="grid gap-2 text-sm font-medium">
-            {messageTranslate("account.password.current")}
-            <input
+      <AuthenticatedSection
+        class="max-w-2xl"
+        description={messageTranslate("account.password.description")}
+        title={messageTranslate("account.password.title")}
+      >
+        <form class="grid gap-2.5 px-3 py-3" onSubmit={props.onSubmit}>
+          <div class="grid min-w-0 gap-1">
+            <Label for="account-password-current">{messageTranslate("account.password.current")}</Label>
+            <Input
               autocomplete="current-password"
-              class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
+              id="account-password-current"
+              onInput={(event) => props.onCurrentPasswordInput(event.currentTarget.value)}
               required
               type="password"
               value={props.currentPassword}
-              onInput={(event) => props.onCurrentPasswordInput(event.currentTarget.value)}
             />
-          </label>
-          <label class="grid gap-2 text-sm font-medium">
-            {messageTranslate("account.password.new")}
-            <input
-              autocomplete="new-password"
-              class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-              minlength={8}
-              required
-              type="password"
-              value={props.newPassword}
-              onInput={(event) => props.onNewPasswordInput(event.currentTarget.value)}
-            />
-          </label>
-          <label class="grid gap-2 text-sm font-medium">
-            {messageTranslate("account.password.confirm")}
-            <input
-              autocomplete="new-password"
-              class="rounded-xl border border-line bg-background px-3.5 py-2.5 text-sm transition-colors placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15"
-              minlength={8}
-              required
-              type="password"
-              value={props.confirmPassword}
-              onInput={(event) => props.onConfirmPasswordInput(event.currentTarget.value)}
-            />
-          </label>
-        </div>
-        <Show when={props.validationMessage}>
-          {(message) => (
-            <div
-              class="mt-4 flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/5 p-3.5 text-sm text-danger"
-              role="alert"
-            >
-              <Icon class="size-4 shrink-0" path={mdiAlertCircleOutline} />
-              <span>{message()}</span>
-            </div>
-          )}
-        </Show>
-        <Show when={props.status === "success"}>
-          <div
-            class="mt-4 flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 p-3.5 text-sm font-medium text-emerald-900 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-            role="status"
-          >
-            <Icon class="size-4 shrink-0" path={mdiCheckCircleOutline} />
-            <span>{messageTranslate("account.password.changed")}</span>
           </div>
-        </Show>
-        <div class="mt-6 flex justify-end">
-          <Button type="submit" variant="filledBlue">
-            {messageTranslate("account.password.submit")}
-          </Button>
-        </div>
-      </form>
-    </Show>
+          {/* The new password and its confirmation belong together, so they share one row on desktop. */}
+          <div class="grid min-w-0 gap-2.5 sm:grid-cols-2">
+            <div class="grid min-w-0 gap-1">
+              <Label for="account-password-new">{messageTranslate("account.password.new")}</Label>
+              <Input
+                autocomplete="new-password"
+                id="account-password-new"
+                minlength={8}
+                onInput={(event) => props.onNewPasswordInput(event.currentTarget.value)}
+                required
+                type="password"
+                value={props.newPassword}
+              />
+            </div>
+            <div class="grid min-w-0 gap-1">
+              <Label for="account-password-confirm">{messageTranslate("account.password.confirm")}</Label>
+              <Input
+                autocomplete="new-password"
+                id="account-password-confirm"
+                minlength={8}
+                onInput={(event) => props.onConfirmPasswordInput(event.currentTarget.value)}
+                required
+                type="password"
+                value={props.confirmPassword}
+              />
+            </div>
+          </div>
+          <Show when={props.validationMessage}>
+            {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+          </Show>
+          <Show when={props.status === "success"}>
+            <AuthenticatedNotice message={messageTranslate("account.password.changed")} />
+          </Show>
+          <div>
+            <Button size="sm" type="submit">
+              {messageTranslate("account.password.submit")}
+            </Button>
+          </div>
+        </form>
+      </AuthenticatedSection>
+    </AccountStateBoundary>
   )
 }

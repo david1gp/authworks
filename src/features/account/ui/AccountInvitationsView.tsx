@@ -1,98 +1,90 @@
-import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
-import { mdiEmailPlusOutline } from "@adaptive-ds/mdi/mdiEmailPlusOutline.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
-import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
+import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
+import { AccountRoleList } from "./AccountRoleList.js"
+import { AccountStateBoundary } from "./AccountStateBoundary.js"
+import { accountAccessBoundaryStateGet } from "./accountAccessBoundaryStateGet.js"
 import type { AccountAccessStatus } from "./accountAccessStatusSchema.js"
 
 export function AccountInvitationsView(props: {
   readonly error?: string
+  readonly invitationHref?: string
   readonly invitations: readonly OrganizationInvitation[]
   readonly onRetry: () => void
   readonly organizationsHref: string
   readonly status: AccountAccessStatus
 }) {
+  const boundary = () =>
+    accountAccessBoundaryStateGet(props.status, {
+      emptyDetail: messageTranslate("account.access.invitationEmpty"),
+      error: props.error,
+    })
   return (
-    <Show
-      when={props.status === "ready"}
-      fallback={
-        <ProductionStatePanel
-          detail={
-            props.status === "empty"
-              ? messageTranslate("account.access.invitationEmpty")
-              : props.status === "permission-denied"
-                ? messageTranslate("account.access.permission")
-                : props.error
-          }
-          onRetry={props.status === "error" ? props.onRetry : undefined}
-          state={
-            props.status === "loading"
-              ? "loading"
-              : props.status === "empty"
-                ? "empty"
-                : props.status === "permission-denied" || props.status === "expired"
-                  ? "inaccessible"
-                  : "error"
-          }
-        />
-      }
-    >
-      <section class="grid max-w-4xl gap-6 sm:gap-8">
-        <div>
-          <div class="flex items-center gap-2">
-            <Icon class="size-5 text-accent" path={mdiEmailPlusOutline} />
-            <h2 class="text-xl font-semibold tracking-tight">{messageTranslate("shell.nav.invitations")}</h2>
-          </div>
-          <p class="mt-1 text-sm text-muted-foreground">{messageTranslate("account.access.invitationDescription")}</p>
-        </div>
-        <div class="grid gap-4">
-          <For each={props.invitations}>
-            {(invitation) => (
-              <article class="rounded-2xl border border-line bg-surface p-6 shadow-xs transition-colors hover:border-line-strong/60">
-                <div class="flex items-start gap-3.5">
-                  <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                    <Icon class="size-5" path={mdiEmailOutline} />
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <h3 class="text-lg font-semibold tracking-tight text-foreground">
-                      {messageTranslate("account.access.invitationFor", { email: invitation.email })}
-                    </h3>
-                    <p class="mt-1 break-all font-mono text-xs text-muted-foreground">{invitation.organizationId}</p>
-                    <div class="mt-2.5 flex flex-wrap gap-1.5">
-                      <For each={invitation.roles}>
-                        {(role) => (
-                          <span class="rounded-md border border-line bg-muted/60 px-2 py-0.5 text-xs font-medium">
-                            {role}
-                          </span>
-                        )}
-                      </For>
-                    </div>
-                    <p class="mt-2 text-xs text-muted-foreground">
-                      {localeDateFormat(invitation.expiresAt, { dateStyle: "medium", timeStyle: "short" })}
-                    </p>
-                    <p class="mt-3 text-xs text-muted-foreground/80">
-                      {messageTranslate("account.access.invitationMissing")}
-                    </p>
-                  </div>
-                </div>
-              </article>
-            )}
-          </For>
-        </div>
-        <div>
-          <A
-            class="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
-            href={props.organizationsHref}
-          >
-            <span>←</span>
-            <span>{messageTranslate("account.access.switchOrganization")}</span>
-          </A>
-        </div>
-      </section>
-    </Show>
+    <AuthenticatedPageBody>
+      <p class="text-sm text-muted-foreground">{messageTranslate("account.access.invitationDescription")}</p>
+
+      <AccountStateBoundary detail={boundary().detail} onRetry={props.onRetry} state={boundary().state}>
+        <AuthenticatedSection label={messageTranslate("shell.nav.invitations")}>
+          <ul class="divide-y divide-line-subtle">
+            <For each={props.invitations}>
+              {(invitation) => (
+                <li class="grid min-w-0 gap-2 px-3 py-2.5">
+                  <h2 class="min-w-0 truncate text-sm font-medium">
+                    {messageTranslate("account.access.invitationFor", { email: invitation.email })}
+                  </h2>
+                  <AuthenticatedFieldList
+                    columns={3}
+                    fields={[
+                      {
+                        identifier: true,
+                        label: messageTranslate("admin.impersonation.organization"),
+                        value: invitation.organizationId,
+                      },
+                      {
+                        label: messageTranslate("account.access.membership"),
+                        value: <AccountRoleList values={invitation.roles} />,
+                      },
+                      {
+                        label: messageTranslate("admin.organizations.invitations.expires"),
+                        value: localeDateFormat(invitation.expiresAt, { dateStyle: "medium", timeStyle: "short" }),
+                      },
+                    ]}
+                  />
+                  {/* An overview entry is only actionable where a destination exists; production
+                      accept links carry a token this listing never receives. */}
+                  <Show
+                    fallback={
+                      <p class="text-xs text-muted-foreground">
+                        {messageTranslate("account.access.invitationMissing")}
+                      </p>
+                    }
+                    when={props.invitationHref}
+                  >
+                    {(href) => (
+                      <div>
+                        <A class="text-sm font-medium text-accent hover:underline" href={href()}>
+                          {messageTranslate("account.access.invitationOpen")}
+                        </A>
+                      </div>
+                    )}
+                  </Show>
+                </li>
+              )}
+            </For>
+          </ul>
+        </AuthenticatedSection>
+      </AccountStateBoundary>
+
+      <div>
+        <A class="text-sm font-medium text-accent hover:underline" href={props.organizationsHref}>
+          {messageTranslate("account.access.switchOrganization")}
+        </A>
+      </div>
+    </AuthenticatedPageBody>
   )
 }
