@@ -19,7 +19,6 @@ const session = {
   organizations: [],
   organizationSelect: () => undefined,
   realms: [{ id: realmId, label: "Customer identity" }],
-  realmSelect: () => undefined,
 } satisfies ProductionSessionContextValue
 const user = {
   createdAt: 1_774_000_000_000,

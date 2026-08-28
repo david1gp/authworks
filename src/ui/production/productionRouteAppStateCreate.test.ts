@@ -44,7 +44,6 @@ const sessionCreate = (
   organizations: [],
   organizationSelect: () => undefined,
   realms: [],
-  realmSelect: () => undefined,
 })
 
 const stateObserve = async (route: ProductionRouteContract, session: ProductionSessionContextValue) => {

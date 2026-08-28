@@ -4,9 +4,12 @@ import { mdiLockOutline } from "@adaptive-ds/mdi/mdiLockOutline.js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { LoaderSpin4Square } from "#ui/static/loaders/LoaderSpin4Square.jsx"
+import { classMerge } from "#ui/utils/classMerge.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 
 export function ProductionStatePanel(props: {
+  /** Removes the panel chrome and shrinks the block so it can sit inside an authenticated section. */
+  readonly compact?: boolean
   readonly detail?: string
   readonly onRetry?: () => void
   readonly state: "empty" | "error" | "inaccessible" | "loading"
@@ -15,13 +18,23 @@ export function ProductionStatePanel(props: {
   return (
     <section
       aria-live={props.state === "loading" ? "polite" : undefined}
-      class="mx-auto flex min-h-72 max-w-xl flex-col items-center justify-center rounded-2xl border border-line bg-surface px-6 py-12 text-center shadow-sm"
+      class={classMerge(
+        "mx-auto flex flex-col items-center justify-center text-center",
+        props.compact
+          ? "min-h-40 max-w-md px-4 py-8"
+          : "min-h-72 max-w-xl rounded-panel border border-line bg-surface px-6 py-12",
+      )}
       data-content-state={props.state}
     >
       {props.state === "loading" ? (
-        <LoaderSpin4Square class="mb-5 text-accent" />
+        <LoaderSpin4Square class={props.compact ? "mb-3 text-accent" : "mb-5 text-accent"} />
       ) : (
-        <span class="mb-5 grid size-12 place-items-center rounded-xl bg-muted text-muted-foreground">
+        <span
+          class={classMerge(
+            "grid place-items-center rounded-panel bg-muted text-muted-foreground",
+            props.compact ? "mb-3 size-9" : "mb-5 size-12",
+          )}
+        >
           <Icon
             path={
               props.state === "error"
@@ -33,7 +46,7 @@ export function ProductionStatePanel(props: {
           />
         </span>
       )}
-      <h2 class="text-xl font-semibold">
+      <h2 class={props.compact ? "text-sm font-semibold" : "text-lg font-semibold tracking-tight"}>
         {props.title ??
           (props.state === "loading"
             ? messageTranslate("common.loading")
@@ -43,7 +56,7 @@ export function ProductionStatePanel(props: {
                 ? messageTranslate("shell.state.pageUnavailable")
                 : messageTranslate("shell.state.nothingHere"))}
       </h2>
-      <p class="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+      <p class={classMerge("mt-1.5 max-w-md text-muted-foreground", props.compact ? "text-xs" : "text-sm")}>
         {props.detail ??
           (props.state === "loading"
             ? messageTranslate("shell.state.loadingDetail")
@@ -54,7 +67,7 @@ export function ProductionStatePanel(props: {
                 : messageTranslate("shell.state.readyDetail"))}
       </p>
       {props.state === "error" && props.onRetry ? (
-        <Button class="mt-6" onClick={props.onRetry}>
+        <Button class="mt-4" onClick={props.onRetry} size="sm" variant="outline">
           {messageTranslate("common.retry")}
         </Button>
       ) : null}

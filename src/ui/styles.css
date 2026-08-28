@@ -20,6 +20,10 @@
 @source "../../ui/static/loaders/**/*.{ts,tsx}";
 
 @theme {
+  /* Compact authenticated scale: one step below `text-xs` for labels, meta, and column heads. */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
@@ -34,6 +38,15 @@
   --color-accent-contrast: var(--accent-contrast);
   --color-danger: var(--danger);
   --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger-soft: var(--danger-soft);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+
+  /* Restrained authenticated radii: hairline panels, tight controls. */
+  --radius-panel: 10px;
+  --radius-control: 6px;
 }
 
 @layer base {
@@ -51,7 +64,13 @@
     --accent-hover: #1d4ed8;
     --accent-contrast: #ffffff;
     --danger: #a33a22;
-    --success: #2f7d3f;
+    /* Dark enough that the status pill text still clears 4.5:1 against its own soft tint. */
+    --success: #256630;
+    --warning: #8a5206;
+    --accent-soft: color-mix(in srgb, var(--accent) 7%, var(--surface));
+    --danger-soft: color-mix(in srgb, var(--danger) 10%, var(--surface));
+    --success-soft: color-mix(in srgb, var(--success) 10%, var(--surface));
+    --warning-soft: color-mix(in srgb, var(--warning) 12%, var(--surface));
     --status-action-blue: #2563eb;
     --status-action-green: #15803d;
     --status-action-sky: #0369a1;
@@ -77,6 +96,11 @@
     --accent-contrast: #171a13;
     --danger: #d6a28b;
     --success: #8fcf70;
+    --warning: #d9b45c;
+    --accent-soft: color-mix(in srgb, var(--accent) 16%, var(--surface));
+    --danger-soft: color-mix(in srgb, var(--danger) 16%, var(--surface));
+    --success-soft: color-mix(in srgb, var(--success) 16%, var(--surface));
+    --warning-soft: color-mix(in srgb, var(--warning) 16%, var(--surface));
     color-scheme: dark;
   }
 

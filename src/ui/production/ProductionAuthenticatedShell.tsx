@@ -1,6 +1,4 @@
-import { mdiAccountCheckOutline } from "@adaptive-ds/mdi/mdiAccountCheckOutline.js"
 import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
-import { mdiDomain } from "@adaptive-ds/mdi/mdiDomain.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiShieldLockOutline } from "@adaptive-ds/mdi/mdiShieldLockOutline.js"
@@ -10,12 +8,15 @@ import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
+import { authenticatedNavigationClasses } from "../authenticated/authenticatedNavigationClasses.js"
+import { authenticatedNavigationLinkClassGet } from "../authenticated/authenticatedNavigationLinkClassGet.js"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
 import { ProductionImpersonationBannerSlot } from "./ProductionImpersonationBannerSlot.js"
 import { productionAuthenticatedShellStateCreate } from "./productionAuthenticatedShellStateCreate.js"
 
+/** Compact authenticated frame: hairline rail navigation, dense groups, and a slim collapsed top bar. */
 export function ProductionAuthenticatedShell(props: {
   readonly children: JSX.Element
   readonly kind: "account" | "admin" | "invitations"
@@ -23,25 +24,22 @@ export function ProductionAuthenticatedShell(props: {
 }) {
   const state = productionAuthenticatedShellStateCreate(() => props.kind)
   const title = () => messageTranslate(props.title)
+  const homeHref = () => (props.kind === "admin" ? "/admin" : "/account")
   const navigation = (
-    <div class="flex h-full flex-col">
-      <div class="flex items-center gap-2 border-b border-line px-4 py-3">
-        <A
-          class="min-w-0 flex-1 truncate text-xl font-bold tracking-tight"
-          href={props.kind === "admin" ? "/admin" : "/account"}
-        >
+    <div class={authenticatedNavigationClasses.frame}>
+      <div class={authenticatedNavigationClasses.brandRow}>
+        <A class={authenticatedNavigationClasses.brandLink} href={homeHref()} onClick={state.destinationSelect}>
           {messageTranslate("app.name")}
         </A>
         <SidebarToggle {...state.sidebar} variant="ghost" />
       </div>
-      <nav aria-label={title()} class="flex-1 overflow-y-auto px-2 py-2">
+      <nav aria-label={title()} class={authenticatedNavigationClasses.nav}>
         <Show when={state.showAdminNavigation()}>
           <A
             aria-current={state.isActive("/admin") ? "page" : undefined}
-            class={`mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
-              state.isActive("/admin") ? "bg-accent text-accent-contrast shadow-sm" : "text-foreground hover:bg-muted"
-            }`}
+            class={`${authenticatedNavigationLinkClassGet(state.isActive("/admin"))} mb-1`}
             href="/admin"
+            onClick={state.destinationSelect}
           >
             <Icon path={mdiShieldLockOutline} />
             {messageTranslate("admin.navigation.label")}
@@ -50,10 +48,9 @@ export function ProductionAuthenticatedShell(props: {
         <Show when={state.showAccountNavigation()}>
           <A
             aria-current={state.isActive("/account") ? "page" : undefined}
-            class={`mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
-              state.isActive("/account") ? "bg-accent text-accent-contrast shadow-sm" : "text-foreground hover:bg-muted"
-            }`}
+            class={`${authenticatedNavigationLinkClassGet(state.isActive("/account"))} mb-1`}
             href="/account"
+            onClick={state.destinationSelect}
           >
             <Icon path={mdiAccountCircleOutline} />
             {messageTranslate("shell.nav.account")}
@@ -61,25 +58,22 @@ export function ProductionAuthenticatedShell(props: {
         </Show>
         <For each={state.groups()}>
           {(group) => (
-            <section class="mb-3">
-              <h2 class="mb-0.5 flex items-center gap-2 px-2 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            <section class={authenticatedNavigationClasses.groupSection}>
+              <h2 class={authenticatedNavigationClasses.groupHeading}>
                 <Icon path={group.icon} />
-                {messageTranslate(group.label)}
+                <span class="truncate">{messageTranslate(group.label)}</span>
               </h2>
-              <div class="grid gap-0.5">
+              <div class="grid">
                 <For each={group.items}>
                   {(item) => (
                     <A
                       aria-current={state.isActive(item.href) ? "page" : undefined}
-                      class={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium transition-colors ${
-                        state.isActive(item.href)
-                          ? "bg-accent text-accent-contrast shadow-sm"
-                          : "text-foreground hover:bg-muted"
-                      }`}
+                      class={authenticatedNavigationLinkClassGet(state.isActive(item.href))}
                       href={item.href}
+                      onClick={state.destinationSelect}
                     >
                       <Icon path={item.icon} />
-                      {messageTranslate(item.label)}
+                      <span class="truncate">{messageTranslate(item.label)}</span>
                     </A>
                   )}
                 </For>
@@ -87,29 +81,17 @@ export function ProductionAuthenticatedShell(props: {
             </section>
           )}
         </For>
-        <div class="grid gap-2 border-t border-line px-2 py-3">
-          <label class="grid gap-1 text-xs text-muted-foreground">
-            <span class="flex items-center gap-2">
-              <Icon path={mdiDomain} />
-              {messageTranslate("shell.nav.realm")}
-            </span>
-            <select
-              aria-label={messageTranslate("shell.nav.realm")}
-              class="min-w-0 rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-foreground"
-              value={state.realmId()}
-              onChange={(event) => state.session.realmSelect(event.currentTarget.value)}
-            >
-              <For each={state.session.realms}>{(realm) => <option value={realm.id}>{realm.label}</option>}</For>
-            </select>
-          </label>
-          <label class="grid gap-1 text-xs text-muted-foreground">
-            <span class="flex items-center gap-2">
+      </nav>
+      <div class={authenticatedNavigationClasses.footer}>
+        <Show when={state.organizationSwitchable()}>
+          <label class="mb-2 grid gap-1">
+            <span class="flex items-center gap-2 px-1 text-2xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               <Icon path={mdiOfficeBuildingOutline} />
               {messageTranslate("shell.nav.organization")}
             </span>
             <select
               aria-label={messageTranslate("shell.nav.organization")}
-              class="min-w-0 rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-foreground"
+              class="min-w-0 rounded-control border border-line bg-surface px-2 py-1 text-[0.8125rem] text-foreground"
               value={state.organizationId()}
               onChange={(event) => state.session.organizationSelect(event.currentTarget.value)}
             >
@@ -118,60 +100,62 @@ export function ProductionAuthenticatedShell(props: {
               </For>
             </select>
           </label>
-          <div class="flex items-center justify-between gap-2">
-            <LanguageSelector />
-            <ThemeButton />
+        </Show>
+        <div class="flex items-center gap-2 rounded-control px-1 py-1">
+          <span
+            aria-hidden="true"
+            class="grid size-7 shrink-0 place-items-center rounded-full bg-accent-soft text-2xs font-semibold text-accent"
+          >
+            {state.actorInitial()}
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-[0.8125rem] font-medium leading-5">{state.session.actorLabel}</p>
+            <Show
+              when={!state.organizationSwitchable() && state.organizationLabel()}
+              fallback={
+                <p class="truncate text-2xs text-muted-foreground">{messageTranslate("login.signedIn.title")}</p>
+              }
+            >
+              <p class="truncate text-2xs text-muted-foreground">{state.organizationLabel()}</p>
+            </Show>
           </div>
-        </div>
-        <div class="px-2 pb-2 pt-1">
-          <p class="truncate text-sm font-medium">{state.session.actorLabel}</p>
-          <p class="flex items-center gap-2 text-xs text-muted-foreground">
-            <Icon path={mdiAccountCheckOutline} />
-            {messageTranslate("login.signedIn.title")}
-          </p>
           <A
-            class="mt-1 inline-flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            aria-label={messageTranslate("common.signOut")}
+            class="grid size-7 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
             href={state.signOutHref}
+            title={messageTranslate("common.signOut")}
           >
             <Icon path={mdiLogout} />
-            {messageTranslate("common.signOut")}
           </A>
         </div>
-      </nav>
+        <div class="mt-1 flex items-center justify-between gap-2 border-t border-line-subtle pt-2">
+          <LanguageSelector />
+          <ThemeButton />
+        </div>
+      </div>
     </div>
   )
 
   return (
-    <div class="min-h-dvh bg-muted/50">
+    <div class="min-h-dvh bg-muted">
       <ProductionImpersonationBannerSlot />
       <Sidebar
         state={state.sidebar}
         title={messageTranslate("shell.nav.navigationTitle", { title: title() })}
         description={messageTranslate("shell.nav.chooseDestination")}
-        desktopChildren={
-          <aside class="fixed inset-y-0 left-0 z-20 w-72 border-r border-line bg-surface">{navigation}</aside>
-        }
+        desktopChildren={<aside class={authenticatedNavigationClasses.aside}>{navigation}</aside>}
         mobileChildren={navigation}
       />
-      <Show
-        when={
-          (state.sidebar.isMobile.get() && !state.sidebar.openMobile.get()) ||
-          (!state.sidebar.isMobile.get() && !state.sidebar.openDesktop.get())
-        }
-      >
-        <SidebarToggle {...state.sidebar} class="fixed left-3 top-3 z-30 bg-surface shadow-sm" variant="ghost" />
-      </Show>
-      <div class={`min-h-dvh ${state.sidebar.openDesktop.get() ? "lg:ml-72" : ""}`}>
-        <main
-          class={`px-4 py-7 sm:px-6 sm:py-9 lg:px-10 ${
-            (state.sidebar.isMobile.get() && !state.sidebar.openMobile.get()) ||
-            (!state.sidebar.isMobile.get() && !state.sidebar.openDesktop.get())
-              ? "pt-16"
-              : ""
-          }`}
-        >
-          {props.children}
-        </main>
+      <div class={`min-h-dvh ${state.sidebar.openDesktop.get() ? authenticatedNavigationClasses.contentOffset : ""}`}>
+        <Show when={state.navigationHidden()}>
+          <header class="sticky top-0 z-30 flex h-12 items-center gap-2 border-b border-line bg-surface px-2">
+            <SidebarToggle {...state.sidebar} variant="ghost" />
+            <A class="min-w-0 truncate text-sm font-semibold tracking-tight" href={homeHref()}>
+              {messageTranslate("app.name")}
+            </A>
+          </header>
+        </Show>
+        <main class="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6 sm:py-6">{props.children}</main>
       </div>
     </div>
   )

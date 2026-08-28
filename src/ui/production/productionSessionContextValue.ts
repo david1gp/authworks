@@ -9,5 +9,4 @@ export type ProductionSessionContextValue = {
   readonly organizations: readonly ProductionContextOption[]
   readonly organizationSelect: (organizationId: string) => void
   readonly realms: readonly ProductionContextOption[]
-  readonly realmSelect: (realmId: string) => void
 }

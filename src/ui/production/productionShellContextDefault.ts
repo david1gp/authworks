@@ -23,6 +23,5 @@ export const productionShellContextDefault = {
     ],
     organizationSelect: noOperation,
     realms: [{ id: "customer-identity", label: "Customer identity" }],
-    realmSelect: noOperation,
   } satisfies ProductionSessionContextValue,
 }

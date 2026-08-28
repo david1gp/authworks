@@ -107,7 +107,6 @@ export async function productionApplicationContextsCreate(): Promise<{
         window.location.assign(next)
       },
       realms: [{ id: realmId, label: realm?.realm.name ?? realmId }],
-      realmSelect: () => window.location.reload(),
     },
   })
 }
@@ -143,7 +142,6 @@ function productionAnonymousContextsCreate() {
       organizations: [],
       organizationSelect: () => undefined,
       realms: [],
-      realmSelect: () => undefined,
     },
   })
 }
@@ -161,7 +159,6 @@ function productionAnonymousSessionCreate(realmId: string, organizationId: strin
     organizations: [{ id: organizationId, label: organizationName }],
     organizationSelect: () => undefined,
     realms: [{ id: realmId, label: realmId }],
-    realmSelect: () => undefined,
   } satisfies ProductionSessionContextValue
 }
 

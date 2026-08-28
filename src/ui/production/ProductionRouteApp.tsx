@@ -16,6 +16,7 @@ import { OrganizationAdminProductionAdapter } from "../../features/organizations
 import { organizationAdminScreenSchema } from "../../features/organizations/ui/organizationAdminScreenSchema.js"
 import { ProjectAdminProductionAdapter } from "../../features/projects/ui/ProjectAdminProductionAdapter.js"
 import { projectAdminScreenSchema } from "../../features/projects/ui/projectAdminScreenSchema.js"
+import { AuthenticatedPageHeader } from "../authenticated/AuthenticatedPageHeader.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { ProductionAuthenticatedShell } from "./ProductionAuthenticatedShell.js"
 import { ProductionFocusShell } from "./ProductionFocusShell.js"
@@ -84,15 +85,13 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
                 kind={state.shellKind() as "account" | "admin" | "invitations"}
                 title={screen().title}
               >
-                <header class="mb-7">
-                  <Show when={screen().path !== "/account/email"}>
-                    <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                      {messageTranslate("app.name")}
-                    </p>
-                  </Show>
-                  <h1 class="mt-2 text-3xl font-semibold tracking-tight">{messageTranslate(screen().title)}</h1>
-                </header>
-                <ProductionRouteContent state={state} />
+                <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
+                  <AuthenticatedPageHeader
+                    eyebrow={screen().path === "/account/email" ? undefined : messageTranslate("app.name")}
+                    title={messageTranslate(screen().title)}
+                  />
+                  <ProductionRouteContent state={state} />
+                </div>
               </ProductionAuthenticatedShell>
             </Show>
           </Match>
