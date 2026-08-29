@@ -5,10 +5,8 @@ import { SelectSingle } from "#ui/input/select/SelectSingle.jsx"
 import { selectSingleTextDefault } from "#ui/input/select/SelectSingleTexts.js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
-import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedSelectStateCreate } from "../../../ui/authenticated/authenticatedSelectStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
@@ -126,147 +124,125 @@ export function AccountProfileView(props: AccountProfileViewProps) {
             userName={props.userName}
           />
 
-          {/* Sign-in identity and the phone factor are both short read-mostly panels, so they share a row. */}
-          <div class="grid min-w-0 gap-3 xl:grid-cols-2 [&>*]:min-w-0">
-            <AuthenticatedSection
-              actions={
-                <AuthenticatedStatus
-                  label={
-                    props.emailVerified
-                      ? messageTranslate("account.profile.verified")
-                      : messageTranslate("account.profile.verificationPending")
-                  }
-                  tone={props.emailVerified ? "success" : "warning"}
-                />
-              }
-              description={messageTranslate("account.profile.signInDescription")}
-              padded
-              title={messageTranslate("account.profile.signInTitle")}
-            >
-              <AuthenticatedFieldList
-                fields={[
-                  { identifier: true, label: messageTranslate("account.profile.userName"), value: props.userName },
-                  { identifier: true, label: messageTranslate("account.profile.email"), value: props.email },
-                ]}
-              />
-            </AuthenticatedSection>
-
-            <AccountProfilePhoneSection
-              candidate={props.phoneCandidate}
-              challengeActive={props.phoneChallengeActive}
-              code={props.phoneCode}
-              errorMessage={props.phoneErrorMessage}
-              onCancel={props.onPhoneCancel}
-              onCodeInput={props.onPhoneCodeInput}
-              onInput={props.onPhoneInput}
-              onResend={props.onPhoneResend}
-              onStart={props.onPhoneStart}
-              onVerify={props.onPhoneVerify}
-              phoneNumber={props.phoneNumber}
-              status={props.phoneStatus}
-              validationMessage={props.phoneValidationMessage}
-              verified={props.phoneVerified}
-            />
-          </div>
-
           <AuthenticatedSection
             description={messageTranslate("account.profile.personalDescription")}
             title={messageTranslate("account.profile.personalInformation")}
           >
-            <form class="grid gap-2.5 px-3 py-3" onSubmit={props.onSubmit}>
-              <div class="grid min-w-0 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                <div class="grid min-w-0 gap-1 sm:col-span-2 lg:col-span-1">
-                  <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
-                  <Input
-                    id="account-display-name"
-                    maxlength={128}
-                    onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
-                    value={props.displayName}
-                  />
+            <div class="grid min-w-0 gap-6 p-4 lg:grid-cols-12 [&>*]:min-w-0">
+              <form class="grid min-w-0 gap-3 lg:col-span-8" onSubmit={props.onSubmit}>
+                <div class="grid min-w-0 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                  <div class="grid min-w-0 gap-1 sm:col-span-2 lg:col-span-1">
+                    <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
+                    <Input
+                      id="account-display-name"
+                      maxlength={128}
+                      onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
+                      value={props.displayName}
+                    />
+                  </div>
+                  <div class="grid min-w-0 gap-1">
+                    <Label for="account-first-name">{messageTranslate("account.profile.firstName")}</Label>
+                    <Input
+                      id="account-first-name"
+                      maxlength={128}
+                      onInput={(event) => props.onFirstNameInput(event.currentTarget.value)}
+                      value={props.firstName}
+                    />
+                  </div>
+                  <div class="grid min-w-0 gap-1">
+                    <Label for="account-last-name">{messageTranslate("account.profile.lastName")}</Label>
+                    <Input
+                      id="account-last-name"
+                      maxlength={128}
+                      onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
+                      value={props.lastName}
+                    />
+                  </div>
+                  {/* The gender select is wrapped so its trigger never keeps a dangling
+                      `aria-controls` reference while the vendored listbox is unmounted. */}
+                  <div class="grid min-w-0 gap-1" ref={genderSelect.containerSet}>
+                    <Label>{messageTranslate("account.profile.gender")}</Label>
+                    <SelectSingle
+                      buttonProps={{
+                        class: "h-9 w-full justify-between",
+                        onOpenChange: genderSelect.openChange,
+                        variant: "outline",
+                      }}
+                      class="w-full"
+                      getOptions={() => accountGenderOptionsGet(props.genderSignal.get())}
+                      renderItem={accountGenderItemRender}
+                      texts={{
+                        ...selectSingleTextDefault,
+                        selectEntry: messageTranslate("account.profile.gender.unspecified"),
+                      }}
+                      valueSignal={props.genderSignal}
+                      valueText={accountGenderValueText}
+                    />
+                  </div>
+                  <div class="grid min-w-0 gap-1">
+                    <Label for="account-nick-name">{messageTranslate("account.profile.nickName")}</Label>
+                    <Input
+                      id="account-nick-name"
+                      maxlength={128}
+                      onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
+                      value={props.nickName}
+                    />
+                    <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.nickNameHint")}</p>
+                  </div>
+                  <div class="grid min-w-0 gap-1">
+                    <Label for="account-preferred-language">
+                      {messageTranslate("account.profile.preferredLanguage")}
+                    </Label>
+                    <Input
+                      id="account-preferred-language"
+                      maxlength={16}
+                      onInput={(event) => props.onPreferredLanguageInput(event.currentTarget.value)}
+                      value={props.preferredLanguage}
+                    />
+                  </div>
                 </div>
-                <div class="grid min-w-0 gap-1">
-                  <Label for="account-first-name">{messageTranslate("account.profile.firstName")}</Label>
-                  <Input
-                    id="account-first-name"
-                    maxlength={128}
-                    onInput={(event) => props.onFirstNameInput(event.currentTarget.value)}
-                    value={props.firstName}
-                  />
-                </div>
-                <div class="grid min-w-0 gap-1">
-                  <Label for="account-last-name">{messageTranslate("account.profile.lastName")}</Label>
-                  <Input
-                    id="account-last-name"
-                    maxlength={128}
-                    onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
-                    value={props.lastName}
-                  />
-                </div>
-                {/* The gender select is wrapped so its trigger never keeps a dangling
-                    `aria-controls` reference while the vendored listbox is unmounted. */}
-                <div class="grid min-w-0 gap-1" ref={genderSelect.containerSet}>
-                  <Label>{messageTranslate("account.profile.gender")}</Label>
-                  <SelectSingle
-                    buttonProps={{
-                      class: "h-9 w-full justify-between",
-                      onOpenChange: genderSelect.openChange,
-                      variant: "outline",
-                    }}
-                    class="w-full"
-                    getOptions={() => accountGenderOptionsGet(props.genderSignal.get())}
-                    renderItem={accountGenderItemRender}
-                    texts={{
-                      ...selectSingleTextDefault,
-                      selectEntry: messageTranslate("account.profile.gender.unspecified"),
-                    }}
-                    valueSignal={props.genderSignal}
-                    valueText={accountGenderValueText}
-                  />
-                </div>
-                <div class="grid min-w-0 gap-1">
-                  <Label for="account-nick-name">{messageTranslate("account.profile.nickName")}</Label>
-                  <Input
-                    id="account-nick-name"
-                    maxlength={128}
-                    onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
-                    value={props.nickName}
-                  />
-                  <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.nickNameHint")}</p>
-                </div>
-                <div class="grid min-w-0 gap-1">
-                  <Label for="account-preferred-language">
-                    {messageTranslate("account.profile.preferredLanguage")}
-                  </Label>
-                  <Input
-                    id="account-preferred-language"
-                    maxlength={16}
-                    onInput={(event) => props.onPreferredLanguageInput(event.currentTarget.value)}
-                    value={props.preferredLanguage}
-                  />
-                </div>
-              </div>
 
-              <AccountProfilePictureField
-                errorMessage={props.pictureErrorMessage}
-                onRemove={props.onPictureRemove}
-                onUpload={props.onPictureUpload}
-                status={props.pictureStatus}
-                url={props.pictureUrl}
-              />
+                <Show when={props.validationMessage}>
+                  {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+                </Show>
+                <Show when={props.status === "success"}>
+                  <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
+                </Show>
+                <div>
+                  <Button size="sm" type="submit">
+                    {messageTranslate("account.profile.save")}
+                  </Button>
+                </div>
+              </form>
 
-              <Show when={props.validationMessage}>
-                {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-              </Show>
-              <Show when={props.status === "success"}>
-                <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
-              </Show>
-              <div>
-                <Button size="sm" type="submit">
-                  {messageTranslate("account.profile.save")}
-                </Button>
+              <div class="min-w-0 lg:col-span-4">
+                <AccountProfilePictureField
+                  errorMessage={props.pictureErrorMessage}
+                  onRemove={props.onPictureRemove}
+                  onUpload={props.onPictureUpload}
+                  status={props.pictureStatus}
+                  url={props.pictureUrl}
+                />
               </div>
-            </form>
+            </div>
           </AuthenticatedSection>
+
+          <AccountProfilePhoneSection
+            candidate={props.phoneCandidate}
+            challengeActive={props.phoneChallengeActive}
+            code={props.phoneCode}
+            errorMessage={props.phoneErrorMessage}
+            onCancel={props.onPhoneCancel}
+            onCodeInput={props.onPhoneCodeInput}
+            onInput={props.onPhoneInput}
+            onResend={props.onPhoneResend}
+            onStart={props.onPhoneStart}
+            onVerify={props.onPhoneVerify}
+            phoneNumber={props.phoneNumber}
+            status={props.phoneStatus}
+            validationMessage={props.phoneValidationMessage}
+            verified={props.phoneVerified}
+          />
         </Show>
       </div>
     </AccountStateBoundary>

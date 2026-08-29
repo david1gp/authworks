@@ -157,9 +157,12 @@ account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
 account.profile.pictureAlt,Current profile picture
+account.profile.pictureChange,Profielfoto wijzigen
 account.profile.pictureChoose,Choose a picture file
+account.profile.pictureDropHint,Sleep een afbeelding hierheen of klik om te bladeren
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
+account.profile.pictureRemoving,Afbeelding verwijderen…
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."

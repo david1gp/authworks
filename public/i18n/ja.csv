@@ -157,9 +157,12 @@ account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
 account.profile.pictureAlt,Current profile picture
+account.profile.pictureChange,プロフィール画像を変更
 account.profile.pictureChoose,Choose a picture file
+account.profile.pictureDropHint,画像をここにドラッグ＆ドロップするか、クリックして参照
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
 account.profile.pictureRemove,Remove picture
+account.profile.pictureRemoving,画像を削除中…
 account.profile.pictureSaved,Profile picture updated.
 account.profile.pictureTooLarge,Choose an image of at most 512 KiB.
 account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."

@@ -34,7 +34,17 @@ export function AccountProfileIdentityStrip(props: {
         <p class="min-w-0 truncate text-sm font-semibold tracking-tight">
           {props.displayName || props.userName || props.email}
         </p>
-        <p class="min-w-0 truncate font-mono text-xs text-muted-foreground">{props.userName || props.email}</p>
+        <div class="flex min-w-0 flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+          <Show when={props.userName}>
+            <span class="truncate font-mono">{props.userName}</span>
+          </Show>
+          <Show when={props.userName && props.email}>
+            <span aria-hidden="true">·</span>
+          </Show>
+          <Show when={props.email}>
+            <span class="truncate font-mono">{props.email}</span>
+          </Show>
+        </div>
       </div>
       <AuthenticatedStatus
         label={
