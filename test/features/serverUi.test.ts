@@ -37,7 +37,7 @@ test("the composed server serves UI assets and known browser routes", async () =
     expect(health.headers.get("content-type")).toContain("application/json")
     expect(await health.json()).toEqual({ status: "ok" })
 
-    for (const pathname of ["/login/deep", "/consent", "/account/profile", "/invitations/one", "/admin/users"]) {
+    for (const pathname of ["/login/deep", "/consent", "/account", "/invitations/one", "/admin/users"]) {
       const response = await request(pathname)
       expect(response.status, pathname).toBe(200)
       expect(await response.text(), pathname).toContain("Authworks UI")

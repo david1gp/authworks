@@ -46,7 +46,7 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     expect(assuranceDenied.body).toContain("authorization.insufficient-assurance")
 
     const permission = await auxiliaryPageCreate(browser, fixture, auxiliaryContexts, responseBodies, requestUrls)
-    await passwordSignIn(permission, fixture.member, "/account/profile")
+    await passwordSignIn(permission, fixture.member, "/account#profile")
     const steppedUp = await mfaStepUpComplete(permission, fixture)
     expect(steppedUp.status).toBe(200)
     expect(steppedUp.body).not.toContain(fixture.recoveryCode)
@@ -118,11 +118,11 @@ test("task 17 composed impersonation scenario enforces lifecycle, safeguards, an
     await auditContextPage.getByRole("button", { name: "Show payload", exact: true }).first().click()
     await expect(auditContextPage.locator("body")).toContainText("Ticket IMP-17: investigate the support report.")
 
-    await page.goto("/account/profile")
+    await page.goto("/account#profile")
     await expect(page.locator("[data-impersonation-banner]")).toContainText("E2E Administrator")
     await page.reload()
     await expect(page.locator("[data-impersonation-banner]")).toContainText("E2E Administrator")
-    await page.goto("/account/email")
+    await page.goto("/account#devices-applications")
     await expect(page.locator("[data-impersonation-banner]")).toContainText("E2E Administrator")
 
     const nested = await impersonationStartRequest(page, fixture, fixture.member.id)

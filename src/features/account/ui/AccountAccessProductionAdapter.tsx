@@ -50,7 +50,7 @@ export function AccountAccessProductionAdapter(props: { readonly screen: Account
           error={state.error()}
           invitations={state.invitations()}
           onRetry={state.reload}
-          organizationsHref="/account/organizations"
+          organizationsHref="/account#access"
           status={state.status()}
         />
       </Match>

@@ -36,26 +36,26 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     const loginResponsePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/password/login"),
     )
-    await page.goto("/login/password?return_to=%2Faccount%2Fprofile")
+    await page.goto("/login/password?return_to=%2Faccount%23profile")
     await page.getByLabel("Username or email").fill(fixture.member.email)
     await page.getByLabel("Password", { exact: true }).fill(fixture.member.password)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
 
     await loginResponsePromise
-    await expect(page).toHaveURL(/\/account\/profile$/)
-    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await expect(page).toHaveURL(/\/account#profile$/)
+    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
     const memberSecretState = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))
     expect(memberSecretState).not.toContain(fixture.member.password)
     expect(await page.locator("body").textContent()).not.toContain(fixture.member.password)
 
     await page.reload()
-    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
-    await page.getByLabel("Display name", { exact: true }).fill("E2E Member Updated")
-    await page.getByRole("button", { name: "Save changes", exact: true }).click()
+    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await page.locator("#profile").getByLabel("Display name", { exact: true }).fill("E2E Member Updated")
+    await page.locator("#profile").getByRole("button", { name: "Save changes", exact: true }).click()
     await expect(page.getByRole("status")).toContainText("Your profile was saved.")
 
     await page.reload()
-    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member Updated")
+    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member Updated")
 
     const tenantDenied = await page.evaluate(async (realmId) => {
       const response = await fetch(`/realms/${realmId}/me`, { credentials: "include" })
@@ -105,8 +105,8 @@ test("task 17 composed production scenario keeps browser sessions and tenants is
     await page.goto("/login/logout")
     await page.getByRole("button", { name: "Sign out", exact: true }).click()
     await expect(page.getByRole("heading", { name: "Signed out", exact: true })).toBeVisible()
-    await page.goto("/account/profile")
-    await expect(page).toHaveURL("/login?return_to=%2Faccount%2Fprofile")
+    await page.goto("/account#profile")
+    await expect(page).toHaveURL("/login?return_to=%2Faccount%23profile")
 
     const adminDiscoveryPromise = page.waitForResponse(
       (response) => new URL(response.url()).pathname === "/organization-discovery",
@@ -387,10 +387,10 @@ test("task 17 composed production scenario displays and revokes machine secrets,
     await page.getByRole("button", { name: "Continue", exact: true }).click()
     await expect(page.getByRole("heading", { name: "Invitation accepted", exact: true })).toBeVisible()
 
-    await page.goto("/account/profile")
-    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await page.goto("/account#profile")
+    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
     await page.reload()
-    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
 
     const browserStorage = await page.evaluate(() => JSON.stringify({ ...localStorage, ...sessionStorage }))
     const browserCookies = (await context.cookies()).map((cookie) => `${cookie.name}=${cookie.value}`).join("\n")

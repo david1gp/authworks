@@ -84,10 +84,18 @@ test("production organization switching calls the self-service API with CSRF", a
     return route.fulfill({ json: { items: organizationItems } })
   })
 
-  await page.goto("/account/organizations")
-  await expect(page.getByRole("heading", { name: "Field Notes" })).toBeVisible()
-  await page.getByRole("button", { name: "Switch organization" }).last().click()
-  await expect(page.getByRole("status")).toContainText("Field Notes")
+  await page.goto("/account#access")
+  const accessSection = page.locator("#access")
+  const organizationsSection = accessSection.getByRole("region", { name: "Switch organization", exact: true })
+  await expect(organizationsSection.getByRole("heading", { name: "Field Notes", exact: true })).toBeVisible()
+  const fieldNotesOrganization = organizationsSection.getByRole("listitem").filter({
+    has: page.getByRole("heading", { name: "Field Notes", exact: true }),
+  })
+  await fieldNotesOrganization.getByRole("button", { name: "Switch organization", exact: true }).click()
+  // Organization selection reloads the authenticated context so the shell and all workspace sections
+  // use the new organization. The transient switch notice does not survive that navigation.
+  await expect(page).toHaveURL(new RegExp(`/account\\?organization=${fieldNotesId}#access$`))
+  await expect(fieldNotesOrganization.getByText("Active organization", { exact: true })).toBeVisible()
   expect(switchRequestHadCsrf).toBe(true)
 })
 
@@ -99,6 +107,26 @@ test("production consent and invitation adapters expose permission and expiry fa
     if (pathname === `/realms/${realmId}` || pathname.endsWith("/sessions/current") || pathname.endsWith("/me"))
       return route.fallback()
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
+    if (pathname.endsWith("/me/emails")) return route.fulfill({ json: { items: [] } })
+    if (pathname.endsWith("/passkeys")) return route.fulfill({ json: { items: [] } })
+    if (pathname.endsWith("/me/authentication-methods")) {
+      return route.fulfill({
+        json: {
+          emailOtp: { available: true },
+          passkeys: { credentials: [] },
+          recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+          totp: { enrolled: false, enrollments: [] },
+        },
+      })
+    }
+    if (pathname.endsWith("/me/external-identities") || pathname.endsWith("/me/external-identity-providers"))
+      return route.fulfill({ json: { items: [] } })
+    if (
+      pathname.endsWith("/me/refresh-tokens") ||
+      pathname.endsWith("/me/security-history") ||
+      pathname.endsWith("/me/effective-access")
+    )
+      return route.fulfill({ json: { items: [] } })
     if (pathname.endsWith("/me/consents") && request.method() === "GET") {
       return route.fulfill({
         json: {
@@ -144,10 +172,11 @@ test("production consent and invitation adapters expose permission and expiry fa
     return route.abort()
   })
 
-  await page.goto("/account/consents")
+  await page.goto("/account#devices-applications")
+  const devicesApplicationsSection = page.locator("#devices-applications")
   page.once("dialog", (dialog) => dialog.accept())
-  await page.getByRole("button", { name: "Revoke" }).click()
-  await expect(page.getByText("You do not have permission to perform this action.")).toBeVisible()
+  await devicesApplicationsSection.getByRole("button", { name: "Revoke" }).click()
+  await expect(devicesApplicationsSection.getByText("You do not have permission to perform this action.")).toBeVisible()
 
   await page.goto("/invitations/accept?token=expired-fixture")
   await expect(page.getByText("This invitation has expired.")).toBeVisible()

@@ -31,7 +31,7 @@ export function emailDeliveryCallbacksCreate(options: EmailDeliveryCallbacksCrea
         renderer.emailChangeRender({
           delivery,
           footer,
-          url: emailDeliveryUrlCreate(options.publicOrigin, "/account/email", {
+          url: emailDeliveryUrlCreate(options.publicOrigin, "/account", {
             challengeId: delivery.challengeId,
             realmId: delivery.realmId,
             token: delivery.token,
@@ -53,7 +53,7 @@ export function emailDeliveryCallbacksCreate(options: EmailDeliveryCallbacksCrea
         renderer.emailChangeRender({
           delivery,
           footer,
-          url: emailDeliveryUrlCreate(options.publicOrigin, "/account/emails", {
+          url: emailDeliveryUrlCreate(options.publicOrigin, "/account", {
             challengeId: delivery.challengeId,
             realmId: delivery.realmId,
             token: delivery.token,

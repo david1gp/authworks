@@ -122,7 +122,7 @@ describe("production application contexts", () => {
     })
     Object.defineProperty(globalThis, "window", {
       configurable: true,
-      value: { location: { href: "https://auth.example/account/organizations" } },
+      value: { location: { href: "https://auth.example/account#access" } },
     })
 
     const contexts = await productionApplicationContextsCreate()

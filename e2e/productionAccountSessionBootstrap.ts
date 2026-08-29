@@ -103,6 +103,24 @@ export async function productionAccountSessionBootstrap(page: Page): Promise<voi
       },
     }),
   )
+  await page.route(`**/realms/${realmId}/me/emails`, (route) =>
+    route.fulfill({
+      json: {
+        items: [
+          {
+            createdAt: 1_700_000_000_000,
+            email: "user@customer.example",
+            id: "01900000-0000-7000-8000-0000000000e1",
+            isPrimary: true,
+            updatedAt: 1_700_000_000_000,
+            verified: true,
+            verifiedAt: 1_700_000_000_000,
+            version: 1,
+          },
+        ],
+      },
+    }),
+  )
   await page.route(`**/realms/${realmId}`, (route) =>
     route.fulfill({
       json: {
@@ -118,4 +136,23 @@ export async function productionAccountSessionBootstrap(page: Page): Promise<voi
       },
     }),
   )
+  await page.route(`**/realms/${realmId}/passkeys`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/authentication-methods`, (route) =>
+    route.fulfill({
+      json: {
+        emailOtp: { available: true },
+        passkeys: { credentials: [] },
+        recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+        totp: { enrolled: false, enrollments: [] },
+      },
+    }),
+  )
+  await page.route(`**/realms/${realmId}/me/external-identities`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/external-identity-providers`, (route) =>
+    route.fulfill({ json: { items: [] } }),
+  )
+  await page.route(`**/realms/${realmId}/me/refresh-tokens`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/security-history**`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/effective-access`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/consents`, (route) => route.fulfill({ json: { items: [] } }))
 }

@@ -6,8 +6,9 @@ import { accountProductionAdapterStateCreate } from "./accountProductionAdapterS
 
 export function AccountProductionAdapter(props: {
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
+  readonly state?: ReturnType<typeof accountProductionAdapterStateCreate>
 }) {
-  const state = accountProductionAdapterStateCreate(() => props.kind)
+  const state = props.state ?? accountProductionAdapterStateCreate(() => props.kind)
   return (
     <Switch>
       <Match when={props.kind === "password"}>

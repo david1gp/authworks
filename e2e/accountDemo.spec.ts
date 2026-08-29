@@ -23,9 +23,13 @@ test("organization, invitation, and consent demos are interactive and network-fr
   })
 
   await page.goto("/demo/account/organizations")
-  await expect(page.getByRole("heading", { name: "Northwind Labs" })).toBeVisible()
-  await page.getByRole("button", { name: "Switch organization" }).last().click()
-  await expect(page.getByRole("status")).toContainText("Field Notes")
+  const organizationSection = page.getByRole("region", { name: "Switch organization", exact: true })
+  await expect(organizationSection.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
+  const fieldNotesOrganization = organizationSection.getByRole("listitem").filter({
+    has: page.getByRole("heading", { name: "Field Notes", exact: true }),
+  })
+  await fieldNotesOrganization.getByRole("button", { name: "Switch organization", exact: true }).click()
+  await expect(organizationSection.getByRole("status")).toContainText("Field Notes")
 
   await page.goto("/demo/account/consents")
   page.once("dialog", (dialog) => void dialog.accept())
@@ -120,11 +124,12 @@ test("production security history uses the safe newest-first cursor contract", a
     })
   })
 
-  await page.goto("/account/security-history")
-  await expect(page.getByText("A session was created", { exact: true })).toBeVisible()
-  await expect(page.getByText("session.created", { exact: true })).toHaveCount(0)
-  await page.getByRole("button", { name: "Load more security activity", exact: true }).click()
-  await expect(page.getByText("An impersonation session started", { exact: true })).toBeVisible()
+  await page.goto("/account#security")
+  const securitySection = page.locator("#security")
+  await expect(securitySection.getByText("A session was created", { exact: true })).toBeVisible()
+  await expect(securitySection.getByText("session.created", { exact: true })).toHaveCount(0)
+  await securitySection.getByRole("button", { name: "Load more security activity", exact: true }).click()
+  await expect(securitySection.getByText("An impersonation session started", { exact: true })).toBeVisible()
 })
 
 test("production session revocation uses the real account contract and CSRF", async ({ page }) => {
@@ -173,11 +178,12 @@ test("production session revocation uses the real account contract and CSRF", as
     await route.fulfill({ contentType: "application/json", body: JSON.stringify({ revoked: true }) })
   })
 
-  await page.goto("/account/sessions")
-  await expect(page.getByText("Fixture phone", { exact: true })).toBeVisible()
+  await page.goto("/account#devices-applications")
+  const devicesApplicationsSection = page.locator("#devices-applications")
+  await expect(devicesApplicationsSection.getByText("Fixture phone", { exact: true })).toBeVisible()
   page.once("dialog", (dialog) => void dialog.accept())
-  await page.getByRole("button", { name: "Revoke session" }).click()
-  await expect(page.getByText("Fixture phone", { exact: true })).toHaveCount(0)
+  await devicesApplicationsSection.getByRole("button", { name: "Revoke session" }).click()
+  await expect(devicesApplicationsSection.getByText("Fixture phone", { exact: true })).toHaveCount(0)
   expect(csrfHeader).toBe("deterministic-csrf-token-12345678901234567890")
 })
 
@@ -206,12 +212,13 @@ test("production recovery codes are fetched with CSRF and displayed once", async
     })
   })
 
-  await page.goto("/account/recovery-codes")
-  await page.getByRole("button", { name: "Generate new codes" }).click()
-  await expect(page.getByText("REAL-API1", { exact: true })).toBeVisible()
+  await page.goto("/account#security")
+  const securitySection = page.locator("#security")
+  await securitySection.getByRole("button", { name: "Generate new codes" }).click()
+  await expect(securitySection.getByText("REAL-API1", { exact: true })).toBeVisible()
   expect(csrfHeader).toBe("recovery-csrf")
-  await page.getByRole("button", { name: "I saved these codes" }).click()
-  await expect(page.getByText("REAL-API1", { exact: true })).toHaveCount(0)
+  await securitySection.getByRole("button", { name: "I saved these codes" }).click()
+  await expect(securitySection.getByText("REAL-API1", { exact: true })).toHaveCount(0)
   await page.reload()
-  await expect(page.getByText("REAL-API1", { exact: true })).toHaveCount(0)
+  await expect(page.locator("#security").getByText("REAL-API1", { exact: true })).toHaveCount(0)
 })

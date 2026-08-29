@@ -101,6 +101,25 @@ test.beforeEach(async ({ page }) => {
   await page.route(`**/realms/${realmId}/me/organizations`, (route) => route.fulfill({ json: { items: [] } }))
   await page.route(`**/realms/${realmId}`, (route) => route.fulfill({ json: realm }))
   await page.route(`**/realms/${realmId}/me/sessions`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/passkeys`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/authentication-methods`, (route) =>
+    route.fulfill({
+      json: {
+        emailOtp: { available: true },
+        passkeys: { credentials: [] },
+        recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+        totp: { enrolled: false, enrollments: [] },
+      },
+    }),
+  )
+  await page.route(`**/realms/${realmId}/me/external-identities`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/external-identity-providers`, (route) =>
+    route.fulfill({ json: { items: [] } }),
+  )
+  await page.route(`**/realms/${realmId}/me/refresh-tokens`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/security-history**`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/effective-access`, (route) => route.fulfill({ json: { items: [] } }))
+  await page.route(`**/realms/${realmId}/me/consents`, (route) => route.fulfill({ json: { items: [] } }))
 })
 
 test("production focus and authenticated shells render without network adapters", async ({ page }) => {
@@ -112,33 +131,30 @@ test("production focus and authenticated shells render without network adapters"
   await expect(page.locator('[data-content-state="empty"]')).toBeVisible()
   await expect(page.getByText("Production route placeholder")).toHaveCount(0)
 
-  await page.goto("/account/sessions")
-  await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
-  const navigation = page.getByRole("navigation", { name: "Sessions and devices" })
+  await page.goto("/account#devices-applications")
+  const accountSection = page.locator("#devices-applications")
+  await expect(
+    accountSection.getByRole("heading", { name: /Sessions and devices.*Applications/, exact: true }),
+  ).toBeVisible()
+  const navigation = page.getByRole("navigation", { name: "Account navigation" })
   await expect(navigation).toBeVisible()
-  for (const label of [
-    "Overview",
-    "Profile",
-    "Email address",
-    "Organizations",
-    "Password",
-    "Sessions and devices",
-    "Passkeys",
-    "Multi-factor authentication",
-    "Recovery codes",
-    "Linked identities",
-    "Application consents",
-    "Delete account",
-  ]) {
-    await expect(navigation.getByRole("link", { name: label, exact: true }).locator("svg")).toHaveCount(1)
+  for (const [label, href] of [
+    ["Profile", "#profile"],
+    ["Security", "#security"],
+    ["Sessions and devices", "#devices-applications"],
+    ["Access", "#access"],
+    ["Danger zone", "#danger-zone"],
+  ] as const) {
+    const link = navigation.getByRole("link", { name: label, exact: true })
+    await expect(link.locator("svg")).toHaveCount(1)
+    await expect(link).toHaveAttribute("href", href)
   }
-  for (const label of ["Security", "Access"]) {
-    await expect(navigation.locator("h2").filter({ hasText: label }).locator("svg")).toHaveCount(1)
-  }
+  await expect(page.locator("header").first()).toHaveCSS("position", "sticky")
+  await expect(navigation).toHaveCSS("position", "sticky")
   // The product has a single realm, so the shell no longer renders a realm chooser. The organization
   // control only appears when the signed-in user actually belongs to more than one organization.
   await expect(page.getByLabel("Realm")).toHaveCount(0)
-  await expect(page.getByLabel("Organization")).toHaveCount(0)
+  await expect(page.locator('header select[aria-label="Organization"]')).toHaveCount(0)
   await expect(page.getByLabel("Language").locator("..").locator("svg")).toHaveCount(1)
   await expect(page.getByRole("link", { name: "Sign out", exact: true }).locator("svg")).toHaveCount(1)
 
@@ -159,47 +175,49 @@ test("unauthenticated protected routes redirect to login with their destination 
   expect(new URL(page.url()).searchParams.get("return_to")).toBe("/admin/not-a-screen?from=bookmark#details")
 })
 
-test("authenticated navigation becomes a mobile drawer", async ({ page }) => {
+test("account workspace exposes sticky section navigation on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto("/account")
 
-  await expect(page.getByRole("heading", { name: "Account", exact: true })).toBeVisible()
-  await page.getByRole("button", { name: "Open sidebar" }).click()
-  await expect(page.getByRole("dialog")).toBeVisible()
-  await expect(page.getByRole("navigation", { name: "Account" })).toBeVisible()
-  await expect(page.getByRole("link", { name: "Sessions and devices", exact: true })).toBeVisible()
+  const navigation = page.getByRole("navigation", { name: "Account navigation" })
+  await expect(navigation).toBeVisible()
+  await expect(navigation).toHaveCSS("position", "sticky")
+  await expect(navigation.getByRole("link", { name: "Profile", exact: true })).toBeVisible()
+  await expect(navigation.getByRole("link", { name: "Danger zone", exact: true })).toBeVisible()
+  await expect(page.getByRole("button", { name: "Open sidebar" })).toHaveCount(0)
 })
 
-test("account email keeps sidebar branding while matching active icon and work-area headings", async ({ page }) => {
-  await page.goto("/account/email")
+test("account workspace keeps identity details consolidated and targets sections with anchors", async ({ page }) => {
+  await page.goto("/account#profile")
 
-  const activeEmailLink = page.getByRole("link", { name: "Email address", exact: true })
-  const activeLinkColor = await activeEmailLink.evaluate((element) => getComputedStyle(element).color)
+  const profileSection = page.locator("#profile")
+  const activeProfileLink = page.getByRole("navigation", { name: "Account navigation" }).getByRole("link", {
+    name: "Profile",
+    exact: true,
+  })
 
-  await expect(activeEmailLink).toHaveAttribute("aria-current", "page")
-  await expect(activeEmailLink.locator("svg")).toHaveCSS("fill", activeLinkColor)
-  await expect(page.locator("main").getByText("Authworks", { exact: true })).toHaveCount(0)
-  await expect(page.locator("aside").getByRole("link", { name: "Authworks", exact: true })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "Email address and verification", exact: true })).toBeVisible()
+  await expect(activeProfileLink).toHaveAttribute("aria-current", "location")
+  await expect(profileSection.getByRole("heading", { name: "Personal information", exact: true })).toBeVisible()
+  const identityDetails = profileSection.getByText("customer-user", { exact: true }).locator("..")
+  await expect(identityDetails.getByText("user@customer.example", { exact: true })).toBeVisible()
+  await expect(page.getByText("Sign-in details", { exact: true })).toHaveCount(0)
+  await expect(page.locator("aside")).toHaveCount(0)
 
-  await page.goto("/account/sessions")
-  await expect(page.locator("main").getByText("Authworks", { exact: true })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
+  await page.goto("/account#devices-applications")
+  await expect(
+    page.locator("#devices-applications").getByRole("heading", { name: /Sessions and devices.*Applications/ }),
+  ).toBeVisible()
 })
 
-test("desktop sidebar collapse releases production content space", async ({ page }) => {
+test("account workspace uses full-width content without a contextual sidebar", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 720 })
   await page.goto("/account")
 
   const content = page.locator("main").locator("..")
-  await expect(content).toHaveCSS("margin-left", "240px")
-  await page.getByRole("button", { name: "Close sidebar" }).click()
   await expect(page.locator("aside")).toHaveCount(0)
   await expect(content).toHaveCSS("margin-left", "0px")
-
-  await page.getByRole("button", { name: "Open sidebar" }).click()
-  await expect(page.locator("aside")).toHaveCount(1)
-  await expect(content).toHaveCSS("margin-left", "240px")
+  await expect(page.getByRole("button", { name: "Close sidebar" })).toHaveCount(0)
+  await expect(page.locator("header").first()).toHaveCSS("position", "sticky")
 })
 
 test("representative production login, account, and administration views have no serious axe violations", async ({
@@ -210,7 +228,7 @@ test("representative production login, account, and administration views have no
     { height: 844, width: 390 },
   ]) {
     await page.setViewportSize(viewport)
-    for (const path of ["/login/password", "/account/sessions", "/admin"]) {
+    for (const path of ["/login/password", "/account", "/admin"]) {
       await page.goto(path)
       await expect(page.locator("main")).toBeVisible()
       const accessibility = await new AxeBuilder({ page }).analyze()

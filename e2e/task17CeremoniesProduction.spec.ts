@@ -51,31 +51,34 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     await page.getByRole("button", { name: "Verify", exact: true }).click()
     await expect(page).toHaveURL(/\/account$/)
 
-    await page.goto(`${browserOrigin}/account/factors`)
-    await expect(page.getByRole("button", { name: "Remove authenticator", exact: true })).toBeVisible()
-    await page.getByRole("button", { name: "Remove authenticator", exact: true }).click()
-    await expect(page.getByRole("button", { name: "Add authenticator", exact: true })).toBeVisible()
+    await page.goto(`${browserOrigin}/account#security`)
+    const securitySection = page.locator("#security")
+    await expect(securitySection.getByRole("button", { name: "Remove authenticator", exact: true })).toBeVisible()
+    await securitySection.getByRole("button", { name: "Remove authenticator", exact: true }).click()
+    await expect(securitySection.getByRole("button", { name: "Add authenticator", exact: true })).toBeVisible()
 
     const enrollmentResponsePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/mfa/totp/enroll"),
     )
-    await page.getByRole("button", { name: "Add authenticator", exact: true }).click()
+    await securitySection.getByRole("button", { name: "Add authenticator", exact: true }).click()
     const enrollmentResponse = await enrollmentResponsePromise
     const enrollmentBody = (await enrollmentResponse.json()) as { readonly secret: string }
     expect(enrollmentResponse.status()).toBe(200)
     expect(enrollmentBody.secret).toMatch(/^[A-Z2-7]{16,128}$/)
     const enrollmentCode = totpCodeCreate(enrollmentBody.secret, Math.floor(Date.now() / 30_000))
-    await page.getByLabel("Verification code", { exact: true }).fill(enrollmentCode)
+    await securitySection.getByLabel("Verification code", { exact: true }).fill(enrollmentCode)
     const enrollmentConfirmPromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/mfa/totp/confirm"),
     )
-    await page.getByRole("button", { name: "Confirm", exact: true }).click()
+    await securitySection.getByRole("button", { name: "Confirm", exact: true }).click()
     const enrollmentConfirm = await enrollmentConfirmPromise
     expect(enrollmentConfirm.status()).toBe(200)
-    await expect(page.getByRole("button", { name: "Remove authenticator", exact: true })).toBeVisible()
+    await expect(securitySection.getByRole("button", { name: "Remove authenticator", exact: true })).toBeVisible()
     collectSafeResponses = true
     await page.reload()
-    await expect(page.getByRole("button", { name: "Remove authenticator", exact: true })).toBeVisible()
+    await expect(
+      page.locator("#security").getByRole("button", { name: "Remove authenticator", exact: true }),
+    ).toBeVisible()
     await expect(page.locator("body")).not.toContainText(enrollmentBody.secret)
     await browserSecretAssert(page, context, enrollmentBody.secret, safeResponseBodies, requestUrls)
     await totpStepAdvanceWait()
@@ -110,17 +113,18 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     expect(challengeComplete.status()).toBe(200)
     await expect(page).toHaveURL(/\/account$/)
     await page.reload()
-    await page.goto(`${browserOrigin}/account/profile`)
-    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await page.goto(`${browserOrigin}/account#profile`)
+    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
 
-    await page.goto(`${browserOrigin}/account/passkeys`)
+    await page.goto(`${browserOrigin}/account#security`)
+    const securityPasskeysSection = page.locator("#security")
     const registrationStartPromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/passkeys/registration/start"),
     )
     const registrationCompletePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/passkeys/registration/complete"),
     )
-    await page.getByRole("button", { name: "Add passkey", exact: true }).click()
+    await securityPasskeysSection.getByRole("button", { name: "Add passkey", exact: true }).click()
     const registrationStart = await registrationStartPromise
     const registrationStartBody = (await registrationStart.json()) as {
       readonly options: { readonly rp: { readonly id: string }; readonly user: { readonly id: string } }
@@ -131,9 +135,9 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     expect(registrationStartBody.options.user.id.length).toBeGreaterThan(0)
     const registrationComplete = await registrationCompletePromise
     expect(registrationComplete.status()).toBe(200)
-    await expect(page.getByText("Device-bound passkey", { exact: true })).toBeVisible()
+    await expect(securityPasskeysSection.getByText("Device-bound passkey", { exact: true })).toBeVisible()
     await page.reload()
-    await expect(page.getByText("Device-bound passkey", { exact: true })).toBeVisible()
+    await expect(page.locator("#security").getByText("Device-bound passkey", { exact: true })).toBeVisible()
 
     await page.goto(`${browserOrigin}/login/logout`)
     await page.getByRole("button", { name: "Sign out", exact: true }).click()
@@ -170,8 +174,8 @@ test("task 17 composed production ceremonies complete passkeys and TOTP without 
     expect((await passkeyMfaCompletePromise).status()).toBe(200)
     await expect(page).toHaveURL(/\/account$/)
     await page.reload()
-    await page.goto(`${browserOrigin}/account/profile`)
-    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await page.goto(`${browserOrigin}/account#profile`)
+    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
     await browserSecretAssert(page, context, enrollmentBody.secret, safeResponseBodies, requestUrls)
     await browserSecretAssert(page, context, registrationStartBody.token, [], requestUrls)
     await browserSecretAssert(page, context, authenticationStartBody.token, [], requestUrls)

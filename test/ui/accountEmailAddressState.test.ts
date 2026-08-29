@@ -6,10 +6,12 @@ import { accountPageStateCreate } from "../../src/features/account/ui/accountPag
 const cleanups: (() => void)[] = []
 
 const submitEvent = { preventDefault: () => {} } as SubmitEvent
+const originalWindow = globalThis.window
 
 afterEach(async () => {
   await new Promise<void>((resolve) => setTimeout(resolve, 0))
   for (const cleanup of cleanups.splice(0)) cleanup()
+  Object.defineProperty(globalThis, "window", { configurable: true, value: originalWindow })
 })
 
 describe("account email-address state", () => {
@@ -103,6 +105,34 @@ describe("account email-address state", () => {
     expect(starts).toBe(1)
     expect(verifies).toBe(0)
     expect(state.emailValidationMessage.get()).toBe("Enter the verification token from the email.")
+  })
+
+  test("removes callback parameters without dropping remaining account query parameters", async () => {
+    const replaceStateCalls: string[] = []
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        history: {
+          replaceState: (_state: unknown, _title: string, url: string) => replaceStateCalls.push(url),
+          state: { page: "account" },
+        },
+        location: {
+          hash: "#profile",
+          pathname: "/account",
+          search: "?tab=profile&challengeId=email-address-challenge&token=abcdefghijklmnopqrstuvwxyz123456&locale=en",
+        },
+      } as unknown as Window,
+    })
+
+    const state = stateCreate({
+      adapter: accountDemoAdapterCreate(() => "success"),
+      initialStatus: "ready",
+      kind: "email",
+    })
+    await new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+    expect(state.emailStatus.get()).toBe("code")
+    expect(replaceStateCalls).toEqual(["/account?tab=profile&locale=en#profile"])
   })
 })
 

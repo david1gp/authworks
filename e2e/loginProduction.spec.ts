@@ -321,12 +321,12 @@ test("production login renders the discovered branding logo instead of the fallb
 test("a successful production password sign-in returns to a validated return path", async ({ page }) => {
   const requests = await loginBackendMock(page, (route) => route.fulfill({ json: { authentication } }))
 
-  await page.goto("/login/password?return_to=%2Faccount%2Fprofile")
+  await page.goto("/login/password?return_to=%2Faccount%23profile")
   await page.getByLabel("Username or email").fill("alex@acme.example")
   await page.getByLabel("Password", { exact: true }).fill("correct-horse")
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
 
-  await expect(page).toHaveURL(/\/account\/profile$/)
+  await expect(page).toHaveURL(/\/account#profile$/)
   const login = requests.find((request) => request.pathname.endsWith("/password/login"))
   expect(login?.pathname).toBe(`/realms/${realmId}/password/login`)
   expect(JSON.parse(login?.body ?? "{}")).toMatchObject({ identifier: "alex@acme.example", organizationId })

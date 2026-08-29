@@ -21,13 +21,13 @@ describe("production route contracts", () => {
   test("encodes the exact same-origin path, query, and hash for login continuation", () => {
     const redirectUrl = productionLoginRedirectUrlCreate({
       hash: "#password",
-      pathname: "/account/profile",
+      pathname: "/account",
       search: "?tab=security&mode=edit",
     })
 
-    expect(redirectUrl).toBe("/login?return_to=%2Faccount%2Fprofile%3Ftab%3Dsecurity%26mode%3Dedit%23password")
+    expect(redirectUrl).toBe("/login?return_to=%2Faccount%3Ftab%3Dsecurity%26mode%3Dedit%23password")
     expect(new URL(redirectUrl, "https://authworks.example").searchParams.get("return_to")).toBe(
-      "/account/profile?tab=security&mode=edit#password",
+      "/account?tab=security&mode=edit#password",
     )
   })
 
@@ -61,7 +61,37 @@ describe("production route contracts", () => {
       ]),
     )
     expect(productionRouteContractMap.consent.screens[0]?.contracts).toContain("oidc.consent")
-    expect(productionRouteContractMap.account.screens.map((screen) => screen.path)).toContain("/account/sessions")
+    expect(productionRouteContractMap.account.screens.map((screen) => screen.path)).toEqual(["/account"])
+    expect(productionRouteContractMap.account.screens[0]?.contracts).toEqual(
+      expect.arrayContaining([
+        "account.profile",
+        "account.email",
+        "account.password",
+        "account.delete",
+        "organizations.list",
+        "organizations.switch",
+        "account.effective-access",
+        "sessions.list",
+        "sessions.revoke",
+        "passkeys.list",
+        "passkeys.revoke",
+        "mfa.list",
+        "mfa.enroll",
+        "mfa.revoke",
+        "mfa.recovery-codes",
+        "external-identities.list",
+        "external-identities.providers",
+        "external-identities.link-start",
+        "external-identities.link-callback",
+        "external-identities.link-complete",
+        "external-identities.unlink",
+        "oidc.refresh-tokens.list",
+        "oidc.refresh-tokens.revoke",
+        "account.security-history",
+        "oidc.consents.list",
+        "oidc.consents.revoke",
+      ]),
+    )
     expect(productionRouteContractMap.invitations.screens.map((screen) => screen.path)).toContain("/invitations/accept")
     expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).toContain("/admin/users/:userId")
 
@@ -104,24 +134,18 @@ describe("production route contracts", () => {
       }
     }
 
-    expect(productionShellNavigationGroups.invitations[0]?.items[0]?.icon).toBe(
-      productionShellNavigationGroups.account[0]?.items[0]?.icon,
-    )
-    expect(productionShellNavigationGroups.invitations[0]?.items[1]?.icon).toBe(
-      productionShellNavigationGroups.account[0]?.items[3]?.icon,
-    )
-    expect(productionShellNavigationGroups.account[2]?.items[0]?.icon).toBeDefined()
+    expect(productionShellNavigationGroups.invitations[0]?.items[0]?.icon).toBeDefined()
+    expect(productionShellNavigationGroups.invitations[0]?.items[1]?.icon).toBeDefined()
+    expect(productionShellNavigationGroups.admin[0]?.items[0]?.icon).toBeDefined()
   })
 
   test("resolves shell labels that share an English value through distinct unambiguous keys", () => {
-    const accountOverview = productionShellNavigationGroups.account[0]?.items[0]
     const adminOverview = productionShellNavigationGroups.admin[0]?.items[0]
-    expect(accountOverview?.label).toBe("shell.nav.overview")
     expect(adminOverview?.label).toBe("shell.nav.overview")
 
     // "Application consents" is also the English value of admin.oidc.consents.title.
-    const accountConsents = productionShellNavigationGroups.account[2]?.items[0]
-    expect(accountConsents?.label).toBe("shell.nav.applicationConsents")
+    const adminConsents = productionShellNavigationGroups.admin[3]?.items[2]
+    expect(adminConsents?.label).toBe("shell.nav.applicationConsents")
     expect(englishCatalog["shell.nav.applicationConsents"]).toBe(englishCatalog["admin.oidc.consents.title"])
 
     // "Password" and "Profile" and "Email address" duplicate feature catalog values.
@@ -129,10 +153,9 @@ describe("production route contracts", () => {
     expect(englishCatalog["shell.nav.profile"]).toBe(englishCatalog["admin.users.profileTitle"])
     expect(englishCatalog["shell.nav.emailAddress"]).toBe(englishCatalog["account.profile.email"])
 
-    const accountScreens = productionRouteContractMap.account.screens
-    expect(accountScreens.find((screen) => screen.key === "password")?.title).toBe("shell.nav.password")
-    expect(accountScreens.find((screen) => screen.key === "profile")?.title).toBe("shell.nav.profile")
-    expect(accountScreens.find((screen) => screen.key === "email")?.title).toBe("shell.nav.emailAddress")
+    const accountScreen = productionRouteContractMap.account.screens[0]
+    expect(accountScreen?.key).toBe("overview")
+    expect(accountScreen?.title).toBe("shell.nav.account")
   })
 
   test("renders every advertised administration screen through exactly one feature owner", () => {
@@ -228,7 +251,8 @@ describe("production shell state", () => {
   })
 
   test("selects exact and parameterized screens without falling back for inaccessible paths", () => {
-    expect(productionRouteScreenSelect(productionRouteContractMap.account, "/account/sessions")?.key).toBe("sessions")
+    expect(productionRouteScreenSelect(productionRouteContractMap.account, "/account")?.key).toBe("overview")
+    expect(productionRouteScreenSelect(productionRouteContractMap.account, "/account/sessions")).toBeUndefined()
     expect(productionRouteScreenSelect(productionRouteContractMap.admin, "/admin/users/user-42")?.key).toBe(
       "user-detail",
     )
@@ -256,11 +280,7 @@ describe("production shell state", () => {
   })
 
   test("keeps navigation grouped and marks only the matching destination active", () => {
-    expect(productionShellNavigationGroups.account.map((group) => group.label)).toEqual([
-      "shell.nav.personalInformation",
-      "shell.nav.security",
-      "shell.nav.access",
-    ])
+    expect(productionShellNavigationGroups.account).toEqual([])
     expect(productionShellNavigationGroups.admin.map((group) => group.label)).toEqual([
       "shell.nav.realm",
       "shell.nav.directory",
@@ -270,7 +290,11 @@ describe("production shell state", () => {
     ])
     expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
     expect(productionNavigationItemActive("/admin", "/admin/users")).toBe(false)
-    expect(productionNavigationItemActive("/account", "/account/password")).toBe(false)
+    expect(productionNavigationItemActive("/admin", "/admin")).toBe(true)
+    expect(productionNavigationItemActive("/admin", "/account")).toBe(false)
+    expect(productionNavigationItemActive("/account", "/account")).toBe(true)
+    expect(productionNavigationItemActive("/account", "/admin")).toBe(false)
+    expect(productionNavigationItemActive("/account", "/account/legacy")).toBe(false)
   })
 
   test("shows administration only for an active-realm realm.read decision and always returns to account from admin", () => {

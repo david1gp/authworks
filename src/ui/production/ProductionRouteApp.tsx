@@ -1,9 +1,7 @@
 import { Match, Show, Switch } from "solid-js"
 import * as v from "valibot"
 import { AccountAccessProductionAdapter } from "../../features/account/ui/AccountAccessProductionAdapter.js"
-import { AccountProductionAdapter } from "../../features/account/ui/AccountProductionAdapter.js"
-import { AccountSecurityProductionAdapter } from "../../features/account/ui/AccountSecurityProductionAdapter.js"
-import { accountSecurityScreenSchema } from "../../features/account/ui/accountSecurityScreenSchema.js"
+import { AccountWorkspaceProductionAdapter } from "../../features/account/ui/AccountWorkspaceProductionAdapter.js"
 import { AdminProductionAdapter } from "../../features/admin/ui/AdminProductionAdapter.js"
 import { adminScreenSchema } from "../../features/admin/ui/adminScreenSchema.js"
 import { ImpersonationAdminProductionAdapter } from "../../features/impersonation/ui/ImpersonationAdminProductionAdapter.js"
@@ -86,10 +84,12 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
                 title={screen().title}
               >
                 <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-                  <AuthenticatedPageHeader
-                    eyebrow={screen().path === "/account/email" ? undefined : messageTranslate("app.name")}
-                    title={messageTranslate(screen().title)}
-                  />
+                  <Show when={state.shellKind() !== "account"}>
+                    <AuthenticatedPageHeader
+                      eyebrow={messageTranslate("app.name")}
+                      title={messageTranslate(screen().title)}
+                    />
+                  </Show>
                   <ProductionRouteContent state={state} />
                 </div>
               </ProductionAuthenticatedShell>
@@ -102,10 +102,6 @@ export function ProductionRouteApp(props: { readonly route: ProductionRouteContr
 }
 
 function ProductionRouteContent(props: { state: ReturnType<typeof productionRouteAppStateCreate> }) {
-  const accountScreen = () => {
-    const parsed = v.safeParse(accountSecurityScreenSchema, props.state.screen()?.key)
-    return parsed.success ? parsed.output : undefined
-  }
   const realmId = () => {
     const guard = props.state.guardState()
     return guard.status === "authenticated" ? guard.realmId : undefined
@@ -159,36 +155,18 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
       <Match when={adminScreen() !== undefined}>
         <AdminProductionAdapter screen={adminScreen()!} />
       </Match>
-      <Match when={props.state.screen()?.key === "organizations" && props.state.shellKind() === "account"}>
-        <AccountAccessProductionAdapter screen="organizations" />
-      </Match>
-      <Match when={props.state.screen()?.key === "effective-access" && props.state.shellKind() === "account"}>
-        <AccountAccessProductionAdapter screen="effective-access" />
-      </Match>
-      <Match when={props.state.screen()?.key === "consents" && props.state.shellKind() === "account"}>
-        <AccountAccessProductionAdapter screen="consents" />
-      </Match>
       <Match when={props.state.screen()?.key === "overview" && props.state.shellKind() === "invitations"}>
         <AccountAccessProductionAdapter screen="invitations" />
       </Match>
       <Match when={props.state.screen()?.key === "accept" && props.state.shellKind() === "invitations"}>
         <AccountAccessProductionAdapter screen="invitation" />
       </Match>
-      <Match when={accountScreen() !== undefined && realmId() !== undefined}>
-        <AccountSecurityProductionAdapter realmId={realmId() as string} screen={accountScreen()!} />
-      </Match>
       <Match
         when={
-          props.state.screen()?.path === "/account" ||
-          props.state.screen()?.path === "/account/profile" ||
-          props.state.screen()?.path === "/account/email" ||
-          props.state.screen()?.path === "/account/password" ||
-          props.state.screen()?.path === "/account/delete"
+          props.state.screen()?.key === "overview" && props.state.shellKind() === "account" && realmId() !== undefined
         }
       >
-        <AccountProductionAdapter
-          kind={(props.state.screen()?.key ?? "overview") as "delete" | "email" | "overview" | "password" | "profile"}
-        />
+        <AccountWorkspaceProductionAdapter realmId={realmId() as string} />
       </Match>
       <Match when={props.state.api.content === "loading"}>
         <ProductionStatePanel state="loading" />

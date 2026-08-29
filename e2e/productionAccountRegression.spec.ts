@@ -8,123 +8,56 @@ type ProductionAccountApiEvidence = {
   readonly path: RegExp
 }
 
-type ProductionAccountTab = {
+type ProductionAccountSection = {
   readonly apiEvidence: readonly ProductionAccountApiEvidence[]
   readonly content: string | RegExp
   readonly heading: string
-  readonly href: string
+  readonly id: string
   readonly label: string
 }
 
-const accountTabs: readonly ProductionAccountTab[] = [
+const accountSections: readonly ProductionAccountSection[] = [
   {
-    apiEvidence: [{ path: /\/me$/ }],
-    content: "Sign-in details",
-    heading: "Account",
-    href: "/account",
-    label: "Overview",
-  },
-  {
-    apiEvidence: [{ path: /\/me$/ }],
+    apiEvidence: [{ path: /\/me$/ }, { path: /\/me\/emails$/ }],
     content: "Personal information",
     heading: "Profile",
-    href: "/account/profile",
+    id: "profile",
     label: "Profile",
   },
   {
-    apiEvidence: [{ path: /\/me$/ }, { path: /\/me\/emails$/ }],
-    content: "Email address and verification",
-    heading: "Email address",
-    href: "/account/email",
-    label: "Email address",
-  },
-  {
-    apiEvidence: [{ path: /\/me\/organizations$/ }],
-    content: "Choose which organization you are working in.",
-    heading: "My organizations",
-    href: "/account/organizations",
-    label: "Organizations",
-  },
-  {
-    apiEvidence: [{ path: /\/me$/ }],
+    apiEvidence: [
+      { path: /\/me$/ },
+      { path: /\/passkeys$/ },
+      { path: /\/me\/authentication-methods$/ },
+      { path: /\/me\/external-identities$/ },
+      { path: /\/me\/external-identity-providers$/ },
+      { path: /\/me\/security-history$/ },
+    ],
     content: "Change password",
-    heading: "Password",
-    href: "/account/password",
-    label: "Password",
+    heading: "Security",
+    id: "security",
+    label: "Security",
   },
   {
-    apiEvidence: [{ path: /\/me\/sessions$/ }],
+    apiEvidence: [{ path: /\/me\/sessions$/ }, { path: /\/me\/refresh-tokens$/ }, { path: /\/me\/consents$/ }],
     content: "Review devices where your account is signed in and revoke any session you do not recognize.",
-    heading: "Sessions and devices",
-    href: "/account/sessions",
+    heading: "Sessions and devices · Applications",
+    id: "devices-applications",
     label: "Sessions and devices",
   },
   {
-    apiEvidence: [{ path: /\/passkeys$/ }],
-    content: "Passkeys use your device screen lock or security key for secure sign-in.",
-    heading: "Passkeys",
-    href: "/account/passkeys",
-    label: "Passkeys",
-  },
-  {
-    apiEvidence: [{ path: /\/me\/authentication-methods$/ }],
-    content: "Review the authentication methods available to your account and manage your authenticator app.",
-    heading: "Multi-factor authentication",
-    href: "/account/factors",
-    label: "Multi-factor authentication",
-  },
-  {
-    apiEvidence: [{ path: /\/me\/authentication-methods$/ }],
-    content: "Recovery access",
-    heading: "Recovery codes",
-    href: "/account/recovery-codes",
-    label: "Recovery codes",
-  },
-  {
-    apiEvidence: [{ path: /\/me\/external-identities$/ }, { path: /\/me\/external-identity-providers$/ }],
-    content: "External accounts linked to your Authworks identity. Unlink accounts you no longer use.",
-    heading: "Linked identities",
-    href: "/account/identities",
-    label: "Linked identities",
-  },
-  {
-    apiEvidence: [{ path: /\/me\/refresh-tokens$/ }],
-    content:
-      "Review the applications using refresh tokens for this account. Only safe metadata is shown; revoking a family also invalidates its access tokens.",
-    heading: "Refresh tokens",
-    href: "/account/refresh-tokens",
-    label: "Refresh tokens",
-  },
-  {
-    apiEvidence: [{ path: /\/me\/security-history$/ }],
-    content:
-      "Review recent security activity for this account. Sensitive event details and identifiers are never shown.",
-    heading: "Security history",
-    href: "/account/security-history",
-    label: "Security history",
-  },
-  {
-    apiEvidence: [{ path: /\/me\/consents$/ }],
-    content:
-      /Applications that can access information from your account\.|No applications have access to this account\./,
-    heading: "Application consents",
-    href: "/account/consents",
-    label: "Application consents",
-  },
-  {
-    apiEvidence: [{ path: /\/me\/effective-access$/ }],
-    content:
-      /Review the active organizations, projects, roles, and permissions available to this account\.|This account has no active organization or project access\./,
-    heading: "Effective access",
-    href: "/account/effective-access",
-    label: "Effective access",
+    apiEvidence: [{ path: /\/me\/organizations$/ }, { path: /\/me\/effective-access$/ }],
+    content: "Choose which organization you are working in.",
+    heading: "Access",
+    id: "access",
+    label: "Access",
   },
   {
     apiEvidence: [{ path: /\/me$/ }],
-    content: "Danger zone",
-    heading: "Delete account",
-    href: "/account/delete",
-    label: "Delete account",
+    content: "Permanently delete this account",
+    heading: "Danger zone",
+    id: "danger-zone",
+    label: "Danger zone",
   },
 ]
 
@@ -361,21 +294,21 @@ function productionAccountSchemaPathCreate(value: string): string {
     .join(".")
 }
 
-async function productionAccountTabVerify(
+async function productionAccountSectionVerify(
   page: Page,
   diagnostics: ReturnType<typeof productionAccountDiagnosticsCreate>,
-  tab: ProductionAccountTab,
-  sequenceBefore: number,
+  section: ProductionAccountSection,
+  responses: readonly ProductionResponseDiagnostic[],
 ) {
-  const message = diagnostics.failureMessage(tab.href)
-  await expect(page).toHaveURL(`${productionOrigin}${tab.href}`)
-  await expect(page.locator("main h1").first(), message).toHaveText(tab.heading)
-  await expect(page.locator("main").getByText(tab.content).first(), message).toBeVisible()
+  const message = diagnostics.failureMessage(`#${section.id}`)
+  const workspaceSection = page.locator(`#${section.id}`)
+  await expect(page).toHaveURL(`${productionOrigin}/account#${section.id}`)
+  await expect(workspaceSection.getByRole("heading", { name: section.heading, exact: true }), message).toBeVisible()
+  await expect(workspaceSection.getByText(section.content).first(), message).toBeVisible()
   await expect(page.locator('[data-content-state="loading"], [role="status"]'), message).toHaveCount(0)
   await diagnostics.flush()
 
-  const responses = diagnostics.responsesSince(sequenceBefore)
-  for (const evidence of tab.apiEvidence) {
+  for (const evidence of section.apiEvidence) {
     expect(
       responses.some(
         (response) => evidence.path.test(response.path) && response.status >= 200 && response.status < 300,
@@ -392,34 +325,44 @@ async function productionAccountTabVerify(
   expect(diagnostics.snapshot().pageErrors, message).toBe(0)
 }
 
-productionAuthTest("authenticated production account tabs remain valid", async ({ page, productionAuth }, testInfo) => {
-  testInfo.setTimeout(180_000)
-  const diagnostics = productionAccountDiagnosticsCreate(page)
-  try {
-    await productionAuth.signIn(page)
-    diagnostics.accountPhaseMark()
-    await expect(page).toHaveURL(`${productionOrigin}/account`)
-    await page.goto(`${productionOrigin}/account`)
-    await page.reload()
-    await expect(page).toHaveURL(`${productionOrigin}/account`)
+productionAuthTest(
+  "authenticated production account workspace sections remain valid",
+  async ({ page, productionAuth }, testInfo) => {
+    testInfo.setTimeout(180_000)
+    const diagnostics = productionAccountDiagnosticsCreate(page)
+    try {
+      await productionAuth.signIn(page)
+      diagnostics.accountPhaseMark()
+      await expect(page).toHaveURL(`${productionOrigin}/account`)
+      const accountLoadSequenceBefore = diagnostics.responseSequenceMark()
+      await page.goto(`${productionOrigin}/account`)
+      await expect(page).toHaveURL(`${productionOrigin}/account`)
 
-    const navigation = page.locator("nav").first()
-    await expect(navigation).toHaveCount(1)
-    for (const tab of accountTabs) {
-      const link = navigation.getByRole("link", { exact: true, name: tab.label })
-      await expect(link).toBeVisible()
-      await expect(link).toHaveAttribute("href", tab.href)
-      const retainedSequenceBefore = tab.href === "/account" ? 0 : diagnostics.responseSequenceMark()
-      if (tab.href !== "/account") await link.click()
-      await expect(link).toHaveAttribute("aria-current", "page")
-      await productionAccountTabVerify(page, diagnostics, tab, retainedSequenceBefore)
+      const navigation = page.getByRole("navigation", { name: "Account navigation" })
+      await expect(navigation).toBeVisible()
+      await expect(page.locator("header").first()).toHaveCSS("position", "sticky")
+      await expect(navigation).toHaveCSS("position", "sticky")
+      await expect(page.getByText("Sign-in details", { exact: true })).toHaveCount(0)
+      await diagnostics.flush()
+      const accountResponses = diagnostics.responsesSince(accountLoadSequenceBefore)
 
-      const reloadSequenceBefore = diagnostics.responseSequenceMark()
+      for (const section of accountSections) {
+        const link = navigation.getByRole("link", { exact: true, name: section.label })
+        await expect(link).toBeVisible()
+        await expect(link).toHaveAttribute("href", `#${section.id}`)
+        await link.click()
+        await expect(link).toHaveAttribute("aria-current", "location")
+        await productionAccountSectionVerify(page, diagnostics, section, accountResponses)
+      }
+
       await page.reload()
-      await expect(link).toHaveAttribute("aria-current", "page")
-      await productionAccountTabVerify(page, diagnostics, tab, reloadSequenceBefore)
+      await expect(page).toHaveURL(`${productionOrigin}/account#danger-zone`)
+      await expect(navigation.getByRole("link", { exact: true, name: "Danger zone" })).toHaveAttribute(
+        "aria-current",
+        "location",
+      )
+    } finally {
+      await diagnostics.attach(testInfo)
     }
-  } finally {
-    await diagnostics.attach(testInfo)
-  }
-})
+  },
+)

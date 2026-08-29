@@ -59,6 +59,7 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
 
   const pictureChooser = page.getByLabel("Choose a picture file")
   await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
+  await expect(page.locator('[role="button"][aria-label="Change picture"]')).toHaveAttribute("tabindex", "0")
   await expect(page.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
 
   await pictureChooser.setInputFiles(
@@ -137,49 +138,65 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
       await route.fulfill({ json: { user: currentUser } })
       return
     }
-    await route.fulfill({ json: { capabilities: { realmRead: true }, user: currentUser } })
+    await accountBackgroundResponseFulfill(route, pathname, currentUser, [
+      {
+        createdAt: 1_774_000_000_000,
+        email: currentUser.email,
+        id: "profile-email",
+        isPrimary: true,
+        updatedAt: 1_774_000_000_000,
+        verified: currentUser.emailVerified,
+        verifiedAt: currentUser.emailVerifiedAt ?? null,
+        version: 1,
+      },
+    ])
   })
 
   // The hosted avatar is served so the reachable path is asserted rather than the fallback.
   await pictureAssetHostInstall(page)
 
-  await page.goto("/account/profile")
-  await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("Avery Stone")
-  await expect(page.getByRole("button", { name: "Unspecified", exact: true })).toBeVisible()
-  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveAttribute(
+  await page.goto("/account#profile")
+  const profileSection = page.locator("#profile")
+  await expect(profileSection.getByLabel("Display name", { exact: true })).toHaveValue("Avery Stone")
+  await expect(profileSection.getByRole("button", { name: "Unspecified", exact: true })).toBeVisible()
+  await expect(profileSection.getByRole("img", { name: "Current profile picture" })).toHaveAttribute(
     "src",
     "https://assets.example.com/avery-stone.png",
   )
-  await page.getByLabel("Display name", { exact: true }).fill("Avery Updated")
-  await page.getByRole("button", { name: "Unspecified", exact: true }).click()
+  await profileSection.getByLabel("Display name", { exact: true }).fill("Avery Updated")
+  await profileSection.getByRole("button", { name: "Unspecified", exact: true }).click()
   await page.getByRole("option", { name: "Woman", exact: true }).click()
-  await page.getByRole("button", { name: "Save changes" }).click()
+  await profileSection.getByRole("button", { name: "Save changes" }).click()
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
 
-  const pictureChooser = page.getByLabel("Choose a picture file")
+  const pictureChooser = profileSection.getByLabel("Choose a picture file")
   await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
-  await expect(page.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
+  await expect(profileSection.locator('[role="button"][aria-label="Change picture"]')).toHaveAttribute("tabindex", "0")
+  await expect(profileSection.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
 
   // Client-side rejections must never reach the upload route.
   await pictureChooser.setInputFiles(
     accountPictureFileFixture({ bytes: 600 * 1024, mimeType: "image/png", name: "too-large.png" }),
   )
-  await expect(page.getByText("Choose an image of at most 512 KiB.")).toBeVisible()
+  await expect(profileSection.getByText("Choose an image of at most 512 KiB.")).toBeVisible()
   await pictureChooser.setInputFiles(
     accountPictureFileFixture({ bytes: 1024, mimeType: "image/bmp", name: "unsupported.bmp" }),
   )
-  await expect(page.getByText("Choose a JPEG, PNG, WebP, or GIF image.")).toBeVisible()
+  await expect(profileSection.getByText("Choose a JPEG, PNG, WebP, or GIF image.")).toBeVisible()
   expect(pictureRequests).toEqual([])
 
   await pictureChooser.setInputFiles(
     accountPictureFileFixture({ bytes: 3072, mimeType: "image/png", name: "avery-updated.png" }),
   )
-  await expect(page.getByText("Profile picture updated.")).toBeVisible()
-  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveAttribute("src", uploadedPictureUrl)
+  await expect(profileSection.getByText("Profile picture updated.")).toBeVisible()
+  await expect(profileSection.getByRole("img", { name: "Current profile picture" })).toHaveAttribute(
+    "src",
+    uploadedPictureUrl,
+  )
 
-  await page.getByRole("button", { name: "Remove picture" }).click()
-  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveCount(0)
-  await expect(page.getByRole("button", { name: "Remove picture" })).toHaveCount(0)
+  await profileSection.getByRole("button", { name: "Remove picture" }).click()
+  await expect(profileSection.getByRole("img", { name: "Current profile picture" })).toHaveCount(0)
+  await expect(profileSection.getByRole("button", { name: "Remove picture" })).toHaveCount(0)
 
   expect(csrfHeader).toBe("e2e-csrf-token")
   expect(pictureRequests).toEqual([
@@ -267,11 +284,12 @@ test("production profile adds, verifies, and changes its WhatsApp phone number",
       await route.fulfill({ json: { user: currentUser } })
       return
     }
-    await route.fulfill({ json: { capabilities: { realmRead: true }, user: currentUser } })
+    await accountBackgroundResponseFulfill(route, pathname, currentUser)
   })
 
-  await page.goto("/account/profile")
+  await page.goto("/account#profile")
   const phoneSection = page
+    .locator("#profile")
     .locator("section")
     .filter({ has: page.getByRole("heading", { name: "WhatsApp phone number" }) })
   await expect(phoneSection.getByText("No verified phone number added", { exact: true })).toBeVisible()
@@ -376,12 +394,20 @@ test("production email addresses use the lifecycle APIs and protect the primary 
       await route.fulfill({ json: { items: addresses } })
       return
     }
-    requests.push({
-      ...(method === "POST" ? { body: route.request().postDataJSON() } : {}),
-      csrf: route.request().headers()["x-csrf-token"] ?? null,
-      method,
-      path,
-    })
+    const isEmailLifecyclePath =
+      path.endsWith("/me/emails/add/start") ||
+      path.endsWith("/me/emails/add/resend") ||
+      path.endsWith("/me/emails/add/verify") ||
+      path.endsWith(`/me/emails/${secondaryEmailId}/primary`) ||
+      path.endsWith(`/me/emails/${primaryEmailId}`)
+    if (isEmailLifecyclePath) {
+      requests.push({
+        ...(method === "POST" ? { body: route.request().postDataJSON() } : {}),
+        csrf: route.request().headers()["x-csrf-token"] ?? null,
+        method,
+        path,
+      })
+    }
     if (path.endsWith("/add/start") || path.endsWith("/add/resend")) {
       await route.fulfill({
         json: { accepted: true, challengeId, expiresAt: 1_800_000_300_000, retryAt: 1_800_000_060_000 },
@@ -413,21 +439,27 @@ test("production email addresses use the lifecycle APIs and protect the primary 
       await route.fulfill({ json: { removed: true } })
       return
     }
-    await route.abort()
+    await accountBackgroundResponseFulfill(route, path, user, addresses)
   })
 
-  await page.goto("/account/email")
-  const primaryRow = page.getByRole("listitem").filter({ hasText: user.email })
+  await page.goto("/account#profile")
+  const profileSection = page.locator("#profile")
+  const emailAddressList = profileSection.getByRole("list", { name: "Email addresses", exact: true })
+  const primaryRow = emailAddressList.getByRole("listitem").filter({
+    has: page.getByText(user.email, { exact: true }),
+  })
   await expect(primaryRow.getByText("Primary", { exact: true })).toBeVisible()
   await expect(primaryRow.getByRole("button", { name: "Remove", exact: true })).toBeDisabled()
 
-  await page.getByLabel("New email address").fill("avery.secondary@example.com")
-  await page.getByRole("button", { name: "Add email address", exact: true }).click()
-  await page.getByRole("button", { name: "Resend verification email", exact: true }).click()
-  await page.getByLabel("Verification token").fill("production-email-address-token-0000000000")
-  await page.getByRole("button", { name: "Verify email address", exact: true }).click()
+  await profileSection.getByLabel("New email address").fill("avery.secondary@example.com")
+  await profileSection.getByRole("button", { name: "Add email address", exact: true }).click()
+  await profileSection.getByRole("button", { name: "Resend verification email", exact: true }).click()
+  await profileSection.getByLabel("Verification token").fill("production-email-address-token-0000000000")
+  await profileSection.getByRole("button", { name: "Verify email address", exact: true }).click()
 
-  const secondaryRow = page.getByRole("listitem").filter({ hasText: "avery.secondary@example.com" })
+  const secondaryRow = emailAddressList.getByRole("listitem").filter({
+    has: page.getByText("avery.secondary@example.com", { exact: true }),
+  })
   await expect(secondaryRow.getByText("Verified", { exact: true })).toBeVisible()
   await secondaryRow.getByRole("button", { name: "Make primary", exact: true }).click()
   await expect(secondaryRow.getByText("Primary", { exact: true })).toBeVisible()
@@ -469,6 +501,7 @@ test("production email addresses use the lifecycle APIs and protect the primary 
 test("production password presents an API rejection", async ({ page }) => {
   await productionAccountSessionBootstrap(page)
   await accountApiRoutesInstall(page, async (route, method) => {
+    const pathname = new URL(route.request().url()).pathname
     if (method === "POST") {
       await route.fulfill({
         json: {
@@ -484,14 +517,15 @@ test("production password presents an API rejection", async ({ page }) => {
       })
       return
     }
-    await route.fulfill({ json: { capabilities: { realmRead: true }, user } })
+    await accountBackgroundResponseFulfill(route, pathname, user)
   })
 
-  await page.goto("/account/password")
-  await page.getByLabel("Current password").fill("wrong-password")
-  await page.getByLabel("New password", { exact: true }).fill("new-password")
-  await page.getByLabel("Confirm new password").fill("new-password")
-  await page.getByRole("button", { name: "Change password" }).click()
+  await page.goto("/account#security")
+  const securitySection = page.locator("#security")
+  await securitySection.getByLabel("Current password").fill("wrong-password")
+  await securitySection.getByLabel("New password", { exact: true }).fill("new-password")
+  await securitySection.getByLabel("Confirm new password").fill("new-password")
+  await securitySection.getByRole("button", { name: "Change password" }).click()
   await expect(page.getByText("The current password is incorrect.")).toBeVisible()
 })
 
@@ -523,4 +557,49 @@ async function accountApiRoutesInstall(page: Page, accountRoute: (route: Route, 
     }
     await accountRoute(route, route.request().method())
   })
+}
+
+async function accountBackgroundResponseFulfill(
+  route: Route,
+  pathname: string,
+  user: unknown,
+  emailAddresses: readonly unknown[] = [],
+) {
+  if (pathname.endsWith("/me/emails")) {
+    await route.fulfill({ json: { items: emailAddresses } })
+    return
+  }
+  if (pathname.endsWith("/me/sessions")) {
+    await route.fulfill({ json: { items: [] } })
+    return
+  }
+  if (pathname.endsWith("/passkeys")) {
+    await route.fulfill({ json: { items: [] } })
+    return
+  }
+  if (pathname.endsWith("/me/authentication-methods")) {
+    await route.fulfill({
+      json: {
+        emailOtp: { available: false },
+        passkeys: { credentials: [] },
+        recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+        totp: { enrolled: false, enrollments: [] },
+      },
+    })
+    return
+  }
+  if (pathname.endsWith("/me/external-identities") || pathname.endsWith("/me/external-identity-providers")) {
+    await route.fulfill({ json: { items: [] } })
+    return
+  }
+  if (
+    pathname.endsWith("/me/refresh-tokens") ||
+    pathname.endsWith("/me/security-history") ||
+    pathname.endsWith("/me/effective-access") ||
+    pathname.endsWith("/me/consents")
+  ) {
+    await route.fulfill({ json: { items: [] } })
+    return
+  }
+  await route.fulfill({ json: { capabilities: { realmRead: true }, user } })
 }

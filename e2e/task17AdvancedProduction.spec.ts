@@ -81,13 +81,13 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     const passwordLoginPromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/password/login"),
     )
-    await page.goto("/login/password?return_to=%2Faccount%2Fprofile")
+    await page.goto("/login/password?return_to=%2Faccount%23profile")
     await page.getByLabel("Username or email", { exact: true }).fill(fixture.member.email)
     await page.getByLabel("Password", { exact: true }).fill(recoveryPassword)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
     const passwordLogin = await passwordLoginPromise
     expect(passwordLogin.status()).toBe(200)
-    await expect(page).toHaveURL(/\/login\/mfa\?return_to=%2Faccount%2Fprofile$/)
+    await expect(page).toHaveURL(/\/login\/mfa\?return_to=%2Faccount%23profile$/)
     await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(fixture.recoveryCode)
     const mfaCompletePromise = page.waitForResponse((response) =>
@@ -96,7 +96,7 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     await page.getByRole("button", { name: "Verify", exact: true }).click()
     const mfaComplete = await mfaCompletePromise
     expect(mfaComplete.status()).toBe(200)
-    await expect(page).toHaveURL(/\/account\/profile$/)
+    await expect(page).toHaveURL(/\/account#profile$/)
 
     const currentSession = await page.evaluate(async (realmId) => {
       const response = await fetch(`/realms/${realmId}/sessions/current`, { credentials: "include" })
@@ -120,7 +120,7 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     expect(expiredSession.status).toBe(401)
     expect(expiredSession.body).not.toContain(recoveryPassword)
     await page.reload()
-    await expect(page).toHaveURL("/login?return_to=%2Faccount%2Fprofile")
+    await expect(page).toHaveURL("/login?return_to=%2Faccount%23profile")
   } finally {
     await e2eServerStop(server.process)
   }
@@ -207,50 +207,65 @@ test("task 17 composed production account increment consumes captured links and 
     expect(page.url()).not.toContain(recoveryToken)
     await secretAbsent(recoveryToken)
 
-    await page.goto("/login/password?return_to=%2Faccount%2Fprofile")
+    await page.goto("/login/password?return_to=%2Faccount%23profile")
     await page.getByLabel("Username or email", { exact: true }).fill(fixture.member.email)
     await page.getByLabel("Password", { exact: true }).fill(recoveryPassword)
     await page.getByRole("button", { name: "Sign in", exact: true }).click()
-    await expect(page).toHaveURL(/\/login\/mfa\?return_to=%2Faccount%2Fprofile$/)
+    await expect(page).toHaveURL(/\/login\/mfa\?return_to=%2Faccount%23profile$/)
     await page.getByRole("button", { name: /^Recovery code/ }).click()
     await page.getByLabel("Recovery code", { exact: true }).fill(fixture.recoveryCode)
     await page.getByRole("button", { name: "Verify", exact: true }).click()
-    await expect(page).toHaveURL(/\/account\/profile$/)
+    await expect(page).toHaveURL(/\/account#profile$/)
     await page.reload()
-    await expect(page.getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
+    await expect(page.locator("#profile").getByLabel("Display name", { exact: true })).toHaveValue("E2E Member")
 
     const accountPassword = "E2E Account Password 456!"
-    await page.goto("/account/password")
+    await page.goto("/account#security")
     await page.reload()
-    await page.getByLabel("Current password", { exact: true }).fill(recoveryPassword)
-    await page.getByLabel("New password", { exact: true }).fill(accountPassword)
-    await page.getByLabel("Confirm new password", { exact: true }).fill(accountPassword)
-    await page.getByRole("button", { name: "Change password", exact: true }).click()
-    await expect(page.getByRole("status")).toContainText("Your password was changed.")
+    const securitySection = page.locator("#security")
+    await securitySection.getByLabel("Current password", { exact: true }).fill(recoveryPassword)
+    await securitySection.getByLabel("New password", { exact: true }).fill(accountPassword)
+    await securitySection.getByLabel("Confirm new password", { exact: true }).fill(accountPassword)
+    await securitySection.getByRole("button", { name: "Change password", exact: true }).click()
+    await expect(securitySection.getByRole("status")).toContainText("Your password was changed.")
 
-    await page.goto("/account/email")
+    await page.goto("/account#profile")
     await page.reload()
-    await expect(page.getByText(fixture.member.email, { exact: true })).toBeVisible()
+    await expect(
+      page
+        .locator("#profile")
+        .getByRole("list", { name: "Email addresses", exact: true })
+        .getByText(fixture.member.email, { exact: true }),
+    ).toBeVisible()
 
-    await page.goto("/account/organizations")
+    await page.goto("/account#access")
     await page.reload()
-    await expect(page.getByRole("heading", { name: fixture.organization.name, exact: true })).toBeVisible()
+    const accessSection = page.locator("#access")
+    const organizationsSection = accessSection.getByRole("region", { name: "Switch organization", exact: true })
+    await expect(
+      organizationsSection.getByRole("heading", { name: fixture.organization.name, exact: true }),
+    ).toBeVisible()
     // The redesigned access pages present each record as a list item rather than a standalone card.
-    const secondaryOrganization = page.locator("li").filter({ hasText: fixture.secondaryOrganization.name })
+    const secondaryOrganization = organizationsSection.locator("li").filter({
+      has: page.getByRole("heading", { name: fixture.secondaryOrganization.name, exact: true }),
+    })
     await expect(secondaryOrganization).toBeVisible()
     const organizationSwitchResponsePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/me/organizations/switch"),
     )
     await secondaryOrganization.getByRole("button", { name: "Switch organization", exact: true }).click()
     expect((await organizationSwitchResponsePromise).status()).toBe(200)
-    await expect(page.getByRole("heading", { name: fixture.secondaryOrganization.name, exact: true })).toBeVisible()
+    await expect(
+      organizationsSection.getByRole("heading", { name: fixture.secondaryOrganization.name, exact: true }),
+    ).toBeVisible()
     await expect.poll(() => new URL(page.url()).searchParams.get("organization")).toBe(fixture.secondaryOrganization.id)
     await page.reload()
     await expect(secondaryOrganization.getByText("Active organization", { exact: true })).toBeVisible()
 
-    await page.goto("/account/sessions")
+    await page.goto("/account#devices-applications")
     await page.reload()
-    const revocableSession = page
+    const devicesApplicationsSection = page.locator("#devices-applications")
+    const revocableSession = devicesApplicationsSection
       .locator("li")
       .filter({ has: page.getByRole("button", { name: "Revoke session", exact: true }) })
       .first()
