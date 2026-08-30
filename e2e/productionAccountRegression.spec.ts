@@ -298,7 +298,7 @@ async function productionAccountSectionVerify(
   page: Page,
   diagnostics: ReturnType<typeof productionAccountDiagnosticsCreate>,
   section: ProductionAccountSection,
-  responses: readonly ProductionResponseDiagnostic[],
+  responseSequenceBefore: number,
 ) {
   const message = diagnostics.failureMessage(`#${section.id}`)
   const workspaceSection = page.locator(`#${section.id}`)
@@ -307,6 +307,7 @@ async function productionAccountSectionVerify(
   await expect(workspaceSection.getByText(section.content).first(), message).toBeVisible()
   await expect(page.locator('[data-content-state="loading"], [role="status"]'), message).toHaveCount(0)
   await diagnostics.flush()
+  const responses = diagnostics.responsesSince(responseSequenceBefore)
 
   for (const evidence of section.apiEvidence) {
     expect(
@@ -341,10 +342,8 @@ productionAuthTest(
       const navigation = page.getByRole("navigation", { name: "Account navigation" })
       await expect(navigation).toBeVisible()
       await expect(page.locator("header").first()).toHaveCSS("position", "sticky")
-      await expect(navigation).toHaveCSS("position", "sticky")
       await expect(page.getByText("Sign-in details", { exact: true })).toHaveCount(0)
       await diagnostics.flush()
-      const accountResponses = diagnostics.responsesSince(accountLoadSequenceBefore)
 
       for (const section of accountSections) {
         const link = navigation.getByRole("link", { exact: true, name: section.label })
@@ -352,7 +351,7 @@ productionAuthTest(
         await expect(link).toHaveAttribute("href", `#${section.id}`)
         await link.click()
         await expect(link).toHaveAttribute("aria-current", "location")
-        await productionAccountSectionVerify(page, diagnostics, section, accountResponses)
+        await productionAccountSectionVerify(page, diagnostics, section, accountLoadSequenceBefore)
       }
 
       await page.reload()

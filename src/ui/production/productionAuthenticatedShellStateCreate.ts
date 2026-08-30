@@ -18,7 +18,7 @@ export function productionAuthenticatedShellStateCreate(
   const location = useLocation()
   const session = productionSessionContextGet()
   const sidebar = createSidebarState()
-  const accountSections = accountSectionNavStateCreate()
+  const accountSections = accountSectionNavStateCreate(() => location.hash)
   const organizationError = createSignalObject<string | undefined>(undefined)
   const organizationPending = createSignalObject(false)
 

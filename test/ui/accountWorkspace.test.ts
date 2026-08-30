@@ -74,6 +74,14 @@ describe("account workspace", () => {
     ).toBe(false)
   })
 
+  test("tracks fragment navigation through the router location", async () => {
+    const shellState = await Bun.file(
+      new URL("../../src/ui/production/productionAuthenticatedShellStateCreate.ts", import.meta.url),
+    ).text()
+
+    expect(shellState).toContain("accountSectionNavStateCreate(() => location.hash)")
+  })
+
   test("shares profile state between the identity and email adapters only", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
