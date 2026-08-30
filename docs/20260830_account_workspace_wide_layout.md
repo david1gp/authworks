@@ -34,4 +34,4 @@ Make `/account` easier to navigate and share, use wide desktop screens effective
 - [x] 4. Split security identity/enrollment areas into existing-entry and new-entry cards, and place sessions/devices beside applications.
 - [x] 5. Render account access as responsive cards with collapsed permission details for every access source, and collapse Danger zone by default.
 - [x] 6. Switch organizations in-app while preserving user-scoped profile state and refreshing only organization-scoped account data.
-- [ ] 7. Update focused tests and browser coverage, run `bun run check`, then use the `commits` skill to commit and push the completed phase and deploy it through the repository's existing deployment workflow.
+- [x] 7. Update focused tests and browser coverage, run `bun run check`, then use the `commits` skill to commit and push the completed phase and deploy it through the repository's existing deployment workflow.
