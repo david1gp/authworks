@@ -446,16 +446,17 @@ test("MFA policy creates a login challenge and step-up rotates the session atomi
         userId: fixture.userId,
       }).success,
     ).toBe(false)
-    expect(
-      mfaTotpEnrollmentRemove({
-        database,
-        enrollmentId: enrolled.enrollmentId,
-        realmId: fixture.realm.id,
-        runtime: testkit.runtime,
-        sessionToken: upgraded.data.session!.token,
-        userId: fixture.userId,
-      }).success,
-    ).toBe(true)
+    const app = mfaServerAppCreate({ database, encryptionSecret: "mfa-test-secret", systemSecret: "system-secret" })
+    const removed = await app.request(`http://mfa.test/realms/${fixture.realm.id}/mfa/totp`, {
+      body: JSON.stringify({ enrollmentId: enrolled.enrollmentId }),
+      headers: {
+        authorization: `Bearer ${upgraded.data.session!.token}`,
+        "content-type": "application/json",
+      },
+      method: "DELETE",
+    })
+    expect(removed.status).toBe(200)
+    expect(await removed.json()).toEqual({ removed: true })
     expect(
       mfaTotpVerify({
         database,
