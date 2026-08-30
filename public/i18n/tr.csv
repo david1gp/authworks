@@ -31,11 +31,13 @@ account.access.invitationOpen,Daveti aç
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
+account.access.makeActiveOrganization,Etkin kuruluş yap
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
-account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationDescription,Üyeliğinizi ve erişiminizi görüntülemek için bir kuruluş seçin. Bir kuruluşu görüntülemek etkin kuruluşunuzu değiştirmez.
 account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationSelector,Görüntülenecek kuruluş
 account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,{source} tarafından verilen {count} izni göster
 account.access.roles,Roles: {roles}

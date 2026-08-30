@@ -1,5 +1,6 @@
-import { AccountAccessProductionAdapter } from "./AccountAccessProductionAdapter.js"
 import { AccountProductionAdapter } from "./AccountProductionAdapter.js"
+import { AccountAccessProductionAdapter } from "./AccountAccessProductionAdapter.js"
+import { AccountOrganizationAccessProductionAdapter } from "./AccountOrganizationAccessProductionAdapter.js"
 import { AccountSecurityProductionAdapter } from "./AccountSecurityProductionAdapter.js"
 import { AccountSplitColumns } from "./AccountSplitColumns.js"
 import { AccountWorkspace } from "./AccountWorkspace.js"
@@ -9,12 +10,7 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
   const profileState = accountProductionAdapterStateCreate(() => "email", { realmId: props.realmId })
   return (
     <AccountWorkspace
-      access={
-        <>
-          <AccountAccessProductionAdapter screen="organizations" />
-          <AccountAccessProductionAdapter screen="effective-access" />
-        </>
-      }
+      access={<AccountOrganizationAccessProductionAdapter />}
       dangerZone={<AccountProductionAdapter kind="delete" />}
       devicesApplications={
         <AccountSplitColumns

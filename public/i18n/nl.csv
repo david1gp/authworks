@@ -31,11 +31,13 @@ account.access.invitationOpen,Uitnodiging openen
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
+account.access.makeActiveOrganization,Instellen als actieve organisatie
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
-account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationDescription,Kies een organisatie om het lidmaatschap en de toegang te bekijken. Een organisatie bekijken verandert uw actieve organisatie niet.
 account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationSelector,Te bekijken organisatie
 account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,Toon {count} rechten verleend door {source}
 account.access.roles,Roles: {roles}

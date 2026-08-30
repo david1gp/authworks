@@ -7,7 +7,10 @@ import type { ProductionSessionContextValue } from "../../../ui/production/produ
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
 import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
+import { accountEffectiveAccessGroupGet } from "../model/accountEffectiveAccessGroupGet.js"
 import { accountEffectiveAccessGroupsCreate } from "../model/accountEffectiveAccessGroupsCreate.js"
+import { accountOrganizationMeGet } from "../model/accountOrganizationMeGet.js"
+import { accountViewedOrganizationIdResolve } from "../model/accountViewedOrganizationIdResolve.js"
 import type { AccountEffectiveAccessEntry } from "../public/accountEffectiveAccessEntrySchema.js"
 import { accountAccessApiCreate } from "./accountAccessApiCreate.js"
 import type { AccountAccessScreen } from "./accountAccessScreenSchema.js"
@@ -17,7 +20,11 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 
 export function accountAccessProductionStateCreate(
   screen: () => AccountAccessScreen,
-  options: { readonly session?: ProductionSessionContextValue } = {},
+  options: {
+    readonly session?: ProductionSessionContextValue
+    readonly viewedOrganizationId?: () => string | undefined
+    readonly viewedOrganizationSelect?: (organizationId: string) => void
+  } = {},
 ) {
   const session = options.session ?? productionSessionContextGet()
   const api = accountAccessApiCreate({ baseUrl: window.location.origin })
@@ -36,11 +43,31 @@ export function accountAccessProductionStateCreate(
     const organization = session.guard.organization
     return typeof organization === "object" ? organization.organizationId : undefined
   }
+  const localViewedOrganizationId = createSignalObject<string | undefined>(activeOrganizationId())
+  const viewedOrganizationId = options.viewedOrganizationId ?? localViewedOrganizationId.get
+  let viewedOrganizationExplicit = false
   const realmId = () => {
     const realm = session.guard.realm
     return typeof realm === "object" ? realm.realmId : ""
   }
   const token = () => new URLSearchParams(window.location.search).get("token") ?? ""
+  const effectiveAccessGroups = () => accountEffectiveAccessGroupsCreate(effectiveAccess.get())
+  const viewedOrganization = () => accountOrganizationMeGet(organizations.get(), viewedOrganizationId())
+  const viewedEffectiveAccessGroup = () =>
+    accountEffectiveAccessGroupGet(effectiveAccessGroups(), viewedOrganizationId())
+  const viewedOrganizationSynchronize = () => {
+    const current = viewedOrganizationId()
+    if (status.get() === "loading" && viewedOrganizationExplicit) return
+    if (viewedOrganizationExplicit && accountOrganizationMeGet(organizations.get(), current) === undefined)
+      viewedOrganizationExplicit = false
+    const next = accountViewedOrganizationIdResolve({
+      activeOrganizationId: activeOrganizationId(),
+      organizations: organizations.get(),
+      viewedOrganizationExplicit,
+      viewedOrganizationId: current,
+    })
+    if (next !== current) localViewedOrganizationId.set(next)
+  }
 
   const fail = (result: FailedResult, invitationOperation = false) => {
     error.set(result.errorMessage)
@@ -132,6 +159,7 @@ export function accountAccessProductionStateCreate(
       return `${realmId()}:${screen()}:${token()}:${organizationId}`
     }, load),
   )
+  if (options.viewedOrganizationId === undefined) createEffect(viewedOrganizationSynchronize)
   return {
     activeOrganizationId,
     consentRevoke: async (clientId: string) => {
@@ -145,7 +173,7 @@ export function accountAccessProductionStateCreate(
     },
     consents: consents.get,
     effectiveAccess: effectiveAccess.get,
-    effectiveAccessGroups: () => accountEffectiveAccessGroupsCreate(effectiveAccess.get()),
+    effectiveAccessGroups,
     effectiveAccessLoadMore: async () => {
       const pageToken = effectiveAccessNextPageToken.get()
       if (pageToken === undefined) return
@@ -194,5 +222,19 @@ export function accountAccessProductionStateCreate(
       void load()
     },
     status: status.get,
+    viewedEffectiveAccessGroup,
+    viewedOrganization,
+    viewedOrganizationId,
+    viewedOrganizationSelect: (organizationId: string) => {
+      if (options.viewedOrganizationSelect !== undefined) return options.viewedOrganizationSelect(organizationId)
+      if (options.viewedOrganizationId !== undefined) return
+      if (accountOrganizationMeGet(organizations.get(), organizationId) === undefined) {
+        viewedOrganizationExplicit = false
+        viewedOrganizationSynchronize()
+        return
+      }
+      viewedOrganizationExplicit = true
+      localViewedOrganizationId.set(organizationId)
+    },
   }
 }

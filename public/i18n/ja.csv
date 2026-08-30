@@ -31,11 +31,13 @@ account.access.invitationOpen,招待を開く
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
+account.access.makeActiveOrganization,アクティブな組織に設定
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
-account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationDescription,組織を選択してメンバーシップとアクセス権を確認します。組織を表示してもアクティブな組織は変更されません。
 account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationSelector,表示する組織
 account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,{source} により付与された {count} 件の権限を表示
 account.access.roles,Roles: {roles}

@@ -4,10 +4,9 @@ import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { AccountConsentsView } from "./AccountConsentsView.js"
 import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
-import { AccountEffectiveAccessView } from "./AccountEffectiveAccessView.js"
 import { AccountInvitationsView } from "./AccountInvitationsView.js"
 import { AccountInvitationView } from "./AccountInvitationView.js"
-import { AccountOrganizationsView } from "./AccountOrganizationsView.js"
+import { AccountOrganizationAccessDemoAdapter } from "./AccountOrganizationAccessDemoAdapter.js"
 import { accountAccessDemoStateCreate } from "./accountAccessDemoStateCreate.js"
 import type { AccountAccessScreen } from "./accountAccessScreenSchema.js"
 
@@ -23,28 +22,8 @@ export function AccountAccessDemoAdapter(props: { readonly screen: AccountAccess
         title={scenario()?.title ?? ""}
       />
       <Switch>
-        <Match when={props.screen === "organizations"}>
-          <AccountOrganizationsView
-            activeOrganizationId={state.activeOrganizationId()}
-            error={state.error()}
-            notice={state.notice()}
-            onRetry={state.reload}
-            onSwitch={state.organizationSwitch}
-            organizations={state.organizations()}
-            pendingId={state.pendingId()}
-            status={state.status()}
-          />
-        </Match>
-        <Match when={props.screen === "effective-access"}>
-          <AccountEffectiveAccessView
-            error={state.error()}
-            groups={state.effectiveAccessGroups()}
-            nextPageToken={state.effectiveAccessNextPageToken()}
-            onLoadMore={state.effectiveAccessLoadMore}
-            onRetry={state.reload}
-            pendingId={state.pendingId()}
-            status={state.status()}
-          />
+        <Match when={props.screen === "organizations" || props.screen === "effective-access"}>
+          <AccountOrganizationAccessDemoAdapter organizationState={state} />
         </Match>
         <Match when={props.screen === "consents"}>
           <AccountConsentsView

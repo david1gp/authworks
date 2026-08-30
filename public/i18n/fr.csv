@@ -31,11 +31,13 @@ account.access.invitationOpen,Ouvrir l'invitation
 account.access.invitationReplay,This invitation was already used or is no longer available.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
+account.access.makeActiveOrganization,Définir comme organisation active
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
-account.access.organizationDescription,Choose which organization you are working in.
+account.access.organizationDescription,Sélectionnez une organisation pour consulter votre adhésion et vos accès. Consulter une organisation ne modifie pas votre organisation active.
 account.access.organizationEmpty,This account does not belong to an organization.
+account.access.organizationSelector,Organisation à consulter
 account.access.permission,You do not have permission to perform this action.
 account.access.permissionsToggle,Afficher les {count} autorisations accordées par {source}
 account.access.roles,Roles: {roles}

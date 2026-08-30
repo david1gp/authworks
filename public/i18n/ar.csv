@@ -31,11 +31,13 @@ account.access.invitationOpen,فتح الدعوة
 account.access.invitationReplay,تم استخدام هذه الدعوة بالفعل أو لم تعد متاحة.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
+account.access.makeActiveOrganization,جعل المنظمة نشطة
 account.access.membership,أدوار العضوية
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
-account.access.organizationDescription,اختر المنظمة التي تعمل بها.
+account.access.organizationDescription,اختر منظمة لعرض عضويتك ووصولك إليها. لا يؤدي عرض المنظمة إلى تغيير منظمتك النشطة.
 account.access.organizationEmpty,هذا الحساب لا ينتمي إلى أي منظمة.
+account.access.organizationSelector,المنظمة المراد عرضها
 account.access.permission,ليس لديك إذن لتنفيذ هذا الإجراء.
 account.access.permissionsToggle,عرض {count} من الأذونات الممنوحة من {source}
 account.access.roles,الأدوار: {roles}

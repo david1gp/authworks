@@ -1,4 +1,5 @@
 import { useLocation } from "@solidjs/router"
+import { createEffect } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
@@ -9,7 +10,10 @@ import { demoFixtureStateLabel } from "../../demo/public/demoFixtureStateLabel.j
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
 import type { OrganizationInvitation } from "../../organizations/public/organizationInvitationSchema.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
+import { accountEffectiveAccessGroupGet } from "../model/accountEffectiveAccessGroupGet.js"
 import { accountEffectiveAccessGroupsCreate } from "../model/accountEffectiveAccessGroupsCreate.js"
+import { accountOrganizationMeGet } from "../model/accountOrganizationMeGet.js"
+import { accountViewedOrganizationIdResolve } from "../model/accountViewedOrganizationIdResolve.js"
 import type { AccountEffectiveAccessEntry } from "../public/accountEffectiveAccessEntrySchema.js"
 import type { AccountAccessScreen } from "./accountAccessScreenSchema.js"
 import type { AccountAccessStatus } from "./accountAccessStatusSchema.js"
@@ -113,7 +117,13 @@ const effectiveAccessFixtures: AccountEffectiveAccessEntry[] = [
   },
 ]
 
-export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) {
+export function accountAccessDemoStateCreate(
+  screen: () => AccountAccessScreen,
+  options: {
+    readonly viewedOrganizationId?: () => string | undefined
+    readonly viewedOrganizationSelect?: (organizationId: string) => void
+  } = {},
+) {
   const location = useLocation()
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   const selected = () => demoFixtureStateSelect(location.search, scenario()?.states ?? ["success"])
@@ -122,20 +132,33 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
   const invitations = createSignalObject([invitationFixture])
   const effectiveAccess = createSignalObject([...effectiveAccessFixtures])
   const activeOrganizationId = createSignalObject("northwind")
+  const localViewedOrganizationId = createSignalObject<string | undefined>(activeOrganizationId.get())
+  const viewedOrganizationId = options.viewedOrganizationId ?? localViewedOrganizationId.get
+  let viewedOrganizationExplicit = false
   const notice = createSignalObject<string | undefined>(undefined)
   const outcome = createSignalObject<AccountAccessStatus | undefined>(undefined)
-  const status = (): AccountAccessStatus => {
+  const availableOrganizations = () => (selected() === "empty" ? [] : organizations.get())
+  const availableEffectiveAccess = () => (selected() === "empty" ? [] : effectiveAccess.get())
+  const effectiveAccessGroups = () => accountEffectiveAccessGroupsCreate(availableEffectiveAccess())
+  const viewedOrganization = () => accountOrganizationMeGet(availableOrganizations(), viewedOrganizationId())
+  const viewedEffectiveAccessGroup = () =>
+    accountEffectiveAccessGroupGet(effectiveAccessGroups(), viewedOrganizationId())
+  const viewedOrganizationSynchronize = () => {
+    const current = viewedOrganizationId()
+    if (viewedOrganizationExplicit && accountOrganizationMeGet(availableOrganizations(), current) === undefined)
+      viewedOrganizationExplicit = false
+    const next = accountViewedOrganizationIdResolve({
+      activeOrganizationId: activeOrganizationId.get(),
+      organizations: availableOrganizations(),
+      viewedOrganizationExplicit,
+      viewedOrganizationId: current,
+    })
+    if (next !== current) localViewedOrganizationId.set(next)
+  }
+  const statusFor = (collection: readonly unknown[]): AccountAccessStatus => {
     if (outcome.get() !== undefined) return outcome.get() as AccountAccessStatus
     const current = selected()
     if (current === "success") {
-      const collection =
-        screen() === "organizations"
-          ? organizations.get()
-          : screen() === "consents"
-            ? consents.get()
-            : screen() === "effective-access"
-              ? effectiveAccess.get()
-              : invitations.get()
       return collection.length === 0 ? "empty" : "ready"
     }
     // States that only affect how a value is presented, and states owned by other features,
@@ -152,6 +175,19 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
     ]
     return presentational.includes(current) ? "ready" : (current as AccountAccessStatus)
   }
+  const organizationStatus = () => statusFor(organizations.get())
+  const status = (): AccountAccessStatus => {
+    const collection =
+      screen() === "organizations"
+        ? organizations.get()
+        : screen() === "consents"
+          ? consents.get()
+          : screen() === "effective-access"
+            ? effectiveAccess.get()
+            : invitations.get()
+    return statusFor(collection)
+  }
+  if (options.viewedOrganizationId === undefined) createEffect(viewedOrganizationSynchronize)
   return {
     activeOrganizationId: activeOrganizationId.get,
     consentRevoke: (clientId: string) => {
@@ -160,9 +196,8 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
       notice.set("revoked")
     },
     consents: () => (selected() === "empty" ? [] : consents.get()),
-    effectiveAccess: () => (selected() === "empty" ? [] : effectiveAccess.get()),
-    effectiveAccessGroups: () =>
-      accountEffectiveAccessGroupsCreate(selected() === "empty" ? [] : effectiveAccess.get()),
+    effectiveAccess: availableEffectiveAccess,
+    effectiveAccessGroups,
     effectiveAccessLoadMore: () => undefined,
     effectiveAccessNextPageToken: () => undefined,
     error: () => (selected() === "error" ? messageTranslate("demo.fixture.accountError") : undefined),
@@ -178,6 +213,7 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
       activeOrganizationId.set(organizationId)
       notice.set(organizations.get().find((item) => item.organization.id === organizationId)?.organization.name)
     },
+    organizationStatus,
     organizations: () => (selected() === "empty" ? [] : organizations.get()),
     pendingId: () => undefined,
     reload: () => undefined,
@@ -188,5 +224,19 @@ export function accountAccessDemoStateCreate(screen: () => AccountAccessScreen) 
         label: demoFixtureStateLabel(fixtureState),
         selected: fixtureState === selected(),
       })),
+    viewedEffectiveAccessGroup,
+    viewedOrganization,
+    viewedOrganizationId,
+    viewedOrganizationSelect: (organizationId: string) => {
+      if (options.viewedOrganizationSelect !== undefined) return options.viewedOrganizationSelect(organizationId)
+      if (options.viewedOrganizationId !== undefined) return
+      if (accountOrganizationMeGet(availableOrganizations(), organizationId) === undefined) {
+        viewedOrganizationExplicit = false
+        viewedOrganizationSynchronize()
+        return
+      }
+      viewedOrganizationExplicit = true
+      localViewedOrganizationId.set(organizationId)
+    },
   }
 }

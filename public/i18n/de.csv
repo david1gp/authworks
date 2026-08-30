@@ -31,11 +31,13 @@ account.access.invitationOpen,Einladung öffnen
 account.access.invitationReplay,Diese Einladung wurde bereits verwendet oder ist nicht mehr verfügbar.
 account.access.loadMore,Load more access
 account.access.loadMore,Load more access
+account.access.makeActiveOrganization,Als aktive Organisation festlegen
 account.access.membership,Mitgliedsrollen
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
-account.access.organizationDescription,Wählen Sie die Organisation aus in der Sie arbeiten.
+account.access.organizationDescription,"Wählen Sie eine Organisation aus, um ihre Mitgliedschaft und Zugriffsrechte anzuzeigen. Das Anzeigen einer Organisation ändert Ihre aktive Organisation nicht."
 account.access.organizationEmpty,Dieses Konto gehört keiner Organisation an.
+account.access.organizationSelector,Organisation zur Ansicht
 account.access.permission,Sie haben keine Berechtigung für diese Aktion.
 account.access.permissionsToggle,{count} von {source} gewährte Berechtigungen anzeigen
 account.access.roles,Rollen: {roles}
