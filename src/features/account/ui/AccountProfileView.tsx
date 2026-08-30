@@ -2,6 +2,7 @@ import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingle } from "#ui/input/select/SelectSingle.jsx"
+import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
 import { selectSingleTextDefault } from "#ui/input/select/SelectSingleTexts.js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
@@ -9,6 +10,7 @@ import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNoti
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { authenticatedSelectStateCreate } from "../../../ui/authenticated/authenticatedSelectStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { languagesSupported } from "../../../ui/i18n/model/languagesSupported.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
 import { AccountEmailAddressView } from "./AccountEmailAddressView.js"
 import { AccountProfileIdentityStrip } from "./AccountProfileIdentityStrip.js"
@@ -54,7 +56,6 @@ type AccountProfileViewProps = {
   readonly onFirstNameInput: (value: string) => void
   readonly onLastNameInput: (value: string) => void
   readonly onNickNameInput: (value: string) => void
-  readonly onPreferredLanguageInput: (value: string) => void
   readonly onPhoneCancel: () => void
   readonly onPhoneCodeInput: (value: string) => void
   readonly onPhoneInput: (value: string) => void
@@ -65,7 +66,7 @@ type AccountProfileViewProps = {
   readonly onPictureUpload: (file: File) => void
   readonly onRetry: () => void
   readonly onSubmit: (event: SubmitEvent) => void
-  readonly preferredLanguage: string
+  readonly preferredLanguage: SignalObject<string>
   readonly phoneCandidate: string
   readonly phoneChallengeActive: boolean
   readonly phoneCode: string
@@ -193,11 +194,14 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     <Label for="account-preferred-language">
                       {messageTranslate("account.profile.preferredLanguage")}
                     </Label>
-                    <Input
+                    <SelectSingleNative
+                      getOptions={() => ["", ...languagesSupported.map((language) => language.code)]}
                       id="account-preferred-language"
-                      maxlength={16}
-                      onInput={(event) => props.onPreferredLanguageInput(event.currentTarget.value)}
-                      value={props.preferredLanguage}
+                      valueSignal={props.preferredLanguage}
+                      valueText={(code) => {
+                        if (code === "") return messageTranslate("account.profile.preferredLanguage.unspecified")
+                        return languagesSupported.find((language) => language.code === code)?.nativeName ?? code
+                      }}
                     />
                   </div>
                 </div>

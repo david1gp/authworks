@@ -172,6 +172,7 @@ export const englishCatalog = {
   "account.profile.phoneVerify": "Verify phone number",
   "account.profile.phoneVerifying": "Verifying…",
   "account.profile.preferredLanguage": "Preferred language",
+  "account.profile.preferredLanguage.unspecified": "Not set",
   "account.profile.save": "Save changes",
   "account.profile.saved": "Your profile was saved.",
   "account.profile.signInDescription": "These details identify your account.",

@@ -69,7 +69,6 @@ export function AccountProductionAdapter(props: {
           onFirstNameInput={state.firstName.set}
           onLastNameInput={state.lastName.set}
           onNickNameInput={state.nickName.set}
-          onPreferredLanguageInput={state.preferredLanguage.set}
           onPhoneCancel={state.phoneChangeCancel}
           onPhoneCodeInput={state.phoneCode.set}
           onPhoneInput={state.phoneCandidate.set}
@@ -80,7 +79,7 @@ export function AccountProductionAdapter(props: {
           onPictureUpload={(file) => void state.pictureUpload(file)}
           onRetry={state.load}
           onSubmit={state.profileSubmit}
-          preferredLanguage={state.preferredLanguage.get()}
+          preferredLanguage={state.preferredLanguage}
           phoneCandidate={state.phoneCandidate.get()}
           phoneChallengeActive={state.phoneChallengeId.get() !== undefined}
           phoneCode={state.phoneCode.get()}

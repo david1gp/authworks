@@ -169,6 +169,7 @@ account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
 account.profile.pictureUnavailable,تعذر تحميل صورة الملف الشخصي
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,اللغة المفضلة
+account.profile.preferredLanguage.unspecified,غير محددة
 account.profile.save,حفظ التغييرات
 account.profile.saved,تم حفظ ملفك الشخصي.
 account.profile.signInDescription,تحدد هذه التفاصيل حسابك.

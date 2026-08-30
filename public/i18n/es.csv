@@ -169,6 +169,7 @@ account.profile.pictureTypeInvalid,"Choose a JPEG, PNG, WebP, or GIF image."
 account.profile.pictureUnavailable,No se pudo cargar la foto de perfil
 account.profile.pictureUploading,Uploading the picture…
 account.profile.preferredLanguage,Preferred language
+account.profile.preferredLanguage.unspecified,No establecido
 account.profile.save,Save changes
 account.profile.saved,Your profile was saved.
 account.profile.signInDescription,These details identify your account.

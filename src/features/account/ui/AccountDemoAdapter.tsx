@@ -84,7 +84,6 @@ export function AccountDemoAdapter(props: {
             onFirstNameInput={page.firstName.set}
             onLastNameInput={page.lastName.set}
             onNickNameInput={page.nickName.set}
-            onPreferredLanguageInput={page.preferredLanguage.set}
             onPhoneCancel={page.phoneChangeCancel}
             onPhoneCodeInput={page.phoneCode.set}
             onPhoneInput={page.phoneCandidate.set}
@@ -95,7 +94,7 @@ export function AccountDemoAdapter(props: {
             onPictureUpload={(file) => void page.pictureUpload(file)}
             onRetry={page.load}
             onSubmit={page.profileSubmit}
-            preferredLanguage={page.preferredLanguage.get()}
+            preferredLanguage={page.preferredLanguage}
             phoneCandidate={page.phoneCandidate.get()}
             phoneChallengeActive={page.phoneChallengeId.get() !== undefined}
             phoneCode={page.phoneCode.get()}
