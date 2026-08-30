@@ -37,12 +37,14 @@ account.access.organizationAccess,Organization access
 account.access.organizationDescription,Choose which organization you are working in.
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.permission,You do not have permission to perform this action.
+account.access.permissionsToggle,Toon {count} rechten verleend door {source}
 account.access.roles,Roles: {roles}
 account.access.scopes,Permissions: {scopes}
 account.access.switchOrganization,Switch organization
 account.access.switched,Organization context changed to {organization}.
 account.delete.confirmLabel,Enter {email} to confirm
 account.delete.dangerZone,Danger zone
+account.delete.dangerZoneToggle,Opties voor accountverwijdering tonen
 account.delete.deletedDetail,Your account and access have been permanently removed.
 account.delete.deletedTitle,Account deleted
 account.delete.emailMismatch,The email address does not match.

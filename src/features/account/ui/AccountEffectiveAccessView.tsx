@@ -3,10 +3,11 @@ import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { AccountEffectiveAccessGroup } from "../public/accountEffectiveAccessGroupSchema.js"
+import { AccountDisclosure } from "./AccountDisclosure.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
 import { accountAccessBoundaryStateGet } from "./accountAccessBoundaryStateGet.js"
-import { accountEffectiveAccessSourceGet } from "./accountEffectiveAccessSourceGet.js"
 import type { AccountAccessStatus } from "./accountAccessStatusSchema.js"
+import { accountEffectiveAccessSourceGet } from "./accountEffectiveAccessSourceGet.js"
 
 export function AccountEffectiveAccessView(props: {
   readonly error?: string
@@ -36,29 +37,42 @@ export function AccountEffectiveAccessView(props: {
                 })}
                 title={group.organization.name}
               >
-                {/* Every grant is a short technical record, so a stacked list stays readable at any width. */}
-                <ul class="divide-y divide-line-subtle">
+                {/* Two access cards fit a desktop row while a phone keeps one readable column. */}
+                <ul class="grid min-w-0 gap-3 px-3 py-3 lg:grid-cols-2 [&>*]:min-w-0">
                   <For each={group.entries}>
-                    {(entry) => (
-                      <li class="grid min-w-0 gap-1 px-3 py-2.5">
-                        <h3 class="min-w-0 truncate text-sm font-medium">
-                          {entry.project?.name ?? messageTranslate("account.access.organizationAccess")}
-                        </h3>
-                        <p class="min-w-0 text-xs text-muted-foreground">
-                          {messageTranslate("account.access.roles", { roles: entry.roleKeys.join(", ") })}
-                        </p>
-                        <p class="min-w-0 text-xs text-muted-foreground">
-                          {messageTranslate("account.access.effectivePermissions", {
-                            permissions: entry.permissions.join(", "),
-                          })}
-                        </p>
-                        <p class="min-w-0 truncate font-mono text-xs text-muted-foreground">
-                          {messageTranslate("account.access.effectiveSource", {
-                            source: accountEffectiveAccessSourceGet(entry),
-                          })}
-                        </p>
-                      </li>
-                    )}
+                    {(entry) => {
+                      const source = () => accountEffectiveAccessSourceGet(entry)
+                      return (
+                        <li class="min-w-0">
+                          <AuthenticatedSection class="h-full" padded>
+                            <h3 class="min-w-0 truncate text-sm font-semibold tracking-tight">
+                              {entry.project?.name ?? messageTranslate("account.access.organizationAccess")}
+                            </h3>
+                            <p class="mt-1 min-w-0 text-xs text-muted-foreground">
+                              {messageTranslate("account.access.roles", { roles: entry.roleKeys.join(", ") })}
+                            </p>
+                            <p class="mt-0.5 min-w-0 truncate font-mono text-xs text-muted-foreground">
+                              {messageTranslate("account.access.effectiveSource", { source: source() })}
+                            </p>
+                            {/* Permission lists are long and rarely read, so every access source keeps
+                                its own list behind a native disclosure that starts collapsed. */}
+                            <AccountDisclosure
+                              class="mt-2.5"
+                              summary={messageTranslate("account.access.permissionsToggle", {
+                                count: String(entry.permissions.length),
+                                source: source(),
+                              })}
+                            >
+                              <p class="min-w-0 text-xs text-muted-foreground">
+                                {messageTranslate("account.access.effectivePermissions", {
+                                  permissions: entry.permissions.join(", "),
+                                })}
+                              </p>
+                            </AccountDisclosure>
+                          </AuthenticatedSection>
+                        </li>
+                      )
+                    }}
                   </For>
                 </ul>
               </AuthenticatedSection>

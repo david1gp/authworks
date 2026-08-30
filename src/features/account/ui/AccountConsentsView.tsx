@@ -27,14 +27,16 @@ export function AccountConsentsView(props: {
     })
   return (
     <AuthenticatedPageBody>
-      <p class="text-sm text-muted-foreground">{messageTranslate("account.access.consentDescription")}</p>
-
       <Show when={props.notice === "revoked"}>
         <AuthenticatedNotice message={messageTranslate("account.access.consentRevoked")} />
       </Show>
 
       <AccountStateBoundary detail={boundary().detail} onRetry={props.onRetry} state={boundary().state}>
-        <AuthenticatedSection label={messageTranslate("admin.oidc.consents.title")}>
+        {/* The visible card title names this column as the requested "Applications" card. */}
+        <AuthenticatedSection
+          description={messageTranslate("account.access.consentDescription")}
+          title={messageTranslate("shell.nav.applications")}
+        >
           <ul class="divide-y divide-line-subtle">
             <For each={props.consents}>
               {(consent) => (

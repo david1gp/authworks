@@ -27,26 +27,24 @@ export function AccountProfilePictureField(props: {
   })
 
   return (
-    <div class="grid min-w-0 gap-3 rounded-control border border-line-subtle bg-surface-subtle/30 p-3.5">
-      <div class="flex items-center justify-between gap-2">
-        <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
-          {messageTranslate("account.profile.picture")}
-        </p>
-        <Show when={props.status === "uploading"}>
-          <span class="text-xs text-muted-foreground" role="status">
-            {messageTranslate("account.profile.pictureUploading")}
-          </span>
-        </Show>
-        <Show when={props.status === "removing"}>
-          <span class="text-xs text-muted-foreground" role="status">
-            {messageTranslate("account.profile.pictureRemoving")}
-          </span>
-        </Show>
-      </div>
+    <div class="grid min-w-0 gap-3">
+      <Show when={props.status === "uploading"}>
+        <span class="text-xs text-muted-foreground" role="status">
+          {messageTranslate("account.profile.pictureUploading")}
+        </span>
+      </Show>
+      <Show when={props.status === "removing"}>
+        <span class="text-xs text-muted-foreground" role="status">
+          {messageTranslate("account.profile.pictureRemoving")}
+        </span>
+      </Show>
 
+      {/* The single native file input stays visually hidden, untabbable, and hidden from the
+          accessibility tree so it is not exposed as a second picker button; the dropzone below is
+          the one accessible, keyboard-operable upload target that opens it programmatically. */}
       <input
         accept={accountPictureAcceptAttribute}
-        aria-label={messageTranslate("account.profile.pictureChoose")}
+        aria-hidden="true"
         class="sr-only"
         disabled={state.busy()}
         onChange={state.onFileInputChange}
@@ -123,25 +121,18 @@ export function AccountProfilePictureField(props: {
 
       <div class="flex flex-wrap items-center justify-between gap-2">
         <p class="text-2xs text-muted-foreground">{messageTranslate("account.profile.pictureHint")}</p>
-        <div class="flex flex-wrap items-center gap-2">
-          <Button disabled={state.busy()} onClick={state.openFilePicker} size="sm" type="button" variant="outline">
-            {state.hasPicture()
-              ? messageTranslate("account.profile.pictureChange")
-              : messageTranslate("account.profile.pictureChoose")}
+        <Show when={props.url.length > 0}>
+          <Button
+            class={authenticatedDangerOutlineButtonClass}
+            disabled={state.busy()}
+            onClick={props.onRemove}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            {messageTranslate("account.profile.pictureRemove")}
           </Button>
-          <Show when={props.url.length > 0}>
-            <Button
-              class={authenticatedDangerOutlineButtonClass}
-              disabled={state.busy()}
-              onClick={props.onRemove}
-              size="sm"
-              type="button"
-              variant="outline"
-            >
-              {messageTranslate("account.profile.pictureRemove")}
-            </Button>
-          </Show>
-        </div>
+        </Show>
       </div>
 
       <Show when={props.errorMessage}>{(message) => <AuthenticatedNotice message={message()} tone="danger" />}</Show>

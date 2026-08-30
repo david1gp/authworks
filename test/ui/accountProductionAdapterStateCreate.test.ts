@@ -17,7 +17,8 @@ const session = {
   },
   impersonation: null,
   organizations: [],
-  organizationSelect: () => undefined,
+  organizationSelect: async () => ({ success: true as const, data: undefined }),
+  organizationSwitchPending: () => false,
   realms: [{ id: realmId, label: "Customer identity" }],
 } satisfies ProductionSessionContextValue
 const user = {
@@ -223,6 +224,135 @@ describe("account production adapter state", () => {
 
     expect(paths).toEqual([`/realms/${realmId}/me`, `/realms/${secondRealmId}/me`])
     expect(state.user.get()).toEqual(secondUser)
+  })
+
+  test("uses the workspace realm for every phone-change API call and exposes the server availability error", async () => {
+    const workspaceRealmId = secondRealmId
+    const workspaceSession = {
+      ...session,
+      guard: {
+        ...session.guard,
+        realm: { realmId, status: "available" as const },
+      },
+      realms: [{ id: realmId, label: "Customer identity" }],
+    }
+    const requests: { readonly body: unknown; readonly method: string; readonly path: string }[] = []
+    const csrfPaths: string[] = []
+    let startCount = 0
+    const candidatePhoneNumber = "+996995494200"
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { host: "auth.example.test", origin: "https://auth.example.test" } },
+    })
+    globalThis.fetch = (async (input, init) => {
+      const request = new Request(input, init)
+      const url = new URL(request.url)
+      if (url.pathname === `/realms/${workspaceRealmId}/me`)
+        return Response.json({ capabilities: { realmRead: true }, user: secondUser } satisfies UserCurrentResponse)
+      if (url.pathname === `/realms/${workspaceRealmId}/sessions/csrf`) {
+        csrfPaths.push(url.pathname)
+        return Response.json({ csrfToken: "csrf-token-for-phone-change-123456789012345678901" })
+      }
+      if (url.pathname.endsWith("/phone-change/start")) {
+        requests.push({
+          body: request.body === null ? undefined : JSON.parse(await request.text()),
+          method: request.method,
+          path: url.pathname,
+        })
+        startCount += 1
+        if (startCount === 2)
+          return Response.json(
+            {
+              error: {
+                code: "whatsapp-otp.unavailable",
+                message: "The WhatsApp OTP is currently unavailable.",
+                op: "whatsappOtpPhoneChangeStart",
+                retryable: true,
+                status: 503,
+              },
+            },
+            { status: 503 },
+          )
+        return Response.json({
+          accepted: true,
+          challengeId: "phone-change-workspace-challenge",
+          expiresAt: 1_774_000_600_000,
+          retryAt: 1_774_000_060_000,
+        })
+      }
+      if (url.pathname.endsWith("/phone-change/resend")) {
+        requests.push({
+          body: request.body === null ? undefined : JSON.parse(await request.text()),
+          method: request.method,
+          path: url.pathname,
+        })
+        return Response.json({
+          accepted: true,
+          challengeId: "phone-change-workspace-challenge",
+          expiresAt: 1_774_000_600_000,
+          retryAt: 1_774_000_060_000,
+        })
+      }
+      if (url.pathname.endsWith("/phone-change/verify")) {
+        requests.push({
+          body: request.body === null ? undefined : JSON.parse(await request.text()),
+          method: request.method,
+          path: url.pathname,
+        })
+        return Response.json({
+          user: { ...secondUser, phoneNumber: candidatePhoneNumber, phoneNumberVerifiedAt: 1_774_000_060_000 },
+        })
+      }
+      return Response.json({})
+    }) as typeof fetch
+
+    const state = createRoot((rootDispose) => {
+      cleanups.push(rootDispose)
+      return accountProductionAdapterStateCreate(() => "profile", {
+        initialStatus: "loading",
+        realmId: workspaceRealmId,
+        session: workspaceSession,
+      })
+    })
+    await state.load(true)
+    state.phoneCandidate.set(candidatePhoneNumber)
+    await state.phoneChangeStart({ preventDefault: () => undefined } as SubmitEvent)
+    await state.phoneChangeResend()
+    state.phoneCode.set("123456")
+    await state.phoneChangeVerify({ preventDefault: () => undefined } as SubmitEvent)
+    state.phoneCandidate.set(candidatePhoneNumber)
+    await state.phoneChangeStart({ preventDefault: () => undefined } as SubmitEvent)
+
+    expect(requests).toEqual([
+      {
+        body: { phoneNumber: candidatePhoneNumber },
+        method: "POST",
+        path: `/realms/${workspaceRealmId}/me/phone-change/start`,
+      },
+      {
+        body: { challengeId: "phone-change-workspace-challenge", phoneNumber: candidatePhoneNumber },
+        method: "POST",
+        path: `/realms/${workspaceRealmId}/me/phone-change/resend`,
+      },
+      {
+        body: { challengeId: "phone-change-workspace-challenge", code: "123456", phoneNumber: candidatePhoneNumber },
+        method: "POST",
+        path: `/realms/${workspaceRealmId}/me/phone-change/verify`,
+      },
+      {
+        body: { phoneNumber: candidatePhoneNumber },
+        method: "POST",
+        path: `/realms/${workspaceRealmId}/me/phone-change/start`,
+      },
+    ])
+    expect(csrfPaths).toEqual([
+      `/realms/${workspaceRealmId}/sessions/csrf`,
+      `/realms/${workspaceRealmId}/sessions/csrf`,
+      `/realms/${workspaceRealmId}/sessions/csrf`,
+      `/realms/${workspaceRealmId}/sessions/csrf`,
+    ])
+    expect(state.phoneStatus.get()).toBe("error")
+    expect(state.phoneErrorMessage.get()).toBe("The WhatsApp OTP is currently unavailable.")
   })
 
   test("reloads the correct loader across retained account route transitions", async () => {

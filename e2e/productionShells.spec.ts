@@ -136,7 +136,7 @@ test("production focus and authenticated shells render without network adapters"
   await expect(
     accountSection.getByRole("heading", { name: /Sessions and devices.*Applications/, exact: true }),
   ).toBeVisible()
-  const navigation = page.getByRole("navigation", { name: "Account navigation" })
+  const navigation = page.locator("header").first().getByRole("navigation", { name: "Account navigation" })
   await expect(navigation).toBeVisible()
   for (const [label, href] of [
     ["Profile", "#profile"],
@@ -150,7 +150,6 @@ test("production focus and authenticated shells render without network adapters"
     await expect(link).toHaveAttribute("href", href)
   }
   await expect(page.locator("header").first()).toHaveCSS("position", "sticky")
-  await expect(navigation).toHaveCSS("position", "sticky")
   // The product has a single realm, so the shell no longer renders a realm chooser. The organization
   // control only appears when the signed-in user actually belongs to more than one organization.
   await expect(page.getByLabel("Realm")).toHaveCount(0)
@@ -175,16 +174,36 @@ test("unauthenticated protected routes redirect to login with their destination 
   expect(new URL(page.url()).searchParams.get("return_to")).toBe("/admin/not-a-screen?from=bookmark#details")
 })
 
-test("account workspace exposes sticky section navigation on mobile", async ({ page }) => {
+test("account workspace exposes section navigation in the sticky primary navbar row on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto("/account")
 
-  const navigation = page.getByRole("navigation", { name: "Account navigation" })
+  const header = page.locator("header").first()
+  const navigation = header.getByRole("navigation", { name: "Account navigation" })
+  await expect(header).toHaveCSS("position", "sticky")
   await expect(navigation).toBeVisible()
-  await expect(navigation).toHaveCSS("position", "sticky")
   await expect(navigation.getByRole("link", { name: "Profile", exact: true })).toBeVisible()
   await expect(navigation.getByRole("link", { name: "Danger zone", exact: true })).toBeVisible()
+  // Only the primary row renders the account sections; the duplicate secondary row is gone.
+  await expect(page.getByRole("navigation", { name: "Account navigation" })).toHaveCount(1)
   await expect(page.getByRole("button", { name: "Open sidebar" })).toHaveCount(0)
+})
+
+test("account section headings are clickable permalinks to their stable anchors", async ({ page }) => {
+  await page.goto("/account")
+
+  for (const [id, name] of [
+    ["profile", "Profile"],
+    ["security", "Security"],
+    ["access", "Access"],
+    ["danger-zone", "Danger zone"],
+  ] as const) {
+    const permalink = page.locator(`#${id}`).getByRole("link", { name, exact: true })
+    await expect(permalink).toHaveAttribute("href", `#${id}`)
+  }
+
+  await page.locator("#security").getByRole("link", { name: "Security", exact: true }).click()
+  await expect(page).toHaveURL(/#security$/)
 })
 
 test("account workspace keeps identity details consolidated and targets sections with anchors", async ({ page }) => {

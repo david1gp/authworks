@@ -11,8 +11,11 @@ import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 export function AccountSessionsSection(props: { readonly state: AccountSecurityViewState }) {
   return (
     <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
-      <p class="text-sm text-muted-foreground">{messageTranslate("account.sessions.description")}</p>
-      <AuthenticatedSection label={messageTranslate("shell.nav.sessionsDevices")}>
+      {/* The visible card title names this column so it reads as the requested "Sessions and devices" card. */}
+      <AuthenticatedSection
+        description={messageTranslate("account.sessions.description")}
+        title={messageTranslate("shell.nav.sessionsDevices")}
+      >
         <Show
           when={props.state.sessions().length > 0}
           fallback={<ProductionStatePanel compact state="empty" title={messageTranslate("account.sessions.empty")} />}

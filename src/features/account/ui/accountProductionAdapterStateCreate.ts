@@ -7,13 +7,14 @@ import type { ProductionSessionContextValue } from "../../../ui/production/produ
 import { passwordApiClientCreate } from "../../passwords/client/passwordApiClientCreate.js"
 import { userApiClientCreate } from "../../users/client/userApiClientCreate.js"
 import { whatsappOtpApiClientCreate } from "../../whatsappOtp/client/whatsappOtpApiClientCreate.js"
-import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 import { accountPageStateCreate } from "./accountPageStateCreate.js"
+import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 
 export function accountProductionAdapterStateCreate(
   kind: Accessor<"delete" | "email" | "overview" | "password" | "profile">,
   options: {
     readonly initialStatus?: AccountViewStatus
+    readonly realmId?: string
     readonly session?: ProductionSessionContextValue
   } = {},
 ) {
@@ -24,6 +25,7 @@ export function accountProductionAdapterStateCreate(
   }
   const baseUrl = typeof window === "undefined" ? "http://localhost" : window.location.origin
   const realmIdResolve = () => {
+    if (options.realmId !== undefined) return Promise.resolve(options.realmId)
     return productionRealmIdResolve({
       baseUrl,
       domain: typeof window === "undefined" ? "localhost" : window.location.host,

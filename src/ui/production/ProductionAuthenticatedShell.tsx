@@ -8,7 +8,6 @@ import { Sidebar } from "#ui/interactive/sidebar/Sidebar.jsx"
 import { SidebarToggle } from "#ui/interactive/sidebar/SidebarToggle.jsx"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
-import { AccountSectionNav } from "../../features/account/ui/AccountSectionNav.js"
 import { authenticatedNavigationClasses } from "../authenticated/authenticatedNavigationClasses.js"
 import { authenticatedNavigationLinkClassGet } from "../authenticated/authenticatedNavigationLinkClassGet.js"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
@@ -100,6 +99,29 @@ export function ProductionAuthenticatedShell(props: {
               <span class="hidden sm:inline">{messageTranslate("shell.nav.account")}</span>
             </A>
           </Show>
+          <Show when={!state.isContextual()}>
+            <nav
+              aria-label={messageTranslate("shell.nav.navigationTitle", {
+                title: messageTranslate("shell.nav.account"),
+              })}
+              class="flex min-w-0 items-center gap-1 overflow-x-auto"
+            >
+              <For each={state.accountSections()}>
+                {(item) => (
+                  <a
+                    aria-current={state.isAccountSectionActive(item.id) ? "location" : undefined}
+                    aria-label={messageTranslate(item.label)}
+                    class={`${authenticatedNavigationLinkClassGet(state.isAccountSectionActive(item.id))} shrink-0 gap-1 px-1.5 py-1 text-xs sm:px-2`}
+                    href={item.href}
+                    title={messageTranslate(item.label)}
+                  >
+                    <Icon path={item.icon} />
+                    <span class="hidden sm:inline">{messageTranslate(item.label)}</span>
+                  </a>
+                )}
+              </For>
+            </nav>
+          </Show>
         </div>
 
         <div class="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -109,6 +131,8 @@ export function ProductionAuthenticatedShell(props: {
               <select
                 aria-label={messageTranslate("shell.nav.organization")}
                 class="max-w-20 truncate rounded-control border border-line bg-surface px-1 py-1 text-xs text-foreground sm:max-w-36 md:max-w-48"
+                aria-busy={state.organizationSwitchPending()}
+                disabled={state.organizationSwitchPending()}
                 value={state.organizationId()}
                 onChange={state.organizationChange}
               >
@@ -116,6 +140,13 @@ export function ProductionAuthenticatedShell(props: {
                   {(organization) => <option value={organization.id}>{organization.label}</option>}
                 </For>
               </select>
+              <Show when={state.organizationError()}>
+                {(error) => (
+                  <span aria-live="assertive" class="sr-only" role="alert">
+                    {error()}
+                  </span>
+                )}
+              </Show>
             </div>
           </Show>
           <Show when={!state.organizationSwitchable() && state.organizationLabel().length > 0}>
@@ -153,10 +184,6 @@ export function ProductionAuthenticatedShell(props: {
         </div>
       </header>
 
-      <Show when={!state.isContextual()}>
-        <AccountSectionNav />
-      </Show>
-
       <Show when={state.isContextual()}>
         <Sidebar
           state={state.sidebar}
@@ -168,7 +195,7 @@ export function ProductionAuthenticatedShell(props: {
       </Show>
 
       <div class={`min-h-[calc(100dvh-3rem)] ${state.contentClass()}`}>
-        <main class="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6 sm:py-6">{props.children}</main>
+        <main class="mx-auto w-full max-w-[1760px] px-4 py-4 sm:px-6 sm:py-6 2xl:px-8">{props.children}</main>
       </div>
     </div>
   )

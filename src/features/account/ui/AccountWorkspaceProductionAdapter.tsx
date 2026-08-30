@@ -1,11 +1,12 @@
 import { AccountAccessProductionAdapter } from "./AccountAccessProductionAdapter.js"
 import { AccountProductionAdapter } from "./AccountProductionAdapter.js"
 import { AccountSecurityProductionAdapter } from "./AccountSecurityProductionAdapter.js"
+import { AccountSplitColumns } from "./AccountSplitColumns.js"
 import { AccountWorkspace } from "./AccountWorkspace.js"
 import { accountProductionAdapterStateCreate } from "./accountProductionAdapterStateCreate.js"
 
 export function AccountWorkspaceProductionAdapter(props: { readonly realmId: string }) {
-  const profileState = accountProductionAdapterStateCreate(() => "email")
+  const profileState = accountProductionAdapterStateCreate(() => "email", { realmId: props.realmId })
   return (
     <AccountWorkspace
       access={
@@ -16,11 +17,17 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
       }
       dangerZone={<AccountProductionAdapter kind="delete" />}
       devicesApplications={
-        <>
-          <AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />
-          <AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />
-          <AccountAccessProductionAdapter screen="consents" />
-        </>
+        <AccountSplitColumns
+          primary={
+            <>
+              {/* Sessions and devices column: browser sessions first, then the long-lived refresh-token
+                  families issued to those devices. Refresh tokens are session state, not applications. */}
+              <AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />
+              <AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />
+            </>
+          }
+          secondary={<AccountAccessProductionAdapter screen="consents" />}
+        />
       }
       profile={
         <>

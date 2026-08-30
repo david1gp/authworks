@@ -7,6 +7,7 @@ import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSec
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
+import { AccountDisclosure } from "./AccountDisclosure.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
 import { accountViewBoundaryStateGet } from "./accountViewBoundaryStateGet.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
@@ -47,28 +48,34 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
           description={messageTranslate("account.delete.warning")}
           title={messageTranslate("account.delete.title")}
         >
-          <form class="grid gap-2.5 px-3 py-3" onSubmit={props.onDelete}>
-            <div class="grid min-w-0 gap-1">
-              <Label for="account-delete-confirmation">
-                {messageTranslate("account.delete.confirmLabel", { email: props.email })}
-              </Label>
-              <Input
-                autocomplete="off"
-                id="account-delete-confirmation"
-                onInput={(event) => props.onConfirmationInput(event.currentTarget.value)}
-                required
-                value={props.confirmation}
-              />
-            </div>
-            <Show when={props.validationMessage}>
-              {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-            </Show>
-            <div>
-              <Button size="sm" type="submit" variant="filledRed">
-                {messageTranslate("account.delete.submit")}
-              </Button>
-            </div>
-          </form>
+          {/* The whole destructive body stays collapsed behind a native disclosure so deletion is
+              never one stray click away, while keeping the typed confirmation guard intact. */}
+          <div class="px-3 py-3">
+            <AccountDisclosure summary={messageTranslate("account.delete.dangerZoneToggle")}>
+              <form class="grid gap-2.5 py-1" onSubmit={props.onDelete}>
+                <div class="grid min-w-0 gap-1">
+                  <Label for="account-delete-confirmation">
+                    {messageTranslate("account.delete.confirmLabel", { email: props.email })}
+                  </Label>
+                  <Input
+                    autocomplete="off"
+                    id="account-delete-confirmation"
+                    onInput={(event) => props.onConfirmationInput(event.currentTarget.value)}
+                    required
+                    value={props.confirmation}
+                  />
+                </div>
+                <Show when={props.validationMessage}>
+                  {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+                </Show>
+                <div>
+                  <Button size="sm" type="submit" variant="filledRed">
+                    {messageTranslate("account.delete.submit")}
+                  </Button>
+                </div>
+              </form>
+            </AccountDisclosure>
+          </div>
         </AuthenticatedSection>
       </Show>
     </AccountStateBoundary>

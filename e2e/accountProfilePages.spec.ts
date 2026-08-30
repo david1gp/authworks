@@ -57,7 +57,9 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   await page.getByRole("button", { name: "Save changes" }).click()
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
 
-  const pictureChooser = page.getByLabel("Choose a picture file")
+  const pictureChooser = page
+    .getByRole("region", { name: "Profile picture", exact: true })
+    .locator('input[type="file"]')
   await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
   await expect(page.locator('[role="button"][aria-label="Change picture"]')).toHaveAttribute("tabindex", "0")
   await expect(page.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
@@ -90,6 +92,7 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   await expect(page.getByText("Your password was changed.")).toBeVisible()
 
   await page.goto("/demo/account/delete")
+  await page.getByText("Show account deletion options", { exact: true }).click()
   await page.getByLabel(/Enter .* to confirm/).fill("not-the-email")
   await page.getByRole("button", { name: "Delete account permanently" }).click()
   await expect(page.getByText("The email address does not match.")).toBeVisible()
@@ -169,7 +172,9 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
   await profileSection.getByRole("button", { name: "Save changes" }).click()
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
 
-  const pictureChooser = profileSection.getByLabel("Choose a picture file")
+  const pictureChooser = profileSection
+    .getByRole("region", { name: "Profile picture", exact: true })
+    .locator('input[type="file"]')
   await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
   await expect(profileSection.locator('[role="button"][aria-label="Change picture"]')).toHaveAttribute("tabindex", "0")
   await expect(profileSection.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
@@ -288,44 +293,43 @@ test("production profile adds, verifies, and changes its WhatsApp phone number",
   })
 
   await page.goto("/account#profile")
-  const phoneSection = page
-    .locator("#profile")
-    .locator("section")
-    .filter({ has: page.getByRole("heading", { name: "WhatsApp phone number" }) })
-  await expect(phoneSection.getByText("No verified phone number added", { exact: true })).toBeVisible()
-  await phoneSection.getByLabel("WhatsApp phone number").fill(firstPhoneNumber)
-  await phoneSection.getByRole("button", { name: "Add phone number" }).click()
+  const profileSection = page.locator("#profile")
+  const phoneDetails = profileSection.getByRole("region", { name: "WhatsApp phone number", exact: true })
+  const phoneForm = profileSection.getByRole("region", { name: /^(Add|Change) phone number$/ })
+  await expect(phoneDetails.getByText("No verified phone number added", { exact: true })).toBeVisible()
+  await phoneForm.getByLabel("WhatsApp phone number").fill(firstPhoneNumber)
+  await phoneForm.getByRole("button", { name: "Add phone number" }).click()
   await expect(
-    phoneSection.getByText(`Enter the code sent to ${firstPhoneNumber} on WhatsApp.`, { exact: true }),
+    phoneForm.getByText(`Enter the code sent to ${firstPhoneNumber} on WhatsApp.`, { exact: true }),
   ).toBeVisible()
-  await expect(phoneSection.getByLabel("Six-digit verification code")).toBeVisible()
+  await expect(phoneForm.getByLabel("Six-digit verification code")).toBeVisible()
 
-  await phoneSection.getByRole("button", { name: "Resend code" }).click()
-  await expect(phoneSection.getByLabel("Six-digit verification code")).toBeVisible()
-  await phoneSection.getByLabel("Six-digit verification code").fill("123456")
-  await phoneSection.getByRole("button", { name: "Verify phone number" }).click()
-  await expect(phoneSection.getByText("Your verified phone number was updated.", { exact: true })).toBeVisible()
-  await expect(phoneSection.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
-  await expect(phoneSection.getByText("Verified", { exact: true })).toBeVisible()
+  await phoneForm.getByRole("button", { name: "Resend code" }).click()
+  await expect(phoneForm.getByLabel("Six-digit verification code")).toBeVisible()
+  await phoneForm.getByLabel("Six-digit verification code").fill("123456")
+  await phoneForm.getByRole("button", { name: "Verify phone number" }).click()
+  await expect(phoneForm.getByText("Your verified phone number was updated.", { exact: true })).toBeVisible()
+  await expect(phoneDetails.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
+  await expect(phoneDetails.getByText("Verified", { exact: true })).toBeVisible()
 
-  await phoneSection.getByLabel("New phone number").fill(replacementPhoneNumber)
-  await phoneSection.getByRole("button", { name: "Change phone number" }).click()
+  await phoneForm.getByLabel("New phone number").fill(replacementPhoneNumber)
+  await phoneForm.getByRole("button", { name: "Change phone number" }).click()
   await expect(
-    phoneSection.getByText(`Enter the code sent to ${replacementPhoneNumber} on WhatsApp.`, { exact: true }),
+    phoneForm.getByText(`Enter the code sent to ${replacementPhoneNumber} on WhatsApp.`, { exact: true }),
   ).toBeVisible()
-  await expect(phoneSection.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
-  await phoneSection.getByLabel("Six-digit verification code").fill("654321")
-  await phoneSection.getByRole("button", { name: "Verify phone number" }).click()
-  await expect(phoneSection.getByText("The account phone-change code is invalid.", { exact: true })).toBeVisible()
-  await expect(phoneSection.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
-  await expect(phoneSection.getByText(replacementPhoneNumber, { exact: true })).toHaveCount(0)
+  await expect(phoneDetails.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
+  await phoneForm.getByLabel("Six-digit verification code").fill("654321")
+  await phoneForm.getByRole("button", { name: "Verify phone number" }).click()
+  await expect(phoneForm.getByText("The account phone-change code is invalid.", { exact: true })).toBeVisible()
+  await expect(phoneDetails.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
+  await expect(phoneDetails.getByText(replacementPhoneNumber, { exact: true })).toHaveCount(0)
 
-  await phoneSection.getByLabel("Six-digit verification code").fill("654322")
-  await phoneSection.getByRole("button", { name: "Verify phone number" }).click()
-  await expect(phoneSection.getByText("Your verified phone number was updated.", { exact: true })).toBeVisible()
-  await expect(phoneSection.getByText(replacementPhoneNumber, { exact: true })).toBeVisible()
-  await expect(phoneSection.getByText(firstPhoneNumber, { exact: true })).toHaveCount(0)
-  await expect(phoneSection.getByText("Verified", { exact: true })).toBeVisible()
+  await phoneForm.getByLabel("Six-digit verification code").fill("654322")
+  await phoneForm.getByRole("button", { name: "Verify phone number" }).click()
+  await expect(phoneForm.getByText("Your verified phone number was updated.", { exact: true })).toBeVisible()
+  await expect(phoneDetails.getByText(replacementPhoneNumber, { exact: true })).toBeVisible()
+  await expect(phoneDetails.getByText(firstPhoneNumber, { exact: true })).toHaveCount(0)
+  await expect(phoneDetails.getByText("Verified", { exact: true })).toBeVisible()
   expect(phoneChangeRequests).toEqual([
     {
       body: { phoneNumber: firstPhoneNumber },

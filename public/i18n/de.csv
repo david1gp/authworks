@@ -37,12 +37,14 @@ account.access.organizationAccess,Organization access
 account.access.organizationDescription,Wählen Sie die Organisation aus in der Sie arbeiten.
 account.access.organizationEmpty,Dieses Konto gehört keiner Organisation an.
 account.access.permission,Sie haben keine Berechtigung für diese Aktion.
+account.access.permissionsToggle,{count} von {source} gewährte Berechtigungen anzeigen
 account.access.roles,Rollen: {roles}
 account.access.scopes,Berechtigungen: {scopes}
 account.access.switchOrganization,Organisation wechseln
 account.access.switched,Organisationskontext zu {organization} geändert.
 account.delete.confirmLabel,Geben Sie zur Bestätigung {email} ein
 account.delete.dangerZone,Gefahrenbereich
+account.delete.dangerZoneToggle,Optionen zur Kontolöschung anzeigen
 account.delete.deletedDetail,Ihr Konto und Ihre Zugriffe wurden dauerhaft entfernt.
 account.delete.deletedTitle,Konto gelöscht
 account.delete.emailMismatch,Die E-Mail-Adresse stimmt nicht überein.

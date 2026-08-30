@@ -9,21 +9,21 @@ import type { SignalObject } from "#ui/utils/createSignalObject.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { authenticatedSelectStateCreate } from "../../../ui/authenticated/authenticatedSelectStateCreate.js"
-import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { languagesSupported } from "../../../ui/i18n/model/languagesSupported.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
 import { AccountEmailAddressView } from "./AccountEmailAddressView.js"
 import { AccountProfileIdentityStrip } from "./AccountProfileIdentityStrip.js"
 import { AccountProfilePhoneSection } from "./AccountProfilePhoneSection.js"
 import { AccountProfilePictureField } from "./AccountProfilePictureField.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
+import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 import { accountGenderItemRender } from "./accountGenderItemRender.js"
 import { accountGenderOptionsGet } from "./accountGenderOptionsGet.js"
 import { accountGenderValueText } from "./accountGenderValueText.js"
-import { accountViewBoundaryStateGet } from "./accountViewBoundaryStateGet.js"
-import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
 import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
+import { accountViewBoundaryStateGet } from "./accountViewBoundaryStateGet.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 
 type AccountProfileViewProps = {
@@ -125,12 +125,15 @@ export function AccountProfileView(props: AccountProfileViewProps) {
             userName={props.userName}
           />
 
-          <AuthenticatedSection
-            description={messageTranslate("account.profile.personalDescription")}
-            title={messageTranslate("account.profile.personalInformation")}
-          >
-            <div class="grid min-w-0 gap-6 p-4 lg:grid-cols-12 [&>*]:min-w-0">
-              <form class="grid min-w-0 gap-3 lg:col-span-8" onSubmit={props.onSubmit}>
+          {/* Personal information is the wide left card; the profile picture is a standalone right
+              card at desktop widths and stacks below it on narrow screens. */}
+          <div class="grid min-w-0 items-start gap-3 lg:grid-cols-12 [&>*]:min-w-0">
+            <AuthenticatedSection
+              class="lg:col-span-8"
+              description={messageTranslate("account.profile.personalDescription")}
+              title={messageTranslate("account.profile.personalInformation")}
+            >
+              <form class="grid min-w-0 gap-3 p-4" onSubmit={props.onSubmit}>
                 <div class="grid min-w-0 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                   <div class="grid min-w-0 gap-1 sm:col-span-2 lg:col-span-1">
                     <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
@@ -218,18 +221,18 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                   </Button>
                 </div>
               </form>
+            </AuthenticatedSection>
 
-              <div class="min-w-0 lg:col-span-4">
-                <AccountProfilePictureField
-                  errorMessage={props.pictureErrorMessage}
-                  onRemove={props.onPictureRemove}
-                  onUpload={props.onPictureUpload}
-                  status={props.pictureStatus}
-                  url={props.pictureUrl}
-                />
-              </div>
-            </div>
-          </AuthenticatedSection>
+            <AuthenticatedSection class="lg:col-span-4" padded title={messageTranslate("account.profile.picture")}>
+              <AccountProfilePictureField
+                errorMessage={props.pictureErrorMessage}
+                onRemove={props.onPictureRemove}
+                onUpload={props.onPictureUpload}
+                status={props.pictureStatus}
+                url={props.pictureUrl}
+              />
+            </AuthenticatedSection>
+          </div>
 
           <AccountProfilePhoneSection
             candidate={props.phoneCandidate}

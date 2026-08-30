@@ -37,12 +37,14 @@ account.access.organizationAccess,Organization access
 account.access.organizationDescription,اختر المنظمة التي تعمل بها.
 account.access.organizationEmpty,هذا الحساب لا ينتمي إلى أي منظمة.
 account.access.permission,ليس لديك إذن لتنفيذ هذا الإجراء.
+account.access.permissionsToggle,عرض {count} من الأذونات الممنوحة من {source}
 account.access.roles,الأدوار: {roles}
 account.access.scopes,الأذونات: {scopes}
 account.access.switchOrganization,تبديل المنظمة
 account.access.switched,تم تغيير سياق المنظمة إلى {organization}.
 account.delete.confirmLabel,أدخل {email} للتأكيد
 account.delete.dangerZone,منطقة الخطر
+account.delete.dangerZoneToggle,إظهار خيارات حذف الحساب
 account.delete.deletedDetail,تمت إزالة حسابك وحق الوصول الخاص بك نهائيًا.
 account.delete.deletedTitle,تم حذف الحساب
 account.delete.emailMismatch,عنوان البريد الإلكتروني غير متطابق.

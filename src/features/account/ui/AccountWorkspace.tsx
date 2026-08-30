@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { AccountSectionAnchorHeading } from "./AccountSectionAnchorHeading.js"
 import { accountWorkspaceSectionIds } from "./accountWorkspaceSectionIds.js"
 
 export function AccountWorkspace(props: {
@@ -17,9 +18,10 @@ export function AccountWorkspace(props: {
         class="grid scroll-mt-24 gap-3"
         id={accountWorkspaceSectionIds.profile}
       >
-        <h2 class="text-lg font-semibold tracking-tight" id="account-workspace-profile-title">
-          {messageTranslate("shell.nav.profile")}
-        </h2>
+        <AccountSectionAnchorHeading
+          id={accountWorkspaceSectionIds.profile}
+          title={messageTranslate("shell.nav.profile")}
+        />
         {props.profile}
       </section>
 
@@ -28,9 +30,10 @@ export function AccountWorkspace(props: {
         class="grid scroll-mt-24 gap-3"
         id={accountWorkspaceSectionIds.security}
       >
-        <h2 class="text-lg font-semibold tracking-tight" id="account-workspace-security-title">
-          {messageTranslate("shell.nav.security")}
-        </h2>
+        <AccountSectionAnchorHeading
+          id={accountWorkspaceSectionIds.security}
+          title={messageTranslate("shell.nav.security")}
+        />
         {props.security}
       </section>
 
@@ -39,9 +42,10 @@ export function AccountWorkspace(props: {
         class="grid scroll-mt-24 gap-3"
         id={accountWorkspaceSectionIds.devicesApplications}
       >
-        <h2 class="text-lg font-semibold tracking-tight" id="account-workspace-devices-applications-title">
-          {messageTranslate("shell.nav.sessionsDevices")} · {messageTranslate("shell.nav.applications")}
-        </h2>
+        <AccountSectionAnchorHeading
+          id={accountWorkspaceSectionIds.devicesApplications}
+          title={`${messageTranslate("shell.nav.sessionsDevices")} · ${messageTranslate("shell.nav.applications")}`}
+        />
         {props.devicesApplications}
       </section>
 
@@ -50,9 +54,10 @@ export function AccountWorkspace(props: {
         class="grid scroll-mt-24 gap-3"
         id={accountWorkspaceSectionIds.access}
       >
-        <h2 class="text-lg font-semibold tracking-tight" id="account-workspace-access-title">
-          {messageTranslate("shell.nav.access")}
-        </h2>
+        <AccountSectionAnchorHeading
+          id={accountWorkspaceSectionIds.access}
+          title={messageTranslate("shell.nav.access")}
+        />
         {props.access}
       </section>
 
@@ -61,9 +66,10 @@ export function AccountWorkspace(props: {
         class="grid scroll-mt-24 gap-3"
         id={accountWorkspaceSectionIds.dangerZone}
       >
-        <h2 class="text-lg font-semibold tracking-tight" id="account-workspace-danger-zone-title">
-          {messageTranslate("account.delete.dangerZone")}
-        </h2>
+        <AccountSectionAnchorHeading
+          id={accountWorkspaceSectionIds.dangerZone}
+          title={messageTranslate("account.delete.dangerZone")}
+        />
         {props.dangerZone}
       </section>
     </div>
