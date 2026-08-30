@@ -179,7 +179,7 @@ describe("account workspace", () => {
     expect(source).toContain("<For each={totpEnrollments()}>")
     expect(source).toContain("{enrollment.label}")
     expect(source).toContain('enrollment.status === "active"')
-     expect(source).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
+    expect(source).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
     // Pending enrollments cannot be removed by the backend, so no remove control is rendered for them.
     expect(source).toContain('<Show when={enrollment.status === "active"}>')
     // The add flow stays reachable regardless of how many enrollments already exist.
@@ -225,7 +225,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountFactorsSection.tsx", import.meta.url),
     ).text()
     expect(factors.match(/onClick=\{props\.state\.totpStart\}/g)).toHaveLength(1)
-     expect(factors).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
+    expect(factors).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
 
     const identities = await Bun.file(
       new URL("../../src/features/account/ui/AccountIdentitiesSection.tsx", import.meta.url),
