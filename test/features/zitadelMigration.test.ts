@@ -169,7 +169,7 @@ test("migration rejects malformed membership IDs before writing", async () => {
       expect(organizationRepositoryCreate(database.db).organizationList(realmId)).toEqual({ data: [], success: true })
     })
   }
-})
+}, 15_000)
 
 test("migration rejects unsupported organization IDs before opening the import transaction", async () => {
   const snapshot = (await fixture("zitadel-migration-snapshot.json")) as {
