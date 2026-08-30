@@ -8,6 +8,7 @@ import { mfaApiClientCreate } from "../../mfa/client/mfaApiClientCreate.js"
 import { mfaRecoveryCodesResponseSchema } from "../../mfa/public/mfaRecoveryCodesResponseSchema.js"
 import type { MfaTotpEnrollmentConfirmRequest } from "../../mfa/public/mfaTotpEnrollmentConfirmRequestSchema.js"
 import { mfaTotpEnrollmentConfirmResponseSchema } from "../../mfa/public/mfaTotpEnrollmentConfirmResponseSchema.js"
+import type { MfaTotpEnrollmentRemoveRequest } from "../../mfa/public/mfaTotpEnrollmentRemoveRequestSchema.js"
 import { mfaTotpEnrollmentRemoveResponseSchema } from "../../mfa/public/mfaTotpEnrollmentRemoveResponseSchema.js"
 import { mfaTotpEnrollmentStartResponseSchema } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
 import { oidcApiClientCreate } from "../../oidc/client/oidcApiClientCreate.js"
@@ -144,11 +145,11 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
         { body: JSON.stringify(input), method: "POST" },
         mfaTotpEnrollmentConfirmResponseSchema,
       ),
-    totpRemove: (realmId: string) =>
+    totpRemove: (realmId: string, input: MfaTotpEnrollmentRemoveRequest = {}) =>
       mutate(
         realmId,
         `/realms/${encodeURIComponent(realmId)}/mfa/totp`,
-        { method: "DELETE" },
+        { body: JSON.stringify(input), method: "DELETE" },
         mfaTotpEnrollmentRemoveResponseSchema,
       ),
     totpStart: (realmId: string) =>

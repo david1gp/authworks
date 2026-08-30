@@ -35,6 +35,7 @@ import { mfaEmailOtpStartRequestSchema } from "../public/mfaEmailOtpStartRequest
 import { mfaPolicySetRequestSchema } from "../public/mfaPolicySetRequestSchema.js"
 import { mfaTotpEnrollmentConfirmRequestSchema } from "../public/mfaTotpEnrollmentConfirmRequestSchema.js"
 import { mfaTotpEnrollmentStartRequestSchema } from "../public/mfaTotpEnrollmentStartRequestSchema.js"
+import { mfaTotpEnrollmentRemoveRequestSchema } from "../public/mfaTotpEnrollmentRemoveRequestSchema.js"
 
 type MfaServerAppCreateOptions = {
   readonly browserMode?: boolean
@@ -193,18 +194,22 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
     )
   })
 
-  app.delete("/realms/:realmId/mfa/totp", protectedMiddleware, (context) =>
-    mfaResultResponseCreate(
+  app.delete("/realms/:realmId/mfa/totp", protectedMiddleware, async (context) => {
+    const body = await mfaJsonRead(context)
+    const input = v.safeParse(mfaTotpEnrollmentRemoveRequestSchema, body.success ? body.data : {})
+    if (!input.success) return mfaErrorResponseCreate(context, "The TOTP removal request is invalid.", "mfa.invalid")
+    return mfaResultResponseCreate(
       context,
       mfaTotpEnrollmentRemove({
         actorId: context.get("authorizationActor").actorId,
         database: options.database,
+        enrollmentId: input.output.enrollmentId,
         realmId: context.req.param("realmId"),
         sessionToken: mfaSessionTokenGet(context, sessionBrowserModeRequested(context, options.browserMode)),
         userId: context.get("authorizationActor").actorId,
       }),
-    ),
-  )
+    )
+  })
 
   app.post("/realms/:realmId/mfa/totp/verify", protectedMiddleware, async (context) => {
     const body = await mfaJsonRead(context)

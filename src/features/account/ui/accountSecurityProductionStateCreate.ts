@@ -290,7 +290,10 @@ export function accountSecurityProductionStateCreate(options: {
         totpCode.set("")
       }
     },
-    totpRemove: () => void mutate("totp:remove", () => api.totpRemove(options.realmId())),
+    totpRemove: (enrollmentId?: string) =>
+      void mutate("totp:remove", () =>
+        api.totpRemove(options.realmId(), enrollmentId === undefined ? {} : { enrollmentId }),
+      ),
     totpSetup: totpSetup.get,
     totpSetupDismiss: () => totpSetup.set(undefined),
     totpStart: async () => {

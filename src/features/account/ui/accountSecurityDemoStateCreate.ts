@@ -408,7 +408,16 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       totpSetup.set(undefined)
       code.set("")
     },
-    totpRemove: () => methods.set({ ...methods.get(), totp: { enrolled: false, enrollments: [] } }),
+    totpRemove: (enrollmentId?: string) => {
+      const enrollments =
+        enrollmentId === undefined
+          ? []
+          : methods.get().totp.enrollments.filter((enrollment) => enrollment.id !== enrollmentId)
+      methods.set({
+        ...methods.get(),
+        totp: { enrolled: enrollments.some((enrollment) => enrollment.status === "active"), enrollments },
+      })
+    },
     totpSetup: totpSetup.get,
     totpSetupDismiss: () => totpSetup.set(undefined),
     totpStart: () => {

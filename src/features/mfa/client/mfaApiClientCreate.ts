@@ -28,6 +28,8 @@ import type { MfaTotpEnrollmentConfirmRequest } from "../public/mfaTotpEnrollmen
 import { mfaTotpEnrollmentConfirmRequestSchema } from "../public/mfaTotpEnrollmentConfirmRequestSchema.js"
 import type { MfaTotpEnrollmentConfirmResponse } from "../public/mfaTotpEnrollmentConfirmResponseSchema.js"
 import { mfaTotpEnrollmentConfirmResponseSchema } from "../public/mfaTotpEnrollmentConfirmResponseSchema.js"
+import type { MfaTotpEnrollmentRemoveRequest } from "../public/mfaTotpEnrollmentRemoveRequestSchema.js"
+import { mfaTotpEnrollmentRemoveRequestSchema } from "../public/mfaTotpEnrollmentRemoveRequestSchema.js"
 import type { MfaTotpEnrollmentRemoveResponse } from "../public/mfaTotpEnrollmentRemoveResponseSchema.js"
 import { mfaTotpEnrollmentRemoveResponseSchema } from "../public/mfaTotpEnrollmentRemoveResponseSchema.js"
 import type { MfaTotpEnrollmentStartRequest } from "../public/mfaTotpEnrollmentStartRequestSchema.js"
@@ -135,10 +137,15 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
         mfaTotpEnrollmentConfirmResponseSchema,
       )
     },
-    mfaTotpEnrollmentRemove(realmId: string): Promise<Result<MfaTotpEnrollmentRemoveResponse>> {
+    mfaTotpEnrollmentRemove(
+      realmId: string,
+      input: MfaTotpEnrollmentRemoveRequest = {},
+    ): Promise<Result<MfaTotpEnrollmentRemoveResponse>> {
+      const checked = parsed(mfaTotpEnrollmentRemoveRequestSchema, input, "The TOTP removal request is invalid.")
+      if (!checked.success) return Promise.resolve(checked)
       return request(
         `/realms/${encodeURIComponent(realmId)}/mfa/totp`,
-        { method: "DELETE" },
+        { ...json(checked.data), method: "DELETE" },
         mfaTotpEnrollmentRemoveResponseSchema,
       )
     },
