@@ -8,9 +8,9 @@ import type { OidcRefreshTokenMetadata } from "../../oidc/public/oidcRefreshToke
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
 import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
+import type { AccountSecurityHistoryItem } from "../public/accountSecurityHistoryItemSchema.js"
 import { accountDemoUserFixture } from "./accountDemoUserFixture.js"
 import { accountRecoveryCodeAcknowledgementStore } from "./accountRecoveryCodeAcknowledgementStore.js"
-import type { AccountSecurityHistoryItem } from "../public/accountSecurityHistoryItemSchema.js"
 import type { AccountSecurityScreen } from "./accountSecurityScreenSchema.js"
 
 const now = Date.UTC(2026, 7, 21, 9, 30)
