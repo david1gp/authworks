@@ -5,7 +5,7 @@ const organizationId = "01900000-0000-7000-8000-000000000002"
 const userId = "01900000-0000-7000-8000-0000000000b1"
 
 export async function productionAccountSessionBootstrap(page: Page): Promise<void> {
-  await page.route("**/organization-discovery", (route) =>
+  await page.route("**/organization-discovery**", (route) =>
     route.fulfill({
       json: {
         branding: {

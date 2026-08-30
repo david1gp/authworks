@@ -95,6 +95,27 @@ describe("account workspace", () => {
     expect(source.match(/state=\{profileState\}/g)).toHaveLength(2)
   })
 
+  test("uses one organization selector and selected panel for the production and demo access compositions", async () => {
+    const production = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
+    ).text()
+    const demo = await Bun.file(
+      new URL("../../src/features/account/ui/AccountAccessDemoAdapter.tsx", import.meta.url),
+    ).text()
+    const accessView = await Bun.file(
+      new URL("../../src/features/account/ui/AccountOrganizationAccessView.tsx", import.meta.url),
+    ).text()
+
+    expect(production).toContain("<AccountOrganizationAccessProductionAdapter />")
+    expect(production).not.toContain('screen="organizations"')
+    expect(production).not.toContain('screen="effective-access"')
+    expect(demo).toContain("<AccountOrganizationAccessDemoAdapter organizationState={state} />")
+    expect(demo).not.toContain("<AccountOrganizationsView")
+    expect(demo).not.toContain("<AccountEffectiveAccessView")
+    expect(accessView).toContain("<AccountOrganizationSelector")
+    expect(accessView).toContain("<AccountOrganizationPanel")
+  })
+
   test("consolidates profile identity into one summary without a redundant sign-in card", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),

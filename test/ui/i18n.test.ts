@@ -423,6 +423,32 @@ test("administration state validation and fixture-error keys are translated in e
   }
 })
 
+const accountOrganizationAccessKeys = [
+  "account.access.makeActiveOrganization",
+  "account.access.organizationDescription",
+  "account.access.organizationSelector",
+] as const
+
+test("organization viewing labels are localized in every maintained catalog", async () => {
+  for (const key of accountOrganizationAccessKeys) expect(Object.hasOwn(englishCatalog, key), key).toBe(true)
+
+  for (const option of languagesSupported.filter((entry) => entry.code !== "en")) {
+    const parsed = translationCsvParse(
+      await Bun.file(new URL(`../../public/i18n/${option.code}.csv`, import.meta.url)).text(),
+    )
+    expect(parsed.success).toBe(true)
+    if (!parsed.success) continue
+
+    for (const key of accountOrganizationAccessKeys) {
+      expect(parsed.data[key], `${option.code}/${key}`).toBeTruthy()
+      expect(parsed.data[key], `${option.code}/${key} must not be an English copy`).not.toBe(englishCatalog[key])
+      expect(translationPlaceholdersGet(parsed.data[key] ?? ""), `${option.code}/${key}`).toEqual(
+        translationPlaceholdersGet(englishCatalog[key]),
+      )
+    }
+  }
+})
+
 test("administration state validation keys render translated German and Arabic text", async () => {
   for (const locale of ["de", "ar"] as const) {
     const parsed = translationCsvParse(

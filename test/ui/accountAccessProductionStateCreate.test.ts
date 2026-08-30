@@ -1,12 +1,16 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { createRoot, createSignal } from "solid-js"
+import { accountEffectiveAccessGroupGet } from "../../src/features/account/model/accountEffectiveAccessGroupGet.js"
+import { accountEffectiveAccessGroupsCreate } from "../../src/features/account/model/accountEffectiveAccessGroupsCreate.js"
+import { accountOrganizationMeGet } from "../../src/features/account/model/accountOrganizationMeGet.js"
 import type { AccountEffectiveAccessEntry } from "../../src/features/account/public/accountEffectiveAccessEntrySchema.js"
+import { accountAccessProductionStateCreate } from "../../src/features/account/ui/accountAccessProductionStateCreate.js"
+import { accountOrganizationAccessProductionStateCreate } from "../../src/features/account/ui/accountOrganizationAccessProductionStateCreate.js"
+import { accountProductionAdapterStateCreate } from "../../src/features/account/ui/accountProductionAdapterStateCreate.js"
 import type { OidcConsent } from "../../src/features/oidc/public/oidcConsentSchema.js"
 import type { OrganizationMe } from "../../src/features/organizations/public/organizationMeSchema.js"
 import type { UserCurrentResponse } from "../../src/features/users/public/userCurrentResponseSchema.js"
 import type { User } from "../../src/features/users/public/userSchema.js"
-import { accountAccessProductionStateCreate } from "../../src/features/account/ui/accountAccessProductionStateCreate.js"
-import { accountProductionAdapterStateCreate } from "../../src/features/account/ui/accountProductionAdapterStateCreate.js"
 import type { ProductionSessionContextValue } from "../../src/ui/production/productionSessionContextValue.js"
 
 const realmId = "01900000-0000-7000-8000-000000000001"
@@ -425,6 +429,184 @@ describe("account organization switch state", () => {
     expect(state.consents()).toBe(consentsBeforeSwitch)
     expect(state.consents()).toEqual([consent])
     expect(consentRequests).toBe(1)
+  })
+
+  test("keeps active and viewed organizations unchanged and surfaces a failed activation", async () => {
+    let organizationSelectCalls = 0
+    const session = {
+      actorLabel: "Avery Stone",
+      guard: {
+        authentication: { status: "authenticated" as const, userId },
+        organization: { organizationId: northwindId, status: "available" as const },
+        permission: "granted" as const,
+        realm: { realmId, status: "available" as const },
+      },
+      impersonation: null,
+      organizations: organizations.map((item) => ({ id: item.organization.id, label: item.organization.name })),
+      organizationSelect: async () => {
+        organizationSelectCalls += 1
+        return {
+          errorMessage: "The organization could not be activated.",
+          op: "organizationSelect",
+          success: false as const,
+        }
+      },
+      organizationSwitchPending: () => false,
+      realms: [{ id: realmId, label: "Customer identity" }],
+    } satisfies ProductionSessionContextValue
+
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { origin: "https://auth.example.test", search: "" } },
+    })
+    globalThis.fetch = (async () => Response.json({ items: organizations })) as unknown as typeof fetch
+
+    const state = createRoot((dispose) => {
+      cleanups.push(dispose)
+      return accountAccessProductionStateCreate(() => "organizations", { session })
+    })
+    await waitFor(() => state.status() === "ready")
+
+    state.viewedOrganizationSelect(fieldNotesId)
+    await state.organizationSwitch(fieldNotesId)
+
+    expect(organizationSelectCalls).toBe(1)
+    expect(state.activeOrganizationId()).toBe(northwindId)
+    expect(state.viewedOrganizationId()).toBe(fieldNotesId)
+    expect(state.pendingId()).toBeUndefined()
+    expect(state.status()).toBe("error")
+    expect(state.error()).toBe("The organization could not be activated.")
+    expect(state.notice()).toBeUndefined()
+  })
+
+  test("shares the viewed organization between membership and effective-access responses", async () => {
+    const effectiveAccessResponse = deferred<Response>()
+    const session = {
+      actorLabel: "Avery Stone",
+      guard: {
+        authentication: { status: "authenticated" as const, userId },
+        organization: { organizationId: northwindId, status: "available" as const },
+        permission: "granted" as const,
+        realm: { realmId, status: "available" as const },
+      },
+      impersonation: null,
+      organizations: organizations.map((item) => ({ id: item.organization.id, label: item.organization.name })),
+      organizationSelect: async () => ({ data: undefined, success: true as const }),
+      organizationSwitchPending: () => false,
+      realms: [{ id: realmId, label: "Customer identity" }],
+    } satisfies ProductionSessionContextValue
+
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { origin: "https://auth.example.test", search: "" } },
+    })
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const pathname = new URL(String(input), "https://auth.example.test").pathname
+      if (pathname === `/realms/${realmId}/me/organizations`) return Response.json({ items: organizations })
+      if (pathname === `/realms/${realmId}/me/effective-access`) return effectiveAccessResponse.promise
+      return Response.json({})
+    }) as unknown as typeof fetch
+
+    const state = createRoot((dispose) => {
+      cleanups.push(dispose)
+      return accountOrganizationAccessProductionStateCreate({ session })
+    })
+    await waitFor(() => state.organizations.status() === "ready")
+
+    state.organizationSelect(fieldNotesId)
+
+    expect(state.organizations.activeOrganizationId()).toBe(northwindId)
+    expect(state.organizations.viewedOrganizationId()).toBe(fieldNotesId)
+    expect(state.effectiveAccess.viewedOrganizationId()).toBe(fieldNotesId)
+    effectiveAccessResponse.resolve(
+      Response.json({ items: [effectiveAccessEntryCreate("effective-field-notes", organizations[1]!)] }),
+    )
+    await waitFor(() => state.effectiveAccess.status() === "ready")
+    expect(state.effectiveAccess.viewedEffectiveAccessGroup()?.entries).toEqual([
+      effectiveAccessEntryCreate("effective-field-notes", organizations[1]!),
+    ])
+  })
+
+  test("keeps viewed organization selection independent and falls back after membership removal", async () => {
+    const [organization, setOrganization] = createSignal<ProductionSessionContextValue["guard"]["organization"]>({
+      organizationId: northwindId,
+      status: "available",
+    })
+    let organizationRequests = 0
+    let organizationSelectCalls = 0
+    const session = {
+      actorLabel: "Avery Stone",
+      guard: {
+        authentication: { status: "authenticated" as const, userId },
+        get organization() {
+          return organization()
+        },
+        permission: "granted" as const,
+        realm: { realmId, status: "available" as const },
+      },
+      impersonation: null,
+      organizations: organizations.map((item) => ({ id: item.organization.id, label: item.organization.name })),
+      organizationSelect: async (organizationId: string) => {
+        organizationSelectCalls += 1
+        setOrganization({ organizationId, status: "available" })
+        return { data: undefined, success: true as const }
+      },
+      organizationSwitchPending: () => false,
+      realms: [{ id: realmId, label: "Customer identity" }],
+    } satisfies ProductionSessionContextValue
+
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { origin: "https://auth.example.test", search: "" } },
+    })
+    globalThis.fetch = (async () => {
+      organizationRequests += 1
+      return Response.json({ items: organizationRequests <= 3 ? organizations : [organizations[0]!] })
+    }) as unknown as typeof fetch
+
+    const state = createRoot((dispose) => {
+      cleanups.push(dispose)
+      return accountAccessProductionStateCreate(() => "organizations", { session })
+    })
+    await waitFor(() => state.status() === "ready")
+
+    expect(state.viewedOrganizationId()).toBe(northwindId)
+    expect(state.viewedOrganization()).toEqual(organizations[0])
+
+    state.viewedOrganizationSelect(fieldNotesId)
+    expect(state.viewedOrganizationId()).toBe(fieldNotesId)
+    expect(state.viewedOrganization()).toEqual(organizations[1])
+    expect(state.activeOrganizationId()).toBe(northwindId)
+    expect(organizationSelectCalls).toBe(0)
+
+    setOrganization({ organizationId: fieldNotesId, status: "available" })
+    await waitFor(() => organizationRequests === 2 && state.status() === "ready")
+    expect(state.viewedOrganizationId()).toBe(fieldNotesId)
+
+    setOrganization({ organizationId: northwindId, status: "available" })
+    await waitFor(() => organizationRequests === 3 && state.status() === "ready")
+    expect(state.viewedOrganizationId()).toBe(fieldNotesId)
+
+    state.viewedOrganizationSelect(fieldNotesId)
+    state.reload()
+    await waitFor(() => organizationRequests === 4 && state.status() === "ready")
+    expect(state.viewedOrganizationId()).toBe(northwindId)
+    expect(state.viewedOrganization()).toEqual(organizations[0])
+  })
+
+  test("selects membership and effective access by the viewed organization", () => {
+    const groups = accountEffectiveAccessGroupsCreate([
+      effectiveAccessEntryCreate("effective-field-notes", organizations[1]!),
+      effectiveAccessEntryCreate("effective-northwind", organizations[0]!),
+    ])
+
+    expect(accountOrganizationMeGet(organizations, fieldNotesId)).toBe(organizations[1])
+    expect(accountEffectiveAccessGroupGet(groups, fieldNotesId)).toEqual({
+      entries: [effectiveAccessEntryCreate("effective-field-notes", organizations[1]!)],
+      organization: organizations[1]!.organization,
+    })
+    expect(accountOrganizationMeGet(organizations, "missing")).toBeUndefined()
+    expect(accountEffectiveAccessGroupGet(groups, "missing")).toBeUndefined()
   })
 })
 

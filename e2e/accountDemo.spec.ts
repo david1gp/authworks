@@ -23,13 +23,35 @@ test("organization, invitation, and consent demos are interactive and network-fr
   })
 
   await page.goto("/demo/account/organizations")
-  const organizationSection = page.getByRole("region", { name: "Switch organization", exact: true })
-  await expect(organizationSection.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
-  const fieldNotesOrganization = organizationSection.getByRole("listitem").filter({
-    has: page.getByRole("heading", { name: "Field Notes", exact: true }),
-  })
-  await fieldNotesOrganization.getByRole("button", { name: "Switch organization", exact: true }).click()
-  await expect(organizationSection.getByRole("status")).toContainText("Field Notes")
+  await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(1)
+  await expect(page.getByRole("link", { name: "Access", exact: true })).toHaveCount(0)
+  const organizationSection = page.getByRole("region", { name: "Organization to view", exact: true })
+  const organizationTabs = organizationSection.getByRole("tab")
+  await expect(organizationTabs).toHaveCount(2)
+  await expect(organizationTabs.nth(0)).toHaveAttribute("aria-selected", "true")
+  const organizationPanel = organizationSection.getByRole("tabpanel")
+  await expect(organizationPanel).toHaveAttribute("aria-labelledby", /-tab-/)
+  await expect(organizationPanel.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
+  await expect(organizationPanel.getByRole("heading", { name: "Customer portal", exact: true })).toBeVisible()
+  await expect(organizationPanel.getByText("Active organization", { exact: true })).toBeVisible()
+
+  await organizationTabs.nth(0).focus()
+  await organizationTabs.nth(0).press("ArrowRight")
+  await expect(organizationTabs.nth(1)).toHaveAttribute("aria-selected", "true")
+  await expect(organizationPanel.getByRole("heading", { name: "Field Notes", exact: true })).toBeVisible()
+  await expect(organizationPanel.getByText("member", { exact: true })).toBeVisible()
+  await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toBeVisible()
+  await expect(organizationPanel.getByText("Active organization", { exact: true })).toHaveCount(0)
+  await expect(
+    organizationSection.getByText("Organization context changed to Field Notes.", { exact: true }),
+  ).toHaveCount(0)
+
+  await organizationPanel.getByRole("button", { name: "Make active organization", exact: true }).click()
+  await expect(organizationPanel.getByText("Active organization", { exact: true })).toBeVisible()
+  await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toHaveCount(0)
+  await expect(
+    organizationSection.getByText("Organization context changed to Field Notes.", { exact: true }),
+  ).toBeVisible()
 
   await page.goto("/demo/account/consents")
   page.once("dialog", (dialog) => void dialog.accept())
@@ -59,7 +81,7 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   })
 
   await page.goto("/demo/account/sessions")
-  await expect(page.getByRole("heading", { name: "Sessions and devices", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { level: 1, name: "Sessions and devices", exact: true })).toBeVisible()
   await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
   page.once("dialog", (dialog) => void dialog.accept())
   await page.getByRole("button", { name: "Revoke session" }).click()
@@ -72,7 +94,7 @@ test("account security demos are fixture-backed and interactive", async ({ page 
 
   await page.goto("/demo/account/factors")
   await expect(page.getByText("7 recovery codes", { exact: true })).toBeVisible()
-  await expect(page.getByText("Configured", { exact: true })).toBeVisible()
+  await expect(page.getByText("Configured", { exact: true }).first()).toBeVisible()
 
   await page.goto("/demo/account/recovery-codes?state=one-time")
   await expect(page.locator('[data-one-time-secret="recovery-codes"]')).toBeVisible()
