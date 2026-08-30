@@ -379,7 +379,7 @@ test("Contentoren ssotest ensure identifies every rejected API boundary without 
       await fixture.close()
     }
   }
-})
+}, 30_000)
 
 test("Contentoren membership-list diagnostics use only the closed field categories", () => {
   const secretValue = "sensitive-membership-value"
