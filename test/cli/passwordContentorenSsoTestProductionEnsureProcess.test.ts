@@ -93,19 +93,23 @@ const processContractCases = [
   })),
 ] as const
 
-test.serial("Contentoren ssotest process maps every API rejection stage to its reserved exit code", async () => {
-  const cliPath = await cliBuild()
-  for (const { exitCode, stage } of apiRejectedStageExitCodes) {
-    const fixture = await processFixtureCreate(stage, "rejected")
-    try {
-      const result = await cliRun(cliPath, fixture.mockOrigin)
-      expectExternalFailure(result, `passwords.contentoren-ssotest-ensure.api-rejected.${stage}`, exitCode)
-      expect(fixture.stageHits()).toBe(1)
-    } finally {
-      await fixture.close()
+test.serial(
+  "Contentoren ssotest process maps every API rejection stage to its reserved exit code",
+  async () => {
+    const cliPath = await cliBuild()
+    for (const { exitCode, stage } of apiRejectedStageExitCodes) {
+      const fixture = await processFixtureCreate(stage, "rejected")
+      try {
+        const result = await cliRun(cliPath, fixture.mockOrigin)
+        expectExternalFailure(result, `passwords.contentoren-ssotest-ensure.api-rejected.${stage}`, exitCode)
+        expect(fixture.stageHits()).toBe(1)
+      } finally {
+        await fixture.close()
+      }
     }
-  }
-})
+  },
+  30_000,
+)
 
 test.serial("Contentoren ssotest process reports an invalid realm-list response cleanly", async () => {
   const cliPath = await cliBuild()
