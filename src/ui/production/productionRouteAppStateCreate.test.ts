@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeAll, describe, expect, mock, test } from "bun:test"
+import { createSignal } from "solid-js"
 import type { ProductionRouteContract } from "./productionRouteContract.js"
 import type { ProductionRouteGuardContext } from "./productionRouteGuardContext.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
@@ -42,7 +43,8 @@ const sessionCreate = (
   },
   impersonation: null,
   organizations: [],
-  organizationSelect: () => undefined,
+  organizationSelect: async () => ({ success: true as const, data: undefined }),
+  organizationSwitchPending: () => false,
   realms: [],
 })
 
@@ -90,5 +92,38 @@ describe("productionRouteAppStateCreate authentication redirect", () => {
     mockLocation = { hash: "#details", pathname: "/account", search: "?tab=security" }
     const anonymousAccount = await stateObserve(productionRouteContractMap.account, sessionCreate("anonymous"))
     expect(anonymousAccount.assignments).toEqual(["/login?return_to=%2Faccount%3Ftab%3Dsecurity%23details"])
+  })
+
+  test("keeps an authenticated account route in place when its organization context changes", async () => {
+    const { productionRouteContractMap } = await import("./productionRouteContractMap.js")
+    const [organization, setOrganization] = createSignal<ProductionRouteGuardContext["organization"]>({
+      organizationId: "organization-1",
+      status: "available",
+    })
+    const baseSession = sessionCreate({ status: "authenticated", userId: "user-1" })
+    const session = {
+      ...baseSession,
+      guard: {
+        ...baseSession.guard,
+        get organization() {
+          return organization()
+        },
+      },
+    }
+
+    mockLocation = { hash: "#access", pathname: "/account", search: "?organization=organization-1" }
+    const observed = await stateObserve(productionRouteContractMap.account, session)
+    expect(observed.assignments).toEqual([])
+    expect(observed.state.guardState()).toMatchObject({
+      organizationId: "organization-1",
+      status: "authenticated",
+    })
+
+    setOrganization({ organizationId: "organization-2", status: "available" })
+    expect(observed.assignments).toEqual([])
+    expect(observed.state.guardState()).toMatchObject({
+      organizationId: "organization-2",
+      status: "authenticated",
+    })
   })
 })

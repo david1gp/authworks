@@ -1,12 +1,18 @@
 import * as v from "valibot"
+import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { httpApiClientRequest } from "../../platform/http/httpApiClientRequest.js"
+import { resultCreate } from "../../platform/errors/resultCreate.js"
+import { resultErrorCodedCreate } from "../../platform/errors/resultErrorCodedCreate.js"
 import { organizationDiscoveryResponseSchema } from "../../features/organizations/public/organizationDiscoveryResponseSchema.js"
 import { organizationMeListResponseSchema } from "../../features/organizations/public/organizationMeListResponseSchema.js"
 import { organizationResourceIdSchema } from "../../features/organizations/public/organizationResourceIdSchema.js"
+import { organizationMeSwitchResponseSchema } from "../../features/organizations/public/organizationMeSwitchResponseSchema.js"
 import { realmResponseSchema } from "../../features/realms/public/realmResponseSchema.js"
+import { sessionBrowserRequest } from "../../features/sessions/client/sessionBrowserRequest.js"
 import { sessionSchema } from "../../features/sessions/public/sessionSchema.js"
 import { userCurrentResponseSchema } from "../../features/users/public/userCurrentResponseSchema.js"
 import type { ProductionApiContextValue } from "./productionApiContextValue.js"
+import type { ProductionRouteGuardContext } from "./productionRouteGuardContext.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
 
 const sessionCurrentResponseSchema = v.strictObject({ session: sessionSchema })
@@ -67,9 +73,75 @@ export async function productionApplicationContextsCreate(): Promise<{
     new URL(window.location.href).searchParams.get("organization"),
   )
   const selectedOrganization =
-    organizations.find((item) => item.id === (requestedOrganization.success ? requestedOrganization.output : "")) ??
+    organizations.find((item) => item.id === session.organizationId) ??
+    (session.organizationId === undefined
+      ? organizations.find((item) => item.id === (requestedOrganization.success ? requestedOrganization.output : ""))
+      : undefined) ??
     organizations.find((item) => item.id === discovery.organization.id) ??
     organizations[0]
+
+  const organization = createSignalObject<ProductionRouteGuardContext["organization"]>(
+    selectedOrganization === undefined ? "missing" : { organizationId: selectedOrganization.id, status: "available" },
+  )
+  const organizationSwitchPending = createSignalObject(false)
+  let organizationSwitchGeneration = 0
+  const organizationSelect = async (organizationId: string) => {
+    const selected = v.safeParse(organizationResourceIdSchema, organizationId)
+    if (!selected.success)
+      return resultErrorCodedCreate(
+        "productionOrganizationSelect",
+        "The organization selection is invalid.",
+        "organizations.invalid",
+      )
+    if (!organizations.some((item) => item.id === selected.output))
+      return resultErrorCodedCreate(
+        "productionOrganizationSelect",
+        "The organization is not available in this realm.",
+        "organizations.not-found",
+      )
+    if (organizationSwitchPending.get())
+      return resultErrorCodedCreate(
+        "productionOrganizationSelect",
+        "An organization switch is already in progress.",
+        "organizations.pending",
+      )
+    const currentOrganization = organization.get()
+    if (typeof currentOrganization === "object" && currentOrganization.organizationId === selected.output) {
+      productionOrganizationUrlUpdate(selected.output)
+      return resultCreate(undefined)
+    }
+
+    const generation = ++organizationSwitchGeneration
+    organizationSwitchPending.set(true)
+    const result = await sessionBrowserRequest({
+      baseUrl: window.location.origin,
+      init: { body: JSON.stringify({ organizationId: selected.output }), method: "POST" },
+      op: "productionOrganizationSelect",
+      path: `/realms/${encodeURIComponent(realmId)}/me/organizations/switch`,
+      realmId,
+      schema: organizationMeSwitchResponseSchema,
+    })
+    if (generation !== organizationSwitchGeneration) return resultCreate(undefined)
+    organizationSwitchPending.set(false)
+    if (!result.success) return result
+    if (
+      result.data.activeOrganizationId !== selected.output ||
+      result.data.context.organizationId !== selected.output ||
+      result.data.context.realmId !== realmId ||
+      result.data.context.actorId !== (session.userId ?? session.subjectId) ||
+      (result.data.context.actor.realmId !== undefined && result.data.context.actor.realmId !== realmId) ||
+      result.data.organization.id !== selected.output ||
+      result.data.organization.realmId !== realmId
+    )
+      return resultErrorCodedCreate(
+        "productionOrganizationSelect",
+        "The organization switch response is invalid.",
+        "platform.invalid-response",
+      )
+    organization.set({ organizationId: selected.output, status: "available" })
+    productionOrganizationUrlUpdate(selected.output)
+    return resultCreate(undefined)
+  }
 
   return productionContextsCreate({
     api: { content: "ready", retry: () => undefined },
@@ -77,10 +149,9 @@ export async function productionApplicationContextsCreate(): Promise<{
       actorLabel: user?.user.profile.displayName ?? user?.user.email ?? "Administrator",
       guard: {
         authentication: { status: "authenticated", userId: session.userId ?? session.subjectId },
-        organization:
-          selectedOrganization === undefined
-            ? "missing"
-            : { organizationId: selectedOrganization.id, status: "available" },
+        get organization() {
+          return organization.get()
+        },
         permission:
           session.subjectType === "user"
             ? user?.capabilities?.realmRead === true
@@ -99,13 +170,8 @@ export async function productionApplicationContextsCreate(): Promise<{
             }
           : null,
       organizations,
-      organizationSelect: (organizationId) => {
-        const selected = v.safeParse(organizationResourceIdSchema, organizationId)
-        if (!selected.success) return
-        const next = new URL(window.location.href)
-        next.searchParams.set("organization", selected.output)
-        window.location.assign(next)
-      },
+      organizationSelect,
+      organizationSwitchPending: organizationSwitchPending.get,
       realms: [{ id: realmId, label: realm?.realm.name ?? realmId }],
     },
   })
@@ -140,7 +206,8 @@ function productionAnonymousContextsCreate() {
       },
       impersonation: null,
       organizations: [],
-      organizationSelect: () => undefined,
+      organizationSelect: async () => resultCreate(undefined),
+      organizationSwitchPending: () => false,
       realms: [],
     },
   })
@@ -157,9 +224,16 @@ function productionAnonymousSessionCreate(realmId: string, organizationId: strin
     },
     impersonation: null,
     organizations: [{ id: organizationId, label: organizationName }],
-    organizationSelect: () => undefined,
+    organizationSelect: async () => resultCreate(undefined),
+    organizationSwitchPending: () => false,
     realms: [{ id: realmId, label: realmId }],
   } satisfies ProductionSessionContextValue
+}
+
+function productionOrganizationUrlUpdate(organizationId: string) {
+  const next = new URL(window.location.href)
+  next.searchParams.set("organization", organizationId)
+  window.history.replaceState(window.history.state, "", `${next.pathname}${next.search}${next.hash}`)
 }
 
 function productionContextsCreate(options: {

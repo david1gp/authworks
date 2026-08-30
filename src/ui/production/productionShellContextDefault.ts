@@ -2,6 +2,7 @@ import type { ProductionApiContextValue } from "./productionApiContextValue.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
 
 const noOperation = () => undefined
+const noOrganizationSelection = async () => ({ success: true as const, data: undefined })
 
 export const productionShellContextDefault = {
   api: {
@@ -21,7 +22,8 @@ export const productionShellContextDefault = {
       { id: "northwind", label: "Northwind Labs" },
       { id: "field-notes", label: "Field Notes" },
     ],
-    organizationSelect: noOperation,
+    organizationSelect: noOrganizationSelection,
+    organizationSwitchPending: () => false,
     realms: [{ id: "customer-identity", label: "Customer identity" }],
   } satisfies ProductionSessionContextValue,
 }
