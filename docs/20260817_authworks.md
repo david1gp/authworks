@@ -1,8 +1,8 @@
-# Authworks backend
+# Authworks
 
 ## Goal
 
-Build `/home/david/adaptive/authworks` as an alpha, backend-first identity platform covering all agreed capabilities from levels 1 through 6. Deliver a usable server, a public schema/API-client library, and an `@stricli/core` CLI. Preserve observable behavior from existing ZITADEL and adaptive authentication tests where applicable, with correctness and security tests taking priority over implementation reuse.
+Build `/home/david/adaptive/authworks` as an alpha identity platform covering all agreed capabilities from levels 1 through 6. Deliver a usable server, public schema/API-client library, `@stricli/core` CLI, and focused account UI. Preserve observable behavior from existing ZITADEL and adaptive authentication tests where applicable, with correctness and security tests taking priority over implementation reuse.
 
 ## Decisions
 
@@ -10,7 +10,8 @@ Build `/home/david/adaptive/authworks` as an alpha, backend-first identity platf
 - Use one Bun package organized feature-first. Each `src/features/<feature>` directory owns its domain, actions, state persistence, event payloads, server routes, public schemas, API client, CLI commands, tests, and future UI.
 - Keep `src/outputs/server.ts`, `src/outputs/library.ts`, and `src/outputs/cli.ts` as thin static compositions built to `dist/{server,library,cli}`. They contain no feature behavior.
 - Keep public Valibot transport schemas separate from private Drizzle persistence schemas. Share explicit domain/public schemas where safe; never derive public contracts blindly from database rows.
-- Perform backend, library, and CLI work before creating any UI.
+- Keep account UI responsive and task-focused: avoid persistent navigation, use compact field layouts, and move add/change forms into accessible dialogs.
+- Organize account contact methods, security status, activity, sessions, applications, and effective access into visually distinct sections without redundant empty-state filler or nested card chrome.
 - Use canonical lowercase UUIDv7 strings for public durable resource and event IDs. Use random opaque secrets for credentials, sessions, authorization codes, refresh tokens, API keys, challenges, nonce, and state. Use an internal integer event position for strict ordering.
 - Use one file-backed SQLite database, `authworks.sqlite`, for current state and the append-only event log. Configure `journal_mode=WAL`, `synchronous=FULL`, `foreign_keys=ON`, `temp_store=MEMORY`, and `busy_timeout=5000`, adapting the proven `/home/david/leo_own/gruppenplan-app` presets for identity-data durability. Write state plus events in one transaction.
 - Current-state tables are authoritative. The append-only event table records versioned domain facts with event ID, position, command index, realm, aggregate identity/version, actor, correlation/causation, timestamp, payload, and metadata. Never record secrets or credential material.
@@ -34,6 +35,7 @@ Build `/home/david/adaptive/authworks` as an alpha, backend-first identity platf
 - Use static output composition so missing feature imports fail at build time. Define library subpath exports and the CLI binary in the root `package.json`. The CLI calls the server through feature API clients and never accesses SQLite directly.
 - Generate and reset the database from the current schema. Test with real temporary file-backed databases, real cryptography where relevant, and one isolated database file per parallel test.
 - Implement external network operations outside database transactions. Persist commands and events synchronously, then perform notifications or provider calls after commit through explicit ports.
+- Reuse existing authenticated UI primitives and account feature APIs. Keep layout-only work in feature-owned UI components and preserve existing profile, contact verification, password, session, and security behavior.
 
 ## Tasks
 
@@ -58,6 +60,9 @@ Build `/home/david/adaptive/authworks` as an alpha, backend-first identity platf
 - [x] 19. Complete public library feature subpaths, all API clients, and all `@stricli/core` command trees against the running server.
 - [x] 20. Run full cross-feature conformance, isolation, event atomicity, API-client, CLI subprocess, and security regression suites; verify all three distributable outputs from a clean checkout.
 - [x] 21. Implement local named CLI connection profiles for server, token, realm, and organization defaults according to `docs/20260825_cli_connection_profiles.md`.
+- [x] 22. Simplify `/account` navigation and profile layout, place email addresses and phone numbers side by side, remove filler/help copy, and move add contact-method and change-password forms into accessible dialogs.
+- [x] 23. Reorganize account security, activity, sessions, applications, and effective-access presentation; add a compact security-method status overview including password, email, phone, passkeys, and backup codes.
+- [x] 24. Update focused browser coverage and run the complete repository check for the account UI changes.
 
 ## Paths
 
