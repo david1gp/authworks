@@ -216,6 +216,7 @@ test("admin browser adapter exposes target reads and fetches CSRF before target 
         return Response.json({
           emailOtp: { available: false },
           passkeys: { credentials: [] },
+          password: { available: false },
           recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
           totp: { enrolled: false, enrollments: [] },
         })

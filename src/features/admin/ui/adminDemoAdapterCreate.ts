@@ -97,6 +97,7 @@ export function adminDemoAdapterCreate(
         return resultCreate({
           emailOtp: { available: false },
           passkeys: { credentials: [] },
+          password: { available: false },
           recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
           totp: { enrolled: false, enrollments: [] },
         })

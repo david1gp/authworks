@@ -6,6 +6,7 @@ import { mfaRepositoryCreate } from "../../mfa/persistence/mfaRepositoryCreate.j
 import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { passkeyCredentialViewCreate } from "../../passkeys/domain/passkeyCredentialViewCreate.js"
 import { passkeyRepositoryCreate } from "../../passkeys/persistence/passkeyRepositoryCreate.js"
+import { passwordUsableAuthenticationMethodRead } from "../../passwords/server/passwordUsableAuthenticationMethodRead.js"
 import type { RealmTenantContext } from "../../realms/server/index.js"
 import { userRepositoryCreate } from "../persistence/userRepositoryCreate.js"
 import type { UserAuthenticationMethods } from "../public/userAuthenticationMethodsSchema.js"
@@ -59,6 +60,13 @@ export function userAuthenticationMethodsRead(
   const passkeys = passkeyRepositoryCreate(options.database.db).passkeyCredentialList(options.realmId, options.userId)
   if (!passkeys.success) return passkeys
 
+  const password = passwordUsableAuthenticationMethodRead({
+    executor: options.database.db,
+    realmId: options.realmId,
+    userId: options.userId,
+  })
+  if (!password.success) return password
+
   const policy = organizationLoginPolicyResolve({
     database: options.database,
     organizationId: options.context.actor.organizationId,
@@ -69,6 +77,7 @@ export function userAuthenticationMethodsRead(
   return resultCreate({
     emailOtp: { available: policy.data.allowEmailOtp && user.data.emailVerifiedAt !== null },
     passkeys: { credentials: passkeys.data.map(passkeyCredentialViewCreate) },
+    password: password.data,
     recoveryCodes: { available: remaining > 0, generatedAt, remaining },
     totp: { enrolled: enrollments.some((enrollment) => enrollment.status === "active"), enrollments },
   })

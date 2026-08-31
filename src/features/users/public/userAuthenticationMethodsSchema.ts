@@ -27,9 +27,14 @@ const userAuthenticationMethodsPasskeysSchema = v.strictObject({
   credentials: v.array(passkeyCredentialSchema),
 })
 
+const userAuthenticationMethodsPasswordSchema = v.strictObject({
+  available: v.boolean(),
+})
+
 export const userAuthenticationMethodsSchema = v.strictObject({
   emailOtp: userAuthenticationMethodsEmailOtpSchema,
   passkeys: userAuthenticationMethodsPasskeysSchema,
+  password: userAuthenticationMethodsPasswordSchema,
   recoveryCodes: userAuthenticationMethodsRecoveryCodesSchema,
   totp: userAuthenticationMethodsTotpSchema,
 })

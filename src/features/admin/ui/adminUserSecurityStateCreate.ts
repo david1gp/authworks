@@ -42,6 +42,7 @@ export function adminUserSecurityStateCreate(options: {
     const empty =
       !result.data.emailOtp.available &&
       result.data.passkeys.credentials.length === 0 &&
+      !result.data.password.available &&
       !result.data.recoveryCodes.available &&
       !result.data.totp.enrolled
     methodsStatus.set(empty ? "empty" : "ready")

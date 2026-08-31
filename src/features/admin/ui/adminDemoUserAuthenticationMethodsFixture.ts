@@ -19,6 +19,7 @@ export const adminDemoUserAuthenticationMethodsFixture: UserAuthenticationMethod
       },
     ],
   },
+  password: { available: true },
   recoveryCodes: { available: true, generatedAt: now - 86_400_000, remaining: 7 },
   totp: {
     enrolled: true,

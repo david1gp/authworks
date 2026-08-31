@@ -11,6 +11,7 @@ import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCrea
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { passkeyRepositoryCreate } from "../../src/features/passkeys/persistence/passkeyRepositoryCreate.js"
+import { passwordRepositoryCreate } from "../../src/features/passwords/persistence/passwordRepositoryCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
@@ -996,6 +997,7 @@ test("subject-bound authentication methods summarize factor state without creden
       data: {
         emailOtp: { available: false },
         passkeys: { credentials: [] },
+        password: { available: false },
         recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
         totp: { enrolled: false, enrollments: [] },
       },
@@ -1064,6 +1066,17 @@ test("subject-bound authentication methods summarize factor state without creden
       expect(createdCredential.success).toBe(true)
     }
 
+    const password = passwordRepositoryCreate(database.db).passwordCredentialCreate({
+      changedAt: testkit.runtime.now(),
+      createdAt: testkit.runtime.now(),
+      hash: "password-hash-material",
+      passwordChangeRequired: 0,
+      realmId: alpha.id,
+      userId: created.data.user.id,
+      version: 1,
+    })
+    expect(password.success).toBe(true)
+
     const verified = userEmailVerificationSet({
       context: system,
       database,
@@ -1082,6 +1095,7 @@ test("subject-bound authentication methods summarize factor state without creden
     expect(enrolled.data.recoveryCodes).toMatchObject({ available: true, remaining: 9 })
     expect(enrolled.data.emailOtp.available).toBe(true)
     expect(enrolled.data.passkeys.credentials).toHaveLength(2)
+    expect(enrolled.data.password.available).toBe(true)
     const body = JSON.stringify(enrolled.data)
     expect(body).not.toContain(started.data.secret)
     expect(body).not.toContain(generated.data.codes[1]!)
@@ -1090,6 +1104,7 @@ test("subject-bound authentication methods summarize factor state without creden
     expect(body).not.toContain("encryptedSecret")
     expect(body).not.toContain("codeHash")
     expect(body).not.toContain("publicKey")
+    expect(body).not.toContain("password-hash-material")
 
     const crossRealm = await client.userMeAuthenticationMethodsGet(beta.id)
     expect(crossRealm.success).toBe(false)
