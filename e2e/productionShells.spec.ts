@@ -106,6 +106,7 @@ test.beforeEach(async ({ page }) => {
     route.fulfill({
       json: {
         emailOtp: { available: true },
+        password: { available: true },
         passkeys: { credentials: [] },
         recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
         totp: { enrolled: false, enrollments: [] },
@@ -149,7 +150,8 @@ test("production focus and authenticated shells render without network adapters"
     await expect(link.locator("svg")).toHaveCount(1)
     await expect(link).toHaveAttribute("href", href)
   }
-  await expect(page.locator("header").first()).toHaveCSS("position", "sticky")
+  // The account navbar scrolls with the page rather than sticking to the top.
+  await expect(page.locator("header").first()).toHaveCSS("position", "static")
   // The product has a single realm, so the shell no longer renders a realm chooser. The organization
   // control only appears when the signed-in user actually belongs to more than one organization.
   await expect(page.getByLabel("Realm")).toHaveCount(0)
@@ -174,13 +176,13 @@ test("unauthenticated protected routes redirect to login with their destination 
   expect(new URL(page.url()).searchParams.get("return_to")).toBe("/admin/not-a-screen?from=bookmark#details")
 })
 
-test("account workspace exposes section navigation in the sticky primary navbar row on mobile", async ({ page }) => {
+test("account workspace exposes section navigation in the primary navbar row on mobile", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto("/account")
 
   const header = page.locator("header").first()
   const navigation = header.getByRole("navigation", { name: "Account navigation" })
-  await expect(header).toHaveCSS("position", "sticky")
+  await expect(header).toHaveCSS("position", "static")
   await expect(navigation).toBeVisible()
   await expect(navigation.getByRole("link", { name: "Profile", exact: true })).toBeVisible()
   await expect(navigation.getByRole("link", { name: "Danger zone", exact: true })).toBeVisible()
@@ -236,7 +238,7 @@ test("account workspace uses full-width content without a contextual sidebar", a
   await expect(page.locator("aside")).toHaveCount(0)
   await expect(content).toHaveCSS("margin-left", "0px")
   await expect(page.getByRole("button", { name: "Close sidebar" })).toHaveCount(0)
-  await expect(page.locator("header").first()).toHaveCSS("position", "sticky")
+  await expect(page.locator("header").first()).toHaveCSS("position", "static")
 })
 
 test("representative production login, account, and administration views have no serious axe violations", async ({

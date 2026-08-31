@@ -32,6 +32,8 @@ export function AccountDemoAdapter(props: {
             currentPassword={page.currentPassword.get()}
             errorMessage={page.errorMessage.get()}
             newPassword={page.newPassword.get()}
+            dialogOpen={page.passwordDialogOpen.get()}
+            onDialogOpenChange={page.passwordDialogOpenSet}
             onConfirmPasswordInput={page.confirmPassword.set}
             onCurrentPasswordInput={page.currentPassword.set}
             onNewPasswordInput={page.newPassword.set}
@@ -58,6 +60,7 @@ export function AccountDemoAdapter(props: {
             displayName={page.displayName.get()}
             email={page.user.get()?.email ?? ""}
             emailActionId={page.emailActionId.get()}
+            emailAddDialogOpen={page.emailAddDialogOpen.get()}
             emailAddresses={page.emailAddresses.get()}
             emailCandidate={page.emailCandidate.get()}
             emailChallengeActive={page.emailChallengeId.get() !== undefined}
@@ -73,6 +76,7 @@ export function AccountDemoAdapter(props: {
             lastName={page.lastName.get()}
             nickName={page.nickName.get()}
             onDisplayNameInput={page.displayName.set}
+            onEmailAddDialogOpenChange={page.emailAddDialogOpenSet}
             onEmailCancel={page.emailAddressAddCancel}
             onEmailInput={page.emailCandidate.set}
             onEmailPrimarySet={page.emailAddressPrimarySet}
@@ -84,6 +88,7 @@ export function AccountDemoAdapter(props: {
             onFirstNameInput={page.firstName.set}
             onLastNameInput={page.lastName.set}
             onNickNameInput={page.nickName.set}
+            onPhoneAddDialogOpenChange={page.phoneAddDialogOpenSet}
             onPhoneCancel={page.phoneChangeCancel}
             onPhoneCodeInput={page.phoneCode.set}
             onPhoneInput={page.phoneCandidate.set}
@@ -95,6 +100,7 @@ export function AccountDemoAdapter(props: {
             onRetry={page.load}
             onSubmit={page.profileSubmit}
             preferredLanguage={page.preferredLanguage}
+            phoneAddDialogOpen={page.phoneAddDialogOpen.get()}
             phoneCandidate={page.phoneCandidate.get()}
             phoneChallengeActive={page.phoneChallengeId.get() !== undefined}
             phoneCode={page.phoneCode.get()}

@@ -40,6 +40,9 @@ export function productionAuthenticatedShellStateCreate(
       kind() !== "account" && sidebar.openDesktop.get() ? authenticatedNavigationClasses.contentOffset : "",
     destinationSelect: () => authenticatedSidebarDestinationSelect(sidebar),
     groups: () => productionShellNavigationGroups[kind()],
+    // The account shell scrolls its navbar away so the profile columns get the full viewport
+    // height; contextual shells keep the sticky bar above the sidebar overlay.
+    headerPositionClass: () => (kind() === "account" ? "" : "sticky top-0 z-30"),
     homeHref: () => (kind() === "admin" ? "/admin" : "/account"),
     isAccountSectionActive: accountSections.isActive,
     isActive: (href: string) => productionNavigationItemActive(href, location.pathname),

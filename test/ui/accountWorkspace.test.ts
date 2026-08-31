@@ -126,18 +126,26 @@ describe("account workspace", () => {
     expect(source).not.toContain("account.profile.signInDescription")
   })
 
-  test("splits personal information and the profile picture into two side-by-side cards on wide screens", async () => {
+  test("renders personal information as one card with three responsive columns", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),
     ).text()
 
-    expect(source).toContain("lg:grid-cols-12")
-    expect(source).toContain('class="lg:col-span-8"')
-    expect(source).toContain('class="lg:col-span-4"')
+    // One personal-information card: names, preferences, and the picture are its three columns.
+    expect(source.match(/<AuthenticatedSection/g)).toHaveLength(1)
+    expect(source).toContain("sm:grid-cols-2 lg:grid-cols-3")
+    expect(source).not.toContain("lg:grid-cols-12")
+    expect(source).not.toContain('class="lg:col-span-8"')
     expect(source).toContain("<AccountProfilePictureField")
-    // Both cards are standalone panels, so the picture is no longer nested inside the form card.
-    expect(source.match(/<AuthenticatedSection/g)).toHaveLength(2)
-    expect(source).toContain('title={messageTranslate("account.profile.picture")}')
+
+    // Column one is first name, last name, display name; column two is nickname, gender, language.
+    const fieldOrder = [...source.matchAll(/account\.profile\.(firstName|lastName|displayName|nickName|gender)"/g)].map(
+      ([, field]) => field,
+    )
+    expect(fieldOrder.slice(0, 5)).toEqual(["firstName", "lastName", "displayName", "nickName", "gender"])
+
+    // The removed nickname helper copy must not come back.
+    expect(source).not.toContain("nickNameHint")
   })
 
   test("gives the authenticated workspace a wider desktop container that still stacks on mobile", async () => {
@@ -226,13 +234,7 @@ describe("account workspace", () => {
     expect(split).toContain("lg:col-span-7")
     expect(split).toContain("lg:col-span-5")
 
-    const sources = [
-      "AccountProfilePhoneSection",
-      "AccountEmailAddressView",
-      "AccountPasskeysSection",
-      "AccountFactorsSection",
-      "AccountIdentitiesSection",
-    ]
+    const sources = ["AccountPasskeysSection", "AccountFactorsSection", "AccountIdentitiesSection"]
     for (const name of sources) {
       const source = await Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()
       expect(source).toContain("<AccountSplitColumns")
@@ -265,9 +267,7 @@ describe("account workspace", () => {
     const phone = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfilePhoneSection.tsx", import.meta.url),
     ).text()
-    // The current number, its verification status, and the empty state stay in the left card only.
     expect(phone.match(/onSubmit=\{props\.onStart\}/g)).toHaveLength(1)
-    expect(phone).toContain('messageTranslate("account.profile.phoneNotAdded")')
     expect(phone).toContain('messageTranslate("account.profile.verificationPending")')
 
     const email = await Bun.file(
@@ -278,65 +278,164 @@ describe("account workspace", () => {
     expect(email.match(/onClick=\{\(\) => props\.onRemove\(address\.id\)\}/g)).toHaveLength(1)
   })
 
-  test("places sessions and devices beside applications on desktop and stacks them on mobile", async () => {
-    const source = await Bun.file(
-      new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
+  test("renders contact methods as two list sections in one responsive grid with dialog-only add flows", async () => {
+    const profile = await Bun.file(
+      new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),
     ).text()
 
-    expect(source).toContain("<AccountSplitColumns")
-    expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />')
-    expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />')
-    expect(source).toContain('secondary={<AccountAccessProductionAdapter screen="consents" />}')
+    // One parent grid: email addresses left, phone numbers right at desktop widths, stacked below lg.
+    expect(profile).toContain("lg:grid-cols-2")
+    expect(profile.indexOf("<AccountEmailAddressView")).toBeLessThan(profile.indexOf("<AccountProfilePhoneSection"))
+    // The phone section is no longer a second, separately placed block further down the page.
+    expect(profile.match(/<AccountProfilePhoneSection/g)).toHaveLength(1)
+    expect(profile).not.toContain("AccountSplitColumns")
+
+    for (const name of ["AccountEmailAddressView", "AccountProfilePhoneSection"]) {
+      const source = await Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()
+
+      // Exactly one add control per section, and it only opens an accessible dialog.
+      expect(source.match(/<AuthenticatedDialog/g)).toHaveLength(1)
+      expect(source).toContain("onOpenChange={props.onAddDialogOpenChange}")
+      expect(source).toContain("open={props.addDialogOpen}")
+      // Each section presents its data as a clean list.
+      expect(source).toContain('class="divide-y divide-line-subtle"')
+      expect(source).toContain("aria-label={messageTranslate(")
+      // No always-visible add form outside the dialog.
+      expect(source.indexOf("<AuthenticatedDialog")).toBeLessThan(source.indexOf("<form"))
+      expect(source).not.toContain("<ProductionStatePanel")
+    }
   })
 
-  test("keeps sessions and applications as the two side-by-side cards in the requested order", async () => {
+  test("removes the contact-method filler empty-state copy from the catalog", async () => {
+    const catalog = await Bun.file(new URL("../../src/ui/i18n/model/englishCatalog.ts", import.meta.url)).text()
+
+    expect(catalog).not.toContain("No verified phone number added")
+    expect(catalog).not.toContain("account.profile.phoneNotAdded")
+    expect(catalog).toContain('"account.profile.phoneNumbers": "Phone numbers"')
+    expect(catalog).toContain('"account.profile.emailAddresses": "Email addresses"')
+  })
+
+  test("closing an add dialog abandons its in-flight contact-method challenge", async () => {
+    const source = await Bun.file(
+      new URL("../../src/features/account/ui/accountPageStateCreate.ts", import.meta.url),
+    ).text()
+
+    expect(source).toContain("const emailAddDialogOpenSet = (open: boolean) => {")
+    expect(source).toContain("if (!open) emailAddressAddCancel()")
+    expect(source).toContain("const phoneAddDialogOpenSet = (open: boolean) => {")
+    expect(source).toContain("phoneChangeCancel()")
+    // A successful verification closes its dialog so the refreshed list is visible.
+    expect(source).toContain('emailStatus.set("success")\n    emailAddDialogOpen.set(false)')
+    expect(source).toContain('phoneStatus.set("success")\n    phoneAddDialogOpen.set(false)')
+    // The emailed verification link reopens the dialog on its code step.
+    expect(source).toContain("emailAddDialogOpen.set(true)")
+  })
+
+  test("keeps password status and action aligned while rendering the change form only in a dialog", async () => {
+    const view = await Bun.file(
+      new URL("../../src/features/account/ui/AccountPasswordView.tsx", import.meta.url),
+    ).text()
+
+    expect(view).toContain("sm:grid-cols-[minmax(0,1fr)_auto]")
+    expect(view.match(/<AuthenticatedDialog/g)).toHaveLength(1)
+    expect(view).toContain("onOpenChange={props.onDialogOpenChange}")
+    expect(view).toContain("open={props.dialogOpen}")
+    expect(view.indexOf("<AuthenticatedDialog")).toBeLessThan(view.indexOf("<form"))
+    expect(view.indexOf('description={messageTranslate("account.password.description")}')).toBeGreaterThan(
+      view.indexOf("<AuthenticatedDialog"),
+    )
+
+    const state = await Bun.file(
+      new URL("../../src/features/account/ui/accountPageStateCreate.ts", import.meta.url),
+    ).text()
+    expect(state).toContain("const passwordDialogOpenSet = (open: boolean) => {")
+    expect(state).toContain('currentPassword.set("")')
+    expect(state).toContain('newPassword.set("")')
+    expect(state).toContain('confirmPassword.set("")')
+  })
+
+  test("groups recent security activity with sessions and applications in one responsive grid", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
     ).text()
 
+    expect(source).toContain("lg:grid-cols-12")
+    expect(source).toContain('class="lg:col-span-12"')
+    expect(source).toContain('class="grid min-w-0 gap-3 lg:col-span-7 [&>*]:min-w-0"')
+    expect(source).toContain('class="min-w-0 lg:col-span-5"')
+    expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />')
+    expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />')
+    expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />')
+    expect(source).toContain('<AccountAccessProductionAdapter screen="consents" />')
+
+    const workspace = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
+    ).text()
+    expect(workspace).toContain('messageTranslate("shell.nav.securityHistory")')
+  })
+
+  test("keeps activity, session state, and applications in a readable source order", async () => {
+    const source = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
+    ).text()
+
+    const securityHistory = source.indexOf('screen="security-history"')
     const sessions = source.indexOf('screen="sessions"')
     const refreshTokens = source.indexOf('screen="refresh-tokens"')
     const consents = source.indexOf('screen="consents"')
-    const secondary = source.indexOf("secondary={<AccountAccessProductionAdapter")
 
-    // Sessions leads its column, refresh tokens follow it, and both stay ahead of the applications column,
-    // so the applications card is never obscured or preceded by a refresh-token card in its own column.
-    expect(sessions).toBeGreaterThan(-1)
+    expect(securityHistory).toBeGreaterThan(-1)
+    expect(sessions).toBeGreaterThan(securityHistory)
     expect(refreshTokens).toBeGreaterThan(sessions)
     expect(consents).toBeGreaterThan(refreshTokens)
-    expect(consents).toBeGreaterThan(secondary)
-    // Only the consents adapter lives in the narrow column.
-    expect(source.slice(secondary)).not.toContain("refresh-tokens")
 
-    // Mobile stacking order follows source order: primary (sessions) first, applications second.
-    const split = await Bun.file(
-      new URL("../../src/features/account/ui/AccountSplitColumns.tsx", import.meta.url),
+    const historySource = await Bun.file(
+      new URL("../../src/features/account/ui/AccountSecurityHistorySection.tsx", import.meta.url),
     ).text()
-    expect(split.indexOf("props.primary")).toBeLessThan(split.indexOf("props.secondary"))
+    expect(historySource).toContain('title={messageTranslate("shell.nav.securityHistory")}')
+    expect(historySource).toContain("sm:grid-cols-[auto_minmax(0,1fr)_auto]")
+    expect(historySource).toContain("onClick={props.state.securityHistoryLoadMore}")
+    expect(historySource).not.toContain("account.securityHistory.description")
+    expect(historySource).not.toContain("ProductionStatePanel")
 
-    // Each column is an explicitly titled card.
     const sessionsSource = await Bun.file(
       new URL("../../src/features/account/ui/AccountSessionsSection.tsx", import.meta.url),
     ).text()
     expect(sessionsSource).toContain('title={messageTranslate("shell.nav.sessionsDevices")}')
+    expect(sessionsSource).toContain("sm:grid-cols-[minmax(0,1fr)_auto]")
+    expect(sessionsSource).toContain("onClick={() => props.state.sessionRevoke(session.id)}")
+    expect(sessionsSource).not.toContain("ProductionStatePanel")
+
+    const refreshTokensSource = await Bun.file(
+      new URL("../../src/features/account/ui/AccountRefreshTokensSection.tsx", import.meta.url),
+    ).text()
+    expect(refreshTokensSource).toContain("onClick={props.state.refreshTokensRevokeAll}")
+    expect(refreshTokensSource).toContain("onClick={() => props.state.refreshTokenRevoke(token.familyId)}")
+    expect(refreshTokensSource).not.toContain("ProductionStatePanel")
 
     const consentsSource = await Bun.file(
       new URL("../../src/features/account/ui/AccountConsentsView.tsx", import.meta.url),
     ).text()
     expect(consentsSource).toContain('title={messageTranslate("shell.nav.applications")}')
-    // Consent revocation stays on the applications card.
+    expect(consentsSource).toContain("sm:grid-cols-[minmax(0,1fr)_auto]")
     expect(consentsSource).toContain("onClick={() => props.onRevoke(consent.clientId)}")
+
+    const catalog = await Bun.file(new URL("../../src/ui/i18n/model/englishCatalog.ts", import.meta.url)).text()
+    expect(catalog).toContain('"shell.nav.securityHistory": "Recent security activity"')
+    expect(catalog).not.toContain("Review recent security activity for this account")
   })
 
-  test("renders effective access as responsive cards with a collapsed permission disclosure per access source", async () => {
+  test("renders effective access as outlined groups with responsive divided rows", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountEffectiveAccessView.tsx", import.meta.url),
     ).text()
 
-    // One card per access source, two per desktop row, stacked on mobile.
-    expect(source).toContain("lg:grid-cols-2")
-    expect(source).toContain('<AuthenticatedSection class="h-full" padded>')
-    expect(source).not.toContain("divide-y divide-line-subtle")
+    // Organizations use one fieldset-like outline; access sources are divided rows rather than nested cards.
+    expect(source).toContain('<fieldset class="min-w-0 rounded-panel border border-line')
+    expect(source).toContain("<legend")
+    expect(source).toContain("divide-y divide-line-subtle")
+    expect(source).toContain("md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]")
+    expect(source).not.toContain("AuthenticatedSection")
 
     // Permissions live inside a disclosure whose summary names its access source.
     expect(source).toContain("<AccountDisclosure")

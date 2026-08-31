@@ -16,7 +16,7 @@ import { LanguageSelector } from "../i18n/ui/LanguageSelector.js"
 import { ProductionImpersonationBannerSlot } from "./ProductionImpersonationBannerSlot.js"
 import { productionAuthenticatedShellStateCreate } from "./productionAuthenticatedShellStateCreate.js"
 
-/** Production authenticated frame with sticky global navbar, contextual sidebar navigation, and account section navigation. */
+/** Production authenticated frame with a global navbar, contextual sidebar navigation, and account section navigation. */
 export function ProductionAuthenticatedShell(props: {
   readonly children: JSX.Element
   readonly kind: "account" | "admin" | "invitations"
@@ -67,7 +67,9 @@ export function ProductionAuthenticatedShell(props: {
   return (
     <div class="min-h-dvh bg-muted">
       <ProductionImpersonationBannerSlot />
-      <header class="sticky top-0 z-30 flex h-12 min-w-0 items-center justify-between gap-1.5 border-b border-line bg-surface px-2.5 sm:gap-3 sm:px-6">
+      <header
+        class={`${state.headerPositionClass()} flex h-12 min-w-0 items-center justify-between gap-1.5 border-b border-line bg-surface px-2.5 sm:gap-3 sm:px-6`}
+      >
         <div class="flex min-w-0 items-center gap-1 sm:gap-2">
           <Show when={state.isContextual()}>
             <SidebarToggle {...state.sidebar} variant="ghost" />

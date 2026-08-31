@@ -80,6 +80,24 @@ test("account security demos are fixture-backed and interactive", async ({ page 
     if (new URL(request.url()).pathname.startsWith("/realms/")) apiRequests.push(request.url())
   })
 
+  await page.goto("/demo/account/overview")
+  const securityOverview = page.locator("[data-account-security-overview]")
+  await expect(securityOverview.locator("dl")).toHaveCount(5)
+  for (const label of ["Password", "Email", "Phone", "Passkeys", "Backup codes"])
+    await expect(securityOverview.getByText(label, { exact: true })).toBeVisible()
+  for (const detail of [
+    "Password set",
+    "avery.stone@example.com verified",
+    "+14155552671 verified",
+    "2 passkeys configured",
+    "7 backup codes remaining",
+  ])
+    await expect(securityOverview.getByText(detail, { exact: true })).toBeVisible()
+
+  await page.goto("/demo/account/overview?state=empty")
+  await expect(page.locator("[data-account-security-overview]")).toContainText("No password set")
+  await expect(page.locator("[data-account-security-overview]")).toContainText("No verified email")
+
   await page.goto("/demo/account/sessions")
   await expect(page.getByRole("heading", { level: 1, name: "Sessions and devices", exact: true })).toBeVisible()
   await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
@@ -146,12 +164,12 @@ test("production security history uses the safe newest-first cursor contract", a
     })
   })
 
-  await page.goto("/account#security")
-  const securitySection = page.locator("#security")
-  await expect(securitySection.getByText("A session was created", { exact: true })).toBeVisible()
-  await expect(securitySection.getByText("session.created", { exact: true })).toHaveCount(0)
-  await securitySection.getByRole("button", { name: "Load more security activity", exact: true }).click()
-  await expect(securitySection.getByText("An impersonation session started", { exact: true })).toBeVisible()
+  await page.goto("/account#devices-applications")
+  const devicesApplicationsSection = page.locator("#devices-applications")
+  await expect(devicesApplicationsSection.getByText("A session was created", { exact: true })).toBeVisible()
+  await expect(devicesApplicationsSection.getByText("session.created", { exact: true })).toHaveCount(0)
+  await devicesApplicationsSection.getByRole("button", { name: "Load more security activity", exact: true }).click()
+  await expect(devicesApplicationsSection.getByText("An impersonation session started", { exact: true })).toBeVisible()
 })
 
 test("production session revocation uses the real account contract and CSRF", async ({ page }) => {
@@ -217,6 +235,7 @@ test("production recovery codes are fetched with CSRF and displayed once", async
       contentType: "application/json",
       body: JSON.stringify({
         emailOtp: { available: true },
+        password: { available: true },
         passkeys: { credentials: [] },
         recoveryCodes: { available: true, generatedAt: 1_777_000_000_000, remaining: 6 },
         totp: { enrolled: true, enrollments: [] },

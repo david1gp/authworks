@@ -1,6 +1,7 @@
 import * as v from "valibot"
 
 export const accountSecurityScreenSchema = v.picklist([
+  "overview",
   "sessions",
   "passkeys",
   "factors",

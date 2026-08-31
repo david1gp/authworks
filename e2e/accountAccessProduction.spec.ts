@@ -78,7 +78,8 @@ test("production organization tabs keep viewing separate from explicit activatio
   await expect(page.getByRole("combobox", { name: "Organization", exact: true })).toHaveValue(fieldNotesId)
   await expect(page).toHaveURL(new RegExp(`/account\\?organization=${fieldNotesId}#access$`))
   expect(switchRequests).toEqual([{ csrf: "csrf-e2e", organizationId: fieldNotesId }])
-  expect(profileRequests).toHaveLength(profileRequestCountBeforeActivation)
+  // Viewing a tab is local-only; explicit activation refreshes the organization-scoped account data once.
+  await expect.poll(() => profileRequests.length).toBe(profileRequestCountBeforeActivation + 1)
 })
 
 test("production organization access uses a native select above eight memberships", async ({ page }) => {
@@ -158,6 +159,7 @@ test("production consent and invitation adapters expose permission and expiry fa
       return route.fulfill({
         json: {
           emailOtp: { available: true },
+          password: { available: true },
           passkeys: { credentials: [] },
           recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
           totp: { enrolled: false, enrollments: [] },

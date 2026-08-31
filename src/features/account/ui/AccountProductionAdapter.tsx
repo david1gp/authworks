@@ -17,6 +17,8 @@ export function AccountProductionAdapter(props: {
           currentPassword={state.currentPassword.get()}
           errorMessage={state.errorMessage.get()}
           newPassword={state.newPassword.get()}
+          dialogOpen={state.passwordDialogOpen.get()}
+          onDialogOpenChange={state.passwordDialogOpenSet}
           onConfirmPasswordInput={state.confirmPassword.set}
           onCurrentPasswordInput={state.currentPassword.set}
           onNewPasswordInput={state.newPassword.set}
@@ -43,6 +45,7 @@ export function AccountProductionAdapter(props: {
           displayName={state.displayName.get()}
           email={state.user.get()?.email ?? ""}
           emailActionId={state.emailActionId.get()}
+          emailAddDialogOpen={state.emailAddDialogOpen.get()}
           emailAddresses={state.emailAddresses.get()}
           emailCandidate={state.emailCandidate.get()}
           emailChallengeActive={state.emailChallengeId.get() !== undefined}
@@ -58,6 +61,7 @@ export function AccountProductionAdapter(props: {
           lastName={state.lastName.get()}
           nickName={state.nickName.get()}
           onDisplayNameInput={state.displayName.set}
+          onEmailAddDialogOpenChange={state.emailAddDialogOpenSet}
           onEmailCancel={state.emailAddressAddCancel}
           onEmailInput={state.emailCandidate.set}
           onEmailPrimarySet={state.emailAddressPrimarySet}
@@ -69,6 +73,7 @@ export function AccountProductionAdapter(props: {
           onFirstNameInput={state.firstName.set}
           onLastNameInput={state.lastName.set}
           onNickNameInput={state.nickName.set}
+          onPhoneAddDialogOpenChange={state.phoneAddDialogOpenSet}
           onPhoneCancel={state.phoneChangeCancel}
           onPhoneCodeInput={state.phoneCode.set}
           onPhoneInput={state.phoneCandidate.set}
@@ -80,6 +85,7 @@ export function AccountProductionAdapter(props: {
           onRetry={state.load}
           onSubmit={state.profileSubmit}
           preferredLanguage={state.preferredLanguage}
+          phoneAddDialogOpen={state.phoneAddDialogOpen.get()}
           phoneCandidate={state.phoneCandidate.get()}
           phoneChallengeActive={state.phoneChallengeId.get() !== undefined}
           phoneCode={state.phoneCode.get()}

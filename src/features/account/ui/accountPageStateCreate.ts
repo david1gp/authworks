@@ -88,13 +88,16 @@ export function accountPageStateCreate(options: {
   const currentPassword = createSignalObject("")
   const newPassword = createSignalObject("")
   const confirmPassword = createSignalObject("")
+  const passwordDialogOpen = createSignalObject(false)
   const deletionConfirmation = createSignalObject("")
+  const phoneAddDialogOpen = createSignalObject(false)
   const phoneCandidate = createSignalObject("")
   const phoneChallengeId = createSignalObject<string | undefined>(undefined)
   const phoneCode = createSignalObject("")
   const phoneErrorMessage = createSignalObject<string | undefined>(undefined)
   const phoneStatus = createSignalObject<AccountPhoneViewStatus>("idle")
   const phoneValidationMessage = createSignalObject<string | undefined>(undefined)
+  const emailAddDialogOpen = createSignalObject(false)
   const emailCandidate = createSignalObject("")
   const emailChallengeId = createSignalObject<string | undefined>(undefined)
   const emailToken = createSignalObject("")
@@ -188,12 +191,14 @@ export function accountPageStateCreate(options: {
       emailAddresses.set(addressResult.data.items)
     }
     if (loadGenerationSnapshot !== loadGeneration) return
+    phoneAddDialogOpen.set(false)
     phoneCandidate.set("")
     phoneChallengeId.set(undefined)
     phoneCode.set("")
     phoneErrorMessage.set(undefined)
     phoneValidationMessage.set(undefined)
     phoneStatus.set("idle")
+    emailAddDialogOpen.set(false)
     emailCandidate.set("")
     emailChallengeId.set(undefined)
     emailToken.set("")
@@ -246,6 +251,17 @@ export function accountPageStateCreate(options: {
     newPassword.set("")
     confirmPassword.set("")
     status.set("success")
+  }
+  const passwordDialogOpenSet = (open: boolean) => {
+    if (!open) {
+      currentPassword.set("")
+      newPassword.set("")
+      confirmPassword.set("")
+      errorMessage.set(undefined)
+      validationMessage.set(undefined)
+      status.set("ready")
+    }
+    passwordDialogOpen.set(open)
   }
   const accountDelete = async (event: SubmitEvent) => {
     event.preventDefault()
@@ -326,12 +342,21 @@ export function accountPageStateCreate(options: {
     phoneChallengeId.set(undefined)
     phoneCode.set("")
     phoneStatus.set("success")
+    phoneAddDialogOpen.set(false)
   }
   const phoneChangeCancel = () => {
     phoneChallengeId.set(undefined)
     phoneCode.set("")
     phoneOperationPrepare()
     phoneStatus.set("idle")
+  }
+  /** Closing the dialog abandons any in-flight challenge so a reopened dialog starts clean. */
+  const phoneAddDialogOpenSet = (open: boolean) => {
+    if (!open) {
+      phoneCandidate.set("")
+      phoneChangeCancel()
+    }
+    phoneAddDialogOpen.set(open)
   }
 
   const emailOperationPrepare = () => {
@@ -402,6 +427,7 @@ export function accountPageStateCreate(options: {
     emailChallengeId.set(undefined)
     emailToken.set("")
     emailStatus.set("success")
+    emailAddDialogOpen.set(false)
   }
   const emailAddressAddCancel = () => {
     emailCandidate.set("")
@@ -409,6 +435,11 @@ export function accountPageStateCreate(options: {
     emailToken.set("")
     emailOperationPrepare()
     emailStatus.set("idle")
+  }
+  /** Closing the dialog abandons any in-flight challenge so a reopened dialog starts clean. */
+  const emailAddDialogOpenSet = (open: boolean) => {
+    if (!open) emailAddressAddCancel()
+    emailAddDialogOpen.set(open)
   }
   const emailAddressPrimarySet = async (emailId: string) => {
     const address = emailAddresses.get().find((candidate) => candidate.id === emailId)
@@ -474,6 +505,8 @@ export function accountPageStateCreate(options: {
       emailChallengeId.set(parsed.output.challengeId)
       emailToken.set(parsed.output.token)
       emailStatus.set("code")
+      // The verification link lands on the account page, so the add dialog reopens on its code step.
+      emailAddDialogOpen.set(true)
       query.delete("challengeId")
       query.delete("token")
       const queryString = query.toString()
@@ -490,6 +523,8 @@ export function accountPageStateCreate(options: {
     currentPassword,
     deletionConfirmation,
     displayName,
+    emailAddDialogOpen,
+    emailAddDialogOpenSet,
     emailCandidate,
     emailChallengeId,
     emailActionId,
@@ -512,6 +547,10 @@ export function accountPageStateCreate(options: {
     newPassword,
     nickName,
     passwordSubmit,
+    passwordDialogOpen,
+    passwordDialogOpenSet,
+    phoneAddDialogOpen,
+    phoneAddDialogOpenSet,
     phoneCandidate,
     phoneChallengeId,
     phoneChangeCancel,

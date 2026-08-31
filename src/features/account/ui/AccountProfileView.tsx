@@ -30,6 +30,7 @@ type AccountProfileViewProps = {
   readonly displayName: string
   readonly email: string
   readonly emailActionId?: string
+  readonly emailAddDialogOpen: boolean
   readonly emailAddresses: readonly UserEmailAddress[]
   readonly emailCandidate: string
   readonly emailChallengeActive: boolean
@@ -45,6 +46,7 @@ type AccountProfileViewProps = {
   readonly lastName: string
   readonly nickName: string
   readonly onDisplayNameInput: (value: string) => void
+  readonly onEmailAddDialogOpenChange: (open: boolean) => void
   readonly onEmailCancel: () => void
   readonly onEmailInput: (value: string) => void
   readonly onEmailResend: () => void
@@ -56,6 +58,7 @@ type AccountProfileViewProps = {
   readonly onFirstNameInput: (value: string) => void
   readonly onLastNameInput: (value: string) => void
   readonly onNickNameInput: (value: string) => void
+  readonly onPhoneAddDialogOpenChange: (open: boolean) => void
   readonly onPhoneCancel: () => void
   readonly onPhoneCodeInput: (value: string) => void
   readonly onPhoneInput: (value: string) => void
@@ -67,6 +70,7 @@ type AccountProfileViewProps = {
   readonly onRetry: () => void
   readonly onSubmit: (event: SubmitEvent) => void
   readonly preferredLanguage: SignalObject<string>
+  readonly phoneAddDialogOpen: boolean
   readonly phoneCandidate: string
   readonly phoneChallengeActive: boolean
   readonly phoneCode: string
@@ -94,26 +98,50 @@ export function AccountProfileView(props: AccountProfileViewProps) {
       title={boundary().title}
     >
       <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+        {/* Contact methods: email addresses on the left, phone numbers on the right at desktop
+            widths, stacked below `lg`. Both sections keep their own list and one add dialog. */}
         <Show when={props.kind === "email"}>
-          <AccountEmailAddressView
-            actionId={props.emailActionId}
-            addresses={props.emailAddresses}
-            candidate={props.emailCandidate}
-            challengeActive={props.emailChallengeActive}
-            errorMessage={props.emailErrorMessage}
-            onAddCancel={props.onEmailCancel}
-            onAddResend={props.onEmailResend}
-            onAddStart={props.onEmailStart}
-            onAddVerify={props.onEmailVerify}
-            onCandidateInput={props.onEmailInput}
-            onPrimarySet={props.onEmailPrimarySet}
-            onRemove={props.onEmailRemove}
-            onRetry={props.onRetry}
-            onTokenInput={props.onEmailTokenInput}
-            status={props.emailStatus}
-            token={props.emailToken}
-            validationMessage={props.emailValidationMessage}
-          />
+          <div class="grid min-w-0 items-start gap-3 lg:grid-cols-2 [&>*]:min-w-0">
+            <AccountEmailAddressView
+              actionId={props.emailActionId}
+              addDialogOpen={props.emailAddDialogOpen}
+              addresses={props.emailAddresses}
+              candidate={props.emailCandidate}
+              challengeActive={props.emailChallengeActive}
+              errorMessage={props.emailErrorMessage}
+              onAddCancel={props.onEmailCancel}
+              onAddDialogOpenChange={props.onEmailAddDialogOpenChange}
+              onAddResend={props.onEmailResend}
+              onAddStart={props.onEmailStart}
+              onAddVerify={props.onEmailVerify}
+              onCandidateInput={props.onEmailInput}
+              onPrimarySet={props.onEmailPrimarySet}
+              onRemove={props.onEmailRemove}
+              onRetry={props.onRetry}
+              onTokenInput={props.onEmailTokenInput}
+              status={props.emailStatus}
+              token={props.emailToken}
+              validationMessage={props.emailValidationMessage}
+            />
+            <AccountProfilePhoneSection
+              addDialogOpen={props.phoneAddDialogOpen}
+              candidate={props.phoneCandidate}
+              challengeActive={props.phoneChallengeActive}
+              code={props.phoneCode}
+              errorMessage={props.phoneErrorMessage}
+              onAddDialogOpenChange={props.onPhoneAddDialogOpenChange}
+              onCancel={props.onPhoneCancel}
+              onCodeInput={props.onPhoneCodeInput}
+              onInput={props.onPhoneInput}
+              onResend={props.onPhoneResend}
+              onStart={props.onPhoneStart}
+              onVerify={props.onPhoneVerify}
+              phoneNumber={props.phoneNumber}
+              status={props.phoneStatus}
+              validationMessage={props.phoneValidationMessage}
+              verified={props.phoneVerified}
+            />
+          </div>
         </Show>
 
         <Show when={props.kind !== "email"}>
@@ -125,25 +153,15 @@ export function AccountProfileView(props: AccountProfileViewProps) {
             userName={props.userName}
           />
 
-          {/* Personal information is the wide left card; the profile picture is a standalone right
-              card at desktop widths and stacks below it on narrow screens. */}
-          <div class="grid min-w-0 items-start gap-3 lg:grid-cols-12 [&>*]:min-w-0">
-            <AuthenticatedSection
-              class="lg:col-span-8"
-              description={messageTranslate("account.profile.personalDescription")}
-              title={messageTranslate("account.profile.personalInformation")}
-            >
-              <form class="grid min-w-0 gap-3 p-4" onSubmit={props.onSubmit}>
-                <div class="grid min-w-0 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                  <div class="grid min-w-0 gap-1 sm:col-span-2 lg:col-span-1">
-                    <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
-                    <Input
-                      id="account-display-name"
-                      maxlength={128}
-                      onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
-                      value={props.displayName}
-                    />
-                  </div>
+          {/* One personal-information card holding three responsive columns: names, preferences,
+              and the profile picture. The columns stack on narrow screens. */}
+          <AuthenticatedSection
+            description={messageTranslate("account.profile.personalDescription")}
+            title={messageTranslate("account.profile.personalInformation")}
+          >
+            <form class="grid min-w-0 gap-3 p-4" onSubmit={props.onSubmit}>
+              <div class="grid min-w-0 items-start gap-2.5 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
+                <div class="grid min-w-0 content-start gap-2.5">
                   <div class="grid min-w-0 gap-1">
                     <Label for="account-first-name">{messageTranslate("account.profile.firstName")}</Label>
                     <Input
@@ -160,6 +178,27 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                       maxlength={128}
                       onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
                       value={props.lastName}
+                    />
+                  </div>
+                  <div class="grid min-w-0 gap-1">
+                    <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
+                    <Input
+                      id="account-display-name"
+                      maxlength={128}
+                      onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
+                      value={props.displayName}
+                    />
+                  </div>
+                </div>
+
+                <div class="grid min-w-0 content-start gap-2.5">
+                  <div class="grid min-w-0 gap-1">
+                    <Label for="account-nick-name">{messageTranslate("account.profile.nickName")}</Label>
+                    <Input
+                      id="account-nick-name"
+                      maxlength={128}
+                      onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
+                      value={props.nickName}
                     />
                   </div>
                   {/* The gender select is wrapped so its trigger never keeps a dangling
@@ -184,16 +223,6 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     />
                   </div>
                   <div class="grid min-w-0 gap-1">
-                    <Label for="account-nick-name">{messageTranslate("account.profile.nickName")}</Label>
-                    <Input
-                      id="account-nick-name"
-                      maxlength={128}
-                      onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
-                      value={props.nickName}
-                    />
-                    <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.nickNameHint")}</p>
-                  </div>
-                  <div class="grid min-w-0 gap-1">
                     <Label for="account-preferred-language">
                       {messageTranslate("account.profile.preferredLanguage")}
                     </Label>
@@ -209,47 +238,31 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                   </div>
                 </div>
 
-                <Show when={props.validationMessage}>
-                  {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-                </Show>
-                <Show when={props.status === "success"}>
-                  <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
-                </Show>
-                <div>
-                  <Button size="sm" type="submit">
-                    {messageTranslate("account.profile.save")}
-                  </Button>
+                <div class="grid min-w-0 content-start gap-1 sm:col-span-2 lg:col-span-1">
+                  <Label>{messageTranslate("account.profile.picture")}</Label>
+                  <AccountProfilePictureField
+                    errorMessage={props.pictureErrorMessage}
+                    onRemove={props.onPictureRemove}
+                    onUpload={props.onPictureUpload}
+                    status={props.pictureStatus}
+                    url={props.pictureUrl}
+                  />
                 </div>
-              </form>
-            </AuthenticatedSection>
+              </div>
 
-            <AuthenticatedSection class="lg:col-span-4" padded title={messageTranslate("account.profile.picture")}>
-              <AccountProfilePictureField
-                errorMessage={props.pictureErrorMessage}
-                onRemove={props.onPictureRemove}
-                onUpload={props.onPictureUpload}
-                status={props.pictureStatus}
-                url={props.pictureUrl}
-              />
-            </AuthenticatedSection>
-          </div>
-
-          <AccountProfilePhoneSection
-            candidate={props.phoneCandidate}
-            challengeActive={props.phoneChallengeActive}
-            code={props.phoneCode}
-            errorMessage={props.phoneErrorMessage}
-            onCancel={props.onPhoneCancel}
-            onCodeInput={props.onPhoneCodeInput}
-            onInput={props.onPhoneInput}
-            onResend={props.onPhoneResend}
-            onStart={props.onPhoneStart}
-            onVerify={props.onPhoneVerify}
-            phoneNumber={props.phoneNumber}
-            status={props.phoneStatus}
-            validationMessage={props.phoneValidationMessage}
-            verified={props.phoneVerified}
-          />
+              <Show when={props.validationMessage}>
+                {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+              </Show>
+              <Show when={props.status === "success"}>
+                <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
+              </Show>
+              <div>
+                <Button size="sm" type="submit">
+                  {messageTranslate("account.profile.save")}
+                </Button>
+              </div>
+            </form>
+          </AuthenticatedSection>
         </Show>
       </div>
     </AccountStateBoundary>

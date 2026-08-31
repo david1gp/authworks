@@ -5,7 +5,6 @@ import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSec
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
 export function AccountSessionsSection(props: { readonly state: AccountSecurityViewState }) {
@@ -18,13 +17,15 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
       >
         <Show
           when={props.state.sessions().length > 0}
-          fallback={<ProductionStatePanel compact state="empty" title={messageTranslate("account.sessions.empty")} />}
+          fallback={
+            <p class="px-3 py-2.5 text-sm text-muted-foreground">{messageTranslate("account.sessions.empty")}</p>
+          }
         >
           <ul class="divide-y divide-line-subtle">
             <For each={props.state.sessions()}>
               {(session) => (
                 <li class="grid min-w-0 gap-2 px-3 py-2.5">
-                  <div class="flex min-w-0 flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
+                  <div class="grid min-w-0 items-start gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                     <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                       <span class="min-w-0 truncate text-sm font-medium">
                         {session.device.description ?? messageTranslate("account.sessions.unknownDevice")}

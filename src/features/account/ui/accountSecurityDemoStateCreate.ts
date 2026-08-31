@@ -60,6 +60,7 @@ const securityHistorySecondPage: AccountSecurityHistoryItem[] = [
 const emptyDemoMethods: UserAuthenticationMethods = {
   emailOtp: { available: false },
   passkeys: { credentials: [] },
+  password: { available: false },
   recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
   totp: { enrolled: false, enrollments: [] },
 }
@@ -140,6 +141,7 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
   const methods = createSignalObject<UserAuthenticationMethods>({
     emailOtp: { available: true },
     passkeys: { credentials: passkeys.get() },
+    password: { available: true },
     recoveryCodes: { available: true, generatedAt: now - 86_400_000, remaining: 7 },
     totp: {
       enrolled: true,
@@ -433,5 +435,14 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
         secret: "JBSWY3DPEHPK3PXP",
       })
     },
+    user: () =>
+      selected() === "empty"
+        ? {
+            ...accountDemoUserFixture,
+            emailVerified: false,
+            emailVerifiedAt: undefined,
+            phoneNumberVerifiedAt: undefined,
+          }
+        : accountDemoUserFixture,
   }
 }

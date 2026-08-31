@@ -141,6 +141,7 @@ export async function productionAccountSessionBootstrap(page: Page): Promise<voi
     route.fulfill({
       json: {
         emailOtp: { available: true },
+        password: { available: true },
         passkeys: { credentials: [] },
         recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
         totp: { enrolled: false, enrollments: [] },

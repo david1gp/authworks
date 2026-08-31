@@ -159,6 +159,7 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
         { body: "{}", method: "POST" },
         mfaTotpEnrollmentStartResponseSchema,
       ),
+    userGet: users.userMeGet,
     // Keep completed feature clients in this adapter even where mutations require a freshly fetched CSRF token.
     featureClients: { identities, mfa, oidc, passkeys, sessions, users },
   }

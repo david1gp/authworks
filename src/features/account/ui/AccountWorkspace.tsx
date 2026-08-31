@@ -44,7 +44,7 @@ export function AccountWorkspace(props: {
       >
         <AccountSectionAnchorHeading
           id={accountWorkspaceSectionIds.devicesApplications}
-          title={`${messageTranslate("shell.nav.sessionsDevices")} · ${messageTranslate("shell.nav.applications")}`}
+          title={`${messageTranslate("shell.nav.securityHistory")} · ${messageTranslate("shell.nav.sessionsDevices")} · ${messageTranslate("shell.nav.applications")}`}
         />
         {props.devicesApplications}
       </section>

@@ -113,14 +113,23 @@ test("task 17 composed production authentication preserves recovery, MFA, deep l
     if (expiresAt === undefined) throw new Error("The composed session did not expose an expiry timestamp.")
 
     server.process.kill("SIGUSR1")
-    const expiredSession = await page.evaluate(async (realmId) => {
-      const response = await fetch(`/realms/${realmId}/sessions/current`, { credentials: "include" })
-      return { body: await response.text(), status: response.status }
-    }, fixture.realm.id)
+    const cookie = (await page.context().cookies()).map((item) => `${item.name}=${item.value}`).join("; ")
+    let expiredSession = { body: "", status: 0 }
+    await expect
+      .poll(async () => {
+        const response = await fetch(`${fixture.serverOrigin}/realms/${fixture.realm.id}/sessions/current`, {
+          headers: { cookie, host: new URL(fixture.origin).host, origin: fixture.origin },
+        })
+        expiredSession = { body: await response.text(), status: response.status }
+        return expiredSession.status
+      })
+      .toBe(401)
     expect(expiredSession.status).toBe(401)
     expect(expiredSession.body).not.toContain(recoveryPassword)
-    await page.reload()
+    await page.goto("/account#profile")
     await expect(page).toHaveURL("/login?return_to=%2Faccount%23profile")
+    // Let account background requests settle before the fixture server is stopped in cleanup.
+    await page.waitForLoadState("networkidle")
   } finally {
     await e2eServerStop(server.process)
   }
@@ -223,11 +232,13 @@ test("task 17 composed production account increment consumes captured links and 
     await page.goto("/account#security")
     await page.reload()
     const securitySection = page.locator("#security")
-    await securitySection.getByLabel("Current password", { exact: true }).fill(recoveryPassword)
-    await securitySection.getByLabel("New password", { exact: true }).fill(accountPassword)
-    await securitySection.getByLabel("Confirm new password", { exact: true }).fill(accountPassword)
     await securitySection.getByRole("button", { name: "Change password", exact: true }).click()
-    await expect(securitySection.getByRole("status")).toContainText("Your password was changed.")
+    const passwordDialog = page.getByRole("dialog", { name: "Change password" })
+    await passwordDialog.getByLabel("Current password", { exact: true }).fill(recoveryPassword)
+    await passwordDialog.getByLabel("New password", { exact: true }).fill(accountPassword)
+    await passwordDialog.getByLabel("Confirm new password", { exact: true }).fill(accountPassword)
+    await passwordDialog.getByRole("button", { name: "Change password", exact: true }).click()
+    await expect(passwordDialog.getByRole("status")).toContainText("Your password was changed.")
 
     await page.goto("/account#profile")
     await page.reload()
@@ -241,26 +252,28 @@ test("task 17 composed production account increment consumes captured links and 
     await page.goto("/account#access")
     await page.reload()
     const accessSection = page.locator("#access")
-    const organizationsSection = accessSection.getByRole("region", { name: "Switch organization", exact: true })
+    const organizationsSection = accessSection.getByRole("region", { name: "Organization to view", exact: true })
     await expect(
       organizationsSection.getByRole("heading", { name: fixture.organization.name, exact: true }),
     ).toBeVisible()
-    // The redesigned access pages present each record as a list item rather than a standalone card.
-    const secondaryOrganization = organizationsSection.locator("li").filter({
-      has: page.getByRole("heading", { name: fixture.secondaryOrganization.name, exact: true }),
-    })
-    await expect(secondaryOrganization).toBeVisible()
+    await organizationsSection.getByRole("tab", { name: fixture.secondaryOrganization.name, exact: true }).click()
+    const secondaryOrganizationPanel = organizationsSection.getByRole("tabpanel")
+    await expect(
+      secondaryOrganizationPanel.getByRole("heading", { name: fixture.secondaryOrganization.name, exact: true }),
+    ).toBeVisible()
     const organizationSwitchResponsePromise = page.waitForResponse((response) =>
       new URL(response.url()).pathname.endsWith("/me/organizations/switch"),
     )
-    await secondaryOrganization.getByRole("button", { name: "Switch organization", exact: true }).click()
+    await secondaryOrganizationPanel.getByRole("button", { name: "Make active organization", exact: true }).click()
     expect((await organizationSwitchResponsePromise).status()).toBe(200)
     await expect(
       organizationsSection.getByRole("heading", { name: fixture.secondaryOrganization.name, exact: true }),
     ).toBeVisible()
     await expect.poll(() => new URL(page.url()).searchParams.get("organization")).toBe(fixture.secondaryOrganization.id)
     await page.reload()
-    await expect(secondaryOrganization.getByText("Active organization", { exact: true })).toBeVisible()
+    await expect(
+      organizationsSection.getByRole("tabpanel").getByText("Active organization", { exact: true }),
+    ).toBeVisible()
 
     await page.goto("/account#devices-applications")
     await page.reload()

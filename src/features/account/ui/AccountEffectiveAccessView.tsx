@@ -1,6 +1,5 @@
 import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { AccountEffectiveAccessGroup } from "../public/accountEffectiveAccessGroupSchema.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
@@ -31,20 +30,22 @@ export function AccountEffectiveAccessView(props: {
         <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
           <For each={props.groups}>
             {(group) => (
-              <AuthenticatedSection
-                description={messageTranslate("account.access.effectiveMembership", {
-                  roles: group.entries[0]?.organization.membership.roles.join(", ") ?? "",
-                })}
-                title={group.organization.name}
-              >
-                {/* Two access cards fit a desktop row while a phone keeps one readable column. */}
-                <ul class="grid min-w-0 gap-3 px-3 py-3 lg:grid-cols-2 [&>*]:min-w-0">
+              <fieldset class="min-w-0 rounded-panel border border-line px-3 pb-1">
+                <legend class="max-w-full px-1 text-sm font-semibold tracking-tight">
+                  <span class="block truncate">{group.organization.name}</span>
+                </legend>
+                <p class="px-1 pb-2 text-xs text-muted-foreground">
+                  {messageTranslate("account.access.effectiveMembership", {
+                    roles: group.entries[0]?.organization.membership.roles.join(", ") ?? "",
+                  })}
+                </p>
+                <ul class="min-w-0 divide-y divide-line-subtle">
                   <For each={group.entries}>
                     {(entry) => {
                       const source = () => accountEffectiveAccessSourceGet(entry)
                       return (
-                        <li class="min-w-0">
-                          <AuthenticatedSection class="h-full" padded>
+                        <li class="grid min-w-0 gap-x-5 gap-y-2 py-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                          <div class="min-w-0">
                             <h3 class="min-w-0 truncate text-sm font-semibold tracking-tight">
                               {entry.project?.name ?? messageTranslate("account.access.organizationAccess")}
                             </h3>
@@ -54,10 +55,9 @@ export function AccountEffectiveAccessView(props: {
                             <p class="mt-0.5 min-w-0 truncate font-mono text-xs text-muted-foreground">
                               {messageTranslate("account.access.effectiveSource", { source: source() })}
                             </p>
-                            {/* Permission lists are long and rarely read, so every access source keeps
-                                its own list behind a native disclosure that starts collapsed. */}
+                          </div>
+                          <div class="min-w-0 md:self-center">
                             <AccountDisclosure
-                              class="mt-2.5"
                               summary={messageTranslate("account.access.permissionsToggle", {
                                 count: String(entry.permissions.length),
                                 source: source(),
@@ -69,13 +69,13 @@ export function AccountEffectiveAccessView(props: {
                                 })}
                               </p>
                             </AccountDisclosure>
-                          </AuthenticatedSection>
+                          </div>
                         </li>
                       )
                     }}
                   </For>
                 </ul>
-              </AuthenticatedSection>
+              </fieldset>
             )}
           </For>
 

@@ -6,7 +6,6 @@ import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStat
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import { AccountRoleList } from "./AccountRoleList.js"
 import { accountRefreshTokenStatusLabelGet } from "./accountRefreshTokenStatusLabelGet.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
@@ -36,7 +35,7 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
         <Show
           when={props.state.refreshTokens().length > 0}
           fallback={
-            <ProductionStatePanel compact state="empty" title={messageTranslate("account.refreshTokens.empty")} />
+            <p class="px-3 py-2.5 text-sm text-muted-foreground">{messageTranslate("account.refreshTokens.empty")}</p>
           }
         >
           <ul class="divide-y divide-line-subtle">

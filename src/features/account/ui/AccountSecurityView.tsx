@@ -7,6 +7,7 @@ import { AccountPasskeysSection } from "./AccountPasskeysSection.js"
 import { AccountRecoveryCodesSection } from "./AccountRecoveryCodesSection.js"
 import { AccountRefreshTokensSection } from "./AccountRefreshTokensSection.js"
 import { AccountSecurityHistorySection } from "./AccountSecurityHistorySection.js"
+import { AccountSecurityOverview } from "./AccountSecurityOverview.js"
 import { AccountSessionsSection } from "./AccountSessionsSection.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
@@ -23,6 +24,9 @@ export function AccountSecurityView(props: { readonly state: AccountSecurityView
 
       <AccountStateBoundary onRetry={props.state.reload} state={boundaryState()}>
         <Switch>
+          <Match when={props.state.screen() === "overview"}>
+            <AccountSecurityOverview state={props.state} />
+          </Match>
           <Match when={props.state.screen() === "sessions"}>
             <AccountSessionsSection state={props.state} />
           </Match>

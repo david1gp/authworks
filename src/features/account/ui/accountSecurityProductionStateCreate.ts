@@ -11,6 +11,7 @@ import type { OidcRefreshTokenMetadata } from "../../oidc/public/oidcRefreshToke
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
 import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
+import type { User } from "../../users/public/userSchema.js"
 import type { AccountSecurityHistoryItem } from "../public/accountSecurityHistoryItemSchema.js"
 import { accountSecurityApiCreate } from "./accountSecurityApiCreate.js"
 import type { AccountSecurityScreen } from "./accountSecurityScreenSchema.js"
@@ -19,6 +20,7 @@ import { passkeyRegistrationRun } from "./passkeyRegistrationRun.js"
 const emptyMethods: UserAuthenticationMethods = {
   emailOtp: { available: false },
   passkeys: { credentials: [] },
+  password: { available: false },
   recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
   totp: { enrolled: false, enrollments: [] },
 }
@@ -39,6 +41,7 @@ export function accountSecurityProductionStateCreate(options: {
   const securityHistoryNextPageToken = createSignalObject<string | undefined>(undefined)
   const passkeys = createSignalObject<PasskeyCredential[]>([])
   const methods = createSignalObject<UserAuthenticationMethods>(emptyMethods)
+  const user = createSignalObject<User | undefined>(undefined)
   const identities = createSignalObject<ExternalIdentity[]>([])
   const identityProviders = createSignalObject<ExternalIdentityProvider[]>([])
   const identityLinkConfirmation = createSignalObject<
@@ -61,6 +64,13 @@ export function accountSecurityProductionStateCreate(options: {
     error.set(undefined)
     const realmId = options.realmId()
     const screen = options.screen()
+    if (screen === "overview") {
+      const [methodsResult, userResult] = await Promise.all([api.methodsGet(realmId), api.userGet(realmId)])
+      if (!methodsResult.success) return failed(methodsResult.errorMessage)
+      if (!userResult.success) return failed(userResult.errorMessage)
+      if (methodsResult.status === "current") methods.set(methodsResult.data)
+      if (userResult.status === "current") user.set(userResult.data.user)
+    }
     if (screen === "sessions") {
       const result = await api.sessionsList(realmId)
       if (!result.success) return failed(result.errorMessage)
@@ -304,5 +314,6 @@ export function accountSecurityProductionStateCreate(options: {
       if (!result.success) return error.set(result.errorMessage)
       totpSetup.set(result.data)
     },
+    user: user.get,
   }
 }
