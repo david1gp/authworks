@@ -101,16 +101,11 @@ account.profile.email,Email address
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
-account.profile.emailAddressDescription,Verified addresses can be used for sign-in and account recovery. Account communication uses the primary address.
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
-account.profile.emailChange,Change email address
-account.profile.emailChangeDescription,Verify a new address before it replaces the current sign-in address.
-account.profile.emailChangeTitle,Change email address
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
-account.profile.emailDescription,Review the verified address used for sign-in and account communication.
 account.profile.emailDifferent,Use a different address
 account.profile.emailInvalid,Enter a valid email address.
 account.profile.emailMakePrimary,Make primary
@@ -121,9 +116,7 @@ account.profile.emailRefresh,Refresh addresses
 account.profile.emailRemove,Remove
 account.profile.emailRemoving,Removing…
 account.profile.emailResend,Resend verification email
-account.profile.emailSaved,Your verified email address was updated.
 account.profile.emailSending,Sending verification email…
-account.profile.emailTitle,Email address and verification
 account.profile.emailToken,Verification token
 account.profile.emailTokenInvalid,Enter the verification token from the email.
 account.profile.emailUpdating,Updating…
@@ -137,7 +130,6 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
-account.profile.nickNameHint,Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number
@@ -150,13 +142,13 @@ account.profile.phoneDifferent,Use a different number
 account.profile.phoneHint,"Use international E.164 format, for example +14155552671."
 account.profile.phoneInvalid,Enter a valid phone number in E.164 format.
 account.profile.phoneNew,New phone number
-account.profile.phoneNotAdded,No verified phone number added
-account.profile.phoneNumber,WhatsApp phone number
+account.profile.phoneNumber,Phone number
+account.profile.phoneNumbers,Números de teléfono
+account.profile.phoneNumbersEmpty,No hay números de teléfono disponibles.
 account.profile.phonePlaceholder,+14155552671
 account.profile.phoneResend,Resend code
 account.profile.phoneSaved,Your verified phone number was updated.
 account.profile.phoneSending,Sending code…
-account.profile.phoneTitle,WhatsApp phone number
 account.profile.phoneVerify,Verify phone number
 account.profile.phoneVerifying,Verifying…
 account.profile.picture,Profile picture
@@ -211,7 +203,6 @@ account.securityHistory.category.passkeys,Passkeys
 account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
-account.securityHistory.description,Review recent safe security activity. Sensitive details and identifiers are never shown.
 account.securityHistory.empty,No security activity is available
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
@@ -252,6 +243,19 @@ account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
 account.securityHistory.event.totpRemoved,An authenticator was removed
 account.securityHistory.event.totpVerified,An authenticator challenge succeeded
 account.securityHistory.loadMore,Load more security activity
+account.securityOverview.backupCodeCount,{count} backup codes remaining
+account.securityOverview.backupCodes,Backup codes
+account.securityOverview.email,Email
+account.securityOverview.emailMissing,No verified email
+account.securityOverview.emailVerified,{email} verified
+account.securityOverview.passkeyCount,{count} passkeys configured
+account.securityOverview.passkeys,Passkeys
+account.securityOverview.password,Password
+account.securityOverview.passwordMissing,No password set
+account.securityOverview.passwordSet,Password set
+account.securityOverview.phone,Phone
+account.securityOverview.phoneMissing,No verified phone
+account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
