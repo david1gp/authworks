@@ -12,12 +12,12 @@ export function AuthenticatedFieldList(props: {
   readonly fields: readonly AuthenticatedField[]
 }) {
   return (
-    <dl
+    <div
       class={classMerge("grid gap-x-4 gap-y-2.5 sm:grid-cols-2", props.columns === 3 && "lg:grid-cols-3", props.class)}
     >
       <For each={props.fields}>
         {(field) => (
-          <div
+          <dl
             class={classMerge(
               "min-w-0",
               field.wide && "sm:col-span-2",
@@ -34,9 +34,9 @@ export function AuthenticatedFieldList(props: {
             >
               {field.value}
             </dd>
-          </div>
+          </dl>
         )}
       </For>
-    </dl>
+    </div>
   )
 }

@@ -101,6 +101,15 @@ test("representative login and account demos have no serious axe violations", as
   }
 })
 
+test("account definition lists use valid semantic children", async ({ page }) => {
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport)
+    await page.goto("/demo/account")
+    const accessibility = await new AxeBuilder({ page }).withRules(["definition-list", "dlitem"]).analyze()
+    expect(accessibility.violations).toEqual([])
+  }
+})
+
 test("Arabic consent is translated, RTL, and usable at desktop and mobile sizes", async ({ page }) => {
   for (const viewport of viewports) {
     await page.setViewportSize(viewport)
