@@ -41,13 +41,14 @@ const accountSections: readonly ProductionAccountSection[] = [
   {
     apiEvidence: [{ path: /\/me\/sessions$/ }, { path: /\/me\/refresh-tokens$/ }, { path: /\/me\/consents$/ }],
     content: "Review devices where your account is signed in and revoke any session you do not recognize.",
-    heading: "Sessions and devices · Applications",
+    heading: "Recent security activity · Sessions and devices · Applications",
     id: "devices-applications",
     label: "Sessions and devices",
   },
   {
     apiEvidence: [{ path: /\/me\/organizations$/ }, { path: /\/me\/effective-access$/ }],
-    content: "Choose which organization you are working in.",
+    content:
+      "Select an organization to view its membership and access. Viewing an organization does not change your active organization.",
     heading: "Access",
     id: "access",
     label: "Access",
@@ -341,7 +342,7 @@ productionAuthTest(
 
       const navigation = page.getByRole("navigation", { name: "Account navigation" })
       await expect(navigation).toBeVisible()
-      await expect(page.locator("header").first()).toHaveCSS("position", "sticky")
+      await expect(page.locator("header").first()).toHaveCSS("position", "static")
       await expect(page.getByText("Sign-in details", { exact: true })).toHaveCount(0)
       await diagnostics.flush()
 
