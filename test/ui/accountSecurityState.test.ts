@@ -14,6 +14,103 @@ afterEach(async () => {
 })
 
 describe("account security external identity state", () => {
+  test("opens, resets, retries, and closes authenticator enrollment explicitly", async () => {
+    let confirmed = false
+    let startAttempts = 0
+    const browserWindow = {
+      addEventListener: () => undefined,
+      location: { origin: "https://auth.example.test" },
+      removeEventListener: () => undefined,
+    } as unknown as Window
+    Object.defineProperty(globalThis, "window", { configurable: true, value: browserWindow })
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = String(input)
+      if (url.endsWith("/me/authentication-methods"))
+        return jsonResponse({
+          emailOtp: { available: true },
+          passkeys: { credentials: [] },
+          password: { available: true },
+          recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+          totp: {
+            enrolled: confirmed,
+            enrollments: confirmed
+              ? [
+                  {
+                    confirmedAt: 2,
+                    id: "totp-enrollment",
+                    label: "Authenticator app",
+                    status: "active",
+                  },
+                ]
+              : [],
+          },
+        })
+      if (url.endsWith("/sessions/csrf")) return jsonResponse({ csrfToken: "csrf-token-long-enough" })
+      if (url.endsWith("/mfa/totp/enroll")) {
+        startAttempts += 1
+        if (startAttempts === 1)
+          return Response.json(
+            { error: { code: "mfa.enrollment-failed", message: "Enrollment could not start.", status: 500 } },
+            { status: 500 },
+          )
+        return jsonResponse({
+          enrollment: {
+            confirmedAt: null,
+            id: "totp-enrollment",
+            label: "Authenticator app",
+            status: "pending",
+            userId: "user-one",
+          },
+          otpauthUri: "otpauth://totp/Authworks:user-one?secret=JBSWY3DPEHPK3PXP&issuer=Authworks",
+          secret: "JBSWY3DPEHPK3PXP",
+        })
+      }
+      if (url.endsWith("/mfa/totp/confirm")) {
+        confirmed = true
+        return jsonResponse({
+          enrollment: {
+            confirmedAt: 2,
+            id: "totp-enrollment",
+            label: "Authenticator app",
+            status: "active",
+            userId: "user-one",
+          },
+        })
+      }
+      throw new Error(`Unexpected account security request: ${url}`)
+    }) as typeof fetch
+
+    const state = await stateCreate({
+      apiBaseUrl: "https://api.example.test",
+      realmId: () => "realm-one",
+      screen: () => "factors",
+    })
+
+    state.totpDialogOpenSet(true)
+    expect(state.totpDialogOpen()).toBe(true)
+    expect(state.pendingId()).toBe("totp:start")
+    await waitFor(() => state.totpError() !== undefined)
+    expect(state.totpSetup()).toBeUndefined()
+
+    state.totpSetupDismiss()
+    expect(state.totpDialogOpen()).toBe(false)
+    expect(state.totpError()).toBeUndefined()
+    state.codeInput({ currentTarget: { value: "654321" } } as InputEvent & { currentTarget: HTMLInputElement })
+    state.totpDialogOpenSet(true)
+    expect(state.code()).toBe("")
+    await waitFor(() => state.totpSetup() !== undefined)
+    expect(state.totpSetup()?.secret).toBe("JBSWY3DPEHPK3PXP")
+
+    state.codeInput({ currentTarget: { value: "123456" } } as InputEvent & { currentTarget: HTMLInputElement })
+    await state.totpConfirm()
+
+    expect(state.totpDialogOpen()).toBe(false)
+    expect(state.totpSetup()).toBeUndefined()
+    expect(state.code()).toBe("")
+    expect(state.totpError()).toBeUndefined()
+    expect(state.methods().totp.enrolled).toBe(true)
+  })
+
   test("keeps provider callback confirmation explicit before linking in the production adapter", async () => {
     let linked = false
     let messageHandler: ((event: MessageEvent<unknown>) => void) | undefined

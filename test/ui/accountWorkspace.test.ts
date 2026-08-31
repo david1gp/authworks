@@ -207,40 +207,47 @@ describe("account workspace", () => {
     expect(source).not.toContain("AuthenticatedPageHeader")
   })
 
-  test("lists every authenticator enrollment with an active-only remove control beside a persistent add action", async () => {
+  test("lists every authenticator enrollment and opens its add flow from the card dialog trigger", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountFactorsSection.tsx", import.meta.url),
     ).text()
 
-    expect(source).toContain("const totpEnrollments = () => props.state.methods().totp.enrollments")
-    expect(source).toContain("<For each={totpEnrollments()}>")
+    expect(source).toContain("const state = accountFactorsSectionStateCreate(() => props.state)")
+    expect(source).toContain("<For each={state.enrollments()}>")
     expect(source).toContain("{enrollment.label}")
     expect(source).toContain('enrollment.status === "active"')
     expect(source).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
     // Pending enrollments cannot be removed by the backend, so no remove control is rendered for them.
     expect(source).toContain('<Show when={enrollment.status === "active"}>')
     // The add flow stays reachable regardless of how many enrollments already exist.
-    expect(source).toContain("onClick={props.state.totpStart}")
-    expect(source).not.toContain("totpEnrolled() ? props.state.totpRemove : props.state.totpStart")
+    expect(source.match(/triggerLabel=\{messageTranslate\("account\.factors\.addTotp"\)\}/g)).toHaveLength(1)
+    expect(source).toContain("<Show when={props.state.totpSetup()}>")
+    expect(source.match(/<AuthenticatedDialog/g)).toHaveLength(1)
   })
 
-  test("splits every security identity area into an existing-entry and a new-entry card", async () => {
-    const split = await Bun.file(
-      new URL("../../src/features/account/ui/AccountSplitColumns.tsx", import.meta.url),
-    ).text()
-
-    // One shared two-column primitive: wide existing-entry column, narrow add column, stacked below lg.
-    expect(split).toContain("lg:grid-cols-12")
-    expect(split).toContain("lg:col-span-7")
-    expect(split).toContain("lg:col-span-5")
-
-    const sources = ["AccountPasskeysSection", "AccountFactorsSection", "AccountIdentitiesSection"]
+  test("keeps security data and actions inside exactly four seamless management cards", async () => {
+    const sources = [
+      "AccountPasskeysSection",
+      "AccountFactorsSection",
+      "AccountIdentitiesSection",
+      "AccountRecoveryCodesSection",
+    ]
     for (const name of sources) {
       const source = await Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()
-      expect(source).toContain("<AccountSplitColumns")
-      expect(source.match(/primary=\{/g)).toHaveLength(1)
-      expect(source.match(/secondary=\{/g)).toHaveLength(1)
+      expect(source.match(/<AuthenticatedSection/g)).toHaveLength(1)
+      expect(source).not.toContain("AccountSplitColumns")
+      expect(source).not.toContain("ProductionStatePanel")
     }
+
+    const workspace = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
+    ).text()
+    expect(workspace.match(/screen="overview"/g)).toHaveLength(1)
+    expect(workspace).toContain('passwordAction={<AccountProductionAdapter kind="password" passwordActionOnly />}')
+    expect(workspace).not.toContain('screen="passkeys"')
+    expect(workspace).not.toContain('screen="factors"')
+    expect(workspace).not.toContain('screen="recovery-codes"')
+    expect(workspace).not.toContain('screen="identities"')
   })
 
   test("keeps exactly one add control per security area without duplicating it across cards", async () => {
@@ -248,14 +255,14 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountPasskeysSection.tsx", import.meta.url),
     ).text()
     expect(passkeys.match(/onClick=\{props\.state\.passkeyAdd\}/g)).toHaveLength(1)
-    // The toolbar row is replaced by the add card, so the action is not rendered twice.
+    // The add action lives in the cohesive card header and is not rendered twice.
     expect(passkeys).not.toContain("AuthenticatedToolbar")
     expect(passkeys).toContain('messageTranslate("account.passkeys.empty")')
 
     const factors = await Bun.file(
       new URL("../../src/features/account/ui/AccountFactorsSection.tsx", import.meta.url),
     ).text()
-    expect(factors.match(/onClick=\{props\.state\.totpStart\}/g)).toHaveLength(1)
+    expect(factors.match(/triggerLabel=\{messageTranslate\("account\.factors\.addTotp"\)\}/g)).toHaveLength(1)
     expect(factors).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
 
     const identities = await Bun.file(

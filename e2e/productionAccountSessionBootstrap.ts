@@ -136,6 +136,7 @@ export async function productionAccountSessionBootstrap(page: Page): Promise<voi
       },
     }),
   )
+  await page.route(`**/realms/${realmId}/me/sessions`, (route) => route.fulfill({ json: { items: [] } }))
   await page.route(`**/realms/${realmId}/passkeys`, (route) => route.fulfill({ json: { items: [] } }))
   await page.route(`**/realms/${realmId}/me/authentication-methods`, (route) =>
     route.fulfill({
