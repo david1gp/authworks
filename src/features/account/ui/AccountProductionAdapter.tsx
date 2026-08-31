@@ -6,6 +6,7 @@ import { accountProductionAdapterStateCreate } from "./accountProductionAdapterS
 
 export function AccountProductionAdapter(props: {
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
+  readonly passwordActionOnly?: boolean
   readonly state?: ReturnType<typeof accountProductionAdapterStateCreate>
 }) {
   const state = props.state ?? accountProductionAdapterStateCreate(() => props.kind)
@@ -24,6 +25,7 @@ export function AccountProductionAdapter(props: {
           onNewPasswordInput={state.newPassword.set}
           onRetry={state.load}
           onSubmit={state.passwordSubmit}
+          actionOnly={props.passwordActionOnly}
           status={state.status.get()}
           validationMessage={state.validationMessage.get()}
         />

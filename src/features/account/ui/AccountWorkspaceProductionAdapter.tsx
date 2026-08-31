@@ -32,14 +32,11 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
         </>
       }
       security={
-        <>
-          <AccountSecurityProductionAdapter realmId={props.realmId} screen="overview" />
-          <AccountProductionAdapter kind="password" />
-          <AccountSecurityProductionAdapter realmId={props.realmId} screen="passkeys" />
-          <AccountSecurityProductionAdapter realmId={props.realmId} screen="factors" />
-          <AccountSecurityProductionAdapter realmId={props.realmId} screen="recovery-codes" />
-          <AccountSecurityProductionAdapter realmId={props.realmId} screen="identities" />
-        </>
+        <AccountSecurityProductionAdapter
+          passwordAction={<AccountProductionAdapter kind="password" passwordActionOnly />}
+          realmId={props.realmId}
+          screen="overview"
+        />
       }
     />
   )

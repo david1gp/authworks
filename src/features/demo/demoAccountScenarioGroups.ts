@@ -80,6 +80,14 @@ export const demoAccountScenarioGroups: DemoFixtureScenarioGroup[] = [
     description: "Sessions, authentication factors, and connected identities.",
     scenarios: [
       {
+        key: "overview",
+        title: "Security setup",
+        description: "Manage passkeys, authenticators, linked identities, and recovery access in one place.",
+        path: "/demo/account/overview",
+        availability: "available",
+        states: [...collectionStates],
+      },
+      {
         key: "sessions",
         title: "Sessions and devices",
         description: "Review active sessions and revoke devices no longer in use.",

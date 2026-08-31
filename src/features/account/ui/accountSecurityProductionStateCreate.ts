@@ -51,8 +51,11 @@ export function accountSecurityProductionStateCreate(options: {
   const identityLinkMessageNonce = createSignalObject<string | undefined>(undefined)
   const identityLinkCallbackOrigin = createSignalObject<string | undefined>(undefined)
   const oneTimeCodes = createSignalObject<string[]>([])
+  const totpDialogOpen = createSignalObject(false)
+  const totpError = createSignalObject<string | undefined>(undefined)
   const totpSetup = createSignalObject<MfaTotpEnrollmentStartResponse | undefined>(undefined)
   const totpCode = createSignalObject("")
+  let totpFlowGeneration = 0
   let identityLinkPopup: Window | null = null
 
   const failed = (message: string) => {
@@ -65,11 +68,23 @@ export function accountSecurityProductionStateCreate(options: {
     const realmId = options.realmId()
     const screen = options.screen()
     if (screen === "overview") {
-      const [methodsResult, userResult] = await Promise.all([api.methodsGet(realmId), api.userGet(realmId)])
+      const [methodsResult, userResult, passkeysResult, identitiesResult, providersResult] = await Promise.all([
+        api.methodsGet(realmId),
+        api.userGet(realmId),
+        api.passkeyList(realmId),
+        api.identitiesList(realmId),
+        api.identityProvidersList(realmId),
+      ])
       if (!methodsResult.success) return failed(methodsResult.errorMessage)
       if (!userResult.success) return failed(userResult.errorMessage)
+      if (!passkeysResult.success) return failed(passkeysResult.errorMessage)
+      if (!identitiesResult.success) return failed(identitiesResult.errorMessage)
+      if (!providersResult.success) return failed(providersResult.errorMessage)
       if (methodsResult.status === "current") methods.set(methodsResult.data)
       if (userResult.status === "current") user.set(userResult.data.user)
+      passkeys.set(passkeysResult.data.items.filter((credential) => credential.revokedAt === null))
+      identities.set(identitiesResult.data.items)
+      identityProviders.set(providersResult.data.items)
     }
     if (screen === "sessions") {
       const result = await api.sessionsList(realmId)
@@ -146,12 +161,43 @@ export function accountSecurityProductionStateCreate(options: {
   window.addEventListener("message", identityLinkMessageReceive)
   onCleanup(() => window.removeEventListener("message", identityLinkMessageReceive))
 
+  const totpFlowReset = () => {
+    totpFlowGeneration += 1
+    totpDialogOpen.set(false)
+    totpError.set(undefined)
+    totpSetup.set(undefined)
+    totpCode.set("")
+  }
+  const totpStart = async () => {
+    const generation = ++totpFlowGeneration
+    totpDialogOpen.set(true)
+    totpError.set(undefined)
+    totpSetup.set(undefined)
+    totpCode.set("")
+    pendingId.set("totp:start")
+    const result = await api.totpStart(options.realmId())
+    if (pendingId.get() === "totp:start") pendingId.set(undefined)
+    if (generation !== totpFlowGeneration || !totpDialogOpen.get()) return
+    if (!result.success) {
+      totpError.set(result.errorMessage)
+      return
+    }
+    totpSetup.set(result.data)
+  }
+  const totpDialogOpenSet = (open: boolean) => {
+    if (!open) {
+      totpFlowReset()
+      return
+    }
+    void totpStart()
+  }
+
   createEffect(
     on(
       () => `${options.realmId()}:${options.screen()}`,
       () => {
         oneTimeCodes.set([])
-        totpSetup.set(undefined)
+        totpFlowReset()
         void load()
       },
     ),
@@ -292,28 +338,31 @@ export function accountSecurityProductionStateCreate(options: {
     totpConfirm: async () => {
       const setup = totpSetup.get()
       if (setup === undefined) return
-      const confirmed = await mutate("totp:confirm", () =>
-        api.totpConfirm(options.realmId(), { code: totpCode.get(), enrollmentId: setup.enrollment.id }),
-      )
-      if (confirmed) {
-        totpSetup.set(undefined)
-        totpCode.set("")
+      const generation = totpFlowGeneration
+      pendingId.set("totp:confirm")
+      totpError.set(undefined)
+      const result = await api.totpConfirm(options.realmId(), {
+        code: totpCode.get(),
+        enrollmentId: setup.enrollment.id,
+      })
+      if (pendingId.get() === "totp:confirm") pendingId.set(undefined)
+      if (!result.success) {
+        if (generation === totpFlowGeneration && totpDialogOpen.get()) totpError.set(result.errorMessage)
+        return
       }
+      await load()
+      if (generation === totpFlowGeneration) totpFlowReset()
     },
+    totpDialogOpen: totpDialogOpen.get,
+    totpDialogOpenSet,
+    totpError: totpError.get,
     totpRemove: (enrollmentId?: string) =>
       void mutate("totp:remove", () =>
         api.totpRemove(options.realmId(), enrollmentId === undefined ? {} : { enrollmentId }),
       ),
     totpSetup: totpSetup.get,
-    totpSetupDismiss: () => totpSetup.set(undefined),
-    totpStart: async () => {
-      pendingId.set("totp:start")
-      error.set(undefined)
-      const result = await api.totpStart(options.realmId())
-      pendingId.set(undefined)
-      if (!result.success) return error.set(result.errorMessage)
-      totpSetup.set(result.data)
-    },
+    totpSetupDismiss: totpFlowReset,
+    totpStart,
     user: user.get,
   }
 }

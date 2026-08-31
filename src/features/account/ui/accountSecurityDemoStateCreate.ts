@@ -238,6 +238,8 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       methods.get().recoveryCodes?.generatedAt,
     )
   const oneTimeCodes = createSignalObject<string[]>([])
+  const totpDialogOpen = createSignalObject(false)
+  const totpError = createSignalObject<string | undefined>(undefined)
   const totpSetup = createSignalObject<
     | {
         readonly enrollment: {
@@ -265,6 +267,35 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
   // dismissed they must not reappear on reload, so acknowledgement is remembered for this session.
   if (selected() === "one-time" && !accountRecoveryCodeAcknowledgementStore.acknowledged(acknowledgementMarker()))
     oneTimeCodes.set([...demoRecoveryCodes])
+
+  const totpFlowReset = () => {
+    totpDialogOpen.set(false)
+    totpError.set(undefined)
+    totpSetup.set(undefined)
+    code.set("")
+  }
+  const totpStart = () => {
+    totpFlowReset()
+    totpDialogOpen.set(true)
+    totpSetup.set({
+      enrollment: {
+        createdAt: Date.now(),
+        id: "totp-demo-enrollment",
+        realmId: "customer-identity",
+        status: "pending",
+        userId: "demo-user",
+      },
+      otpauthUri: "otpauth://totp/Authworks:demo-user?secret=JBSWY3DPEHPK3PXP&issuer=Authworks",
+      secret: "JBSWY3DPEHPK3PXP",
+    })
+  }
+  const totpDialogOpenSet = (open: boolean) => {
+    if (!open) {
+      totpFlowReset()
+      return
+    }
+    totpStart()
+  }
 
   return {
     code: code.get,
@@ -407,9 +438,11 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
           enrollments: [{ confirmedAt: Date.now(), id: "totp-demo", label: "Authenticator app", status: "active" }],
         },
       })
-      totpSetup.set(undefined)
-      code.set("")
+      totpFlowReset()
     },
+    totpDialogOpen: totpDialogOpen.get,
+    totpDialogOpenSet,
+    totpError: totpError.get,
     totpRemove: (enrollmentId?: string) => {
       const enrollments =
         enrollmentId === undefined
@@ -421,20 +454,8 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       })
     },
     totpSetup: totpSetup.get,
-    totpSetupDismiss: () => totpSetup.set(undefined),
-    totpStart: () => {
-      totpSetup.set({
-        enrollment: {
-          createdAt: Date.now(),
-          id: "totp-demo-enrollment",
-          realmId: "customer-identity",
-          status: "pending",
-          userId: "demo-user",
-        },
-        otpauthUri: "otpauth://totp/Authworks:demo-user?secret=JBSWY3DPEHPK3PXP&issuer=Authworks",
-        secret: "JBSWY3DPEHPK3PXP",
-      })
-    },
+    totpSetupDismiss: totpFlowReset,
+    totpStart,
     user: () =>
       selected() === "empty"
         ? {

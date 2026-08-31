@@ -1,30 +1,22 @@
-import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
-import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
 import type { Accessor } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserAuthenticationMethods } from "../../users/public/userAuthenticationMethodsSchema.js"
 import type { User } from "../../users/public/userSchema.js"
 
-export function accountSecurityOverviewStateCreate(options: {
+export function accountRecoveryAccessStateCreate(options: {
   readonly methods: Accessor<UserAuthenticationMethods>
   readonly user: Accessor<User | undefined>
 }) {
-  const itemCreate = (label: string, detail: string, configured: boolean) => ({
-    configured,
-    detail,
-    icon: configured ? mdiCheckCircleOutline : mdiAlertCircleOutline,
-    label,
-  })
-  const items = () => {
+  const statusCreate = (label: string, detail: string, configured: boolean) => ({ configured, detail, label })
+  const statuses = () => {
     const methods = options.methods()
     const user = options.user()
     const emailConfigured = user?.emailVerified === true
     const phoneNumber = user?.phoneNumber
     const phoneConfigured = phoneNumber !== undefined && user?.phoneNumberVerifiedAt !== undefined
-    const passkeyCount = methods.passkeys.credentials.length
     const backupCodeCount = methods.recoveryCodes.remaining
     return [
-      itemCreate(
+      statusCreate(
         messageTranslate("account.securityOverview.password"),
         messageTranslate(
           methods.password.available
@@ -33,31 +25,26 @@ export function accountSecurityOverviewStateCreate(options: {
         ),
         methods.password.available,
       ),
-      itemCreate(
+      statusCreate(
         messageTranslate("account.securityOverview.email"),
         emailConfigured
           ? messageTranslate("account.securityOverview.emailVerified", { email: user.email })
           : messageTranslate("account.securityOverview.emailMissing"),
         emailConfigured,
       ),
-      itemCreate(
+      statusCreate(
         messageTranslate("account.securityOverview.phone"),
         phoneConfigured
           ? messageTranslate("account.securityOverview.phoneVerified", { phone: phoneNumber })
           : messageTranslate("account.securityOverview.phoneMissing"),
         phoneConfigured,
       ),
-      itemCreate(
-        messageTranslate("account.securityOverview.passkeys"),
-        messageTranslate("account.securityOverview.passkeyCount", { count: passkeyCount }),
-        passkeyCount > 0,
-      ),
-      itemCreate(
+      statusCreate(
         messageTranslate("account.securityOverview.backupCodes"),
         messageTranslate("account.securityOverview.backupCodeCount", { count: backupCodeCount }),
         backupCodeCount > 0,
       ),
     ]
   }
-  return { items }
+  return { statuses }
 }
