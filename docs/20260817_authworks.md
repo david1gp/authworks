@@ -12,6 +12,7 @@ Build `/home/david/adaptive/authworks` as an alpha identity platform covering al
 - Keep public Valibot transport schemas separate from private Drizzle persistence schemas. Share explicit domain/public schemas where safe; never derive public contracts blindly from database rows.
 - Keep account UI responsive and task-focused: avoid persistent navigation, use compact field layouts, and move add/change forms into accessible dialogs.
 - Organize account contact methods, security status, activity, sessions, applications, and effective access into visually distinct sections without redundant empty-state filler or nested card chrome.
+- Present account security as four cohesive management cards—Passkeys, Authenticators, Linked identities, and Recovery access—with prominent local status, inline actions, dialog-based enrollment where appropriate, and one overall setup-progress indicator.
 - Use canonical lowercase UUIDv7 strings for public durable resource and event IDs. Use random opaque secrets for credentials, sessions, authorization codes, refresh tokens, API keys, challenges, nonce, and state. Use an internal integer event position for strict ordering.
 - Use one file-backed SQLite database, `authworks.sqlite`, for current state and the append-only event log. Configure `journal_mode=WAL`, `synchronous=FULL`, `foreign_keys=ON`, `temp_store=MEMORY`, and `busy_timeout=5000`, adapting the proven `/home/david/leo_own/gruppenplan-app` presets for identity-data durability. Write state plus events in one transaction.
 - Current-state tables are authoritative. The append-only event table records versioned domain facts with event ID, position, command index, realm, aggregate identity/version, actor, correlation/causation, timestamp, payload, and metadata. Never record secrets or credential material.
@@ -36,6 +37,7 @@ Build `/home/david/adaptive/authworks` as an alpha identity platform covering al
 - Generate and reset the database from the current schema. Test with real temporary file-backed databases, real cryptography where relevant, and one isolated database file per parallel test.
 - Implement external network operations outside database transactions. Persist commands and events synchronously, then perform notifications or provider calls after commit through explicit ports.
 - Reuse existing authenticated UI primitives and account feature APIs. Keep layout-only work in feature-owned UI components and preserve existing profile, contact verification, password, session, and security behavior.
+- Derive security-card status and setup progress from existing password, verified contact, passkey, authenticator, linked-identity, and backup-code state; do not add an aggregate API.
 
 ## Tasks
 
@@ -63,6 +65,8 @@ Build `/home/david/adaptive/authworks` as an alpha identity platform covering al
 - [x] 22. Simplify `/account` navigation and profile layout, place email addresses and phone numbers side by side, remove filler/help copy, and move add contact-method and change-password forms into accessible dialogs.
 - [x] 23. Reorganize account security, activity, sessions, applications, and effective-access presentation; add a compact security-method status overview including password, email, phone, passkeys, and backup codes.
 - [x] 24. Update focused browser coverage and run the complete repository check for the account UI changes.
+- [x] 25. Redesign `/account#security` as four seamless responsive management cards, remove the redundant authentication-method summary, integrate prominent configured/missing states, move authenticator enrollment into a dialog, and add configured-method progress.
+- [x] 26. Verify the redesigned security section at desktop/mobile widths, including dialogs, progress semantics, accessibility, and existing security actions.
 
 ## Paths
 
