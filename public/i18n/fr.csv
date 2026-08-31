@@ -195,6 +195,11 @@ account.refreshTokens.revokedAt,Révoqué le {date}
 account.refreshTokens.scope,Étendues : {scope}
 account.refreshTokens.title,Familles de jetons d’actualisation
 account.security.label,Account security management
+account.security.authenticatorCount,{count} authenticators configured
+account.security.authenticators,Authenticators
+account.security.identityCount,{count} linked identities
+account.security.progress,{count}/5 methods configured
+account.security.progressLabel,Security setup progress: {count} of 5 methods configured
 account.securityHistory.category.emailChanges,Email changes
 account.securityHistory.category.impersonation,Impersonation
 account.securityHistory.category.linkedIdentities,Linked identities
