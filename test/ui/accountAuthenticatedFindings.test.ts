@@ -1,12 +1,48 @@
 import { expect, test } from "bun:test"
-import { createRoot } from "solid-js"
+import { createRoot, createSignal } from "solid-js"
 
-const [{ authenticatedImageFallbackStateCreate }, { authenticatedSelectAriaControlsApply }, { englishCatalog }] =
-  await Promise.all([
-    import("../../src/ui/authenticated/authenticatedImageFallbackStateCreate.js"),
-    import("../../src/ui/authenticated/authenticatedSelectAriaControlsApply.js"),
-    import("../../src/ui/i18n/model/englishCatalog.js"),
-  ])
+const [
+  { authenticatedDialogStateCreate },
+  { authenticatedImageFallbackStateCreate },
+  { authenticatedSelectAriaControlsApply },
+  { englishCatalog },
+] = await Promise.all([
+  import("../../src/ui/authenticated/authenticatedDialogStateCreate.js"),
+  import("../../src/ui/authenticated/authenticatedImageFallbackStateCreate.js"),
+  import("../../src/ui/authenticated/authenticatedSelectAriaControlsApply.js"),
+  import("../../src/ui/i18n/model/englishCatalog.js"),
+])
+
+test("a controlled authenticated dialog restores focus after closing", async () => {
+  const attributes = new Map<string, string>()
+  let focusCalls = 0
+  const trigger = {
+    focus: () => {
+      focusCalls += 1
+    },
+    removeAttribute: (name: string) => void attributes.delete(name),
+    setAttribute: (name: string, value: string) => void attributes.set(name, value),
+  } as unknown as HTMLButtonElement
+  const [open, openSet] = createSignal(false)
+  let dispose: (() => void) | undefined
+
+  createRoot((rootDispose) => {
+    dispose = rootDispose
+    const state = authenticatedDialogStateCreate(open)
+    state.triggerRegister(trigger)
+  })
+  await Promise.resolve()
+  openSet(true)
+  await Promise.resolve()
+  expect(attributes.has("aria-controls")).toBe(true)
+  openSet(false)
+  await Promise.resolve()
+  await Promise.resolve()
+
+  expect(attributes.has("aria-controls")).toBe(false)
+  expect(focusCalls).toBe(1)
+  dispose?.()
+})
 
 test("an unreachable picture URL degrades to the placeholder and recovers for a new URL", () => {
   createRoot((dispose) => {
