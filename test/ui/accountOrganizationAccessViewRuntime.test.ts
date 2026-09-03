@@ -14,15 +14,13 @@ const globalValues = globalThis as unknown as Record<string, unknown>
 const globalNames = ["window", "document", "Node", "Element", "HTMLElement", "SVGElement", "Text"] as const
 const previousGlobals = new Map<string, unknown>()
 const compiledViewPath = join(import.meta.dirname, `.account-organization-access-view-${randomUUID()}.mjs`)
-const clsxRuntimePath = "../../node_modules/clsx/dist/clsx.mjs"
+const cnRuntimePath = "../../node_modules/cn/dist/index.js"
 const solidRuntimePath = "../../node_modules/solid-js/dist/dev.js"
 const solidWebRuntimePath = "../../node_modules/solid-js/web/dist/web.js"
-const tailwindMergeRuntimePath = "../../node_modules/tailwind-merge/dist/bundle-mjs.mjs"
 
 mock.module("solid-js", () => import(solidRuntimePath))
 mock.module("solid-js/web", () => import(solidWebRuntimePath))
-mock.module("clsx", () => import(clsxRuntimePath))
-mock.module("tailwind-merge", () => import(tailwindMergeRuntimePath))
+mock.module("cn", () => import(cnRuntimePath))
 
 let accountOrganizationAccessView: AccountOrganizationAccessView
 let createComponent: typeof import("solid-js").createComponent
@@ -52,7 +50,7 @@ beforeAll(async () => {
   }
   const build = await Bun.build({
     entrypoints: [resolve(sourceRoot, "src/features/account/ui/AccountOrganizationAccessView.tsx")],
-    external: ["clsx", "solid-js", "solid-js/web", "tailwind-merge"],
+    external: ["cn", "solid-js", "solid-js/web"],
     format: "esm",
     plugins: [
       {

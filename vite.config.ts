@@ -36,8 +36,7 @@ export default defineConfig(({ mode }) => {
         { find: /^solid-js\/store$/, replacement: resolve(dependenciesRoot, solidStoreRuntime) },
         { find: /^@corvu\/popover$/, replacement: resolve(dependenciesRoot, "@corvu/popover") },
         { find: /^valibot$/, replacement: resolve(dependenciesRoot, "valibot") },
-        { find: "clsx", replacement: resolve(dependenciesRoot, "clsx") },
-        { find: "tailwind-merge", replacement: resolve(dependenciesRoot, "tailwind-merge") },
+        { find: "cn", replacement: resolve(dependenciesRoot, "cn") },
       ],
     },
     server: {
