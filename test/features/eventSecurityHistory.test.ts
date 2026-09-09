@@ -172,6 +172,7 @@ test("the task-7 event inventory has production integration and an explicit subj
       "mfa.totp.enrollment.confirmed",
       "mfa.totp.enrollment.started",
       "mfa.totp.removed",
+      "mfa.totp.renamed",
       "mfa.totp.verified",
     ],
     passkeys: [

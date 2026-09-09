@@ -1,11 +1,14 @@
 import { createEffect, on, onCleanup } from "solid-js"
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ExternalIdentityCallbackResponse } from "../../externalIdentities/public/externalIdentityCallbackResponseSchema.js"
 import { externalIdentityCallbackResponseSchema } from "../../externalIdentities/public/externalIdentityCallbackResponseSchema.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentity } from "../../externalIdentities/public/externalIdentitySchema.js"
+import type { MfaChallengeCompleteRequest } from "../../mfa/public/mfaChallengeCompleteRequestSchema.js"
+import type { MfaChallengeResponse } from "../../mfa/public/mfaChallengeResponseSchema.js"
 import type { MfaTotpEnrollmentStartResponse } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
 import type { OidcRefreshTokenMetadata } from "../../oidc/public/oidcRefreshTokenMetadataSchema.js"
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
@@ -55,7 +58,13 @@ export function accountSecurityProductionStateCreate(options: {
   const totpError = createSignalObject<string | undefined>(undefined)
   const totpSetup = createSignalObject<MfaTotpEnrollmentStartResponse | undefined>(undefined)
   const totpCode = createSignalObject("")
+  const totpRemoveStepUpChallenge = createSignalObject<MfaChallengeResponse | undefined>(undefined)
+  const totpRemoveStepUpCode = createSignalObject("")
+  const totpRemoveStepUpError = createSignalObject<string | undefined>(undefined)
+  const totpRemoveStepUpEnrollmentId = createSignalObject<string | undefined>(undefined)
+  const confirmation = confirmStateCreate()
   let totpFlowGeneration = 0
+  let totpRemoveStepUpGeneration = 0
   let identityLinkPopup: Window | null = null
 
   const failed = (message: string) => {
@@ -97,7 +106,7 @@ export function accountSecurityProductionStateCreate(options: {
       refreshTokens.set(result.data.items)
     }
     if (screen === "security-history") {
-      const result = await api.securityHistoryList(realmId, { pageSize: 20 })
+      const result = await api.securityHistoryList(realmId, { pageSize: 10 })
       if (!result.success) return failed(result.errorMessage)
       securityHistory.set(result.data.items)
       securityHistoryNextPageToken.set(result.data.nextPageToken)
@@ -168,6 +177,82 @@ export function accountSecurityProductionStateCreate(options: {
     totpSetup.set(undefined)
     totpCode.set("")
   }
+  const totpRemoveStepUpReset = () => {
+    totpRemoveStepUpGeneration += 1
+    totpRemoveStepUpChallenge.set(undefined)
+    totpRemoveStepUpCode.set("")
+    totpRemoveStepUpError.set(undefined)
+    totpRemoveStepUpEnrollmentId.set(undefined)
+  }
+  const totpRemoveStepUpStart = async (enrollmentId?: string) => {
+    const generation = ++totpRemoveStepUpGeneration
+    totpRemoveStepUpChallenge.set(undefined)
+    totpRemoveStepUpCode.set("")
+    totpRemoveStepUpError.set(undefined)
+    totpRemoveStepUpEnrollmentId.set(enrollmentId)
+    pendingId.set("totp:remove:step-up:start")
+    const result = await api.mfaStepUpStart(options.realmId())
+    if (generation !== totpRemoveStepUpGeneration) return
+    if (result.success) {
+      totpRemoveStepUpChallenge.set(result.data)
+      pendingId.set("totp:remove:step-up")
+      return
+    }
+    pendingId.set(undefined)
+    totpRemoveStepUpError.set(result.errorMessage)
+  }
+  const totpRemoveStepUpCancel = () => {
+    if (pendingId.get()?.startsWith("totp:remove:step-up") === true) pendingId.set(undefined)
+    totpRemoveStepUpReset()
+  }
+  const totpRemoveExecute = async (enrollmentId?: string): Promise<boolean> => {
+    if (pendingId.get() !== undefined) return false
+    pendingId.set("totp:remove")
+    error.set(undefined)
+    const result = await api.totpRemove(options.realmId(), enrollmentId === undefined ? {} : { enrollmentId })
+    if (result.success) {
+      pendingId.set(undefined)
+      totpRemoveStepUpReset()
+      await load()
+      return true
+    }
+    if (result.code === "mfa.unauthorized" || result.code === "sessions.assurance-required") {
+      pendingId.set(undefined)
+      await totpRemoveStepUpStart(enrollmentId)
+      return false
+    }
+    pendingId.set(undefined)
+    error.set(result.errorMessage)
+    return false
+  }
+  const totpRemove = async (enrollmentId?: string): Promise<boolean> => {
+    if (!(await confirmation.confirm(messageTranslate("account.factors.removeTotp")))) return false
+    return totpRemoveExecute(enrollmentId)
+  }
+  const totpRemoveStepUpComplete = async (input: {
+    readonly code: string
+    readonly factor?: MfaChallengeCompleteRequest["factor"]
+  }): Promise<boolean> => {
+    const challenge = totpRemoveStepUpChallenge.get()
+    const enrollmentId = totpRemoveStepUpEnrollmentId.get()
+    if (challenge === undefined) return false
+    if (input.code.length === 0) return false
+    pendingId.set("totp:remove:step-up:complete")
+    totpRemoveStepUpError.set(undefined)
+    const result = await api.mfaStepUpComplete(options.realmId(), {
+      code: input.code,
+      ...(input.factor === undefined ? {} : { factor: input.factor }),
+      token: challenge.token,
+    })
+    if (!result.success) {
+      pendingId.set(undefined)
+      totpRemoveStepUpError.set(result.errorMessage)
+      return false
+    }
+    totpRemoveStepUpReset()
+    pendingId.set(undefined)
+    return totpRemoveExecute(enrollmentId)
+  }
   const totpStart = async () => {
     const generation = ++totpFlowGeneration
     totpDialogOpen.set(true)
@@ -198,6 +283,7 @@ export function accountSecurityProductionStateCreate(options: {
       () => {
         oneTimeCodes.set([])
         totpFlowReset()
+        totpRemoveStepUpCancel()
         void load()
       },
     ),
@@ -206,6 +292,7 @@ export function accountSecurityProductionStateCreate(options: {
   return {
     code: totpCode.get,
     codeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => totpCode.set(event.currentTarget.value),
+    confirmation,
     error: error.get,
     identities: identities.get,
     identityLinkCancel: () => {
@@ -271,8 +358,8 @@ export function accountSecurityProductionStateCreate(options: {
     identityProviderLinked: (providerId: string) =>
       identities.get().some((identity) => identity.providerId === providerId),
     identityProviders: identityProviders.get,
-    identityUnlink: (providerId: string, externalSubject: string) => {
-      if (!window.confirm(messageTranslate("account.identities.unlinkConfirm"))) return
+    identityUnlink: async (providerId: string, externalSubject: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.identities.unlinkConfirm")))) return
       void mutate(`identity:${providerId}`, () => api.identityUnlink(options.realmId(), providerId, externalSubject))
     },
     methods: methods.get,
@@ -293,8 +380,10 @@ export function accountSecurityProductionStateCreate(options: {
       }
       await mutate("passkey:add", () => api.passkeyComplete(options.realmId(), registration.data))
     },
-    passkeyRevoke: (credentialId: string) =>
-      void mutate(`passkey:${credentialId}`, () => api.passkeyRevoke(options.realmId(), credentialId)),
+    passkeyRevoke: async (credentialId: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.passkeys.remove")))) return
+      void mutate(`passkey:${credentialId}`, () => api.passkeyRevoke(options.realmId(), credentialId))
+    },
     passkeys: passkeys.get,
     pendingId: pendingId.get,
     recoveryCodesGenerate: async () => {
@@ -307,13 +396,13 @@ export function accountSecurityProductionStateCreate(options: {
       await load()
     },
     reload: () => void load(),
-    refreshTokenRevoke: (familyId: string) => {
-      if (!window.confirm(messageTranslate("account.refreshTokens.revokeConfirm"))) return
+    refreshTokenRevoke: async (familyId: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.refreshTokens.revokeConfirm")))) return
       return mutate(`refresh-token:${familyId}`, () => api.refreshTokenRevoke(options.realmId(), familyId))
     },
     refreshTokens: refreshTokens.get,
-    refreshTokensRevokeAll: () => {
-      if (!window.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm"))) return
+    refreshTokensRevokeAll: async () => {
+      if (!(await confirmation.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm")))) return
       void mutate("refresh-tokens:all", () => api.refreshTokensRevokeAll(options.realmId()))
     },
     securityHistory: securityHistory.get,
@@ -321,7 +410,7 @@ export function accountSecurityProductionStateCreate(options: {
       const pageToken = securityHistoryNextPageToken.get()
       if (pageToken === undefined || pendingId.get() !== undefined) return
       pendingId.set("security-history:next")
-      const result = await api.securityHistoryList(options.realmId(), { pageSize: 20, pageToken })
+      const result = await api.securityHistoryList(options.realmId(), { pageSize: 10, pageToken })
       pendingId.set(undefined)
       if (!result.success) return failed(result.errorMessage)
       securityHistory.set([...securityHistory.get(), ...result.data.items])
@@ -329,8 +418,8 @@ export function accountSecurityProductionStateCreate(options: {
     },
     securityHistoryNextPageToken: securityHistoryNextPageToken.get,
     screen: options.screen,
-    sessionRevoke: (sessionId: string) => {
-      if (!window.confirm(messageTranslate("account.sessions.revokeConfirm"))) return
+    sessionRevoke: async (sessionId: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.sessions.revokeConfirm")))) return
       void mutate(`session:${sessionId}`, () => api.sessionRevoke(options.realmId(), sessionId))
     },
     sessions: sessions.get,
@@ -356,10 +445,22 @@ export function accountSecurityProductionStateCreate(options: {
     totpDialogOpen: totpDialogOpen.get,
     totpDialogOpenSet,
     totpError: totpError.get,
-    totpRemove: (enrollmentId?: string) =>
-      void mutate("totp:remove", () =>
-        api.totpRemove(options.realmId(), enrollmentId === undefined ? {} : { enrollmentId }),
-      ),
+    totpRemove: (enrollmentId?: string) => totpRemove(enrollmentId),
+    totpRemoveStepUpCancel,
+    totpRemoveStepUpChallenge: totpRemoveStepUpChallenge.get,
+    totpRemoveStepUpCode: totpRemoveStepUpCode.get,
+    totpRemoveStepUpCodeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
+      totpRemoveStepUpCode.set(event.currentTarget.value),
+    totpRemoveStepUpComplete,
+    totpRemoveStepUpEnrollmentId: totpRemoveStepUpEnrollmentId.get,
+    totpRemoveStepUpError: totpRemoveStepUpError.get,
+    totpRemoveStepUpPending: () => {
+      const pending = pendingId.get()
+      return pending === "totp:remove:step-up:start" || pending === "totp:remove:step-up:complete"
+    },
+    totpRemoveStepUpStart,
+    totpRename: (enrollmentId: string, label: string) =>
+      mutate(`totp:rename:${enrollmentId}`, () => api.totpRename(options.realmId(), enrollmentId, { label })),
     totpSetup: totpSetup.get,
     totpSetupDismiss: totpFlowReset,
     totpStart,

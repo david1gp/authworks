@@ -59,6 +59,12 @@ export const eventSecurityEventDefinitionByType = {
     productionIntegrations: ["mfaTotpEnrollmentRemove"],
     subject: "user",
   },
+  "mfa.totp.renamed": {
+    category: "mfa",
+    displayCode: "mfa.totp.renamed",
+    productionIntegrations: ["mfaTotpEnrollmentRename"],
+    subject: "user",
+  },
   "mfa.totp.verified": {
     category: "mfa",
     displayCode: "mfa.totp.verified",

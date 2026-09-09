@@ -1,7 +1,9 @@
+import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { LoaderSpin4Square } from "#ui/static/loaders/LoaderSpin4Square.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
@@ -68,6 +70,7 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
         </AuthenticatedDialog>
       }
       class="h-full"
+      description={messageTranslate("account.factors.description")}
       title={messageTranslate("account.security.authenticators")}
     >
       <AccountSecurityStatus
@@ -99,20 +102,137 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
                   />
                 </div>
                 <Show when={enrollment.status === "active"}>
-                  <Button
+                  <AuthenticatedDialog
+                    description={messageTranslate("account.factors.description")}
                     disabled={props.state.pendingId()?.startsWith("totp:")}
-                    onClick={() => props.state.totpRemove(enrollment.id)}
-                    size="sm"
-                    variant="filledRed"
+                    onOpenChange={(open) => state.renameDialogOpenSet(enrollment.id, enrollment.label, open)}
+                    open={state.renameDialogOpen(enrollment.id)}
+                    title={messageTranslate("account.factors.totp")}
+                    triggerLabel={
+                      <>
+                        <Icon class="size-4" path={mdiPencil} />
+                        <span class="sr-only">{messageTranslate("account.factors.totp")}</span>
+                      </>
+                    }
+                    variant="outline"
                   >
-                    {messageTranslate("account.factors.removeTotp")}
-                  </Button>
+                    <form class="grid gap-3" onSubmit={state.renameSubmit}>
+                      <div class="grid gap-1">
+                        <Label for={`account-totp-label-${enrollment.id}`}>
+                          {messageTranslate("account.factors.authenticatorName")}
+                        </Label>
+                        <Input
+                          disabled={props.state.pendingId() === `totp:rename:${enrollment.id}`}
+                          id={`account-totp-label-${enrollment.id}`}
+                          maxlength={128}
+                          onInput={state.renameLabelInput}
+                          required
+                          value={state.renameLabel()}
+                        />
+                      </div>
+                      <div class="flex flex-wrap justify-between gap-2">
+                        <Button
+                          disabled={props.state.pendingId() === `totp:rename:${enrollment.id}`}
+                          size="sm"
+                          type="submit"
+                        >
+                          {messageTranslate("common.save")}
+                        </Button>
+                        <Button
+                          disabled={props.state.pendingId()?.startsWith("totp:")}
+                          onClick={() => void state.renameRemove(enrollment.id)}
+                          size="sm"
+                          type="button"
+                          variant="filledRed"
+                        >
+                          {messageTranslate("account.factors.removeTotp")}
+                        </Button>
+                      </div>
+                    </form>
+                  </AuthenticatedDialog>
                 </Show>
               </li>
             )}
           </For>
         </ul>
       </Show>
+      <AuthenticatedDialog
+        description={messageTranslate("account.factors.stepUpDescription")}
+        onOpenChange={(open) => {
+          if (!open) props.state.totpRemoveStepUpCancel()
+        }}
+        open={state.stepUpOpen()}
+        title={messageTranslate("account.confirmTitle")}
+      >
+        <Show
+          when={props.state.totpRemoveStepUpChallenge()}
+          fallback={
+            <Show
+              when={props.state.totpRemoveStepUpPending()}
+              fallback={
+                <div class="grid gap-3">
+                  <Show when={props.state.totpRemoveStepUpError()}>
+                    {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
+                  </Show>
+                  <div>
+                    <Button
+                      onClick={() => void props.state.totpRemoveStepUpStart(props.state.totpRemoveStepUpEnrollmentId())}
+                      size="sm"
+                      type="button"
+                    >
+                      {messageTranslate("common.retry")}
+                    </Button>
+                  </div>
+                </div>
+              }
+            >
+              <AccountFactorsSectionLoading />
+            </Show>
+          }
+        >
+          <form class="grid gap-3" onSubmit={state.stepUpSubmit}>
+            <p class="text-sm text-muted-foreground">
+              {messageTranslate(
+                state.stepUpFactor() === "email_otp"
+                  ? "account.factors.emailOtp"
+                  : state.stepUpFactor() === "passkey"
+                    ? "account.factors.passkeys"
+                    : "account.factors.totp",
+              )}
+            </p>
+            <div class="grid gap-1">
+              <Label for="account-totp-step-up-code">{messageTranslate("account.factors.verificationCode")}</Label>
+              <Input
+                autocomplete="one-time-code"
+                class="font-mono"
+                disabled={props.state.totpRemoveStepUpPending()}
+                id="account-totp-step-up-code"
+                inputmode="numeric"
+                maxlength={6}
+                onInput={props.state.totpRemoveStepUpCodeInput}
+                value={props.state.totpRemoveStepUpCode()}
+              />
+            </div>
+            <Show when={props.state.totpRemoveStepUpError()}>
+              {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
+            </Show>
+            <div class="flex flex-wrap gap-2">
+              <Button
+                disabled={props.state.totpRemoveStepUpPending() || !/^\d{6}$/.test(props.state.totpRemoveStepUpCode())}
+                size="sm"
+                type="submit"
+              >
+                {props.state.totpRemoveStepUpPending()
+                  ? messageTranslate("common.loading")
+                  : messageTranslate("common.continue")}
+              </Button>
+              <Button onClick={props.state.totpRemoveStepUpCancel} size="sm" type="button" variant="ghost">
+                {messageTranslate("common.cancel")}
+              </Button>
+            </div>
+          </form>
+        </Show>
+      </AuthenticatedDialog>
     </AuthenticatedSection>
   )
 }

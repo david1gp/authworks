@@ -189,7 +189,7 @@ test("every API client publishes its complete method set", () => {
   expect(Object.keys(events.eventApiClientCreate(options))).toHaveLength(2)
   expect(Object.keys(externalIdentities.externalIdentityApiClientCreate(options))).toHaveLength(21)
   expect(Object.keys(oidc.oidcApiClientCreate(options))).toHaveLength(42)
-  expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(15)
+  expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(16)
   expect(Object.keys(passkeys.passkeyApiClientCreate(options))).toHaveLength(10)
   expect(Object.keys(machineUsers.machineUserApiClientCreate(options))).toHaveLength(20)
   expect(Object.keys(projects.projectApiClientCreate(options))).toHaveLength(44)

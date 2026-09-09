@@ -10,6 +10,7 @@ import { mfaStepUpComplete } from "../../src/features/mfa/actions/mfaStepUpCompl
 import { mfaStepUpStart } from "../../src/features/mfa/actions/mfaStepUpStart.js"
 import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
 import { mfaTotpEnrollmentRemove } from "../../src/features/mfa/actions/mfaTotpEnrollmentRemove.js"
+import { mfaTotpEnrollmentRename } from "../../src/features/mfa/actions/mfaTotpEnrollmentRename.js"
 import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
 import { mfaTotpVerify } from "../../src/features/mfa/actions/mfaTotpVerify.js"
 import { mfaApiClientCreate } from "../../src/features/mfa/client/mfaApiClientCreate.js"
@@ -714,5 +715,60 @@ test("MFA browser completion issues and upgrades an HttpOnly session cookie with
     expect(invalid.headers.get("set-cookie")).toBeNull()
     const invalidBody = (await invalid.json()) as { session?: { token?: string } }
     expect(invalidBody.session?.token).toHaveLength(43)
+  })
+})
+
+test("TOTP authenticator labels are renamed transactionally through the public client", async () => {
+  await withDatabase(async (database, testkit) => {
+    const fixture = await createUser(database, "mfa-rename.example.com")
+    const enrolled = await enrollTotp(database, testkit, fixture.realm.id, fixture.userId)
+    const renamed = mfaTotpEnrollmentRename({
+      database,
+      enrollmentId: enrolled.enrollmentId,
+      input: { label: "  Work account  " },
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      userId: fixture.userId,
+    })
+    expect(renamed).toMatchObject({ data: { enrollment: { label: "Work account", status: "active" } }, success: true })
+    expect(
+      database.sqlite.query("SELECT label, version FROM mfa_totp_enrollments WHERE id = ?").get(enrolled.enrollmentId),
+    ).toEqual({ label: "Work account", version: 3 })
+    expect(
+      database.sqlite
+        .query("SELECT event_type AS eventType, payload FROM events WHERE event_type = 'mfa.totp.renamed'")
+        .get(),
+    ).toMatchObject({ eventType: "mfa.totp.renamed", payload: expect.stringContaining("Work account") })
+    expect(
+      mfaTotpEnrollmentRename({
+        database,
+        enrollmentId: enrolled.enrollmentId,
+        input: { label: "   " },
+        realmId: fixture.realm.id,
+        runtime: testkit.runtime,
+        userId: fixture.userId,
+      }),
+    ).toMatchObject({ code: "mfa.invalid", success: false })
+
+    const login = passwordLogin({
+      context: fixture.context,
+      database,
+      input: { identifier: "mfa-rename-example-com", password: "Correct Horse 12" },
+      realmId: fixture.realm.id,
+      runtime: testkit.runtime,
+      sessionCreate: sessionPasswordCreate(),
+    })
+    expect(login.success).toBe(true)
+    if (!login.success || login.data.session === undefined) return
+    const app = mfaServerAppCreate({ database, encryptionSecret: "mfa-test-secret" })
+    const client = mfaApiClientCreate({
+      baseUrl: "http://mfa-rename.test",
+      fetch: async (input, init) => app.request(input.toString(), init),
+      token: login.data.session.token,
+    })
+    const throughClient = await client.mfaTotpEnrollmentRename(fixture.realm.id, enrolled.enrollmentId, {
+      label: "Personal account",
+    })
+    expect(throughClient).toMatchObject({ data: { enrollment: { label: "Personal account" } }, success: true })
   })
 })

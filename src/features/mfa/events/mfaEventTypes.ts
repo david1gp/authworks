@@ -8,5 +8,6 @@ export const mfaEventTypes = {
   totpEnrollmentConfirmed: "mfa.totp.enrollment.confirmed",
   totpEnrollmentStarted: "mfa.totp.enrollment.started",
   totpRemoved: "mfa.totp.removed",
+  totpRenamed: "mfa.totp.renamed",
   totpVerified: "mfa.totp.verified",
 } as const

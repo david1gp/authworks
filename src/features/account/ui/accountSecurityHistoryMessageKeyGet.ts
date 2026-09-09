@@ -29,6 +29,7 @@ const displayMessageKeyByCode = {
   "mfa.totp.enrollment.confirmed": "account.securityHistory.event.totpEnrollmentConfirmed",
   "mfa.totp.enrollment.started": "account.securityHistory.event.totpEnrollmentStarted",
   "mfa.totp.removed": "account.securityHistory.event.totpRemoved",
+  "mfa.totp.renamed": "account.securityHistory.event.totpRenamed",
   "mfa.totp.verified": "account.securityHistory.event.totpVerified",
   "passkey.authentication_completed": "account.securityHistory.event.passkeyAuthenticationCompleted",
   "passkey.authentication_started": "account.securityHistory.event.passkeyAuthenticationStarted",

@@ -32,6 +32,10 @@ import type { MfaTotpEnrollmentRemoveRequest } from "../public/mfaTotpEnrollment
 import { mfaTotpEnrollmentRemoveRequestSchema } from "../public/mfaTotpEnrollmentRemoveRequestSchema.js"
 import type { MfaTotpEnrollmentRemoveResponse } from "../public/mfaTotpEnrollmentRemoveResponseSchema.js"
 import { mfaTotpEnrollmentRemoveResponseSchema } from "../public/mfaTotpEnrollmentRemoveResponseSchema.js"
+import type { MfaTotpEnrollmentRenameRequest } from "../public/mfaTotpEnrollmentRenameRequestSchema.js"
+import { mfaTotpEnrollmentRenameRequestSchema } from "../public/mfaTotpEnrollmentRenameRequestSchema.js"
+import type { MfaTotpEnrollmentRenameResponse } from "../public/mfaTotpEnrollmentRenameResponseSchema.js"
+import { mfaTotpEnrollmentRenameResponseSchema } from "../public/mfaTotpEnrollmentRenameResponseSchema.js"
 import type { MfaTotpEnrollmentStartRequest } from "../public/mfaTotpEnrollmentStartRequestSchema.js"
 import { mfaTotpEnrollmentStartRequestSchema } from "../public/mfaTotpEnrollmentStartRequestSchema.js"
 import type { MfaTotpEnrollmentStartResponse } from "../public/mfaTotpEnrollmentStartResponseSchema.js"
@@ -147,6 +151,19 @@ export function mfaApiClientCreate(options: MfaApiClientCreateOptions) {
         `/realms/${encodeURIComponent(realmId)}/mfa/totp`,
         { ...json(checked.data), method: "DELETE" },
         mfaTotpEnrollmentRemoveResponseSchema,
+      )
+    },
+    mfaTotpEnrollmentRename(
+      realmId: string,
+      enrollmentId: string,
+      input: MfaTotpEnrollmentRenameRequest,
+    ): Promise<Result<MfaTotpEnrollmentRenameResponse>> {
+      const checked = parsed(mfaTotpEnrollmentRenameRequestSchema, input, "The TOTP enrollment label is invalid.")
+      if (!checked.success) return Promise.resolve(checked)
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/mfa/totp/${encodeURIComponent(enrollmentId)}`,
+        { ...json(checked.data), method: "PATCH" },
+        mfaTotpEnrollmentRenameResponseSchema,
       )
     },
     mfaTotpVerify(realmId: string, code: string): Promise<Result<MfaTotpVerifyResponse>> {

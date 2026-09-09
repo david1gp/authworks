@@ -302,7 +302,10 @@ describe("account security external identity state", () => {
     })
     expect(state.refreshTokens()).toHaveLength(1)
     expect(state.refreshTokens()[0]).not.toHaveProperty("tokenHash")
-    await state.refreshTokenRevoke("01900000-0000-7000-8000-000000000032")
+    const revocation = state.refreshTokenRevoke("01900000-0000-7000-8000-000000000032")
+    expect(state.confirmation.open()).toBe(true)
+    state.confirmation.accept()
+    await revocation
     expect(state.refreshTokens()[0]?.status).toBe("revoked")
   })
 
@@ -313,8 +316,10 @@ describe("account security external identity state", () => {
       removeEventListener: () => undefined,
     } as unknown as Window
     Object.defineProperty(globalThis, "window", { configurable: true, value: browserWindow })
+    const pageSizes: number[] = []
     globalThis.fetch = (async (input: string | URL | Request) => {
       const url = new URL(String(input))
+      if (url.searchParams.has("pageSize")) pageSizes.push(Number(url.searchParams.get("pageSize")))
       if (url.searchParams.has("pageToken"))
         return jsonResponse({
           items: [
@@ -345,6 +350,86 @@ describe("account security external identity state", () => {
     await state.securityHistoryLoadMore()
     expect(state.securityHistory().map((item) => item.id)).toEqual(["history-1", "history-2"])
     expect(state.securityHistoryNextPageToken()).toBeUndefined()
+    expect(pageSizes).toEqual([10, 10])
+  })
+
+  test("renames an authenticator and retries removal after the existing MFA step-up flow", async () => {
+    let label = "Authenticator app"
+    let enrolled = true
+    let removalAttempts = 0
+    const browserWindow = {
+      addEventListener: () => undefined,
+      location: { origin: "https://auth.example.test" },
+      removeEventListener: () => undefined,
+    } as unknown as Window
+    Object.defineProperty(globalThis, "window", { configurable: true, value: browserWindow })
+    globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+      const request = new Request(String(input), init)
+      const url = new URL(request.url)
+      if (url.pathname.endsWith("/me/authentication-methods"))
+        return jsonResponse({
+          emailOtp: { available: true },
+          passkeys: { credentials: [] },
+          password: { available: true },
+          recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+          totp: {
+            enrolled,
+            enrollments: enrolled ? [{ confirmedAt: 2, id: "totp-enrollment", label, status: "active" }] : [],
+          },
+        })
+      if (url.pathname.endsWith("/sessions/csrf")) return jsonResponse({ csrfToken: "csrf-token" })
+      if (url.pathname.endsWith("/mfa/totp/totp-enrollment")) {
+        label = "Work account"
+        return jsonResponse({
+          enrollment: { confirmedAt: 2, id: "totp-enrollment", label, status: "active", userId: "user-one" },
+        })
+      }
+      if (url.pathname.endsWith("/mfa/totp")) {
+        removalAttempts += 1
+        if (removalAttempts === 1)
+          return Response.json(
+            { error: { code: "mfa.unauthorized", message: "MFA step-up authorization is required.", status: 401 } },
+            { status: 401 },
+          )
+        enrolled = false
+        return jsonResponse({ removed: true })
+      }
+      if (url.pathname.endsWith("/mfa/step-up/start"))
+        return jsonResponse({
+          challenge: {
+            availableFactors: ["totp"],
+            expiresAt: 300_000,
+            factor: "totp",
+            id: "step-up-challenge",
+            purpose: "step_up",
+            requiredAssurance: "multi_factor",
+          },
+          token: "x".repeat(43),
+        })
+      if (url.pathname.endsWith("/mfa/step-up/complete"))
+        return jsonResponse({ authentication: { authenticatedAt: 3, realmId: "realm-one", userId: "user-one" } })
+      throw new Error(`Unexpected account security request: ${url}`)
+    }) as typeof fetch
+
+    const state = await stateCreate({
+      apiBaseUrl: "https://api.example.test",
+      realmId: () => "realm-one",
+      screen: () => "factors",
+    })
+    expect(await state.totpRename("totp-enrollment", "Work account")).toBe(true)
+    expect(state.methods().totp.enrollments[0]?.label).toBe("Work account")
+
+    const removal = state.totpRemove("totp-enrollment")
+    expect(state.confirmation.open()).toBe(true)
+    state.confirmation.accept()
+    expect(await removal).toBe(false)
+    expect(state.totpRemoveStepUpChallenge()?.challenge.purpose).toBe("step_up")
+    state.totpRemoveStepUpCodeInput({ currentTarget: { value: "123456" } } as InputEvent & {
+      currentTarget: HTMLInputElement
+    })
+    expect(await state.totpRemoveStepUpComplete({ code: state.totpRemoveStepUpCode() })).toBe(true)
+    expect(state.methods().totp.enrolled).toBe(false)
+    expect(state.totpRemoveStepUpChallenge()).toBeUndefined()
   })
 })
 

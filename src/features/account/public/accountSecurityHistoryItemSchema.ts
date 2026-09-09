@@ -28,6 +28,7 @@ export const accountSecurityHistoryItemSchema = v.strictObject({
     "mfa.totp.enrollment.confirmed",
     "mfa.totp.enrollment.started",
     "mfa.totp.removed",
+    "mfa.totp.renamed",
     "mfa.totp.verified",
     "passkey.authentication_completed",
     "passkey.authentication_started",

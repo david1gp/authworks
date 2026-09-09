@@ -2,6 +2,7 @@ import { useLocation } from "@solidjs/router"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { demoScenarioPlaceholderStateCreate } from "../../demo/ui/demoScenarioPlaceholderStateCreate.js"
+import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountSecurityView } from "./AccountSecurityView.js"
 import { accountSecurityDemoStateCreate } from "./accountSecurityDemoStateCreate.js"
@@ -20,6 +21,7 @@ export function AccountSecurityDemoAdapter(props: { readonly screen: AccountSecu
         title={scenario()?.title ?? ""}
       />
       <AccountSecurityView state={state} />
+      <ConfirmDialog state={state.confirmation} titleKey="account.confirmTitle" />
     </div>
   )
 }

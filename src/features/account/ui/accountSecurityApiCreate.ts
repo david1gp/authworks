@@ -10,7 +10,12 @@ import type { MfaTotpEnrollmentConfirmRequest } from "../../mfa/public/mfaTotpEn
 import { mfaTotpEnrollmentConfirmResponseSchema } from "../../mfa/public/mfaTotpEnrollmentConfirmResponseSchema.js"
 import type { MfaTotpEnrollmentRemoveRequest } from "../../mfa/public/mfaTotpEnrollmentRemoveRequestSchema.js"
 import { mfaTotpEnrollmentRemoveResponseSchema } from "../../mfa/public/mfaTotpEnrollmentRemoveResponseSchema.js"
+import type { MfaTotpEnrollmentRenameRequest } from "../../mfa/public/mfaTotpEnrollmentRenameRequestSchema.js"
+import { mfaTotpEnrollmentRenameResponseSchema } from "../../mfa/public/mfaTotpEnrollmentRenameResponseSchema.js"
 import { mfaTotpEnrollmentStartResponseSchema } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
+import { mfaChallengeResponseSchema } from "../../mfa/public/mfaChallengeResponseSchema.js"
+import type { MfaChallengeCompleteRequest } from "../../mfa/public/mfaChallengeCompleteRequestSchema.js"
+import { mfaLoginResponseSchema } from "../../mfa/public/mfaLoginResponseSchema.js"
 import { oidcApiClientCreate } from "../../oidc/client/oidcApiClientCreate.js"
 import { oidcRefreshTokenRevokeResponseSchema } from "../../oidc/public/oidcRefreshTokenRevokeResponseSchema.js"
 import { passkeyApiClientCreate } from "../../passkeys/client/passkeyApiClientCreate.js"
@@ -78,6 +83,20 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
         externalIdentityUnlinkResponseSchema,
       ),
     methodsGet: users.userMeAuthenticationMethodsGet,
+    mfaStepUpComplete: (realmId: string, input: MfaChallengeCompleteRequest) =>
+      mutate(
+        realmId,
+        `/realms/${encodeURIComponent(realmId)}/mfa/step-up/complete`,
+        { body: JSON.stringify(input), method: "POST" },
+        mfaLoginResponseSchema,
+      ),
+    mfaStepUpStart: (realmId: string) =>
+      mutate(
+        realmId,
+        `/realms/${encodeURIComponent(realmId)}/mfa/step-up/start`,
+        { body: "{}", method: "POST" },
+        mfaChallengeResponseSchema,
+      ),
     passkeyComplete: (realmId: string, input: PasskeyRegistrationCompleteRequest) =>
       mutate(
         realmId,
@@ -151,6 +170,13 @@ export function accountSecurityApiCreate(options: { readonly baseUrl: string; re
         `/realms/${encodeURIComponent(realmId)}/mfa/totp`,
         { body: JSON.stringify(input), method: "DELETE" },
         mfaTotpEnrollmentRemoveResponseSchema,
+      ),
+    totpRename: (realmId: string, enrollmentId: string, input: MfaTotpEnrollmentRenameRequest) =>
+      mutate(
+        realmId,
+        `/realms/${encodeURIComponent(realmId)}/mfa/totp/${encodeURIComponent(enrollmentId)}`,
+        { body: JSON.stringify(input), method: "PATCH" },
+        mfaTotpEnrollmentRenameResponseSchema,
       ),
     totpStart: (realmId: string) =>
       mutate(

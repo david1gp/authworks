@@ -6,8 +6,10 @@ export const mfaEventPayloadSchema = v.strictObject({
   codeCount: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
   enrollmentId: v.optional(v.pipe(v.string(), v.minLength(1))),
   factor: v.optional(v.picklist(["email_otp", "passkey", "recovery_code", "totp"])),
+  label: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
   locked: v.optional(v.boolean()),
   mode: v.optional(v.picklist(["disabled", "optional", "required"])),
+  previousLabel: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(128))),
   purpose: v.optional(v.picklist(["login", "step_up"])),
   userId: v.optional(v.pipe(v.string(), v.minLength(1))),
 })

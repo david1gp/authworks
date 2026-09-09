@@ -26,6 +26,7 @@ import { mfaStepUpComplete } from "../actions/mfaStepUpComplete.js"
 import { mfaStepUpStart } from "../actions/mfaStepUpStart.js"
 import { mfaTotpEnrollmentConfirm } from "../actions/mfaTotpEnrollmentConfirm.js"
 import { mfaTotpEnrollmentRemove } from "../actions/mfaTotpEnrollmentRemove.js"
+import { mfaTotpEnrollmentRename } from "../actions/mfaTotpEnrollmentRename.js"
 import { mfaTotpEnrollmentStart } from "../actions/mfaTotpEnrollmentStart.js"
 import { mfaTotpVerify } from "../actions/mfaTotpVerify.js"
 import { mfaChallengeCompleteRequestSchema } from "../public/mfaChallengeCompleteRequestSchema.js"
@@ -36,6 +37,7 @@ import { mfaPolicySetRequestSchema } from "../public/mfaPolicySetRequestSchema.j
 import { mfaTotpEnrollmentConfirmRequestSchema } from "../public/mfaTotpEnrollmentConfirmRequestSchema.js"
 import { mfaTotpEnrollmentStartRequestSchema } from "../public/mfaTotpEnrollmentStartRequestSchema.js"
 import { mfaTotpEnrollmentRemoveRequestSchema } from "../public/mfaTotpEnrollmentRemoveRequestSchema.js"
+import { mfaTotpEnrollmentRenameRequestSchema } from "../public/mfaTotpEnrollmentRenameRequestSchema.js"
 
 type MfaServerAppCreateOptions = {
   readonly browserMode?: boolean
@@ -206,6 +208,24 @@ export function mfaServerAppCreate(options: MfaServerAppCreateOptions) {
         enrollmentId: input.output.enrollmentId,
         realmId: context.req.param("realmId"),
         sessionToken: mfaSessionTokenGet(context, sessionBrowserModeRequested(context, options.browserMode)),
+        userId: context.get("authorizationActor").actorId,
+      }),
+    )
+  })
+
+  app.patch("/realms/:realmId/mfa/totp/:enrollmentId", protectedMiddleware, async (context) => {
+    const body = await mfaJsonRead(context)
+    if (!body.success) return mfaErrorResponseCreate(context, body.errorMessage, "mfa.invalid")
+    const input = v.safeParse(mfaTotpEnrollmentRenameRequestSchema, body.data)
+    if (!input.success) return mfaErrorResponseCreate(context, "The TOTP enrollment label is invalid.", "mfa.invalid")
+    return mfaResultResponseCreate(
+      context,
+      mfaTotpEnrollmentRename({
+        actorId: context.get("authorizationActor").actorId,
+        database: options.database,
+        enrollmentId: context.req.param("enrollmentId"),
+        input: input.output,
+        realmId: context.req.param("realmId"),
         userId: context.get("authorizationActor").actorId,
       }),
     )

@@ -1,9 +1,12 @@
 import { useLocation } from "@solidjs/router"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoFixtureStateSelect } from "../../demo/demoFixtureStateSelect.js"
 import type { ExternalIdentityProvider } from "../../externalIdentities/public/externalIdentityProviderSchema.js"
 import type { ExternalIdentity } from "../../externalIdentities/public/externalIdentitySchema.js"
+import type { MfaChallengeCompleteRequest } from "../../mfa/public/mfaChallengeCompleteRequestSchema.js"
+import type { MfaChallengeResponse } from "../../mfa/public/mfaChallengeResponseSchema.js"
 import type { OidcRefreshTokenMetadata } from "../../oidc/public/oidcRefreshTokenMetadataSchema.js"
 import type { PasskeyCredential } from "../../passkeys/public/passkeyCredentialSchema.js"
 import type { SessionMe } from "../../sessions/public/sessionMeSchema.js"
@@ -34,6 +37,36 @@ const securityHistoryFirstPage: AccountSecurityHistoryItem[] = [
     displayCode: "linked_identity.linked",
     id: "history-identity-linked",
     occurredAt: now - 300_000,
+  },
+  {
+    category: "sessions",
+    displayCode: "session.rotated",
+    id: "history-session-rotated",
+    occurredAt: now - 330_000,
+  },
+  {
+    category: "mfa",
+    displayCode: "mfa.totp.verified",
+    id: "history-totp-verified",
+    occurredAt: now - 345_000,
+  },
+  {
+    category: "passkeys",
+    displayCode: "passkey.credential_used",
+    id: "history-passkey-used",
+    occurredAt: now - 350_000,
+  },
+  {
+    category: "passwords",
+    displayCode: "password.credential_changed",
+    id: "history-password-changed",
+    occurredAt: now - 355_000,
+  },
+  {
+    category: "email_changes",
+    displayCode: "email_change.requested",
+    id: "history-email-requested",
+    occurredAt: now - 358_000,
   },
 ]
 const securityHistorySecondPage: AccountSecurityHistoryItem[] = [
@@ -255,13 +288,20 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     | undefined
   >(undefined)
   const pendingId = createSignalObject<string | undefined>(undefined)
+  const totpRemoveStepUpChallenge = createSignalObject<MfaChallengeResponse | undefined>(undefined)
+  const totpRemoveStepUpCode = createSignalObject("")
+  const totpRemoveStepUpError = createSignalObject<string | undefined>(undefined)
+  const totpRemoveStepUpEnrollmentId = createSignalObject<string | undefined>(undefined)
+  const totpRemoveStepUpCompleted = createSignalObject(false)
+  const confirmation = confirmStateCreate()
   const identityLinkConfirmation = createSignalObject<
     { readonly confirmationToken: string; readonly expiresAt: number; readonly kind: "link_confirmation" } | undefined
   >(undefined)
   const identityLinkProvider = createSignalObject<string | undefined>(undefined)
   const identityError = createSignalObject<string | undefined>(undefined)
   const code = createSignalObject("")
-  const selected = () => demoFixtureStateSelect(location.search, ["success", "empty", "loading", "error", "one-time"])
+  const selected = () =>
+    demoFixtureStateSelect(location.search, ["success", "empty", "loading", "error", "assurance-required", "one-time"])
   const visible = <T>(values: readonly T[]) => (selected() === "empty" ? [] : [...values])
   // The one-time state is reachable straight from a URL, so it seeds already-issued codes. Once
   // dismissed they must not reappear on reload, so acknowledgement is remembered for this session.
@@ -296,10 +336,77 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     }
     totpStart()
   }
+  const totpRemoveStepUpReset = () => {
+    totpRemoveStepUpChallenge.set(undefined)
+    totpRemoveStepUpCode.set("")
+    totpRemoveStepUpError.set(undefined)
+    totpRemoveStepUpEnrollmentId.set(undefined)
+    totpRemoveStepUpCompleted.set(false)
+  }
+  const totpRemoveStepUpStart = async (enrollmentId?: string) => {
+    totpRemoveStepUpChallenge.set({
+      challenge: {
+        availableFactors: ["totp"],
+        expiresAt: Date.now() + 300_000,
+        factor: "totp",
+        id: "demo-totp-remove-step-up",
+        purpose: "step_up",
+        requiredAssurance: "multi_factor",
+      },
+      token: "demo-totp-remove-step-up-token-000000000000000000000000",
+    })
+    totpRemoveStepUpCode.set("")
+    totpRemoveStepUpError.set(undefined)
+    totpRemoveStepUpEnrollmentId.set(enrollmentId)
+    pendingId.set("totp:remove:step-up:start")
+    await Promise.resolve()
+    pendingId.set("totp:remove:step-up")
+  }
+  const totpRemoveStepUpCancel = () => {
+    pendingId.set(undefined)
+    totpRemoveStepUpReset()
+  }
+  const totpRemoveExecute = async (enrollmentId?: string): Promise<boolean> => {
+    if (pendingId.get() !== undefined) return false
+    if (selected() === "assurance-required" && !totpRemoveStepUpCompleted.get()) {
+      await totpRemoveStepUpStart(enrollmentId)
+      return false
+    }
+    pendingId.set("totp:remove")
+    const enrollments =
+      enrollmentId === undefined
+        ? []
+        : methods.get().totp.enrollments.filter((enrollment) => enrollment.id !== enrollmentId)
+    methods.set({
+      ...methods.get(),
+      totp: { enrolled: enrollments.some((enrollment) => enrollment.status === "active"), enrollments },
+    })
+    pendingId.set(undefined)
+    totpRemoveStepUpReset()
+    return true
+  }
+  const totpRemove = async (enrollmentId?: string): Promise<boolean> => {
+    if (!(await confirmation.confirm(messageTranslate("account.factors.removeTotp")))) return false
+    return totpRemoveExecute(enrollmentId)
+  }
+  const totpRemoveStepUpComplete = async (input: {
+    readonly code: string
+    readonly factor?: MfaChallengeCompleteRequest["factor"]
+  }): Promise<boolean> => {
+    if (totpRemoveStepUpChallenge.get() === undefined || input.code !== "123456") {
+      totpRemoveStepUpError.set("The demo MFA code is invalid.")
+      return false
+    }
+    totpRemoveStepUpCompleted.set(true)
+    const enrollmentId = totpRemoveStepUpEnrollmentId.get()
+    pendingId.set(undefined)
+    return totpRemoveExecute(enrollmentId)
+  }
 
   return {
     code: code.get,
     codeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) => code.set(event.currentTarget.value),
+    confirmation,
     error: () =>
       identityError.get() ?? (selected() === "error" ? messageTranslate("demo.fixture.accountError") : undefined),
     identities: () => visible(identities.get()),
@@ -366,8 +473,8 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     identityProviderLinked: (providerId: string) =>
       identities.get().some((identity) => identity.providerId === providerId),
     identityProviders: () => identityProviders.get(),
-    identityUnlink: (providerId: string) => {
-      if (!window.confirm(messageTranslate("account.identities.unlinkConfirm"))) return
+    identityUnlink: async (providerId: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.identities.unlinkConfirm")))) return
       identities.set(identities.get().filter((item) => item.providerId !== providerId))
     },
     methods: () =>
@@ -383,7 +490,10 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       oneTimeCodes.set([])
     },
     passkeyAdd: () => undefined,
-    passkeyRevoke: (credentialId: string) => passkeys.set(passkeys.get().filter((item) => item.id !== credentialId)),
+    passkeyRevoke: async (credentialId: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.passkeys.remove")))) return
+      passkeys.set(passkeys.get().filter((item) => item.id !== credentialId))
+    },
     passkeys: () => visible(passkeys.get()),
     pendingId: pendingId.get,
     recoveryCodesGenerate: () => {
@@ -392,8 +502,8 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       oneTimeCodes.set([...demoRecoveryCodes])
     },
     reload: () => undefined,
-    refreshTokenRevoke: (familyId: string) => {
-      if (!window.confirm(messageTranslate("account.refreshTokens.revokeConfirm"))) return
+    refreshTokenRevoke: async (familyId: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.refreshTokens.revokeConfirm")))) return
       const revokedAt = Date.now()
       refreshTokens.set(
         refreshTokens
@@ -402,8 +512,8 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       )
     },
     refreshTokens: () => visible(refreshTokens.get()),
-    refreshTokensRevokeAll: () => {
-      if (!window.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm"))) return
+    refreshTokensRevokeAll: async () => {
+      if (!(await confirmation.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm")))) return
       const revokedAt = Date.now()
       refreshTokens.set(
         refreshTokens
@@ -419,8 +529,8 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     },
     securityHistoryNextPageToken: () => (selected() === "empty" ? undefined : securityHistoryNextPageToken.get()),
     screen,
-    sessionRevoke: (sessionId: string) => {
-      if (!window.confirm(messageTranslate("account.sessions.revokeConfirm"))) return
+    sessionRevoke: async (sessionId: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.sessions.revokeConfirm")))) return
       sessions.set(sessions.get().filter((item) => item.id !== sessionId))
     },
     sessions: () => visible(sessions.get()),
@@ -443,15 +553,31 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     totpDialogOpen: totpDialogOpen.get,
     totpDialogOpenSet,
     totpError: totpError.get,
-    totpRemove: (enrollmentId?: string) => {
-      const enrollments =
-        enrollmentId === undefined
-          ? []
-          : methods.get().totp.enrollments.filter((enrollment) => enrollment.id !== enrollmentId)
+    totpRemove,
+    totpRemoveStepUpCancel,
+    totpRemoveStepUpChallenge: totpRemoveStepUpChallenge.get,
+    totpRemoveStepUpCode: totpRemoveStepUpCode.get,
+    totpRemoveStepUpCodeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
+      totpRemoveStepUpCode.set(event.currentTarget.value),
+    totpRemoveStepUpComplete,
+    totpRemoveStepUpEnrollmentId: totpRemoveStepUpEnrollmentId.get,
+    totpRemoveStepUpError: totpRemoveStepUpError.get,
+    totpRemoveStepUpPending: () => {
+      const pending = pendingId.get()
+      return pending === "totp:remove:step-up:start" || pending === "totp:remove:step-up:complete"
+    },
+    totpRemoveStepUpStart,
+    totpRename: async (enrollmentId: string, label: string) => {
+      const enrollments = methods
+        .get()
+        .totp.enrollments.map((enrollment) =>
+          enrollment.id === enrollmentId ? { ...enrollment, label: label.trim() } : enrollment,
+        )
       methods.set({
         ...methods.get(),
-        totp: { enrolled: enrollments.some((enrollment) => enrollment.status === "active"), enrollments },
+        totp: { ...methods.get().totp, enrollments },
       })
+      return true
     },
     totpSetup: totpSetup.get,
     totpSetupDismiss: totpFlowReset,
