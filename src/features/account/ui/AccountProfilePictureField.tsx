@@ -27,7 +27,7 @@ export function AccountProfilePictureField(props: {
   })
 
   return (
-    <div class="grid min-w-0 gap-3">
+    <div class="grid min-w-0 justify-items-center gap-2 sm:justify-items-start">
       <Show when={props.status === "uploading"}>
         <span class="text-xs text-muted-foreground" role="status">
           {messageTranslate("account.profile.pictureUploading")}
@@ -61,7 +61,7 @@ export function AccountProfilePictureField(props: {
             ? messageTranslate("account.profile.pictureChange")
             : messageTranslate("account.profile.pictureChoose")
         }
-        class={`group relative flex min-h-44 cursor-pointer flex-col items-center justify-center rounded-panel border-2 border-dashed p-4 text-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+        class={`group relative grid size-28 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full border-2 text-center shadow-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
           state.isDragging()
             ? "border-primary bg-primary/5"
             : "border-line bg-surface hover:border-foreground/30 hover:bg-surface-hover/50"
@@ -77,20 +77,14 @@ export function AccountProfilePictureField(props: {
       >
         <Show
           fallback={
-            <div class="flex flex-col items-center gap-2">
-              <div class="grid size-16 place-items-center rounded-full border border-dashed border-line bg-muted text-muted-foreground group-hover:text-foreground">
-                <Icon class="size-8" path={mdiCloudUploadOutline} />
-              </div>
-              <div class="grid gap-0.5">
-                <p class="text-xs font-medium text-foreground">{messageTranslate("account.profile.pictureChoose")}</p>
-                <p class="text-2xs text-muted-foreground">{messageTranslate("account.profile.pictureDropHint")}</p>
-              </div>
+            <div class="grid size-full place-items-center bg-muted text-muted-foreground group-hover:text-foreground">
+              <Icon class="size-10" path={mdiCloudUploadOutline} />
             </div>
           }
           when={state.hasPicture()}
         >
-          <div class="flex flex-col items-center gap-2">
-            <div class="relative size-20 overflow-hidden rounded-full border-2 border-line bg-muted shadow-xs">
+          <div class="size-full">
+            <div class="relative size-full overflow-hidden bg-muted">
               <Show
                 fallback={
                   <span
@@ -111,16 +105,19 @@ export function AccountProfilePictureField(props: {
                 />
               </Show>
             </div>
-            <div class="grid gap-0.5">
-              <p class="text-xs font-medium text-foreground">{messageTranslate("account.profile.pictureChange")}</p>
-              <p class="text-2xs text-muted-foreground">{messageTranslate("account.profile.pictureDropHint")}</p>
-            </div>
           </div>
         </Show>
+        <span class="absolute inset-x-0 bottom-0 bg-foreground/75 px-1 py-1 text-2xs font-medium text-background">
+          {state.hasPicture()
+            ? messageTranslate("account.profile.pictureChange")
+            : messageTranslate("account.profile.pictureChoose")}
+        </span>
       </div>
 
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="text-2xs text-muted-foreground">{messageTranslate("account.profile.pictureHint")}</p>
+      <div class="flex max-w-48 flex-wrap items-center justify-center gap-2 sm:justify-start">
+        <p class="text-center text-2xs text-muted-foreground sm:text-left">
+          {messageTranslate("account.profile.pictureHint")}
+        </p>
         <Show when={props.url.length > 0}>
           <Button
             class={authenticatedDangerOutlineButtonClass}

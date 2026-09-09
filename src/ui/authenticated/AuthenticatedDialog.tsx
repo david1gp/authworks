@@ -23,20 +23,22 @@ export function AuthenticatedDialog(props: {
   readonly onOpenChange: (open: boolean) => void
   readonly open: boolean
   readonly title: string
-  readonly triggerLabel: JSX.Element
+  readonly triggerLabel?: JSX.Element
   readonly variant?: ButtonVariant
 }) {
   const state = authenticatedDialogStateCreate(() => props.open)
 
   return (
     <Dialog dialogId={state.dialogId} onOpenChange={props.onOpenChange} open={props.open}>
-      <Dialog.Trigger
-        class={buttonCva2(props.variant, undefined, classesButtonClickAnimation, props.class)}
-        disabled={props.disabled}
-        ref={state.triggerRegister}
-      >
-        {props.triggerLabel}
-      </Dialog.Trigger>
+      <Show when={props.triggerLabel !== undefined}>
+        <Dialog.Trigger
+          class={buttonCva2(props.variant, undefined, classesButtonClickAnimation, props.class)}
+          disabled={props.disabled}
+          ref={state.triggerRegister}
+        >
+          {props.triggerLabel}
+        </Dialog.Trigger>
+      </Show>
       <Dialog.Portal>
         <Dialog.Overlay class={classesDialogOverlayMerge()} />
         <Dialog.Content class={classesDialogContentMerge("w-[calc(100vw-2rem)] max-w-lg")}>

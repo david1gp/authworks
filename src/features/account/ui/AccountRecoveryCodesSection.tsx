@@ -16,7 +16,11 @@ export function AccountRecoveryCodesSection(props: {
     user: props.state.user,
   })
   return (
-    <AuthenticatedSection class="h-full" title={messageTranslate("account.recovery.summary")}>
+    <AuthenticatedSection
+      class="h-full"
+      description={messageTranslate("account.factors.description")}
+      title={messageTranslate("account.recovery.summary")}
+    >
       <div class="divide-y divide-line-subtle">
         <For each={state.statuses()}>
           {(status, index) => (

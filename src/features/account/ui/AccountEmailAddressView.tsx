@@ -131,6 +131,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
         </>
       }
       class="h-full"
+      description={messageTranslate("account.profile.emailAddDescription")}
       title={messageTranslate("account.profile.emailAddresses")}
     >
       <Show

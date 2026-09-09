@@ -3,6 +3,7 @@ import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
@@ -10,11 +11,13 @@ import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 export function AccountSessionsSection(props: { readonly state: AccountSecurityViewState }) {
   return (
     <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
-      {/* The visible card title names this column so it reads as the requested "Sessions and devices" card. */}
-      <AuthenticatedSection
-        description={messageTranslate("account.sessions.description")}
-        title={messageTranslate("shell.nav.sessionsDevices")}
-      >
+      <AuthenticatedToolbar label={messageTranslate("shell.nav.sessionsDevices")}>
+        <div class="grid gap-0.5">
+          <h2 class="text-base font-semibold tracking-tight">{messageTranslate("shell.nav.sessionsDevices")}</h2>
+          <p class="text-sm text-muted-foreground">{messageTranslate("account.sessions.description")}</p>
+        </div>
+      </AuthenticatedToolbar>
+      <AuthenticatedSection label={messageTranslate("shell.nav.sessionsDevices")}>
         <Show
           when={props.state.sessions().length > 0}
           fallback={

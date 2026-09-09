@@ -1,6 +1,7 @@
 import { createEffect, on } from "solid-js"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import type { ProductionSessionContextValue } from "../../../ui/production/productionSessionContextValue.js"
@@ -39,6 +40,7 @@ export function accountAccessProductionStateCreate(
   const invitation = createSignalObject<OrganizationInvitation | undefined>(undefined)
   const effectiveAccess = createSignalObject<AccountEffectiveAccessEntry[]>([])
   const effectiveAccessNextPageToken = createSignalObject<string | undefined>(undefined)
+  const confirmation = confirmStateCreate()
   const activeOrganizationId = () => {
     const organization = session.guard.organization
     return typeof organization === "object" ? organization.organizationId : undefined
@@ -163,7 +165,7 @@ export function accountAccessProductionStateCreate(
   return {
     activeOrganizationId,
     consentRevoke: async (clientId: string) => {
-      if (!window.confirm(messageTranslate("account.access.consentRevokeConfirm", { clientId }))) return
+      if (!(await confirmation.confirm(messageTranslate("account.access.consentRevokeConfirm", { clientId })))) return
       const succeeded = await mutate(`consent:${clientId}`, () => api.consentRevoke(realmId(), clientId))
       if (!succeeded) return
       consents.set(consents.get().filter((item) => item.clientId !== clientId))
@@ -172,6 +174,7 @@ export function accountAccessProductionStateCreate(
       status.set(consents.get().length === 0 ? "empty" : "ready")
     },
     consents: consents.get,
+    confirmation,
     effectiveAccess: effectiveAccess.get,
     effectiveAccessGroups,
     effectiveAccessLoadMore: async () => {
@@ -195,7 +198,7 @@ export function accountAccessProductionStateCreate(
       if (succeeded) status.set("accepted")
     },
     invitationDecline: async () => {
-      if (!window.confirm(messageTranslate("account.access.invitationDeclineConfirm"))) return
+      if (!(await confirmation.confirm(messageTranslate("account.access.invitationDeclineConfirm")))) return
       const succeeded = await mutate("invitation:decline", () => api.invitationDecline(realmId(), token()), true)
       if (succeeded) status.set("declined")
     },

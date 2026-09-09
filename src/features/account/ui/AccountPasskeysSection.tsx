@@ -17,6 +17,7 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
         </Button>
       }
       class="h-full"
+      description={messageTranslate("account.passkeys.description")}
       title={messageTranslate("shell.nav.passkeys")}
     >
       <AccountSecurityStatus
@@ -26,9 +27,6 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
           props.state.passkeys().length > 0 ? "account.status.configured" : "account.status.notConfigured",
         )}
       />
-      <p class="border-y border-line-subtle px-3 py-2.5 text-xs text-muted-foreground">
-        {messageTranslate("account.passkeys.description")}
-      </p>
       <Show
         when={props.state.passkeys().length > 0}
         fallback={
@@ -37,7 +35,7 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
           </p>
         }
       >
-        <ul class="divide-y divide-line-subtle">
+        <ul class="divide-y divide-line-subtle border-t border-line-subtle">
           <For each={props.state.passkeys()}>
             {(credential) => (
               <li class="grid min-w-0 gap-2 px-3 py-2.5">

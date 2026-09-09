@@ -82,17 +82,24 @@ describe("account workspace", () => {
     expect(shellState).toContain("accountSectionNavStateCreate(() => location.hash)")
   })
 
-  test("shares profile state between the identity and email adapters only", async () => {
+  test("shares profile and overview security state across the composed account page", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
     ).text()
+    const stateSource = await Bun.file(
+      new URL("../../src/features/account/ui/accountWorkspaceProductionAdapterStateCreate.ts", import.meta.url),
+    ).text()
 
+    expect(source).toContain("const state = accountWorkspaceProductionAdapterStateCreate(() => props.realmId)")
+    expect(source).toContain("configuredSecurityMethodCount={state.securityProgress.configuredCount()}")
     expect(source).toContain(
-      'const profileState = accountProductionAdapterStateCreate(() => "email", { realmId: props.realmId })',
+      '<AccountProductionAdapter kind="email" renderConfirmation={false} state={state.profile} />',
     )
-    expect(source).toContain('<AccountProductionAdapter kind="overview" state={profileState} />')
-    expect(source).toContain('<AccountProductionAdapter kind="email" state={profileState} />')
-    expect(source.match(/state=\{profileState\}/g)).toHaveLength(2)
+    expect(source).toContain("state={state.security}")
+    expect(stateSource).toContain('accountProductionAdapterStateCreate(() => "email"')
+    expect(stateSource).toContain("accountSecurityProgressStateCreate({")
+    expect(stateSource).toContain("methods: security.methods")
+    expect(stateSource).toContain("passkeyCount: () => security.passkeys().length")
   })
 
   test("uses one organization selector and selected panel for the production and demo access compositions", async () => {
@@ -126,17 +133,25 @@ describe("account workspace", () => {
     expect(source).not.toContain("account.profile.signInDescription")
   })
 
-  test("renders personal information as one card with three responsive columns", async () => {
+  test("renders the editable picture in the overview and personal information in two columns", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),
     ).text()
+    const overview = await Bun.file(
+      new URL("../../src/features/account/ui/AccountProfileIdentityStrip.tsx", import.meta.url),
+    ).text()
 
-    // One personal-information card: names, preferences, and the picture are its three columns.
+    // Personal information remains one card while its title and subtitle sit outside the card.
     expect(source.match(/<AuthenticatedSection/g)).toHaveLength(1)
-    expect(source).toContain("sm:grid-cols-2 lg:grid-cols-3")
+    expect(source).toContain("sm:grid-cols-2")
+    expect(source).not.toContain("lg:grid-cols-3")
     expect(source).not.toContain("lg:grid-cols-12")
     expect(source).not.toContain('class="lg:col-span-8"')
-    expect(source).toContain("<AccountProfilePictureField")
+    expect(source).toContain("<AuthenticatedToolbar")
+    expect(source).not.toContain("<AccountProfilePictureField")
+    expect(overview).toContain("<AccountProfilePictureField")
+    expect(overview).toContain('href="#security"')
+    expect(overview).toContain('messageTranslate("account.security.progress"')
 
     // Column one is first name, last name, display name; column two is nickname, gender, language.
     const fieldOrder = [...source.matchAll(/account\.profile\.(firstName|lastName|displayName|nickName|gender)"/g)].map(
@@ -156,6 +171,11 @@ describe("account workspace", () => {
     expect(shell).toContain("max-w-[1760px]")
     expect(shell).not.toContain("max-w-[1400px]")
     expect(shell).toContain("px-4 py-4 sm:px-6")
+
+    const workspace = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
+    ).text()
+    expect(workspace).toContain("max-w-7xl")
   })
 
   test("keeps exactly one accessible upload target without a redundant visible file control", async () => {
@@ -216,13 +236,13 @@ describe("account workspace", () => {
     expect(source).toContain("<For each={state.enrollments()}>")
     expect(source).toContain("{enrollment.label}")
     expect(source).toContain('enrollment.status === "active"')
-    expect(source).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
+    expect(source).toContain("state.renameRemove(enrollment.id)")
     // Pending enrollments cannot be removed by the backend, so no remove control is rendered for them.
     expect(source).toContain('<Show when={enrollment.status === "active"}>')
     // The add flow stays reachable regardless of how many enrollments already exist.
     expect(source.match(/triggerLabel=\{messageTranslate\("account\.factors\.addTotp"\)\}/g)).toHaveLength(1)
     expect(source).toContain("<Show when={props.state.totpSetup()}>")
-    expect(source.match(/<AuthenticatedDialog/g)).toHaveLength(1)
+    expect(source.match(/<AuthenticatedDialog/g)).toHaveLength(3)
   })
 
   test("keeps security data and actions inside exactly four seamless management cards", async () => {
@@ -263,7 +283,7 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountFactorsSection.tsx", import.meta.url),
     ).text()
     expect(factors.match(/triggerLabel=\{messageTranslate\("account\.factors\.addTotp"\)\}/g)).toHaveLength(1)
-    expect(factors).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
+    expect(factors).toContain("state.renameRemove(enrollment.id)")
 
     const identities = await Bun.file(
       new URL("../../src/features/account/ui/AccountIdentitiesSection.tsx", import.meta.url),
@@ -366,10 +386,8 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
     ).text()
 
-    expect(source).toContain("lg:grid-cols-12")
-    expect(source).toContain('class="lg:col-span-12"')
-    expect(source).toContain('class="grid min-w-0 gap-3 lg:col-span-7 [&>*]:min-w-0"')
-    expect(source).toContain('class="min-w-0 lg:col-span-5"')
+    expect(source).toContain("lg:grid-cols-2")
+    expect(source).toContain('class="lg:col-span-2"')
     expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />')
     expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />')
     expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />')
@@ -381,6 +399,32 @@ describe("account workspace", () => {
     expect(workspace).toContain('messageTranslate("shell.nav.securityHistory")')
   })
 
+  test("routes every account destructive action through the styled confirmation state", async () => {
+    const stateSources = await Promise.all(
+      ["accountPageStateCreate", "accountSecurityProductionStateCreate", "accountAccessProductionStateCreate"].map(
+        (name) => Bun.file(new URL(`../../src/features/account/ui/${name}.ts`, import.meta.url)).text(),
+      ),
+    )
+    for (const source of stateSources) {
+      expect(source).toContain("confirmStateCreate()")
+      expect(source).not.toContain("window.confirm")
+    }
+
+    expect(stateSources[0]).toContain('confirmation.confirm(messageTranslate("account.profile.pictureRemove"))')
+    expect(stateSources[0]).toContain('confirmation.confirm(messageTranslate("account.profile.emailRemove"))')
+    expect(stateSources[0]).toContain('confirmation.confirm(messageTranslate("account.profile.phoneChange"))')
+    expect(stateSources[0]).toContain('confirmation.confirm(messageTranslate("account.delete.warning"))')
+    expect(stateSources[1]).toContain('confirmation.confirm(messageTranslate("account.passkeys.remove"))')
+    expect(stateSources[1]).toContain('confirmation.confirm(messageTranslate("account.factors.removeTotp"))')
+    expect(stateSources[1]).toContain('confirmation.confirm(messageTranslate("account.identities.unlinkConfirm"))')
+    expect(stateSources[1]).toContain('confirmation.confirm(messageTranslate("account.sessions.revokeConfirm"))')
+    expect(stateSources[1]).toContain('confirmation.confirm(messageTranslate("account.refreshTokens.revokeConfirm"))')
+    expect(stateSources[1]).toContain(
+      'confirmation.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm"))',
+    )
+    expect(stateSources[2]).toContain('confirmation.confirm(messageTranslate("account.access.consentRevokeConfirm"')
+  })
+
   test("keeps activity, session state, and applications in a readable source order", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
@@ -389,26 +433,26 @@ describe("account workspace", () => {
     const securityHistory = source.indexOf('screen="security-history"')
     const sessions = source.indexOf('screen="sessions"')
     const refreshTokens = source.indexOf('screen="refresh-tokens"')
-    const consents = source.indexOf('screen="consents"')
 
     expect(securityHistory).toBeGreaterThan(-1)
     expect(sessions).toBeGreaterThan(securityHistory)
     expect(refreshTokens).toBeGreaterThan(sessions)
-    expect(consents).toBeGreaterThan(refreshTokens)
 
     const historySource = await Bun.file(
       new URL("../../src/features/account/ui/AccountSecurityHistorySection.tsx", import.meta.url),
     ).text()
-    expect(historySource).toContain('title={messageTranslate("shell.nav.securityHistory")}')
+    expect(historySource).toContain('label={messageTranslate("shell.nav.securityHistory")}')
+    expect(historySource).toContain("<AuthenticatedToolbar")
     expect(historySource).toContain("sm:grid-cols-[auto_minmax(0,1fr)_auto]")
     expect(historySource).toContain("onClick={props.state.securityHistoryLoadMore}")
-    expect(historySource).not.toContain("account.securityHistory.description")
+    expect(historySource).toContain("account.securityHistory.description")
     expect(historySource).not.toContain("ProductionStatePanel")
 
     const sessionsSource = await Bun.file(
       new URL("../../src/features/account/ui/AccountSessionsSection.tsx", import.meta.url),
     ).text()
-    expect(sessionsSource).toContain('title={messageTranslate("shell.nav.sessionsDevices")}')
+    expect(sessionsSource).toContain('label={messageTranslate("shell.nav.sessionsDevices")}')
+    expect(sessionsSource).toContain("<AuthenticatedToolbar")
     expect(sessionsSource).toContain("sm:grid-cols-[minmax(0,1fr)_auto]")
     expect(sessionsSource).toContain("onClick={() => props.state.sessionRevoke(session.id)}")
     expect(sessionsSource).not.toContain("ProductionStatePanel")
@@ -418,14 +462,8 @@ describe("account workspace", () => {
     ).text()
     expect(refreshTokensSource).toContain("onClick={props.state.refreshTokensRevokeAll}")
     expect(refreshTokensSource).toContain("onClick={() => props.state.refreshTokenRevoke(token.familyId)}")
+    expect(refreshTokensSource).toContain('label={messageTranslate("shell.nav.applications")}')
     expect(refreshTokensSource).not.toContain("ProductionStatePanel")
-
-    const consentsSource = await Bun.file(
-      new URL("../../src/features/account/ui/AccountConsentsView.tsx", import.meta.url),
-    ).text()
-    expect(consentsSource).toContain('title={messageTranslate("shell.nav.applications")}')
-    expect(consentsSource).toContain("sm:grid-cols-[minmax(0,1fr)_auto]")
-    expect(consentsSource).toContain("onClick={() => props.onRevoke(consent.clientId)}")
 
     const catalog = await Bun.file(new URL("../../src/ui/i18n/model/englishCatalog.ts", import.meta.url)).text()
     expect(catalog).toContain('"shell.nav.securityHistory": "Recent security activity"')

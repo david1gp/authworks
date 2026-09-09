@@ -26,9 +26,12 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
             </Button>
           </Show>
         }
-        label={messageTranslate("shell.nav.refreshTokens")}
+        label={messageTranslate("shell.nav.applications")}
       >
-        <p class="text-sm text-muted-foreground">{messageTranslate("account.refreshTokens.description")}</p>
+        <div class="grid gap-0.5">
+          <h2 class="text-base font-semibold tracking-tight">{messageTranslate("shell.nav.applications")}</h2>
+          <p class="text-sm text-muted-foreground">{messageTranslate("account.refreshTokens.description")}</p>
+        </div>
       </AuthenticatedToolbar>
 
       <AuthenticatedSection label={messageTranslate("account.refreshTokens.title")}>

@@ -2,6 +2,7 @@ import { type Accessor, onMount } from "solid-js"
 import * as v from "valibot"
 import type { Result } from "#result"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { PasswordMeChangeResponse } from "../../passwords/public/passwordMeChangeResponseSchema.js"
 import type { UserEmailAddressAddResendRequest } from "../../users/public/userEmailAddressAddResendRequestSchema.js"
@@ -106,6 +107,7 @@ export function accountPageStateCreate(options: {
   const emailValidationMessage = createSignalObject<string | undefined>(undefined)
   const emailAddresses = createSignalObject<readonly UserEmailAddress[]>([])
   const emailActionId = createSignalObject<string | undefined>(undefined)
+  const confirmation = confirmStateCreate()
   let loadGeneration = 0
 
   const resultIsExpired = (result: {
@@ -162,6 +164,7 @@ export function accountPageStateCreate(options: {
     pictureStatus.set("success")
   }
   const pictureRemove = async () => {
+    if (!(await confirmation.confirm(messageTranslate("account.profile.pictureRemove")))) return
     pictureErrorMessage.set(undefined)
     pictureStatus.set("removing")
     const result = await options.adapter.profilePictureRemove()
@@ -270,6 +273,7 @@ export function accountPageStateCreate(options: {
       validationMessage.set(messageTranslate("account.delete.emailMismatch"))
       return
     }
+    if (!(await confirmation.confirm(messageTranslate("account.delete.warning")))) return
     status.set("loading")
     const result = await options.adapter.deleteAccount()
     if (!result.success) return resultFail(result)
@@ -290,6 +294,11 @@ export function accountPageStateCreate(options: {
       phoneValidationMessage.set(messageTranslate("account.profile.phoneInvalid"))
       return
     }
+    if (
+      user.get()?.phoneNumber !== undefined &&
+      !(await confirmation.confirm(messageTranslate("account.profile.phoneChange")))
+    )
+      return
     phoneCandidate.set(parsed.output.phoneNumber)
     phoneStatus.set("sending")
     const result = await options.adapter.phoneChangeStart(parsed.output)
@@ -476,6 +485,7 @@ export function accountPageStateCreate(options: {
   const emailAddressRemove = async (emailId: string) => {
     const address = emailAddresses.get().find((candidate) => candidate.id === emailId)
     if (address === undefined || address.isPrimary) return
+    if (!(await confirmation.confirm(messageTranslate("account.profile.emailRemove")))) return
     emailOperationPrepare()
     emailActionId.set(emailId)
     emailStatus.set("sending")
@@ -519,6 +529,7 @@ export function accountPageStateCreate(options: {
   })
   return {
     accountDelete,
+    confirmation,
     confirmPassword,
     currentPassword,
     deletionConfirmation,

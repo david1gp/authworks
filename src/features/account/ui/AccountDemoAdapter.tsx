@@ -3,6 +3,7 @@ import { Match, Switch } from "solid-js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
 import { demoFixtureScenarioSelect } from "../../demo/demoFixtureScenarioSelect.js"
 import { demoScenarioPlaceholderStateCreate } from "../../demo/ui/demoScenarioPlaceholderStateCreate.js"
+import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { AccountDeleteView } from "./AccountDeleteView.js"
 import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountPasswordView } from "./AccountPasswordView.js"
@@ -118,6 +119,7 @@ export function AccountDemoAdapter(props: {
           />
         </Match>
       </Switch>
+      <ConfirmDialog state={page.confirmation} titleKey="account.confirmTitle" />
     </div>
   )
 }

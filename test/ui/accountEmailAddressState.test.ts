@@ -68,7 +68,10 @@ describe("account email-address state", () => {
       true,
     )
 
-    await state.emailAddressRemove("account-demo-email-primary")
+    const removal = state.emailAddressRemove("account-demo-email-primary")
+    expect(state.confirmation.open()).toBe(true)
+    state.confirmation.accept()
+    await removal
     expect(removeCalls).toBe(1)
     expect(state.emailAddresses.get()).toHaveLength(1)
   })

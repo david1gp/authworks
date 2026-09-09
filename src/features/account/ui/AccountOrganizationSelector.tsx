@@ -1,5 +1,6 @@
 import { For, Show } from "solid-js"
 import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
+import { Button } from "#ui/interactive/button/Button.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
@@ -41,7 +42,7 @@ export function AccountOrganizationSelector(props: {
       {/* Horizontal scrolling keeps every tab reachable on a narrow viewport without wrapping the row. */}
       <div
         aria-label={messageTranslate("account.access.organizationSelector")}
-        class="-mx-1 flex min-w-0 gap-1 overflow-x-auto px-1 pb-1"
+        class="flex min-w-0 gap-1.5 overflow-x-auto rounded-panel border border-line bg-muted/60 p-1.5 shadow-inner"
         role="tablist"
       >
         <For each={props.organizations}>
@@ -49,26 +50,32 @@ export function AccountOrganizationSelector(props: {
             const id = () => item.organization.id
             const selected = () => state.selected(id())
             return (
-              <button
+              <Button
                 aria-controls={props.panelId}
                 aria-selected={selected()}
                 class={classMerge(
-                  "shrink-0 rounded-control border px-2.5 py-1.5 text-sm whitespace-nowrap focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none",
-                  selected() ? "border-line bg-muted font-medium" : "border-transparent text-muted-foreground",
+                  "shrink-0 gap-2 rounded-control border px-3.5 py-2 text-sm whitespace-nowrap shadow-none focus-visible:ring-accent",
+                  selected()
+                    ? "border-accent/50 bg-surface text-foreground shadow-sm"
+                    : "border-transparent text-muted-foreground hover:border-line hover:bg-surface/70 hover:text-foreground",
                 )}
                 id={`${props.panelId}-tab-${id()}`}
                 onClick={() => state.tabSelect(id())}
                 onKeyDown={state.tabKeyDown}
                 ref={(element) => state.tabRefSet(id(), element)}
                 role="tab"
+                size="none"
                 tabIndex={state.tabIndexGet(id())}
                 type="button"
+                variant="none"
               >
-                {item.organization.name}
+                <span>{item.organization.name}</span>
                 <Show when={id() === props.activeOrganizationId}>
-                  <span class="ml-1.5 text-xs text-accent">{messageTranslate("account.access.active")}</span>
+                  <span class="rounded-full bg-accent/10 px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-accent uppercase">
+                    {messageTranslate("account.access.active")}
+                  </span>
                 </Show>
-              </button>
+              </Button>
             )
           }}
         </For>

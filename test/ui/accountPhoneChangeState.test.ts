@@ -46,7 +46,10 @@ describe("account phone-change state", () => {
     expect(state.pictureUrl.get()).toContain("avery.stone_demo.webp")
     expect(state.user.get()?.profile.picture?.contentType).toBe("image/webp")
 
-    await state.pictureRemove()
+    const removal = state.pictureRemove()
+    expect(state.confirmation.open()).toBe(true)
+    state.confirmation.accept()
+    await removal
     expect(state.pictureStatus.get()).toBe("success")
     expect(state.pictureUrl.get()).toBe("")
     expect(state.user.get()?.profile.picture).toBeUndefined()
@@ -125,7 +128,10 @@ describe("account phone-change state", () => {
     state.user.set(loaded.data.user)
 
     state.phoneCandidate.set(replacement)
-    await state.phoneChangeStart(submitEvent)
+    const start = state.phoneChangeStart(submitEvent)
+    expect(state.confirmation.open()).toBe(true)
+    state.confirmation.accept()
+    await start
 
     expect(state.user.get()?.phoneNumber).toBe(accountDemoUserFixture.phoneNumber)
     expect(state.phoneChallengeId.get()).toBe("account-demo-phone-change")

@@ -3,32 +3,40 @@ import { AccountAccessProductionAdapter } from "./AccountAccessProductionAdapter
 import { AccountOrganizationAccessProductionAdapter } from "./AccountOrganizationAccessProductionAdapter.js"
 import { AccountSecurityProductionAdapter } from "./AccountSecurityProductionAdapter.js"
 import { AccountWorkspace } from "./AccountWorkspace.js"
-import { accountProductionAdapterStateCreate } from "./accountProductionAdapterStateCreate.js"
+import { accountWorkspaceProductionAdapterStateCreate } from "./accountWorkspaceProductionAdapterStateCreate.js"
 
 export function AccountWorkspaceProductionAdapter(props: { readonly realmId: string }) {
-  const profileState = accountProductionAdapterStateCreate(() => "email", { realmId: props.realmId })
+  const state = accountWorkspaceProductionAdapterStateCreate(() => props.realmId)
   return (
     <AccountWorkspace
-      access={<AccountOrganizationAccessProductionAdapter />}
+      access={
+        <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+          <AccountOrganizationAccessProductionAdapter />
+          <AccountAccessProductionAdapter screen="consents" />
+        </div>
+      }
       dangerZone={<AccountProductionAdapter kind="delete" />}
       devicesApplications={
-        <div class="grid min-w-0 items-start gap-3 lg:grid-cols-12 [&>*]:min-w-0">
-          <div class="lg:col-span-12">
+        <div class="grid min-w-0 items-start gap-3 lg:grid-cols-2 [&>*]:min-w-0">
+          <div class="lg:col-span-2">
             <AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />
           </div>
-          <div class="grid min-w-0 gap-3 lg:col-span-7 [&>*]:min-w-0">
+          <div class="min-w-0">
             <AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />
-            <AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />
           </div>
-          <div class="min-w-0 lg:col-span-5">
-            <AccountAccessProductionAdapter screen="consents" />
+          <div class="min-w-0">
+            <AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />
           </div>
         </div>
       }
       profile={
         <>
-          <AccountProductionAdapter kind="overview" state={profileState} />
-          <AccountProductionAdapter kind="email" state={profileState} />
+          <AccountProductionAdapter
+            configuredSecurityMethodCount={state.securityProgress.configuredCount()}
+            kind="overview"
+            state={state.profile}
+          />
+          <AccountProductionAdapter kind="email" renderConfirmation={false} state={state.profile} />
         </>
       }
       security={
@@ -36,6 +44,7 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
           passwordAction={<AccountProductionAdapter kind="password" passwordActionOnly />}
           realmId={props.realmId}
           screen="overview"
+          state={state.security}
         />
       }
     />

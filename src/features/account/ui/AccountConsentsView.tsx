@@ -3,6 +3,7 @@ import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OidcConsent } from "../../oidc/public/oidcConsentSchema.js"
@@ -35,52 +36,58 @@ export function AccountConsentsView(props: {
       </Show>
 
       <AccountStateBoundary detail={boundary().detail} onRetry={props.onRetry} state={boundary().state}>
-        {/* The visible card title names this column as the requested "Applications" card. */}
-        <AuthenticatedSection
-          description={messageTranslate("account.access.consentDescription")}
-          title={messageTranslate("shell.nav.applications")}
-        >
-          <Show
-            when={props.consents.length > 0}
-            fallback={
-              <p class="px-3 py-2.5 text-sm text-muted-foreground">{messageTranslate("account.access.consentEmpty")}</p>
-            }
-          >
-            <ul class="divide-y divide-line-subtle">
-              <For each={props.consents}>
-                {(consent) => (
-                  <li class="grid min-w-0 gap-2 px-3 py-2.5">
-                    <div class="grid min-w-0 items-start gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-                      <div class="min-w-0">
-                        <h2 class="min-w-0 truncate font-mono text-sm font-medium">{consent.clientId}</h2>
-                        <p class="mt-0.5 text-xs text-muted-foreground">
-                          {messageTranslate("account.access.created", {
-                            date: localeDateFormat(consent.createdAt, { dateStyle: "medium" }),
-                          })}
-                        </p>
+        <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+          <AuthenticatedToolbar label={messageTranslate("shell.nav.applications")}>
+            <div class="grid gap-0.5">
+              <h2 class="text-base font-semibold tracking-tight">{messageTranslate("shell.nav.applications")}</h2>
+              <p class="text-sm text-muted-foreground">{messageTranslate("account.access.consentDescription")}</p>
+            </div>
+          </AuthenticatedToolbar>
+          <AuthenticatedSection label={messageTranslate("shell.nav.applications")}>
+            <Show
+              when={props.consents.length > 0}
+              fallback={
+                <p class="px-3 py-2.5 text-sm text-muted-foreground">
+                  {messageTranslate("account.access.consentEmpty")}
+                </p>
+              }
+            >
+              <ul class="divide-y divide-line-subtle">
+                <For each={props.consents}>
+                  {(consent) => (
+                    <li class="grid min-w-0 gap-2 px-3 py-2.5">
+                      <div class="grid min-w-0 items-start gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                        <div class="min-w-0">
+                          <h2 class="min-w-0 truncate font-mono text-sm font-medium">{consent.clientId}</h2>
+                          <p class="mt-0.5 text-xs text-muted-foreground">
+                            {messageTranslate("account.access.created", {
+                              date: localeDateFormat(consent.createdAt, { dateStyle: "medium" }),
+                            })}
+                          </p>
+                        </div>
+                        <Button
+                          disabled={props.pendingId !== undefined}
+                          onClick={() => props.onRevoke(consent.clientId)}
+                          size="sm"
+                          variant="filledRed"
+                        >
+                          {messageTranslate("common.revoke")}
+                        </Button>
                       </div>
-                      <Button
-                        disabled={props.pendingId !== undefined}
-                        onClick={() => props.onRevoke(consent.clientId)}
-                        size="sm"
-                        variant="filledRed"
-                      >
-                        {messageTranslate("common.revoke")}
-                      </Button>
-                    </div>
-                    {/* The dense chips carry no prose, so the granted scopes keep a spoken summary. */}
-                    <div>
-                      <span class="sr-only">
-                        {messageTranslate("account.access.scopes", { scopes: consent.scope.join(", ") })}
-                      </span>
-                      <AccountRoleList values={consent.scope} />
-                    </div>
-                  </li>
-                )}
-              </For>
-            </ul>
-          </Show>
-        </AuthenticatedSection>
+                      {/* The dense chips carry no prose, so the granted scopes keep a spoken summary. */}
+                      <div>
+                        <span class="sr-only">
+                          {messageTranslate("account.access.scopes", { scopes: consent.scope.join(", ") })}
+                        </span>
+                        <AccountRoleList values={consent.scope} />
+                      </div>
+                    </li>
+                  )}
+                </For>
+              </ul>
+            </Show>
+          </AuthenticatedSection>
+        </div>
       </AccountStateBoundary>
     </AuthenticatedPageBody>
   )

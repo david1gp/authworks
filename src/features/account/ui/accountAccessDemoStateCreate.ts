@@ -1,6 +1,7 @@
 import { useLocation } from "@solidjs/router"
 import { createEffect } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
 import { demoFixtureScenarioHrefBuild } from "../../demo/demoFixtureScenarioHrefBuild.js"
@@ -137,6 +138,7 @@ export function accountAccessDemoStateCreate(
   let viewedOrganizationExplicit = false
   const notice = createSignalObject<string | undefined>(undefined)
   const outcome = createSignalObject<AccountAccessStatus | undefined>(undefined)
+  const confirmation = confirmStateCreate()
   const availableOrganizations = () => (selected() === "empty" ? [] : organizations.get())
   const availableEffectiveAccess = () => (selected() === "empty" ? [] : effectiveAccess.get())
   const effectiveAccessGroups = () => accountEffectiveAccessGroupsCreate(availableEffectiveAccess())
@@ -190,12 +192,13 @@ export function accountAccessDemoStateCreate(
   if (options.viewedOrganizationId === undefined) createEffect(viewedOrganizationSynchronize)
   return {
     activeOrganizationId: activeOrganizationId.get,
-    consentRevoke: (clientId: string) => {
-      if (!window.confirm(messageTranslate("account.access.consentRevokeConfirm", { clientId }))) return
+    consentRevoke: async (clientId: string) => {
+      if (!(await confirmation.confirm(messageTranslate("account.access.consentRevokeConfirm", { clientId })))) return
       consents.set(consents.get().filter((item) => item.clientId !== clientId))
       notice.set("revoked")
     },
     consents: () => (selected() === "empty" ? [] : consents.get()),
+    confirmation,
     effectiveAccess: availableEffectiveAccess,
     effectiveAccessGroups,
     effectiveAccessLoadMore: () => undefined,
@@ -203,8 +206,8 @@ export function accountAccessDemoStateCreate(
     error: () => (selected() === "error" ? messageTranslate("demo.fixture.accountError") : undefined),
     invitation: () => invitationFixture,
     invitationAccept: () => outcome.set("accepted"),
-    invitationDecline: () => {
-      if (!window.confirm(messageTranslate("account.access.invitationDeclineConfirm"))) return
+    invitationDecline: async () => {
+      if (!(await confirmation.confirm(messageTranslate("account.access.invitationDeclineConfirm")))) return
       outcome.set("declined")
     },
     invitations: () => (selected() === "empty" ? [] : invitations.get()),

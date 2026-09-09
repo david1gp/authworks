@@ -316,12 +316,16 @@ describe("account production adapter state", () => {
     })
     await state.load(true)
     state.phoneCandidate.set(candidatePhoneNumber)
-    await state.phoneChangeStart({ preventDefault: () => undefined } as SubmitEvent)
+    const firstStart = state.phoneChangeStart({ preventDefault: () => undefined } as SubmitEvent)
+    state.confirmation.accept()
+    await firstStart
     await state.phoneChangeResend()
     state.phoneCode.set("123456")
     await state.phoneChangeVerify({ preventDefault: () => undefined } as SubmitEvent)
     state.phoneCandidate.set(candidatePhoneNumber)
-    await state.phoneChangeStart({ preventDefault: () => undefined } as SubmitEvent)
+    const secondStart = state.phoneChangeStart({ preventDefault: () => undefined } as SubmitEvent)
+    state.confirmation.accept()
+    await secondStart
 
     expect(requests).toEqual([
       {

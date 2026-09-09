@@ -129,6 +129,7 @@ export function AccountProfilePhoneSection(props: {
         </AuthenticatedDialog>
       }
       class="h-full"
+      description={messageTranslate("account.profile.phoneDescription")}
       title={messageTranslate("account.profile.phoneNumbers")}
     >
       <Show

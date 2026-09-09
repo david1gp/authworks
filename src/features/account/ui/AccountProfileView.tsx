@@ -8,6 +8,7 @@ import { Button } from "#ui/interactive/button/Button.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedSelectStateCreate } from "../../../ui/authenticated/authenticatedSelectStateCreate.js"
 import { languagesSupported } from "../../../ui/i18n/model/languagesSupported.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -15,7 +16,6 @@ import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema
 import { AccountEmailAddressView } from "./AccountEmailAddressView.js"
 import { AccountProfileIdentityStrip } from "./AccountProfileIdentityStrip.js"
 import { AccountProfilePhoneSection } from "./AccountProfilePhoneSection.js"
-import { AccountProfilePictureField } from "./AccountProfilePictureField.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
 import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 import { accountGenderItemRender } from "./accountGenderItemRender.js"
@@ -27,6 +27,7 @@ import { accountViewBoundaryStateGet } from "./accountViewBoundaryStateGet.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 
 type AccountProfileViewProps = {
+  readonly configuredSecurityMethodCount?: number
   readonly displayName: string
   readonly email: string
   readonly emailActionId?: string
@@ -146,21 +147,29 @@ export function AccountProfileView(props: AccountProfileViewProps) {
 
         <Show when={props.kind !== "email"}>
           <AccountProfileIdentityStrip
+            configuredSecurityMethodCount={props.configuredSecurityMethodCount}
             displayName={props.displayName}
             email={props.email}
             emailVerified={props.emailVerified}
+            onPictureRemove={props.onPictureRemove}
+            onPictureUpload={props.onPictureUpload}
+            pictureErrorMessage={props.pictureErrorMessage}
+            pictureStatus={props.pictureStatus}
             pictureUrl={props.pictureUrl}
             userName={props.userName}
           />
 
-          {/* One personal-information card holding three responsive columns: names, preferences,
-              and the profile picture. The columns stack on narrow screens. */}
-          <AuthenticatedSection
-            description={messageTranslate("account.profile.personalDescription")}
-            title={messageTranslate("account.profile.personalInformation")}
-          >
+          <AuthenticatedToolbar label={messageTranslate("account.profile.personalInformation")}>
+            <div class="grid gap-0.5">
+              <h2 class="text-base font-semibold tracking-tight">
+                {messageTranslate("account.profile.personalInformation")}
+              </h2>
+              <p class="text-sm text-muted-foreground">{messageTranslate("account.profile.personalDescription")}</p>
+            </div>
+          </AuthenticatedToolbar>
+          <AuthenticatedSection label={messageTranslate("account.profile.personalInformation")}>
             <form class="grid min-w-0 gap-3 p-4" onSubmit={props.onSubmit}>
-              <div class="grid min-w-0 items-start gap-2.5 sm:grid-cols-2 lg:grid-cols-3 [&>*]:min-w-0">
+              <div class="grid min-w-0 items-start gap-2.5 sm:grid-cols-2 [&>*]:min-w-0">
                 <div class="grid min-w-0 content-start gap-2.5">
                   <div class="grid min-w-0 gap-1">
                     <Label for="account-first-name">{messageTranslate("account.profile.firstName")}</Label>
@@ -236,17 +245,6 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                       }}
                     />
                   </div>
-                </div>
-
-                <div class="grid min-w-0 content-start gap-1 sm:col-span-2 lg:col-span-1">
-                  <Label>{messageTranslate("account.profile.picture")}</Label>
-                  <AccountProfilePictureField
-                    errorMessage={props.pictureErrorMessage}
-                    onRemove={props.onPictureRemove}
-                    onUpload={props.onPictureUpload}
-                    status={props.pictureStatus}
-                    url={props.pictureUrl}
-                  />
                 </div>
               </div>
 

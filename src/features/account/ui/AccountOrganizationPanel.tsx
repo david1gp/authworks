@@ -35,79 +35,101 @@ export function AccountOrganizationPanel(props: {
     organizationId: () => props.membership.organization.id,
   })
   return (
-    <div aria-labelledby={state.tabId(props.id)} class="grid min-w-0 gap-3 [&>*]:min-w-0" id={props.id} role="tabpanel">
-      <AuthenticatedSection padded title={props.membership.organization.name}>
-        <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
+    <div aria-labelledby={state.tabId(props.id)} class="grid min-w-0 gap-5 [&>*]:min-w-0" id={props.id} role="tabpanel">
+      <section class="grid min-w-0 gap-2" aria-labelledby={`${props.id}-membership-title`}>
+        <div>
+          <h3 class="text-base font-semibold tracking-tight" id={`${props.id}-membership-title`}>
+            {props.membership.organization.name}
+          </h3>
           <p class="min-w-0 truncate font-mono text-xs text-muted-foreground">{props.membership.organization.id}</p>
-          <AuthenticatedStatus
-            label={messageTranslate(`admin.organizations.statusValue.${props.membership.organization.status}`)}
-            tone={props.membership.organization.status === "active" ? "success" : "neutral"}
-          />
-          <Show when={props.active}>
-            <AuthenticatedStatus label={messageTranslate("account.access.active")} tone="accent" />
-          </Show>
         </div>
 
-        <div class="mt-2.5 grid gap-1">
-          <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
-            {messageTranslate("account.access.membership")}
-          </p>
-          <AccountRoleList values={props.membership.membership.roles} />
-        </div>
-
-        {/* The activation action stays explicit so that inspecting an organization is read-only. */}
-        <Show when={!props.active}>
-          <div class="mt-2.5">
-            <Button
-              disabled={props.pending}
-              onClick={() => props.onActivate(props.membership.organization.id)}
-              size="sm"
-              variant="outline"
-            >
-              {messageTranslate("account.access.makeActiveOrganization")}
-            </Button>
+        <AuthenticatedSection label={props.membership.organization.name} padded>
+          <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+            <AuthenticatedStatus
+              label={messageTranslate(`admin.organizations.statusValue.${props.membership.organization.status}`)}
+              tone={props.membership.organization.status === "active" ? "success" : "neutral"}
+            />
+            <Show when={props.active}>
+              <AuthenticatedStatus label={messageTranslate("account.access.active")} tone="accent" />
+            </Show>
           </div>
-        </Show>
-      </AuthenticatedSection>
+
+          <div class="mt-2.5 grid gap-1">
+            <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
+              {messageTranslate("account.access.membership")}
+            </p>
+            <AccountRoleList values={props.membership.membership.roles} />
+          </div>
+
+          {/* The activation action stays explicit so that inspecting an organization is read-only. */}
+          <Show when={!props.active}>
+            <div class="mt-2.5">
+              <Button
+                disabled={props.pending}
+                onClick={() => props.onActivate(props.membership.organization.id)}
+                size="sm"
+                variant="outline"
+              >
+                {messageTranslate("account.access.makeActiveOrganization")}
+              </Button>
+            </div>
+          </Show>
+        </AuthenticatedSection>
+      </section>
 
       <AccountStateBoundary
         detail={props.effectiveAccessBoundary.detail}
         onRetry={props.onEffectiveAccessRetry}
         state={props.effectiveAccessBoundary.state}
       >
-        <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
-          <AuthenticatedSection
-            padded
-            title={messageTranslate("account.access.organizationAccess")}
-            description={messageTranslate("account.access.effectiveMembership", {
-              roles: props.membership.membership.roles.join(", "),
-            })}
-          >
-            <Show
-              when={state.organizationPermissions().length > 0}
-              fallback={
-                <p class="text-xs text-muted-foreground">{messageTranslate("account.access.effectiveEmpty")}</p>
-              }
-            >
-              <p class="min-w-0 text-xs text-muted-foreground">
-                {messageTranslate("account.access.effectivePermissions", {
-                  permissions: state.organizationPermissions().join(", "),
+        <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+          <section class="grid min-w-0 gap-2" aria-labelledby={`${props.id}-organization-access-title`}>
+            <div>
+              <h3 class="text-base font-semibold tracking-tight" id={`${props.id}-organization-access-title`}>
+                {messageTranslate("account.access.organizationAccess")}
+              </h3>
+              <p class="mt-0.5 text-sm text-muted-foreground">
+                {messageTranslate("account.access.effectiveMembership", {
+                  roles: props.membership.membership.roles.join(", "),
                 })}
               </p>
-            </Show>
-          </AuthenticatedSection>
+            </div>
+            <AuthenticatedSection label={messageTranslate("account.access.organizationAccess")} padded>
+              <Show
+                when={state.organizationPermissions().length > 0}
+                fallback={
+                  <p class="text-xs text-muted-foreground">{messageTranslate("account.access.effectiveEmpty")}</p>
+                }
+              >
+                <p class="min-w-0 text-xs text-muted-foreground">
+                  {messageTranslate("account.access.effectivePermissions", {
+                    permissions: state.organizationPermissions().join(", "),
+                  })}
+                </p>
+              </Show>
+            </AuthenticatedSection>
+          </section>
 
-          <AuthenticatedSection title={messageTranslate("account.access.effectiveTitle")}>
+          <section class="grid min-w-0 gap-2" aria-labelledby={`${props.id}-effective-access-title`}>
+            <div>
+              <h3 class="text-base font-semibold tracking-tight" id={`${props.id}-effective-access-title`}>
+                {messageTranslate("account.access.effectiveTitle")}
+              </h3>
+              <p class="mt-0.5 text-sm text-muted-foreground">
+                {messageTranslate("account.access.effectiveDescription")}
+              </p>
+            </div>
             <Show
               when={state.projectEntries().length > 0}
               fallback={
-                <p class="px-3 py-2.5 text-xs text-muted-foreground">
-                  {messageTranslate("account.access.effectiveEmpty")}
-                </p>
+                <AuthenticatedSection label={messageTranslate("account.access.effectiveTitle")} padded>
+                  <p class="text-xs text-muted-foreground">{messageTranslate("account.access.effectiveEmpty")}</p>
+                </AuthenticatedSection>
               }
             >
               {/* Two project cards fit a desktop row while a phone keeps one readable column. */}
-              <ul class="grid min-w-0 gap-3 px-3 py-3 lg:grid-cols-2 [&>*]:min-w-0">
+              <ul class="grid min-w-0 gap-3 lg:grid-cols-2 [&>*]:min-w-0">
                 <For each={state.projectEntries()}>
                   {(entry) => {
                     const source = () => accountEffectiveAccessSourceGet(entry)
@@ -167,7 +189,7 @@ export function AccountOrganizationPanel(props: {
                 </For>
               </ul>
             </Show>
-          </AuthenticatedSection>
+          </section>
 
           <Show when={props.effectiveAccessNextPageToken}>
             <div>

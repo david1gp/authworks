@@ -9,7 +9,11 @@ import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
 export function AccountIdentitiesSection(props: { readonly state: AccountSecurityViewState }) {
   return (
-    <AuthenticatedSection class="h-full" title={messageTranslate("shell.nav.linkedIdentities")}>
+    <AuthenticatedSection
+      class="h-full"
+      description={messageTranslate("account.identities.description")}
+      title={messageTranslate("shell.nav.linkedIdentities")}
+    >
       <AccountSecurityStatus
         configured={props.state.identities().length > 0}
         detail={messageTranslate("account.security.identityCount", { count: props.state.identities().length })}

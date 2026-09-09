@@ -11,7 +11,7 @@ export function AccountWorkspace(props: {
   readonly security: JSX.Element
 }) {
   return (
-    <div class="grid min-w-0 gap-8 [&>*]:min-w-0" data-account-workspace>
+    <div class="mx-auto grid w-full max-w-7xl min-w-0 gap-8 [&>*]:min-w-0" data-account-workspace>
       <h1 class="text-xl font-semibold tracking-tight">{messageTranslate("shell.nav.account")}</h1>
       <section
         aria-labelledby="account-workspace-profile-title"
@@ -19,6 +19,7 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.profile}
       >
         <AccountSectionAnchorHeading
+          description={messageTranslate("account.profile.personalDescription")}
           id={accountWorkspaceSectionIds.profile}
           title={messageTranslate("shell.nav.profile")}
         />
@@ -31,6 +32,7 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.security}
       >
         <AccountSectionAnchorHeading
+          description={messageTranslate("account.factors.description")}
           id={accountWorkspaceSectionIds.security}
           title={messageTranslate("shell.nav.security")}
         />
@@ -43,6 +45,7 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.devicesApplications}
       >
         <AccountSectionAnchorHeading
+          description={messageTranslate("account.sessions.description")}
           id={accountWorkspaceSectionIds.devicesApplications}
           title={`${messageTranslate("shell.nav.securityHistory")} · ${messageTranslate("shell.nav.sessionsDevices")} · ${messageTranslate("shell.nav.applications")}`}
         />
@@ -55,6 +58,7 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.access}
       >
         <AccountSectionAnchorHeading
+          description={messageTranslate("account.access.effectiveDescription")}
           id={accountWorkspaceSectionIds.access}
           title={messageTranslate("shell.nav.access")}
         />
@@ -67,6 +71,7 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.dangerZone}
       >
         <AccountSectionAnchorHeading
+          description={messageTranslate("account.delete.warning")}
           id={accountWorkspaceSectionIds.dangerZone}
           title={messageTranslate("account.delete.dangerZone")}
         />

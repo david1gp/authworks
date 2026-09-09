@@ -2,6 +2,7 @@ import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { accountSecurityHistoryMessageKeyGet } from "./accountSecurityHistoryMessageKeyGet.js"
@@ -10,7 +11,13 @@ import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 export function AccountSecurityHistorySection(props: { readonly state: AccountSecurityViewState }) {
   return (
     <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
-      <AuthenticatedSection title={messageTranslate("shell.nav.securityHistory")}>
+      <AuthenticatedToolbar label={messageTranslate("shell.nav.securityHistory")}>
+        <div class="grid gap-0.5">
+          <h2 class="text-base font-semibold tracking-tight">{messageTranslate("shell.nav.securityHistory")}</h2>
+          <p class="text-sm text-muted-foreground">{messageTranslate("account.securityHistory.description")}</p>
+        </div>
+      </AuthenticatedToolbar>
+      <AuthenticatedSection label={messageTranslate("shell.nav.securityHistory")}>
         <Show
           when={props.state.securityHistory().length > 0}
           fallback={

@@ -186,16 +186,16 @@ describe("account security management", () => {
     expect(sources[3]).not.toContain("AccountProfilePhoneSection")
   })
 
-  test("moves authenticator enrollment into one accessible dialog without changing removal", async () => {
+  test("provides authenticator setup, edit, removal, and step-up dialogs", async () => {
     const factors = await Bun.file(
       new URL("../../src/features/account/ui/AccountFactorsSection.tsx", import.meta.url),
     ).text()
 
-    expect(factors).not.toContain("account.factors.description")
-    expect(factors).not.toContain("account.factors.emailOtp")
-    expect(factors).not.toContain("account.factors.passkeys")
+    expect(factors).toContain("account.factors.description")
+    expect(factors).toContain("account.factors.emailOtp")
+    expect(factors).toContain("account.factors.passkeys")
     expect(factors).not.toContain("account.factors.recovery")
-    expect(factors.match(/<AuthenticatedDialog/g)).toHaveLength(1)
+    expect(factors.match(/<AuthenticatedDialog/g)).toHaveLength(3)
     expect(factors).toContain("open={props.state.totpDialogOpen()}")
     expect(factors).toContain("onOpenChange={props.state.totpDialogOpenSet}")
     expect(factors).toContain('triggerLabel={messageTranslate("account.factors.addTotp")}')
@@ -206,7 +206,10 @@ describe("account security management", () => {
     expect(factors).toContain("props.state.totpError()")
     expect(factors).toContain("state.startPending()")
     expect(factors).toContain("onClick={props.state.totpSetupDismiss}")
-    expect(factors).toContain("onClick={() => props.state.totpRemove(enrollment.id)}")
+    expect(factors).toContain("state.renameRemove(enrollment.id)")
+    expect(factors).toContain("state.renameSubmit")
+    expect(factors).toContain("state.stepUpSubmit")
+    expect(factors).toContain("props.state.totpRemoveStepUpStart")
     expect(
       await Bun.file(new URL("../../src/features/account/ui/AccountSecurityOverview.tsx", import.meta.url)).exists(),
     ).toBe(false)
