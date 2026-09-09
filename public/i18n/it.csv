@@ -1,4 +1,8 @@
 key,it
+account.confirmTitle,Confirm this action
+account.factors.authenticatorName,Authenticator name
+account.factors.stepUpDescription,"Verify with multi-factor authentication, then the authenticator removal will be retried."
+account.securityHistory.description,Review recent security-sensitive activity on this account.
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
@@ -246,6 +250,7 @@ account.securityHistory.event.sessionsRevoked,All sessions were revoked
 account.securityHistory.event.totpEnrollmentConfirmed,An authenticator was confirmed
 account.securityHistory.event.totpEnrollmentStarted,Authenticator setup started
 account.securityHistory.event.totpRemoved,An authenticator was removed
+account.securityHistory.event.totpRenamed,An authenticator was renamed
 account.securityHistory.event.totpVerified,An authenticator challenge succeeded
 account.securityHistory.loadMore,Load more security activity
 account.securityOverview.backupCodeCount,{count} backup codes remaining
