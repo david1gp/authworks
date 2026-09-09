@@ -4,8 +4,10 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
 import { oidcMultichatDevelopmentClientEnsure } from "../../src/features/oidc/cli/oidcMultichatDevelopmentClientEnsure.js"
+import { oidcMultichatDevelopmentSecretRotate } from "../../src/features/oidc/cli/oidcMultichatDevelopmentSecretRotate.js"
 import { oidcMultichatProductionClientEnsure } from "../../src/features/oidc/cli/oidcMultichatProductionClientEnsure.js"
 import { oidcMultichatProductionOrganizationIdGet } from "../../src/features/oidc/cli/oidcMultichatProductionOrganizationIdGet.js"
+import { oidcMultichatProductionSecretRotate } from "../../src/features/oidc/cli/oidcMultichatProductionSecretRotate.js"
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
 import { realmApiClientCreate } from "../../src/features/realms/client/realmApiClientCreate.js"
@@ -62,10 +64,78 @@ test("Multichat production and development clients are separate fixed confidenti
       homeDirectory: fixture.directory,
     })
     expect(secondProduction.success).toBe(true)
+    expect(secondProduction).toMatchObject({ data: { action: "unchanged" }, success: true })
     expect(productionEnvelopes).toHaveLength(1)
     expect(JSON.stringify(secondProduction)).not.toContain(
       productionEnvelopes[0]?.split('"clientSecret":"')[1]?.split('"')[0] ?? "",
     )
+
+    const unrelated = await fixture.oidc.oidcClientCreate(fixture.realmId, {
+      allowedScopes: ["openid"],
+      clientType: "confidential",
+      name: "Codeline preview",
+      postLogoutRedirectUris: [],
+      redirectUris: ["https://preview.codeline.work/api/auth/callback"],
+      requireConsent: true,
+      trusted: false,
+    })
+    expect(unrelated.success).toBe(true)
+    if (!unrelated.success) return
+    const unrelatedBefore = await fixture.oidc.oidcClientGet(fixture.realmId, unrelated.data.client.id)
+    expect(unrelatedBefore.success).toBe(true)
+    if (!unrelatedBefore.success) return
+
+    const productionRotationEnvelopes: string[] = []
+    const productionRotation = await oidcMultichatProductionSecretRotate({
+      credentialEnvelopeWrite: (envelope) => productionRotationEnvelopes.push(envelope),
+      fetch: fixture.fetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(productionRotation.success).toBe(true)
+    expect(productionRotationEnvelopes).toHaveLength(1)
+    expect(productionRotationEnvelopes[0]).not.toBe(productionEnvelopes[0])
+    expect(JSON.parse(productionRotationEnvelopes[0] ?? "{}").clientId).toBe(productionClient?.id)
+
+    const developmentRotationEnvelopes: string[] = []
+    const developmentRotation = await oidcMultichatDevelopmentSecretRotate({
+      credentialEnvelopeWrite: (envelope) => developmentRotationEnvelopes.push(envelope),
+      fetch: fixture.fetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(developmentRotation.success).toBe(true)
+    expect(developmentRotationEnvelopes).toHaveLength(1)
+    expect(JSON.parse(developmentRotationEnvelopes[0] ?? "{}").clientId).toBe(developmentClient?.id)
+
+    const unrelatedAfter = await fixture.oidc.oidcClientGet(fixture.realmId, unrelated.data.client.id)
+    expect(unrelatedAfter.success).toBe(true)
+    if (!unrelatedAfter.success || unrelatedAfter.status !== "current" || unrelatedBefore.status !== "current") return
+    expect(unrelatedAfter.data).toEqual(unrelatedBefore.data)
+  } finally {
+    await fixture.close()
+  }
+})
+
+test("Multichat production secret recovery refuses a missing dedicated client before rotation", async () => {
+  const fixture = await productionFixtureCreate()
+  try {
+    let rotationRequests = 0
+    const fetch = async (input: string | URL | Request, init?: RequestInit) => {
+      const request = new Request(input, init)
+      if (request.method === "POST" && new URL(request.url).pathname.endsWith("/secret/rotate")) rotationRequests += 1
+      return await fixture.fetch(request)
+    }
+    const envelopes: string[] = []
+    const result = await oidcMultichatProductionSecretRotate({
+      credentialEnvelopeWrite: (envelope) => envelopes.push(envelope),
+      fetch,
+      homeDirectory: fixture.directory,
+    })
+
+    expect(result.success).toBe(false)
+    if (result.success) return
+    expect(result.code).toBe("oidc.not-found")
+    expect(rotationRequests).toBe(0)
+    expect(envelopes).toEqual([])
   } finally {
     await fixture.close()
   }

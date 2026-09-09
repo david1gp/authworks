@@ -15,8 +15,10 @@ import { oidcCodelineProductionSecretRotate } from "./oidcCodelineProductionSecr
 import { oidcCodelineSecretRotateExitCodeGet } from "./oidcCodelineSecretRotateExitCodeGet.js"
 import { oidcCodelineSecretRotateFailureOutputCreate } from "./oidcCodelineSecretRotateFailureOutputCreate.js"
 import { oidcMultichatDevelopmentClientEnsure } from "./oidcMultichatDevelopmentClientEnsure.js"
+import { oidcMultichatDevelopmentSecretRotate } from "./oidcMultichatDevelopmentSecretRotate.js"
 import { oidcMultichatProductionClientEnsure } from "./oidcMultichatProductionClientEnsure.js"
 import { oidcMultichatProductionOrganizationIdGet } from "./oidcMultichatProductionOrganizationIdGet.js"
+import { oidcMultichatProductionSecretRotate } from "./oidcMultichatProductionSecretRotate.js"
 import { oidcProductionSigningKeyEnsure } from "./oidcProductionSigningKeyEnsure.js"
 import { oidcProductionSigningKeyEnsureExitCodeGet } from "./oidcProductionSigningKeyEnsureExitCodeGet.js"
 import { oidcProductionSigningKeyEnsureFailureOutputCreate } from "./oidcProductionSigningKeyEnsureFailureOutputCreate.js"
@@ -261,6 +263,44 @@ const oidcMultichatDevelopmentClientEnsureCommand = buildCommand({
   docs: { brief: "Ensure the fixed development Multichat client with a one-time machine credential handoff" },
 })
 
+const oidcMultichatProductionSecretRotateCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcMultichatProductionSecretRotate({
+        credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+        homeDirectory: "/home/authworks",
+      })
+      if (result.success) return
+      this.process.stderr.write(result.errorMessage ?? "The production Multichat secret rotation failed.")
+      this.process.exitCode = 1
+    } catch (_error) {
+      this.process.stderr.write("The production Multichat secret rotation failed.")
+      this.process.exitCode = 1
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Rotate only the exact fixed production Multichat client secret for machine handoff" },
+})
+
+const oidcMultichatDevelopmentSecretRotateCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcMultichatDevelopmentSecretRotate({
+        credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+        homeDirectory: "/home/authworks",
+      })
+      if (result.success) return
+      this.process.stderr.write(result.errorMessage ?? "The development Multichat secret rotation failed.")
+      this.process.exitCode = 1
+    } catch (_error) {
+      this.process.stderr.write("The development Multichat secret rotation failed.")
+      this.process.exitCode = 1
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Rotate only the exact fixed development Multichat client secret for machine handoff" },
+})
+
 const oidcCodelineProductionOrganizationIdGetCommand = buildCommand({
   async func(this: ApplicationContext) {
     try {
@@ -501,6 +541,8 @@ export const oidcCliCommands = buildRouteMap({
     codelineProductionSecretRotate: oidcCodelineProductionSecretRotateCommand,
     multichatProductionEnsure: oidcMultichatProductionClientEnsureCommand,
     multichatDevelopmentEnsure: oidcMultichatDevelopmentClientEnsureCommand,
+    multichatProductionSecretRotate: oidcMultichatProductionSecretRotateCommand,
+    multichatDevelopmentSecretRotate: oidcMultichatDevelopmentSecretRotateCommand,
     multichatProductionOrganizationIdGet: oidcMultichatProductionOrganizationIdGetCommand,
     clientGet: oidcClientGetCommand,
     clientList: oidcClientListCommand,
