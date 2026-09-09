@@ -8,6 +8,7 @@ import { organizationMembershipPublicViewCreate } from "../domain/organizationMe
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
 import type { OrganizationMeListResponse } from "../public/organizationMeListResponseSchema.js"
+import { organizationBrandingGet } from "./organizationBrandingGet.js"
 import { organizationSubjectUserGet } from "./organizationSubjectUserGet.js"
 
 type OrganizationMeListOptions = {
@@ -38,7 +39,16 @@ export function organizationMeList(options: OrganizationMeListOptions): Result<O
       continue
     const membershipView = organizationMembershipPublicViewCreate(membership)
     if (!membershipView.success) return membershipView
+    // Branding is already public through organization discovery. Resolve it only after membership
+    // and tenant checks so this endpoint cannot reveal organizations the subject cannot access.
+    const branding = organizationBrandingGet({
+      database: options.database,
+      organizationId: organization.data.id,
+      realmId: options.realmId,
+    })
+    if (!branding.success) return branding
     items.push({
+      branding: branding.data.branding,
       membership: membershipView.data,
       organization: organizationPublicViewCreate(organization.data),
     })

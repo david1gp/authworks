@@ -88,7 +88,27 @@ afterAll(async () => {
   await unlink(compiledViewPath)
 })
 
-const organizationAccess = (id: string, name: string): OrganizationMe => ({
+const organizationAccess = (id: string, name: string, logoUrl?: string): OrganizationMe => ({
+  branding: logoUrl
+    ? {
+        dark: {
+          backgroundColor: "#111111",
+          fontColor: "#ffffff",
+          logoUrl: `${logoUrl}?theme=dark`,
+          primaryColor: "#4455ee",
+          warnColor: "#dd2222",
+        },
+        disableWatermark: false,
+        light: {
+          backgroundColor: "#ffffff",
+          fontColor: "#111111",
+          logoUrl,
+          primaryColor: "#4455ee",
+          warnColor: "#dd2222",
+        },
+        themeMode: "system",
+      }
+    : undefined,
   membership: {
     createdAt: 1,
     id: `membership-${id}`,
@@ -147,7 +167,7 @@ const renderView = async (
   browserWindow.document.body.append(root)
   const organizations = [
     organizationAccess("alpha", "Alpha Organization"),
-    organizationAccess("beta", "Beta Organization"),
+    organizationAccess("beta", "Beta Organization", "https://assets.example.com/beta.svg"),
   ]
   const props = {
     activeOrganizationId: "alpha",
@@ -185,6 +205,10 @@ test("keeps selected organization membership and activation visible while effect
   expect(root.querySelectorAll('[data-content-state="loading"]')).toHaveLength(1)
   expect(root.querySelector('[data-content-state="loading"]')).toBe(panel?.lastElementChild ?? null)
   expect(root.querySelector('[role="tablist"] [data-content-state]')).toBeNull()
+  expect(root.querySelectorAll('img[src="https://assets.example.com/beta.svg"]')).toHaveLength(2)
+  expect(root.querySelectorAll('img[src="https://assets.example.com/beta.svg?theme=dark"]')).toHaveLength(2)
+  expect(root.querySelectorAll('img[alt=""]')).toHaveLength(4)
+  expect(panel?.querySelector('span[aria-hidden="true"] svg')).not.toBeNull()
 
   dispose()
   domRestore()

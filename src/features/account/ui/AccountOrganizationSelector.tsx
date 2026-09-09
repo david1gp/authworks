@@ -4,6 +4,7 @@ import { Button } from "#ui/interactive/button/Button.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
+import { AccountOrganizationBrandMark } from "./AccountOrganizationBrandMark.js"
 import { accountOrganizationSelectorStateCreate } from "./accountOrganizationSelectorStateCreate.js"
 
 /**
@@ -69,6 +70,7 @@ export function AccountOrganizationSelector(props: {
                 type="button"
                 variant="none"
               >
+                <AccountOrganizationBrandMark branding={item.branding} class="size-7 border-0 bg-muted shadow-none" />
                 <span>{item.organization.name}</span>
                 <Show when={id() === props.activeOrganizationId}>
                   <span class="rounded-full bg-accent/10 px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-accent uppercase">

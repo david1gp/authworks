@@ -1,11 +1,16 @@
+import { mdiBriefcaseAccountOutline } from "@adaptive-ds/mdi/mdiBriefcaseAccountOutline.js"
+import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
+import { mdiShieldKeyOutline } from "@adaptive-ds/mdi/mdiShieldKeyOutline.js"
 import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
 import type { AccountEffectiveAccessGroup } from "../public/accountEffectiveAccessGroupSchema.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
+import { AccountOrganizationBrandMark } from "./AccountOrganizationBrandMark.js"
 import { AccountRoleList } from "./AccountRoleList.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
 import { accountAccessBoundaryStateGet } from "./accountAccessBoundaryStateGet.js"
@@ -37,11 +42,14 @@ export function AccountOrganizationPanel(props: {
   return (
     <div aria-labelledby={state.tabId(props.id)} class="grid min-w-0 gap-5 [&>*]:min-w-0" id={props.id} role="tabpanel">
       <section class="grid min-w-0 gap-2" aria-labelledby={`${props.id}-membership-title`}>
-        <div>
-          <h3 class="text-base font-semibold tracking-tight" id={`${props.id}-membership-title`}>
-            {props.membership.organization.name}
-          </h3>
-          <p class="min-w-0 truncate font-mono text-xs text-muted-foreground">{props.membership.organization.id}</p>
+        <div class="flex min-w-0 items-center gap-3">
+          <AccountOrganizationBrandMark branding={props.membership.branding} class="size-11" />
+          <div class="min-w-0">
+            <h3 class="truncate text-base font-semibold tracking-tight" id={`${props.id}-membership-title`}>
+              {props.membership.organization.name}
+            </h3>
+            <p class="min-w-0 truncate font-mono text-xs text-muted-foreground">{props.membership.organization.id}</p>
+          </div>
         </div>
 
         <AuthenticatedSection label={props.membership.organization.name} padded>
@@ -86,7 +94,11 @@ export function AccountOrganizationPanel(props: {
         <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
           <section class="grid min-w-0 gap-2" aria-labelledby={`${props.id}-organization-access-title`}>
             <div>
-              <h3 class="text-base font-semibold tracking-tight" id={`${props.id}-organization-access-title`}>
+              <h3
+                class="flex items-center gap-2 text-base font-semibold tracking-tight"
+                id={`${props.id}-organization-access-title`}
+              >
+                <Icon class="size-5 text-accent" path={mdiOfficeBuildingOutline} />
                 {messageTranslate("account.access.organizationAccess")}
               </h3>
               <p class="mt-0.5 text-sm text-muted-foreground">
@@ -113,7 +125,11 @@ export function AccountOrganizationPanel(props: {
 
           <section class="grid min-w-0 gap-2" aria-labelledby={`${props.id}-effective-access-title`}>
             <div>
-              <h3 class="text-base font-semibold tracking-tight" id={`${props.id}-effective-access-title`}>
+              <h3
+                class="flex items-center gap-2 text-base font-semibold tracking-tight"
+                id={`${props.id}-effective-access-title`}
+              >
+                <Icon class="size-5 text-accent" path={mdiShieldKeyOutline} />
                 {messageTranslate("account.access.effectiveTitle")}
               </h3>
               <p class="mt-0.5 text-sm text-muted-foreground">
@@ -137,7 +153,10 @@ export function AccountOrganizationPanel(props: {
                       <li class="min-w-0">
                         <AuthenticatedSection class="h-full" padded>
                           <div class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
-                            <h3 class="min-w-0 truncate text-sm font-semibold tracking-tight">{entry.project?.name}</h3>
+                            <h3 class="flex min-w-0 items-center gap-2 truncate text-sm font-semibold tracking-tight">
+                              <Icon class="size-4 text-muted-foreground" path={mdiBriefcaseAccountOutline} />
+                              <span class="truncate">{entry.project?.name}</span>
+                            </h3>
                             <Show when={entry.project?.status}>
                               {(status) => (
                                 <AuthenticatedStatus

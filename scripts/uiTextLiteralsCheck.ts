@@ -201,13 +201,15 @@ export function uiTextLiteralsCheck(root: string): readonly UiTextLiteralDiagnos
       if (ts.isJsxAttribute(node)) {
         const name = node.name.getText(sourceFile)
         if (node.initializer && ts.isStringLiteral(node.initializer) && !attributeIsTechnical(name)) {
-          if (textAttributeNames.has(name)) report(node.initializer, node.initializer.text, `${name} attribute`)
+          if (textAttributeNames.has(name) && !(name === "alt" && node.initializer.text === "")) {
+            report(node.initializer, node.initializer.text, `${name} attribute`)
+          }
         }
         if (node.initializer && ts.isJsxExpression(node.initializer) && node.initializer.expression) {
           const expression = node.initializer.expression
           if (!callIsTtc(expression) && !attributeIsTechnical(name)) {
             const text = literalValueGet(expression)
-            if (text !== undefined && textAttributeNames.has(name)) {
+            if (text !== undefined && textAttributeNames.has(name) && !(name === "alt" && text === "")) {
               report(expression, text, `${name} attribute`)
             }
           }

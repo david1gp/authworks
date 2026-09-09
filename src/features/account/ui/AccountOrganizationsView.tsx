@@ -5,6 +5,7 @@ import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSec
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
+import { AccountOrganizationBrandMark } from "./AccountOrganizationBrandMark.js"
 import { AccountRoleList } from "./AccountRoleList.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
 import { accountAccessBoundaryStateGet } from "./accountAccessBoundaryStateGet.js"
@@ -53,11 +54,16 @@ export function AccountOrganizationsView(props: {
                 <li class="min-w-0">
                   <AuthenticatedSection class="h-full" padded>
                     <div class="flex min-w-0 flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
-                      <div class="min-w-0 flex-1">
-                        <h2 class="min-w-0 truncate text-sm font-semibold tracking-tight">{item.organization.name}</h2>
-                        <p class="mt-0.5 min-w-0 truncate font-mono text-xs text-muted-foreground">
-                          {item.organization.id}
-                        </p>
+                      <div class="flex min-w-0 flex-1 items-center gap-2.5">
+                        <AccountOrganizationBrandMark branding={item.branding} />
+                        <div class="min-w-0">
+                          <h2 class="min-w-0 truncate text-sm font-semibold tracking-tight">
+                            {item.organization.name}
+                          </h2>
+                          <p class="mt-0.5 min-w-0 truncate font-mono text-xs text-muted-foreground">
+                            {item.organization.id}
+                          </p>
+                        </div>
                       </div>
                       <Show when={active()}>
                         <AuthenticatedStatus label={messageTranslate("account.access.active")} tone="accent" />
