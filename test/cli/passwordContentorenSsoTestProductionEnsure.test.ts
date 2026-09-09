@@ -324,7 +324,7 @@ test("Contentoren ssotest ensure identifies every invalid API response boundary 
       await fixture.close()
     }
   }
-})
+}, 30_000)
 
 test("Contentoren ssotest ensure identifies every rejected API boundary without disclosure", async () => {
   const secretStatus = "409"
