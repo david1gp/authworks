@@ -1,3 +1,4 @@
+import { mdiLinkVariant } from "@adaptive-ds/mdi/mdiLinkVariant.js"
 import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -12,6 +13,7 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
     <AuthenticatedSection
       class="h-full"
       description={messageTranslate("account.identities.description")}
+      icon={mdiLinkVariant}
       title={messageTranslate("shell.nav.linkedIdentities")}
     >
       <AccountSecurityStatus

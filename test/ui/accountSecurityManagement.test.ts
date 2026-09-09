@@ -125,7 +125,7 @@ describe("account security management", () => {
     expect(state.width()).toBe("100%")
   })
 
-  test("renders exactly four responsive management cards followed by seamless progress", async () => {
+  test("renders exactly four responsive management cards in a three-column desktop grid", async () => {
     const management = await Bun.file(
       new URL("../../src/features/account/ui/AccountSecurityManagement.tsx", import.meta.url),
     ).text()
@@ -133,12 +133,9 @@ describe("account security management", () => {
       new URL("../../src/features/account/ui/AccountSecurityView.tsx", import.meta.url),
     ).text()
 
-    expect(management).toContain("md:grid-cols-2 2xl:grid-cols-4")
+    expect(management).toContain("md:grid-cols-2 xl:grid-cols-3")
     expect(management.match(/<Account(Passkeys|Factors|Identities|RecoveryCodes)Section/g)).toHaveLength(4)
-    expect(management).toContain("<AccountSecurityProgress state={props.state} />")
-    expect(management.indexOf("<AccountSecurityProgress")).toBeGreaterThan(
-      management.indexOf("<AccountRecoveryCodesSection"),
-    )
+    expect(management).not.toContain("AccountSecurityProgress")
     expect(
       await Bun.file(new URL("../../src/features/account/ui/AccountSecurityProgress.tsx", import.meta.url)).exists(),
     ).toBe(true)
@@ -154,12 +151,13 @@ describe("account security management", () => {
     expect(progress).toContain('role="progressbar"')
     expect(progress).toContain("aria-valuemin={0}")
     expect(progress).toContain("aria-valuemax={5}")
-    expect(progress).toContain("aria-valuenow={state.configuredCount()}")
-    expect(progress).toContain("aria-label={state.accessibleLabel()}")
-    expect(progress).toContain("style={{ width: state.width() }}")
+    expect(progress).toContain("aria-valuenow={props.state.configuredCount()}")
+    expect(progress).toContain("aria-label={props.state.accessibleLabel()}")
+    expect(progress).toContain("style={{ width: props.state.width() }}")
     expect(progress).toContain("transition-[width]")
     expect(progress).toContain("motion-reduce:transition-none")
-    expect(progress).toContain("sm:flex-row")
+    expect(progress).toContain('href="#security"')
+    expect(progress).toContain('messageTranslate("account.security.recoveryMfa")')
     expect(progress).not.toContain("AuthenticatedSection")
   })
 
@@ -176,7 +174,7 @@ describe("account security management", () => {
     expect(sources[0]).toContain('title={messageTranslate("shell.nav.passkeys")}')
     expect(sources[1]).toContain('title={messageTranslate("account.security.authenticators")}')
     expect(sources[2]).toContain('title={messageTranslate("shell.nav.linkedIdentities")}')
-    expect(sources[3]).toContain('title={messageTranslate("account.recovery.summary")}')
+    expect(sources[3]).toContain('title={messageTranslate("shell.nav.recoveryCodes")}')
     for (const source of sources) expect(source).toContain("<AccountSecurityStatus")
 
     expect(sources[3]).toContain("props.passwordAction")

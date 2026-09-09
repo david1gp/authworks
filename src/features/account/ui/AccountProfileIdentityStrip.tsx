@@ -1,11 +1,11 @@
-import { Show } from "solid-js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountProfilePictureField } from "./AccountProfilePictureField.js"
+import { AccountSecurityProgress } from "./AccountSecurityProgress.js"
 import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
+import type { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
 
 export function AccountProfileIdentityStrip(props: {
-  readonly configuredSecurityMethodCount?: number
   readonly displayName: string
   readonly email: string
   readonly emailVerified: boolean
@@ -14,6 +14,7 @@ export function AccountProfileIdentityStrip(props: {
   readonly pictureErrorMessage?: string
   readonly pictureStatus: AccountPictureViewStatus
   readonly pictureUrl: string
+  readonly securityProgress?: ReturnType<typeof accountSecurityProgressStateCreate>
   readonly userName: string
 }) {
   return (
@@ -58,17 +59,7 @@ export function AccountProfileIdentityStrip(props: {
           </dl>
         </div>
       </div>
-      <Show when={props.configuredSecurityMethodCount !== undefined}>
-        <a
-          class="flex min-w-0 items-center justify-between gap-3 border-t border-line-subtle px-3 py-2.5 transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-          href="#security"
-        >
-          <span class="text-sm font-medium">{messageTranslate("shell.nav.security")}</span>
-          <span class="rounded-full border border-line bg-surface px-2.5 py-1 text-xs font-semibold tabular-nums">
-            {messageTranslate("account.security.progress", { count: props.configuredSecurityMethodCount ?? 0 })}
-          </span>
-        </a>
-      </Show>
+      {props.securityProgress ? <AccountSecurityProgress state={props.securityProgress} /> : null}
     </section>
   )
 }

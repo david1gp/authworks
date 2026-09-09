@@ -18,24 +18,20 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
       dangerZone={<AccountProductionAdapter kind="delete" />}
       devicesApplications={
         <div class="grid min-w-0 items-start gap-3 lg:grid-cols-2 [&>*]:min-w-0">
-          <div class="lg:col-span-2">
+          <div class="min-w-0">
             <AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />
           </div>
           <div class="min-w-0">
             <AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />
           </div>
-          <div class="min-w-0">
+          <div class="min-w-0 lg:col-span-2">
             <AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />
           </div>
         </div>
       }
       profile={
         <>
-          <AccountProductionAdapter
-            configuredSecurityMethodCount={state.securityProgress.configuredCount()}
-            kind="overview"
-            state={state.profile}
-          />
+          <AccountProductionAdapter kind="overview" securityProgress={state.securityProgress} state={state.profile} />
           <AccountProductionAdapter kind="email" renderConfirmation={false} state={state.profile} />
         </>
       }

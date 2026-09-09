@@ -1,5 +1,6 @@
 import type { JSX } from "solid-js"
 import { Show } from "solid-js"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 
 /**
@@ -11,6 +12,7 @@ export function AuthenticatedSection(props: {
   readonly children: JSX.Element
   readonly class?: string
   readonly description?: string
+  readonly icon?: string
   readonly label?: string
   readonly padded?: boolean
   readonly title?: string
@@ -26,7 +28,12 @@ export function AuthenticatedSection(props: {
         <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line-subtle px-3 py-2">
           <div class="min-w-0">
             <Show when={props.title}>
-              {(title) => <h2 class="truncate text-sm font-semibold tracking-tight">{title()}</h2>}
+              {(title) => (
+                <h2 class="flex min-w-0 items-center gap-1.5 text-sm font-semibold tracking-tight">
+                  <Show when={props.icon}>{(icon) => <Icon class="size-4 text-muted-foreground" path={icon()} />}</Show>
+                  <span class="truncate">{title()}</span>
+                </h2>
+              )}
             </Show>
             <Show when={props.description}>
               {(description) => (

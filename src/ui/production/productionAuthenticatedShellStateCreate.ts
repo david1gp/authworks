@@ -28,6 +28,7 @@ export function productionAuthenticatedShellStateCreate(
   }
 
   const organizationLabel = () => {
+    if (kind() === "account") return ""
     const currentId = organizationId()
     const active = session.organizations.find((item) => item.id === currentId) ?? session.organizations[0]
     return active?.label ?? ""
@@ -60,7 +61,7 @@ export function productionAuthenticatedShellStateCreate(
     organizationLabel,
     organizationError: organizationError.get,
     organizationSwitchPending: () => organizationPending.get() || session.organizationSwitchPending(),
-    organizationSwitchable: () => session.organizations.length > 1,
+    organizationSwitchable: () => kind() !== "account" && session.organizations.length > 1,
     showAccountNavigation: () =>
       productionShellNavigationLinkVisible({ guard: session.guard, kind: kind(), target: "account" }),
     showAdminNavigation: () =>

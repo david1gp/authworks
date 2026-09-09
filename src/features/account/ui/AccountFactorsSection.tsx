@@ -1,3 +1,4 @@
+import { mdiCellphoneKey } from "@adaptive-ds/mdi/mdiCellphoneKey.js"
 import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
@@ -71,6 +72,7 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
       }
       class="h-full"
       description={messageTranslate("account.factors.description")}
+      icon={mdiCellphoneKey}
       title={messageTranslate("account.security.authenticators")}
     >
       <AccountSecurityStatus

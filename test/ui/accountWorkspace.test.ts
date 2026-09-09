@@ -1,6 +1,16 @@
-import { describe, expect, test } from "bun:test"
+import { describe, expect, mock, test } from "bun:test"
+import { createRoot } from "solid-js"
+
+mock.module("@solidjs/router", () => ({
+  useLocation: () => ({ hash: "", pathname: "/account", search: "" }),
+}))
+
 import { accountSectionNavStateCreate } from "../../src/features/account/ui/accountSectionNavStateCreate.js"
 import { accountWorkspaceSectionIds } from "../../src/features/account/ui/accountWorkspaceSectionIds.js"
+
+const { productionAuthenticatedShellStateCreate } = await import(
+  "../../src/ui/production/productionAuthenticatedShellStateCreate.js"
+)
 
 describe("account workspace", () => {
   test("keeps stable anchors for every workspace section", () => {
@@ -91,7 +101,7 @@ describe("account workspace", () => {
     ).text()
 
     expect(source).toContain("const state = accountWorkspaceProductionAdapterStateCreate(() => props.realmId)")
-    expect(source).toContain("configuredSecurityMethodCount={state.securityProgress.configuredCount()}")
+    expect(source).toContain("securityProgress={state.securityProgress}")
     expect(source).toContain(
       '<AccountProductionAdapter kind="email" renderConfirmation={false} state={state.profile} />',
     )
@@ -133,7 +143,7 @@ describe("account workspace", () => {
     expect(source).not.toContain("account.profile.signInDescription")
   })
 
-  test("renders the editable picture in the overview and personal information in two columns", async () => {
+  test("renders overview security progress and personal information in three columns", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),
     ).text()
@@ -143,17 +153,22 @@ describe("account workspace", () => {
 
     // Personal information remains one card while its title and subtitle sit outside the card.
     expect(source.match(/<AuthenticatedSection/g)).toHaveLength(1)
-    expect(source).toContain("sm:grid-cols-2")
-    expect(source).not.toContain("lg:grid-cols-3")
+    expect(source).toContain("sm:grid-cols-2 lg:grid-cols-3")
     expect(source).not.toContain("lg:grid-cols-12")
     expect(source).not.toContain('class="lg:col-span-8"')
     expect(source).toContain("<AuthenticatedToolbar")
     expect(source).not.toContain("<AccountProfilePictureField")
+    const progress = await Bun.file(
+      new URL("../../src/features/account/ui/AccountSecurityProgress.tsx", import.meta.url),
+    ).text()
     expect(overview).toContain("<AccountProfilePictureField")
-    expect(overview).toContain('href="#security"')
-    expect(overview).toContain('messageTranslate("account.security.progress"')
+    expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
+    expect(progress).toContain('href="#security"')
+    expect(progress).toContain('messageTranslate("account.security.recoveryMfa")')
+    expect(progress).toContain("{props.state.text()}")
+    expect(progress).toContain('role="progressbar"')
 
-    // Column one is first name, last name, display name; column two is nickname, gender, language.
+    // The six fields retain their sensible row-major order as the responsive grid gains columns.
     const fieldOrder = [...source.matchAll(/account\.profile\.(firstName|lastName|displayName|nickName|gender)"/g)].map(
       ([, field]) => field,
     )
@@ -161,6 +176,7 @@ describe("account workspace", () => {
 
     // The removed nickname helper copy must not come back.
     expect(source).not.toContain("nickNameHint")
+    expect(source).toContain("mdiAccountDetailsOutline")
   })
 
   test("gives the authenticated workspace a wider desktop container that still stacks on mobile", async () => {
@@ -305,6 +321,22 @@ describe("account workspace", () => {
     expect(email.match(/onClick=\{\(\) => props\.onRemove\(address\.id\)\}/g)).toHaveLength(1)
   })
 
+  test("adds existing MDI icons to the refined account section headings", async () => {
+    const expectedIcons = {
+      AccountEmailAddressView: "mdiEmailOutline",
+      AccountFactorsSection: "mdiCellphoneKey",
+      AccountIdentitiesSection: "mdiLinkVariant",
+      AccountPasskeysSection: "mdiFingerprint",
+      AccountProfilePhoneSection: "mdiPhoneOutline",
+      AccountRecoveryCodesSection: "mdiBackupRestore",
+    }
+
+    for (const [name, icon] of Object.entries(expectedIcons)) {
+      const source = await Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()
+      expect(source).toContain(`icon={${icon}}`)
+    }
+  })
+
   test("renders contact methods as two list sections in one responsive grid with dialog-only add flows", async () => {
     const profile = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),
@@ -381,16 +413,21 @@ describe("account workspace", () => {
     expect(state).toContain('confirmPassword.set("")')
   })
 
-  test("groups recent security activity with sessions and applications in one responsive grid", async () => {
+  test("places activity and sessions in equal desktop columns with applications below", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
     ).text()
 
     expect(source).toContain("lg:grid-cols-2")
-    expect(source).toContain('class="lg:col-span-2"')
-    expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />')
-    expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />')
-    expect(source).toContain('<AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />')
+    expect(source).toContain(
+      'class="min-w-0">\n            <AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />',
+    )
+    expect(source).toContain(
+      'class="min-w-0">\n            <AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />',
+    )
+    expect(source).toContain(
+      'class="min-w-0 lg:col-span-2">\n            <AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />',
+    )
     expect(source).toContain('<AccountAccessProductionAdapter screen="consents" />')
 
     const workspace = await Bun.file(
@@ -520,5 +557,31 @@ describe("account workspace", () => {
     ).text()
 
     expect(source).toContain('organizationsHref="/account#access"')
+  })
+
+  test("omits the global header organization switcher and label on the account shell", () => {
+    createRoot((dispose) => {
+      const accountRootState = productionAuthenticatedShellStateCreate(
+        () => "account",
+        () => "shell.nav.account",
+      )
+      expect(accountRootState.organizationSwitchable()).toBe(false)
+      expect(accountRootState.organizationLabel()).toBe("")
+
+      dispose()
+    })
+  })
+
+  test("retains global header organization switcher on non-account routes when multiple organizations exist", () => {
+    createRoot((dispose) => {
+      const adminState = productionAuthenticatedShellStateCreate(
+        () => "admin",
+        () => "admin.navigation.label",
+      )
+      expect(adminState.organizationSwitchable()).toBe(true)
+      expect(adminState.organizationLabel()).toBe("Northwind Labs")
+
+      dispose()
+    })
   })
 })

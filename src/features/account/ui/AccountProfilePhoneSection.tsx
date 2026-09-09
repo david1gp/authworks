@@ -1,3 +1,4 @@
+import { mdiPhoneOutline } from "@adaptive-ds/mdi/mdiPhoneOutline.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -130,6 +131,7 @@ export function AccountProfilePhoneSection(props: {
       }
       class="h-full"
       description={messageTranslate("account.profile.phoneDescription")}
+      icon={mdiPhoneOutline}
       title={messageTranslate("account.profile.phoneNumbers")}
     >
       <Show

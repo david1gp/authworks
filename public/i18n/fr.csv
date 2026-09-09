@@ -204,6 +204,7 @@ account.security.authenticators,Authenticators
 account.security.identityCount,{count} linked identities
 account.security.progress,{count}/5 methods configured
 account.security.progressLabel,Security setup progress: {count} of 5 methods configured
+account.security.recoveryMfa,Accès à la récupération / MFA
 account.securityHistory.category.emailChanges,Email changes
 account.securityHistory.category.impersonation,Impersonation
 account.securityHistory.category.linkedIdentities,Linked identities

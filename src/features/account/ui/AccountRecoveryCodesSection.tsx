@@ -1,3 +1,4 @@
+import { mdiBackupRestore } from "@adaptive-ds/mdi/mdiBackupRestore.js"
 import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
@@ -19,7 +20,8 @@ export function AccountRecoveryCodesSection(props: {
     <AuthenticatedSection
       class="h-full"
       description={messageTranslate("account.factors.description")}
-      title={messageTranslate("account.recovery.summary")}
+      icon={mdiBackupRestore}
+      title={messageTranslate("shell.nav.recoveryCodes")}
     >
       <div class="divide-y divide-line-subtle">
         <For each={state.statuses()}>

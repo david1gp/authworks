@@ -1,3 +1,4 @@
+import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -132,6 +133,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
       }
       class="h-full"
       description={messageTranslate("account.profile.emailAddDescription")}
+      icon={mdiEmailOutline}
       title={messageTranslate("account.profile.emailAddresses")}
     >
       <Show

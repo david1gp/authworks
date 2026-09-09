@@ -1,3 +1,4 @@
+import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
 import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -18,6 +19,7 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
       }
       class="h-full"
       description={messageTranslate("account.passkeys.description")}
+      icon={mdiFingerprint}
       title={messageTranslate("shell.nav.passkeys")}
     >
       <AccountSecurityStatus

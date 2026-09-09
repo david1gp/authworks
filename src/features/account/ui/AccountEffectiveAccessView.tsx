@@ -1,5 +1,7 @@
+import { mdiShieldKeyOutline } from "@adaptive-ds/mdi/mdiShieldKeyOutline.js"
 import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { AccountEffectiveAccessGroup } from "../public/accountEffectiveAccessGroupSchema.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
@@ -32,7 +34,10 @@ export function AccountEffectiveAccessView(props: {
             {(group) => (
               <fieldset class="min-w-0 rounded-panel border border-line px-3 pb-1">
                 <legend class="max-w-full px-1 text-sm font-semibold tracking-tight">
-                  <span class="block truncate">{group.organization.name}</span>
+                  <span class="flex min-w-0 items-center gap-2">
+                    <Icon class="size-4 text-accent" path={mdiShieldKeyOutline} />
+                    <span class="block truncate">{group.organization.name}</span>
+                  </span>
                 </legend>
                 <p class="px-1 pb-2 text-xs text-muted-foreground">
                   {messageTranslate("account.access.effectiveMembership", {

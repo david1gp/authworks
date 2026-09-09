@@ -4,12 +4,13 @@ import { AccountDeleteView } from "./AccountDeleteView.js"
 import { AccountPasswordView } from "./AccountPasswordView.js"
 import { AccountProfileView } from "./AccountProfileView.js"
 import { accountProductionAdapterStateCreate } from "./accountProductionAdapterStateCreate.js"
+import type { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
 
 export function AccountProductionAdapter(props: {
-  readonly configuredSecurityMethodCount?: number
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
   readonly passwordActionOnly?: boolean
   readonly renderConfirmation?: boolean
+  readonly securityProgress?: ReturnType<typeof accountSecurityProgressStateCreate>
   readonly state?: ReturnType<typeof accountProductionAdapterStateCreate>
 }) {
   const state = props.state ?? accountProductionAdapterStateCreate(() => props.kind)
@@ -48,7 +49,6 @@ export function AccountProductionAdapter(props: {
         </Match>
         <Match when={props.kind === "overview" || props.kind === "profile" || props.kind === "email"}>
           <AccountProfileView
-            configuredSecurityMethodCount={props.configuredSecurityMethodCount}
             displayName={state.displayName.get()}
             email={state.user.get()?.email ?? ""}
             emailActionId={state.emailActionId.get()}
@@ -104,6 +104,7 @@ export function AccountProductionAdapter(props: {
             pictureErrorMessage={state.pictureErrorMessage.get()}
             pictureStatus={state.pictureStatus.get()}
             pictureUrl={state.pictureUrl.get()}
+            securityProgress={props.securityProgress}
             status={state.status.get()}
             userName={state.user.get()?.userName ?? ""}
             validationMessage={state.validationMessage.get()}
