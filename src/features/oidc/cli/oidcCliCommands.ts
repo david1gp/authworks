@@ -14,6 +14,9 @@ import { oidcCodelineProductionOrganizationIdGetFailureOutputCreate } from "./oi
 import { oidcCodelineProductionSecretRotate } from "./oidcCodelineProductionSecretRotate.js"
 import { oidcCodelineSecretRotateExitCodeGet } from "./oidcCodelineSecretRotateExitCodeGet.js"
 import { oidcCodelineSecretRotateFailureOutputCreate } from "./oidcCodelineSecretRotateFailureOutputCreate.js"
+import { oidcMultichatDevelopmentClientEnsure } from "./oidcMultichatDevelopmentClientEnsure.js"
+import { oidcMultichatProductionClientEnsure } from "./oidcMultichatProductionClientEnsure.js"
+import { oidcMultichatProductionOrganizationIdGet } from "./oidcMultichatProductionOrganizationIdGet.js"
 import { oidcProductionSigningKeyEnsure } from "./oidcProductionSigningKeyEnsure.js"
 import { oidcProductionSigningKeyEnsureExitCodeGet } from "./oidcProductionSigningKeyEnsureExitCodeGet.js"
 import { oidcProductionSigningKeyEnsureFailureOutputCreate } from "./oidcProductionSigningKeyEnsureFailureOutputCreate.js"
@@ -220,6 +223,44 @@ const oidcCodelineProductionSecretRotateCommand = buildCommand({
   docs: { brief: "Rotate only the exact fixed production Codeline client secret for machine handoff" },
 })
 
+const oidcMultichatProductionClientEnsureCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcMultichatProductionClientEnsure({
+        credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+        homeDirectory: "/home/authworks",
+      })
+      if (result.success) return
+      this.process.stderr.write(result.errorMessage ?? "The production Multichat client ensure failed.")
+      this.process.exitCode = 1
+    } catch (_error) {
+      this.process.stderr.write("The production Multichat client ensure failed.")
+      this.process.exitCode = 1
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Ensure the fixed production Multichat client with a one-time machine credential handoff" },
+})
+
+const oidcMultichatDevelopmentClientEnsureCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcMultichatDevelopmentClientEnsure({
+        credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+        homeDirectory: "/home/authworks",
+      })
+      if (result.success) return
+      this.process.stderr.write(result.errorMessage ?? "The development Multichat client ensure failed.")
+      this.process.exitCode = 1
+    } catch (_error) {
+      this.process.stderr.write("The development Multichat client ensure failed.")
+      this.process.exitCode = 1
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Ensure the fixed development Multichat client with a one-time machine credential handoff" },
+})
+
 const oidcCodelineProductionOrganizationIdGetCommand = buildCommand({
   async func(this: ApplicationContext) {
     try {
@@ -238,6 +279,25 @@ const oidcCodelineProductionOrganizationIdGetCommand = buildCommand({
   },
   parameters: { flags: {} },
   docs: { brief: "Read the fixed Contentoren production organization ID for one machine handoff" },
+})
+
+const oidcMultichatProductionOrganizationIdGetCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcMultichatProductionOrganizationIdGet({ homeDirectory: "/home/authworks" })
+      if (result.success) {
+        this.process.stdout.write(`${JSON.stringify(result.data)}\n`)
+        return
+      }
+      this.process.stderr.write(result.errorMessage ?? "The production Multichat organization ID read failed.")
+      this.process.exitCode = 1
+    } catch (_error) {
+      this.process.stderr.write("The production Multichat organization ID read failed.")
+      this.process.exitCode = 1
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Read the fixed Contentoren organization ID for Multichat without mutation" },
 })
 
 const oidcProductionSigningKeyEnsureCommand = buildCommand({
@@ -439,6 +499,9 @@ export const oidcCliCommands = buildRouteMap({
     codelineProductionEnsure: oidcCodelineProductionClientEnsureCommand,
     codelineProductionOrganizationIdGet: oidcCodelineProductionOrganizationIdGetCommand,
     codelineProductionSecretRotate: oidcCodelineProductionSecretRotateCommand,
+    multichatProductionEnsure: oidcMultichatProductionClientEnsureCommand,
+    multichatDevelopmentEnsure: oidcMultichatDevelopmentClientEnsureCommand,
+    multichatProductionOrganizationIdGet: oidcMultichatProductionOrganizationIdGetCommand,
     clientGet: oidcClientGetCommand,
     clientList: oidcClientListCommand,
     clientSecretRotate: oidcClientSecretRotateCommand,
