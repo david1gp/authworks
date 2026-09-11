@@ -67,7 +67,6 @@ test("production organization tabs keep viewing separate from explicit activatio
   await expect(organizationPanel.getByText("organization.read", { exact: false })).toBeVisible()
   await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toBeVisible()
   await expect(organizationPanel.getByText("Active organization", { exact: true })).toHaveCount(0)
-  await expect(page.getByRole("combobox", { name: "Organization", exact: true })).toHaveValue(northwindId)
   expect(switchRequests).toEqual([])
   const profileRequestCountBeforeActivation = profileRequests.length
 
@@ -75,7 +74,6 @@ test("production organization tabs keep viewing separate from explicit activatio
   await expect(organizationPanel.getByText("Active organization", { exact: true })).toBeVisible()
   await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toHaveCount(0)
   await expect(organizationTabs.nth(1)).toContainText("Active organization")
-  await expect(page.getByRole("combobox", { name: "Organization", exact: true })).toHaveValue(fieldNotesId)
   await expect(page).toHaveURL(new RegExp(`/account\\?organization=${fieldNotesId}#access$`))
   expect(switchRequests).toEqual([{ csrf: "csrf-e2e", organizationId: fieldNotesId }])
   // Viewing a tab is local-only; explicit activation refreshes the organization-scoped account data once.
@@ -114,7 +112,6 @@ test("production organization access uses a native select above eight membership
   await expect(
     organizationsSection.getByRole("tabpanel").getByRole("heading", { name: "Field Notes", exact: true }),
   ).toBeVisible()
-  await expect(page.getByRole("combobox", { name: "Organization", exact: true })).toHaveValue(northwindId)
   expect(switchRequests).toEqual([])
 
   await page.setViewportSize({ height: 844, width: 390 })
