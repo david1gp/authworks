@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
+import { authworksVersionMetadataRender } from "../authworksVersionMetadataRender.js"
 import { connectionProfilesCliCommands } from "../features/connectionProfiles/cli/connectionProfilesCliCommands.js"
 import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommands.js"
 import { externalIdentityCliCommands } from "../features/externalIdentities/cli/externalIdentityCliCommands.js"
@@ -18,6 +19,9 @@ import { userCliCommands } from "../features/users/cli/userCliCommands.js"
 import { whatsappOtpCliCommands } from "../features/whatsappOtp/cli/whatsappOtpCliCommands.js"
 import { zitadelMigrationCliCommands } from "../features/zitadelMigration/cli/zitadelMigrationCliCommands.js"
 import { packageVersion } from "../packageVersion.js"
+
+const args = process.argv.slice(2)
+const verboseVersion = args.includes("--verbose") && (args.includes("--version") || args[0] === "version")
 
 const cliApplication = buildApplication(
   buildRouteMap({
@@ -81,5 +85,6 @@ const cliApplication = buildApplication(
 )
 
 if (import.meta.main) {
-  await run(cliApplication, process.argv.slice(2), { process })
+  if (verboseVersion) process.stdout.write(authworksVersionMetadataRender())
+  else await run(cliApplication, args, { process })
 }

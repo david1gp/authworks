@@ -70,6 +70,16 @@ test("built library, server, and CLI outputs are executable", async () => {
   expect(cliHelp.stderr).toBe("")
   expect(cliHelp.stdout).toContain("realms")
   expect(cliHelp.stdout).not.toContain("instances")
+
+  const cliVersionVerbose = await processRun(["bun", "dist/cli/cli.js", "version", "--verbose"])
+  expect(cliVersionVerbose.exitCode).toBe(0)
+  expect(cliVersionVerbose.stderr).toBe("")
+  expect(cliVersionVerbose.stdout).toContain("0.1.3\n")
+  expect(cliVersionVerbose.stdout).toContain("user agent: @adaptive-ds/authworks/0.1.3")
+  expect(cliVersionVerbose.stdout).toContain("installation type: development checkout")
+  expect(cliVersionVerbose.stdout).toContain("runtime requirements: node >=22, bun >=1.3.0")
+  expect(cliVersionVerbose.stdout).toContain(`platform: ${process.platform} ${process.arch} (OS release `)
+
   for (const route of [
     "profile",
     "realms",
