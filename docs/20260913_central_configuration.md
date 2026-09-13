@@ -22,4 +22,4 @@ Implement the public configuration core first, then CLI integration and credenti
 4. Completed: Expose assignment HTTP/library operations with contract tests.
 5. Completed: Add CLI assign/list/edit/unassign and shared alias lookup with focused tests.
 6. Completed: Add CLI/library usage documentation and run repository checks.
-7. Completed: Delegate commits skill to a Luna subagent, then deploy and release using repository tooling.
+7. Commit/push increment completed; deployment and release remain pending by explicit instruction.
