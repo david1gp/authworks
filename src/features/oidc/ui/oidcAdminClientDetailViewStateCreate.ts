@@ -18,7 +18,10 @@ export function oidcAdminClientDetailViewStateCreate(options: {
   const name = createSignalObject("")
   const redirectUris = createSignalObject("")
   const postLogoutRedirectUris = createSignalObject("")
+  const additionalOrigins = createSignalObject("")
   const scopes = createSignalObject<readonly string[]>([])
+  const accessTokenRoleAssertion = createSignalObject(false)
+  const idTokenUserinfoAssertion = createSignalObject(false)
   const requireConsent = createSignalObject(true)
   const trusted = createSignalObject(false)
   const formError = createSignalObject<string | undefined>(undefined)
@@ -31,7 +34,10 @@ export function oidcAdminClientDetailViewStateCreate(options: {
         name.set(client.name)
         redirectUris.set(client.redirectUris.join("\n"))
         postLogoutRedirectUris.set(client.postLogoutRedirectUris.join("\n"))
+        additionalOrigins.set(client.additionalOrigins.join("\n"))
         scopes.set([...client.allowedScopes])
+        accessTokenRoleAssertion.set(client.accessTokenRoleAssertion)
+        idTokenUserinfoAssertion.set(client.idTokenUserinfoAssertion)
         requireConsent.set(client.requireConsent)
         trusted.set(client.trusted)
       },
@@ -39,7 +45,10 @@ export function oidcAdminClientDetailViewStateCreate(options: {
   )
 
   return {
+    accessTokenRoleAssertion,
+    additionalOrigins,
     formError: formError.get,
+    idTokenUserinfoAssertion,
     name,
     page: options.page,
     postLogoutRedirectUris,
@@ -57,6 +66,9 @@ export function oidcAdminClientDetailViewStateCreate(options: {
       if (client === undefined) return
       const parsed = v.safeParse(oidcClientUpdateRequestSchema, {
         allowedScopes: [...scopes.get()],
+        accessTokenRoleAssertion: accessTokenRoleAssertion.get(),
+        additionalOrigins: [...oidcAdminUriListParse(additionalOrigins.get())],
+        idTokenUserinfoAssertion: idTokenUserinfoAssertion.get(),
         name: name.get(),
         postLogoutRedirectUris: [...oidcAdminUriListParse(postLogoutRedirectUris.get())],
         redirectUris: [...oidcAdminUriListParse(redirectUris.get())],

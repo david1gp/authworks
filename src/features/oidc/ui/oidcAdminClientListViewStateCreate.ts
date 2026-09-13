@@ -20,7 +20,10 @@ export function oidcAdminClientListViewStateCreate(options: {
   const clientType = createSignalObject("confidential")
   const redirectUris = createSignalObject("")
   const postLogoutRedirectUris = createSignalObject("")
+  const additionalOrigins = createSignalObject("")
   const scopes = createSignalObject<readonly string[]>(["openid", "profile", "email"])
+  const accessTokenRoleAssertion = createSignalObject(false)
+  const idTokenUserinfoAssertion = createSignalObject(false)
   const requireConsent = createSignalObject(true)
   const trusted = createSignalObject(false)
   const formError = createSignalObject<string | undefined>(undefined)
@@ -37,9 +40,13 @@ export function oidcAdminClientListViewStateCreate(options: {
     event.preventDefault()
     const parsedRedirects = oidcAdminUriListParse(redirectUris.get())
     const parsedPostLogout = oidcAdminUriListParse(postLogoutRedirectUris.get())
+    const parsedAdditionalOrigins = oidcAdminUriListParse(additionalOrigins.get())
     const parsed = v.safeParse(oidcClientCreateRequestSchema, {
       allowedScopes: scopes.get().length === 0 ? undefined : [...scopes.get()],
+      accessTokenRoleAssertion: accessTokenRoleAssertion.get(),
       clientType: clientType.get(),
+      additionalOrigins: [...parsedAdditionalOrigins],
+      idTokenUserinfoAssertion: idTokenUserinfoAssertion.get(),
       name: name.get(),
       postLogoutRedirectUris: parsedPostLogout.length === 0 ? undefined : [...parsedPostLogout],
       redirectUris: [...parsedRedirects],
@@ -56,10 +63,15 @@ export function oidcAdminClientListViewStateCreate(options: {
     name.set("")
     redirectUris.set("")
     postLogoutRedirectUris.set("")
+    additionalOrigins.set("")
+    accessTokenRoleAssertion.set(false)
+    idTokenUserinfoAssertion.set(false)
     options.createOpenSet(false)
   }
 
   return {
+    accessTokenRoleAssertion,
+    additionalOrigins,
     clientOpen: options.clientOpen,
     clientType,
     createOpen: options.createOpen,
@@ -70,6 +82,7 @@ export function oidcAdminClientListViewStateCreate(options: {
     createSubmit,
     filteredClients,
     formError: formError.get,
+    idTokenUserinfoAssertion,
     name,
     page: options.page,
     postLogoutRedirectUris,

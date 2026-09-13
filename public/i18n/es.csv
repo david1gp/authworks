@@ -428,6 +428,11 @@ admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,Administrar la configuración de OpenID Connect requiere un inicio de sesión más fuerte y reciente. Vuelva a iniciar sesión para continuar.
 admin.oidc.assuranceRequiredTitle,Se requiere un inicio de sesión más fuerte
 admin.oidc.clients.consent,Consentimiento
+admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
+admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
+admin.oidc.clients.additionalOrigins,Additional browser origins
+admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,Obligatorio
 admin.oidc.clients.consentSkipped,No obligatorio
 admin.oidc.clients.create,Registrar cliente
@@ -438,6 +443,8 @@ admin.oidc.clients.detailTitle,Detalle del cliente OIDC
 admin.oidc.clients.empty,Todavía no hay clientes de OpenID Connect registrados en este dominio.
 admin.oidc.clients.exactMatchHint,"Una URI por línea. Cada redirección se compara de forma exacta, por lo que se rechazan los comodines y las diferencias finales."
 admin.oidc.clients.identifier,Identificador del cliente
+admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
+admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
 admin.oidc.clients.invalid,"Introduzca un nombre de cliente, al menos un URI de redirección exacto y al menos un ámbito."
 admin.oidc.clients.lifecycleChanged,Se cambió el estado del cliente.
 admin.oidc.clients.missingId,Debe seleccionarse un cliente OIDC para este destino.

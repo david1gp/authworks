@@ -428,6 +428,11 @@ admin.navigation.title,Administration navigation
 admin.oidc.assuranceRequired,OpenID Connect の設定を管理するには、より強力で最近のサインインが必要です。続行するには再度サインインしてください。
 admin.oidc.assuranceRequiredTitle,より強力なサインインが必要です
 admin.oidc.clients.consent,同意
+admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
+admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
+admin.oidc.clients.additionalOrigins,Additional browser origins
+admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,必要
 admin.oidc.clients.consentSkipped,不要
 admin.oidc.clients.create,クライアントを登録
@@ -438,6 +443,8 @@ admin.oidc.clients.detailTitle,OIDC クライアントの詳細
 admin.oidc.clients.empty,このレルムにはまだ OpenID Connect クライアントが登録されていません。
 admin.oidc.clients.exactMatchHint,1 行につき 1 つの URI。すべてのリダイレクトは完全一致で照合されるため、ワイルドカードや末尾の差異は拒否されます。
 admin.oidc.clients.identifier,クライアント識別子
+admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
+admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
 admin.oidc.clients.invalid,クライアント名、完全一致のリダイレクト URI を 1 つ以上、スコープを 1 つ以上入力してください。
 admin.oidc.clients.lifecycleChanged,クライアントの状態を変更しました。
 admin.oidc.clients.missingId,この宛先にはOIDCクライアントの選択が必要です。

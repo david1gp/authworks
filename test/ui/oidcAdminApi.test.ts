@@ -7,9 +7,12 @@ const userId = "018f0000-0000-7000-8000-000000000021"
 
 const client = {
   allowedScopes: ["openid"],
+  accessTokenRoleAssertion: false,
   clientType: "confidential",
+  additionalOrigins: [],
   createdAt: 1,
   id: clientId,
+  idTokenUserinfoAssertion: false,
   name: "Acme Web Portal",
   postLogoutRedirectUris: [],
   realmId,
@@ -70,6 +73,22 @@ describe("OIDC administration production adapter", () => {
 
     expect(requests[0]?.init?.method).toBe("PATCH")
     expect(new Headers(requests[0]?.init?.headers).get("x-csrf-token")).toBe("csrf-fixture")
+  })
+
+  test("forwards compatibility settings including explicit false and empty values", async () => {
+    const { adapter, requests } = adapterCreate(() => Response.json({ client }))
+
+    await adapter.clientUpdate(clientId, {
+      accessTokenRoleAssertion: false,
+      additionalOrigins: [],
+      idTokenUserinfoAssertion: false,
+    })
+
+    expect(JSON.parse(String(requests[0]?.init?.body))).toMatchObject({
+      accessTokenRoleAssertion: false,
+      additionalOrigins: [],
+      idTokenUserinfoAssertion: false,
+    })
   })
 
   test("resolves a fresh CSRF token per mutation when none is supplied", async () => {

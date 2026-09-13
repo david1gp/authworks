@@ -11,11 +11,13 @@ import type { StorageTransaction } from "../../../platform/storage/storageSchema
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { machineClientCredentialsAuthenticate } from "../../machineUsers/actions/machineClientCredentialsAuthenticate.js"
 import { machineClientCredentialsIssue } from "../../machineUsers/actions/machineClientCredentialsIssue.js"
+import { projectSubjectProjectRoleResolve } from "../../projects/server/projectSubjectProjectRoleResolve.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import { type SessionRow, sessionTable } from "../../sessions/persistence/sessionTable.js"
 import { type UserProfileRow, userProfileTable } from "../../users/persistence/userProfileTable.js"
 import { type UserRow, userTable } from "../../users/persistence/userTable.js"
+import { oidcAccessTokenRoleClaimsCreate } from "../domain/oidcAccessTokenRoleClaimsCreate.js"
 import { oidcClientSecretMatches } from "../domain/oidcClientSecretMatches.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcIssuerCreate } from "../domain/oidcIssuerCreate.js"
@@ -24,6 +26,7 @@ import { oidcPkceVerify } from "../domain/oidcPkceVerify.js"
 import { oidcRefreshTokenCreate } from "../domain/oidcRefreshTokenCreate.js"
 import { oidcResourceOwnerOrganizationIdResolve } from "../domain/oidcResourceOwnerOrganizationIdResolve.js"
 import { oidcResourceOwnerScope } from "../domain/oidcResourceOwnerScope.js"
+import { oidcUserInfoClaimsCreate } from "../domain/oidcUserInfoClaimsCreate.js"
 import { oidcValueDecrypt } from "../domain/oidcValueEncrypt.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
 import { oidcAccessTokenIssuedEventPayloadSchema } from "../events/oidcAccessTokenIssuedEventPayloadSchema.js"
@@ -504,6 +507,16 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
   accessClaims.client_id = options.client.id
   accessClaims.jti = accessJti
   accessClaims.scope = options.scope.join(" ")
+  if (options.client.accessTokenRoleAssertion === 1 && options.client.projectId !== null) {
+    const projectRoles = projectSubjectProjectRoleResolve({
+      executor: options.transaction,
+      projectId: options.client.projectId,
+      realmId: options.realmId,
+      userId: options.subject.user.id,
+    })
+    if (!projectRoles.success) return oidcTokenStageResult(projectRoles, options, "membership")
+    Object.assign(accessClaims, oidcAccessTokenRoleClaimsCreate(projectRoles.data))
+  }
   const accessToken = oidcJwtSign({ alg: "RS256", kid: key.data.id, typ: "JWT" }, accessClaims, key.data.privateKey)
   if (!accessToken.success) return oidcTokenStageResult(accessToken, options, "signing_key")
   const idClaims = oidcTokenClaimsCreate(
@@ -517,6 +530,8 @@ function oidcTokenArtifactsIssue(options: OidcTokenArtifactsOptions): Result<Oid
   idClaims.azp = options.client.id
   idClaims.sid = options.subject.session.id
   if (options.nonce !== null) idClaims.nonce = options.nonce
+  if (options.client.idTokenUserinfoAssertion === 1)
+    Object.assign(idClaims, oidcUserInfoClaimsCreate(options.subject, options.scope))
   const idToken = oidcJwtSign({ alg: "RS256", kid: key.data.id, typ: "JWT" }, idClaims, key.data.privateKey)
   if (!idToken.success) return oidcTokenStageResult(idToken, options, "signing_key")
   const refreshToken =
@@ -776,23 +791,6 @@ function oidcTokenClaimsCreate(
     sub: subject.user.id,
   }
   if (subject.session.impersonatorId !== null) claims.act = { sub: subject.session.impersonatorId }
-  if (scope.includes("email")) {
-    claims.email = subject.user.email
-    claims.email_verified = subject.user.emailVerifiedAt !== null
-  }
-  if (scope.includes("profile")) {
-    claims.preferred_username = subject.user.userName
-    if (subject.profile?.displayName !== null && subject.profile?.displayName !== undefined)
-      claims.name = subject.profile.displayName
-    if (subject.profile?.firstName !== null && subject.profile?.firstName !== undefined)
-      claims.given_name = subject.profile.firstName
-    if (subject.profile?.lastName !== null && subject.profile?.lastName !== undefined)
-      claims.family_name = subject.profile.lastName
-    if (subject.profile?.nickName !== null && subject.profile?.nickName !== undefined)
-      claims.nickname = subject.profile.nickName
-    if (subject.profile?.preferredLanguage !== null && subject.profile?.preferredLanguage !== undefined)
-      claims.locale = subject.profile.preferredLanguage
-  }
   if (scope.includes(oidcResourceOwnerScope) && subject.resourceOwnerOrganizationId !== undefined)
     claims[oidcResourceOwnerClaim] = subject.resourceOwnerOrganizationId
   return claims

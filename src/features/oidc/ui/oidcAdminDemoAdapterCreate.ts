@@ -1,4 +1,5 @@
 import type { Result } from "#result"
+import * as v from "valibot"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { demoAdminOidcClients } from "../../demo/demoAdminOidcClients.js"
@@ -9,7 +10,7 @@ import { demoAdminOidcSigningKeys } from "../../demo/demoAdminOidcSigningKeys.js
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import { demoRealmId } from "../../demo/demoRealmId.js"
 import { demoResourceIdGenerate } from "../../demo/demoResourceIdGenerate.js"
-import type { OidcClient } from "../public/oidcClientSchema.js"
+import { oidcClientSchema, type OidcClient } from "../public/oidcClientSchema.js"
 import type { OidcSigningKey } from "../public/oidcSigningKeySchema.js"
 import type { OidcAdminAdapter } from "./oidcAdminAdapter.js"
 import { oidcAdminDemoUserFixtures } from "./oidcAdminDemoUserFixtures.js"
@@ -18,14 +19,18 @@ const neverResolves = <T>(): Promise<Result<T>> => new Promise<Result<T>>(() => 
 
 /** A deterministic, clearly fake secret so no demo screen ever suggests a usable credential. */
 const demoSecretGenerate = () => `demo-secret-${demoResourceIdGenerate().replaceAll("-", "")}`
+const demoClientsStorageKey = "authworks.demo.oidc.clients"
 
 /**
  * Fixture-backed adapter. It performs no network access and derives every success, empty,
  * loading, error, denied, assurance, one-time, redacted, and cross-tenant response from the
- * URL-selected fixture state so each demo destination is deterministic.
+ * URL-selected fixture state so each demo destination is deterministic. Successful client
+ * mutations are also retained in browser storage so a detail reload reflects the saved values.
  */
 export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState): OidcAdminAdapter {
   const clients = demoAdminOidcClients.map((client) => ({ ...client }))
+  const storedClients = demoClientsStorageRead()
+  if (storedClients !== undefined) clients.splice(0, clients.length, ...storedClients.map((client) => ({ ...client })))
   const signingKeys = demoAdminOidcSigningKeys.map((key) => ({ ...key }))
   const consents = demoAdminOidcConsents.map((consent) => ({ ...consent }))
   const timestamp = 1_755_782_400_000
@@ -63,10 +68,13 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
       gate(() => {
         const client: OidcClient = {
           allowedScopes: input.allowedScopes === undefined ? ["openid"] : [...input.allowedScopes],
+          accessTokenRoleAssertion: input.accessTokenRoleAssertion ?? false,
           ...(input.applicationId === undefined ? {} : { applicationId: input.applicationId }),
           clientType: input.clientType,
+          additionalOrigins: input.additionalOrigins === undefined ? [] : [...input.additionalOrigins],
           createdAt: timestamp,
           id: demoResourceIdGenerate(),
+          idTokenUserinfoAssertion: input.idTokenUserinfoAssertion ?? false,
           realmId: demoRealmId,
           name: input.name,
           postLogoutRedirectUris: input.postLogoutRedirectUris === undefined ? [] : [...input.postLogoutRedirectUris],
@@ -78,6 +86,7 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
           updatedAt: timestamp,
         }
         clients.push(client)
+        demoClientsStorageWrite(clients)
         // A public client is never issued a secret, matching the production contract.
         if (client.clientType === "public") return resultCreate({ client })
         return resultCreate({ client, clientSecret: demoSecretGenerate() })
@@ -97,6 +106,7 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
           return resultErrorCodedCreate("oidcAdminDemo", "The OIDC client was not found.", "oidc.not-found")
         const updated = { ...existing, status: input.status, updatedAt: timestamp }
         clients[index] = updated
+        demoClientsStorageWrite(clients)
         return resultCreate(updated)
       }),
     clientList: () => collection(clients),
@@ -115,6 +125,7 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
           return resultErrorCodedCreate("oidcAdminDemo", "The OIDC client was not found.", "oidc.not-found")
         const updated = { ...existing, updatedAt: timestamp }
         clients[index] = updated
+        demoClientsStorageWrite(clients)
         return resultCreate({ client: updated, clientSecret: demoSecretGenerate() })
       }),
     clientUpdate: (clientId, input) =>
@@ -126,6 +137,10 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
         const updated: OidcClient = {
           ...existing,
           allowedScopes: input.allowedScopes === undefined ? existing.allowedScopes : [...input.allowedScopes],
+          accessTokenRoleAssertion: input.accessTokenRoleAssertion ?? existing.accessTokenRoleAssertion,
+          additionalOrigins:
+            input.additionalOrigins === undefined ? existing.additionalOrigins : [...input.additionalOrigins],
+          idTokenUserinfoAssertion: input.idTokenUserinfoAssertion ?? existing.idTokenUserinfoAssertion,
           name: input.name ?? existing.name,
           postLogoutRedirectUris:
             input.postLogoutRedirectUris === undefined
@@ -137,6 +152,7 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
           updatedAt: timestamp,
         }
         clients[index] = updated
+        demoClientsStorageWrite(clients)
         return resultCreate(updated)
       }),
     consentList: (userId) => collection(consents.filter((item) => item.userId === userId)),
@@ -195,6 +211,28 @@ export function oidcAdminDemoAdapterCreate(fixtureState: () => DemoFixtureState)
       },
       retiredAt: null,
       status: "active",
+    }
+  }
+
+  function demoClientsStorageRead(): readonly OidcClient[] | undefined {
+    try {
+      if (typeof window === "undefined") return undefined
+      const parsed = v.safeParse(
+        v.array(oidcClientSchema),
+        JSON.parse(window.localStorage.getItem(demoClientsStorageKey) ?? "null"),
+      )
+      return parsed.success ? parsed.output : undefined
+    } catch {
+      return undefined
+    }
+  }
+
+  function demoClientsStorageWrite(value: readonly OidcClient[]): void {
+    try {
+      if (typeof window === "undefined") return
+      window.localStorage.setItem(demoClientsStorageKey, JSON.stringify(value))
+    } catch {
+      // Demo mutations remain in memory when browser storage is unavailable.
     }
   }
 }

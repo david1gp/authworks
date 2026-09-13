@@ -11,6 +11,7 @@ import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
+import { oidcClientCompatibilitySettingsValidate } from "../domain/oidcClientCompatibilitySettingsValidate.js"
 import { oidcClientPublicViewCreate } from "../domain/oidcClientPublicViewCreate.js"
 import { oidcClientSecretCreate } from "../domain/oidcClientSecretCreate.js"
 import { oidcRedirectUriValidate } from "../domain/oidcRedirectUriValidate.js"
@@ -72,13 +73,16 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
     if (!clientContext.success) return clientContext
     const created = repository.clientCreate({
       allowedScopes: JSON.stringify(configuration.data.allowedScopes),
+      accessTokenRoleAssertion: configuration.data.accessTokenRoleAssertion ? 1 : 0,
       applicationId: parsed.output.applicationId ?? null,
       clientType: parsed.output.clientType,
       createdAt,
       id: clientId,
+      idTokenUserinfoAssertion: configuration.data.idTokenUserinfoAssertion ? 1 : 0,
       realmId: options.realmId,
       name: parsed.output.name,
       postLogoutRedirectUris: JSON.stringify(configuration.data.postLogoutRedirectUris),
+      additionalOrigins: JSON.stringify(configuration.data.additionalOrigins),
       projectId: parsed.output.projectId ?? null,
       redirectUris: JSON.stringify(configuration.data.redirectUris),
       requireConsent: configuration.data.requireConsent ? 1 : 0,
@@ -91,7 +95,10 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
     if (!created.success) return created
     const payload = v.safeParse(oidcClientCreatedEventPayloadSchema, {
       allowedScopes: configuration.data.allowedScopes,
+      accessTokenRoleAssertion: configuration.data.accessTokenRoleAssertion,
       clientType: parsed.output.clientType,
+      additionalOrigins: configuration.data.additionalOrigins,
+      idTokenUserinfoAssertion: configuration.data.idTokenUserinfoAssertion,
       name: parsed.output.name,
       postLogoutRedirectUris: configuration.data.postLogoutRedirectUris,
       redirectUris: configuration.data.redirectUris,
@@ -126,6 +133,9 @@ export function oidcClientCreate(options: OidcClientCreateOptions): Result<OidcC
 
 function oidcClientConfigurationValidate(input: OidcClientCreateRequest): Result<{
   allowedScopes: string[]
+  accessTokenRoleAssertion: boolean
+  additionalOrigins: string[]
+  idTokenUserinfoAssertion: boolean
   postLogoutRedirectUris: string[]
   redirectUris: string[]
   requireConsent: boolean
@@ -146,8 +156,17 @@ function oidcClientConfigurationValidate(input: OidcClientCreateRequest): Result
   }
   if (new Set(allowedScopes).size !== allowedScopes.length)
     return resultErrorCodedCreate(op, "OIDC scopes must be unique.", "oidc.conflict")
+  const compatibility = oidcClientCompatibilitySettingsValidate({
+    accessTokenRoleAssertion: input.accessTokenRoleAssertion ?? false,
+    additionalOrigins: input.additionalOrigins ?? [],
+    idTokenUserinfoAssertion: input.idTokenUserinfoAssertion ?? false,
+  })
+  if (!compatibility.success) return compatibility
   return resultCreate({
     allowedScopes,
+    accessTokenRoleAssertion: compatibility.data.accessTokenRoleAssertion,
+    additionalOrigins: compatibility.data.additionalOrigins,
+    idTokenUserinfoAssertion: compatibility.data.idTokenUserinfoAssertion,
     postLogoutRedirectUris,
     redirectUris,
     requireConsent: input.requireConsent ?? true,

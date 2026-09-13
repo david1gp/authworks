@@ -159,6 +159,31 @@ describe("OIDC administration demo adapter", () => {
     expect(updated.success && updated.data.requireConsent).toBe(true)
   })
 
+  test("round-trips compatibility settings and preserves explicit clears", async () => {
+    const adapter = oidcAdminDemoAdapterCreate(() => "success")
+
+    const created = await adapter.clientCreate({
+      accessTokenRoleAssertion: true,
+      additionalOrigins: ["https://console.example"],
+      clientType: "public",
+      idTokenUserinfoAssertion: true,
+      name: "Compatibility client",
+      redirectUris: ["https://portal.example/callback"],
+    })
+    const updated = await adapter.clientUpdate(publicClientId, {
+      accessTokenRoleAssertion: false,
+      additionalOrigins: [],
+      idTokenUserinfoAssertion: false,
+    })
+
+    expect(created.success && created.data.client.accessTokenRoleAssertion).toBe(true)
+    expect(created.success && created.data.client.additionalOrigins).toEqual(["https://console.example"])
+    expect(created.success && created.data.client.idTokenUserinfoAssertion).toBe(true)
+    expect(updated.success && updated.data.accessTokenRoleAssertion).toBe(false)
+    expect(updated.success && updated.data.additionalOrigins).toEqual([])
+    expect(updated.success && updated.data.idTokenUserinfoAssertion).toBe(false)
+  })
+
   test("moves a client through its lifecycle", async () => {
     const adapter = oidcAdminDemoAdapterCreate(() => "success")
 

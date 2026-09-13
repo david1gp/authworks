@@ -456,6 +456,13 @@ export const englishCatalog = {
   "admin.oidc.clients.consent": "Consent",
   "admin.oidc.clients.consentRequired": "Required",
   "admin.oidc.clients.consentSkipped": "Not required",
+  "admin.oidc.clients.accessTokenRoleAssertion": "Add project roles to access tokens",
+  "admin.oidc.clients.accessTokenRoleAssertionHint":
+    "Uses roles effective in the client's configured project and organization context.",
+  "admin.oidc.clients.additionalOrigins": "Additional browser origins",
+  "admin.oidc.clients.additionalOriginsHint":
+    "One exact origin per line. Redirect URI origins are already included; wildcards are not supported.",
+  "admin.oidc.clients.compatibility": "Compatibility settings",
   "admin.oidc.clients.create": "Register client",
   "admin.oidc.clients.createDescription":
     "Register an application that signs people in with OpenID Connect. A confidential client receives a secret once.",
@@ -466,6 +473,8 @@ export const englishCatalog = {
   "admin.oidc.clients.exactMatchHint":
     "One URI per line. Every redirect is matched exactly, so wildcards and trailing differences are rejected.",
   "admin.oidc.clients.identifier": "Client identifier",
+  "admin.oidc.clients.idTokenUserinfoAssertion": "Add scoped UserInfo claims to ID tokens",
+  "admin.oidc.clients.idTokenUserinfoAssertionHint": "Uses only personal claims allowed by the granted scopes.",
   "admin.oidc.clients.invalid": "Enter a client name, at least one exact redirect URI, and at least one scope.",
   "admin.oidc.clients.lifecycleChanged": "The client status was changed.",
   "admin.oidc.clients.missingId": "An OIDC client must be selected for this destination.",

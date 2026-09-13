@@ -199,7 +199,12 @@ async function oidcTokenRequest(
   )
 }
 
-async function createOidcTokenFixture(database: StorageDatabase, domain: string, scope = "openid profile email") {
+async function createOidcTokenFixture(
+  database: StorageDatabase,
+  domain: string,
+  scope = "openid profile email",
+  idTokenUserinfoAssertion = false,
+) {
   const authenticated = await createAuthenticatedSession(database, domain)
   const client = oidcClientCreate({
     context: realmSystemContextCreate(),
@@ -207,6 +212,7 @@ async function createOidcTokenFixture(database: StorageDatabase, domain: string,
     input: {
       allowedScopes: ["openid", "profile", "email"],
       clientType: "confidential",
+      idTokenUserinfoAssertion,
       name: `${domain} client`,
       redirectUris: ["https://client.example/callback"],
       trusted: true,
@@ -1063,6 +1069,7 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
       input: {
         allowedScopes: ["openid", "profile", "email"],
         clientType: "confidential",
+        idTokenUserinfoAssertion: true,
         name: "Token client",
         redirectUris: ["https://client.example/callback"],
         trusted: true,
@@ -1194,6 +1201,192 @@ test("the standards token endpoint exchanges codes, signs scoped tokens, and rot
     ).toEqual({
       count: 2,
     })
+  })
+})
+
+test("ID-token UserInfo assertions follow granted scopes for authorization-code and refresh issuance", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(
+      database,
+      "userinfo-assertion.example.com",
+      "openid profile email",
+      true,
+    )
+    const jwksResponse = await fixture.app.fetch(
+      new Request("https://userinfo-assertion.example.com/.well-known/jwks.json"),
+    )
+    const jwks = v.parse(oidcJwksSchema, await jwksResponse.json())
+    const key = jwks.keys[0]
+    if (key === undefined) return
+
+    const authorizationCodeClaims = oidcJwtVerify(fixture.token.id_token, key)
+    expect(authorizationCodeClaims).toMatchObject({
+      data: {
+        email: "userinfo-assertion-example-com@example.com",
+        email_verified: true,
+        name: "OIDC User",
+        preferred_username: "userinfo-assertion-example-com",
+        sub: fixture.authenticated.userId,
+      },
+      success: true,
+    })
+    if (!authorizationCodeClaims.success) return
+    expect(authorizationCodeClaims.data).not.toHaveProperty("address")
+    expect(authorizationCodeClaims.data).not.toHaveProperty("phone_number")
+
+    const authorizationCodeAccessClaims = oidcJwtVerify(fixture.token.access_token, key)
+    expect(authorizationCodeAccessClaims).toMatchObject({
+      data: {
+        acr: "authenticated",
+        amr: ["password"],
+        auth_time: 1_700_000_000,
+        aud: fixture.client.id,
+        client_id: fixture.client.id,
+        scope: "openid profile email",
+        sub: fixture.authenticated.userId,
+      },
+      success: true,
+    })
+    if (!authorizationCodeAccessClaims.success) return
+    expect(authorizationCodeAccessClaims.data).not.toHaveProperty("email")
+    expect(authorizationCodeAccessClaims.data).not.toHaveProperty("email_verified")
+    expect(authorizationCodeAccessClaims.data).not.toHaveProperty("name")
+    expect(authorizationCodeAccessClaims.data).not.toHaveProperty("preferred_username")
+
+    const refreshedResponse = await oidcTokenRequest(fixture.app, "userinfo-assertion.example.com", {
+      client_id: fixture.client.id,
+      client_secret: fixture.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: fixture.token.refresh_token,
+      scope: "openid",
+    })
+    expect(refreshedResponse.status).toBe(200)
+    const refreshed = v.parse(oidcTokenResponseSchema, await refreshedResponse.json())
+    const refreshedClaims = oidcJwtVerify(refreshed.id_token, key)
+    expect(refreshedClaims).toMatchObject({
+      data: { sub: fixture.authenticated.userId },
+      success: true,
+    })
+    if (!refreshedClaims.success) return
+    expect(refreshedClaims.data).not.toHaveProperty("email")
+    expect(refreshedClaims.data).not.toHaveProperty("email_verified")
+    expect(refreshedClaims.data).not.toHaveProperty("preferred_username")
+    expect(refreshedClaims.data).not.toHaveProperty("name")
+    expect(refreshedClaims.data).not.toHaveProperty("address")
+    expect(refreshedClaims.data).not.toHaveProperty("phone_number")
+
+    const refreshedAccessClaims = oidcJwtVerify(refreshed.access_token, key)
+    expect(refreshedAccessClaims).toMatchObject({
+      data: {
+        acr: "authenticated",
+        amr: ["password"],
+        auth_time: 1_700_000_000,
+        aud: fixture.client.id,
+        client_id: fixture.client.id,
+        scope: "openid",
+        sub: fixture.authenticated.userId,
+      },
+      success: true,
+    })
+    if (!refreshedAccessClaims.success) return
+    expect(refreshedAccessClaims.data).not.toHaveProperty("email")
+    expect(refreshedAccessClaims.data).not.toHaveProperty("email_verified")
+    expect(refreshedAccessClaims.data).not.toHaveProperty("name")
+    expect(refreshedAccessClaims.data).not.toHaveProperty("preferred_username")
+  })
+})
+
+test("disabled ID-token UserInfo assertions omit optional claims in authorization-code and refresh issuance", async () => {
+  await withDatabase(async (database) => {
+    const fixture = await createOidcTokenFixture(database, "userinfo-assertion-disabled.example.com")
+    const jwksResponse = await fixture.app.fetch(
+      new Request("https://userinfo-assertion-disabled.example.com/.well-known/jwks.json"),
+    )
+    const jwks = v.parse(oidcJwksSchema, await jwksResponse.json())
+    const key = jwks.keys[0]
+    if (key === undefined) return
+
+    const authorizationCodeClaims = oidcJwtVerify(fixture.token.id_token, key)
+    expect(authorizationCodeClaims).toMatchObject({
+      data: {
+        acr: "authenticated",
+        amr: ["password"],
+        auth_time: 1_700_000_000,
+        aud: fixture.client.id,
+        iss: "https://userinfo-assertion-disabled.example.com",
+        sub: fixture.authenticated.userId,
+      },
+      success: true,
+    })
+    if (!authorizationCodeClaims.success) return
+    expect(authorizationCodeClaims.data).not.toHaveProperty("email")
+    expect(authorizationCodeClaims.data).not.toHaveProperty("email_verified")
+    expect(authorizationCodeClaims.data).not.toHaveProperty("name")
+    expect(authorizationCodeClaims.data).not.toHaveProperty("preferred_username")
+
+    const authorizationCodeAccessClaims = oidcJwtVerify(fixture.token.access_token, key)
+    expect(authorizationCodeAccessClaims).toMatchObject({
+      data: {
+        acr: "authenticated",
+        amr: ["password"],
+        auth_time: 1_700_000_000,
+        aud: fixture.client.id,
+        client_id: fixture.client.id,
+        scope: "openid profile email",
+        sub: fixture.authenticated.userId,
+      },
+      success: true,
+    })
+    if (!authorizationCodeAccessClaims.success) return
+    expect(authorizationCodeAccessClaims.data).not.toHaveProperty("email")
+    expect(authorizationCodeAccessClaims.data).not.toHaveProperty("email_verified")
+    expect(authorizationCodeAccessClaims.data).not.toHaveProperty("name")
+    expect(authorizationCodeAccessClaims.data).not.toHaveProperty("preferred_username")
+
+    const refreshedResponse = await oidcTokenRequest(fixture.app, "userinfo-assertion-disabled.example.com", {
+      client_id: fixture.client.id,
+      client_secret: fixture.clientSecret,
+      grant_type: "refresh_token",
+      refresh_token: fixture.token.refresh_token,
+    })
+    expect(refreshedResponse.status).toBe(200)
+    const refreshed = v.parse(oidcTokenResponseSchema, await refreshedResponse.json())
+    const refreshedClaims = oidcJwtVerify(refreshed.id_token, key)
+    expect(refreshedClaims).toMatchObject({
+      data: {
+        acr: "authenticated",
+        amr: ["password"],
+        auth_time: 1_700_000_000,
+        aud: fixture.client.id,
+        iss: "https://userinfo-assertion-disabled.example.com",
+        sub: fixture.authenticated.userId,
+      },
+      success: true,
+    })
+    if (!refreshedClaims.success) return
+    expect(refreshedClaims.data).not.toHaveProperty("email")
+    expect(refreshedClaims.data).not.toHaveProperty("email_verified")
+    expect(refreshedClaims.data).not.toHaveProperty("name")
+    expect(refreshedClaims.data).not.toHaveProperty("preferred_username")
+
+    const refreshedAccessClaims = oidcJwtVerify(refreshed.access_token, key)
+    expect(refreshedAccessClaims).toMatchObject({
+      data: {
+        acr: "authenticated",
+        amr: ["password"],
+        auth_time: 1_700_000_000,
+        aud: fixture.client.id,
+        client_id: fixture.client.id,
+        scope: "openid profile email",
+        sub: fixture.authenticated.userId,
+      },
+      success: true,
+    })
+    if (!refreshedAccessClaims.success) return
+    expect(refreshedAccessClaims.data).not.toHaveProperty("email")
+    expect(refreshedAccessClaims.data).not.toHaveProperty("email_verified")
+    expect(refreshedAccessClaims.data).not.toHaveProperty("name")
+    expect(refreshedAccessClaims.data).not.toHaveProperty("preferred_username")
   })
 })
 

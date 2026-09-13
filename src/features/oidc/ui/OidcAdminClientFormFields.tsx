@@ -11,7 +11,10 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
  */
 export function OidcAdminClientFormFields(props: {
   readonly clientType?: SignalObject<string>
+  readonly accessTokenRoleAssertion: SignalObject<boolean>
+  readonly additionalOrigins: SignalObject<string>
   readonly idPrefix: string
+  readonly idTokenUserinfoAssertion: SignalObject<boolean>
   readonly name: SignalObject<string>
   readonly postLogoutRedirectUris: SignalObject<string>
   readonly redirectUris: SignalObject<string>
@@ -80,6 +83,65 @@ export function OidcAdminClientFormFields(props: {
           />
         </div>
       </div>
+
+      <fieldset class="grid min-w-0 gap-1.5">
+        <legend class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
+          {messageTranslate("admin.oidc.clients.compatibility")}
+        </legend>
+        <div class="grid gap-1.5 sm:grid-cols-2">
+          <div class="grid min-w-0 gap-1.5">
+            <label
+              class="flex min-w-0 items-start gap-2 rounded-control border border-line-subtle px-2 py-1.5 text-xs font-medium"
+              for={`${props.idPrefix}-id-token-userinfo-assertion`}
+            >
+              <input
+                checked={props.idTokenUserinfoAssertion.get()}
+                class="mt-0.5 size-3.5 shrink-0"
+                id={`${props.idPrefix}-id-token-userinfo-assertion`}
+                onChange={(event) => props.idTokenUserinfoAssertion.set(event.currentTarget.checked)}
+                type="checkbox"
+              />
+              <span class="min-w-0">{messageTranslate("admin.oidc.clients.idTokenUserinfoAssertion")}</span>
+            </label>
+            <p class="text-2xs leading-4 text-muted-foreground">
+              {messageTranslate("admin.oidc.clients.idTokenUserinfoAssertionHint")}
+            </p>
+          </div>
+          <div class="grid min-w-0 gap-1.5">
+            <label
+              class="flex min-w-0 items-start gap-2 rounded-control border border-line-subtle px-2 py-1.5 text-xs font-medium"
+              for={`${props.idPrefix}-access-token-role-assertion`}
+            >
+              <input
+                checked={props.accessTokenRoleAssertion.get()}
+                class="mt-0.5 size-3.5 shrink-0"
+                id={`${props.idPrefix}-access-token-role-assertion`}
+                onChange={(event) => props.accessTokenRoleAssertion.set(event.currentTarget.checked)}
+                type="checkbox"
+              />
+              <span class="min-w-0">{messageTranslate("admin.oidc.clients.accessTokenRoleAssertion")}</span>
+            </label>
+            <p class="text-2xs leading-4 text-muted-foreground">
+              {messageTranslate("admin.oidc.clients.accessTokenRoleAssertionHint")}
+            </p>
+          </div>
+        </div>
+        <div class="grid min-w-0 gap-1">
+          <Label for={`${props.idPrefix}-additional-origins`}>
+            {messageTranslate("admin.oidc.clients.additionalOrigins")}
+          </Label>
+          <textarea
+            class={textareaClass}
+            id={`${props.idPrefix}-additional-origins`}
+            onInput={(event) => props.additionalOrigins.set(event.currentTarget.value)}
+            rows={3}
+            value={props.additionalOrigins.get()}
+          />
+          <p class="text-2xs leading-4 text-muted-foreground">
+            {messageTranslate("admin.oidc.clients.additionalOriginsHint")}
+          </p>
+        </div>
+      </fieldset>
 
       <fieldset class="grid min-w-0 gap-1.5">
         <legend class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">

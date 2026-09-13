@@ -1,4 +1,4 @@
-import type { Next } from "hono"
+import type { MiddlewareHandler, Next } from "hono"
 import { Hono } from "hono"
 import type { ContentfulStatusCode } from "hono/utils/http-status"
 import * as v from "valibot"
@@ -13,11 +13,11 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
+import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
-import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import { sessionBrowserCookieExtract } from "../../sessions/domain/sessionBrowserCookieExtract.js"
@@ -53,11 +53,12 @@ import { oidcSigningKeyList } from "../actions/oidcSigningKeyList.js"
 import { oidcTokenIssue } from "../actions/oidcTokenIssue.js"
 import { oidcTokenRevoke } from "../actions/oidcTokenRevoke.js"
 import { oidcUserInfoGet } from "../actions/oidcUserInfoGet.js"
+import { oidcClientCorsOriginMatches } from "../domain/oidcClientCorsOriginMatches.js"
+import { oidcClientSecretMatches } from "../domain/oidcClientSecretMatches.js"
 import { oidcHashCreate } from "../domain/oidcHashCreate.js"
 import { oidcErrorCreate as resultErrorCreate } from "../errors/oidcErrorCreate.js"
+import type { OidcClientRow } from "../persistence/oidcClientTable.js"
 import { oidcRepositoryCreate } from "../persistence/oidcRepositoryCreate.js"
-import { oidcInteractionOrganizationContextSet } from "./oidcInteractionOrganizationContextSet.js"
-import { oidcClientContextValidate } from "./oidcClientContextValidate.js"
 import { oidcAuthorizationCodeRedeemRequestSchema } from "../public/oidcAuthorizationCodeRedeemRequestSchema.js"
 import { oidcAuthorizationConsentRequestSchema } from "../public/oidcAuthorizationConsentRequestSchema.js"
 import { oidcAuthorizationConsentRequiredSchema } from "../public/oidcAuthorizationConsentRequiredSchema.js"
@@ -71,6 +72,8 @@ import { oidcLogoutRequestSchema } from "../public/oidcLogoutRequestSchema.js"
 import { oidcSigningKeyLifecycleRequestSchema } from "../public/oidcSigningKeyLifecycleRequestSchema.js"
 import { oidcTokenRequestSchema } from "../public/oidcTokenRequestSchema.js"
 import { oidcTokenRevokeRequestSchema } from "../public/oidcTokenRevokeRequestSchema.js"
+import { oidcClientContextValidate } from "./oidcClientContextValidate.js"
+import { oidcInteractionOrganizationContextSet } from "./oidcInteractionOrganizationContextSet.js"
 
 type OidcServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -86,8 +89,23 @@ type OidcServerEnv = {
   }
 }
 
+type OidcProtocolCorsEndpoint = {
+  readonly methods: readonly ("GET" | "POST")[]
+  readonly path: string
+  readonly kind: "authorization-code-redeem" | "revoke" | "token" | "userinfo"
+}
+
+const oidcProtocolCorsEndpoints: readonly OidcProtocolCorsEndpoint[] = [
+  { kind: "authorization-code-redeem", methods: ["POST"], path: "/oauth2/authorization-code/redeem" },
+  { kind: "revoke", methods: ["POST"], path: "/oauth2/revoke" },
+  { kind: "token", methods: ["POST"], path: "/oauth2/token" },
+  { kind: "userinfo", methods: ["GET", "POST"], path: "/oauth2/userinfo" },
+]
+
 export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
   const app = new Hono<OidcServerEnv>()
+  for (const endpoint of oidcProtocolCorsEndpoints)
+    app.use(endpoint.path, oidcProtocolCorsMiddlewareCreate(options, endpoint))
   const protectedMiddleware = sessionProtectedMiddlewareCreate({
     database: options.database,
     minimumAssurance: "authenticated",
@@ -571,6 +589,224 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     return new Response(null, { status: 200 })
   })
   return app
+}
+
+function oidcProtocolCorsMiddlewareCreate(
+  options: OidcServerAppCreateOptions,
+  endpoint: OidcProtocolCorsEndpoint,
+): MiddlewareHandler<OidcServerEnv> {
+  return async (context, next) => {
+    const requestOrigin = context.req.header("origin")
+    if (requestOrigin === undefined) {
+      await next()
+      return
+    }
+    if (context.req.method === "OPTIONS")
+      return oidcProtocolCorsPreflightResponseCreate(options.database, context, endpoint, requestOrigin)
+    if (!endpoint.methods.includes(context.req.method as "GET" | "POST")) {
+      await next()
+      return
+    }
+
+    const client = await oidcProtocolCorsActualClientResolve(options.database, context, endpoint)
+    await next()
+    const response = context.res
+    oidcProtocolCorsVarySet(response.headers, "Origin")
+    if (client === undefined || !oidcClientCorsOriginMatches(client, requestOrigin)) return response
+    response.headers.set("Access-Control-Allow-Origin", requestOrigin)
+    return response
+  }
+}
+
+async function oidcProtocolCorsActualClientResolve(
+  database: StorageDatabase,
+  context: {
+    readonly req: {
+      readonly header: (name: string) => string | undefined
+      readonly method: string
+      readonly query: (name: string) => string | undefined
+      readonly raw: Request
+      readonly url: string
+    }
+  },
+  endpoint: OidcProtocolCorsEndpoint,
+): Promise<OidcClientRow | undefined> {
+  const realm = oidcPublicRealmResolve(database, context.req.header("host"), context.req.url)
+  if (!realm.success) return undefined
+
+  if (endpoint.kind === "userinfo") {
+    const token = oidcBearerTokenGet(context.req.header("authorization"))
+    if (token === null) return undefined
+    const access = oidcRepositoryCreate(database.db).accessTokenGetByTokenHash(
+      realm.data.realmId,
+      oidcHashCreate(token),
+    )
+    if (
+      !access.success ||
+      access.data === null ||
+      access.data.expiresAt <= database.runtime.now() ||
+      access.data.revokedAt !== null
+    )
+      return undefined
+    const client = oidcProtocolCorsClientGet(database, realm.data.realmId, access.data.clientId)
+    return oidcProtocolCorsClientQueryMatches(context, client) ? client : undefined
+  }
+
+  if (endpoint.kind === "authorization-code-redeem") {
+    const body = await oidcProtocolCorsJsonRead(context.req.raw)
+    const clientId = oidcProtocolCorsBodyValueGet(body, "client_id")
+    const code = oidcProtocolCorsBodyValueGet(body, "code")
+    const client = oidcProtocolCorsClientGet(database, realm.data.realmId, clientId)
+    if (
+      !oidcProtocolCorsClientQueryMatches(context, client) ||
+      !oidcProtocolCorsClientSecretAuthorize(client, oidcProtocolCorsBodyValueGet(body, "client_secret"))
+    )
+      return undefined
+    if (code === undefined) return undefined
+    const stored = oidcRepositoryCreate(database.db).authorizationCodeGetByTokenHash(
+      realm.data.realmId,
+      oidcHashCreate(code),
+    )
+    if (!stored.success || stored.data === null || stored.data.clientId !== client?.id) return undefined
+    return client
+  }
+
+  const body = await oidcProtocolCorsFormRead(context.req.raw)
+  if (body === undefined) return undefined
+  const credentials = oidcTokenClientCredentialsResolve(context.req.header("authorization"), body)
+  if (!credentials.success) return undefined
+  const client = oidcProtocolCorsClientGet(database, realm.data.realmId, credentials.clientId)
+  if (!oidcProtocolCorsClientQueryMatches(context, client)) return undefined
+  if (!oidcProtocolCorsClientSecretAuthorize(client, credentials.clientSecret)) return undefined
+  return client
+}
+
+function oidcProtocolCorsPreflightResponseCreate(
+  database: StorageDatabase,
+  context: {
+    readonly req: {
+      readonly header: (name: string) => string | undefined
+      readonly query: (name: string) => string | undefined
+      readonly url: string
+    }
+  },
+  endpoint: OidcProtocolCorsEndpoint,
+  requestOrigin: string,
+): Response {
+  const headers = new Headers()
+  headers.set("Vary", "Origin, Access-Control-Request-Method, Access-Control-Request-Headers")
+  const requestedMethod = context.req.header("access-control-request-method")?.toUpperCase()
+  const requestedHeaders = oidcProtocolCorsRequestedHeadersParse(context.req.header("access-control-request-headers"))
+  if (
+    requestedMethod === undefined ||
+    !endpoint.methods.includes(requestedMethod as "GET" | "POST") ||
+    requestedHeaders === undefined
+  )
+    return new Response(null, { headers, status: 403 })
+
+  const realm = oidcPublicRealmResolve(database, context.req.header("host"), context.req.url)
+  if (!realm.success) return new Response(null, { headers, status: 403 })
+  const candidate = oidcProtocolCorsPreflightCandidateResolve(
+    database,
+    realm.data.realmId,
+    context.req.query("client_id"),
+    requestOrigin,
+  )
+  if (candidate === undefined) return new Response(null, { headers, status: 403 })
+
+  headers.set("Access-Control-Allow-Origin", requestOrigin)
+  headers.set("Access-Control-Allow-Methods", endpoint.methods.join(", "))
+  headers.set("Access-Control-Allow-Headers", "authorization, content-type")
+  headers.set("Access-Control-Max-Age", "600")
+  return new Response(null, { headers, status: 204 })
+}
+
+function oidcProtocolCorsPreflightCandidateResolve(
+  database: StorageDatabase,
+  realmId: string,
+  clientId: string | undefined,
+  requestOrigin: string,
+): OidcClientRow | undefined {
+  const repository = oidcRepositoryCreate(database.db)
+  if (clientId !== undefined) {
+    const client = repository.clientGet(realmId, clientId)
+    if (!client.success || client.data === null || client.data.status !== "active") return undefined
+    return oidcClientCorsOriginMatches(client.data, requestOrigin) ? client.data : undefined
+  }
+  const clients = repository.clientList(realmId)
+  if (!clients.success) return undefined
+  return clients.data.find((client) => client.status === "active" && oidcClientCorsOriginMatches(client, requestOrigin))
+}
+
+function oidcProtocolCorsClientGet(
+  database: StorageDatabase,
+  realmId: string,
+  clientId: string | undefined,
+): OidcClientRow | undefined {
+  if (clientId === undefined || clientId.length === 0) return undefined
+  const client = oidcRepositoryCreate(database.db).clientGet(realmId, clientId)
+  if (!client.success || client.data === null || client.data.status !== "active") return undefined
+  return client.data
+}
+
+function oidcProtocolCorsClientQueryMatches(
+  context: { readonly req: { readonly query: (name: string) => string | undefined } },
+  client: OidcClientRow | undefined,
+): boolean {
+  const queryClientId = context.req.query("client_id")
+  return client !== undefined && (queryClientId === undefined || queryClientId === client.id)
+}
+
+function oidcProtocolCorsClientSecretAuthorize(client: OidcClientRow | undefined, secret: string | undefined): boolean {
+  if (client === undefined) return false
+  if (client.clientType === "confidential")
+    return secret !== undefined && client.secretHash !== null && oidcClientSecretMatches(secret, client.secretHash)
+  return secret === undefined
+}
+
+function oidcProtocolCorsRequestedHeadersParse(value: string | undefined): string[] | undefined {
+  if (value === undefined || value.trim().length === 0) return []
+  const requested = value.split(",").map((header) => header.trim().toLowerCase())
+  if (requested.some((header) => header.length === 0 || !/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(header))) return undefined
+  if (requested.some((header) => header !== "authorization" && header !== "content-type")) return undefined
+  return requested
+}
+
+async function oidcProtocolCorsFormRead(request: Request): Promise<Record<string, string> | undefined> {
+  try {
+    const values: Record<string, string> = {}
+    for (const [key, value] of new URLSearchParams(await request.clone().text()).entries()) {
+      if (Object.hasOwn(values, key)) return undefined
+      values[key] = value
+    }
+    return values
+  } catch (_error) {
+    return undefined
+  }
+}
+
+async function oidcProtocolCorsJsonRead(request: Request): Promise<Record<string, unknown> | undefined> {
+  try {
+    const body: unknown = await request.clone().json()
+    if (body === null || typeof body !== "object" || Array.isArray(body)) return undefined
+    return body as Record<string, unknown>
+  } catch (_error) {
+    return undefined
+  }
+}
+
+function oidcProtocolCorsBodyValueGet(body: Record<string, unknown> | undefined, name: string): string | undefined {
+  const value = body?.[name]
+  return typeof value === "string" ? value : undefined
+}
+
+function oidcProtocolCorsVarySet(headers: Headers, value: string): void {
+  const values = (headers.get("Vary") ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0)
+  if (!values.some((item) => item.toLowerCase() === value.toLowerCase())) values.push(value)
+  headers.set("Vary", values.join(", "))
 }
 
 type OidcAuthenticatedSession =

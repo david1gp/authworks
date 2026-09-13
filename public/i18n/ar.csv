@@ -428,6 +428,11 @@ admin.navigation.title,التنقل في الإدارة
 admin.oidc.assuranceRequired,تتطلب إدارة إعدادات OpenID Connect تسجيل دخول أقوى وأحدث. سجّل الدخول مرة أخرى للمتابعة.
 admin.oidc.assuranceRequiredTitle,مطلوب تسجيل دخول أقوى
 admin.oidc.clients.consent,الموافقة
+admin.oidc.clients.accessTokenRoleAssertion,Add project roles to access tokens
+admin.oidc.clients.accessTokenRoleAssertionHint,Uses roles effective in the client's configured project and organization context.
+admin.oidc.clients.additionalOrigins,Additional browser origins
+admin.oidc.clients.additionalOriginsHint,"One exact origin per line. Redirect URI origins are already included; wildcards are not supported."
+admin.oidc.clients.compatibility,Compatibility settings
 admin.oidc.clients.consentRequired,مطلوبة
 admin.oidc.clients.consentSkipped,غير مطلوبة
 admin.oidc.clients.create,تسجيل عميل
@@ -438,6 +443,8 @@ admin.oidc.clients.detailTitle,تفاصيل عميل OIDC
 admin.oidc.clients.empty,لا يوجد بعد أي عميل OpenID Connect مسجّل في هذا النطاق.
 admin.oidc.clients.exactMatchHint,معرّف URI واحد في كل سطر. تتم مطابقة كل إعادة توجيه بشكل تام، لذا تُرفض أحرف البدل والاختلافات في النهاية.
 admin.oidc.clients.identifier,معرّف العميل
+admin.oidc.clients.idTokenUserinfoAssertion,Add scoped UserInfo claims to ID tokens
+admin.oidc.clients.idTokenUserinfoAssertionHint,Uses only personal claims allowed by the granted scopes.
 admin.oidc.clients.invalid,أدخل اسم عميل، ومعرّف URI واحداً على الأقل لإعادة التوجيه المطابق تماماً، ونطاقاً واحداً على الأقل.
 admin.oidc.clients.lifecycleChanged,تم تغيير حالة العميل.
 admin.oidc.clients.missingId,يجب اختيار عميل OIDC لهذه الوجهة.

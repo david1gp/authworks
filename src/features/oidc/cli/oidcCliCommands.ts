@@ -39,6 +39,17 @@ type OidcRealmFlags = OidcCliFlags & { readonly realmId?: string }
 type OidcListRealmFlags = OidcListCliFlags & { readonly realmId?: string }
 type OidcClientFlags = OidcRealmFlags & { readonly clientId: string }
 type OidcClientGetFlags = OidcClientFlags & { readonly ifModifiedSince?: string }
+type OidcClientUpdateFlags = OidcClientFlags & {
+  readonly accessTokenRoleAssertion?: boolean
+  readonly additionalOrigins?: string
+  readonly allowedScopes?: string
+  readonly idTokenUserinfoAssertion?: boolean
+  readonly name?: string
+  readonly postLogoutRedirectUris?: string
+  readonly redirectUris?: string
+  readonly requireConsent?: boolean
+  readonly trusted?: boolean
+}
 type OidcConsentFlags = OidcRealmFlags & { readonly userId: string }
 type OidcConsentListFlags = OidcListRealmFlags & { readonly userId: string }
 type OidcCodelineClientEnsureFlags = OidcRealmFlags & {
@@ -56,6 +67,9 @@ const oidcClientCreateCommand = buildCommand({
       redirectUris: string
       postLogoutRedirectUris?: string
       allowedScopes?: string
+      accessTokenRoleAssertion?: boolean
+      additionalOrigins?: string
+      idTokenUserinfoAssertion?: boolean
       trusted?: boolean
       requireConsent?: boolean
     },
@@ -75,6 +89,9 @@ const oidcClientCreateCommand = buildCommand({
         name: flags.name,
         postLogoutRedirectUris: splitValues(flags.postLogoutRedirectUris, []),
         redirectUris: splitValues(flags.redirectUris, []),
+        accessTokenRoleAssertion: flags.accessTokenRoleAssertion,
+        additionalOrigins: splitValues(flags.additionalOrigins, []),
+        idTokenUserinfoAssertion: flags.idTokenUserinfoAssertion,
         requireConsent: flags.requireConsent,
         trusted: flags.trusted,
       }),
@@ -95,6 +112,17 @@ const oidcClientCreateCommand = buildCommand({
       redirectUris: oidcTextFlag("Comma-separated exact redirect URIs"),
       postLogoutRedirectUris: { ...oidcTextFlag("Comma-separated post-logout redirect URIs"), optional: true as const },
       allowedScopes: { ...oidcTextFlag("Comma-separated allowed scopes"), optional: true as const },
+      accessTokenRoleAssertion: {
+        brief: "Include project roles in access tokens",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      additionalOrigins: { ...oidcTextFlag("Comma-separated additional browser origins"), optional: true as const },
+      idTokenUserinfoAssertion: {
+        brief: "Include scoped claims from UserInfo in ID tokens",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
       trusted: { brief: "Skip consent for this client", kind: "boolean" as const, optional: true as const },
       requireConsent: { brief: "Require consent", kind: "boolean" as const, optional: true as const },
     },
@@ -151,9 +179,70 @@ const oidcClientGetCommand = buildCommand({
   docs: { brief: "Get an OIDC client" },
 })
 
+const oidcClientUpdateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: OidcClientUpdateFlags) {
+    const connection = await oidcCliConnectionResolve(this, flags)
+    if (!connection.success) {
+      oidcCliResultWrite(this, connection)
+      return
+    }
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    if (realmId === undefined) return
+    oidcCliResultWrite(
+      this,
+      await oidcCliClientCreate(connection.data).oidcClientUpdate(realmId, flags.clientId, {
+        ...(flags.accessTokenRoleAssertion === undefined
+          ? {}
+          : { accessTokenRoleAssertion: flags.accessTokenRoleAssertion }),
+        ...(flags.additionalOrigins === undefined
+          ? {}
+          : { additionalOrigins: splitValues(flags.additionalOrigins, []) }),
+        ...(flags.allowedScopes === undefined ? {} : { allowedScopes: splitValues(flags.allowedScopes, []) }),
+        ...(flags.idTokenUserinfoAssertion === undefined
+          ? {}
+          : { idTokenUserinfoAssertion: flags.idTokenUserinfoAssertion }),
+        ...(flags.name === undefined ? {} : { name: flags.name }),
+        ...(flags.postLogoutRedirectUris === undefined
+          ? {}
+          : { postLogoutRedirectUris: splitValues(flags.postLogoutRedirectUris, []) }),
+        ...(flags.redirectUris === undefined ? {} : { redirectUris: splitValues(flags.redirectUris, []) }),
+        ...(flags.requireConsent === undefined ? {} : { requireConsent: flags.requireConsent }),
+        ...(flags.trusted === undefined ? {} : { trusted: flags.trusted }),
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...oidcCommonFlags(),
+      realmId: oidcRealmIdFlag(),
+      clientId: oidcIdFlag("Client UUID"),
+      name: { ...oidcTextFlag("Client display name"), optional: true as const },
+      redirectUris: { ...oidcTextFlag("Comma-separated exact redirect URIs"), optional: true as const },
+      postLogoutRedirectUris: { ...oidcTextFlag("Comma-separated post-logout redirect URIs"), optional: true as const },
+      allowedScopes: { ...oidcTextFlag("Comma-separated allowed scopes"), optional: true as const },
+      accessTokenRoleAssertion: {
+        brief: "Include project roles in access tokens",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      additionalOrigins: { ...oidcTextFlag("Comma-separated additional browser origins"), optional: true as const },
+      idTokenUserinfoAssertion: {
+        brief: "Include scoped claims from UserInfo in ID tokens",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      trusted: { brief: "Skip consent for this client", kind: "boolean" as const, optional: true as const },
+      requireConsent: { brief: "Require consent", kind: "boolean" as const, optional: true as const },
+    },
+  },
+  docs: { brief: "Update an OIDC client" },
+})
+
 const oidcCodelineClientEnsureCommand = buildCommand({
   async func(this: ApplicationContext, flags: OidcCodelineClientEnsureFlags) {
-    const connection = await oidcCliConnectionResolve(this, flags)
+    const { envFile: _codelineEnvFile, ...connectionFlags } = flags
+    const connection = await oidcCliConnectionResolve(this, connectionFlags)
     if (!connection.success) {
       oidcCliResultWrite(this, connection)
       return
@@ -546,6 +635,7 @@ export const oidcCliCommands = buildRouteMap({
     multichatProductionOrganizationIdGet: oidcMultichatProductionOrganizationIdGetCommand,
     clientGet: oidcClientGetCommand,
     clientList: oidcClientListCommand,
+    clientUpdate: oidcClientUpdateCommand,
     clientSecretRotate: oidcClientSecretRotateCommand,
     keyCreate: oidcSigningKeyCreateCommand,
     keyList: oidcSigningKeyListCommand,

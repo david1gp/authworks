@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import { oidcClientTypeSchema } from "./oidcClientTypeSchema.js"
+import { oidcOriginSchema } from "./oidcOriginSchema.js"
 import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 import { oidcScopeSchema } from "./oidcScopeSchema.js"
 
@@ -7,8 +8,11 @@ const oidcRedirectUriRequestSchema = v.pipe(v.string(), v.minLength(1), v.maxLen
 
 export const oidcClientCreateRequestSchema = v.strictObject({
   allowedScopes: v.optional(v.pipe(v.array(oidcScopeSchema), v.minLength(1), v.maxLength(100))),
+  accessTokenRoleAssertion: v.optional(v.boolean()),
   applicationId: v.optional(oidcResourceIdSchema),
   clientType: oidcClientTypeSchema,
+  additionalOrigins: v.optional(v.pipe(v.array(oidcOriginSchema), v.maxLength(100))),
+  idTokenUserinfoAssertion: v.optional(v.boolean()),
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   postLogoutRedirectUris: v.optional(v.pipe(v.array(oidcRedirectUriRequestSchema), v.maxLength(100))),
   projectId: v.optional(oidcResourceIdSchema),

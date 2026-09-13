@@ -83,7 +83,10 @@ export function OidcAdminClientDetailView(props: {
               >
                 <form class="grid gap-3 px-3 py-3" onSubmit={state.settingsSubmit}>
                   <OidcAdminClientFormFields
+                    accessTokenRoleAssertion={state.accessTokenRoleAssertion}
+                    additionalOrigins={state.additionalOrigins}
                     idPrefix="oidc-detail"
+                    idTokenUserinfoAssertion={state.idTokenUserinfoAssertion}
                     name={state.name}
                     postLogoutRedirectUris={state.postLogoutRedirectUris}
                     redirectUris={state.redirectUris}

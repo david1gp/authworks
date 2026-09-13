@@ -22,6 +22,7 @@ export const oidcErrorCatalog = [
   { code: "oidc.consent-invalid", httpStatus: 400, retryable: false },
   { code: "oidc.redirect-uri-invalid", httpStatus: 400, retryable: false },
   { code: "oidc.redirect-uri-not-registered", httpStatus: 400, retryable: false },
+  { code: "oidc.origin-invalid", httpStatus: 400, retryable: false },
   { code: "oidc.scope-invalid", httpStatus: 400, retryable: false },
   { code: "oidc.invalid-client", httpStatus: 401, retryable: false },
   { code: "oidc.invalid-token", httpStatus: 401, retryable: false },

@@ -11,6 +11,7 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
+import { oidcClientCompatibilitySettingsValidate } from "../domain/oidcClientCompatibilitySettingsValidate.js"
 import { oidcClientPublicViewCreate } from "../domain/oidcClientPublicViewCreate.js"
 import { oidcRedirectUriValidate } from "../domain/oidcRedirectUriValidate.js"
 import { oidcClientUpdatedEventPayloadSchema } from "../events/oidcClientUpdatedEventPayloadSchema.js"
@@ -58,7 +59,10 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
     if (!clientContext.success) return clientContext
     const updated = repository.clientUpdate(options.realmId, options.clientId, {
       allowedScopes: JSON.stringify(configuration.data.allowedScopes),
+      accessTokenRoleAssertion: configuration.data.accessTokenRoleAssertion ? 1 : 0,
       applicationId: parsed.data.applicationId === undefined ? current.data.applicationId : parsed.data.applicationId,
+      additionalOrigins: JSON.stringify(configuration.data.additionalOrigins),
+      idTokenUserinfoAssertion: configuration.data.idTokenUserinfoAssertion ? 1 : 0,
       name: parsed.data.name ?? current.data.name,
       postLogoutRedirectUris: JSON.stringify(configuration.data.postLogoutRedirectUris),
       projectId: parsed.data.projectId === undefined ? current.data.projectId : parsed.data.projectId,
@@ -72,7 +76,10 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
     if (updated.data === null) return resultErrorCodedCreate(op, "The OIDC client was not found.", "oidc.not-found")
     const payload = v.safeParse(oidcClientUpdatedEventPayloadSchema, {
       allowedScopes: configuration.data.allowedScopes,
+      accessTokenRoleAssertion: configuration.data.accessTokenRoleAssertion,
       clientType: updated.data.clientType,
+      additionalOrigins: configuration.data.additionalOrigins,
+      idTokenUserinfoAssertion: configuration.data.idTokenUserinfoAssertion,
       name: updated.data.name,
       postLogoutRedirectUris: configuration.data.postLogoutRedirectUris,
       redirectUris: configuration.data.redirectUris,
@@ -108,6 +115,9 @@ export function oidcClientUpdate(options: OidcClientUpdateOptions): Result<OidcC
 function oidcClientUpdateConfigurationValidate(
   input: OidcClientUpdateRequest,
   current: {
+    accessTokenRoleAssertion: number
+    additionalOrigins: string
+    idTokenUserinfoAssertion: number
     allowedScopes: string
     postLogoutRedirectUris: string
     redirectUris: string
@@ -115,6 +125,9 @@ function oidcClientUpdateConfigurationValidate(
     trusted: number
   },
 ): Result<{
+  accessTokenRoleAssertion: boolean
+  additionalOrigins: string[]
+  idTokenUserinfoAssertion: boolean
   allowedScopes: string[]
   postLogoutRedirectUris: string[]
   redirectUris: string[]
@@ -125,10 +138,12 @@ function oidcClientUpdateConfigurationValidate(
   let allowedScopes: string[]
   let postLogoutRedirectUris: string[]
   let redirectUris: string[]
+  let additionalOrigins: unknown
   try {
     allowedScopes = input.allowedScopes ?? (JSON.parse(current.allowedScopes) as string[])
     postLogoutRedirectUris = input.postLogoutRedirectUris ?? (JSON.parse(current.postLogoutRedirectUris) as string[])
     redirectUris = input.redirectUris ?? (JSON.parse(current.redirectUris) as string[])
+    additionalOrigins = JSON.parse(current.additionalOrigins ?? "[]")
   } catch (_error) {
     return resultErrorCodedCreate(op, "The OIDC client configuration is invalid.", "oidc.configuration-invalid")
   }
@@ -139,12 +154,26 @@ function oidcClientUpdateConfigurationValidate(
     return resultErrorCodedCreate(op, "OIDC values must be unique.", "oidc.conflict")
   if (new Set(redirectUris).size !== redirectUris.length)
     return resultErrorCodedCreate(op, "OIDC redirect URIs must be unique.", "oidc.conflict")
+  if (
+    !Array.isArray(additionalOrigins) ||
+    !additionalOrigins.every((origin): origin is string => typeof origin === "string")
+  )
+    return resultErrorCodedCreate(op, "The OIDC client configuration is invalid.", "oidc.configuration-invalid")
   for (const uri of [...redirectUris, ...postLogoutRedirectUris]) {
     const valid = oidcRedirectUriValidate(uri)
     if (!valid.success) return valid
   }
+  const compatibility = oidcClientCompatibilitySettingsValidate({
+    accessTokenRoleAssertion: input.accessTokenRoleAssertion ?? current.accessTokenRoleAssertion === 1,
+    additionalOrigins: input.additionalOrigins ?? additionalOrigins,
+    idTokenUserinfoAssertion: input.idTokenUserinfoAssertion ?? current.idTokenUserinfoAssertion === 1,
+  })
+  if (!compatibility.success) return compatibility
   return resultCreate({
     allowedScopes,
+    accessTokenRoleAssertion: compatibility.data.accessTokenRoleAssertion,
+    additionalOrigins: compatibility.data.additionalOrigins,
+    idTokenUserinfoAssertion: compatibility.data.idTokenUserinfoAssertion,
     postLogoutRedirectUris,
     redirectUris,
     requireConsent: input.requireConsent ?? current.requireConsent === 1,
