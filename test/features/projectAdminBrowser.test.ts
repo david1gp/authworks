@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
 import { projectCreate } from "../../src/features/projects/actions/projectCreate.js"
+import { projectRoleCreate } from "../../src/features/projects/actions/projectRoleCreate.js"
 import { projectApiClientCreate } from "../../src/features/projects/client/projectApiClientCreate.js"
 import { projectServerAppCreate } from "../../src/features/projects/server/projectServerAppCreate.js"
 import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
@@ -225,6 +226,15 @@ test("browser project administration enforces delegated permissions, tenant isol
     })
     expect(first.success && second.success).toBe(true)
     if (!first.success || !second.success) return
+    const role = projectRoleCreate({
+      context: system,
+      database,
+      input: { displayName: "Reader", key: "reader" },
+      projectId: first.data.project.id,
+      realmId: realm.data.realm.id,
+    })
+    expect(role.success).toBe(true)
+    if (!role.success) return
     const issued = sessionIssue({
       assurance: "authenticated",
       authenticationMethod: "password",
@@ -261,6 +271,50 @@ test("browser project administration enforces delegated permissions, tenant isol
         })
       ).success,
     ).toBe(true)
+    const missingAssignmentCsrf = await app.request(
+      `https://project-client.example.com/realms/${realm.data.realm.id}/projects/${first.data.project.id}/assignments`,
+      {
+        body: JSON.stringify({ userId: memberUser.data.user.id }),
+        headers: {
+          cookie: `session=${issued.data.token}; csrf=${csrf}`,
+          host: "project-client.example.com",
+          origin: "https://project-client.example.com",
+          "content-type": "application/json",
+        },
+        method: "POST",
+      },
+    )
+    expect(missingAssignmentCsrf.status).toBe(403)
+    const membershipAssignment = await client.projectTenantUserAssignmentCreate(
+      realm.data.realm.id,
+      first.data.project.id,
+      { userId: memberUser.data.user.id },
+    )
+    expect(membershipAssignment).toMatchObject({ success: true, data: { assignment: { roleKeys: [] } } })
+    const roleAssignment = await client.projectTenantUserAssignmentCreate(realm.data.realm.id, first.data.project.id, {
+      roleKeys: ["reader"],
+      userId: user.data.user.id,
+    })
+    expect(roleAssignment).toMatchObject({ success: true, data: { assignment: { roleKeys: ["reader"] } } })
+    if (!membershipAssignment.success || !roleAssignment.success) return
+    const assignments = await client.projectTenantUserAssignmentList(realm.data.realm.id, first.data.project.id)
+    expect(assignments).toMatchObject({
+      success: true,
+      data: { items: [{ roleKeys: [] }, { roleKeys: ["reader"] }] },
+    })
+    const updatedAssignment = await client.projectTenantUserAssignmentUpdate(
+      realm.data.realm.id,
+      first.data.project.id,
+      roleAssignment.data.assignment.id,
+      { roleKeys: [] },
+    )
+    expect(updatedAssignment).toMatchObject({ success: true, data: { assignment: { roleKeys: [] } } })
+    const removedAssignment = await client.projectTenantUserAssignmentRemove(
+      realm.data.realm.id,
+      first.data.project.id,
+      membershipAssignment.data.assignment.id,
+    )
+    expect(removedAssignment).toEqual({ success: true, data: { removed: true } })
 
     const crossRealm = await app.request(
       `https://project-client.example.com/realms/${otherRealm.data.realm.id}/projects`,
@@ -269,6 +323,13 @@ test("browser project administration enforces delegated permissions, tenant isol
       },
     )
     expect(crossRealm.status).toBe(401)
+    const crossRealmAssignments = await app.request(
+      `https://project-client.example.com/realms/${otherRealm.data.realm.id}/projects/${first.data.project.id}/assignments`,
+      {
+        headers: { cookie: `session=${issued.data.token}`, host: "project-client.example.com" },
+      },
+    )
+    expect(crossRealmAssignments.status).toBe(401)
     const memberSession = sessionIssue({
       assurance: "authenticated",
       authenticationMethod: "password",
@@ -284,5 +345,10 @@ test("browser project administration enforces delegated permissions, tenant isol
       headers: { cookie: `session=${memberSession.data.token}`, host: "project-client.example.com" },
     })
     expect(denied.status).toBe(403)
+    const assignmentDenied = await app.request(
+      `https://project-client.example.com/realms/${realm.data.realm.id}/projects/${first.data.project.id}/assignments`,
+      { headers: { cookie: `session=${memberSession.data.token}`, host: "project-client.example.com" } },
+    )
+    expect(assignmentDenied.status).toBe(403)
   })
 })

@@ -4,8 +4,10 @@ import { organizationResourceIdSchema } from "../../organizations/public/organiz
 import { projectGrantSchema } from "./projectGrantSchema.js"
 import { projectRoleSchema } from "./projectRoleSchema.js"
 import { projectSchema } from "./projectSchema.js"
+import { projectUserAssignmentSchema } from "./projectUserAssignmentSchema.js"
 
 export const projectAccountAccessSchema = v.strictObject({
+  assignment: v.optional(projectUserAssignmentSchema),
   grant: v.optional(projectGrantSchema),
   organizationId: organizationResourceIdSchema,
   permissions: v.array(authorizationPermissionSchema),

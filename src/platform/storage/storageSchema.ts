@@ -39,6 +39,7 @@ import { projectApplicationTable } from "../../features/projects/persistence/pro
 import { projectGrantTable } from "../../features/projects/persistence/projectGrantTable.js"
 import { projectRoleTable } from "../../features/projects/persistence/projectRoleTable.js"
 import { projectTable } from "../../features/projects/persistence/projectTable.js"
+import { projectUserAssignmentTable } from "../../features/projects/persistence/projectUserAssignmentTable.js"
 import { realmBootstrapAdminTable } from "../../features/realms/persistence/realmBootstrapAdminTable.js"
 import { realmDomainTable } from "../../features/realms/persistence/realmDomainTable.js"
 import { realmTable } from "../../features/realms/persistence/realmTable.js"
@@ -78,6 +79,7 @@ export const storageSchema = {
   projectGrantTable,
   projectRoleTable,
   projectTable,
+  projectUserAssignmentTable,
   machineCredentialTable,
   machineUserTable,
   oidcAccessTokenTable,

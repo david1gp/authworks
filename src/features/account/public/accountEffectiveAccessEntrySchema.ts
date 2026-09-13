@@ -3,9 +3,11 @@ import { authorizationPermissionSchema } from "../../authorization/public/author
 import { organizationAccountAccessSchema } from "../../organizations/public/organizationAccountAccessSchema.js"
 import { projectGrantSchema } from "../../projects/public/projectGrantSchema.js"
 import { projectSchema } from "../../projects/public/projectSchema.js"
+import { projectUserAssignmentSchema } from "../../projects/public/projectUserAssignmentSchema.js"
 import { accountEffectiveAccessSourceSchema } from "./accountEffectiveAccessSourceSchema.js"
 
 export const accountEffectiveAccessEntrySchema = v.strictObject({
+  assignment: v.optional(projectUserAssignmentSchema),
   grant: v.optional(projectGrantSchema),
   id: v.pipe(v.string(), v.minLength(1), v.maxLength(512)),
   organization: organizationAccountAccessSchema,

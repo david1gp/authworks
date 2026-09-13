@@ -41,6 +41,10 @@ import { projectRoleCreate } from "../actions/projectRoleCreate.js"
 import { projectRoleDelete } from "../actions/projectRoleDelete.js"
 import { projectRoleList } from "../actions/projectRoleList.js"
 import { projectRoleUpdate } from "../actions/projectRoleUpdate.js"
+import { projectUserAssignmentCreate } from "../actions/projectUserAssignmentCreate.js"
+import { projectUserAssignmentList } from "../actions/projectUserAssignmentList.js"
+import { projectUserAssignmentRemove } from "../actions/projectUserAssignmentRemove.js"
+import { projectUserAssignmentUpdate } from "../actions/projectUserAssignmentUpdate.js"
 import { projectUpdate } from "../actions/projectUpdate.js"
 import { projectApplicationCreateRequestSchema } from "../public/projectApplicationCreateRequestSchema.js"
 import { projectApplicationLifecycleRequestSchema } from "../public/projectApplicationLifecycleRequestSchema.js"
@@ -52,6 +56,8 @@ import { projectGrantUpdateRequestSchema } from "../public/projectGrantUpdateReq
 import { projectLifecycleRequestSchema } from "../public/projectLifecycleRequestSchema.js"
 import { projectRoleCreateRequestSchema } from "../public/projectRoleCreateRequestSchema.js"
 import { projectRoleUpdateRequestSchema } from "../public/projectRoleUpdateRequestSchema.js"
+import { projectUserAssignmentCreateRequestSchema } from "../public/projectUserAssignmentCreateRequestSchema.js"
+import { projectUserAssignmentUpdateRequestSchema } from "../public/projectUserAssignmentUpdateRequestSchema.js"
 import { projectUpdateRequestSchema } from "../public/projectUpdateRequestSchema.js"
 
 type ProjectServerAppCreateOptions = {
@@ -218,6 +224,7 @@ function projectRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, auth
 
   projectApplicationRoutesRegister(app, prefix, authenticate)
   projectRoleRoutesRegister(app, prefix, authenticate)
+  projectUserAssignmentRoutesRegister(app, prefix, authenticate)
   projectGrantRoutesRegister(app, prefix, authenticate)
 }
 
@@ -533,6 +540,89 @@ function projectGrantRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string,
         database: projectDatabaseGet(app),
         realmId: projectParamGet(context, "realmId"),
         projectId: projectParamGet(context, "projectId"),
+      }),
+    )
+  })
+}
+
+function projectUserAssignmentRoutesRegister(
+  app: Hono<ProjectServerEnv>,
+  prefix: string,
+  authenticate: ProjectAuthenticator,
+) {
+  app.get(`${prefix}/projects/:projectId/assignments`, (context) => {
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectWrite)
+    if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    if (!query.success) return projectErrorResponseCreate(context, query)
+    return projectResultResponseCreate(
+      context,
+      projectUserAssignmentList({
+        context: authenticated.data,
+        database: projectDatabaseGet(app),
+        projectId: projectParamGet(context, "projectId"),
+        query: query.data,
+        realmId: projectParamGet(context, "realmId"),
+      }),
+    )
+  })
+  app.post(`${prefix}/projects/:projectId/assignments`, async (context) => {
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectWrite)
+    if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const body = await projectRequestJsonRead(context)
+    if (!body.success) return projectErrorResponseCreate(context, body)
+    const input = v.safeParse(projectUserAssignmentCreateRequestSchema, body.data)
+    if (!input.success)
+      return projectErrorResponseCreate(context, {
+        errorMessage: "The project user assignment request is invalid.",
+        op: "projectUserAssignmentCreate",
+      })
+    return projectResultResponseCreate(
+      context,
+      projectUserAssignmentCreate({
+        context: authenticated.data,
+        database: projectDatabaseGet(app),
+        input: input.output,
+        projectId: projectParamGet(context, "projectId"),
+        realmId: projectParamGet(context, "realmId"),
+      }),
+      201,
+    )
+  })
+  app.patch(`${prefix}/projects/:projectId/assignments/:assignmentId`, async (context) => {
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectWrite)
+    if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    const body = await projectRequestJsonRead(context)
+    if (!body.success) return projectErrorResponseCreate(context, body)
+    const input = v.safeParse(projectUserAssignmentUpdateRequestSchema, body.data)
+    if (!input.success)
+      return projectErrorResponseCreate(context, {
+        errorMessage: "The project user assignment update is invalid.",
+        op: "projectUserAssignmentUpdate",
+      })
+    return projectResultResponseCreate(
+      context,
+      projectUserAssignmentUpdate({
+        assignmentId: projectParamGet(context, "assignmentId"),
+        context: authenticated.data,
+        database: projectDatabaseGet(app),
+        input: input.output,
+        projectId: projectParamGet(context, "projectId"),
+        realmId: projectParamGet(context, "realmId"),
+      }),
+    )
+  })
+  app.delete(`${prefix}/projects/:projectId/assignments/:assignmentId`, (context) => {
+    const authenticated = authenticate(context, authorizationPermissionDefinitions.projectWrite)
+    if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
+    return projectResultResponseCreate(
+      context,
+      projectUserAssignmentRemove({
+        assignmentId: projectParamGet(context, "assignmentId"),
+        context: authenticated.data,
+        database: projectDatabaseGet(app),
+        projectId: projectParamGet(context, "projectId"),
+        realmId: projectParamGet(context, "realmId"),
       }),
     )
   })

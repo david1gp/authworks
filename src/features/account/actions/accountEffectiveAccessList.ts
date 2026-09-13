@@ -7,9 +7,13 @@ import { authorizationRoleKeysResolve } from "../../authorization/actions/author
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import { organizationAccountAccessList } from "../../organizations/actions/organizationAccountAccessList.js"
+import { organizationPublicViewCreate } from "../../organizations/domain/organizationPublicViewCreate.js"
+import { organizationRepositoryCreate } from "../../organizations/persistence/organizationRepositoryCreate.js"
 import { projectAccountAccessList } from "../../projects/actions/projectAccountAccessList.js"
+import type { ProjectAccountAccess } from "../../projects/public/projectAccountAccessSchema.js"
 import type { AccountEffectiveAccessEntry } from "../public/accountEffectiveAccessEntrySchema.js"
 import type { AccountEffectiveAccessListResponse } from "../public/accountEffectiveAccessListResponseSchema.js"
+import { userRepositoryCreate } from "../../users/persistence/userRepositoryCreate.js"
 
 type AccountEffectiveAccessListOptions = {
   readonly actor: AuthorizationActorContext
@@ -33,17 +37,28 @@ export function accountEffectiveAccessList(
     return resultErrorCodedCreate(op, "The authenticated account is not available in this realm.", "account.forbidden")
   if (options.query?.sortBy !== undefined && options.query.sortBy !== "id")
     return resultErrorCodedCreate(op, "The effective-access sort is invalid.", "account.invalid")
+  const subjectId = options.subjectId ?? options.actor.actorId
+  const subject = userRepositoryCreate(options.database.db).userGet(options.realmId, subjectId)
+  if (!subject.success) return subject
+  if (subject.data !== null && (subject.data.state !== "active" || subject.data.deletedAt !== null))
+    return listRowsPage({
+      idGet: (entry) => entry.id,
+      query: options.query,
+      rows: [] as AccountEffectiveAccessEntry[],
+      sortValueGet: (entry) => entry.id,
+    })
 
   const organizations = organizationAccountAccessList({
     database: options.database,
     realmId: options.realmId,
-    userId: options.subjectId ?? options.actor.actorId,
+    userId: subjectId,
   })
   if (!organizations.success) return organizations
   const projects = projectAccountAccessList({
     database: options.database,
     organizationIds: organizations.data.items.map((item) => item.organization.id),
     realmId: options.realmId,
+    userId: subjectId,
   })
   if (!projects.success) return projects
 
@@ -60,6 +75,7 @@ export function accountEffectiveAccessList(
     ].sort() as typeof current.permissions
   }
   const organizationById = new Map(organizations.data.items.map((item) => [item.organization.id, item] as const))
+  const organizationRepository = organizationRepositoryCreate(options.database.db)
   for (const organization of organizations.data.items) {
     const resolved = authorizationRoleKeysResolve({ roles: organization.membership.roles })
     if (!resolved.success) return resolved
@@ -72,6 +88,27 @@ export function accountEffectiveAccessList(
     })
   }
   for (const access of projects.data.items) {
+    const assignment = access.assignment
+    if (assignment !== undefined) {
+      const organization = directAssignmentOrganizationAccessCreate({
+        access: { assignment, organizationId: access.organizationId },
+        organizationById,
+        organizationRepository,
+        realmId: options.realmId,
+      })
+      if (!organization.success) return organization
+      if (organization.data === null) continue
+      add({
+        assignment,
+        id: `project:${access.project.id}:assignment:${assignment.id}`,
+        organization: organization.data,
+        permissions: access.permissions,
+        project: access.project,
+        roleKeys: access.roleKeys,
+        source: "project-assignment",
+      })
+      continue
+    }
     const organization = organizationById.get(access.organizationId)
     if (organization === undefined) continue
     const resolved = authorizationRoleKeysResolve({ roles: organization.membership.roles })
@@ -100,4 +137,55 @@ export function accountEffectiveAccessList(
     rows: [...entries.values()],
     sortValueGet: (entry) => entry.id,
   })
+}
+
+function directAssignmentOrganizationAccessCreate(options: {
+  readonly access: {
+    readonly assignment: NonNullable<ProjectAccountAccess["assignment"]>
+    readonly organizationId: string
+  }
+  readonly organizationById: ReadonlyMap<string, AccountEffectiveAccessEntry["organization"]>
+  readonly organizationRepository: ReturnType<typeof organizationRepositoryCreate>
+  readonly realmId: string
+}): Result<AccountEffectiveAccessEntry["organization"] | null> {
+  const existing = options.organizationById.get(options.access.organizationId)
+  if (existing !== undefined)
+    return {
+      data: {
+        membership: {
+          createdAt: options.access.assignment.createdAt,
+          id: options.access.assignment.id,
+          organizationId: options.access.organizationId,
+          realmId: options.realmId,
+          roles: [],
+          updatedAt: options.access.assignment.updatedAt,
+          userId: options.access.assignment.userId,
+        },
+        organization: existing.organization,
+      },
+      success: true,
+    }
+  const organization = options.organizationRepository.organizationGet(options.access.organizationId)
+  if (!organization.success) return organization
+  if (
+    organization.data === null ||
+    organization.data.realmId !== options.realmId ||
+    organization.data.status !== "active"
+  )
+    return { data: null, success: true }
+  return {
+    data: {
+      membership: {
+        createdAt: options.access.assignment.createdAt,
+        id: options.access.assignment.id,
+        organizationId: options.access.organizationId,
+        realmId: options.realmId,
+        roles: [],
+        updatedAt: options.access.assignment.updatedAt,
+        userId: options.access.assignment.userId,
+      },
+      organization: organizationPublicViewCreate(organization.data),
+    },
+    success: true,
+  }
 }

@@ -2,25 +2,33 @@ import { type Result } from "#result"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationRoleKeysResolve } from "../../authorization/actions/authorizationRoleKeysResolve.js"
+import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import { organizationAccountAccessActiveIdList } from "../../organizations/actions/organizationAccountAccessActiveIdList.js"
 import { projectGrantPublicViewCreate } from "../domain/projectGrantPublicViewCreate.js"
 import { projectPublicViewCreate } from "../domain/projectPublicViewCreate.js"
 import { projectRoleKeysDecode } from "../domain/projectRoleKeysDecode.js"
 import { projectRolePublicViewCreate } from "../domain/projectRolePublicViewCreate.js"
+import { projectUserAssignmentPublicViewCreate } from "../domain/projectUserAssignmentPublicViewCreate.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
 import type { ProjectAccountAccessListResponse } from "../public/projectAccountAccessListResponseSchema.js"
+import { userRepositoryCreate } from "../../users/persistence/userRepositoryCreate.js"
 
 type ProjectAccountAccessListOptions = {
   readonly database: StorageDatabase
   readonly organizationIds: readonly string[]
   readonly realmId: string
+  readonly userId?: string
 }
 
 export function projectAccountAccessList(
   options: ProjectAccountAccessListOptions,
 ): Result<ProjectAccountAccessListResponse> {
   const op = "projectAccountAccessList"
-  if (options.realmId.length === 0 || options.organizationIds.some((organizationId) => organizationId.length === 0))
+  if (
+    options.realmId.length === 0 ||
+    options.organizationIds.some((organizationId) => organizationId.length === 0) ||
+    (options.userId !== undefined && options.userId.length === 0)
+  )
     return resultErrorCodedCreate(op, "The account access context is invalid.", "projects.invalid")
   const organizationIds = new Set(options.organizationIds)
   const repository = projectRepositoryCreate(options.database.db)
@@ -33,6 +41,14 @@ export function projectAccountAccessList(
   })
   if (!activeOwnerOrganizations.success) return activeOwnerOrganizations
   const activeOwnerOrganizationIds = new Set(activeOwnerOrganizations.data)
+  let directAssignmentsEnabled = false
+  if (options.userId !== undefined) {
+    const user = userRepositoryCreate(options.database.db).userGet(options.realmId, options.userId)
+    if (!user.success) return user
+    if (user.data === null || user.data.state !== "active" || user.data.deletedAt !== null)
+      return { data: { items: [] }, success: true }
+    directAssignmentsEnabled = true
+  }
   const items: ProjectAccountAccessListResponse["items"] = []
   const seen = new Set<string>()
 
@@ -92,11 +108,39 @@ export function projectAccountAccessList(
         roleKeys: activeGrantRoleKeys,
       })
     }
+    if (!directAssignmentsEnabled || options.userId === undefined) continue
+    const assignment = repository.projectUserAssignmentGetByProjectUser(options.realmId, project.id, options.userId)
+    if (!assignment.success) return assignment
+    if (assignment.data === null) continue
+    const roleKeys = projectRoleKeysDecode(assignment.data.roleKeys)
+    if (!roleKeys.success) return roleKeys
+    const activeAssignmentRoleKeys = roleKeys.data.filter((roleKey) => activeRoleKeys.has(roleKey))
+    const permissions = authorizationRoleKeysResolve({ roles: activeAssignmentRoleKeys })
+    if (!permissions.success) return permissions
+    const assignmentView = projectUserAssignmentPublicViewCreate(assignment.data)
+    if (!assignmentView.success) return assignmentView
+    const id = `assignment:${project.id}:${assignment.data.id}`
+    if (seen.has(id)) continue
+    seen.add(id)
+    items.push({
+      assignment: { ...assignmentView.data, roleKeys: activeAssignmentRoleKeys },
+      organizationId: project.organizationId,
+      permissions: permissions.data.permissions.filter(projectAssignmentPermissionAllowed),
+      project: projectPublicViewCreate(project),
+      roleDefinitions,
+      roleKeys: activeAssignmentRoleKeys,
+    })
   }
   items.sort((left, right) => {
-    const leftId = `${left.project.id}:${left.organizationId}:${left.grant === undefined ? "owner" : "grant"}`
-    const rightId = `${right.project.id}:${right.organizationId}:${right.grant === undefined ? "owner" : "grant"}`
+    const leftSource = left.assignment === undefined ? (left.grant === undefined ? "owner" : "grant") : "assignment"
+    const rightSource = right.assignment === undefined ? (right.grant === undefined ? "owner" : "grant") : "assignment"
+    const leftId = `${left.project.id}:${left.organizationId}:${leftSource}`
+    const rightId = `${right.project.id}:${right.organizationId}:${rightSource}`
     return leftId.localeCompare(rightId)
   })
   return { data: { items }, success: true }
+}
+
+function projectAssignmentPermissionAllowed(permission: AuthorizationPermission): boolean {
+  return permission === "project.read" || permission === "project.role.read" || permission === "project.app.read"
 }

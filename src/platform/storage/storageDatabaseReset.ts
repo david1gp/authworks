@@ -122,6 +122,7 @@ export function storageDatabaseReset(database: StorageDatabase): Result<void> {
       transaction.run("DROP TABLE IF EXISTS password_lockouts")
       transaction.run("DROP TABLE IF EXISTS password_policies")
       transaction.run("DROP TABLE IF EXISTS password_credentials")
+      transaction.run("DROP TABLE IF EXISTS project_user_assignments")
       transaction.run("DROP TABLE IF EXISTS project_grants")
       transaction.run("DROP TABLE IF EXISTS project_roles")
       transaction.run("DROP TABLE IF EXISTS project_applications")

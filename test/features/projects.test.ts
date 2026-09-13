@@ -21,6 +21,7 @@ import { projectRoleCreate } from "../../src/features/projects/actions/projectRo
 import { projectRoleList } from "../../src/features/projects/actions/projectRoleList.js"
 import { projectRoleUpdate } from "../../src/features/projects/actions/projectRoleUpdate.js"
 import { projectUpdate } from "../../src/features/projects/actions/projectUpdate.js"
+import { userCreate } from "../../src/features/users/actions/userCreate.js"
 import { projectApiClientCreate } from "../../src/features/projects/client/projectApiClientCreate.js"
 import { projectServerAppCreate } from "../../src/features/projects/server/projectServerAppCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
@@ -629,6 +630,61 @@ test("project routes, API client, and CLI expose public contracts", async () => 
     })
     expect(created.success).toBe(true)
     if (!created.success) return
+    const role = projectRoleCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { displayName: "Reader", key: "reader" },
+      projectId: created.data.project.id,
+      realmId: realm.id,
+    })
+    expect(role.success).toBe(true)
+    if (!role.success) return
+    const membershipUser = userCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        email: "api-membership@example.com",
+        profile: { displayName: "API membership" },
+        userName: "api-membership",
+      },
+      realmId: realm.id,
+    })
+    const roleUser = userCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { email: "api-role@example.com", profile: { displayName: "API role" }, userName: "api-role" },
+      realmId: realm.id,
+    })
+    expect(membershipUser.success && roleUser.success).toBe(true)
+    if (!membershipUser.success || !roleUser.success) return
+    const membershipAssignment = await client.projectUserAssignmentCreate(realm.id, created.data.project.id, {
+      userId: membershipUser.data.user.id,
+    })
+    expect(membershipAssignment).toMatchObject({ success: true, data: { assignment: { roleKeys: [] } } })
+    const roleAssignment = await client.projectUserAssignmentCreate(realm.id, created.data.project.id, {
+      roleKeys: ["reader"],
+      userId: roleUser.data.user.id,
+    })
+    expect(roleAssignment).toMatchObject({ success: true, data: { assignment: { roleKeys: ["reader"] } } })
+    if (!membershipAssignment.success || !roleAssignment.success) return
+    const assignments = await client.projectUserAssignmentList(realm.id, created.data.project.id)
+    expect(assignments).toMatchObject({
+      success: true,
+      data: { items: [{ roleKeys: [] }, { roleKeys: ["reader"] }] },
+    })
+    const updatedAssignment = await client.projectUserAssignmentUpdate(
+      realm.id,
+      created.data.project.id,
+      roleAssignment.data.assignment.id,
+      { roleKeys: [] },
+    )
+    expect(updatedAssignment).toMatchObject({ success: true, data: { assignment: { roleKeys: [] } } })
+    const removedAssignment = await client.projectUserAssignmentRemove(
+      realm.id,
+      created.data.project.id,
+      membershipAssignment.data.assignment.id,
+    )
+    expect(removedAssignment).toEqual({ success: true, data: { removed: true } })
     const fetched = await client.projectGet(realm.id, created.data.project.id)
     expect(fetched.success).toBe(true)
     if (!fetched.success || fetched.status !== "current") return
@@ -658,14 +714,22 @@ test("project routes, API client, and CLI expose public contracts", async () => 
     expect(unchanged.status).toBe("unchanged")
     const listed = await client.projectList(realm.id)
     expect(listed.success).toBe(true)
+    const otherRealm = await createRealm(database, "api-projects-other.example.com")
+    const crossRealmAssignments = await client.projectUserAssignmentList(otherRealm.id, created.data.project.id)
+    expect(crossRealmAssignments).toMatchObject({ code: "projects.not-found", statusCode: 404, success: false })
     const unauthorized = await projectApiClientCreate({
       baseUrl: "http://server.test",
       fetch: async (input, init) => app.request(input.toString(), init),
     }).projectList(realm.id)
     expect(unauthorized.success).toBe(false)
+    const unauthorizedAssignments = await projectApiClientCreate({
+      baseUrl: "http://server.test",
+      fetch: async (input, init) => app.request(input.toString(), init),
+    }).projectUserAssignmentList(realm.id, created.data.project.id)
+    expect(unauthorizedAssignments).toMatchObject({ code: "projects.unauthorized", statusCode: 401, success: false })
   })
   const helpProcess = Bun.spawn(["bun", "src/outputs/cli.ts", "projects", "--help"], { stderr: "pipe", stdout: "pipe" })
   const helpOutput = await new Response(helpProcess.stdout).text()
   expect(await helpProcess.exited).toBe(0)
-  expect(helpOutput).toContain("Project, application, role, and grant administration")
+  expect(helpOutput).toContain("Project, application, role, grant, and assignment administration")
 })

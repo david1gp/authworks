@@ -7,6 +7,7 @@ import { type ProjectApplicationRow, projectApplicationTable } from "./projectAp
 import { type ProjectGrantRow, projectGrantTable } from "./projectGrantTable.js"
 import { type ProjectRoleRow, projectRoleTable } from "./projectRoleTable.js"
 import { type ProjectRow, projectTable } from "./projectTable.js"
+import { type ProjectUserAssignmentRow, projectUserAssignmentTable } from "./projectUserAssignmentTable.js"
 
 type ProjectInsert = typeof projectTable.$inferInsert
 type ProjectUpdate = Partial<ProjectInsert>
@@ -16,6 +17,8 @@ type ProjectRoleInsert = typeof projectRoleTable.$inferInsert
 type ProjectRoleUpdate = Partial<ProjectRoleInsert>
 type ProjectGrantInsert = typeof projectGrantTable.$inferInsert
 type ProjectGrantUpdate = Partial<ProjectGrantInsert>
+type ProjectUserAssignmentInsert = typeof projectUserAssignmentTable.$inferInsert
+type ProjectUserAssignmentUpdate = Partial<ProjectUserAssignmentInsert>
 
 export function projectRepositoryCreate(database: StorageExecutor) {
   return {
@@ -264,6 +267,132 @@ export function projectRepositoryCreate(database: StorageExecutor) {
         return resultErrorCodedCreate(
           "projectGrantUpdate",
           "The project grant could not be updated.",
+          "projects.write-failed",
+        )
+      }
+    },
+
+    projectUserAssignmentCreate(input: ProjectUserAssignmentInsert): Result<ProjectUserAssignmentRow> {
+      try {
+        const row = database.insert(projectUserAssignmentTable).values(input).returning().get()
+        if (row === undefined)
+          return resultErrorCodedCreate(
+            "projectUserAssignmentCreate",
+            "The project user assignment could not be created.",
+            "projects.write-failed",
+          )
+        return resultCreate(row)
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectUserAssignmentCreate",
+          "The project user assignment could not be created.",
+          "projects.write-failed",
+        )
+      }
+    },
+
+    projectUserAssignmentDelete(assignmentId: string): Result<ProjectUserAssignmentRow | null> {
+      try {
+        return resultCreate(
+          database
+            .delete(projectUserAssignmentTable)
+            .where(eq(projectUserAssignmentTable.id, assignmentId))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectUserAssignmentDelete",
+          "The project user assignment could not be removed.",
+          "projects.write-failed",
+        )
+      }
+    },
+
+    projectUserAssignmentGet(assignmentId: string): Result<ProjectUserAssignmentRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(projectUserAssignmentTable)
+            .where(eq(projectUserAssignmentTable.id, assignmentId))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectUserAssignmentGet",
+          "The project user assignments could not be read.",
+          "projects.read-failed",
+        )
+      }
+    },
+
+    projectUserAssignmentGetByProjectUser(
+      realmId: string,
+      projectId: string,
+      userId: string,
+    ): Result<ProjectUserAssignmentRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(projectUserAssignmentTable)
+            .where(
+              and(
+                eq(projectUserAssignmentTable.realmId, realmId),
+                eq(projectUserAssignmentTable.projectId, projectId),
+                eq(projectUserAssignmentTable.userId, userId),
+              ),
+            )
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectUserAssignmentGetByProjectUser",
+          "The project user assignment could not be read.",
+          "projects.read-failed",
+        )
+      }
+    },
+
+    projectUserAssignmentList(realmId: string, projectId: string): Result<ProjectUserAssignmentRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(projectUserAssignmentTable)
+            .where(
+              and(eq(projectUserAssignmentTable.realmId, realmId), eq(projectUserAssignmentTable.projectId, projectId)),
+            )
+            .orderBy(asc(projectUserAssignmentTable.createdAt), asc(projectUserAssignmentTable.id))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectUserAssignmentList",
+          "The project user assignments could not be read.",
+          "projects.read-failed",
+        )
+      }
+    },
+
+    projectUserAssignmentUpdate(
+      assignmentId: string,
+      input: ProjectUserAssignmentUpdate,
+    ): Result<ProjectUserAssignmentRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(projectUserAssignmentTable)
+            .set(input)
+            .where(eq(projectUserAssignmentTable.id, assignmentId))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectUserAssignmentUpdate",
+          "The project user assignment could not be updated.",
           "projects.write-failed",
         )
       }

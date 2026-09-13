@@ -479,6 +479,18 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS project_grants_granted_organization_id_idx ON project_grants (granted_organization_id)",
     )
     database.run(
+      "CREATE TABLE IF NOT EXISTS project_user_assignments (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, project_id TEXT NOT NULL, user_id TEXT NOT NULL, role_keys TEXT NOT NULL CHECK (json_valid(role_keys)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, project_id, user_id), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS project_user_assignments_realm_id_idx ON project_user_assignments (realm_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS project_user_assignments_project_id_idx ON project_user_assignments (project_id)",
+    )
+    database.run(
+      "CREATE INDEX IF NOT EXISTS project_user_assignments_user_id_idx ON project_user_assignments (user_id)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS machine_users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, display_name TEXT NOT NULL, scopes TEXT NOT NULL CHECK (json_valid(scopes)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     database.run("CREATE INDEX IF NOT EXISTS machine_users_realm_id_idx ON machine_users (realm_id)")

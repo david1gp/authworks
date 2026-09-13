@@ -14,4 +14,7 @@ export const projectEventTypes = {
   roleUpdated: "project.role_updated",
   statusChanged: "project.status_changed",
   updated: "project.updated",
+  userAssignmentCreated: "project.user_assignment_created",
+  userAssignmentRemoved: "project.user_assignment_removed",
+  userAssignmentUpdated: "project.user_assignment_updated",
 } as const

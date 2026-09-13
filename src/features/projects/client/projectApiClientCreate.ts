@@ -73,6 +73,26 @@ import {
   projectRoleUpdateRequestSchema,
 } from "../public/projectRoleUpdateRequestSchema.js"
 import { type ProjectUpdateRequest, projectUpdateRequestSchema } from "../public/projectUpdateRequestSchema.js"
+import {
+  type ProjectUserAssignmentCreateRequest,
+  projectUserAssignmentCreateRequestSchema,
+} from "../public/projectUserAssignmentCreateRequestSchema.js"
+import {
+  type ProjectUserAssignmentListResponse,
+  projectUserAssignmentListResponseSchema,
+} from "../public/projectUserAssignmentListResponseSchema.js"
+import {
+  type ProjectUserAssignmentRemoveResponse,
+  projectUserAssignmentRemoveResponseSchema,
+} from "../public/projectUserAssignmentRemoveResponseSchema.js"
+import {
+  type ProjectUserAssignmentResponse,
+  projectUserAssignmentResponseSchema,
+} from "../public/projectUserAssignmentResponseSchema.js"
+import {
+  type ProjectUserAssignmentUpdateRequest,
+  projectUserAssignmentUpdateRequestSchema,
+} from "../public/projectUserAssignmentUpdateRequestSchema.js"
 
 type ProjectApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 
@@ -454,6 +474,69 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
         )
       return browserRequest(projectTenantPath(realmId, projectId), patchRequest(parsed.output), projectResponseSchema)
     },
+    projectTenantUserAssignmentCreate(
+      realmId: string,
+      projectId: string,
+      input: ProjectUserAssignmentCreateRequest,
+    ): Promise<Result<ProjectUserAssignmentResponse>> {
+      const parsed = v.safeParse(projectUserAssignmentCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantUserAssignmentCreate",
+            "The project user assignment request is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/assignments`,
+        jsonRequest(parsed.output),
+        projectUserAssignmentResponseSchema,
+      )
+    },
+    projectTenantUserAssignmentList(
+      realmId: string,
+      projectId: string,
+      query?: ListQuery,
+    ): Promise<Result<ProjectUserAssignmentListResponse>> {
+      return browserRequest(
+        projectListPath(`${projectTenantPath(realmId, projectId)}/assignments`, query),
+        { method: "GET" },
+        projectUserAssignmentListResponseSchema,
+      )
+    },
+    projectTenantUserAssignmentRemove(
+      realmId: string,
+      projectId: string,
+      assignmentId: string,
+    ): Promise<Result<ProjectUserAssignmentRemoveResponse>> {
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/assignments/${encodeURIComponent(assignmentId)}`,
+        { method: "DELETE" },
+        projectUserAssignmentRemoveResponseSchema,
+      )
+    },
+    projectTenantUserAssignmentUpdate(
+      realmId: string,
+      projectId: string,
+      assignmentId: string,
+      input: ProjectUserAssignmentUpdateRequest,
+    ): Promise<Result<ProjectUserAssignmentResponse>> {
+      const parsed = v.safeParse(projectUserAssignmentUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantUserAssignmentUpdate",
+            "The project user assignment update is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return browserRequest(
+        `${projectTenantPath(realmId, projectId)}/assignments/${encodeURIComponent(assignmentId)}`,
+        patchRequest(parsed.output),
+        projectUserAssignmentResponseSchema,
+      )
+    },
     projectAccessCheck(realmId: string, projectId: string): Promise<Result<ProjectAccessResponse>> {
       return request(`${projectPath(realmId, projectId)}/access`, { method: "GET" }, projectAccessResponseSchema)
     },
@@ -728,6 +811,69 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
           resultErrorCodedCreate("projectApiClientUpdate", "The project update is invalid.", "projects.invalid"),
         )
       return request(projectPath(realmId, projectId), patchRequest(parsed.output), projectResponseSchema)
+    },
+    projectUserAssignmentCreate(
+      realmId: string,
+      projectId: string,
+      input: ProjectUserAssignmentCreateRequest,
+    ): Promise<Result<ProjectUserAssignmentResponse>> {
+      const parsed = v.safeParse(projectUserAssignmentCreateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientUserAssignmentCreate",
+            "The project user assignment request is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return request(
+        `${projectPath(realmId, projectId)}/assignments`,
+        jsonRequest(parsed.output),
+        projectUserAssignmentResponseSchema,
+      )
+    },
+    projectUserAssignmentList(
+      realmId: string,
+      projectId: string,
+      query?: ListQuery,
+    ): Promise<Result<ProjectUserAssignmentListResponse>> {
+      return request(
+        projectListPath(`${projectPath(realmId, projectId)}/assignments`, query),
+        { method: "GET" },
+        projectUserAssignmentListResponseSchema,
+      )
+    },
+    projectUserAssignmentRemove(
+      realmId: string,
+      projectId: string,
+      assignmentId: string,
+    ): Promise<Result<ProjectUserAssignmentRemoveResponse>> {
+      return request(
+        `${projectPath(realmId, projectId)}/assignments/${encodeURIComponent(assignmentId)}`,
+        { method: "DELETE" },
+        projectUserAssignmentRemoveResponseSchema,
+      )
+    },
+    projectUserAssignmentUpdate(
+      realmId: string,
+      projectId: string,
+      assignmentId: string,
+      input: ProjectUserAssignmentUpdateRequest,
+    ): Promise<Result<ProjectUserAssignmentResponse>> {
+      const parsed = v.safeParse(projectUserAssignmentUpdateRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientUserAssignmentUpdate",
+            "The project user assignment update is invalid.",
+            "projects.invalid",
+          ),
+        )
+      return request(
+        `${projectPath(realmId, projectId)}/assignments/${encodeURIComponent(assignmentId)}`,
+        patchRequest(parsed.output),
+        projectUserAssignmentResponseSchema,
+      )
     },
   }
 }

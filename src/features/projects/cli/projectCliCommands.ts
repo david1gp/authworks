@@ -1,13 +1,20 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
+import * as v from "valibot"
+import { resultCreate } from "../../../platform/errors/resultCreate.js"
+import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
+import { authworksLocalCredentialLookup } from "../../connectionProfiles/public/index.js"
+import { userResourceIdSchema } from "../../users/public/userResourceIdSchema.js"
 import { projectApiClientCreate } from "../client/projectApiClientCreate.js"
 
 type ProjectCliFlags = {
+  readonly envFile?: string
+  readonly project?: string
   readonly profile?: string
   readonly server?: string
   readonly systemToken?: string
@@ -19,8 +26,9 @@ type ProjectListCliFlags = ProjectCliFlags & {
   readonly sortBy?: string
   readonly sortDirection?: "asc" | "desc"
 }
-type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId: string; readonly realmId?: string }
+type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId?: string; readonly realmId?: string }
 type ProjectGetCliFlags = ProjectIdCliFlags & { readonly ifModifiedSince?: string }
+type ProjectUserAssignmentCliFlags = ProjectIdCliFlags & { readonly assignmentId: string }
 
 const projectCreateCommand = buildCommand({
   async func(
@@ -75,12 +83,13 @@ const projectGetCommand = buildCommand({
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
     projectCliResultWrite(
       this,
       await projectCliClientCreate(connection.data).projectGet(
         realmId,
-        flags.projectId,
+        projectId,
         flags.ifModifiedSince === undefined ? undefined : { ifModifiedSince: flags.ifModifiedSince },
       ),
       [connection.data.token, connection.data.systemToken],
@@ -90,7 +99,7 @@ const projectGetCommand = buildCommand({
     flags: {
       ...projectCommonFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
       ifModifiedSince: ifModifiedSinceFlag(),
     },
   },
@@ -102,10 +111,11 @@ const projectUpdateCommand = buildCommand({
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(connection.data).projectUpdate(realmId, flags.projectId, { name: flags.name }),
+      await projectCliClientCreate(connection.data).projectUpdate(realmId, projectId, { name: flags.name }),
       [connection.data.token, connection.data.systemToken],
     )
   },
@@ -113,7 +123,7 @@ const projectUpdateCommand = buildCommand({
     flags: {
       ...projectCommonFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
       name: textFlag("Project name"),
     },
   },
@@ -125,10 +135,11 @@ const projectLifecycleCommand = buildCommand({
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(connection.data).projectLifecycleSet(realmId, flags.projectId, {
+      await projectCliClientCreate(connection.data).projectLifecycleSet(realmId, projectId, {
         status: flags.status,
       }),
       [connection.data.token, connection.data.systemToken],
@@ -138,7 +149,7 @@ const projectLifecycleCommand = buildCommand({
     flags: {
       ...projectCommonFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
       status: statusFlag(),
     },
   },
@@ -153,10 +164,11 @@ const projectApplicationCreateCommand = buildCommand({
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(connection.data).projectApplicationCreate(realmId, flags.projectId, {
+      await projectCliClientCreate(connection.data).projectApplicationCreate(realmId, projectId, {
         applicationType: flags.applicationType,
         name: flags.name,
       }),
@@ -167,7 +179,7 @@ const projectApplicationCreateCommand = buildCommand({
     flags: {
       ...projectCommonFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
       name: textFlag("Application name"),
       applicationType: applicationTypeFlag(),
     },
@@ -180,12 +192,13 @@ const projectApplicationListCommand = buildCommand({
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
     projectCliResultWrite(
       this,
       await projectCliClientCreate(connection.data).projectApplicationList(
         realmId,
-        flags.projectId,
+        projectId,
         projectListQueryCreate(flags),
       ),
       [connection.data.token, connection.data.systemToken],
@@ -196,7 +209,7 @@ const projectApplicationListCommand = buildCommand({
       ...projectCommonFlags(),
       ...projectListFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
     },
   },
   docs: { brief: "List applications" },
@@ -207,10 +220,11 @@ const projectRoleCreateCommand = buildCommand({
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(connection.data).projectRoleCreate(realmId, flags.projectId, {
+      await projectCliClientCreate(connection.data).projectRoleCreate(realmId, projectId, {
         displayName: flags.displayName,
         key: flags.key,
       }),
@@ -221,7 +235,7 @@ const projectRoleCreateCommand = buildCommand({
     flags: {
       ...projectCommonFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
       key: textFlag("Role key"),
       displayName: textFlag("Role display name"),
     },
@@ -234,14 +248,11 @@ const projectRoleListCommand = buildCommand({
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(connection.data).projectRoleList(
-        realmId,
-        flags.projectId,
-        projectListQueryCreate(flags),
-      ),
+      await projectCliClientCreate(connection.data).projectRoleList(realmId, projectId, projectListQueryCreate(flags)),
       [connection.data.token, connection.data.systemToken],
     )
   },
@@ -250,7 +261,7 @@ const projectRoleListCommand = buildCommand({
       ...projectCommonFlags(),
       ...projectListFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
     },
   },
   docs: { brief: "List project roles" },
@@ -267,11 +278,12 @@ const projectGrantCreateCommand = buildCommand({
     })
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
     const grantedOrganizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
-    if (realmId === undefined || grantedOrganizationId === undefined) return
+    if (realmId === undefined || projectId === undefined || grantedOrganizationId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(connection.data).projectGrantCreate(realmId, flags.projectId, {
+      await projectCliClientCreate(connection.data).projectGrantCreate(realmId, projectId, {
         grantedOrganizationId,
         roleKeys: flags.roleKeys.length === 0 ? [] : flags.roleKeys.split(","),
       }),
@@ -282,7 +294,7 @@ const projectGrantCreateCommand = buildCommand({
     flags: {
       ...projectCommonFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
       grantedOrganizationId: projectScopeIdFlag("Granted organization UUID"),
       roleKeys: textFlag("Comma-separated project role keys"),
     },
@@ -295,12 +307,67 @@ const projectGrantListCommand = buildCommand({
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
     projectCliResultWrite(
       this,
-      await projectCliClientCreate(connection.data).projectGrantList(
+      await projectCliClientCreate(connection.data).projectGrantList(realmId, projectId, projectListQueryCreate(flags)),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      ...projectListFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+    },
+  },
+  docs: { brief: "List project grants" },
+})
+
+const projectUserAssignmentCreateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectIdCliFlags & { roleKeys?: string; userId: string }) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
+    const userId = await projectUserAssignmentUserIdResolve(this, flags)
+    if (!userId.success) return projectCliResultWrite(this, userId)
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectUserAssignmentCreate(realmId, projectId, {
+        ...(flags.roleKeys === undefined ? {} : { roleKeys: projectUserAssignmentRoleKeysParse(flags.roleKeys) }),
+        userId: userId.data,
+      }),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      userId: idFlag("User UUID or local credential alias"),
+      roleKeys: { ...textFlag("Comma-separated project role keys"), optional: true as const },
+    },
+  },
+  docs: { brief: "Assign a user to a project" },
+})
+
+const projectUserAssignmentListCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectListCliFlags & ProjectIdCliFlags) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectUserAssignmentList(
         realmId,
-        flags.projectId,
+        projectId,
         projectListQueryCreate(flags),
       ),
       [connection.data.token, connection.data.systemToken],
@@ -311,14 +378,82 @@ const projectGrantListCommand = buildCommand({
       ...projectCommonFlags(),
       ...projectListFlags(),
       realmId: projectScopeIdFlag("Realm UUID"),
-      projectId: idFlag("Project UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
     },
   },
-  docs: { brief: "List project grants" },
+  docs: { brief: "List project user assignments" },
+})
+
+const projectUserAssignmentUpdateCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectUserAssignmentCliFlags & { roleKeys?: string }) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectUserAssignmentUpdate(
+        realmId,
+        projectId,
+        flags.assignmentId,
+        {
+          ...(flags.roleKeys === undefined ? {} : { roleKeys: projectUserAssignmentRoleKeysParse(flags.roleKeys) }),
+        },
+      ),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      assignmentId: idFlag("Assignment UUID"),
+      roleKeys: { ...textFlag("Comma-separated project role keys; empty clears roles"), optional: true as const },
+    },
+  },
+  docs: { brief: "Update a project user assignment" },
+})
+
+const projectUserAssignmentRemoveCommand = buildCommand({
+  async func(this: ApplicationContext, flags: ProjectUserAssignmentCliFlags) {
+    const connection = await projectCliConnectionResolve(this, flags)
+    if (!connection.success) return projectCliResultWrite(this, connection)
+    const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
+    const projectId = projectIdResolve(this, connection.data.projectId)
+    if (realmId === undefined || projectId === undefined) return
+    projectCliResultWrite(
+      this,
+      await projectCliClientCreate(connection.data).projectUserAssignmentRemove(realmId, projectId, flags.assignmentId),
+      [connection.data.token, connection.data.systemToken],
+    )
+  },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      realmId: projectScopeIdFlag("Realm UUID"),
+      projectId: projectScopeIdFlag("Project UUID"),
+      assignmentId: idFlag("Assignment UUID"),
+    },
+  },
+  docs: { brief: "Remove a project user assignment" },
 })
 
 export const projectCliCommands = buildRouteMap({
+  aliases: {
+    assign: "assignmentCreate",
+    assignmentAssign: "assignmentCreate",
+    assignmentEdit: "assignmentUpdate",
+    assignmentUnassign: "assignmentRemove",
+    edit: "assignmentUpdate",
+    unassign: "assignmentRemove",
+  },
   routes: {
+    assignmentCreate: projectUserAssignmentCreateCommand,
+    assignmentList: projectUserAssignmentListCommand,
+    assignmentRemove: projectUserAssignmentRemoveCommand,
+    assignmentUpdate: projectUserAssignmentUpdateCommand,
     applicationCreate: projectApplicationCreateCommand,
     applicationList: projectApplicationListCommand,
     create: projectCreateCommand,
@@ -331,7 +466,7 @@ export const projectCliCommands = buildRouteMap({
     roleList: projectRoleListCommand,
     update: projectUpdateCommand,
   },
-  docs: { brief: "Project, application, role, and grant administration" },
+  docs: { brief: "Project, application, role, grant, and assignment administration" },
 })
 
 async function projectCliConnectionResolve(
@@ -384,7 +519,7 @@ function projectCliResultWrite(
 
 function projectCommonFlags() {
   return {
-    profile: connectionProfileCliProfileFlag(),
+    ...connectionProfileCliCentralFlags(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,
@@ -438,12 +573,43 @@ function projectListQueryCreate(flags: ProjectListCliFlags): ListQuery | undefin
   }
 }
 
+function projectUserAssignmentRoleKeysParse(value: string): string[] {
+  return value.length === 0 ? [] : value.split(",")
+}
+
+async function projectUserAssignmentUserIdResolve(
+  context: ApplicationContext,
+  flags: ProjectIdCliFlags & { readonly userId: string },
+) {
+  const parsedUserId = v.safeParse(userResourceIdSchema, flags.userId)
+  if (parsedUserId.success) return resultCreate(parsedUserId.output)
+
+  const credential = await authworksLocalCredentialLookup({
+    alias: flags.userId,
+    envFile: flags.envFile,
+    environment: context.process.env,
+    profile: flags.profile,
+    project: flags.project,
+  })
+  if (!credential.success) return credential
+  if (credential.data === undefined)
+    return resultErrorCreate("projectUserAssignmentUserIdResolve", `Credential alias "${flags.userId}" was not found.`)
+  return resultCreate(credential.data.userId)
+}
+
 function idFlag(brief: string) {
   return { brief, kind: "parsed" as const, parse: (value: string) => value, placeholder: "UUID" }
 }
 
 function projectScopeIdFlag(brief: string) {
   return { ...idFlag(brief), optional: true as const }
+}
+
+function projectIdResolve(context: ApplicationContext, projectId: string | undefined): string | undefined {
+  if (projectId !== undefined && projectId.trim().length > 0) return projectId
+  context.process.stderr.write("Expected input for flag --project-id\n")
+  context.process.exitCode = 1
+  return undefined
 }
 
 function ifModifiedSinceFlag() {
