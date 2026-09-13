@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test"
+import { packageVersion } from "../../src/packageVersion.js"
 
 type ProcessResult = {
   readonly exitCode: number
@@ -9,7 +10,7 @@ type ProcessResult = {
 test("preserves plain version output", async () => {
   const result = await processRun(["bun", "src/outputs/cli.ts", "--version"])
 
-  expect(result).toEqual({ exitCode: 0, stderr: "", stdout: "0.1.3\n" })
+  expect(result).toEqual({ exitCode: 0, stderr: "", stdout: `${packageVersion}\n` })
 })
 
 test("renders verbose metadata without starting a service", async () => {
@@ -17,8 +18,8 @@ test("renders verbose metadata without starting a service", async () => {
 
   expect(result.exitCode).toBe(0)
   expect(result.stderr).toBe("")
-  expect(result.stdout).toContain("0.1.3\n")
-  expect(result.stdout).toContain("user agent: @adaptive-ds/authworks/0.1.3")
+  expect(result.stdout).toContain(`${packageVersion}\n`)
+  expect(result.stdout).toContain(`user agent: @adaptive-ds/authworks/${packageVersion}`)
   expect(result.stdout).toContain(
     "description: Backend-first identity platform: Hono server, typed API client library, and CLI. Users, orgs, OIDC, MFA, and events on SQLite.",
   )
