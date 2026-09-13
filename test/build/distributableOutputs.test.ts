@@ -28,7 +28,10 @@ test("built library, server, and CLI outputs are executable", async () => {
   expect(uiHtml).not.toContain("/src/ui/main.tsx")
   expect(await Bun.file("dist/ui/favicon.svg").exists()).toBe(true)
 
-  const packageJson = (await Bun.file("package.json").json()) as { files?: readonly string[] }
+  const packageJson = (await Bun.file("package.json").json()) as {
+    readonly files?: readonly string[]
+    readonly version: string
+  }
   expect(packageJson.files).toContain("dist")
   expect(await Bun.file("dist/package.json").exists()).toBe(true)
 
@@ -75,8 +78,8 @@ test("built library, server, and CLI outputs are executable", async () => {
   const cliVersionVerbose = await processRun(["bun", "dist/cli/cli.js", "version", "--verbose"])
   expect(cliVersionVerbose.exitCode).toBe(0)
   expect(cliVersionVerbose.stderr).toBe("")
-  expect(cliVersionVerbose.stdout).toContain("0.1.3\n")
-  expect(cliVersionVerbose.stdout).toContain("user agent: @adaptive-ds/authworks/0.1.3")
+  expect(cliVersionVerbose.stdout).toContain(`${packageJson.version}\n`)
+  expect(cliVersionVerbose.stdout).toContain(`user agent: @adaptive-ds/authworks/${packageJson.version}`)
   expect(cliVersionVerbose.stdout).toContain("installation type: development checkout")
   expect(cliVersionVerbose.stdout).toContain("runtime requirements: node >=22, bun >=1.3.0")
   expect(cliVersionVerbose.stdout).toContain(`platform: ${process.platform} ${process.arch} (OS release `)
