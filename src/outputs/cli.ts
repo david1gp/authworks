@@ -1,8 +1,9 @@
 #!/usr/bin/env bun
 
-import { buildApplication, buildCommand, buildRouteMap, help, run, version } from "@stricli/core"
+import { buildApplication, buildRouteMap, help, run, version } from "@stricli/core"
 import { authworksVersionMetadataRender } from "../authworksVersionMetadataRender.js"
 import { connectionProfilesCliCommands } from "../features/connectionProfiles/cli/connectionProfilesCliCommands.js"
+import { connectionProfilesCliCredentialsCommands } from "../features/connectionProfiles/cli/connectionProfilesCliCredentialsCommands.js"
 import { emailOtpCliCommands } from "../features/emailOtp/cli/emailOtpCliCommands.js"
 import { externalIdentityCliCommands } from "../features/externalIdentities/cli/externalIdentityCliCommands.js"
 import { impersonationCliCommands } from "../features/impersonation/cli/impersonationCliCommands.js"
@@ -27,6 +28,7 @@ const cliApplication = buildApplication(
   buildRouteMap({
     routes: {
       profile: connectionProfilesCliCommands,
+      credentials: connectionProfilesCliCredentialsCommands,
       realms: realmCliCommands,
       emailOtp: emailOtpCliCommands,
       externalIdentities: externalIdentityCliCommands,

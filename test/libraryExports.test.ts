@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test"
 import * as account from "../src/outputs/library/account.js"
 import * as authorization from "../src/outputs/library/authorization.js"
+import * as configuration from "../src/outputs/library/configuration.js"
 import * as email from "../src/outputs/library/email.js"
 import * as emailOtp from "../src/outputs/library/emailOtp.js"
 import * as events from "../src/outputs/library/events.js"
@@ -36,6 +37,8 @@ test("root library publishes HTTP GET contracts", () => {
 test("every completed feature has a public library subpath and client", () => {
   expect(account.accountApiClientCreate).toBeFunction()
   expect(authorization.authorizationActorContextSchema).toBeDefined()
+  expect(configuration.authworksConfigurationResolve).toBeFunction()
+  expect(configuration.localCredentialLookup).toBeFunction()
   expect(email.emailGeneratorApiClientCreate).toBeFunction()
   expect(email.imapMailReceivePortCreate).toBeFunction()
   expect(email.smtpMailDeliveryPortCreate).toBeFunction()
@@ -194,7 +197,7 @@ test("every API client publishes its complete method set", () => {
   expect(Object.keys(mfa.mfaApiClientCreate(options))).toHaveLength(16)
   expect(Object.keys(passkeys.passkeyApiClientCreate(options))).toHaveLength(10)
   expect(Object.keys(machineUsers.machineUserApiClientCreate(options))).toHaveLength(20)
-  expect(Object.keys(projects.projectApiClientCreate(options))).toHaveLength(44)
+  expect(Object.keys(projects.projectApiClientCreate(options))).toHaveLength(52)
   expect(Object.keys(impersonation.impersonationApiClientCreate(options))).toHaveLength(2)
 })
 
@@ -206,6 +209,7 @@ test("package exports name every library feature boundary", async () => {
     "./account",
     "./authorization",
     "./cli",
+    "./configuration",
     "./email",
     "./emailOtp",
     "./events",

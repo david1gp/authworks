@@ -271,6 +271,199 @@ machine, config directory, and backups accordingly. Keyring integration and encr
 `AUTHWORKS_SYSTEM_SECRET` is never stored in or resolved from a profile. System-secret inputs remain flag- or
 environment-only, including `AUTHWORKS_SYSTEM_SECRET` and applicable system-token flags.
 
+## Central configuration and local credentials
+
+The CLI and the TypeScript library use the same resolver. Central configuration lives at
+`$XDG_CONFIG_HOME/authworks`, or `~/.config/authworks` when `XDG_CONFIG_HOME` is unset. The central files are:
+
+```text
+config.json
+credentials/{profile}.json
+projects/{project}.json
+```
+
+The central library surface is the `@adaptive-ds/authworks/configuration` package export. It provides these functions:
+`configurationDirectoryPathResolve`, `configurationLoad`, `configurationPathResolve`, `configurationResolve`,
+`credentialsLoad`, `credentialsPathResolve`, `credentialLookup`, `localCredentialLookup`, `projectLoad`, and
+`projectPathResolve`. It also exports `configurationSchema`, `credentialsSchema`, `profileSchema`, `projectSchema`,
+`testUserSchema`, and the corresponding `Configuration`, `ConfigurationResolveOptions`, `ResolvedConfiguration`,
+`Credentials`, `Project`, `Profile`, and `TestUser` types (plus the related path/load/lookup option types).
+
+Use `configurationResolve` in a consumer when the CLI would otherwise resolve the connection:
+
+```ts
+import { configurationResolve } from "@adaptive-ds/authworks/configuration"
+
+const resolved = await configurationResolve({
+  project: "demo",
+  envFile: "./authworks.env",
+})
+
+if (!resolved.success) {
+  throw new Error(resolved.errorMessage ?? "Authworks configuration could not be resolved.")
+}
+
+const { baseUrl, organizationId, projectId, realmId, token } = resolved.data
+```
+
+The resolver accepts the same injectable filesystem and environment options as the CLI integration, including
+`configDirectory`, `homeDirectory`, `environment`, `configPath`, `credentialsDirectory`, `projectsDirectory`, and
+`legacyProfilesPath`. `envFile`, `envFilePath`, `dotenv`, and `dotenvPath` explicitly select a dotenv file; there is no
+implicit `.env` search. A selected dotenv file must exist and is read without merging it into `process.env`.
+
+### JSON files
+
+`config.json` contains a default profile and profiles with a base URL and organization ID. `realmId` is optional;
+tokens belong in the matching credentials file, not in this profile:
+
+```json
+{
+  "defaultProfile": "local",
+  "profiles": {
+    "local": {
+      "baseUrl": "https://auth.example.com",
+      "organizationId": "org-123",
+      "realmId": "realm-123"
+    }
+  }
+}
+```
+
+`credentials/local.json` may contain a bearer token and local test-user credentials. The credential object is the exact
+value returned by `credentialLookup`:
+
+```json
+{
+  "token": "bearer-token",
+  "testUsers": {
+    "testadmin": {
+      "userId": "user-123",
+      "username": "admin@example.com",
+      "password": "test-password"
+    }
+  }
+}
+```
+
+`projects/demo.json` selects the profile and project ID:
+
+```json
+{
+  "profile": "local",
+  "projectId": "project-123"
+}
+```
+
+Missing `config.json` behaves as `{ "profiles": {} }`; missing credential files behave as `{ "testUsers": {} }`.
+Credential files are owner-only: loading a credential file enforces mode `0600` and its parent credentials directory
+mode `0700`. Keep the containing configuration directory owner-only as well, and protect backups because the JSON is
+plaintext.
+
+### Resolution order and environment names
+
+Values are resolved independently. The general order is explicit CLI/library options, process environment, selected
+dotenv values, selected project, central profile, legacy profile, then the built-in default where one exists. The
+specific selections are:
+
+- Dotenv file: `dotenvPath`, `envFilePath`, `envFile`, or `dotenv`, then `AUTHWORKS_ENV_FILE` or
+  `AUTHWORKS_DOTENV_PATH`. The CLI spelling is `--env-file PATH`.
+- Project name: `project` or `projectName`, then `AUTHWORKS_PROJECT` or `AUTHWORKS_PROJECT_NAME`, then the selected
+  dotenv values. The CLI spelling is `--project NAME`.
+- Profile: `profile`, `AUTHWORKS_PROFILE`, selected dotenv `AUTHWORKS_PROFILE`, `defaultProfile`,
+  `AUTHWORKS_DEFAULT_PROFILE`, selected dotenv `AUTHWORKS_DEFAULT_PROFILE`, the selected project's `profile`,
+  `config.json`'s `defaultProfile`, then the profile named `default` when it exists. The CLI spelling is
+  `--profile NAME`.
+- Base URL: `baseUrl` or `server`, `AUTHWORKS_BASE_URL`, `AUTHWORKS_URL`, or `AUTHWORKS_SERVER`, selected dotenv
+  values with those names, the central profile, then the legacy profile. The final default is
+  `http://127.0.0.1:3000`. CLI spellings include `--base-url`, `--url`, and `--server`.
+- Organization ID: `organizationId`, `AUTHWORKS_ORGANIZATION_ID`, selected dotenv value, then the selected central or
+  legacy profile. The CLI spelling is `--organization-id`.
+- Realm ID: `realmId`, `AUTHWORKS_REALM_ID`, selected dotenv value, then the selected central or legacy profile. The
+  CLI spelling is `--realm-id`.
+- Project ID: `projectId`, `AUTHWORKS_PROJECT_ID`, selected dotenv value, then the selected project's `projectId`. The
+  CLI spelling is `--project-id`.
+- Bearer token: `token`, `AUTHWORKS_TOKEN`, selected dotenv value, the selected credentials file's `token`, then the
+  legacy profile token. The CLI spelling is `--token`.
+
+Empty environment values are ignored. `AUTHWORKS_SYSTEM_SECRET` is not central configuration and is never stored in a
+profile; project commands accept `--system-token` and otherwise use that environment value for system access.
+
+### Local credential lookup and CLI retrieval
+
+Credential lookup is local and does not require an API request or token. It chooses an explicit profile first, then a
+selected project's profile, then the normal resolved profile, and finally the profile named `default` when no profile
+was resolved. It returns `undefined` for an unknown alias and never creates users, resets passwords, or grants
+organization administration:
+
+```ts
+import { credentialLookup } from "@adaptive-ds/authworks/configuration"
+
+const credential = await credentialLookup({ alias: "testadmin", project: "demo" })
+if (!credential.success) throw new Error(credential.errorMessage ?? "Credential lookup failed.")
+if (credential.data === undefined) throw new Error("Credential alias was not found.")
+
+console.log(credential.data.userId, credential.data.username, credential.data.password)
+```
+
+The CLI exposes the same lookup:
+
+```bash
+authworks credentials get testadmin --field userId
+authworks credentials get testadmin --field username --project demo --profile local
+authworks credentials get testadmin --output json
+```
+
+The first two commands print exactly one value. JSON output is exactly one object, for example:
+
+```json
+{"userId":"user-123","username":"admin@example.com","password":"test-password"}
+```
+
+`--field` accepts `username`, `password`, or `userId`; `--output json` and `--field` are mutually exclusive, and one
+of them is required. `credentials get` also accepts `--env-file PATH` and `--project NAME`/`--profile NAME`.
+
+### Project assignments, aliases, and administration boundaries
+
+The canonical assignment commands require explicit realm, project, user, and assignment IDs where applicable:
+
+```bash
+authworks projects assignment-create --server https://auth.example.com --token TOKEN \
+  --realm-id REALM_ID --project-id PROJECT_ID --user-id USER_ID --role-keys reader,editor
+authworks projects assignment-list --server https://auth.example.com --token TOKEN \
+  --realm-id REALM_ID --project-id PROJECT_ID
+authworks projects assignment-update --server https://auth.example.com --token TOKEN \
+  --realm-id REALM_ID --project-id PROJECT_ID --assignment-id ASSIGNMENT_ID --role-keys ""
+authworks projects assignment-remove --server https://auth.example.com --token TOKEN \
+  --realm-id REALM_ID --project-id PROJECT_ID --assignment-id ASSIGNMENT_ID
+```
+
+The shared short aliases are `assign` for `assignment-create`, `edit` for `assignment-update`, and `unassign` for
+`assignment-remove`. The longer aliases are `assignment-assign`, `assignment-edit`, and `assignment-unassign`.
+`assignment-list` has no short alias. `--role-keys` is comma-separated; omit it for membership-only access and pass an
+empty value to clear roles during an update. `--user-id` accepts either a user UUID or a local credential alias:
+
+```bash
+authworks projects assign --server https://auth.example.com --token TOKEN \
+  --realm-id REALM_ID --project-id PROJECT_ID --user-id testadmin --role-keys reader
+```
+
+The assignment command tree also accepts the shared `--env-file`, `--profile`, and `--project` options. `--project`
+selects a central project file; it is not a project UUID, so use `--project-id` when an explicit project ID is needed.
+
+Assignment management requires `project.write`. An organization owner or administrator (and a realm administrator) has
+the project and application administration permissions for the organization-owned project, including
+`project.app.read`, `project.app.write`, and `project.app.delete`. There is no separate persisted “application admin”
+role: application administration is permission-based. A direct project assignment grants project access and can expose
+resolved project role keys, but it is not organization administration and does not grant assignment management or
+application write/delete permissions. Applications must enforce the resolved project access/roles; a local credential
+alias only supplies a user ID and credentials.
+
+Central configuration remains compatible with the older CLI profile store. `authworks profile set/list/show/delete`
+continues to read and write `${XDG_CONFIG_HOME}/authworks/profiles.json` (or `~/.config/authworks/profiles.json`) with
+legacy `server`, `token`, `realmId`, and `organizationId` fields. If a selected name is absent from central
+`config.json`, the resolver can read that legacy profile, so existing environment-only and profile-based workflows keep
+working. New central profiles use `baseUrl` plus a separate credentials file; the two JSON formats should not be mixed.
+
 ## CLI scope defaults
 
 Realm- and organization-scoped commands can still use `AUTHWORKS_REALM_ID` and `AUTHWORKS_ORGANIZATION_ID` as default
@@ -285,6 +478,28 @@ authworks organizations get
 Explicit `--realm-id` and `--organization-id` flags take precedence over their corresponding environment values. If a
 required ID is missing from both the environment and the selected profile, the CLI exits with a validation error before
 making the request.
+
+## Direct project user assignments
+
+Project administrators can manage direct memberships with optional project roles. Omit `--role-keys` for membership-only;
+pass comma-separated keys for roles, and pass an empty value to clear roles during an update:
+
+```bash
+authworks projects assignment-create --realm-id REALM_ID --project-id PROJECT_ID --user-id USER_ID
+authworks projects assignment-create --realm-id REALM_ID --project-id PROJECT_ID --user-id ROLE_USER_ID --role-keys reader,editor
+authworks projects assignment-list --realm-id REALM_ID --project-id PROJECT_ID
+authworks projects assignment-update --realm-id REALM_ID --project-id PROJECT_ID --assignment-id ASSIGNMENT_ID --role-keys ""
+authworks projects assignment-remove --realm-id REALM_ID --project-id PROJECT_ID --assignment-id ASSIGNMENT_ID
+```
+
+The same operations are available through the project client, for example:
+
+```ts
+import { projectApiClientCreate } from "@adaptive-ds/authworks/projects"
+
+const client = projectApiClientCreate({ baseUrl: SERVER_URL, token: TOKEN })
+await client.projectUserAssignmentCreate(REALM_ID, PROJECT_ID, { userId: USER_ID, roleKeys: ["reader"] })
+```
 
 ## Layout
 

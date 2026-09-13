@@ -1,8 +1,8 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { externalIdentityApiClientCreate } from "../client/externalIdentityApiClientCreate.js"
 import type { ExternalIdentityProviderType } from "../public/externalIdentityProviderTypeSchema.js"
@@ -209,7 +209,7 @@ function externalIdentityCliResultWrite(
 
 function externalIdentityCommonFlags() {
   return {
-    profile: connectionProfileCliProfileFlag(),
+    ...connectionProfileCliCentralFlags(),
     realmId: { ...externalIdentityTextFlag("Realm UUID"), optional: true as const },
     server: {
       brief: "Authworks server URL",

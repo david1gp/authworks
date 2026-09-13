@@ -1,9 +1,9 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { realmApiClientCreate } from "../client/realmApiClientCreate.js"
 import type { RealmCreateRequest } from "../public/realmCreateRequestSchema.js"
@@ -42,7 +42,7 @@ const realmCreateCommand = buildCommand({
   },
   parameters: {
     flags: {
-      profile: connectionProfileCliProfileFlag(),
+      ...connectionProfileCliCentralFlags(),
       domain: {
         brief: "Primary realm domain",
         kind: "parsed",
@@ -78,7 +78,7 @@ const realmListCommand = buildCommand({
   },
   parameters: {
     flags: {
-      profile: connectionProfileCliProfileFlag(),
+      ...connectionProfileCliCentralFlags(),
       server: {
         brief: "Authworks server URL",
         kind: "parsed",
@@ -110,7 +110,7 @@ const realmBootstrapCommand = buildCommand({
   },
   parameters: {
     flags: {
-      profile: connectionProfileCliProfileFlag(),
+      ...connectionProfileCliCentralFlags(),
       realmId: {
         brief: "Realm UUID",
         kind: "parsed",

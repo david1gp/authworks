@@ -1,22 +1,27 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import type { ConnectionProfile } from "../model/connectionProfile.js"
-import { connectionProfilesStoreCreate } from "../persistence/connectionProfilesStoreCreate.js"
+import { authworksConfigurationResolve } from "../public/index.js"
 
 type ConnectionProfileCliConnection = {
   readonly organizationId?: string
+  readonly projectId?: string
   readonly realmId?: string
   readonly server: string
   readonly token?: string
 }
 
 type ConnectionProfileCliConnectionFlags = {
+  readonly baseUrl?: string
+  readonly envFile?: string
   readonly organizationId?: string
   readonly profile?: string
+  readonly project?: string
+  readonly projectId?: string
   readonly realmId?: string
   readonly server?: string
   readonly token?: string
+  readonly url?: string
 }
 
 type ConnectionProfileCliConnectionResolveOptions = {
@@ -29,32 +34,32 @@ export async function connectionProfileCliConnectionResolve(
   flags: ConnectionProfileCliConnectionFlags,
   options: ConnectionProfileCliConnectionResolveOptions = {},
 ): Promise<Result<ConnectionProfileCliConnection>> {
-  const profile = await connectionProfileCliSelectedProfileResolve(flags.profile, options)
-  if (!profile.success) return profile
-
-  const environment = options.environment ?? process.env
-  return resultCreate({
-    organizationId: flags.organizationId ?? environment.AUTHWORKS_ORGANIZATION_ID ?? profile.data?.organizationId,
-    realmId: flags.realmId ?? environment.AUTHWORKS_REALM_ID ?? profile.data?.realmId,
-    server: flags.server ?? environment.AUTHWORKS_URL ?? profile.data?.server ?? "http://127.0.0.1:3000",
-    token: flags.token ?? environment.AUTHWORKS_TOKEN ?? profile.data?.token,
+  const { path, ...configurationOptions } = options
+  const resolved = await authworksConfigurationResolve({
+    ...configurationOptions,
+    ...(path === undefined ? {} : { legacyProfilesPath: path }),
+    baseUrl: flags.baseUrl ?? flags.url ?? flags.server,
+    envFile: flags.envFile,
+    organizationId: flags.organizationId,
+    profile: flags.profile,
+    project: flags.project,
+    projectId: flags.projectId,
+    realmId: flags.realmId,
+    token: flags.token,
   })
-}
-
-async function connectionProfileCliSelectedProfileResolve(
-  name: string | undefined,
-  options: ConnectionProfileCliConnectionResolveOptions,
-): Promise<Result<ConnectionProfile | undefined>> {
-  const selectedName = name ?? "default"
-  const profile = await connectionProfilesStoreCreate({
-    environment: options.environment,
-    homeDirectory: options.homeDirectory,
-    path: options.path,
-  }).connectionProfileGet(selectedName)
-  if (!profile.success) return profile
-  if (profile.data !== undefined || name === undefined) return profile
-  return resultErrorCreate(
-    "connectionProfileCliConnectionResolve",
-    `Connection profile "${selectedName}" was not found.`,
-  )
+  if (!resolved.success) {
+    if (flags.profile !== undefined && resolved.errorMessage === `Authworks profile "${flags.profile}" was not found.`)
+      return resultErrorCreate(
+        "connectionProfileCliConnectionResolve",
+        `Connection profile "${flags.profile}" was not found.`,
+      )
+    return resolved
+  }
+  return resultCreate({
+    server: resolved.data.baseUrl,
+    ...(resolved.data.organizationId === undefined ? {} : { organizationId: resolved.data.organizationId }),
+    ...(resolved.data.projectId === undefined ? {} : { projectId: resolved.data.projectId }),
+    ...(resolved.data.realmId === undefined ? {} : { realmId: resolved.data.realmId }),
+    ...(resolved.data.token === undefined ? {} : { token: resolved.data.token }),
+  })
 }

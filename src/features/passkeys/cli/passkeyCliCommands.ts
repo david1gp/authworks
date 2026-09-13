@@ -1,8 +1,8 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { passkeyApiClientCreate } from "../client/passkeyApiClientCreate.js"
 
 type PasskeyListFlags = {
@@ -99,7 +99,7 @@ function passkeyResultWrite(
 
 function passkeyCommonFlags() {
   return {
-    profile: connectionProfileCliProfileFlag(),
+    ...connectionProfileCliCentralFlags(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

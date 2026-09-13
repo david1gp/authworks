@@ -1,8 +1,8 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { machineUserApiClientCreate } from "../client/machineUserApiClientCreate.js"
 
@@ -313,7 +313,7 @@ function machineCliResultWrite(
 
 function machineCommonFlags() {
   return {
-    profile: connectionProfileCliProfileFlag(),
+    ...connectionProfileCliCentralFlags(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

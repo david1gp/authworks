@@ -1,7 +1,7 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { emailOtpApiClientCreate } from "../client/emailOtpApiClientCreate.js"
 
 type EmailOtpCliFlags = {
@@ -86,7 +86,7 @@ function emailOtpCliResultWrite(
 
 function emailOtpCommonFlags() {
   return {
-    profile: connectionProfileCliProfileFlag(),
+    ...connectionProfileCliCentralFlags(),
     server: {
       brief: "Authworks server URL",
       kind: "parsed" as const,

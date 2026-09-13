@@ -1,8 +1,8 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { impersonationApiClientCreate } from "../client/impersonationApiClientCreate.js"
 
 type ImpersonationCliFlags = {
@@ -104,7 +104,7 @@ function impersonationCliResultWrite(
 
 function impersonationCommonFlags() {
   return {
-    profile: connectionProfileCliProfileFlag(),
+    ...connectionProfileCliCentralFlags(),
     realmId: { ...textFlag("Realm UUID"), optional: true as const },
     server: optionalTextFlag("Authworks server URL"),
     token: optionalTextFlag("Bearer token"),

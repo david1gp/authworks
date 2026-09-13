@@ -193,6 +193,10 @@
     "./cli": {
       "import": "./dist/cli/cli.js"
     },
+    "./configuration": {
+      "types": "./dist/library/outputs/library/configuration.d.ts",
+      "import": "./dist/library/outputs/library/configuration.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

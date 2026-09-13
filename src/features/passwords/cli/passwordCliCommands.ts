@@ -2,9 +2,9 @@ import { type ApplicationContext, buildChoiceParser, buildCommand, buildRouteMap
 import * as v from "valibot"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { Secret } from "../../../platform/secrets/Secret.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
 import { passwordApiClientCreate } from "../client/passwordApiClientCreate.js"
 import { passwordContentorenSsoTestProductionEnsure } from "./passwordContentorenSsoTestProductionEnsure.js"
@@ -436,7 +436,7 @@ function passwordCommonFlags() {
       parse: (value: string) => value,
       placeholder: "URL",
     },
-    profile: connectionProfileCliProfileFlag(),
+    ...connectionProfileCliCentralFlags(),
     token: {
       brief: "Bearer token",
       kind: "parsed" as const,
