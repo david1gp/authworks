@@ -336,6 +336,7 @@ function externalIdentitySignInCommit(
     return resultErrorCreate(op, externalIdentityTransactionExpiryMessage, "external-identities.invalid")
   const organizationId = loginContext.data.organizationId
   const existing = repository.externalIdentityGetByProviderSubject(
+    options.realmId,
     options.provider.id,
     options.identity.externalSubject,
   )

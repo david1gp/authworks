@@ -96,7 +96,11 @@ export function externalIdentityLinkComplete(
     if (!current.success) return current
     if (current.data === null || current.data.version !== pendingRow.version)
       return resultErrorCreate(op, "The external identity link confirmation is invalid.", "external-identities.invalid")
-    const duplicate = currentRepository.externalIdentityGetByProviderSubject(pendingRow.providerId, externalSubject)
+    const duplicate = currentRepository.externalIdentityGetByProviderSubject(
+      options.realmId,
+      pendingRow.providerId,
+      externalSubject,
+    )
     if (!duplicate.success) return duplicate
     if (duplicate.data !== null) {
       if (duplicate.data.userId === options.userId)

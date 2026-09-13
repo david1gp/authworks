@@ -32,6 +32,29 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    externalIdentityUpdate(
+      realmId: string,
+      identityId: string,
+      input: Partial<typeof externalIdentityTable.$inferInsert>,
+    ): Result<ExternalIdentityRow | null> {
+      try {
+        return resultCreate(
+          database
+            .update(externalIdentityTable)
+            .set(input)
+            .where(and(eq(externalIdentityTable.realmId, realmId), eq(externalIdentityTable.id, identityId)))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "externalIdentityUpdate",
+          "The external identity could not be updated.",
+          "external-identities.write-failed",
+        )
+      }
+    },
+
     externalIdentityDelete(
       realmId: string,
       userId: string,
@@ -62,7 +85,62 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    externalIdentityDeleteByProvider(realmId: string, providerId: string): Result<ExternalIdentityRow[]> {
+      try {
+        return resultCreate(
+          database
+            .delete(externalIdentityTable)
+            .where(and(eq(externalIdentityTable.realmId, realmId), eq(externalIdentityTable.providerId, providerId)))
+            .returning()
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "externalIdentityDeleteByProvider",
+          "The external identities could not be removed.",
+          "external-identities.write-failed",
+        )
+      }
+    },
+
+    externalIdentityGetById(realmId: string, id: string): Result<ExternalIdentityRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(externalIdentityTable)
+            .where(and(eq(externalIdentityTable.realmId, realmId), eq(externalIdentityTable.id, id)))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "externalIdentityGetById",
+          "The external identity could not be read.",
+          "external-identities.read-failed",
+        )
+      }
+    },
+
+    externalIdentityDeleteById(realmId: string, id: string): Result<ExternalIdentityRow | null> {
+      try {
+        return resultCreate(
+          database
+            .delete(externalIdentityTable)
+            .where(and(eq(externalIdentityTable.realmId, realmId), eq(externalIdentityTable.id, id)))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "externalIdentityDeleteById",
+          "The external identity could not be removed.",
+          "external-identities.write-failed",
+        )
+      }
+    },
+
     externalIdentityGetByProviderSubject(
+      realmId: string,
       providerId: string,
       externalSubject: string,
     ): Result<ExternalIdentityRow | null> {
@@ -74,6 +152,7 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
             .where(
               and(
                 eq(externalIdentityTable.providerId, providerId),
+                eq(externalIdentityTable.realmId, realmId),
                 eq(externalIdentityTable.externalSubject, externalSubject),
               ),
             )
@@ -348,6 +427,30 @@ export function externalIdentityRepositoryCreate(database: StorageExecutor) {
         return resultErrorCreate(
           "externalIdentityProviderUpdate",
           "The external identity provider could not be updated.",
+          "external-identities.write-failed",
+        )
+      }
+    },
+
+    externalIdentityProviderDisable(realmId: string, providerId: string): Result<ExternalIdentityProviderRow | null> {
+      return this.externalIdentityProviderUpdate(realmId, providerId, { enabled: false })
+    },
+
+    externalIdentityProviderDelete(realmId: string, providerId: string): Result<ExternalIdentityProviderRow | null> {
+      try {
+        return resultCreate(
+          database
+            .delete(externalIdentityProviderTable)
+            .where(
+              and(eq(externalIdentityProviderTable.realmId, realmId), eq(externalIdentityProviderTable.id, providerId)),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "externalIdentityProviderDelete",
+          "The external identity provider could not be removed.",
           "external-identities.write-failed",
         )
       }
