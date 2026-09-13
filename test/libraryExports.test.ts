@@ -17,6 +17,7 @@ import * as realms from "../src/outputs/library/realms.js"
 import * as sessions from "../src/outputs/library/sessions.js"
 import * as users from "../src/outputs/library/users.js"
 import * as whatsappOtp from "../src/outputs/library/whatsappOtp.js"
+import * as zitadelMigration from "../src/outputs/library/zitadelMigration.js"
 import type { HttpGetOptions, HttpGetResult } from "../src/outputs/library.js"
 
 test("root library publishes HTTP GET contracts", () => {
@@ -53,6 +54,7 @@ test("every completed feature has a public library subpath and client", () => {
   expect(projects.projectApiClientCreate).toBeFunction()
   expect(sessions.sessionApiClientCreate).toBeFunction()
   expect(users.userApiClientCreate).toBeFunction()
+  expect(zitadelMigration.zitadelMigrationRun).toBeFunction()
 })
 
 test("account library publishes only account contracts and client methods", () => {
@@ -223,6 +225,7 @@ test("package exports name every library feature boundary", async () => {
     "./sessions",
     "./users",
     "./whatsappOtp",
+    "./zitadelMigration",
   ].sort()
   expect(exportKeys).toEqual(expectedKeys)
   expect(exportKeys.some((key) => key.includes("*"))).toBe(false)

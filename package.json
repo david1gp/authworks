@@ -131,6 +131,10 @@
       "types": "./dist/library/outputs/library/whatsappOtp.d.ts",
       "import": "./dist/library/outputs/library/whatsappOtp.js"
     },
+    "./zitadelMigration": {
+      "types": "./dist/library/outputs/library/zitadelMigration.d.ts",
+      "import": "./dist/library/outputs/library/zitadelMigration.js"
+    },
     "./events": {
       "types": "./dist/library/outputs/library/events.d.ts",
       "import": "./dist/library/outputs/library/events.js"
