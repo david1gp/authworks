@@ -1,4 +1,4 @@
-export * from "../../features/connectionProfiles/public/index.js"
+export * from "../../features/centralConfiguration/public/index.js"
 
 export {
   authworksConfigurationDirectoryPathResolve as configurationDirectoryPathResolve,
@@ -11,7 +11,7 @@ export {
   authworksLocalCredentialLookup as localCredentialLookup,
   authworksProjectLoad as projectLoad,
   authworksProjectPathResolve as projectPathResolve,
-} from "../../features/connectionProfiles/public/index.js"
+} from "../../features/centralConfiguration/public/index.js"
 
 export {
   authworksConfigurationSchema as configurationSchema,
@@ -19,7 +19,7 @@ export {
   authworksProfileSchema as profileSchema,
   authworksProjectSchema as projectSchema,
   authworksTestUserSchema as testUserSchema,
-} from "../../features/connectionProfiles/public/index.js"
+} from "../../features/centralConfiguration/public/index.js"
 
 export type {
   AuthworksConfiguration as Configuration,
@@ -37,4 +37,4 @@ export type {
   AuthworksProfile as Profile,
   AuthworksResolvedConfiguration as ResolvedConfiguration,
   AuthworksTestUser as TestUser,
-} from "../../features/connectionProfiles/public/index.js"
+} from "../../features/centralConfiguration/public/index.js"

@@ -1,7 +1,7 @@
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import { authworksConfigurationResolve } from "../public/index.js"
+import { authworksConfigurationResolve } from "../../centralConfiguration/public/index.js"
 
 type ConnectionProfileCliConnection = {
   readonly organizationId?: string

@@ -11,7 +11,7 @@ import {
 import { type AuthworksCredentialsLoadOptions, authworksCredentialsLoad } from "./authworksCredentialsLoad.js"
 import { authworksDotenvEnvironmentLoad } from "./authworksDotenvEnvironmentLoad.js"
 import { authworksProjectLoad } from "./authworksProjectLoad.js"
-import type { AuthworksTestUser } from "./authworksTestUserSchema.js"
+import type { AuthworksTestUser } from "../public/authworksTestUserSchema.js"
 
 export type AuthworksLocalCredentialLookupOptions = AuthworksConfigurationResolveOptions & {
   readonly alias: string

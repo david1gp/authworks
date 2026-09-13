@@ -1,5 +1,5 @@
 import { type ApplicationContext, buildChoiceParser, buildCommand, buildRouteMap } from "@stricli/core"
-import { authworksLocalCredentialLookup } from "../public/index.js"
+import { authworksLocalCredentialLookup } from "../../centralConfiguration/public/index.js"
 import { connectionProfileCliProfileFlag } from "./connectionProfileCliProfileFlag.js"
 
 type CredentialsGetFlags = {

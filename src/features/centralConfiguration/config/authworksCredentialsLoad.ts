@@ -5,12 +5,13 @@ import * as v from "valibot"
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import { connectionProfileNameValidate } from "../model/connectionProfileNameValidate.js"
+import { connectionProfileNameValidate } from "../../connectionProfiles/public/connectionProfileNameValidate.js"
 import {
   type AuthworksCredentialsPathOptions,
   authworksCredentialsPathResolve,
 } from "./authworksCredentialsPathResolve.js"
-import { type AuthworksCredentials, authworksCredentialsSchema } from "./authworksCredentialsSchema.js"
+import { type AuthworksCredentials } from "../public/authworksCredentialsSchema.js"
+import { authworksCredentialsSchema } from "../public/authworksCredentialsSchema.js"
 
 export type AuthworksCredentialsLoadOptions = AuthworksCredentialsPathOptions
 

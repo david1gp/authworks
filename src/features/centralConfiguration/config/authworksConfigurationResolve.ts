@@ -2,8 +2,8 @@ import { dirname, join } from "node:path"
 import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import { connectionProfileNameValidate } from "../model/connectionProfileNameValidate.js"
-import { connectionProfilesStoreCreate } from "../persistence/connectionProfilesStoreCreate.js"
+import { connectionProfileLegacyGet } from "../../connectionProfiles/public/connectionProfileLegacyGet.js"
+import { connectionProfileNameValidate } from "../../connectionProfiles/public/connectionProfileNameValidate.js"
 import {
   type AuthworksConfigurationPathOptions,
   authworksConfigurationDirectoryPathResolve,
@@ -16,10 +16,10 @@ import {
 import { authworksCredentialsLoad } from "./authworksCredentialsLoad.js"
 import type { AuthworksCredentialsPathOptions } from "./authworksCredentialsPathResolve.js"
 import { authworksDotenvEnvironmentLoad } from "./authworksDotenvEnvironmentLoad.js"
-import type { AuthworksProfile } from "./authworksProfileSchema.js"
+import type { AuthworksProfile } from "../public/authworksProfileSchema.js"
 import { authworksProjectLoad } from "./authworksProjectLoad.js"
 import type { AuthworksProjectPathOptions } from "./authworksProjectPathResolve.js"
-import type { AuthworksProject } from "./authworksProjectSchema.js"
+import type { AuthworksProject } from "../public/authworksProjectSchema.js"
 
 export type AuthworksConfigurationResolveOptions = AuthworksConfigurationPathOptions &
   AuthworksConfigurationFilePathOptions &
@@ -235,9 +235,9 @@ async function authworksLegacyProfileGet(
     | undefined
   >
 > {
-  return connectionProfilesStoreCreate({
+  return connectionProfileLegacyGet(name, {
     path: options.legacyProfilesPath ?? join(baseDirectory, "profiles.json"),
-  }).connectionProfileGet(name)
+  })
 }
 
 function authworksEnvironmentValueGet(

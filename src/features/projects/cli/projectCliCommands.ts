@@ -8,7 +8,7 @@ import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/c
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
-import { authworksLocalCredentialLookup } from "../../connectionProfiles/public/index.js"
+import { authworksLocalCredentialLookup } from "../../centralConfiguration/public/index.js"
 import { userResourceIdSchema } from "../../users/public/userResourceIdSchema.js"
 import { projectApiClientCreate } from "../client/projectApiClientCreate.js"
 

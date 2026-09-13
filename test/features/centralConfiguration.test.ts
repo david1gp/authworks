@@ -9,7 +9,7 @@ import {
   authworksCredentialsLoad,
   authworksLocalCredentialLookup,
   authworksProjectLoad,
-} from "../../src/features/connectionProfiles/public/index.js"
+} from "../../src/features/centralConfiguration/public/index.js"
 
 test("central configuration paths use XDG and home fallbacks", () => {
   expect(
