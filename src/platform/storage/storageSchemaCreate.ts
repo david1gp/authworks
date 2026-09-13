@@ -505,8 +505,29 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE UNIQUE INDEX IF NOT EXISTS machine_credentials_secret_hash_idx ON machine_credentials (secret_hash)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS oidc_clients (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, name TEXT NOT NULL, client_type TEXT NOT NULL CHECK (client_type IN ('public', 'confidential')), secret_hash TEXT, redirect_uris TEXT NOT NULL CHECK (json_valid(redirect_uris)), post_logout_redirect_uris TEXT NOT NULL CHECK (json_valid(post_logout_redirect_uris)), allowed_scopes TEXT NOT NULL CHECK (json_valid(allowed_scopes)), trusted INTEGER NOT NULL CHECK (trusted IN (0, 1)), require_consent INTEGER NOT NULL CHECK (require_consent IN (0, 1)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), project_id TEXT, application_id TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL, FOREIGN KEY (application_id) REFERENCES project_applications(id) ON DELETE SET NULL)",
+      "CREATE TABLE IF NOT EXISTS oidc_clients (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, name TEXT NOT NULL, client_type TEXT NOT NULL CHECK (client_type IN ('public', 'confidential')), secret_hash TEXT, redirect_uris TEXT NOT NULL CHECK (json_valid(redirect_uris)), post_logout_redirect_uris TEXT NOT NULL CHECK (json_valid(post_logout_redirect_uris)), allowed_scopes TEXT NOT NULL CHECK (json_valid(allowed_scopes)), trusted INTEGER NOT NULL CHECK (trusted IN (0, 1)), require_consent INTEGER NOT NULL CHECK (require_consent IN (0, 1)), id_token_userinfo_assertion INTEGER NOT NULL DEFAULT 0 CHECK (id_token_userinfo_assertion IN (0, 1)), access_token_role_assertion INTEGER NOT NULL DEFAULT 0 CHECK (access_token_role_assertion IN (0, 1)), additional_origins TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(additional_origins)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), project_id TEXT, application_id TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL, FOREIGN KEY (application_id) REFERENCES project_applications(id) ON DELETE SET NULL)",
     )
+    try {
+      database.run(
+        "ALTER TABLE oidc_clients ADD COLUMN id_token_userinfo_assertion INTEGER NOT NULL DEFAULT 0 CHECK (id_token_userinfo_assertion IN (0, 1))",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "id_token_userinfo_assertion")) throw error
+    }
+    try {
+      database.run(
+        "ALTER TABLE oidc_clients ADD COLUMN access_token_role_assertion INTEGER NOT NULL DEFAULT 0 CHECK (access_token_role_assertion IN (0, 1))",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "access_token_role_assertion")) throw error
+    }
+    try {
+      database.run(
+        "ALTER TABLE oidc_clients ADD COLUMN additional_origins TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(additional_origins))",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "additional_origins")) throw error
+    }
     database.run("CREATE INDEX IF NOT EXISTS oidc_clients_realm_id_idx ON oidc_clients (realm_id)")
     database.run(
       "CREATE UNIQUE INDEX IF NOT EXISTS oidc_clients_realm_application_idx ON oidc_clients (realm_id, application_id)",
