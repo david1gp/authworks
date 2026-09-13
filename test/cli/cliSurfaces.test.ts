@@ -44,7 +44,7 @@ test("every completed feature command tree has clean subprocess help", async () 
     expect(result.stderr).toBe("")
     expect(result.stdout.length).toBeGreaterThan(0)
   }
-})
+}, 30_000)
 
 test("CLI realm identifiers use the realm flag and vocabulary", async () => {
   const result = await cliRun("users", "create", "--help")

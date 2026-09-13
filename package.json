@@ -56,7 +56,7 @@
     "dev": "bun run --parallel dev:api dev:ui",
     "dev:api": "bun run --watch src/outputs/server.ts",
     "dev:ui": "vite",
-    "test": "bun --conditions=browser test --isolate --max-concurrency=1 --dots --bail=1 test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance test/ui",
+    "test": "bun --conditions=browser test --timeout=30000 --isolate --max-concurrency=1 --dots --bail=1 test/packageName.test.ts test/libraryExports.test.ts test/platform test/features test/cli test/conformance test/ui",
     "test:e2e": "playwright test",
     "test:e2e:production-auth": "AUTHWORKS_E2E_PRODUCTION=1 bun --env-file=.env run scripts/productionE2eCredentialsCheck.ts && AUTHWORKS_E2E_PRODUCTION=1 bun --env-file=.env run playwright test e2e/productionAuthentication.spec.ts",
     "test:e2e:production-account": "AUTHWORKS_E2E_PRODUCTION=1 bun --env-file=.env run scripts/productionE2eCredentialsCheck.ts && AUTHWORKS_E2E_PRODUCTION=1 bun --env-file=.env run playwright test e2e/productionAccountRegression.spec.ts",

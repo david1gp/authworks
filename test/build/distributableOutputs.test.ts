@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test"
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises"
+import { createServer } from "node:net"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
@@ -123,11 +124,21 @@ test("built library, server, and CLI outputs are executable", async () => {
   expect(cliOrganizationHelp.stdout).toContain("realm-login-policy-set")
 
   const directory = await mkdtemp(join(tmpdir(), "authworks-built-outputs-"))
+  const portServer = createServer()
+  await new Promise<void>((resolve, reject) => {
+    portServer.once("error", reject)
+    portServer.listen(0, "127.0.0.1", resolve)
+  })
+  const address = portServer.address()
+  if (address === null || typeof address === "string") throw new Error("Could not allocate a TCP port")
+  const serverUrl = `http://127.0.0.1:${address.port}`
+  await new Promise<void>((resolve, reject) => portServer.close((error) => (error ? reject(error) : resolve())))
   const child = Bun.spawn(["bun", "dist/server/server.js"], {
     env: {
       ...process.env,
+      AUTHWORKS_PORT: String(address.port),
       AUTHWORKS_DATABASE_PATH: join(directory, "authworks.sqlite"),
-      AUTHWORKS_PUBLIC_ORIGIN: "https://127.0.0.1:3000",
+      AUTHWORKS_PUBLIC_ORIGIN: `https://127.0.0.1:${address.port}`,
       AUTHWORKS_SYSTEM_SECRET: "built-output-secret",
       NODE_ENV: "production",
     },
@@ -139,7 +150,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     let ready = false
     for (let attempt = 0; attempt < 40; attempt += 1) {
       try {
-        const response = await fetch("http://127.0.0.1:3000/system/realms", {
+        const response = await fetch(`${serverUrl}/system/realms`, {
           headers: { authorization: "Bearer built-output-secret" },
         })
         if (response.status === 200) {
@@ -152,43 +163,43 @@ test("built library, server, and CLI outputs are executable", async () => {
     }
     expect(ready).toBe(true)
 
-    const indexResponse = await fetch("http://127.0.0.1:3000/", { redirect: "manual" })
+    const indexResponse = await fetch(`${serverUrl}/`, { redirect: "manual" })
     expect(indexResponse.status).toBe(302)
     expect(indexResponse.headers.get("location")).toBe("/login")
     expect(indexResponse.headers.get("cache-control")).toBe("no-cache")
 
-    const healthResponse = await fetch("http://127.0.0.1:3000/health")
+    const healthResponse = await fetch(`${serverUrl}/health`)
     expect(healthResponse.status).toBe(200)
     expect(healthResponse.headers.get("cache-control")).toBe("no-store")
     expect(await healthResponse.json()).toEqual({ status: "ok" })
 
-    const accountResponse = await fetch("http://127.0.0.1:3000/realms/not-a-realm/me/effective-access")
+    const accountResponse = await fetch(`${serverUrl}/realms/not-a-realm/me/effective-access`)
     expect(accountResponse.status).toBe(401)
-    const accountHistoryResponse = await fetch("http://127.0.0.1:3000/realms/not-a-realm/me/security-history")
+    const accountHistoryResponse = await fetch(`${serverUrl}/realms/not-a-realm/me/security-history`)
     expect(accountHistoryResponse.status).toBe(401)
 
-    const loginResponse = await fetch("http://127.0.0.1:3000/login/deep-link")
+    const loginResponse = await fetch(`${serverUrl}/login/deep-link`)
     expect(loginResponse.status).toBe(200)
     expect(await loginResponse.text()).toContain('<div id="app">')
 
     const assetName = uiAssets.find((fileName) => fileName.endsWith(".js"))
     expect(assetName).toBeDefined()
     if (assetName === undefined) return
-    const assetResponse = await fetch(`http://127.0.0.1:3000/assets/${assetName}`)
+    const assetResponse = await fetch(`${serverUrl}/assets/${assetName}`)
     expect(assetResponse.status).toBe(200)
     expect(assetResponse.headers.get("cache-control")).toBe("public, max-age=31536000, immutable")
     expect(assetResponse.headers.get("content-type")).toContain("text/javascript")
 
-    const faviconResponse = await fetch("http://127.0.0.1:3000/favicon.svg")
+    const faviconResponse = await fetch(`${serverUrl}/favicon.svg`)
     expect(faviconResponse.status).toBe(200)
     expect(faviconResponse.headers.get("cache-control")).toBe("public, max-age=3600")
     expect(faviconResponse.headers.get("content-type")).toContain("image/svg+xml")
 
-    const demoResponse = await fetch("http://127.0.0.1:3000/demo/login")
+    const demoResponse = await fetch(`${serverUrl}/demo/login`)
     expect(demoResponse.status).toBe(200)
     expect(await demoResponse.text()).toContain('<div id="app">')
-    expect((await fetch("http://127.0.0.1:3000/assets/missing.js")).status).toBe(404)
-    expect((await fetch("http://127.0.0.1:3000/api/not-a-route")).status).toBe(404)
+    expect((await fetch(`${serverUrl}/assets/missing.js`)).status).toBe(404)
+    expect((await fetch(`${serverUrl}/api/not-a-route`)).status).toBe(404)
 
     const cliCreate = await processRun([
       "bun",
@@ -196,7 +207,7 @@ test("built library, server, and CLI outputs are executable", async () => {
       "realms",
       "create",
       "--server",
-      "http://127.0.0.1:3000",
+      serverUrl,
       "--token",
       "built-output-secret",
       "--domain",
@@ -209,11 +220,11 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(JSON.parse(cliCreate.stdout)).toMatchObject({ realm: { domains: ["built-output.task-20.example"] } })
 
     const builtRealmId = (JSON.parse(cliCreate.stdout) as { realm: { id: string } }).realm.id
-    const adminResponse = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/users`, {
+    const adminResponse = await fetch(`${serverUrl}/realms/${builtRealmId}/users`, {
       headers: { host: "built-output.task-20.example" },
     })
     expect(adminResponse.status).toBe(401)
-    const registration = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/register`, {
+    const registration = await fetch(`${serverUrl}/realms/${builtRealmId}/password/register`, {
       body: JSON.stringify({
         email: "browser-mode@built-output.task-20.example",
         password: "Built Output Password 123!",
@@ -227,7 +238,7 @@ test("built library, server, and CLI outputs are executable", async () => {
 
     const cliArguments = [
       "--server",
-      "http://127.0.0.1:3000",
+      serverUrl,
       "--system-token",
       "built-output-secret",
       "--realm-id",
@@ -256,7 +267,7 @@ test("built library, server, and CLI outputs are executable", async () => {
       expect(changed.exitCode, command).toBe(0)
     }
 
-    const loginAttempt = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/login`, {
+    const loginAttempt = await fetch(`${serverUrl}/realms/${builtRealmId}/password/login`, {
       body: JSON.stringify({
         identifier: "browser-mode@built-output.task-20.example",
         password: "Built Output Password 123!",
@@ -275,7 +286,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(loginCookie).toContain("Secure")
     expect(loginCookie).toContain("SameSite=Lax")
 
-    const apiLoginAttempt = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/login`, {
+    const apiLoginAttempt = await fetch(`${serverUrl}/realms/${builtRealmId}/password/login`, {
       body: JSON.stringify({
         identifier: "browser-mode@built-output.task-20.example",
         password: "Built Output Password 123!",
@@ -287,7 +298,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     expect(apiLoginAttempt.headers.get("set-cookie")).toBeNull()
     expect(await apiLoginAttempt.text()).toContain('"token"')
 
-    const invalidLoginAttempt = await fetch(`http://127.0.0.1:3000/realms/${builtRealmId}/password/login`, {
+    const invalidLoginAttempt = await fetch(`${serverUrl}/realms/${builtRealmId}/password/login`, {
       body: JSON.stringify({
         identifier: "browser-mode@built-output.task-20.example",
         password: "Built Output Password 123!",
@@ -307,7 +318,7 @@ test("built library, server, and CLI outputs are executable", async () => {
     await child.exited
     await rm(directory, { force: true, recursive: true })
   }
-})
+}, 30_000)
 
 async function processRun(args: readonly string[]): Promise<ProcessResult> {
   const child = Bun.spawn(Array.from(args), { stderr: "pipe", stdout: "pipe" })

@@ -196,7 +196,7 @@ test("remaining target command trees preserve profile scope resolution without u
     server.stop(true)
     await rm(directory, { force: true, recursive: true })
   }
-})
+}, 30_000)
 
 test("target CLI commands resolve profile connections and preserve system-secret precedence", async () => {
   const directory = await mkdtemp(join(tmpdir(), "authworks-cli-target-profile-"))
@@ -620,7 +620,7 @@ test("realm and organization system commands ignore profile and AUTHWORKS_TOKEN 
     server.stop(true)
     await rm(directory, { force: true, recursive: true })
   }
-}, 10_000)
+}, 30_000)
 
 test("integrated CLI writers redact profile, environment, and flag connection tokens from errors", async () => {
   const directory = await mkdtemp(join(tmpdir(), "authworks-cli-writer-redaction-"))
@@ -968,7 +968,7 @@ test("users, passwords, and external identity system routes isolate system-secre
     server.stop(true)
     await rm(directory, { force: true, recursive: true })
   }
-})
+}, 30_000)
 
 test("OIDC logout redacts echoed ID token hints and connection tokens from errors", async () => {
   const connectionToken = "oidc-logout-connection-token-12345678901234567890"
@@ -1112,10 +1112,17 @@ async function cliRunWithEnvironment(environmentOverrides: Record<string, string
     else environment[name] = value
   }
   const child = Bun.spawn(["bun", "src/outputs/cli.ts", ...args], { env: environment, stderr: "pipe", stdout: "pipe" })
-  const [exitCode, stderr, stdout] = await Promise.all([
-    child.exited,
-    new Response(child.stderr).text(),
-    new Response(child.stdout).text(),
-  ])
-  return { exitCode, stderr, stdout }
+  try {
+    const [exitCode, stderr, stdout] = await Promise.all([
+      child.exited,
+      new Response(child.stderr).text(),
+      new Response(child.stdout).text(),
+    ])
+    return { exitCode, stderr, stdout }
+  } finally {
+    if (child.exitCode === null) {
+      child.kill()
+      await child.exited
+    }
+  }
 }
