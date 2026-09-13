@@ -265,5 +265,23 @@ export function machineRepositoryCreate(database: StorageExecutor) {
         )
       }
     },
+
+    userDelete(realmId: string, machineUserId: string): Result<MachineUserRow | null> {
+      try {
+        return resultCreate(
+          database
+            .delete(machineUserTable)
+            .where(and(eq(machineUserTable.realmId, realmId), eq(machineUserTable.id, machineUserId)))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "machineUserDelete",
+          "The machine user could not be deleted.",
+          "machine-users.write-failed",
+        )
+      }
+    },
   }
 }

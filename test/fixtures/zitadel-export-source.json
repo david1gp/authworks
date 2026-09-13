@@ -3,7 +3,7 @@
     {
       "id": "323456789012345678",
       "name": "Source organization",
-      "state": "ORG_STATE_ACTIVE",
+      "state": "ORGANIZATION_STATE_ACTIVE",
       "details": {
         "creationDate": "2023-11-14T22:13:20.000Z",
         "changeDate": "2023-11-14T22:13:21.000Z"
@@ -77,7 +77,7 @@
       "projectOwnerId": "323456789012345678",
       "grantedOrgId": "323456789012345678",
       "grantedRoleKeys": ["viewer"],
-      "state": "PROJECT_GRANT_STATE_ACTIVE",
+      "state": "GRANTED_PROJECT_STATE_ACTIVE",
       "details": {
         "creationDate": "2023-11-14T22:13:20.000Z",
         "changeDate": "2023-11-14T22:13:21.000Z"

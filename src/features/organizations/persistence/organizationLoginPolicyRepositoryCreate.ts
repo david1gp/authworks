@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -137,6 +137,29 @@ export function organizationLoginPolicyRepositoryCreate(database: StorageExecuto
         return resultErrorCodedCreate(
           "organizationLoginPolicyUpdate",
           "The login policy could not be saved.",
+          "organizations.write-failed",
+        )
+      }
+    },
+
+    organizationLoginPolicyDelete(organizationId: string, realmId: string): Result<OrganizationLoginPolicyRow | null> {
+      try {
+        return resultCreate(
+          database
+            .delete(organizationLoginPolicyTable)
+            .where(
+              and(
+                eq(organizationLoginPolicyTable.organizationId, organizationId),
+                eq(organizationLoginPolicyTable.realmId, realmId),
+              ),
+            )
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "organizationLoginPolicyDelete",
+          "The login policy could not be removed.",
           "organizations.write-failed",
         )
       }

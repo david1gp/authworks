@@ -68,6 +68,39 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    organizationDelete(realmId: string, organizationId: string): Result<OrganizationRow | null> {
+      try {
+        const organization = database
+          .select()
+          .from(organizationTable)
+          .where(and(eq(organizationTable.realmId, realmId), eq(organizationTable.id, organizationId)))
+          .get()
+        if (organization === undefined) return resultCreate(null)
+        database
+          .delete(organizationMembershipTable)
+          .where(
+            and(
+              eq(organizationMembershipTable.realmId, realmId),
+              eq(organizationMembershipTable.organizationId, organizationId),
+            ),
+          )
+          .run()
+        return resultCreate(
+          database
+            .delete(organizationTable)
+            .where(and(eq(organizationTable.realmId, realmId), eq(organizationTable.id, organizationId)))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "organizationDelete",
+          "The organization could not be deleted.",
+          "organizations.write-failed",
+        )
+      }
+    },
+
     organizationUpdate(organizationId: string, input: OrganizationUpdate): Result<OrganizationRow | null> {
       try {
         return resultCreate(
@@ -106,12 +139,17 @@ export function organizationRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    organizationMembershipDelete(membershipId: string): Result<OrganizationMembershipRow | null> {
+    organizationMembershipDelete(membershipId: string, realmId?: string): Result<OrganizationMembershipRow | null> {
       try {
         return resultCreate(
           database
             .delete(organizationMembershipTable)
-            .where(eq(organizationMembershipTable.id, membershipId))
+            .where(
+              and(
+                eq(organizationMembershipTable.id, membershipId),
+                ...(realmId === undefined ? [] : [eq(organizationMembershipTable.realmId, realmId)]),
+              ),
+            )
             .returning()
             .get() ?? null,
         )

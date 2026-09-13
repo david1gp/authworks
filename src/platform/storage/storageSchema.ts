@@ -49,6 +49,7 @@ import { userProfileTable } from "../../features/users/persistence/userProfileTa
 import { userTable } from "../../features/users/persistence/userTable.js"
 import { wahaHealthCandidateTable } from "../../features/waha/persistence/wahaHealthCandidateTable.js"
 import { whatsappOtpChallengeTable } from "../../features/whatsappOtp/persistence/whatsappOtpChallengeTable.js"
+import { zitadelMigrationSourceRecordTable } from "../../features/zitadelMigration/persistence/zitadelMigrationSourceRecordTable.js"
 import { rateLimitTable } from "../rateLimit/rateLimitTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
 import { storageEventTable } from "./storageEventTable.js"
@@ -105,6 +106,7 @@ export const storageSchema = {
   storageCurrentStateTable,
   storageEventTable,
   eventUserSubjectTable,
+  zitadelMigrationSourceRecordTable,
 }
 
 export type StorageClient = BunSQLiteDatabase<typeof storageSchema>

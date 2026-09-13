@@ -26,7 +26,11 @@ export function organizationDomainRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    organizationDomainDelete(domain: string, organizationId: string): Result<OrganizationDomainRow | null> {
+    organizationDomainDelete(
+      domain: string,
+      organizationId: string,
+      realmId?: string,
+    ): Result<OrganizationDomainRow | null> {
       try {
         return resultCreate(
           database
@@ -35,6 +39,7 @@ export function organizationDomainRepositoryCreate(database: StorageExecutor) {
               and(
                 eq(organizationDomainTable.domain, domain),
                 eq(organizationDomainTable.organizationId, organizationId),
+                ...(realmId === undefined ? [] : [eq(organizationDomainTable.realmId, realmId)]),
               ),
             )
             .returning()

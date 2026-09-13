@@ -17,6 +17,7 @@ import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { zitadelMigrationImport } from "../../src/features/zitadelMigration/actions/zitadelMigrationImport.js"
+import { zitadelMigrationSourceRecordRepositoryCreate } from "../../src/features/zitadelMigration/persistence/zitadelMigrationSourceRecordRepositoryCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -54,11 +55,34 @@ function pkceChallengeCreate(verifier: string): string {
 
 function migrationSnapshot() {
   return {
+    version: 2,
+    sourceInstance: "https://source.test",
+    exportedAt: 1,
+    completeness: {
+      users: { complete: true, count: 1 },
+      organizations: { complete: true, count: 0 },
+      organizationMemberships: { complete: true, count: 0 },
+      projects: { complete: true, count: 0 },
+      projectRoles: { complete: true, count: 0 },
+      projectGrants: { complete: true, count: 0 },
+      oidcApplications: { complete: true, count: 0 },
+      machineUsers: { complete: true, count: 0 },
+      domains: { complete: true, count: 0 },
+      loginPolicies: { complete: true, count: 0 },
+      identityProviders: { complete: true, count: 0 },
+      externalIdentityLinks: { complete: true, count: 0 },
+    },
     organizations: [],
     organizationMemberships: [],
     projectGrants: [],
     projectRoles: [],
     projects: [],
+    oidcApplications: [],
+    machineUsers: [],
+    domains: [],
+    loginPolicies: [],
+    identityProviders: [],
+    externalIdentityLinks: [],
     unsupported: [],
     users: [
       {
@@ -81,7 +105,6 @@ function migrationSnapshot() {
         userName: "numeric-user",
       },
     ],
-    version: 1,
   }
 }
 
@@ -139,18 +162,37 @@ test("authorization user references accept migrated IDs without widening OIDC re
   ).toBe(true)
 })
 
-test("authorization and replay events store migrated numeric user IDs", async () => {
+test("authorization and replay events store migrated destination user IDs", async () => {
   await withDatabase(async (database, realmId) => {
+    const sourceRecords = zitadelMigrationSourceRecordRepositoryCreate(database.db)
+    expect(
+      sourceRecords.sourceRecordUpsert({
+        destinationId: "018f0e3f-8b00-7000-8000-000000000003",
+        entityType: "user",
+        realmId,
+        sourceId: userId,
+        sourceInstance: "https://source.test",
+        sourceUpdatedAt: 1_700_000_000_000,
+        sourceVersion: null,
+      }).success,
+    ).toBe(true)
     const imported = zitadelMigrationImport({ database, realmId, snapshot: migrationSnapshot() })
     expect(imported.success).toBe(true)
     if (!imported.success) return
+    const sourceRecord = sourceRecords.sourceRecordGet(realmId, "https://source.test", "user", userId)
+    expect(sourceRecord.success).toBe(true)
+    if (!sourceRecord.success) return
+    expect(sourceRecord.data).not.toBeNull()
+    if (sourceRecord.data === null) return
+    const destinationUserId = sourceRecord.data.destinationId
+    expect(destinationUserId).not.toBe(userId)
 
     const session = sessionIssue({
       assurance: "authenticated",
       authenticationMethod: "password",
       database,
       realmId,
-      userId,
+      userId: destinationUserId,
     })
     expect(session.success).toBe(true)
     if (!session.success) return
@@ -194,18 +236,20 @@ test("authorization and replay events store migrated numeric user IDs", async ()
       .from(storageEventTable)
       .all()
       .find((event) => event.eventType === "oidc.authorization_request_validated")
-    expect(validatedEvent?.actorId).toBe(userId)
+    expect(validatedEvent?.actorId).toBe(destinationUserId)
     expect(v.parse(oidcAuthorizationRequestValidatedEventPayloadSchema, validatedEvent?.payload ?? {})).toMatchObject({
       clientId: client.data.client.id,
       sessionId: expect.any(String),
-      userId,
+      userId: destinationUserId,
     })
     const issuedEvent = database.db
       .select()
       .from(storageEventTable)
       .all()
       .find((event) => event.eventType === "oidc.authorization_code_issued")
-    expect(v.parse(oidcAuthorizationCodeIssuedEventPayloadSchema, issuedEvent?.payload ?? {}).userId).toBe(userId)
+    expect(v.parse(oidcAuthorizationCodeIssuedEventPayloadSchema, issuedEvent?.payload ?? {}).userId).toBe(
+      destinationUserId,
+    )
 
     const redeemed = oidcAuthorizationCodeRedeem({
       database,
@@ -224,8 +268,10 @@ test("authorization and replay events store migrated numeric user IDs", async ()
       .from(storageEventTable)
       .all()
       .find((event) => event.eventType === "oidc.authorization_code_consumed")
-    expect(consumedEvent?.actorId).toBe(userId)
-    expect(v.parse(oidcAuthorizationCodeConsumedEventPayloadSchema, consumedEvent?.payload ?? {}).userId).toBe(userId)
+    expect(consumedEvent?.actorId).toBe(destinationUserId)
+    expect(v.parse(oidcAuthorizationCodeConsumedEventPayloadSchema, consumedEvent?.payload ?? {}).userId).toBe(
+      destinationUserId,
+    )
 
     const key = oidcSigningKeyCreate({
       context: realmSystemContextCreate(),
@@ -279,7 +325,9 @@ test("authorization and replay events store migrated numeric user IDs", async ()
       .from(storageEventTable)
       .all()
       .find((event) => event.eventType === "oidc.refresh_token_replay_detected")
-    expect(replayEvent?.actorId).toBe(userId)
-    expect(v.parse(oidcRefreshTokenReplayDetectedEventPayloadSchema, replayEvent?.payload ?? {}).userId).toBe(userId)
+    expect(replayEvent?.actorId).toBe(destinationUserId)
+    expect(v.parse(oidcRefreshTokenReplayDetectedEventPayloadSchema, replayEvent?.payload ?? {}).userId).toBe(
+      destinationUserId,
+    )
   })
 })

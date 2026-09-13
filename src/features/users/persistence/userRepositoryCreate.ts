@@ -3,6 +3,7 @@ import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageExecutor } from "../../../platform/storage/storageSchema.js"
+import { organizationMembershipTable } from "../../organizations/persistence/organizationMembershipTable.js"
 import { userEmailNormalize } from "../domain/userEmailNormalize.js"
 import { userNameNormalize } from "../domain/userNameNormalize.js"
 import { userStateInvariantValidate } from "../domain/userStateInvariantValidate.js"
@@ -292,6 +293,30 @@ export function userRepositoryCreate(database: StorageExecutor) {
         return resultCreate(users.map(({ profile, user }) => ({ ...user, profile })))
       } catch (_error) {
         return resultErrorCreate("userList", "The users could not be read.", "users.read-failed")
+      }
+    },
+
+    userDelete(realmId: string, userId: string): Result<UserRow | null> {
+      try {
+        const user = database
+          .select()
+          .from(userTable)
+          .where(and(eq(userTable.realmId, realmId), eq(userTable.id, userId)))
+          .get()
+        if (user === undefined) return resultCreate(null)
+        database
+          .delete(organizationMembershipTable)
+          .where(and(eq(organizationMembershipTable.realmId, realmId), eq(organizationMembershipTable.userId, userId)))
+          .run()
+        return resultCreate(
+          database
+            .delete(userTable)
+            .where(and(eq(userTable.realmId, realmId), eq(userTable.id, userId)))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate("userDelete", "The user could not be deleted.", "users.write-failed")
       }
     },
 

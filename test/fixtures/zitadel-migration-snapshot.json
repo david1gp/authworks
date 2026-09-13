@@ -1,5 +1,27 @@
 {
-  "version": 1,
+  "version": 2,
+  "sourceInstance": "https://auth.contentoren.de",
+  "exportedAt": 1700000001000,
+  "completeness": {
+    "domains": { "complete": true, "count": 0 },
+    "externalIdentityLinks": { "complete": true, "count": 0 },
+    "identityProviders": { "complete": true, "count": 0 },
+    "loginPolicies": { "complete": true, "count": 0 },
+    "machineUsers": { "complete": true, "count": 0 },
+    "oidcApplications": { "complete": true, "count": 0 },
+    "users": { "complete": true, "count": 1 },
+    "organizations": { "complete": true, "count": 2 },
+    "organizationMemberships": { "complete": true, "count": 1 },
+    "projects": { "complete": true, "count": 1 },
+    "projectRoles": { "complete": true, "count": 1 },
+    "projectGrants": { "complete": true, "count": 1 }
+  },
+  "domains": [],
+  "externalIdentityLinks": [],
+  "identityProviders": [],
+  "loginPolicies": [],
+  "machineUsers": [],
+  "oidcApplications": [],
   "users": [
     {
       "id": "98765432109876543210",

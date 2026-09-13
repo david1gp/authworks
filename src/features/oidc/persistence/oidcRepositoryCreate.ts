@@ -1007,6 +1007,20 @@ export function oidcRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    clientDelete(realmId: string, clientId: string): Result<OidcClientRow | null> {
+      try {
+        return resultCreate(
+          database
+            .delete(oidcClientTable)
+            .where(and(eq(oidcClientTable.realmId, realmId), eq(oidcClientTable.id, clientId)))
+            .returning()
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate("oidcClientDelete", "The OIDC client could not be deleted.", "oidc.write-failed")
+      }
+    },
+
     clientUpdate(realmId: string, clientId: string, input: OidcClientUpdate): Result<OidcClientRow | null> {
       try {
         return resultCreate(

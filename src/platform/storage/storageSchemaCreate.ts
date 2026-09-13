@@ -11,6 +11,9 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE TABLE IF NOT EXISTS current_state (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL CHECK (json_valid(value)), version INTEGER NOT NULL CHECK (version > 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0))",
     )
     database.run(
+      "CREATE TABLE IF NOT EXISTS zitadel_migration_source_records (realm_id TEXT NOT NULL, source_instance TEXT NOT NULL, entity_type TEXT NOT NULL, source_id TEXT NOT NULL, destination_id TEXT NOT NULL, source_version TEXT, source_updated_at INTEGER, PRIMARY KEY (realm_id, source_instance, entity_type, source_id), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+    )
+    database.run(
       "CREATE TABLE IF NOT EXISTS realms (id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, primary_domain TEXT NOT NULL UNIQUE, status TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), bootstrap_admin_id TEXT UNIQUE, bootstrap_completed_at INTEGER CHECK (bootstrap_completed_at IS NULL OR bootstrap_completed_at >= 0))",
     )
     database.run(
