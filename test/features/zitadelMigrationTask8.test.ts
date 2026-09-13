@@ -5,6 +5,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import * as v from "valibot"
 import { organizationDomainRepositoryCreate } from "../../src/features/organizations/persistence/organizationDomainRepositoryCreate.js"
+import { organizationPrimaryDomainResolve } from "../../src/features/organizations/server/organizationPrimaryDomainResolve.js"
 import { organizationLoginPolicyRepositoryCreate } from "../../src/features/organizations/persistence/organizationLoginPolicyRepositoryCreate.js"
 import { organizationRepositoryCreate } from "../../src/features/organizations/persistence/organizationRepositoryCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
@@ -14,6 +15,7 @@ import { zitadelMigrationImport } from "../../src/features/zitadelMigration/acti
 import { zitadelMigrationSourceRecordRepositoryCreate } from "../../src/features/zitadelMigration/persistence/zitadelMigrationSourceRecordRepositoryCreate.js"
 import type { ZitadelMigrationSnapshot } from "../../src/features/zitadelMigration/public/zitadelMigrationSnapshotSchema.js"
 import { zitadelMigrationSnapshotSchema } from "../../src/features/zitadelMigration/public/zitadelMigrationSnapshotSchema.js"
+import { oidcAccessTokenRoleClaimsCreate } from "../../src/features/oidc/domain/oidcAccessTokenRoleClaimsCreate.js"
 import { type StorageDatabase, storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { platformTestkitCreate } from "../../src/platform/testkit/platformTestkitCreate.js"
 
@@ -49,6 +51,15 @@ test("task 8 round-trips source timestamps and imports mapped domains and polici
     })
     expect(v.safeParse(zitadelMigrationSnapshotSchema, snapshot).success).toBe(true)
   })
+})
+
+test("task 8 legacy domain snapshots default isPrimary to false", () => {
+  const snapshot = task8Snapshot()
+  const { isPrimary: _isPrimary, ...legacyDomain } = snapshot.domains[0]!
+  const legacySnapshot = { ...snapshot, domains: [legacyDomain] }
+  const parsed = v.safeParse(zitadelMigrationSnapshotSchema, legacySnapshot)
+  expect(parsed.success).toBe(true)
+  if (parsed.success) expect(parsed.output.domains[0]?.isPrimary).toBe(false)
 })
 
 test("task 8 complete snapshots delete source-owned domains and policies and remove mappings", async () => {
@@ -143,6 +154,126 @@ test("task 8 source verification overwrites, native conflicts stay unowned, and 
   })
 })
 
+test("task 8 preserves source primary state, clears it, and drives effective verified role claims", async () => {
+  await withDatabase((database, realmId) => {
+    const snapshot = task8Snapshot()
+    const imported = zitadelMigrationImport({ database, realmId, snapshot })
+    expect(imported.success).toBe(true)
+    if (!imported.success) return
+    const organizations = organizationRepositoryCreate(database.db).organizationList(realmId)
+    expect(organizations.success).toBe(true)
+    if (!organizations.success) return
+    const organizationId = organizations.data[0]?.id ?? ""
+    const primary = organizationPrimaryDomainResolve({ executor: database.db, organizationId, realmId })
+    expect(primary).toEqual({ success: true, data: "example.com" })
+    expect(
+      oidcAccessTokenRoleClaimsCreate([
+        { organizationId, primaryDomain: primary.success ? primary.data : undefined, roleKeys: ["reader"] },
+      ]),
+    ).toEqual({ "urn:zitadel:iam:org:project:roles": { reader: { [organizationId]: "example.com" } } })
+
+    const unverified = structuredClone(snapshot)
+    unverified.domains[0]!.verified = false
+    unverified.domains[0]!.updatedAt = 201
+    expect(zitadelMigrationImport({ database, realmId, snapshot: unverified }).success).toBe(true)
+    const unverifiedPrimary = organizationPrimaryDomainResolve({ executor: database.db, organizationId, realmId })
+    expect(unverifiedPrimary).toEqual({ success: true, data: undefined })
+    expect(
+      oidcAccessTokenRoleClaimsCreate([
+        {
+          organizationId,
+          primaryDomain: unverifiedPrimary.success ? unverifiedPrimary.data : undefined,
+          roleKeys: ["reader"],
+        },
+      ]),
+    ).toEqual({})
+
+    const restored = structuredClone(snapshot)
+    restored.domains[0]!.updatedAt = 202
+    expect(zitadelMigrationImport({ database, realmId, snapshot: restored }).success).toBe(true)
+
+    const cleared = structuredClone(snapshot)
+    cleared.domains[0]!.isPrimary = false
+    cleared.domains[0]!.updatedAt = 203
+    expect(zitadelMigrationImport({ database, realmId, snapshot: cleared }).success).toBe(true)
+    expect(organizationDomainRepositoryCreate(database.db).organizationDomainGet("example.com")).toMatchObject({
+      data: { isPrimary: false, verified: true },
+    })
+    const afterClear = organizationPrimaryDomainResolve({ executor: database.db, organizationId, realmId })
+    expect(afterClear).toEqual({ success: true, data: undefined })
+    expect(
+      oidcAccessTokenRoleClaimsCreate([
+        { organizationId, primaryDomain: afterClear.success ? afterClear.data : undefined, roleKeys: ["reader"] },
+      ]),
+    ).toEqual({})
+  })
+})
+
+test("task 8 primary conflicts do not alter native or cross-source domains", async () => {
+  await withDatabase((database, realmId) => {
+    const snapshot = task8Snapshot()
+    const initial = structuredClone(snapshot)
+    initial.domains[0]!.isPrimary = false
+    const first = zitadelMigrationImport({ database, realmId, snapshot: initial })
+    expect(first.success).toBe(true)
+    if (!first.success) return
+    const organizations = organizationRepositoryCreate(database.db).organizationList(realmId)
+    if (!organizations.success) return
+    const organizationId = organizations.data[0]?.id ?? ""
+    const domains = organizationDomainRepositoryCreate(database.db)
+    const native = domains.organizationDomainCreate({
+      createdAt: 300,
+      domain: "native.example.com",
+      isPrimary: true,
+      organizationId,
+      realmId,
+      updatedAt: 300,
+      verificationTokenHash: "native-token",
+      verified: true,
+      version: 1,
+    })
+    expect(native.success).toBe(true)
+    const sourceRecords = zitadelMigrationSourceRecordRepositoryCreate(database.db)
+    const changed = structuredClone(snapshot)
+    changed.domains[0]!.updatedAt = 301
+    const conflict = zitadelMigrationImport({ database, realmId, snapshot: changed })
+    expect(conflict).toMatchObject({ success: true, data: { conflicts: 1, counts: { domains: { skipped: 1 } } } })
+    expect(domains.organizationDomainGet("native.example.com")).toMatchObject({ data: { isPrimary: true } })
+    expect(domains.organizationDomainGet("example.com")).toMatchObject({ data: { isPrimary: false } })
+    expect(domains.organizationDomainDelete("native.example.com", organizationId, realmId).success).toBe(true)
+    const crossSource = domains.organizationDomainCreate({
+      createdAt: 302,
+      domain: "cross-source.example.com",
+      isPrimary: true,
+      organizationId,
+      realmId,
+      updatedAt: 302,
+      verificationTokenHash: "cross-source-token",
+      verified: true,
+      version: 1,
+    })
+    expect(crossSource.success).toBe(true)
+    expect(
+      sourceRecords.sourceRecordUpsert({
+        realmId,
+        sourceInstance: "https://other.example",
+        entityType: "domain",
+        sourceId: "cross-source-domain",
+        destinationId: "cross-source.example.com",
+        sourceUpdatedAt: 302,
+      }).success,
+    ).toBe(true)
+    changed.domains[0]!.updatedAt = 303
+    const crossSourceConflict = zitadelMigrationImport({ database, realmId, snapshot: changed })
+    expect(crossSourceConflict).toMatchObject({
+      success: true,
+      data: { conflicts: 1, counts: { domains: { skipped: 1 } } },
+    })
+    expect(domains.organizationDomainGet("cross-source.example.com")).toMatchObject({ data: { isPrimary: true } })
+    expect(domains.organizationDomainGet("example.com")).toMatchObject({ data: { isPrimary: false } })
+  })
+})
+
 test("task 8 exporter scopes organization calls, maps verified domains, deduplicates normalized domains, and reports incomplete", async () => {
   const calls: string[] = []
   const api = new Proxy(
@@ -220,6 +351,7 @@ function task8Snapshot(): ZitadelMigrationSnapshot {
       sourceId: "domain-8",
       organizationId: "8",
       domain: "Example.COM",
+      isPrimary: true,
       verified: true,
       createdAt: 100,
       updatedAt: 200,

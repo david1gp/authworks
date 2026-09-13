@@ -35,6 +35,14 @@ type ZitadelRecord = Readonly<Record<string, unknown>>
 type ZitadelApiFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>
 const paginationMaxPages = 10_000
 const paginationMaxRecords = 1_000_000
+const providerTemplateListResponseSchema = v.object({
+  details: v.object({ totalResult: v.union([v.number(), v.string()]) }),
+  result: v.array(v.record(v.string(), v.unknown())),
+})
+
+type ProviderTemplateScope =
+  | { readonly kind: "instance" }
+  | { readonly kind: "organization"; readonly organizationId: string }
 
 export type ZitadelApiClientCreateOptions = {
   readonly baseUrl: string
@@ -144,6 +152,7 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
     typedPaged(
       (request: ProjectServiceListProjectsRequest) => projectServiceListProjects({ ...typed, request }),
       (response: ListProjectsResponse) => response.projects,
+      (record) => recordIdentityGet(record, "projectId"),
       [],
     )
 
@@ -151,6 +160,7 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
     typedPaged(
       (request: ProjectServiceListProjectRolesRequest) => projectServiceListProjectRoles({ ...typed, request }),
       (response: ListProjectRolesResponse) => response.projectRoles,
+      (record) => recordIdentityGet(record, "projectId", "key"),
       [],
       projectId,
     )
@@ -159,6 +169,7 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
     typedPaged(
       (request: ProjectServiceListProjectGrantsRequest) => projectServiceListProjectGrants({ ...typed, request }),
       (response: ListProjectGrantsResponse) => response.projectGrants,
+      (record) => recordIdentityGet(record, "organizationId", "projectId", "grantedOrganizationId"),
       [],
     )
 
@@ -166,6 +177,7 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
     typedPaged<ApplicationServiceListApplicationsRequest, ListApplicationsResponse>(
       (request) => applicationServiceListApplications({ ...typed, request: request as never }),
       (response) => response.applications.map(applicationNormalize),
+      (record) => recordIdentityGet(record, "id"),
       [{ filter: { case: "projectIdFilter" as const, value: { projectId } } }],
       undefined,
       undefined,
@@ -181,8 +193,9 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
           id: domain.domain,
           organizationId: domain.organizationId || organizationId,
           isVerified: domain.isVerified,
-          isPrimary: domain.isPrimary,
+          isPrimary: domain.isPrimary === true,
         })),
+      (record) => recordIdentityGet(record, "id"),
       [],
       undefined,
       (request) => ({ ...(request as object), organizationId }) as OrganizationServiceListOrganizationDomainsRequest,
@@ -341,6 +354,7 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
             idpId: link.idpId,
             userId: link.userId,
           })),
+        (record) => recordIdentityGet(record, "userId", "idpId"),
         [],
         undefined,
         (request) => ({ ...request, userId }) as typeof request,
@@ -438,8 +452,21 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
     },
 
     async identityProvidersList(organizationIds: readonly string[]): Promise<Result<ZitadelRecord[]>> {
-      void organizationIds
-      return typedPaged<AdminServiceListIDPsRequest, ListIDPsResponse>(
+      // The typed package intentionally only exposes the legacy IDP listing. The
+      // template endpoints are the source of truth for current installations and
+      // are also the only listing that includes organization-owned templates.
+      // Keep the transport-backed path for callers/tests that explicitly provide
+      // a Connect transport for the legacy compatibility operation.
+      if (options.transport === undefined)
+        return identityProviderTemplatesList({
+          baseUrl,
+          fetcher,
+          organizationIds,
+          pageSize,
+          token: options.token,
+        })
+      const organizationIdSet = new Set(organizationIds)
+      const result = await typedPaged<AdminServiceListIDPsRequest, ListIDPsResponse>(
         (request) =>
           adminServiceListIDPs({
             ...typed,
@@ -448,15 +475,7 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
         (response) =>
           response.result.map((idp) => {
             const config = idp.config.case === "oidcConfig" ? idp.config.value : undefined
-            const issuer = config?.issuer
-            const provider =
-              issuer === "https://accounts.google.com"
-                ? "GOOGLE"
-                : issuer === "https://github.com"
-                  ? "GITHUB"
-                  : issuer === "https://login.microsoftonline.com/common/v2.0"
-                    ? "MICROSOFT"
-                    : undefined
+            const provider = identityProviderTypeGet(config?.issuer)
             const owner = idp.owner === 2 ? idp.details?.resourceOwner : undefined
             return {
               id: idp.id,
@@ -466,10 +485,18 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
                 ? {}
                 : { oidcConfig: { clientId: config.clientId, issuer: config.issuer, scopes: [...config.scopes] } }),
               ...(owner === undefined ? {} : { organizationId: owner }),
+              autoRegister: idp.autoRegister,
               enabled: idp.state === 1,
               owner: idp.owner,
+              ...(providerTemplateTimestampGet(idp.details?.creationDate) === undefined
+                ? {}
+                : { createdAt: providerTemplateTimestampGet(idp.details?.creationDate) }),
+              ...(providerTemplateTimestampGet(idp.details?.changeDate) === undefined
+                ? {}
+                : { updatedAt: providerTemplateTimestampGet(idp.details?.changeDate) }),
             }
           }),
+        (record) => recordIdentityGet(record, "id"),
         [],
         undefined,
         (request) => {
@@ -482,8 +509,347 @@ export function zitadelApiClientCreate(options: ZitadelApiClientCreateOptions) {
         },
         pageSize,
       )
+      if (!result.success) return result
+      return resultCreate(
+        result.data.filter((record) => {
+          const organizationId = stringGet(record.organizationId)
+          return organizationId === undefined || organizationIdSet.has(organizationId)
+        }),
+      )
     },
   }
+}
+
+function identityProviderTypeGet(issuer: string | undefined): "GOOGLE" | "GITHUB" | "MICROSOFT" | undefined {
+  const normalized = issuer?.trim().replace(/\/+$/, "").toLowerCase()
+  if (normalized === "https://accounts.google.com") return "GOOGLE"
+  if (normalized === "https://github.com") return "GITHUB"
+  if (normalized?.startsWith("https://login.microsoftonline.com/") && normalized.endsWith("/v2.0")) return "MICROSOFT"
+  return undefined
+}
+
+async function identityProviderTemplatesList(options: {
+  readonly baseUrl: string
+  readonly fetcher: ZitadelApiFetch
+  readonly organizationIds: readonly string[]
+  readonly pageSize: number
+  readonly token: string
+}): Promise<Result<ZitadelRecord[]>> {
+  const instanceResult = await identityProviderTemplatesSearch({
+    baseUrl: options.baseUrl,
+    fetcher: options.fetcher,
+    pageSize: options.pageSize,
+    scope: { kind: "instance" },
+    token: options.token,
+  })
+  if (!instanceResult.success) return instanceResult
+
+  const organizationIdSet = new Set(options.organizationIds)
+  const candidates: ZitadelRecord[] = instanceResult.data.filter((record) => {
+    const organizationId = stringGet(record.organizationId)
+    return organizationId === undefined || organizationIdSet.has(organizationId)
+  })
+  for (const organizationId of options.organizationIds) {
+    const organizationResult = await identityProviderTemplatesSearch({
+      baseUrl: options.baseUrl,
+      fetcher: options.fetcher,
+      pageSize: options.pageSize,
+      scope: { kind: "organization", organizationId },
+      token: options.token,
+    })
+    if (!organizationResult.success) return organizationResult
+    candidates.push(...organizationResult.data)
+  }
+
+  const providers = new Map<string, ZitadelRecord>()
+  for (const candidate of candidates) {
+    const sourceId = stringGet(candidate.id)
+    if (sourceId === undefined)
+      return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "provider id missing")
+    const prior = providers.get(sourceId)
+    if (prior === undefined) {
+      providers.set(sourceId, candidate)
+      continue
+    }
+    const priorOrganizationId = stringGet(prior.organizationId)
+    const organizationId = stringGet(candidate.organizationId)
+    // An instance-owned provider is inherited into every organization response.
+    // Deduplicate that copy without assigning it the queried organization.
+    if (priorOrganizationId === undefined && organizationId === undefined) continue
+    if (priorOrganizationId !== undefined && priorOrganizationId === organizationId) continue
+    return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "provider ownership conflicted")
+  }
+  return resultCreate([...providers.values()])
+}
+
+async function identityProviderTemplatesSearch(options: {
+  readonly baseUrl: string
+  readonly fetcher: ZitadelApiFetch
+  readonly pageSize: number
+  readonly scope: ProviderTemplateScope
+  readonly token: string
+}): Promise<Result<ZitadelRecord[]>> {
+  const op = "zitadelApiClientIdentityProviderTemplates"
+  if (options.token.length === 0)
+    return resultErrorCodedCreate(
+      op,
+      "A ZITADEL service account token is required.",
+      "zitadel-migration.credentials-required",
+    )
+  if (!Number.isSafeInteger(options.pageSize) || options.pageSize < 1 || options.pageSize > 1000)
+    return resultErrorCodedCreate(op, "The ZITADEL page size is invalid.", "zitadel-migration.invalid")
+
+  const path =
+    options.scope.kind === "instance" ? "/admin/v1/idps/templates/_search" : "/management/v1/idps/templates/_search"
+  const records: ZitadelRecord[] = []
+  const seenIds = new Set<string>()
+  const seenPages = new Set<string>()
+  let expectedTotal: number | undefined
+  let rawRows = 0
+  let pageNumber = 0
+  for (;;) {
+    if (++pageNumber > paginationMaxPages || records.length > paginationMaxRecords)
+      return sourceIncomplete(op, "pagination budget exceeded")
+    let response: Response
+    try {
+      response = await options.fetcher(`${options.baseUrl}${path}`, {
+        body: JSON.stringify({
+          query: { asc: true, limit: options.pageSize, offset: (pageNumber - 1) * options.pageSize },
+          queries: [],
+        }),
+        headers: {
+          Authorization: `Bearer ${options.token}`,
+          "Content-Type": "application/json",
+          ...(options.scope.kind === "organization" ? { "x-zitadel-orgid": options.scope.organizationId } : {}),
+        },
+        method: "POST",
+      })
+    } catch (_error) {
+      return resultErrorCodedCreate(op, "The ZITADEL API could not be reached.", "zitadel-migration.source-unavailable")
+    }
+    if (!response.ok)
+      return resultErrorCodedCreate(
+        op,
+        `The ZITADEL API returned HTTP ${response.status}.`,
+        "zitadel-migration.source-request-failed",
+      )
+
+    let payload: unknown
+    try {
+      payload = await response.json()
+    } catch (_error) {
+      return resultErrorCodedCreate(op, "The ZITADEL API response was not JSON.", "zitadel-migration.source-invalid")
+    }
+    const parsed = v.safeParse(providerTemplateListResponseSchema, payload)
+    if (!parsed.success)
+      return resultErrorCodedCreate(
+        op,
+        "The ZITADEL identity provider template response was malformed.",
+        "zitadel-migration.source-invalid",
+      )
+
+    const page: ZitadelRecord[] = []
+    for (const raw of parsed.output.result) {
+      const mapped = identityProviderTemplateMap(raw, options.scope)
+      if (!mapped.success) return mapped
+      page.push(mapped.data)
+    }
+    const fingerprint = pageFingerprint(page)
+    if (page.length > 0 && seenPages.has(fingerprint)) return sourceIncomplete(op, "page repeated")
+    seenPages.add(fingerprint)
+    const total = numberGet(parsed.output.details.totalResult)
+    if (total === undefined) return sourceIncomplete(op, "totalResult invalid")
+    if (expectedTotal !== undefined && total !== expectedTotal) return sourceIncomplete(op, "totalResult changed")
+    expectedTotal ??= total
+    rawRows += page.length
+    if (total < rawRows) return sourceIncomplete(op, "totalResult is inconsistent")
+    for (const record of page) {
+      const sourceId = stringGet(record.id)
+      if (sourceId === undefined) return sourceIncomplete(op, "provider id missing")
+      if (seenIds.has(sourceId)) return sourceIncomplete(op, "provider repeated across pages")
+      seenIds.add(sourceId)
+      records.push(record)
+    }
+    if (rawRows === total) return resultCreate(records)
+    if (page.length === 0 || page.length < options.pageSize) return sourceIncomplete(op, "partial page")
+  }
+}
+
+function identityProviderTemplateMap(raw: ZitadelRecord, scope: ProviderTemplateScope): Result<ZitadelRecord> {
+  const sourceId = stringGet(raw.id)
+  const name = stringGet(raw.name)
+  const owner = providerTemplateOwnerGet(raw.owner)
+  const type = providerTemplateTypeGet(raw.type)
+  const enabled = providerTemplateEnabledGet(raw.state)
+  if (sourceId === undefined)
+    return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "provider id missing")
+  if (name === undefined) return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "provider name missing")
+  if (owner === undefined)
+    return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "provider owner missing")
+  if (type === undefined) return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "provider type missing")
+  if (enabled === undefined)
+    return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "provider state unsupported")
+
+  const details = recordGet(raw.details)
+  const resourceOwner = stringGet(details?.resourceOwner)
+  if (owner === "organization") {
+    if (resourceOwner === undefined)
+      return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "organization owner missing")
+    if (scope.kind === "organization" && resourceOwner !== scope.organizationId)
+      return sourceIncomplete("zitadelApiClientIdentityProviderTemplates", "organization owner conflicted")
+  }
+
+  const configuration = providerTemplateConfigurationGet(type, recordGet(raw.config))
+  return resultCreate({
+    id: sourceId,
+    name,
+    type: configuration.type ?? type,
+    owner: owner === "organization" ? "IDP_OWNER_TYPE_ORG" : "IDP_OWNER_TYPE_SYSTEM",
+    enabled,
+    ...(owner === "organization" && resourceOwner === undefined
+      ? {}
+      : owner === "organization"
+        ? { organizationId: resourceOwner }
+        : {}),
+    ...(configuration.oidcConfig === undefined ? {} : { oidcConfig: configuration.oidcConfig }),
+    ...(configuration.allowAccountCreation === undefined
+      ? {}
+      : { allowAccountCreation: configuration.allowAccountCreation }),
+    ...(providerTemplateTimestampGet(details?.creationDate) === undefined
+      ? {}
+      : { createdAt: providerTemplateTimestampGet(details?.creationDate) }),
+    ...(providerTemplateTimestampGet(details?.changeDate) === undefined
+      ? {}
+      : { updatedAt: providerTemplateTimestampGet(details?.changeDate) }),
+  })
+}
+
+function providerTemplateOwnerGet(value: unknown): "system" | "organization" | undefined {
+  if (value === 1 || value === "IDP_OWNER_TYPE_SYSTEM" || value === "system" || value === "SYSTEM") return "system"
+  if (value === 2 || value === "IDP_OWNER_TYPE_ORG" || value === "organization" || value === "ORG")
+    return "organization"
+  return undefined
+}
+
+function providerTemplateTypeGet(value: unknown): string | undefined {
+  const normalized = typeof value === "string" ? value.trim().toUpperCase() : undefined
+  if (value === 1 || normalized === "PROVIDER_TYPE_OIDC" || normalized === "OIDC") return "OIDC"
+  if (value === 2 || normalized === "PROVIDER_TYPE_JWT" || normalized === "JWT") return "JWT"
+  if (value === 3 || normalized === "PROVIDER_TYPE_LDAP" || normalized === "LDAP") return "LDAP"
+  if (value === 4 || normalized === "PROVIDER_TYPE_OAUTH" || normalized === "OAUTH") return "OAUTH"
+  if (value === 5 || normalized === "PROVIDER_TYPE_AZURE_AD" || normalized === "AZURE_AD" || normalized === "MICROSOFT")
+    return "AZURE_AD"
+  if (value === 6 || normalized === "PROVIDER_TYPE_GITHUB" || normalized === "GITHUB") return "GITHUB"
+  if (value === 7 || normalized === "PROVIDER_TYPE_GITHUB_ES" || normalized === "GITHUB_ES") return "GITHUB_ES"
+  if (value === 8 || normalized === "PROVIDER_TYPE_GITLAB" || normalized === "GITLAB") return "GITLAB"
+  if (value === 9 || normalized === "PROVIDER_TYPE_GITLAB_SELF_HOSTED" || normalized === "GITLAB_SELF_HOSTED")
+    return "GITLAB_SELF_HOSTED"
+  if (value === 10 || normalized === "PROVIDER_TYPE_GOOGLE" || normalized === "GOOGLE") return "GOOGLE"
+  if (value === 11 || normalized === "PROVIDER_TYPE_APPLE" || normalized === "APPLE") return "APPLE"
+  if (value === 12 || normalized === "PROVIDER_TYPE_SAML" || normalized === "SAML") return "SAML"
+  if (value === 13 || normalized === "PROVIDER_TYPE_ZITADEL" || normalized === "ZITADEL") return "ZITADEL"
+  if (typeof value === "number" && Number.isInteger(value)) return `__numeric_${value}`
+  return normalized === undefined || normalized.length === 0 ? undefined : normalized
+}
+
+function providerTemplateEnabledGet(value: unknown): boolean | undefined {
+  if (value === 1 || value === "IDP_STATE_ACTIVE" || value === "active" || value === "ACTIVE") return true
+  if (value === 2 || value === "IDP_STATE_INACTIVE" || value === "inactive" || value === "INACTIVE") return false
+  return undefined
+}
+
+function providerTemplateConfigurationGet(
+  type: string,
+  config: ZitadelRecord | undefined,
+): {
+  readonly allowAccountCreation?: boolean
+  readonly oidcConfig?: ZitadelRecord
+  readonly type?: string
+} {
+  if (config === undefined) return {}
+  const nested = recordGet(config.config)
+  const oneof = nested ?? config
+  const options = recordGet(config.options) ?? recordGet(nested?.options)
+  const allowAccountCreation = typeof options?.isCreationAllowed === "boolean" ? options.isCreationAllowed : undefined
+  const oneofValue = providerTemplateOneofGet(oneof)
+  if (oneofValue === undefined) return { ...(allowAccountCreation === undefined ? {} : { allowAccountCreation }) }
+  const nativeType =
+    oneofValue.case === "google"
+      ? "GOOGLE"
+      : oneofValue.case === "github"
+        ? "GITHUB"
+        : oneofValue.case === "azureAd"
+          ? "AZURE_AD"
+          : undefined
+  if (nativeType !== undefined) {
+    if (type !== nativeType) return { ...(allowAccountCreation === undefined ? {} : { allowAccountCreation }) }
+    const oidcConfig = providerTemplateOidcConfigGet(oneofValue.value)
+    return {
+      ...(allowAccountCreation === undefined ? {} : { allowAccountCreation }),
+      ...(oidcConfig === undefined ? {} : { oidcConfig }),
+    }
+  }
+  if (oneofValue.case !== "oidc") return { ...(allowAccountCreation === undefined ? {} : { allowAccountCreation }) }
+  const oidcConfig = providerTemplateOidcConfigGet(oneofValue.value, true)
+  const issuerType = identityProviderTypeGet(stringGet(oneofValue.value.issuer))
+  return {
+    ...(allowAccountCreation === undefined ? {} : { allowAccountCreation }),
+    ...(oidcConfig === undefined ? {} : { oidcConfig }),
+    ...(type === "OIDC" && issuerType !== undefined ? { type: issuerType } : {}),
+  }
+}
+
+function providerTemplateOneofGet(
+  config: ZitadelRecord,
+): { readonly case: string; readonly value: ZitadelRecord } | undefined {
+  const caseName = stringGet(config.case)
+  const caseValue = recordGet(config.value)
+  if (caseName !== undefined && caseValue !== undefined) return { case: caseName, value: caseValue }
+  for (const name of ["google", "github", "azureAd", "oidc", "saml", "oauth", "jwt", "ldap", "apple", "zitadel"]) {
+    const value = recordGet(config[name])
+    if (value !== undefined) return { case: name, value }
+  }
+  return undefined
+}
+
+function providerTemplateOidcConfigGet(value: ZitadelRecord, includeIssuer = false): ZitadelRecord | undefined {
+  const clientId = stringGet(value.clientId)
+  if (clientId === undefined) return undefined
+  const scopes = providerTemplateScopesGet(value.scopes)
+  if (value.scopes !== undefined && scopes === undefined) return undefined
+  const issuer = stringGet(value.issuer)
+  if (includeIssuer && issuer === undefined) return undefined
+  return {
+    clientId,
+    ...(scopes === undefined ? {} : { scopes }),
+    ...(includeIssuer && issuer !== undefined ? { issuer } : {}),
+  }
+}
+
+function providerTemplateScopesGet(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const scopes: string[] = []
+  for (const item of value) {
+    if (typeof item !== "string" || item.trim().length === 0) return undefined
+    const scope = item.trim()
+    if (!scopes.includes(scope)) scopes.push(scope)
+  }
+  return scopes
+}
+
+function providerTemplateTimestampGet(value: unknown): number | undefined {
+  if (typeof value === "number") return Number.isSafeInteger(value) && value >= 0 ? value : undefined
+  if (typeof value === "string") {
+    const numeric = /^\d+(?:\.\d+)?$/.test(value) ? Number(value) : Date.parse(value)
+    return Number.isSafeInteger(numeric) && numeric >= 0 ? numeric : undefined
+  }
+  const record = recordGet(value)
+  if (record === undefined) return undefined
+  const seconds = numberGet(record.seconds)
+  const nanos = numberGet(record.nanos) ?? 0
+  return seconds === undefined || !Number.isSafeInteger(seconds * 1000 + Math.floor(nanos / 1_000_000))
+    ? undefined
+    : seconds * 1000 + Math.floor(nanos / 1_000_000)
 }
 
 function recordGet(value: unknown): ZitadelRecord | undefined {
@@ -519,6 +885,7 @@ function numberGet(value: unknown): number | undefined {
 async function typedPaged<TRequest, TResponse>(
   call: (request: TRequest) => Promise<Result<TResponse>>,
   recordsGet: (response: TResponse) => readonly ZitadelRecord[],
+  identityGet: (record: ZitadelRecord) => string | undefined,
   filters: readonly unknown[],
   projectId?: string,
   requestTransform?: (request: TRequest) => TRequest,
@@ -572,7 +939,7 @@ async function typedPaged<TRequest, TResponse>(
     rawRows += BigInt(page.length)
     const before = records.size + anonymous.length
     for (const record of page) {
-      const id = stringGet(record.projectId ?? record.id ?? record.key)
+      const id = identityGet(record)
       if (id === undefined) anonymous.push(record)
       else if (!records.has(id)) records.set(id, record)
     }
@@ -604,6 +971,12 @@ function sourceIncomplete(op: string, reason: string): Result<never> {
     `The ZITADEL source export is incomplete (${reason}).`,
     "zitadel-migration.source-incomplete",
   )
+}
+
+function recordIdentityGet(record: ZitadelRecord, ...fields: readonly string[]): string | undefined {
+  const values = fields.map((field) => stringGet(record[field]))
+  if (values.some((value) => value === undefined)) return undefined
+  return values.join("\u0000")
 }
 
 function recordFingerprint(record: ZitadelRecord): string {

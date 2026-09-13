@@ -46,7 +46,23 @@ test("version 2 snapshots normalize source instances and accept portable entitie
   ;(snapshot.completeness as Record<string, unknown>).oidcApplications = { complete: true, count: 1 }
   const parsed = v.safeParse(zitadelMigrationSnapshotSchema, snapshot)
   expect(parsed.success).toBe(true)
-  if (parsed.success) expect(parsed.output.sourceInstance).toBe("https://zitadel.example")
+  if (parsed.success) {
+    expect(parsed.output.sourceInstance).toBe("https://zitadel.example")
+    expect(parsed.output.oidcApplications[0]).toMatchObject({
+      accessTokenRoleAssertion: false,
+      additionalOrigins: [],
+      idTokenUserinfoAssertion: false,
+    })
+  }
+  const invalidOrigin = structuredClone(snapshot)
+  invalidOrigin.oidcApplications = [
+    {
+      ...(snapshot.oidcApplications as JsonRecord[])[0]!,
+      additionalOrigins: ["https://app.example/path"],
+    },
+  ]
+  ;(invalidOrigin.completeness as Record<string, unknown>).oidcApplications = { complete: true, count: 1 }
+  expect(v.safeParse(zitadelMigrationSnapshotSchema, invalidOrigin).success).toBe(false)
 })
 
 test("version 1, incomplete counts, missing source, and embedded secrets are rejected", async () => {
@@ -523,7 +539,7 @@ test("ZITADEL v2 project applications and domains use injected transport and fil
         }
       return {
         message: {
-          domains: [{ domain: "Example.TEST", organizationId: "org-1", isVerified: true }],
+          domains: [{ domain: "Example.TEST", organizationId: "org-1", isVerified: true, isPrimary: true }],
           pagination: { totalResult: 1n },
         },
       }
@@ -544,7 +560,10 @@ test("ZITADEL v2 project applications and domains use injected transport and fil
     data: [{ id: "app-1", oidcConfig: { clientId: "client-1", postLogoutRedirectUris: ["https://example.test/out"] } }],
   })
   const domains = await api.organizationDomainsList("org-1")
-  expect(domains).toMatchObject({ success: true, data: [{ domain: "Example.TEST", organizationId: "org-1" }] })
+  expect(domains).toMatchObject({
+    success: true,
+    data: [{ domain: "Example.TEST", isPrimary: true, organizationId: "org-1" }],
+  })
   expect(requests).toHaveLength(2)
   expect(requests[0]).toMatchObject({
     method: expect.stringContaining("ListApplications"),

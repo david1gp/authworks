@@ -5,10 +5,11 @@ import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { externalIdentityRepositoryCreate } from "../../externalIdentities/persistence/externalIdentityRepositoryCreate.js"
 import { externalIdentityProviderScopesValidate } from "../../externalIdentities/domain/externalIdentityProviderScopesValidate.js"
+import { externalIdentityRepositoryCreate } from "../../externalIdentities/persistence/externalIdentityRepositoryCreate.js"
 import { machineRepositoryCreate } from "../../machineUsers/persistence/machineRepositoryCreate.js"
-import { oidcRedirectUriValidate } from "../../oidc/domain/oidcRedirectUriValidate.js"
+import { oidcClientCompatibilitySettingsValidate } from "../../oidc/public/oidcClientCompatibilitySettingsValidate.js"
+import { oidcRedirectUriValidate } from "../../oidc/public/oidcRedirectUriValidate.js"
 import { oidcRepositoryCreate } from "../../oidc/persistence/oidcRepositoryCreate.js"
 import { organizationRolesEncode } from "../../organizations/domain/organizationRolesEncode.js"
 import { organizationDomainRepositoryCreate } from "../../organizations/persistence/organizationDomainRepositoryCreate.js"
@@ -24,15 +25,18 @@ import { userNameNormalize } from "../../users/domain/userNameNormalize.js"
 import type { UserRecord } from "../../users/persistence/userRepositoryCreate.js"
 import { userRepositoryCreate } from "../../users/persistence/userRepositoryCreate.js"
 import { zitadelMigrationOrganizationRolesMap } from "../domain/zitadelMigrationOrganizationRolesMap.js"
-import { zitadelMigrationSourceRecordRepositoryCreate } from "../persistence/zitadelMigrationSourceRecordRepositoryCreate.js"
 import {
-  type ZitadelMigrationSnapshot,
-  zitadelMigrationSnapshotSchema,
-} from "../public/zitadelMigrationSnapshotSchema.js"
+  normalizeSourceInstance,
+  zitadelMigrationSourceRecordRepositoryCreate,
+} from "../persistence/zitadelMigrationSourceRecordRepositoryCreate.js"
 import {
   type ZitadelMigrationProviderCredentialBundle,
   zitadelMigrationProviderCredentialBundleSchema,
 } from "../public/zitadelMigrationProviderCredentialBundleSchema.js"
+import {
+  type ZitadelMigrationSnapshot,
+  zitadelMigrationSnapshotSchema,
+} from "../public/zitadelMigrationSnapshotSchema.js"
 import { zitadelMigrationDeletionExecute } from "./zitadelMigrationDeletionExecute.js"
 import {
   zitadelMigrationDeletionPlanCreate,
@@ -628,14 +632,76 @@ function importDomain(
   if (!mapping.success) return mapping
   const current = repository.organizationDomainGet(normalized.data)
   if (!current.success) return current
-  if (mapping.data === null && current.data !== null)
-    return skipResult(state, "domains", input.sourceId, "native-conflict")
+  if (mapping.data === null && current.data !== null) {
+    const owners = sourceRecords.sourceRecordFindByDestination(realmId, "domain", normalized.data)
+    if (!owners.success) return owners
+    return skipResult(
+      state,
+      "domains",
+      input.sourceId,
+      owners.data.length > 0 ? "cross-source-conflict" : "native-conflict",
+    )
+  }
   if (current.data !== null && current.data.organizationId !== organizationId)
     return skipResult(state, "domains", input.sourceId, "stable-id-conflict")
+  if (current.data !== null && current.data.realmId !== realmId)
+    return skipResult(state, "domains", input.sourceId, "stable-id-conflict")
+  if (mapping.data !== null && mapping.data.destinationId !== normalized.data && current.data !== null)
+    return skipResult(state, "domains", input.sourceId, "stable-id-conflict")
+
+  const source = normalizeSourceInstance(sourceInstance)
+  if (current.data !== null) {
+    const owners = sourceRecords.sourceRecordFindByDestination(realmId, "domain", normalized.data)
+    if (!owners.success) return owners
+    if (
+      owners.data.some((owner) => normalizeSourceInstance(owner.sourceInstance) !== source) ||
+      !owners.data.some(
+        (owner) => normalizeSourceInstance(owner.sourceInstance) === source && owner.sourceId === input.sourceId,
+      )
+    )
+      return skipResult(state, "domains", input.sourceId, "cross-source-conflict")
+  }
+
+  let previous: typeof current.data = null
+  if (mapping.data !== null && mapping.data.destinationId !== normalized.data) {
+    const mapped = repository.organizationDomainGet(mapping.data.destinationId)
+    if (!mapped.success) return mapped
+    if (mapped.data !== null) {
+      if (mapped.data.organizationId !== organizationId || mapped.data.realmId !== realmId)
+        return skipResult(state, "domains", input.sourceId, "stable-id-conflict")
+      const owners = sourceRecords.sourceRecordFindByDestination(realmId, "domain", mapped.data.domain)
+      if (!owners.success) return owners
+      if (
+        owners.data.some((owner) => normalizeSourceInstance(owner.sourceInstance) !== source) ||
+        !owners.data.some(
+          (owner) => normalizeSourceInstance(owner.sourceInstance) === source && owner.sourceId === input.sourceId,
+        )
+      )
+        return skipResult(state, "domains", input.sourceId, "cross-source-conflict")
+      previous = mapped.data
+    }
+  }
+
+  const organizationDomains = repository.organizationDomainList(organizationId)
+  if (!organizationDomains.success) return organizationDomains
+  if (input.isPrimary) {
+    for (const domain of organizationDomains.data) {
+      if (!domain.isPrimary || domain.domain === normalized.data) continue
+      if (domain.realmId !== realmId) return skipResult(state, "domains", input.sourceId, "primary-conflict")
+      const owners = sourceRecords.sourceRecordFindByDestination(realmId, "domain", domain.domain)
+      if (!owners.success) return owners
+      if (
+        owners.data.length === 0 ||
+        owners.data.some((owner) => normalizeSourceInstance(owner.sourceInstance) !== source)
+      )
+        return skipResult(state, "domains", input.sourceId, "primary-conflict")
+    }
+  }
+
   const values = {
     createdAt: sourceTimestamp(input.createdAt ?? input.updatedAt, input),
     domain: normalized.data,
-    isPrimary: current.data?.isPrimary ?? false,
+    isPrimary: input.isPrimary,
     organizationId,
     realmId,
     updatedAt: sourceTimestamp(input.updatedAt ?? input.createdAt, input),
@@ -644,13 +710,43 @@ function importDomain(
     verified: input.verified,
     version: current.data?.version ?? 1,
   }
+  if (input.isPrimary) {
+    for (const domain of organizationDomains.data) {
+      if (!domain.isPrimary || domain.domain === normalized.data || domain.realmId !== realmId) continue
+      const demoted = repository.organizationDomainUpdate(domain.domain, {
+        isPrimary: false,
+        version: domain.version + 1,
+      })
+      if (!demoted.success) return demoted
+      if (demoted.data === null)
+        return resultErrorCodedCreate(
+          "zitadelMigrationImport",
+          "The source-owned organization domain could not be updated.",
+          "zitadel-migration.write-failed",
+        )
+    }
+  }
+  if (previous !== null) {
+    const removed = repository.organizationDomainDelete(previous.domain, previous.organizationId, realmId)
+    if (!removed.success) return removed
+    if (removed.data === null)
+      return resultErrorCodedCreate(
+        "zitadelMigrationImport",
+        "The source-owned organization domain could not be cleared.",
+        "zitadel-migration.write-failed",
+      )
+  }
   const saved =
     current.data === null
       ? repository.organizationDomainCreate(values)
       : repository.organizationDomainUpdate(normalized.data, values)
   if (!saved.success) return saved
   if (current.data === null) countCreated(state, "domains")
-  else if (current.data.verified === input.verified && current.data.updatedAt === values.updatedAt)
+  else if (
+    current.data.isPrimary === values.isPrimary &&
+    current.data.verified === input.verified &&
+    current.data.updatedAt === values.updatedAt
+  )
     countUnchanged(state, "domains")
   else countUpdated(state, "domains")
   return sourceRecordStore(
@@ -1410,9 +1506,19 @@ function importOidcApplication(
   const clientByApplication = oidc.clientList(realmId)
   if (!clientByApplication.success) return clientByApplication
   const existingClient = client ?? clientByApplication.data.find((item) => item.applicationId === applicationId) ?? null
+  const allowedScopes = input.allowedScopes ?? ["openid"]
+  const requireConsent = input.requireConsent ?? true
+  const trusted = input.trusted ?? false
+  const compatibility = oidcClientCompatibilitySettingsValidate({
+    accessTokenRoleAssertion: input.accessTokenRoleAssertion,
+    additionalOrigins: input.additionalOrigins,
+    idTokenUserinfoAssertion: input.idTokenUserinfoAssertion,
+  })
+  if (!compatibility.success) return compatibility
   const clientSource = {
-    allowedScopes: JSON.stringify(["openid"]),
+    allowedScopes: JSON.stringify(allowedScopes),
     applicationId,
+    accessTokenRoleAssertion: compatibility.data.accessTokenRoleAssertion ? 1 : 0,
     clientType: input.clientType,
     createdAt: input.createdAt,
     id: existingClient?.id ?? randomUUID(),
@@ -1421,10 +1527,12 @@ function importOidcApplication(
     postLogoutRedirectUris: JSON.stringify(postLogoutRedirectUris),
     projectId,
     redirectUris: JSON.stringify(redirectUris),
-    requireConsent: 1,
+    additionalOrigins: JSON.stringify(compatibility.data.additionalOrigins),
+    idTokenUserinfoAssertion: compatibility.data.idTokenUserinfoAssertion ? 1 : 0,
+    requireConsent: requireConsent ? 1 : 0,
     secretHash: existingClient?.secretHash ?? null,
     status: input.status,
-    trusted: 0,
+    trusted: trusted ? 1 : 0,
     updatedAt: input.updatedAt,
     version: existingClient?.version ?? 1,
   }

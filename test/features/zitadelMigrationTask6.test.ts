@@ -44,8 +44,54 @@ test("task 6 imports OIDC applications, converges, overwrites, and reports rotat
     expect(clients.success).toBe(true)
     if (!clients.success) return
     expect(clients.data).toHaveLength(2)
-    expect(clients.data).toHaveLength(2)
-    expect(clients.data.find((client) => client.name === "Public")?.secretHash).toBeNull()
+    const publicClient = clients.data.find((client) => client.name === "Public")
+    expect(publicClient?.secretHash).toBeNull()
+    expect(publicClient).toMatchObject({
+      accessTokenRoleAssertion: 1,
+      additionalOrigins: JSON.stringify(["https://origin.example"]),
+      allowedScopes: JSON.stringify(["openid", "profile"]),
+      idTokenUserinfoAssertion: 1,
+      requireConsent: 0,
+      trusted: 1,
+    })
+
+    const nativeProjectId = projectMapping.data.destinationId
+    expect(
+      projects.projectApplicationCreate({
+        applicationType: "oidc",
+        createdAt: 1,
+        id: "native-app",
+        name: "Native",
+        projectId: nativeProjectId,
+        realmId,
+        status: "active",
+        updatedAt: 1,
+        version: 1,
+      }).success,
+    ).toBe(true)
+    expect(
+      oidc.clientCreate({
+        accessTokenRoleAssertion: 1,
+        additionalOrigins: JSON.stringify(["https://native.example"]),
+        allowedScopes: JSON.stringify(["openid"]),
+        applicationId: "native-app",
+        clientType: "public",
+        createdAt: 1,
+        id: "native-client",
+        idTokenUserinfoAssertion: 1,
+        name: "Native",
+        postLogoutRedirectUris: "[]",
+        projectId: nativeProjectId,
+        realmId,
+        redirectUris: JSON.stringify(["https://native.example/callback"]),
+        requireConsent: 1,
+        secretHash: null,
+        status: "active",
+        trusted: 1,
+        updatedAt: 1,
+        version: 1,
+      }).success,
+    ).toBe(true)
 
     const second = zitadelMigrationImport({ database, realmId, snapshot })
     expect(second.success).toBe(true)
@@ -53,6 +99,9 @@ test("task 6 imports OIDC applications, converges, overwrites, and reports rotat
 
     const changed = structuredClone(snapshot)
     changed.oidcApplications[0]!.name = "Authoritative name"
+    changed.oidcApplications[0]!.accessTokenRoleAssertion = false
+    changed.oidcApplications[0]!.additionalOrigins = []
+    changed.oidcApplications[0]!.idTokenUserinfoAssertion = false
     const overwritten = zitadelMigrationImport({ database, realmId, snapshot: changed })
     expect(overwritten.success).toBe(true)
     const applicationMapping = zitadelMigrationSourceRecordRepositoryCreate(database.db).sourceRecordGet(
@@ -66,6 +115,22 @@ test("task 6 imports OIDC applications, converges, overwrites, and reports rotat
       expect(projects.projectApplicationGet(applicationMapping.data.destinationId)).toMatchObject({
         data: { name: "Authoritative name" },
       })
+    const updatedClients = oidc.clientList(realmId)
+    expect(updatedClients.success).toBe(true)
+    if (!updatedClients.success) return
+    const updatedClient = updatedClients.data.find((client) => client.name === "Authoritative name")
+    expect(updatedClient).toMatchObject({
+      accessTokenRoleAssertion: 0,
+      additionalOrigins: "[]",
+      idTokenUserinfoAssertion: 0,
+    })
+    expect(oidc.clientGet(realmId, "native-client")).toMatchObject({
+      data: {
+        accessTokenRoleAssertion: 1,
+        additionalOrigins: JSON.stringify(["https://native.example"]),
+        idTokenUserinfoAssertion: 1,
+      },
+    })
   })
 })
 
@@ -77,6 +142,31 @@ test("task 6 rejects invalid URIs before writing and preserves native conflicts"
     invalid.oidcApplications[0]!.redirectUris = ["file:///not-valid"]
     expect(zitadelMigrationImport({ database, realmId, snapshot: invalid }).success).toBe(false)
     expect(projects.projectApplicationList("project-1")).toMatchObject({ data: { length: 0 } })
+  })
+})
+
+test("old snapshots default OIDC compatibility settings to disabled and empty", async () => {
+  await withDatabase(async (database, realmId) => {
+    const oldSnapshot = structuredClone(applicationSnapshot())
+    for (const application of oldSnapshot.oidcApplications) {
+      const record = application as unknown as Record<string, unknown>
+      delete record.accessTokenRoleAssertion
+      delete record.additionalOrigins
+      delete record.idTokenUserinfoAssertion
+    }
+    const imported = zitadelMigrationImport({ database, realmId, snapshot: oldSnapshot })
+    expect(imported.success).toBe(true)
+    if (!imported.success) return
+    const clients = oidcRepositoryCreate(database.db).clientList(realmId)
+    expect(clients.success).toBe(true)
+    if (!clients.success) return
+    expect(clients.data).toContainEqual(
+      expect.objectContaining({
+        accessTokenRoleAssertion: 0,
+        additionalOrigins: "[]",
+        idTokenUserinfoAssertion: 0,
+      }),
+    )
   })
 })
 
@@ -106,6 +196,9 @@ function applicationSnapshot(): Snapshot {
   base.oidcApplications = [
     {
       authorizationEndpoint: null,
+      accessTokenRoleAssertion: true,
+      allowedScopes: ["openid", "profile"],
+      additionalOrigins: ["https://origin.example"],
       clientType: "public",
       credentials: [],
       createdAt: 1,
@@ -116,10 +209,15 @@ function applicationSnapshot(): Snapshot {
       sourceId: "app-public",
       status: "active",
       tokenEndpointAuthMethod: "none",
+      idTokenUserinfoAssertion: true,
+      requireConsent: false,
+      trusted: true,
       updatedAt: 1,
     },
     {
       authorizationEndpoint: null,
+      accessTokenRoleAssertion: false,
+      additionalOrigins: [],
       clientType: "confidential",
       credentials: [{ available: false, portable: false, type: "client-secret" }],
       createdAt: 1,
@@ -130,6 +228,7 @@ function applicationSnapshot(): Snapshot {
       sourceId: "client-confidential",
       status: "active",
       tokenEndpointAuthMethod: "client_secret_basic",
+      idTokenUserinfoAssertion: false,
       updatedAt: 1,
     },
   ]

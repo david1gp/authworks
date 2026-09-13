@@ -88,5 +88,10 @@ behavior.
 - [x] 14. Replace inferred ZITADEL wire mappings with `@adaptive-ds/zitadel-cli`; verify a protected live read export,
       dry-run, first import, idempotent rerun, provider credential handoff, secret isolation, and SQLite integrity against
       a temporary local database.
-- [ ] 15. Resolve the remaining incomplete ZITADEL provider/application records, then back up and synchronize the stopped
-      production Authworks database authoritatively.
+- [x] 15. Complete provider discovery and supported mapping, including organization-owned providers; retain explicit
+      incompleteness for unresolved source references and unsupported import semantics.
+- [x] 16. Resolve application export gaps and preserve all settings with existing Authworks equivalents.
+- [ ] 17. Verify a protected read-only production export and isolated local import, document remaining non-portable
+      categories, and run repository checks. Do not modify either production service.
+- [ ] 18. Decide destination support for API/SAML applications and remaining ZITADEL-specific OIDC settings before
+      extending portable contracts or enabling authoritative application reconciliation.

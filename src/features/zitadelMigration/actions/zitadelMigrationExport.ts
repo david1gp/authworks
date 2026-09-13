@@ -3,6 +3,7 @@ import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import { oidcOriginValidate } from "../../oidc/public/oidcOriginValidate.js"
 import { zitadelApiClientCreate } from "../client/zitadelApiClientCreate.js"
 import type { ZitadelMigrationIssue } from "../public/zitadelMigrationIssue.js"
 import { zitadelMigrationResultIssueClassify } from "../public/zitadelMigrationResultIssueClassify.js"
@@ -16,6 +17,7 @@ const OrganizationState = { ACTIVE: 1, INACTIVE: 2, REMOVED: 3 } as const
 const ProjectState = { ACTIVE: 1, INACTIVE: 2 } as const
 const GrantedProjectState = { ACTIVE: 1, INACTIVE: 2 } as const
 const UserState = { ACTIVE: 1, INACTIVE: 2, DELETED: 3, LOCKED: 4, INITIAL: 5, REMOVED: 3 } as const
+const ApplicationState = { ACTIVE: 1, INACTIVE: 2, REMOVED: 3 } as const
 
 type ZitadelApiClient = ReturnType<typeof zitadelApiClientCreate>
 export type ZitadelMigrationSkippedRecord = {
@@ -235,6 +237,7 @@ export async function zitadelMigrationExport(
   }
 
   let identityProvidersResult: Result<Readonly<Record<string, unknown>>[]> = resultCreate([])
+  const identityProviderListingIds = new Set<string>()
   if (options.api.identityProvidersList === undefined) {
     identityProvidersComplete = false
     identityProvidersResult = resultCreate([])
@@ -244,6 +247,8 @@ export async function zitadelMigrationExport(
     issues.push(zitadelMigrationResultIssueClassify("identityProviders", identityProvidersResult))
   } else {
     for (const raw of identityProvidersResult.data) {
+      const sourceId = sourceIdGet(raw)
+      if (sourceId !== "unknown") identityProviderListingIds.add(sourceId)
       const provider = identityProviderMap(raw)
       if (provider === undefined) {
         identityProvidersComplete = false
@@ -268,11 +273,33 @@ export async function zitadelMigrationExport(
     const type = stringGet(raw.type)
     return sourceId !== undefined && (providerTypeMap(name) ?? providerTypeMap(type)) !== undefined
   })
+  const knownPolicyProviderRefs = new Set<string>()
+  for (const raw of policyProviderRefs) {
+    const sourceId = policyProviderRefIdGet(raw)
+    if (sourceId === undefined || identityProviderListingIds.has(sourceId)) continue
+    const name = policyProviderRefNameGet(raw)
+    const type = stringGet(raw.type)
+    if (providerTypeMap(name) !== undefined || providerTypeMap(type) !== undefined) continue
+    if (knownPolicyProviderRefs.has(sourceId)) continue
+    knownPolicyProviderRefs.add(sourceId)
+    identityProvidersComplete = false
+    skipped.push({
+      entity: "identityProvider",
+      reason: "unsupported-provider-reconfiguration-required",
+      sourceId,
+    })
+  }
   const providerResultWasUnavailable =
     !identityProvidersResult.success || options.api.identityProvidersList === undefined
   const providerResultWasInconsistent = identityProvidersResult.success && identityProvidersResult.data.length === 0
-  if ((providerResultWasUnavailable || providerResultWasInconsistent) && recognizedPolicyProviderRefs.length > 0) {
-    if (providerResultWasInconsistent) identityProvidersComplete = false
+  const missingRecognizedPolicyProvider = recognizedPolicyProviderRefs.some(
+    (raw) => !identityProviderListingIds.has(policyProviderRefIdGet(raw) ?? ""),
+  )
+  if (
+    (providerResultWasUnavailable || providerResultWasInconsistent || missingRecognizedPolicyProvider) &&
+    recognizedPolicyProviderRefs.length > 0
+  ) {
+    identityProvidersComplete = false
     issues.push({ collection: "identityProviders", code: "fallback-used", reason: "policy-reference-fallback-used" })
     const known = new Map<string, (typeof identityProviders)[number]>()
     const ambiguous = new Set<string>()
@@ -398,8 +425,17 @@ export async function zitadelMigrationExport(
         continue
       }
       const oidc = objectGet(raw.oidcConfig) ?? objectGet(raw.oidc) ?? objectGet(raw.oidcConfiguration)
+      const missingFields = oidcApplicationMissingFields(raw, oidc)
+      if (missingFields.length > 0) {
+        skipped.push({
+          entity: "oidcApplication",
+          reason: missingReason(missingFields),
+          sourceId: sourceIdGet(raw),
+        })
+        continue
+      }
       const authMethod = enumNameGet(oidc?.authMethodType ?? oidc?.authMethod ?? raw.authMethodType ?? raw.authMethod)
-      if (oidc !== undefined && authMethod !== undefined && authMethodMap(authMethod) === undefined) {
+      if (authMethodMap(authMethod) === undefined) {
         complete.oidcApplications = false
         unsupported.push({
           entity: "oidcApplication",
@@ -408,11 +444,29 @@ export async function zitadelMigrationExport(
         })
         continue
       }
+      const applicationType = oidcApplicationTypeGet(raw, oidc)
+      if (applicationType !== undefined && oidcApplicationTypeMap(applicationType) === undefined) {
+        complete.oidcApplications = false
+        unsupported.push({
+          entity: "oidcApplication",
+          reason: "unsupported-oidc-application-type",
+          sourceId: sourceIdGet(raw),
+        })
+        continue
+      }
+      for (const setting of oidcApplicationUnsupportedSettings(raw, oidc)) {
+        complete.oidcApplications = false
+        unsupported.push({
+          entity: "oidcApplication",
+          reason: `unsupported-oidc-setting:${setting}`,
+          sourceId: sourceIdGet(raw),
+        })
+      }
       const application = oidcApplicationMap(raw, project.id)
       if (application === undefined) {
         skipped.push({
           entity: "oidcApplication",
-          reason: "unsupported-or-required-fields-missing",
+          reason: "required-fields-missing",
           sourceId: sourceIdGet(raw),
         })
         continue
@@ -576,6 +630,27 @@ function membershipMissingFields(raw: Readonly<Record<string, unknown>>): string
   ]
 }
 
+function oidcApplicationMissingFields(
+  raw: Readonly<Record<string, unknown>>,
+  oidc: Readonly<Record<string, unknown>> | undefined,
+): string[] {
+  const redirects = stringArrayGet(oidc?.redirectUris ?? raw.redirectUris)
+  const authMethod = oidc?.authMethodType ?? oidc?.authMethod ?? raw.authMethodType ?? raw.authMethod
+  return [
+    ...(oidc === undefined ? ["oidcConfiguration"] : []),
+    ...(stringGet(raw.id) === undefined && stringGet(raw.applicationId) === undefined ? ["applicationId"] : []),
+    ...(stringGet(raw.name) === undefined ? ["name"] : []),
+    ...(redirects === undefined || redirects.length === 0 ? ["redirectUris"] : []),
+    ...(timestampGet(raw.creationDate ?? raw.createdAt) === undefined ? ["creationDate"] : []),
+    ...(timestampGet(raw.changeDate ?? raw.updatedAt) === undefined &&
+    timestampGet(raw.creationDate ?? raw.createdAt) === undefined
+      ? ["changeDate"]
+      : []),
+    ...(applicationStatusMap(raw.state) === undefined ? ["state"] : []),
+    ...(enumNameGet(authMethod) === undefined ? ["authMethodType"] : []),
+  ]
+}
+
 function oidcApplicationMap(
   raw: Readonly<Record<string, unknown>>,
   projectId: string,
@@ -587,66 +662,75 @@ function oidcApplicationMap(
   const updatedAt = timestampGet(raw.changeDate ?? raw.updatedAt) ?? createdAt
   const redirects = stringArrayGet(oidc?.redirectUris ?? raw.redirectUris)
   const authMethod = enumNameGet(oidc?.authMethodType ?? oidc?.authMethod ?? raw.authMethodType ?? raw.authMethod)
-  const applicationType = enumNameGet(oidc?.applicationType ?? raw.applicationType)
+  const applicationType = oidcApplicationTypeGet(raw, oidc)
+  const status = applicationStatusMap(raw.state)
   if (
     oidc === undefined ||
     sourceId === undefined ||
     name === undefined ||
     redirects === undefined ||
+    redirects.length === 0 ||
     createdAt === undefined ||
     updatedAt === undefined ||
-    (applicationType !== undefined &&
-      ![
-        "OIDC",
-        "oidc",
-        "APPLICATION_TYPE_WEB",
-        "APPLICATION_TYPE_NATIVE",
-        "APPLICATION_TYPE_USER_AGENT",
-        "__numeric_1",
-        "__numeric_2",
-        "__numeric_3",
-        "__numeric_0",
-      ].includes(applicationType))
+    status === undefined ||
+    (applicationType !== undefined && oidcApplicationTypeMap(applicationType) === undefined)
   )
     return undefined
   const tokenEndpointAuthMethod = authMethodMap(authMethod)
   if (tokenEndpointAuthMethod === undefined) return undefined
+  const allowedScopes = stringArrayGet(oidc.allowedScopes ?? raw.allowedScopes)
+  const requireConsent = booleanGet(oidc.requireConsent ?? raw.requireConsent)
+  const trusted = booleanGet(oidc.trusted ?? raw.trusted)
+  const compatibility = oidcApplicationCompatibilityMap(raw, oidc)
   return {
-    authorizationEndpoint: nullableStringGet(oidc.authorizationEndpoint ?? raw.authorizationEndpoint),
+    accessTokenRoleAssertion: compatibility.accessTokenRoleAssertion,
+    ...(allowedScopes === undefined ? {} : { allowedScopes }),
+    additionalOrigins: compatibility.additionalOrigins,
     clientType: tokenEndpointAuthMethod === "none" ? "public" : "confidential",
     credentials: [{ available: false, portable: false, type: "client-secret" }],
     name,
     projectId,
     createdAt,
-    status: "active",
     redirectUris: redirects,
-    ...(stringGet(oidc.clientId) === undefined ? {} : { clientId: stringGet(oidc.clientId) }),
-    ...(stringArrayGet(oidc.postLogoutRedirectUris) === undefined
+    ...(stringGet(oidc.clientId ?? raw.clientId) === undefined
       ? {}
-      : { postLogoutRedirectUris: stringArrayGet(oidc.postLogoutRedirectUris) }),
+      : { clientId: stringGet(oidc.clientId ?? raw.clientId) }),
+    ...(stringArrayGet(oidc.postLogoutRedirectUris ?? raw.postLogoutRedirectUris) === undefined
+      ? {}
+      : { postLogoutRedirectUris: stringArrayGet(oidc.postLogoutRedirectUris ?? raw.postLogoutRedirectUris) }),
+    ...(requireConsent === undefined ? {} : { requireConsent }),
     sourceId,
     tokenEndpointAuthMethod,
+    ...(trusted === undefined ? {} : { trusted }),
+    idTokenUserinfoAssertion: compatibility.idTokenUserinfoAssertion,
     updatedAt,
+    status,
   }
 }
 
 function applicationProtocolGet(raw: Readonly<Record<string, unknown>>): string | undefined {
   const value = enumNameGet(raw.applicationType ?? raw.protocol ?? raw.type)
-  if (value === undefined) return undefined
+  const configuration = objectGet(raw.configuration)
+  const configurationCase = stringGet(configuration?.case)
   if (
+    value !== undefined &&
     [
       "OIDC",
       "oidc",
+      "APPLICATION_TYPE_OIDC",
       "APPLICATION_TYPE_WEB",
       "APPLICATION_TYPE_NATIVE",
       "APPLICATION_TYPE_USER_AGENT",
-      "__numeric_0",
       "__numeric_1",
-      "__numeric_2",
-      "__numeric_3",
     ].includes(value)
   )
     return "oidc"
+  if (value === "API" || value === "api" || value === "APPLICATION_TYPE_API" || value === "__numeric_2") return "api"
+  if (value === "SAML" || value === "saml" || value === "APPLICATION_TYPE_SAML" || value === "__numeric_3")
+    return "saml"
+  if (value === undefined && configurationCase !== undefined)
+    return configurationCase.replace(/Configuration$/, "").toLowerCase()
+  if (value === undefined && objectGet(raw.oidcConfig) !== undefined) return "oidc"
   return value
 }
 
@@ -657,11 +741,176 @@ function enumNameGet(value: unknown): string | undefined {
 }
 
 function authMethodMap(value: string | undefined): "none" | "client_secret_basic" | "client_secret_post" | undefined {
-  if (value === "none" || value === "OIDC_AUTH_METHOD_NONE" || value === "__numeric_2") return "none"
-  if (value === "client_secret_basic" || value === "OIDC_AUTH_METHOD_BASIC" || value === "__numeric_0")
+  if (
+    value === "none" ||
+    value === "OIDC_AUTH_METHOD_NONE" ||
+    value === "OIDC_AUTH_METHOD_TYPE_NONE" ||
+    value === "__numeric_2"
+  )
+    return "none"
+  if (
+    value === "client_secret_basic" ||
+    value === "OIDC_AUTH_METHOD_BASIC" ||
+    value === "OIDC_AUTH_METHOD_TYPE_BASIC" ||
+    value === "__numeric_0"
+  )
     return "client_secret_basic"
-  if (value === "client_secret_post" || value === "OIDC_AUTH_METHOD_POST" || value === "__numeric_1")
+  if (
+    value === "client_secret_post" ||
+    value === "OIDC_AUTH_METHOD_POST" ||
+    value === "OIDC_AUTH_METHOD_TYPE_POST" ||
+    value === "__numeric_1"
+  )
     return "client_secret_post"
+  return undefined
+}
+
+function applicationStatusMap(value: unknown): "active" | "inactive" | "removed" | undefined {
+  if (value === ApplicationState.ACTIVE || value === "APPLICATION_STATE_ACTIVE") return "active"
+  if (value === ApplicationState.INACTIVE || value === "APPLICATION_STATE_INACTIVE") return "inactive"
+  if (value === ApplicationState.REMOVED || value === "APPLICATION_STATE_REMOVED") return "removed"
+  return value === "active" || value === "inactive" || value === "removed" ? value : undefined
+}
+
+function oidcApplicationTypeGet(
+  raw: Readonly<Record<string, unknown>>,
+  oidc: Readonly<Record<string, unknown>> | undefined,
+): string | undefined {
+  const configured = enumNameGet(oidc?.applicationType)
+  if (configured !== undefined) return configured
+  const protocol = enumNameGet(raw.applicationType)
+  if (
+    protocol === "OIDC" ||
+    protocol === "oidc" ||
+    protocol === "APPLICATION_TYPE_OIDC" ||
+    protocol === "APPLICATION_TYPE_API" ||
+    protocol === "APPLICATION_TYPE_SAML" ||
+    protocol === "__numeric_1" ||
+    protocol === "__numeric_2" ||
+    protocol === "__numeric_3"
+  )
+    return undefined
+  return protocol
+}
+
+function oidcApplicationTypeMap(value: string): "web" | "user_agent" | "native" | undefined {
+  if (value === "OIDC_APP_TYPE_WEB" || value === "APPLICATION_TYPE_WEB" || value === "web" || value === "__numeric_0")
+    return "web"
+  if (
+    value === "OIDC_APP_TYPE_USER_AGENT" ||
+    value === "APPLICATION_TYPE_USER_AGENT" ||
+    value === "user_agent" ||
+    value === "__numeric_1"
+  )
+    return "user_agent"
+  if (
+    value === "OIDC_APP_TYPE_NATIVE" ||
+    value === "APPLICATION_TYPE_NATIVE" ||
+    value === "native" ||
+    value === "__numeric_2"
+  )
+    return "native"
+  return undefined
+}
+
+function oidcApplicationUnsupportedSettings(
+  raw: Readonly<Record<string, unknown>>,
+  oidc: Readonly<Record<string, unknown>> | undefined,
+): readonly string[] {
+  if (oidc === undefined) return []
+  const unsupported: string[] = []
+  if (enumArrayHasUnsupported(oidc.responseTypes, oidcResponseTypeMap)) unsupported.push("response-types")
+  if (enumArrayHasUnsupported(oidc.grantTypes, oidcGrantTypeMap)) unsupported.push("grant-types")
+  if (oidc.version !== undefined && oidcVersionMap(enumNameGet(oidc.version)) === undefined) unsupported.push("version")
+  if (oidc.developmentMode === true) unsupported.push("development-mode")
+  if (oidc.nonCompliant === true) unsupported.push("non-compliant")
+  const compatibility = oidcApplicationCompatibilityMap(raw, oidc)
+  unsupported.push(...compatibility.unsupported)
+  if (oidc.idTokenRoleAssertion === true) unsupported.push("id-token-role-assertion")
+  if (oidc.skipNativeAppSuccessPage === true) unsupported.push("skip-native-app-success-page")
+  if (stringGet(oidc.backChannelLogoutUri) !== undefined) unsupported.push("back-channel-logout-uri")
+  if (oidc.loginVersion !== undefined) unsupported.push("login-version")
+  if (oidc.ios !== undefined) unsupported.push("ios-app-link")
+  if (oidc.android !== undefined) unsupported.push("android-app-link")
+  if (stringGet(oidc.authorizationEndpoint ?? raw.authorizationEndpoint) !== undefined)
+    unsupported.push("authorization-endpoint")
+  return unsupported
+}
+
+function oidcApplicationCompatibilityMap(
+  raw: Readonly<Record<string, unknown>>,
+  oidc: Readonly<Record<string, unknown>>,
+): {
+  readonly accessTokenRoleAssertion: boolean
+  readonly additionalOrigins: string[]
+  readonly idTokenUserinfoAssertion: boolean
+  readonly unsupported: readonly string[]
+} {
+  const accessTokenRoleAssertionValue = oidcApplicationSettingGet(raw, oidc, "accessTokenRoleAssertion")
+  const idTokenUserinfoAssertionValue = oidcApplicationSettingGet(raw, oidc, "idTokenUserinfoAssertion")
+  const additionalOriginsValue = oidcApplicationSettingGet(raw, oidc, "additionalOrigins")
+  const accessTokenRoleAssertion = booleanGet(accessTokenRoleAssertionValue)
+  const idTokenUserinfoAssertion = booleanGet(idTokenUserinfoAssertionValue)
+  const additionalOrigins = oidcAdditionalOriginsMap(additionalOriginsValue)
+  return {
+    accessTokenRoleAssertion: accessTokenRoleAssertion ?? false,
+    additionalOrigins: additionalOrigins ?? [],
+    idTokenUserinfoAssertion: idTokenUserinfoAssertion ?? false,
+    unsupported: [
+      ...(accessTokenRoleAssertionValue !== undefined && accessTokenRoleAssertion === undefined
+        ? ["access-token-role-assertion"]
+        : []),
+      ...(idTokenUserinfoAssertionValue !== undefined && idTokenUserinfoAssertion === undefined
+        ? ["id-token-userinfo-assertion"]
+        : []),
+      ...(additionalOriginsValue !== undefined && additionalOrigins === undefined ? ["additional-origins"] : []),
+    ],
+  }
+}
+
+function oidcApplicationSettingGet(
+  raw: Readonly<Record<string, unknown>>,
+  oidc: Readonly<Record<string, unknown>>,
+  key: string,
+): unknown {
+  if (Object.hasOwn(oidc, key)) return oidc[key]
+  return raw[key]
+}
+
+function oidcAdditionalOriginsMap(value: unknown): string[] | undefined {
+  if (value === undefined) return []
+  if (!Array.isArray(value) || value.length > 100) return undefined
+  const origins: string[] = []
+  for (const item of value) {
+    if (typeof item !== "string") return undefined
+    const valid = oidcOriginValidate(item)
+    if (!valid.success || origins.includes(valid.data)) return undefined
+    origins.push(valid.data)
+  }
+  return origins
+}
+
+function enumArrayHasUnsupported<T>(value: unknown, map: (value: string | undefined) => T | undefined): boolean {
+  if (value === undefined) return false
+  if (!Array.isArray(value)) return true
+  return value.some((item) => map(enumNameGet(item)) === undefined)
+}
+
+function oidcResponseTypeMap(value: string | undefined): "code" | undefined {
+  if (value === "code" || value === "OIDC_RESPONSE_TYPE_CODE" || value === "__numeric_1") return "code"
+  return undefined
+}
+
+function oidcGrantTypeMap(value: string | undefined): "authorization_code" | "refresh_token" | undefined {
+  if (value === "authorization_code" || value === "OIDC_GRANT_TYPE_AUTHORIZATION_CODE" || value === "__numeric_0")
+    return "authorization_code"
+  if (value === "refresh_token" || value === "OIDC_GRANT_TYPE_REFRESH_TOKEN" || value === "__numeric_2")
+    return "refresh_token"
+  return undefined
+}
+
+function oidcVersionMap(value: string | undefined): "1.0" | undefined {
+  if (value === "1.0" || value === "OIDC_VERSION_1_0" || value === "__numeric_0") return "1.0"
   return undefined
 }
 
@@ -674,23 +923,51 @@ function identityProviderMap(
   const saml = objectGet(raw.samlConfig) ?? objectGet(raw.saml)
   const providerValue = stringGet(raw.type) ?? stringGet(raw.provider)
   const authworksType = providerTypeMap(providerValue)
+  const organizationId = stringGet(raw.organizationId)
+  const owner = enumNameGet(raw.owner)
+  const organizationOwner =
+    owner === "__numeric_2" || owner === "IDP_OWNER_TYPE_ORG" || owner?.toLowerCase() === "organization"
+  const systemOwner = owner === "__numeric_1" || owner === "IDP_OWNER_TYPE_SYSTEM" || owner?.toLowerCase() === "system"
+  if (
+    (organizationOwner && organizationId === undefined) ||
+    (owner !== undefined && !organizationOwner && !systemOwner)
+  )
+    return undefined
   const provider =
-    oidc !== undefined || providerValue === "OIDC" || providerValue === "oidc"
+    oidc !== undefined || providerValue === "OIDC" || providerValue === "oidc" || providerValue === "PROVIDER_TYPE_OIDC"
       ? "oidc"
-      : saml !== undefined || providerValue === "SAML" || providerValue === "saml"
+      : saml !== undefined ||
+          providerValue === "SAML" ||
+          providerValue === "saml" ||
+          providerValue === "PROVIDER_TYPE_SAML"
         ? "saml"
         : undefined
   const clientId = stringGet(oidc?.clientId) ?? stringGet(saml?.clientId) ?? stringGet(raw.clientId)
   if (sourceId === undefined || name === undefined || provider === undefined) return undefined
+  const scopes = stringArrayGet(oidc?.scopes) ?? stringArrayGet(saml?.scopes)
+  const allowAccountCreation =
+    typeof raw.autoRegister === "boolean"
+      ? raw.autoRegister
+      : typeof raw.allowAccountCreation === "boolean"
+        ? raw.allowAccountCreation
+        : undefined
+  const configuration =
+    scopes === undefined && allowAccountCreation === undefined
+      ? undefined
+      : {
+          ...(scopes === undefined ? {} : { scopes }),
+          ...(allowAccountCreation === undefined ? {} : { allowAccountCreation }),
+        }
   const createdAt = timestampGet(objectGet(raw.details)?.creationDate ?? raw.creationDate ?? raw.createdAt)
   const updatedAt = timestampGet(objectGet(raw.details)?.changeDate ?? raw.changeDate ?? raw.updatedAt) ?? createdAt
   return {
     ...(clientId === undefined ? {} : { clientId }),
+    ...(configuration === undefined ? {} : { configuration }),
     name,
     provider,
     sourceId,
     ...(authworksType === undefined ? { authworksType: null } : { authworksType }),
-    ...(stringGet(raw.organizationId) === undefined ? {} : { organizationId: stringGet(raw.organizationId) }),
+    ...(organizationId === undefined ? {} : { organizationId }),
     ...(typeof raw.enabled === "boolean" ? { enabled: raw.enabled } : {}),
     ...(createdAt === undefined ? {} : { createdAt }),
     ...(updatedAt === undefined ? {} : { updatedAt }),
@@ -699,9 +976,15 @@ function identityProviderMap(
 
 function providerTypeMap(value: string | undefined): "google" | "github" | "microsoft" | undefined {
   const normalized = value?.trim().toLowerCase()
-  if (normalized === "google") return "google"
-  if (normalized === "github") return "github"
-  if (normalized === "microsoft" || normalized === "azure_ad") return "microsoft"
+  if (normalized === "google" || normalized === "provider_type_google") return "google"
+  if (normalized === "github" || normalized === "provider_type_github") return "github"
+  if (
+    normalized === "microsoft" ||
+    normalized === "azure_ad" ||
+    normalized === "provider_type_azure_ad" ||
+    normalized === "provider_type_microsoft"
+  )
+    return "microsoft"
   return undefined
 }
 
@@ -769,6 +1052,7 @@ function domainMap(
   if (domain === undefined || sourceId === undefined || sourceOrganizationId === undefined) return undefined
   return {
     domain: domain.toLowerCase(),
+    isPrimary: raw.isPrimary === true,
     organizationId: sourceOrganizationId,
     sourceId,
     verified: raw.isVerified === true || raw.verified === true,
@@ -1063,6 +1347,10 @@ function stringGet(value: unknown): string | undefined {
 
 function nullableStringGet(value: unknown): string | null {
   return stringGet(value) ?? null
+}
+
+function booleanGet(value: unknown): boolean | undefined {
+  return typeof value === "boolean" ? value : undefined
 }
 
 function stringArrayGet(value: unknown): string[] | undefined {

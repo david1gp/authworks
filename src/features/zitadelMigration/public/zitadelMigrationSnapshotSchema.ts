@@ -1,4 +1,5 @@
 import * as v from "valibot"
+import { oidcClientCompatibilitySettingsValidate } from "../../oidc/public/oidcClientCompatibilitySettingsValidate.js"
 import { organizationMembershipResourceIdSchema } from "../../organizations/public/organizationMembershipResourceIdSchema.js"
 import { organizationResourceIdSchema } from "../../organizations/public/organizationResourceIdSchema.js"
 import { userResourceIdSchema } from "../../users/public/userResourceIdSchema.js"
@@ -95,7 +96,30 @@ const projectGrantSchema = v.strictObject({
 })
 
 const oidcApplicationSchema = v.strictObject({
-  authorizationEndpoint: v.nullable(v.pipe(v.string(), v.url())),
+  // Kept optional so snapshots written before task 16 remain readable.  The
+  // endpoint is source-wide in ZITADEL and has no per-application Authworks
+  // setting, so new exports do not write it and imports intentionally ignore it.
+  authorizationEndpoint: v.optional(v.nullable(v.pipe(v.string(), v.url()))),
+  allowedScopes: v.optional(
+    v.pipe(v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(100))), v.minLength(1), v.maxLength(100)),
+  ),
+  accessTokenRoleAssertion: v.optional(v.boolean(), false),
+  additionalOrigins: v.optional(
+    v.pipe(
+      v.array(v.pipe(v.string(), v.minLength(1), v.maxLength(2048))),
+      v.maxLength(100),
+      v.check(
+        (additionalOrigins) =>
+          oidcClientCompatibilitySettingsValidate({
+            accessTokenRoleAssertion: false,
+            additionalOrigins,
+            idTokenUserinfoAssertion: false,
+          }).success,
+        "Additional origins must be valid, normalized, and unique.",
+      ),
+    ),
+    [],
+  ),
   clientType: v.picklist(["public", "confidential"]),
   credentials: v.array(credentialMetadataSchema),
   clientId: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(320))),
@@ -107,6 +131,9 @@ const oidcApplicationSchema = v.strictObject({
   status: v.picklist(["active", "inactive", "removed"]),
   sourceId: sourceIdSchema,
   tokenEndpointAuthMethod: v.picklist(["none", "client_secret_basic", "client_secret_post"]),
+  requireConsent: v.optional(v.boolean()),
+  trusted: v.optional(v.boolean()),
+  idTokenUserinfoAssertion: v.optional(v.boolean(), false),
   updatedAt: timestampSchema,
 })
 
@@ -122,6 +149,7 @@ const machineUserSchema = v.strictObject({
 const domainSchema = v.strictObject({
   createdAt: v.optional(timestampSchema),
   domain: v.pipe(v.string(), v.minLength(1), v.maxLength(253)),
+  isPrimary: v.optional(v.boolean(), false),
   organizationId: sourceIdSchema,
   sourceId: sourceIdSchema,
   verified: v.boolean(),

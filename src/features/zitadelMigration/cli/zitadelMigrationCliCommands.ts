@@ -2,15 +2,15 @@ import { chmod, lstat, open, readFile, rename, unlink } from "node:fs/promises"
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import * as v from "valibot"
 import { storageDatabaseOpen } from "../../../platform/storage/storageDatabaseOpen.js"
+import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
-import { connectionProfileCliProfileFlag } from "../../connectionProfiles/cli/connectionProfileCliProfileFlag.js"
 import { zitadelMigrationExport } from "../actions/zitadelMigrationExport.js"
 import { zitadelMigrationImport } from "../actions/zitadelMigrationImport.js"
 import { zitadelMigrationRun } from "../actions/zitadelMigrationRun.js"
 import { zitadelApiClientCreate } from "../client/zitadelApiClientCreate.js"
-import { zitadelMigrationSnapshotSchema } from "../public/zitadelMigrationSnapshotSchema.js"
 import { zitadelMigrationProviderCredentialBundleSchema } from "../public/zitadelMigrationProviderCredentialBundleSchema.js"
+import { zitadelMigrationSnapshotSchema } from "../public/zitadelMigrationSnapshotSchema.js"
 
 type ExportCliFlags = {
   readonly apiUrl?: string
@@ -111,7 +111,7 @@ const runCommand = buildCommand({
       apiUrl: optionalTextFlag("ZITADEL API URL"),
       database: optionalTextFlag("Authworks SQLite database path"),
       pageSize: optionalNumberFlag("ZITADEL search page size"),
-      profile: connectionProfileCliProfileFlag(),
+      ...connectionProfileCliCentralFlags(),
       token: optionalTextFlag("ZITADEL service account token"),
       realmId: optionalTextFlag("Authworks realm ID"),
       authoritative: { brief: "Delete stale source-owned records", kind: "boolean", optional: true },
@@ -159,7 +159,7 @@ const exportCommand = buildCommand({
       apiUrl: optionalTextFlag("ZITADEL API URL"),
       output: optionalTextFlag("Output migration snapshot path"),
       pageSize: optionalNumberFlag("ZITADEL search page size"),
-      profile: connectionProfileCliProfileFlag(),
+      ...connectionProfileCliCentralFlags(),
       token: optionalTextFlag("ZITADEL service account token"),
     },
   },
@@ -209,7 +209,7 @@ const importCommand = buildCommand({
       confirmDestructive: { brief: "Acknowledge authoritative deletion", kind: "boolean", optional: true },
       dryRun: { brief: "Plan without changing the database", kind: "boolean", optional: true },
       input: optionalTextFlag("Input migration snapshot path"),
-      profile: connectionProfileCliProfileFlag(),
+      ...connectionProfileCliCentralFlags(),
       realmId: optionalTextFlag("Authworks realm ID"),
       providerCredentials: optionalTextFlag("Secure provider credential bundle path"),
     },
