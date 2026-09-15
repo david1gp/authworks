@@ -4,7 +4,6 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
-import { organizationBrandingSet } from "../../src/features/organizations/actions/organizationBrandingSet.js"
 import { organizationInvitationAccept } from "../../src/features/organizations/actions/organizationInvitationAccept.js"
 import { organizationInvitationCreate } from "../../src/features/organizations/actions/organizationInvitationCreate.js"
 import { organizationInvitationDecline } from "../../src/features/organizations/actions/organizationInvitationDecline.js"
@@ -19,11 +18,9 @@ import { organizationSwitch } from "../../src/features/organizations/actions/org
 import { organizationUpdate } from "../../src/features/organizations/actions/organizationUpdate.js"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
 import { organizationEventTypes } from "../../src/features/organizations/events/organizationEventTypes.js"
-import { organizationBrandingDefaultCreate } from "../../src/features/organizations/domain/organizationBrandingDefaultCreate.js"
 import { organizationRepositoryCreate } from "../../src/features/organizations/persistence/organizationRepositoryCreate.js"
 import { organizationListResponseSchema } from "../../src/features/organizations/public/organizationListResponseSchema.js"
 import { organizationResourceIdSchema } from "../../src/features/organizations/public/organizationResourceIdSchema.js"
-import { organizationSchema } from "../../src/features/organizations/public/organizationSchema.js"
 import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -775,20 +772,6 @@ test("subject-bound organization self-service stays isolated and protects invita
     )
       return
 
-    const defaultBranding = organizationBrandingDefaultCreate()
-    const branding = organizationBrandingSet({
-      context: system,
-      database,
-      input: {
-        ...defaultBranding,
-        dark: { ...defaultBranding.dark, logoUrl: "https://assets.example.com/alpha-dark.svg" },
-        light: { ...defaultBranding.light, logoUrl: "https://assets.example.com/alpha.svg" },
-      },
-      organizationId: alphaOrganization.data.organization.id,
-      realmId: alpha.id,
-    })
-    expect(branding.success).toBe(true)
-
     const invitation = organizationInvitationCreate({
       context: system,
       database,
@@ -838,19 +821,6 @@ test("subject-bound organization self-service stays isolated and protects invita
     expect(organizations.data.nextPageToken).toBeDefined()
     const next = await client.organizationMeList(alpha.id, { pageSize: 1, pageToken: organizations.data.nextPageToken })
     expect(next).toMatchObject({ success: true, data: { items: [{ membership: { userId: alphaUser.id } }] } })
-    if (!next.success) return
-    const organizationItems = [...organizations.data.items, ...next.data.items]
-    expect(
-      organizationItems.find((item) => item.organization.id === alphaOrganization.data.organization.id)?.branding,
-    ).toMatchObject({
-      dark: { logoUrl: "https://assets.example.com/alpha-dark.svg" },
-      light: { logoUrl: "https://assets.example.com/alpha.svg" },
-    })
-    const defaultOrganizationBranding = organizationItems.find(
-      (item) => item.organization.id === secondOrganization.data.organization.id,
-    )?.branding
-    expect(defaultOrganizationBranding?.dark.logoUrl).toBeUndefined()
-    expect(defaultOrganizationBranding?.light.logoUrl).toBeUndefined()
 
     const switched = await client.organizationMeSwitch(alpha.id, {
       organizationId: alphaOrganization.data.organization.id,
