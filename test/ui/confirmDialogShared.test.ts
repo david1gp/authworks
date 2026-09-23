@@ -13,7 +13,6 @@ mock.module("solid-js", () => ({
 
 const [
   { confirmStateCreate },
-  { confirmDialogFocusNextSelect },
   { adminPageStateCreate },
   { adminDemoAdapterCreate },
   { oidcAdminPageStateCreate },
@@ -24,7 +23,6 @@ const [
   { englishCatalog },
 ] = await Promise.all([
   import("../../src/ui/confirm/confirmStateCreate.js"),
-  import("../../src/ui/confirm/confirmDialogFocusNextSelect.js"),
   import("../../src/features/admin/ui/adminPageStateCreate.js"),
   import("../../src/features/admin/ui/adminDemoAdapterCreate.js"),
   import("../../src/features/oidc/ui/oidcAdminPageStateCreate.js"),
@@ -37,8 +35,6 @@ const [
 
 const alexId = "01900000-0000-7000-8000-000000000021"
 const confidentialClientId = "01900000-0000-7000-8000-000000000041"
-// The dialog renders cancel first so the destructive choice is never the default.
-const dialogControls = ["cancel", "accept"] as const
 
 describe("shared confirmation state", () => {
   test("opens with the given message and resolves true only when accepted", async () => {
@@ -84,29 +80,6 @@ describe("shared confirmation state", () => {
 
     expect(await pending).toBe(false)
     expect(state.open()).toBe(false)
-  })
-})
-
-describe("shared confirmation focus selection", () => {
-  test("wraps forward and backward within the dialog controls", () => {
-    expect(confirmDialogFocusNextSelect({ active: "cancel", backwards: false, elements: dialogControls })).toBe(
-      "accept",
-    )
-    expect(confirmDialogFocusNextSelect({ active: "accept", backwards: false, elements: dialogControls })).toBe(
-      "cancel",
-    )
-    expect(confirmDialogFocusNextSelect({ active: "accept", backwards: true, elements: dialogControls })).toBe("cancel")
-    expect(confirmDialogFocusNextSelect({ active: "cancel", backwards: true, elements: dialogControls })).toBe("accept")
-  })
-
-  test("pulls focus back inside when it sits outside, and has nothing to focus when empty", () => {
-    expect(confirmDialogFocusNextSelect({ active: "page-button", backwards: false, elements: dialogControls })).toBe(
-      "cancel",
-    )
-    expect(confirmDialogFocusNextSelect({ active: undefined, backwards: true, elements: dialogControls })).toBe(
-      "accept",
-    )
-    expect(confirmDialogFocusNextSelect({ active: undefined, backwards: false, elements: [] })).toBeUndefined()
   })
 })
 

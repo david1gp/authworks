@@ -13,7 +13,6 @@ mock.module("solid-js", () => ({
 
 const [
   { confirmStateCreate: adminConfirmStateCreate },
-  { confirmDialogFocusNextSelect: adminDialogFocusNextSelect },
   { adminPageStateCreate },
   { adminDemoAdapterCreate },
   { impersonationAdminPageStateCreate },
@@ -22,7 +21,6 @@ const [
   { englishCatalog },
 ] = await Promise.all([
   import("../../src/ui/confirm/confirmStateCreate.js"),
-  import("../../src/ui/confirm/confirmDialogFocusNextSelect.js"),
   import("../../src/features/admin/ui/adminPageStateCreate.js"),
   import("../../src/features/admin/ui/adminDemoAdapterCreate.js"),
   import("../../src/features/impersonation/ui/impersonationAdminPageStateCreate.js"),
@@ -32,8 +30,6 @@ const [
 ])
 
 const alexId = "01900000-0000-7000-8000-000000000021"
-// The dialog renders cancel first so the destructive choice is never the default.
-const dialogControls = ["cancel", "accept"] as const
 
 const adminPageCreate = (confirmState: ReturnType<typeof adminConfirmStateCreate>, screen: "user-detail") =>
   adminPageStateCreate({
@@ -48,16 +44,6 @@ describe("administration confirmation dialog", () => {
     expect(englishCatalog["admin.common.confirmTitle"]).toBeString()
     expect(englishCatalog["common.cancel"]).toBeString()
     expect(englishCatalog["common.continue"]).toBeString()
-  })
-
-  test("keeps keyboard focus wrapping inside the dialog in both directions", () => {
-    expect(adminDialogFocusNextSelect({ active: "cancel", backwards: false, elements: dialogControls })).toBe("accept")
-    expect(adminDialogFocusNextSelect({ active: "accept", backwards: false, elements: dialogControls })).toBe("cancel")
-    expect(adminDialogFocusNextSelect({ active: "accept", backwards: true, elements: dialogControls })).toBe("cancel")
-    expect(adminDialogFocusNextSelect({ active: "page-button", backwards: false, elements: dialogControls })).toBe(
-      "cancel",
-    )
-    expect(adminDialogFocusNextSelect({ active: undefined, backwards: false, elements: [] })).toBeUndefined()
   })
 })
 

@@ -44,6 +44,20 @@ describe("confirmation wiring", () => {
     expect(source).toContain("onCleanup(() => state.dispose())")
   })
 
+  test("confirmation and authenticated dialogs use Corvu layers instead of competing manual focus traps", async () => {
+    const confirmation = await sourceRead("../../src/ui/confirm/ConfirmDialog.tsx")
+    const underlying = await sourceRead("../../src/ui/authenticated/AuthenticatedDialog.tsx")
+    expect(confirmation).toContain('role="alertdialog"')
+    expect(confirmation).toContain("<Dialog.Content")
+    expect(confirmation).toContain("confirmDialogStack.enter()")
+    expect(confirmation).not.toContain("onKeyDown=")
+    expect(underlying).toContain("trapFocus={!confirmDialogStack.active()}")
+    expect(underlying).toContain("restoreFocus={!confirmDialogStack.active()}")
+    expect(underlying).toContain("closeOnEscapeKeyDown={!confirmDialogStack.active()}")
+    expect(underlying).toContain("closeOnOutsidePointer={!confirmDialogStack.active()}")
+    expect(underlying).not.toContain("onOutsideFocus=")
+  })
+
   test("no migrated administration state falls back to a native prompt or auto-accept", async () => {
     for (const path of migratedStateModules) {
       const source = await sourceRead(path)

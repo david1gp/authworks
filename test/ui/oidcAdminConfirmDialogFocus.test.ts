@@ -13,53 +13,15 @@ mock.module("solid-js", () => ({
 
 const [
   { confirmStateCreate: oidcAdminConfirmStateCreate },
-  { confirmDialogFocusNextSelect: oidcAdminDialogFocusNextSelect },
   { oidcAdminPageStateCreate },
   { oidcAdminDemoAdapterCreate },
 ] = await Promise.all([
   import("../../src/ui/confirm/confirmStateCreate.js"),
-  import("../../src/ui/confirm/confirmDialogFocusNextSelect.js"),
   import("../../src/features/oidc/ui/oidcAdminPageStateCreate.js"),
   import("../../src/features/oidc/ui/oidcAdminDemoAdapterCreate.js"),
 ])
 
 const confidentialClientId = "01900000-0000-7000-8000-000000000041"
-// The dialog renders cancel first so the destructive choice is never the default.
-const dialogControls = ["cancel", "accept"] as const
-
-describe("confirmation dialog focus containment", () => {
-  test("moves forward through the dialog controls and wraps back to the first", () => {
-    expect(oidcAdminDialogFocusNextSelect({ active: "cancel", backwards: false, elements: dialogControls })).toBe(
-      "accept",
-    )
-    expect(oidcAdminDialogFocusNextSelect({ active: "accept", backwards: false, elements: dialogControls })).toBe(
-      "cancel",
-    )
-  })
-
-  test("moves backward on Shift+Tab and wraps to the last control", () => {
-    expect(oidcAdminDialogFocusNextSelect({ active: "accept", backwards: true, elements: dialogControls })).toBe(
-      "cancel",
-    )
-    expect(oidcAdminDialogFocusNextSelect({ active: "cancel", backwards: true, elements: dialogControls })).toBe(
-      "accept",
-    )
-  })
-
-  test("pulls focus back inside when it sits outside the dialog", () => {
-    expect(oidcAdminDialogFocusNextSelect({ active: "page-button", backwards: false, elements: dialogControls })).toBe(
-      "cancel",
-    )
-    expect(oidcAdminDialogFocusNextSelect({ active: undefined, backwards: true, elements: dialogControls })).toBe(
-      "accept",
-    )
-  })
-
-  test("has nothing to focus when the dialog is closed", () => {
-    expect(oidcAdminDialogFocusNextSelect({ active: undefined, backwards: false, elements: [] })).toBeUndefined()
-  })
-})
-
 const pageStateCreate = (confirmState: ReturnType<typeof oidcAdminConfirmStateCreate>) =>
   oidcAdminPageStateCreate({
     adapter: oidcAdminDemoAdapterCreate(() => "success"),

@@ -1,13 +1,14 @@
-import Dialog from "@corvu/dialog"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
+import Dialog from "@corvu/dialog"
 import { type JSX, Show } from "solid-js"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import type { ButtonVariant } from "#ui/interactive/button/buttonCva.js"
 import { buttonCva2 } from "#ui/interactive/button/buttonCva.js"
 import { classesButtonClickAnimation } from "#ui/interactive/button/classesButtonClickAnimation.js"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classesDialogContentMerge, classesDialogOverlayMerge } from "#ui/interactive/dialog/classesDialogContent.js"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
+import { confirmDialogStack } from "../confirm/confirmDialogStack.js"
 import { authenticatedDialogStateCreate } from "./authenticatedDialogStateCreate.js"
 
 /**
@@ -32,7 +33,15 @@ export function AuthenticatedDialog(props: {
   const state = authenticatedDialogStateCreate(() => props.open)
 
   return (
-    <Dialog dialogId={state.dialogId} onOpenChange={props.onOpenChange} open={props.open}>
+    <Dialog
+      dialogId={state.dialogId}
+      closeOnEscapeKeyDown={!confirmDialogStack.active()}
+      closeOnOutsidePointer={!confirmDialogStack.active()}
+      onOpenChange={props.onOpenChange}
+      open={props.open}
+      restoreFocus={!confirmDialogStack.active()}
+      trapFocus={!confirmDialogStack.active()}
+    >
       <Show when={props.triggerLabel !== undefined}>
         <Dialog.Trigger
           class={buttonCva2(props.variant, undefined, classesButtonClickAnimation, props.class)}
