@@ -171,7 +171,7 @@ describe("account workspace", () => {
     expect(source).not.toContain("account.profile.signInDescription")
   })
 
-  test("renders overview security progress and personal information in three columns", async () => {
+  test("renders overview security progress and profile values with editing in a dialog", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),
     ).text()
@@ -179,9 +179,12 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountProfileIdentityStrip.tsx", import.meta.url),
     ).text()
 
-    // Personal information remains one card while its title and subtitle sit outside the card.
+    // Values stay visible, while editing is available only inside the dialog.
     expect(source.match(/<AuthenticatedSection/g)).toHaveLength(1)
     expect(source).toContain("sm:grid-cols-2 lg:grid-cols-3")
+    expect(source).toContain("<dl")
+    expect(source.indexOf("<AuthenticatedDialog")).toBeLessThan(source.indexOf("<form"))
+    expect(source).toContain("onOpenChange={props.onProfileDialogOpenChange}")
     expect(source).not.toContain("lg:grid-cols-12")
     expect(source).not.toContain('class="lg:col-span-8"')
     expect(source).toContain("<AuthenticatedToolbar")
@@ -195,12 +198,6 @@ describe("account workspace", () => {
     expect(progress).toContain('messageTranslate("account.security.recoveryMfa")')
     expect(progress).toContain("{props.state.text()}")
     expect(progress).toContain('role="progressbar"')
-
-    // The six fields retain their sensible row-major order as the responsive grid gains columns.
-    const fieldOrder = [...source.matchAll(/account\.profile\.(firstName|lastName|displayName|nickName|gender)"/g)].map(
-      ([, field]) => field,
-    )
-    expect(fieldOrder.slice(0, 5)).toEqual(["firstName", "lastName", "displayName", "nickName", "gender"])
 
     // The removed nickname helper copy must not come back.
     expect(source).not.toContain("nickNameHint")
@@ -222,7 +219,7 @@ describe("account workspace", () => {
     expect(workspace).toContain("max-w-7xl")
   })
 
-  test("keeps exactly one accessible upload target without a redundant visible file control", async () => {
+  test("stages picture selection inside an accessible dialog before saving", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfilePictureField.tsx", import.meta.url),
     ).text()
@@ -234,6 +231,10 @@ describe("account workspace", () => {
     expect(source).toContain("tabIndex={-1}")
     expect(source).toContain('aria-hidden="true"')
     expect(source).not.toMatch(/<input[^>]*aria-label/s)
+    expect(source).toContain("<AuthenticatedDialog")
+    expect(source).toContain("onOpenChange={state.openChange}")
+    expect(source).toContain("onClick={state.save}")
+    expect(source).toContain("state.previewUrl()")
     // The dropzone is the single keyboard-operable picker trigger.
     expect(source.match(/role="button"/g)).toHaveLength(1)
     expect(source.match(/onClick=\{state\.openFilePicker\}/g)).toHaveLength(1)
@@ -465,7 +466,7 @@ describe("account workspace", () => {
     const workspace = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
     ).text()
-    expect(workspace).toContain('messageTranslate("shell.nav.securityHistory")')
+    expect(workspace).toContain('messageTranslate("account.workspace.devicesTitle")')
   })
 
   test("routes every account destructive action through the styled confirmation state", async () => {
@@ -581,6 +582,39 @@ describe("account workspace", () => {
     expect(source).toContain('id="account-delete-confirmation"')
     expect(source).toContain('messageTranslate("account.delete.submit")')
     expect(source).toContain('variant="filledRed"')
+  })
+
+  test("uses shared overview headings, readable status rows and secondary account actions", async () => {
+    const workspace = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
+    ).text()
+    const organizations = await Bun.file(
+      new URL("../../src/features/account/ui/AccountOrganizationAccessView.tsx", import.meta.url),
+    ).text()
+    const status = await Bun.file(
+      new URL("../../src/features/account/ui/AccountSecurityStatus.tsx", import.meta.url),
+    ).text()
+    const history = await Bun.file(
+      new URL("../../src/features/account/ui/AccountSecurityHistorySection.tsx", import.meta.url),
+    ).text()
+    const danger = await Bun.file(
+      new URL("../../src/features/account/ui/AccountDeleteView.tsx", import.meta.url),
+    ).text()
+
+    expect(workspace).toContain('title={messageTranslate("account.workspace.devicesTitle")}')
+    expect(workspace).toContain('description={messageTranslate("account.workspace.dangerDescription")}')
+    expect(organizations).toContain('<AuthenticatedToolbar label={messageTranslate("shell.nav.organizations")}>')
+    expect(status).toContain("sm:grid-cols-[auto_minmax(0,1fr)_auto]")
+    expect(status).toContain('class="break-words text-sm font-medium"')
+    expect(history).toContain('class="min-w-0 break-words text-sm font-medium"')
+    expect(history).toContain("onClick={props.state.securityHistoryLoadMore}")
+    expect(danger).toContain('class="border-danger/35"')
+    expect(danger).toContain('description={messageTranslate("account.delete.warning")}')
+
+    for (const name of ["AccountPasskeysSection", "AccountFactorsSection", "AccountRecoveryCodesSection"]) {
+      const source = await Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()
+      expect(source).toContain('variant="outline"')
+    }
   })
 
   test("points invitation organization switching to account access", async () => {

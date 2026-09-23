@@ -100,6 +100,8 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.cancel,Mégse
+account.profile.edit,Profil szerkesztése
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
+account.profile.notSet,Nincs megadva
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,Profilkép módosítása
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,"Húzzon ide egy képet, vagy kattintson a tallózáshoz"
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,Profilkép előnézete
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,Kép eltávolítása folyamatban…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+account.workspace.accessDescription,"Tekintse át szervezeteit, jogosultságait és engedélyezett alkalmazásait."
+account.workspace.dangerDescription,Tekintse át a fiók visszafordíthatatlan műveleteit.
+account.workspace.devicesDescription,"Tekintse át a biztonsági tevékenységeket, a bejelentkezett eszközöket és a csatlakoztatott alkalmazásokat."
+account.workspace.devicesTitle,Eszközök és alkalmazások
+account.workspace.securityDescription,Kezelje a bejelentkezési módokat és a helyreállítási lehetőségeket.
 admin.common.confirmTitle,Erősítse meg ezt a műveletet
 admin.common.next,Következő
 admin.common.pagination,Lapozás

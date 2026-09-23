@@ -36,6 +36,7 @@ export function AccountRecoveryCodesSection(props: {
                     disabled={props.state.pendingId() === "recovery:generate"}
                     icon={mdiBackupRestore}
                     onClick={props.state.recoveryCodesGenerate}
+                    variant="outline"
                   >
                     {messageTranslate("account.recovery.generate")}
                   </ButtonIcon>

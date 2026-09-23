@@ -100,6 +100,8 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.cancel,Annuler
+account.profile.edit,Modifier le profil
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
+account.profile.notSet,Non renseigné
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,Changer la photo de profil
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Glissez-déposez une image ici ou cliquez pour parcourir
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,Aperçu de la photo de profil
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,Suppression de l'image en cours…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+account.workspace.accessDescription,"Consultez vos organisations, autorisations et applications autorisées."
+account.workspace.dangerDescription,Consultez les actions irréversibles pour ce compte.
+account.workspace.devicesDescription,"Consultez l’activité de sécurité, les appareils connectés et les applications associées."
+account.workspace.devicesTitle,Appareils et applications
+account.workspace.securityDescription,Gérez les méthodes de connexion et les options de récupération.
 admin.common.confirmTitle,Confirmer cette action
 admin.common.next,Suivant
 admin.common.pagination,Pagination

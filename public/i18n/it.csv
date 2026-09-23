@@ -100,6 +100,8 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.cancel,Annulla
+account.profile.edit,Modifica profilo
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
+account.profile.notSet,Non impostato
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,Cambia immagine del profilo
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Trascina un'immagine qui oppure fai clic per sfogliare
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,Anteprima dell'immagine del profilo
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,Rimozione dell'immagine in corso…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+account.workspace.accessDescription,"Esamina le tue organizzazioni, autorizzazioni e applicazioni autorizzate."
+account.workspace.dangerDescription,Esamina le azioni irreversibili per questo account.
+account.workspace.devicesDescription,"Esamina le attività di sicurezza, i dispositivi connessi e le applicazioni collegate."
+account.workspace.devicesTitle,Dispositivi e applicazioni
+account.workspace.securityDescription,Gestisci i metodi di accesso e le opzioni di recupero.
 admin.common.confirmTitle,Confermare questa azione
 admin.common.next,Avanti
 admin.common.pagination,Paginazione

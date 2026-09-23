@@ -100,6 +100,8 @@ account.password.submit,Passwort ändern
 account.password.title,Passwort ändern
 account.password.tooShort,Das neue Passwort muss mindestens 8 Zeichen enthalten.
 account.profile.displayName,Anzeigename
+account.profile.cancel,Abbrechen
+account.profile.edit,Profil bearbeiten
 account.profile.displayNameRequired,Geben Sie einen Anzeigenamen ein.
 account.profile.email,E-Mail-Adresse
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Nachname
 account.profile.nickName,Spitzname
+account.profile.notSet,Nicht festgelegt
 account.profile.personalDescription,"Halten Sie das Profil aktuell, das Anwendungen und Administratoren angezeigt wird."
 account.profile.personalInformation,Persönliche Angaben
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,Profilbild ändern
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Bild hierher ziehen oder zum Auswählen klicken
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,Vorschau des Profilbilds
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,Profilbild wird entfernt…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,Verfügbar
 account.status.configured,Konfiguriert
 account.status.notConfigured,Nicht konfiguriert
 account.status.unavailable,Nicht verfügbar
+account.workspace.accessDescription,"Überprüfen Sie Ihre Organisationen, Berechtigungen und autorisierten Anwendungen."
+account.workspace.dangerDescription,Überprüfen Sie unumkehrbare Aktionen für dieses Konto.
+account.workspace.devicesDescription,"Überprüfen Sie Sicherheitsaktivitäten, angemeldete Geräte und verbundene Anwendungen."
+account.workspace.devicesTitle,Geräte und Anwendungen
+account.workspace.securityDescription,Verwalten Sie Anmeldemethoden und Wiederherstellungsoptionen.
 admin.common.confirmTitle,Diese Aktion bestätigen
 admin.common.next,Weiter
 admin.common.pagination,Seitennavigation

@@ -14,8 +14,8 @@ export function AccountSecurityStatus(props: {
     <div
       class={
         props.configured
-          ? "grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 bg-success/5 px-3 py-2.5"
-          : "grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 bg-danger/5 px-3 py-2.5"
+          ? "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5 bg-success/5 px-3 py-2.5 sm:grid-cols-[auto_minmax(0,1fr)_auto]"
+          : "grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5 bg-danger/5 px-3 py-2.5 sm:grid-cols-[auto_minmax(0,1fr)_auto]"
       }
       data-configured={props.configured}
     >
@@ -26,11 +26,9 @@ export function AccountSecurityStatus(props: {
       />
       <dl class="min-w-0">
         <dt class="text-xs font-semibold text-muted-foreground">{props.label}</dt>
-        <dd class="truncate text-sm font-medium" title={props.detail}>
-          {props.detail}
-        </dd>
+        <dd class="break-words text-sm font-medium">{props.detail}</dd>
       </dl>
-      <Show when={props.action}>{(action) => <div class="shrink-0">{action()}</div>}</Show>
+      <Show when={props.action}>{(action) => <div class="col-span-2 sm:col-span-1">{action()}</div>}</Show>
     </div>
   )
 }

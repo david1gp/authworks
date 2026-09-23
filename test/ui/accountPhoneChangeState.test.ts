@@ -5,6 +5,7 @@ import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { accountDemoUserFixture } from "../../src/features/account/ui/accountDemoUserFixture.js"
 import { accountDemoAdapterCreate } from "../../src/features/account/ui/accountDemoAdapterCreate.js"
 import { accountPageStateCreate } from "../../src/features/account/ui/accountPageStateCreate.js"
+import { confirmDialogStack } from "../../src/ui/confirm/confirmDialogStack.js"
 
 const cleanups: (() => void)[] = []
 
@@ -147,6 +148,30 @@ describe("account phone-change state", () => {
       input: { challengeId: "account-demo-phone-change", code: "123456", phoneNumber: replacement },
       name: "verify",
     })
+  })
+
+  test("keeps the phone form mounted while a stacked confirmation resolves and the start request completes", async () => {
+    const adapter = accountDemoAdapterCreate(() => "success")
+    const state = stateCreate({ adapter, initialStatus: "ready", kind: "profile" })
+    const loaded = await adapter.loadUser()
+    if (!loaded.success) throw new Error("Expected demo user")
+    state.user.set(loaded.data.user)
+    state.phoneAddDialogOpenSet(true)
+    state.phoneCandidate.set("+14155552672")
+
+    const start = state.phoneChangeStart(submitEvent)
+    expect(state.confirmation.open()).toBe(true)
+    const leave = confirmDialogStack.enter()
+    expect(confirmDialogStack.active()).toBe(true)
+
+    state.confirmation.accept()
+    leave()
+    expect(confirmDialogStack.active()).toBe(false)
+    await start
+    expect(state.phoneAddDialogOpen.get()).toBe(true)
+    expect(state.phoneChallengeId.get()).toBe("account-demo-phone-change")
+    expect(state.phoneCandidate.get()).toBe("+14155552672")
+    expect(state.user.get()?.phoneNumber).toBe(accountDemoUserFixture.phoneNumber)
   })
 
   test("clears phone-change state after a successful user reload", async () => {

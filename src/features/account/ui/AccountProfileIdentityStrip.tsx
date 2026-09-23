@@ -14,6 +14,8 @@ export function AccountProfileIdentityStrip(props: {
   readonly pictureErrorMessage?: string
   readonly pictureStatus: AccountPictureViewStatus
   readonly pictureUrl: string
+  readonly phoneNumber?: string
+  readonly phoneVerified: boolean
   readonly securityProgress?: ReturnType<typeof accountSecurityProgressStateCreate>
   readonly userName: string
 }) {
@@ -57,6 +59,18 @@ export function AccountProfileIdentityStrip(props: {
               <dd class="truncate font-mono text-sm">{props.email}</dd>
             </div>
           </dl>
+          <div class="flex min-w-0 flex-wrap items-center gap-2 text-sm">
+            <span class="text-muted-foreground">{messageTranslate("account.profile.phoneNumber")}</span>
+            <span class="break-all font-mono">{props.phoneNumber ?? messageTranslate("account.profile.notSet")}</span>
+            {props.phoneNumber ? (
+              <AuthenticatedStatus
+                label={messageTranslate(
+                  props.phoneVerified ? "account.profile.verified" : "account.profile.verificationPending",
+                )}
+                tone={props.phoneVerified ? "success" : "warning"}
+              />
+            ) : null}
+          </div>
         </div>
       </div>
       {props.securityProgress ? <AccountSecurityProgress state={props.securityProgress} /> : null}

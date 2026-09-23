@@ -1,5 +1,6 @@
 import { Show } from "solid-js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
 import type { AccountEffectiveAccessGroup } from "../public/accountEffectiveAccessGroupSchema.js"
@@ -41,7 +42,12 @@ export function AccountOrganizationAccessView(props: {
       aria-label={messageTranslate("account.access.organizationSelector")}
       class="grid min-w-0 gap-3 [&>*]:min-w-0"
     >
-      <p class="text-sm text-muted-foreground">{messageTranslate("account.access.organizationDescription")}</p>
+      <AuthenticatedToolbar label={messageTranslate("shell.nav.organizations")}>
+        <div class="grid gap-0.5">
+          <h2 class="text-base font-semibold tracking-tight">{messageTranslate("shell.nav.organizations")}</h2>
+          <p class="text-sm text-muted-foreground">{messageTranslate("account.access.organizationDescription")}</p>
+        </div>
+      </AuthenticatedToolbar>
 
       <Show when={props.organizationNotice}>
         {(organization) => (

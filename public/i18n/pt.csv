@@ -100,6 +100,8 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.cancel,Cancelar
+account.profile.edit,Editar perfil
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
+account.profile.notSet,Não definido
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,Alterar foto de perfil
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Arraste e solte uma imagem aqui ou clique para navegar
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,Pré-visualização da foto do perfil
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,Removendo a imagem…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+account.workspace.accessDescription,"Revise suas organizações, permissões e aplicativos autorizados."
+account.workspace.dangerDescription,Revise as ações irreversíveis desta conta.
+account.workspace.devicesDescription,"Revise a atividade de segurança, os dispositivos com sessão iniciada e os aplicativos conectados."
+account.workspace.devicesTitle,Dispositivos e aplicativos
+account.workspace.securityDescription,Gerencie métodos de entrada e opções de recuperação.
 admin.common.confirmTitle,Confirmar esta ação
 admin.common.next,Seguinte
 admin.common.pagination,Paginação

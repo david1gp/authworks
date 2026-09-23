@@ -3,6 +3,41 @@ import { createRoot } from "solid-js"
 import { accountProfilePictureFieldStateCreate } from "../../src/features/account/ui/accountProfilePictureFieldStateCreate.js"
 
 describe("account profile picture field state", () => {
+  test("rejects invalid files and discards staged selection on cancel", () => {
+    createRoot((dispose) => {
+      let uploaded = false
+      const state = accountProfilePictureFieldStateCreate({
+        onRemove: () => undefined,
+        onUpload: () => {
+          uploaded = true
+        },
+        status: () => "idle",
+        url: () => "https://assets.example.com/current.png",
+      })
+      const drop = (file: File) =>
+        state.onDrop({
+          dataTransfer: { files: [file] },
+          preventDefault: () => undefined,
+          stopPropagation: () => undefined,
+        } as unknown as DragEvent)
+      state.openChange(true)
+      drop(new File(["bad"], "bad.txt", { type: "text/plain" }))
+      expect(state.validationMessage()).toBeTruthy()
+      expect(state.selectedFile()).toBeUndefined()
+      drop(new File([new Uint8Array(512 * 1024 + 1)], "big.png", { type: "image/png" }))
+      expect(state.validationMessage()).toBeTruthy()
+      expect(state.selectedFile()).toBeUndefined()
+      drop(new File(["valid"], "good.png", { type: "image/png" }))
+      expect(state.validationMessage()).toBeUndefined()
+      expect(state.selectedFile()?.name).toBe("good.png")
+      state.openChange(false)
+      expect(state.selectedFile()).toBeUndefined()
+      expect(state.previewUrl()).toBe("https://assets.example.com/current.png")
+      state.save()
+      expect(uploaded).toBe(false)
+      dispose()
+    })
+  })
   test("initializes with empty picture state when URL is empty", () => {
     createRoot((dispose) => {
       const state = accountProfilePictureFieldStateCreate({
@@ -90,6 +125,9 @@ describe("account profile picture field state", () => {
       } as unknown as DragEvent
 
       state.onDrop(dropEvent)
+      expect(state.selectedFile()).toBe(file)
+      expect(uploadedFile).toBeUndefined()
+      state.save()
       expect(uploadedFile).toBe(file)
       dispose()
     })
@@ -171,6 +209,9 @@ describe("account profile picture field state", () => {
 
       state.onDrop(dropEvent)
       expect(state.isDragging()).toBe(false)
+      expect(state.selectedFile()).toBe(file)
+      expect(uploadedFile).toBeUndefined()
+      state.save()
       expect(uploadedFile).toBe(file)
       dispose()
     })
@@ -195,6 +236,9 @@ describe("account profile picture field state", () => {
       } as unknown as HTMLInputElement
 
       state.onFileInputChange({ currentTarget: input } as unknown as Event)
+      expect(state.selectedFile()).toBe(file)
+      expect(uploadedFile).toBeUndefined()
+      state.save()
       expect(uploadedFile).toBe(file)
       expect(input.value).toBe("")
       dispose()

@@ -77,6 +77,8 @@ export function accountPageStateCreate(options: {
   const user = createSignalObject<User | undefined>(undefined)
   const errorMessage = createSignalObject<string | undefined>(undefined)
   const validationMessage = createSignalObject<string | undefined>(undefined)
+  const profileDialogOpen = createSignalObject(false)
+  const profileSaving = createSignalObject(false)
   const displayName = createSignalObject("")
   const firstName = createSignalObject("")
   const gender = createSignalObject("")
@@ -128,13 +130,24 @@ export function accountPageStateCreate(options: {
   }
   const userApply = (nextUser: User) => {
     user.set(nextUser)
+    if (!profileDialogOpen.get()) profileDraftReset(nextUser)
+    pictureUrl.set(nextUser.profile.picture?.url ?? "")
+  }
+  const profileDraftReset = (nextUser: User) => {
     displayName.set(nextUser.profile.displayName ?? "")
     firstName.set(nextUser.profile.firstName ?? "")
     gender.set(nextUser.profile.gender ?? "")
     lastName.set(nextUser.profile.lastName ?? "")
     nickName.set(nextUser.profile.nickName ?? "")
-    pictureUrl.set(nextUser.profile.picture?.url ?? "")
     preferredLanguage.set(nextUser.profile.preferredLanguage ?? "")
+  }
+  const profileDialogOpenSet = (open: boolean) => {
+    if (profileSaving.get()) return
+    const currentUser = user.get()
+    if (!open && currentUser !== undefined) profileDraftReset(currentUser)
+    validationMessage.set(undefined)
+    errorMessage.set(undefined)
+    profileDialogOpen.set(open)
   }
   /** Mirrors the server validator so an unusable file never reaches the upload route. */
   const pictureFileValidate = (file: File) => {
@@ -227,10 +240,17 @@ export function accountPageStateCreate(options: {
       nickName: nickName.get().trim() || null,
       preferredLanguage: preferredLanguage.get().trim() || null,
     }
-    status.set("loading")
+    profileSaving.set(true)
     const result = await options.adapter.updateProfile(profileInput)
-    if (!result.success) return resultFail(result)
+    profileSaving.set(false)
+    if (!result.success) {
+      if (resultIsExpired(result)) return resultFail(result)
+      errorMessage.set(result.errorMessage)
+      return
+    }
     userApply(result.data.user)
+    profileDraftReset(result.data.user)
+    profileDialogOpen.set(false)
     status.set("success")
   }
   const passwordSubmit = async (event: SubmitEvent) => {
@@ -578,6 +598,9 @@ export function accountPageStateCreate(options: {
     pictureUpload,
     pictureUrl,
     preferredLanguage,
+    profileDialogOpen,
+    profileDialogOpenSet,
+    profileSaving,
     profileSubmit,
     status,
     user,

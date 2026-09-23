@@ -18,6 +18,7 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
           disabled={props.state.pendingId() === "passkey:add"}
           icon={mdiFingerprint}
           onClick={props.state.passkeyAdd}
+          variant="outline"
         >
           {messageTranslate("account.passkeys.add")}
         </ButtonIcon>

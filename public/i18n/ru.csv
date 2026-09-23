@@ -100,6 +100,8 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.cancel,Отмена
+account.profile.edit,Редактировать профиль
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
+account.profile.notSet,Не указано
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,Изменить фото профиля
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,Перетащите изображение сюда или нажмите для выбора
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,Предварительный просмотр фотографии профиля
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,Удаление изображения…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+account.workspace.accessDescription,"Просмотрите свои организации, разрешения и авторизованные приложения."
+account.workspace.dangerDescription,Просмотрите необратимые действия для этой учётной записи.
+account.workspace.devicesDescription,"Просмотрите события безопасности, устройства с выполненным входом и подключённые приложения."
+account.workspace.devicesTitle,Устройства и приложения
+account.workspace.securityDescription,Управляйте способами входа и вариантами восстановления.
 admin.common.confirmTitle,Подтвердите это действие
 admin.common.next,Далее
 admin.common.pagination,Постраничная навигация

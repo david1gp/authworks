@@ -100,6 +100,8 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.cancel,Cancelar
+account.profile.edit,Editar perfil
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
+account.profile.notSet,No establecido
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,Cambiar foto de perfil
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,"Arrastra y suelta una imagen aquí, o haz clic para explorar"
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,Vista previa de la foto de perfil
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,Eliminando la imagen…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+account.workspace.accessDescription,"Revisa tus organizaciones, permisos y aplicaciones autorizadas."
+account.workspace.dangerDescription,Revisa las acciones irreversibles de esta cuenta.
+account.workspace.devicesDescription,"Revisa la actividad de seguridad, los dispositivos con sesión iniciada y las aplicaciones conectadas."
+account.workspace.devicesTitle,Dispositivos y aplicaciones
+account.workspace.securityDescription,Administra los métodos de inicio de sesión y las opciones de recuperación.
 admin.common.confirmTitle,Confirmar esta acción
 admin.common.next,Siguiente
 admin.common.pagination,Paginación

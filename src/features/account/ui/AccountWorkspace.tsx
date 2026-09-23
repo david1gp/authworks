@@ -32,7 +32,7 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.security}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.factors.description")}
+          description={messageTranslate("account.workspace.securityDescription")}
           id={accountWorkspaceSectionIds.security}
           title={messageTranslate("shell.nav.security")}
         />
@@ -45,9 +45,9 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.devicesApplications}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.sessions.description")}
+          description={messageTranslate("account.workspace.devicesDescription")}
           id={accountWorkspaceSectionIds.devicesApplications}
-          title={`${messageTranslate("shell.nav.securityHistory")} · ${messageTranslate("shell.nav.sessionsDevices")} · ${messageTranslate("shell.nav.applications")}`}
+          title={messageTranslate("account.workspace.devicesTitle")}
         />
         {props.devicesApplications}
       </section>
@@ -58,7 +58,7 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.access}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.access.effectiveDescription")}
+          description={messageTranslate("account.workspace.accessDescription")}
           id={accountWorkspaceSectionIds.access}
           title={messageTranslate("shell.nav.access")}
         />
@@ -71,7 +71,7 @@ export function AccountWorkspace(props: {
         id={accountWorkspaceSectionIds.dangerZone}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.delete.warning")}
+          description={messageTranslate("account.workspace.dangerDescription")}
           id={accountWorkspaceSectionIds.dangerZone}
           title={messageTranslate("account.delete.dangerZone")}
         />

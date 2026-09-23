@@ -45,7 +45,7 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
       >
         <AuthenticatedSection
           actions={<AuthenticatedStatus label={messageTranslate("account.delete.dangerZone")} tone="danger" />}
-          class="max-w-2xl border-danger/35"
+          class="border-danger/35"
           description={messageTranslate("account.delete.warning")}
           title={messageTranslate("account.delete.title")}
         >

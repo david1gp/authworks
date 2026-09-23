@@ -449,6 +449,39 @@ test("organization viewing labels are localized in every maintained catalog", as
   }
 })
 
+const accountOverviewDialogKeys = [
+  "account.profile.edit",
+  "account.profile.cancel",
+  "account.profile.notSet",
+  "account.profile.picturePreview",
+  "account.workspace.accessDescription",
+  "account.workspace.dangerDescription",
+  "account.workspace.devicesDescription",
+  "account.workspace.devicesTitle",
+  "account.workspace.securityDescription",
+] as const
+
+test("account overview and dialog labels are translated in every non-English catalog", async () => {
+  for (const key of accountOverviewDialogKeys) expect(Object.hasOwn(englishCatalog, key), key).toBe(true)
+
+  for (const option of languagesSupported.filter((entry) => entry.code !== "en")) {
+    const parsed = translationCsvParse(
+      await Bun.file(new URL(`../../public/i18n/${option.code}.csv`, import.meta.url)).text(),
+    )
+    expect(parsed.success).toBe(true)
+    if (!parsed.success) continue
+
+    for (const key of accountOverviewDialogKeys) {
+      const translated = parsed.data[key]
+      expect(translated, `${option.code}/${key}`).toBeTruthy()
+      expect(translated, `${option.code}/${key} must not be an English copy`).not.toBe(englishCatalog[key])
+      expect(translationPlaceholdersGet(translated ?? ""), `${option.code}/${key}`).toEqual(
+        translationPlaceholdersGet(englishCatalog[key]),
+      )
+    }
+  }
+})
+
 test("administration state validation keys render translated German and Arabic text", async () => {
   for (const locale of ["de", "ar"] as const) {
     const parsed = translationCsvParse(

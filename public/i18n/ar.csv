@@ -100,6 +100,8 @@ account.password.submit,تغيير كلمة المرور
 account.password.title,تغيير كلمة المرور
 account.password.tooShort,يجب أن تحتوي كلمة المرور الجديدة على 8 أحرف على الأقل.
 account.profile.displayName,الاسم المعروض
+account.profile.cancel,إلغاء
+account.profile.edit,تعديل الملف الشخصي
 account.profile.displayNameRequired,أدخل اسمًا معروضًا.
 account.profile.email,عنوان البريد الإلكتروني
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,اسم العائلة
 account.profile.nickName,الاسم المستعار
+account.profile.notSet,غير محدد
 account.profile.personalDescription,حافظ على تحديث الملف الشخصي المعروض للتطبيقات والمسؤولين.
 account.profile.personalInformation,المعلومات الشخصية
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,تغيير صورة الملف الشخصي
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,"اسحب الصورة وأفلتها هنا، أو انقر للاستعراض"
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,معاينة صورة الملف الشخصي
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,جارٍ إزالة الصورة…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,متاح
 account.status.configured,تمت التهيئة
 account.status.notConfigured,غير مهيأ
 account.status.unavailable,غير متاح
+account.workspace.accessDescription,"راجع مؤسساتك وأذوناتك والتطبيقات المصرح بها."
+account.workspace.dangerDescription,راجع الإجراءات التي لا يمكن التراجع عنها لهذا الحساب.
+account.workspace.devicesDescription,"راجع النشاط الأمني والأجهزة المسجل الدخول إليها والتطبيقات المتصلة."
+account.workspace.devicesTitle,الأجهزة والتطبيقات
+account.workspace.securityDescription,أدر طرق تسجيل الدخول وخيارات الاسترداد.
 admin.common.confirmTitle,تأكيد هذا الإجراء
 admin.common.next,التالي
 admin.common.pagination,ترقيم الصفحات

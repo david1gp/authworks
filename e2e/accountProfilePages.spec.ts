@@ -35,53 +35,63 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
 
   await page.goto("/demo/account/profile")
   await expect(page.getByRole("heading", { name: "Personal information" })).toBeVisible()
+  const profileSection = page.getByRole("region", { name: "Profile", exact: true })
+  await expect(page.getByText("Avery Stone", { exact: true }).first()).toBeVisible()
+  await expect(page.getByText("avery.stone@example.com", { exact: true })).toBeVisible()
+  await expect(page.getByText("Verified", { exact: true }).first()).toBeVisible()
+  await expect(profileSection.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toHaveCount(0)
 
-  // The fixture avatar host never resolves, so the surface degrades to a labelled placeholder
-  // instead of leaving a broken image on the page.
-  await expect(page.getByRole("img", { name: "Profile picture could not be loaded" })).toBeVisible()
-  await expect(page.getByRole("img", { name: "Current profile picture" })).toHaveCount(0)
+  const pictureTrigger = profileSection.getByRole("button", { name: "Change picture", exact: true })
+  await pictureTrigger.click()
+  const pictureDialog = page.getByRole("dialog", { name: "Profile picture", exact: true })
+  await expect(pictureDialog.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
+  await expect(pictureDialog.getByRole("button", { name: "Choose a picture file", exact: true })).toBeVisible()
+  await expect(pictureDialog.getByRole("button", { name: "Save changes", exact: true })).toBeDisabled()
+  const pictureChooser = pictureDialog.locator('input[type="file"]')
+  await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
+  await pictureChooser.setInputFiles(
+    accountPictureFileFixture({ bytes: 4096, mimeType: "image/png", name: "staged.png" }),
+  )
+  await expect(pictureDialog.getByText("staged.png", { exact: true })).toBeVisible()
+  await expect(pictureDialog.getByRole("button", { name: "Save changes", exact: true })).toBeEnabled()
+  await pictureDialog.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(pictureDialog).toHaveCount(0)
+  await expect(profileSection.getByText("Profile picture updated.")).toHaveCount(0)
 
-  await page.getByLabel("Display name", { exact: true }).fill("Avery Example")
-  const genderTrigger = page.getByRole("button", { name: "Unspecified", exact: true })
+  await pictureTrigger.click()
+  const reopenedPictureDialog = page.getByRole("dialog", { name: "Profile picture", exact: true })
+  await expect(reopenedPictureDialog.getByText("staged.png", { exact: true })).toHaveCount(0)
+  await reopenedPictureDialog
+    .locator('input[type="file"]')
+    .setInputFiles(accountPictureFileFixture({ bytes: 4096, mimeType: "image/png", name: "avery-example.png" }))
+  await reopenedPictureDialog.getByRole("button", { name: "Save changes", exact: true }).click()
+  await expect(reopenedPictureDialog).toHaveCount(0)
+  await expect(profileSection.getByText("Profile picture updated.")).toBeVisible()
+
+  await page.getByRole("button", { name: "Edit profile", exact: true }).click()
+  const profileDialog = page.getByRole("dialog", { name: "Edit profile", exact: true })
+  await profileDialog.getByLabel("Display name", { exact: true }).fill("Avery Example")
+  const genderTrigger = profileDialog.getByRole("button", { name: "Unspecified", exact: true })
   // A closed select must not reference a listbox id that is absent from the document.
   await expect(genderTrigger).not.toHaveAttribute("aria-controls", /.+/)
   await genderTrigger.click()
   await page.getByRole("option", { name: "Woman", exact: true }).click()
   await expect(page.getByRole("button", { name: "Woman", exact: true })).not.toHaveAttribute("aria-controls", /.+/)
   await expect(
-    page.getByText(
+    profileDialog.getByText(
       "Optional preferred or short name shared in the OIDC nickname claim; display name is shown in the account UI.",
     ),
   ).toHaveCount(0)
-  await page.getByRole("button", { name: "Save changes" }).click()
+  await profileDialog.getByRole("button", { name: "Save changes" }).click()
+  await expect(profileDialog).toHaveCount(0)
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
 
-  const pictureChooser = page
-    .getByRole("region", { name: "Personal information", exact: true })
-    .locator('input[type="file"]')
-  await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
-  await expect(page.locator('[role="button"][aria-label="Change picture"]')).toHaveAttribute("tabindex", "0")
-  await expect(page.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
-
-  await pictureChooser.setInputFiles(
-    accountPictureFileFixture({ bytes: 600 * 1024, mimeType: "image/png", name: "too-large.png" }),
-  )
-  await expect(page.getByText("Choose an image of at most 512 KiB.")).toBeVisible()
-
-  await pictureChooser.setInputFiles(
-    accountPictureFileFixture({ bytes: 2048, mimeType: "image/bmp", name: "unsupported.bmp" }),
-  )
-  await expect(page.getByText("Choose a JPEG, PNG, WebP, or GIF image.")).toBeVisible()
-
-  await pictureChooser.setInputFiles(
-    accountPictureFileFixture({ bytes: 4096, mimeType: "image/png", name: "avery-example.png" }),
-  )
-  await expect(page.getByText("Profile picture updated.")).toBeVisible()
-  // The replacement URL is attempted again rather than inheriting the previous load failure.
-  await expect(page.getByRole("img", { name: "Profile picture could not be loaded" })).toBeVisible()
-  await page.getByRole("button", { name: "Remove picture" }).click()
-  await expect(page.getByRole("img", { name: "Profile picture could not be loaded" })).toHaveCount(0)
-  await expect(page.getByRole("button", { name: "Remove picture" })).toHaveCount(0)
+  await pictureTrigger.click()
+  const removeDialog = page.getByRole("dialog", { name: "Profile picture", exact: true })
+  await expect(removeDialog.getByRole("button", { name: "Remove picture", exact: true })).toBeVisible()
+  await removeDialog.getByRole("button", { name: "Remove picture", exact: true }).click()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
+  await expect(removeDialog).toHaveCount(0)
 
   await page.goto("/demo/account/password")
   const passwordDialogTrigger = page.getByRole("button", { name: "Change password" })
@@ -106,6 +116,18 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   await page.getByRole("button", { name: "Delete account permanently" }).click()
   await expect(page.getByText("The email address does not match.")).toBeVisible()
   expect(apiRequests).toEqual([])
+})
+
+test("demo profile edits can be cancelled without changing the overview", async ({ page }) => {
+  await page.goto("/demo/account/profile")
+  const profileSection = page.getByRole("region", { name: "Profile", exact: true })
+  await page.getByRole("button", { name: "Edit profile", exact: true }).click()
+  const profileDialog = page.getByRole("dialog", { name: "Edit profile", exact: true })
+  await profileDialog.getByLabel("Display name", { exact: true }).fill("Uncommitted name")
+  await profileDialog.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(profileDialog).toHaveCount(0)
+  await expect(page.getByText("Avery Stone", { exact: true }).first()).toBeVisible()
+  await expect(profileSection.getByText("Uncommitted name", { exact: true })).toHaveCount(0)
 })
 
 test("production profile uses the subject API and CSRF", async ({ page }) => {
@@ -169,48 +191,61 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
 
   await page.goto("/account#profile")
   const profileSection = page.locator("#profile")
-  await expect(profileSection.getByLabel("Display name", { exact: true })).toHaveValue("Avery Stone")
-  await expect(profileSection.getByRole("button", { name: "Unspecified", exact: true })).toBeVisible()
-  await expect(profileSection.getByRole("img", { name: "Current profile picture" })).toHaveAttribute(
-    "src",
-    "https://assets.example.com/avery-stone.png",
-  )
-  await profileSection.getByLabel("Display name", { exact: true }).fill("Avery Updated")
-  await profileSection.getByRole("button", { name: "Unspecified", exact: true }).click()
+  await expect(page.getByText("Avery Stone", { exact: true }).first()).toBeVisible()
+  await expect(page.getByText("Verified", { exact: true }).first()).toBeVisible()
+  await expect(profileSection.getByRole("button", { name: "Change picture", exact: true })).toBeVisible()
+  await profileSection.getByRole("button", { name: "Edit profile", exact: true }).click()
+  const profileDialog = page.getByRole("dialog", { name: "Edit profile", exact: true })
+  await profileDialog.getByLabel("Display name", { exact: true }).fill("Avery Updated")
+  await profileDialog.getByRole("button", { name: "Unspecified", exact: true }).click()
   await page.getByRole("option", { name: "Woman", exact: true }).click()
-  await profileSection.getByRole("button", { name: "Save changes" }).click()
+  await profileDialog.getByRole("button", { name: "Save changes" }).click()
+  await expect(profileDialog).toHaveCount(0)
   await expect(page.getByText("Your profile was saved.")).toBeVisible()
 
-  const pictureChooser = profileSection
-    .getByRole("region", { name: "Personal information", exact: true })
-    .locator('input[type="file"]')
+  const pictureTrigger = profileSection.getByRole("button", { name: "Change picture", exact: true })
+  await expect(profileSection.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toHaveCount(0)
+  await pictureTrigger.click()
+  const pictureDialog = page.getByRole("dialog", { name: "Profile picture", exact: true })
+  const pictureChooser = pictureDialog.locator('input[type="file"]')
   await expect(pictureChooser).toHaveAttribute("accept", "image/jpeg,image/png,image/webp,image/gif")
-  await expect(profileSection.locator('[role="button"][aria-label="Change picture"]')).toHaveAttribute("tabindex", "0")
-  await expect(profileSection.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
+  await expect(pictureDialog.getByText("Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB.")).toBeVisible()
 
   // Client-side rejections must never reach the upload route.
   await pictureChooser.setInputFiles(
     accountPictureFileFixture({ bytes: 600 * 1024, mimeType: "image/png", name: "too-large.png" }),
   )
-  await expect(profileSection.getByText("Choose an image of at most 512 KiB.")).toBeVisible()
+  await expect(pictureDialog.getByText("Choose an image of at most 512 KiB.")).toBeVisible()
   await pictureChooser.setInputFiles(
     accountPictureFileFixture({ bytes: 1024, mimeType: "image/bmp", name: "unsupported.bmp" }),
   )
-  await expect(profileSection.getByText("Choose a JPEG, PNG, WebP, or GIF image.")).toBeVisible()
+  await expect(pictureDialog.getByText("Choose a JPEG, PNG, WebP, or GIF image.")).toBeVisible()
   expect(pictureRequests).toEqual([])
 
   await pictureChooser.setInputFiles(
+    accountPictureFileFixture({ bytes: 3072, mimeType: "image/png", name: "cancelled.png" }),
+  )
+  await pictureDialog.getByRole("button", { name: "Cancel", exact: true }).click()
+  await expect(pictureDialog).toHaveCount(0)
+  expect(pictureRequests).toEqual([])
+  await pictureTrigger.click()
+  const uploadDialog = page.getByRole("dialog", { name: "Profile picture", exact: true })
+  const uploadChooser = uploadDialog.locator('input[type="file"]')
+  await uploadChooser.setInputFiles(
     accountPictureFileFixture({ bytes: 3072, mimeType: "image/png", name: "avery-updated.png" }),
   )
+  await expect(uploadDialog.getByText("avery-updated.png", { exact: true })).toBeVisible()
+  await uploadDialog.getByRole("button", { name: "Save changes", exact: true }).click()
+  await expect(uploadDialog).toHaveCount(0)
   await expect(profileSection.getByText("Profile picture updated.")).toBeVisible()
-  await expect(profileSection.getByRole("img", { name: "Current profile picture" })).toHaveAttribute(
-    "src",
-    uploadedPictureUrl,
-  )
+  await expect(profileSection.getByRole("button", { name: "Change picture", exact: true })).toBeVisible()
 
-  await profileSection.getByRole("button", { name: "Remove picture" }).click()
-  await expect(profileSection.getByRole("img", { name: "Current profile picture" })).toHaveCount(0)
-  await expect(profileSection.getByRole("button", { name: "Remove picture" })).toHaveCount(0)
+  await pictureTrigger.click()
+  const removalDialog = page.getByRole("dialog", { name: "Profile picture", exact: true })
+  await removalDialog.getByRole("button", { name: "Remove picture", exact: true }).click()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
+  await expect(removalDialog).toHaveCount(0)
+  await expect(profileSection.getByRole("button", { name: "Change picture", exact: true })).toBeVisible()
 
   expect(csrfHeader).toBe("e2e-csrf-token")
   expect(pictureRequests).toEqual([
@@ -328,6 +363,12 @@ test("production profile adds, verifies, and changes its phone number", async ({
   await phoneDetails.getByRole("button", { name: "Change phone number" }).click()
   await phoneForm.getByLabel("New phone number").fill(replacementPhoneNumber)
   await phoneForm.getByRole("button", { name: "Change phone number" }).click()
+  await expect(page.getByRole("alertdialog")).toBeVisible()
+  await page.keyboard.press("Escape")
+  await expect(page.getByRole("alertdialog")).toHaveCount(0)
+  await expect(phoneForm.getByLabel("New phone number")).toHaveValue(replacementPhoneNumber)
+  await phoneForm.getByRole("button", { name: "Change phone number" }).click()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
   await expect(
     phoneForm.getByText(`Enter the code sent to ${replacementPhoneNumber} on WhatsApp.`, { exact: true }),
   ).toBeVisible()
@@ -488,6 +529,7 @@ test("production email addresses use the lifecycle APIs and protect the primary 
   await secondaryRow.getByRole("button", { name: "Make primary", exact: true }).click()
   await expect(secondaryRow.getByText("Primary", { exact: true })).toBeVisible()
   await primaryRow.getByRole("button", { name: "Remove", exact: true }).click()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
   await expect(primaryRow).toHaveCount(0)
   expect(requests).toEqual([
     {

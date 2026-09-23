@@ -107,9 +107,12 @@ export function AccountDemoAdapter(props: {
             onPhoneVerify={page.phoneChangeVerify}
             onPictureRemove={() => void page.pictureRemove()}
             onPictureUpload={(file) => void page.pictureUpload(file)}
+            onProfileDialogOpenChange={page.profileDialogOpenSet}
             onRetry={page.load}
             onSubmit={page.profileSubmit}
             preferredLanguage={page.preferredLanguage}
+            profileDialogOpen={page.profileDialogOpen.get()}
+            profileSaving={page.profileSaving.get()}
             phoneAddDialogOpen={page.phoneAddDialogOpen.get()}
             phoneCandidate={page.phoneCandidate.get()}
             phoneChallengeActive={page.phoneChallengeId.get() !== undefined}

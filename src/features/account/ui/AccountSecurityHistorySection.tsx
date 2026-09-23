@@ -36,7 +36,7 @@ export function AccountSecurityHistorySection(props: { readonly state: AccountSe
                     label={messageTranslate(accountSecurityHistoryMessageKeyGet(item).category)}
                     tone="neutral"
                   />
-                  <span class="min-w-0 truncate text-sm font-medium">
+                  <span class="min-w-0 break-words text-sm font-medium">
                     {messageTranslate(accountSecurityHistoryMessageKeyGet(item).display)}
                   </span>
                   <time

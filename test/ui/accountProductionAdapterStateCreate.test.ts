@@ -57,6 +57,36 @@ afterEach(async () => {
 })
 
 describe("account production adapter state", () => {
+  test("canceling profile edits restores loaded fields without sending a patch", async () => {
+    let patches = 0
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: { location: { host: "auth.example.test", origin: "https://auth.example.test" } },
+    })
+    globalThis.fetch = (async (input, init) => {
+      const request = new Request(input, init)
+      if (request.method === "PATCH") patches++
+      if (new URL(request.url).pathname === "/organization-discovery") return Response.json({ found: false })
+      if (new URL(request.url).pathname === `/realms/${realmId}/me`)
+        return Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse)
+      return Response.json({})
+    }) as typeof fetch
+
+    const state = stateCreate(() => "overview")
+    await state.load(true)
+    state.profileDialogOpenSet(true)
+    state.displayName.set("Unsaved name")
+    state.firstName.set("Unsaved first name")
+    state.gender.set("woman")
+    state.preferredLanguage.set("de")
+    state.profileDialogOpenSet(false)
+    expect(state.profileDialogOpen.get()).toBe(false)
+    expect(state.displayName.get()).toBe("Avery Stone")
+    expect(state.firstName.get()).toBe("")
+    expect(state.gender.get()).toBe("")
+    expect(state.preferredLanguage.get()).toBe("")
+    expect(patches).toBe(0)
+  })
   test("loads /me without browser cache revalidation for every account page kind", async () => {
     const kinds = ["overview", "profile", "email", "password", "delete"] as const
     const requests: {
@@ -169,9 +199,13 @@ describe("account production adapter state", () => {
 
     const state = stateCreate(() => "profile")
     await state.load(true)
+    state.profileDialogOpenSet(true)
     state.displayName.set("Updated Avery Stone")
     const profileSubmit = state.profileSubmit({ preventDefault: () => undefined } as SubmitEvent)
     await waitFor(() => requests.some((request) => request.method === "PATCH"))
+    expect(state.profileSaving.get()).toBe(true)
+    state.profileDialogOpenSet(false)
+    expect(state.profileDialogOpen.get()).toBe(true)
     const reload = state.load(true)
     expect(requests.filter((request) => request.method === "GET")).toHaveLength(1)
     mutation.resolve(Response.json({ user: updatedUser }))
@@ -182,6 +216,7 @@ describe("account production adapter state", () => {
     expect(userRequests).toHaveLength(2)
     expect(userRequests.every((request) => request.ifModifiedSince === null)).toBe(true)
     expect(state.user.get()).toEqual(updatedUser)
+    expect(state.profileDialogOpen.get()).toBe(false)
   })
 
   test("resolves each load against the current realm and session boundary", async () => {

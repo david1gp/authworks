@@ -100,6 +100,8 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.cancel,キャンセル
+account.profile.edit,プロフィールを編集
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
 account.profile.emailAdd,Add email address
@@ -134,6 +136,7 @@ account.profile.gender.unspecified,Unspecified
 account.profile.gender.woman,Woman
 account.profile.lastName,Last name
 account.profile.nickName,Nickname
+account.profile.notSet,未設定
 account.profile.personalDescription,Keep the profile shown to applications and administrators up to date.
 account.profile.personalInformation,Personal information
 account.profile.phoneAdd,Add phone number
@@ -161,6 +164,7 @@ account.profile.pictureChange,プロフィール画像を変更
 account.profile.pictureChoose,Choose a picture file
 account.profile.pictureDropHint,画像をここにドラッグ＆ドロップするか、クリックして参照
 account.profile.pictureHint,"Upload a JPEG, PNG, WebP, or GIF image of at most 512 KiB."
+account.profile.picturePreview,プロフィール写真のプレビュー
 account.profile.pictureRemove,Remove picture
 account.profile.pictureRemoving,画像を削除中…
 account.profile.pictureSaved,Profile picture updated.
@@ -279,6 +283,11 @@ account.status.available,Available
 account.status.configured,Configured
 account.status.notConfigured,Not configured
 account.status.unavailable,Unavailable
+account.workspace.accessDescription,"組織、権限、許可されたアプリケーションを確認します。"
+account.workspace.dangerDescription,このアカウントに対する取り消しできない操作を確認します。
+account.workspace.devicesDescription,"セキュリティアクティビティ、サインイン中のデバイス、接続済みアプリケーションを確認します。"
+account.workspace.devicesTitle,デバイスとアプリケーション
+account.workspace.securityDescription,サインイン方法とアカウント復旧オプションを管理します。
 admin.common.confirmTitle,この操作を確認
 admin.common.next,次へ
 admin.common.pagination,ページ送り

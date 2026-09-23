@@ -35,7 +35,7 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
           title={messageTranslate("account.factors.finishTotp")}
           triggerLabel={messageTranslate("account.factors.addTotp")}
           triggerIcon={mdiCellphoneKey}
-          variant="filledBlue"
+          variant="outline"
         >
           <Show when={!state.startPending()} fallback={<AccountFactorsSectionLoading />}>
             <Show when={props.state.totpSetup()}>

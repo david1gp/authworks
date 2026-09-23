@@ -89,9 +89,12 @@ export function AccountProductionAdapter(props: {
             onPhoneVerify={state.phoneChangeVerify}
             onPictureRemove={() => void state.pictureRemove()}
             onPictureUpload={(file) => void state.pictureUpload(file)}
+            onProfileDialogOpenChange={state.profileDialogOpenSet}
             onRetry={state.load}
             onSubmit={state.profileSubmit}
             preferredLanguage={state.preferredLanguage}
+            profileDialogOpen={state.profileDialogOpen.get()}
+            profileSaving={state.profileSaving.get()}
             phoneAddDialogOpen={state.phoneAddDialogOpen.get()}
             phoneCandidate={state.phoneCandidate.get()}
             phoneChallengeActive={state.phoneChallengeId.get() !== undefined}

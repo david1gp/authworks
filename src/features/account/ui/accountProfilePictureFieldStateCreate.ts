@@ -1,6 +1,8 @@
-import { type Accessor } from "solid-js"
+import { type Accessor, createEffect, onCleanup } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { authenticatedImageFallbackStateCreate } from "../../../ui/authenticated/authenticatedImageFallbackStateCreate.js"
+import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { userPictureConstraints } from "../../users/public/userPictureConstraints.js"
 import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
 
 export function accountProfilePictureFieldStateCreate(options: {
@@ -9,43 +11,71 @@ export function accountProfilePictureFieldStateCreate(options: {
   readonly status: Accessor<AccountPictureViewStatus>
   readonly url: Accessor<string>
 }) {
+  const open = createSignalObject(false)
   const isDragging = createSignalObject(false)
-  const picture = authenticatedImageFallbackStateCreate(options.url)
+  const selectedFile = createSignalObject<File | undefined>(undefined)
+  const previewUrl = createSignalObject("")
+  const validationMessage = createSignalObject<string | undefined>(undefined)
+  const picture = authenticatedImageFallbackStateCreate(() => previewUrl.get() || options.url())
   let fileInput: HTMLInputElement | undefined
-
+  let previousStatus: AccountPictureViewStatus = options.status()
   const busy = () => options.status() === "uploading" || options.status() === "removing"
-  const hasPicture = () => options.url().length > 0
-
-  const openFilePicker = () => {
-    if (busy()) return
-    fileInput?.click()
+  const hasPicture = () => (previewUrl.get() || options.url()).length > 0
+  const previewClear = () => {
+    if (previewUrl.get()) URL.revokeObjectURL(previewUrl.get())
+    previewUrl.set("")
+    selectedFile.set(undefined)
+    validationMessage.set(undefined)
+    isDragging.set(false)
   }
-
+  const openChange = (next: boolean) => {
+    if (busy() && !next) return
+    if (!next) previewClear()
+    open.set(next)
+  }
+  const selectFile = (file: File) => {
+    if (busy()) return
+    if (!(userPictureConstraints.contentTypes as readonly string[]).includes(file.type)) {
+      validationMessage.set(messageTranslate("account.profile.pictureTypeInvalid"))
+      return
+    }
+    if (file.size === 0 || file.size > userPictureConstraints.maximumBytes) {
+      validationMessage.set(messageTranslate("account.profile.pictureTooLarge"))
+      return
+    }
+    previewClear()
+    selectedFile.set(file)
+    previewUrl.set(URL.createObjectURL(file))
+  }
+  const save = () => {
+    const file = selectedFile.get()
+    if (file === undefined || busy()) return
+    options.onUpload(file)
+  }
+  createEffect(() => {
+    const current = options.status()
+    if ((previousStatus === "uploading" || previousStatus === "removing") && current === "success") openChange(false)
+    previousStatus = current
+  })
+  onCleanup(previewClear)
+  const openFilePicker = () => {
+    if (!busy()) fileInput?.click()
+  }
   const fileInputSet = (element: HTMLInputElement) => {
     fileInput = element
   }
-
   const onFileInputChange = (event: Event) => {
     const target = event.currentTarget as HTMLInputElement
     const file = target.files?.[0]
     target.value = ""
-    if (file !== undefined && !busy()) options.onUpload(file)
+    if (file !== undefined) selectFile(file)
   }
-
   const onDragOver = (event: DragEvent) => {
     event.preventDefault()
     event.stopPropagation()
-    if (busy()) return
-    if (!isDragging.get()) isDragging.set(true)
+    if (!busy()) isDragging.set(true)
   }
-
-  const onDragEnter = (event: DragEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-    if (busy()) return
-    isDragging.set(true)
-  }
-
+  const onDragEnter = onDragOver
   const onDragLeave = (event: DragEvent) => {
     event.preventDefault()
     event.stopPropagation()
@@ -54,23 +84,18 @@ export function accountProfilePictureFieldStateCreate(options: {
     if (currentTarget && relatedTarget && currentTarget.contains(relatedTarget)) return
     isDragging.set(false)
   }
-
   const onDrop = (event: DragEvent) => {
     event.preventDefault()
     event.stopPropagation()
     isDragging.set(false)
-    if (busy()) return
     const file = event.dataTransfer?.files?.[0]
-    if (file !== undefined) options.onUpload(file)
+    if (file !== undefined) selectFile(file)
   }
-
   const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault()
-      openFilePicker()
-    }
+    if (event.key !== "Enter" && event.key !== " ") return
+    event.preventDefault()
+    openFilePicker()
   }
-
   return {
     busy,
     fileInputSet,
@@ -83,7 +108,13 @@ export function accountProfilePictureFieldStateCreate(options: {
     onFileInputChange,
     onKeyDown,
     onPictureError: picture.onError,
+    open: open.get,
+    openChange,
     openFilePicker,
     pictureFailed: picture.failed,
+    previewUrl: () => previewUrl.get() || options.url(),
+    save,
+    selectedFile: selectedFile.get,
+    validationMessage: validationMessage.get,
   }
 }
