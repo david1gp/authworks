@@ -1500,3 +1500,19 @@ shell.state.loadingDetail,Przygotowywanie tej strony i jej kontekstu bezpieczeń
 shell.state.nothingHere,Jeszcze nic tu nie ma
 shell.state.pageUnavailable,Ta strona jest niedostępna
 shell.state.readyDetail,Ta strona jest gotowa na swoją zawartość.
+demo.consent.approved,Application access was approved. Continue in the application.
+demo.consent.clientId,Client ID
+demo.consent.declined,Application access was declined.
+demo.consent.error,The authorization request could not be loaded.
+demo.consent.expired,This authorization request has expired. Start again from the application.
+demo.consent.expiredTitle,Authorization request expired
+demo.consent.redirectDescription,"After approval, you will return to {redirectUri}."
+demo.consent.redirectUri,Redirect URI
+demo.consent.requestDescription,{application} is requesting access to your account.
+demo.consent.scopeTitle,Requested permissions
+demo.consent.scenario.description,"Approve or decline an OpenID Connect application access request using a fixture-backed interaction."
+demo.consent.scenario.title,Application consent
+demo.hub.consentDescription,"Review an OpenID Connect application access request with approve and decline outcomes."
+demo.hub.consentOpen,Open consent
+demo.hub.invitationsDescription,Review and respond to invitations addressed to the signed-in account.
+demo.hub.invitationsOpen,Open invitations

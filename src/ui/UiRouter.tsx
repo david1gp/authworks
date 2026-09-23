@@ -10,6 +10,7 @@ import { ImpersonationAdminDemoAdapter } from "../features/impersonation/ui/Impe
 import { LoginDemoApp } from "../features/login/ui/LoginDemoApp.js"
 import { MachineAdminDemoRoute } from "../features/machineUsers/ui/MachineAdminDemoRoute.js"
 import { OidcAdminDemoRoute } from "../features/oidc/ui/OidcAdminDemoRoute.js"
+import { OidcConsentDemoAdapter } from "../features/oidc/ui/OidcConsentDemoAdapter.js"
 import { OrganizationAdminDemoAdapter } from "../features/organizations/ui/OrganizationAdminDemoAdapter.js"
 import { ProjectAdminDemoRoute } from "../features/projects/ui/ProjectAdminDemoRoute.js"
 import { ProductionApplicationProviders } from "./production/ProductionApplicationProviders.js"
@@ -45,6 +46,7 @@ export function UiRouter(props: {
         <Route path="/demo/account/*accountPath" component={AccountDemoApp} />
         <Route path="/demo/invitations" component={AccountDemoApp} />
         <Route path="/demo/invitations/*invitationPath" component={AccountDemoApp} />
+        <Route path="/demo/consent" component={OidcConsentDemoAdapter} />
         <Route path="/demo/emails" component={EmailDemoApp} />
         <Route path="/demo/emails/*emailPath" component={EmailDemoApp} />
         <Route path="/demo/admin" component={AdminDemoApp}>

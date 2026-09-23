@@ -25,6 +25,12 @@ export function DemoNav(props: DemoNavProps) {
         <Button variant="ghost" class="justify-start" onClick={() => props.onNavigate("/demo/account")}>
           {props.compact ? "◎" : messageTranslate("demo.nav.account")}
         </Button>
+        <Button variant="ghost" class="justify-start" onClick={() => props.onNavigate("/demo/invitations")}>
+          {props.compact ? "✦" : messageTranslate("shell.nav.invitations")}
+        </Button>
+        <Button variant="ghost" class="justify-start" onClick={() => props.onNavigate("/demo/consent")}>
+          {props.compact ? "✓" : messageTranslate("shell.nav.applicationConsent")}
+        </Button>
         <Button variant="ghost" class="justify-start" onClick={() => props.onNavigate("/demo/admin")}>
           {props.compact ? "⚙" : messageTranslate("demo.nav.admin")}
         </Button>

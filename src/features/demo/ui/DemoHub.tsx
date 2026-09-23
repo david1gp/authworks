@@ -32,6 +32,18 @@ export function DemoHub() {
             </A>
             <A
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
+              href="/demo/invitations"
+            >
+              {messageTranslate("shell.nav.invitations")}
+            </A>
+            <A
+              class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
+              href="/demo/consent"
+            >
+              {messageTranslate("shell.nav.applicationConsent")}
+            </A>
+            <A
+              class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
               href="/demo/admin"
             >
               {messageTranslate("demo.nav.admin")}
@@ -63,6 +75,18 @@ export function DemoHub() {
               description={() => messageTranslate("demo.hub.accountDescription")}
               href="/demo/account"
               linkLabel={() => messageTranslate("demo.hub.accountOpen")}
+            />
+            <DemoCard
+              title={() => messageTranslate("shell.nav.invitations")}
+              description={() => messageTranslate("demo.hub.invitationsDescription")}
+              href="/demo/invitations"
+              linkLabel={() => messageTranslate("demo.hub.invitationsOpen")}
+            />
+            <DemoCard
+              title={() => messageTranslate("shell.nav.applicationConsent")}
+              description={() => messageTranslate("demo.hub.consentDescription")}
+              href="/demo/consent"
+              linkLabel={() => messageTranslate("demo.hub.consentOpen")}
             />
             <DemoCard
               title={() => messageTranslate("demo.nav.login")}
