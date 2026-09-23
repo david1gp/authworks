@@ -1,6 +1,7 @@
 import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
@@ -13,9 +14,13 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
   return (
     <AuthenticatedSection
       actions={
-        <Button disabled={props.state.pendingId() === "passkey:add"} onClick={props.state.passkeyAdd} size="sm">
+        <ButtonIcon
+          disabled={props.state.pendingId() === "passkey:add"}
+          icon={mdiFingerprint}
+          onClick={props.state.passkeyAdd}
+        >
           {messageTranslate("account.passkeys.add")}
-        </Button>
+        </ButtonIcon>
       }
       class="h-full"
       description={messageTranslate("account.passkeys.description")}
@@ -55,14 +60,14 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
                       tone="neutral"
                     />
                   </div>
-                  <Button
+                  <ButtonIcon
                     disabled={props.state.pendingId() === `passkey:${credential.id}`}
+                    icon={mdiDelete}
                     onClick={() => props.state.passkeyRevoke(credential.id)}
-                    size="sm"
                     variant="filledRed"
                   >
                     {messageTranslate("account.passkeys.remove")}
-                  </Button>
+                  </ButtonIcon>
                 </div>
                 <AccountRoleList values={credential.transports} />
               </li>

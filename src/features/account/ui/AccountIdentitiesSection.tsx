@@ -1,6 +1,10 @@
 import { mdiLinkVariant } from "@adaptive-ds/mdi/mdiLinkVariant.js"
+import { mdiLinkOff } from "@adaptive-ds/mdi/mdiLinkOff.js"
+import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
+import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { For, Show } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -31,7 +35,6 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
               <Button
                 disabled={props.state.identityProviderLinked(provider.id) || props.state.pendingId() !== undefined}
                 onClick={() => props.state.identityLinkStart(provider.id)}
-                size="sm"
                 variant="outline"
               >
                 <Icon class="mr-1.5 size-4" path={accountIdentityProviderIconGet(provider.type)} />
@@ -50,16 +53,16 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
             })}
           </p>
           <div class="mt-2 flex flex-wrap gap-1.5">
-            <Button
+            <ButtonIcon
               disabled={props.state.pendingId() === "identity:link:confirm"}
+              icon={mdiCheck}
               onClick={props.state.identityLinkConfirm}
-              size="sm"
             >
               {messageTranslate("account.identities.confirm")}
-            </Button>
-            <Button onClick={props.state.identityLinkCancel} size="sm" variant="ghost">
+            </ButtonIcon>
+            <ButtonIcon icon={mdiClose} onClick={props.state.identityLinkCancel} variant="ghost">
               {messageTranslate("common.cancel")}
-            </Button>
+            </ButtonIcon>
           </div>
         </div>
       </Show>
@@ -87,14 +90,14 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                     </p>
                   </div>
                 </div>
-                <Button
+                <ButtonIcon
                   disabled={props.state.pendingId() === `identity:${identity.providerId}`}
+                  icon={mdiLinkOff}
                   onClick={() => props.state.identityUnlink(identity.providerId, identity.externalSubject)}
-                  size="sm"
                   variant="filledRed"
                 >
                   {messageTranslate("account.identities.unlink")}
-                </Button>
+                </ButtonIcon>
               </li>
             )}
           </For>

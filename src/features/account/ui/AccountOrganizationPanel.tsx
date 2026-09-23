@@ -1,8 +1,10 @@
 import { mdiBriefcaseAccountOutline } from "@adaptive-ds/mdi/mdiBriefcaseAccountOutline.js"
+import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiShieldKeyOutline } from "@adaptive-ds/mdi/mdiShieldKeyOutline.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -73,14 +75,14 @@ export function AccountOrganizationPanel(props: {
           {/* The activation action stays explicit so that inspecting an organization is read-only. */}
           <Show when={!props.active}>
             <div class="mt-2.5">
-              <Button
+              <ButtonIcon
                 disabled={props.pending}
+                icon={mdiCheckCircleOutline}
                 onClick={() => props.onActivate(props.membership.organization.id)}
-                size="sm"
                 variant="outline"
               >
                 {messageTranslate("account.access.makeActiveOrganization")}
-              </Button>
+              </ButtonIcon>
             </div>
           </Show>
         </AuthenticatedSection>
@@ -212,15 +214,15 @@ export function AccountOrganizationPanel(props: {
 
           <Show when={props.effectiveAccessNextPageToken}>
             <div>
-              <Button
+              <ButtonIcon
                 disabled={props.effectiveAccessPending}
+                icon={mdiChevronDown}
                 onClick={props.onEffectiveAccessLoadMore}
-                size="sm"
                 type="button"
                 variant="outline"
               >
                 {messageTranslate("account.access.loadMore")}
-              </Button>
+              </ButtonIcon>
             </div>
           </Show>
         </div>

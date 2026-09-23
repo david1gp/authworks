@@ -1,5 +1,6 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -65,14 +66,14 @@ export function AccountConsentsView(props: {
                             })}
                           </p>
                         </div>
-                        <Button
+                        <ButtonIcon
                           disabled={props.pendingId !== undefined}
+                          icon={mdiCancel}
                           onClick={() => props.onRevoke(consent.clientId)}
-                          size="sm"
                           variant="filledRed"
                         >
                           {messageTranslate("common.revoke")}
-                        </Button>
+                        </ButtonIcon>
                       </div>
                       {/* The dense chips carry no prose, so the granted scopes keep a spoken summary. */}
                       <div>

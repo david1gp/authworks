@@ -1,5 +1,6 @@
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
@@ -50,14 +51,15 @@ export function AccountSecurityHistorySection(props: { readonly state: AccountSe
           </ul>
           <Show when={props.state.securityHistoryNextPageToken()}>
             <div class="border-t border-line-subtle px-3 py-2">
-              <Button
+              <ButtonIcon
                 class="h-7 text-xs"
                 disabled={props.state.pendingId() === "security-history:next"}
+                icon={mdiChevronDown}
                 onClick={props.state.securityHistoryLoadMore}
                 variant="outline"
               >
                 {messageTranslate("account.securityHistory.loadMore")}
-              </Button>
+              </ButtonIcon>
             </div>
           </Show>
         </Show>

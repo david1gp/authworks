@@ -1,5 +1,6 @@
+import { mdiKeyRemove } from "@adaptive-ds/mdi/mdiKeyRemove.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -16,14 +17,15 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
       <AuthenticatedToolbar
         actions={
           <Show when={props.state.refreshTokens().some((token) => token.status === "active")}>
-            <Button
+            <ButtonIcon
               class="h-7 text-xs"
               disabled={props.state.pendingId() === "refresh-tokens:all"}
+              icon={mdiKeyRemove}
               onClick={props.state.refreshTokensRevokeAll}
               variant="filledRed"
             >
               {messageTranslate("account.refreshTokens.revokeAll")}
-            </Button>
+            </ButtonIcon>
           </Show>
         }
         label={messageTranslate("shell.nav.applications")}
@@ -54,14 +56,14 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
                       />
                     </div>
                     <Show when={token.status === "active"}>
-                      <Button
+                      <ButtonIcon
                         disabled={props.state.pendingId() === `refresh-token:${token.familyId}`}
+                        icon={mdiKeyRemove}
                         onClick={() => props.state.refreshTokenRevoke(token.familyId)}
-                        size="sm"
                         variant="filledRed"
                       >
                         {messageTranslate("account.refreshTokens.revoke")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
                   </div>
                   <AccountRoleList values={token.scope} />

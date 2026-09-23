@@ -26,7 +26,7 @@ export function accountDemoAppStateCreate() {
   }
   return {
     accessScreen,
-    isDirectory: () => location.pathname === "/demo/account",
+    isWorkspace: () => location.pathname === "/demo/account",
     kind,
     path: () => location.pathname,
     securityScreen,

@@ -1,7 +1,8 @@
 import { mdiBackupRestore } from "@adaptive-ds/mdi/mdiBackupRestore.js"
+import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import type { JSX } from "solid-js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { accountRecoveryAccessStateCreate } from "./accountRecoveryAccessStateCreate.js"
@@ -31,13 +32,13 @@ export function AccountRecoveryCodesSection(props: {
                 index() === 0 ? (
                   props.passwordAction
                 ) : index() === 3 ? (
-                  <Button
+                  <ButtonIcon
                     disabled={props.state.pendingId() === "recovery:generate"}
+                    icon={mdiBackupRestore}
                     onClick={props.state.recoveryCodesGenerate}
-                    size="sm"
                   >
                     {messageTranslate("account.recovery.generate")}
-                  </Button>
+                  </ButtonIcon>
                 ) : undefined
               }
               configured={status.configured}
@@ -61,9 +62,9 @@ export function AccountRecoveryCodesSection(props: {
             </For>
           </ul>
           <div class="mt-2.5">
-            <Button onClick={props.state.oneTimeCodesDismiss} size="sm" variant="outline">
+            <ButtonIcon icon={mdiCheck} onClick={props.state.oneTimeCodesDismiss} variant="outline">
               {messageTranslate("account.recovery.saved")}
-            </Button>
+            </ButtonIcon>
           </div>
         </div>
       </Show>

@@ -1,8 +1,12 @@
 import { mdiPhoneOutline } from "@adaptive-ds/mdi/mdiPhoneOutline.js"
+import { mdiPhonePlusOutline } from "@adaptive-ds/mdi/mdiPhonePlusOutline.js"
+import { mdiPhoneRefreshOutline } from "@adaptive-ds/mdi/mdiPhoneRefreshOutline.js"
+import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
+import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -44,6 +48,7 @@ export function AccountProfilePhoneSection(props: {
           open={props.addDialogOpen}
           title={addLabel()}
           triggerLabel={addLabel()}
+          triggerIcon={mdiPhonePlusOutline}
           variant="outline"
         >
           <Show
@@ -70,9 +75,9 @@ export function AccountProfilePhoneSection(props: {
                   <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.phoneHint")}</p>
                 </div>
                 <div>
-                  <Button disabled={props.status === "sending"} size="sm" type="submit">
+                  <ButtonIcon disabled={props.status === "sending"} icon={mdiPhonePlusOutline} type="submit">
                     {props.status === "sending" ? messageTranslate("account.profile.phoneSending") : addLabel()}
-                  </Button>
+                  </ButtonIcon>
                 </div>
               </form>
             }
@@ -96,25 +101,29 @@ export function AccountProfilePhoneSection(props: {
                 />
               </div>
               <div class="flex flex-wrap gap-1.5">
-                <Button disabled={props.status === "verifying" || props.status === "sending"} size="sm" type="submit">
+                <ButtonIcon
+                  disabled={props.status === "verifying" || props.status === "sending"}
+                  icon={mdiCheckCircleOutline}
+                  type="submit"
+                >
                   {props.status === "verifying"
                     ? messageTranslate("account.profile.phoneVerifying")
                     : messageTranslate("account.profile.phoneVerify")}
-                </Button>
-                <Button
+                </ButtonIcon>
+                <ButtonIcon
                   disabled={props.status === "sending" || props.status === "verifying"}
+                  icon={mdiRefresh}
                   onClick={props.onResend}
-                  size="sm"
                   type="button"
                   variant="outline"
                 >
                   {props.status === "sending"
                     ? messageTranslate("account.profile.phoneSending")
                     : messageTranslate("account.profile.phoneResend")}
-                </Button>
-                <Button onClick={props.onCancel} size="sm" type="button" variant="ghost">
+                </ButtonIcon>
+                <ButtonIcon icon={mdiPhoneRefreshOutline} onClick={props.onCancel} type="button" variant="ghost">
                   {messageTranslate("account.profile.phoneDifferent")}
-                </Button>
+                </ButtonIcon>
               </div>
             </form>
           </Show>

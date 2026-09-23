@@ -1,6 +1,7 @@
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiShieldKeyOutline } from "@adaptive-ds/mdi/mdiShieldKeyOutline.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { AccountEffectiveAccessGroup } from "../public/accountEffectiveAccessGroupSchema.js"
@@ -86,15 +87,15 @@ export function AccountEffectiveAccessView(props: {
 
           <Show when={props.nextPageToken}>
             <div>
-              <Button
+              <ButtonIcon
                 disabled={props.pendingId !== undefined}
+                icon={mdiChevronDown}
                 onClick={props.onLoadMore}
-                size="sm"
                 type="button"
                 variant="outline"
               >
                 {messageTranslate("account.access.loadMore")}
-              </Button>
+              </ButtonIcon>
             </div>
           </Show>
         </div>

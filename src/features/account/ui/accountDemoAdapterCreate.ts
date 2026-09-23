@@ -43,8 +43,8 @@ const demoEmailAddresses: UserEmailAddress[] = [
     id: "account-demo-email-secondary",
     isPrimary: false,
     updatedAt: accountDemoUserFixture.updatedAt,
-    verified: true,
-    verifiedAt: accountDemoUserFixture.emailVerifiedAt ?? null,
+    verified: false,
+    verifiedAt: null,
     version: 1,
   },
 ]

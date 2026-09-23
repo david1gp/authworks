@@ -11,17 +11,22 @@ import { AccountOrganizationAccessDemoAdapter } from "./AccountOrganizationAcces
 import { accountAccessDemoStateCreate } from "./accountAccessDemoStateCreate.js"
 import type { AccountAccessScreen } from "./accountAccessScreenSchema.js"
 
-export function AccountAccessDemoAdapter(props: { readonly screen: AccountAccessScreen }) {
+export function AccountAccessDemoAdapter(props: {
+  readonly screen: AccountAccessScreen
+  readonly showFixtureHeader?: boolean
+}) {
   const location = useLocation()
   const state = accountAccessDemoStateCreate(() => props.screen)
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-      <AccountDemoFixtureHeader
-        description={scenario()?.description ?? ""}
-        stateOptions={state.stateOptions()}
-        title={scenario()?.title ?? ""}
-      />
+      {props.showFixtureHeader === false ? null : (
+        <AccountDemoFixtureHeader
+          description={scenario()?.description ?? ""}
+          stateOptions={state.stateOptions()}
+          title={scenario()?.title ?? ""}
+        />
+      )}
       <Switch>
         <Match when={props.screen === "organizations" || props.screen === "effective-access"}>
           <AccountOrganizationAccessDemoAdapter organizationState={state} />

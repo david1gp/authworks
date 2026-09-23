@@ -1,7 +1,8 @@
+import { mdiAccountRemoveOutline } from "@adaptive-ds/mdi/mdiAccountRemoveOutline.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -69,9 +70,9 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
                   {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                 </Show>
                 <div>
-                  <Button size="sm" type="submit" variant="filledRed">
+                  <ButtonIcon icon={mdiAccountRemoveOutline} type="submit" variant="filledRed">
                     {messageTranslate("account.delete.submit")}
-                  </Button>
+                  </ButtonIcon>
                 </div>
               </form>
             </AccountDisclosure>

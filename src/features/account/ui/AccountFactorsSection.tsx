@@ -1,9 +1,15 @@
 import { mdiCellphoneKey } from "@adaptive-ds/mdi/mdiCellphoneKey.js"
+import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
+import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
+import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
+import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiPencil } from "@adaptive-ds/mdi/mdiPencil.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { LoaderSpin4Square } from "#ui/static/loaders/LoaderSpin4Square.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
@@ -28,6 +34,7 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
           open={props.state.totpDialogOpen()}
           title={messageTranslate("account.factors.finishTotp")}
           triggerLabel={messageTranslate("account.factors.addTotp")}
+          triggerIcon={mdiCellphoneKey}
           variant="filledBlue"
         >
           <Show when={!state.startPending()} fallback={<AccountFactorsSectionLoading />}>
@@ -51,11 +58,11 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
                       value={props.state.code()}
                     />
                   </div>
-                  <Button disabled={state.confirmDisabled()} onClick={props.state.totpConfirm} size="sm">
+                  <ButtonIcon disabled={state.confirmDisabled()} icon={mdiCheck} onClick={props.state.totpConfirm}>
                     {state.confirmPending()
                       ? messageTranslate("common.loading")
                       : messageTranslate("account.factors.confirm")}
-                  </Button>
+                  </ButtonIcon>
                 </div>
               )}
             </Show>
@@ -64,9 +71,9 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
             {(error) => <AuthenticatedNotice class="mt-3" message={error()} tone="danger" />}
           </Show>
           <div class="mt-3">
-            <Button onClick={props.state.totpSetupDismiss} size="sm" variant="ghost">
+            <ButtonIcon icon={mdiClose} onClick={props.state.totpSetupDismiss} variant="ghost">
               {messageTranslate("common.cancel")}
-            </Button>
+            </ButtonIcon>
           </div>
         </AuthenticatedDialog>
       }
@@ -133,22 +140,22 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
                         />
                       </div>
                       <div class="flex flex-wrap justify-between gap-2">
-                        <Button
+                        <ButtonIcon
                           disabled={props.state.pendingId() === `totp:rename:${enrollment.id}`}
-                          size="sm"
+                          icon={mdiContentSave}
                           type="submit"
                         >
                           {messageTranslate("common.save")}
-                        </Button>
-                        <Button
+                        </ButtonIcon>
+                        <ButtonIcon
                           disabled={props.state.pendingId()?.startsWith("totp:")}
+                          icon={mdiDelete}
                           onClick={() => void state.renameRemove(enrollment.id)}
-                          size="sm"
                           type="button"
                           variant="filledRed"
                         >
                           {messageTranslate("account.factors.removeTotp")}
-                        </Button>
+                        </ButtonIcon>
                       </div>
                     </form>
                   </AuthenticatedDialog>
@@ -177,13 +184,13 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
                     {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
                   </Show>
                   <div>
-                    <Button
+                    <ButtonIcon
+                      icon={mdiRefresh}
                       onClick={() => void props.state.totpRemoveStepUpStart(props.state.totpRemoveStepUpEnrollmentId())}
-                      size="sm"
                       type="button"
                     >
                       {messageTranslate("common.retry")}
-                    </Button>
+                    </ButtonIcon>
                   </div>
                 </div>
               }
@@ -219,18 +226,18 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
               {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
             </Show>
             <div class="flex flex-wrap gap-2">
-              <Button
+              <ButtonIcon
                 disabled={props.state.totpRemoveStepUpPending() || !/^\d{6}$/.test(props.state.totpRemoveStepUpCode())}
-                size="sm"
+                icon={mdiArrowRight}
                 type="submit"
               >
                 {props.state.totpRemoveStepUpPending()
                   ? messageTranslate("common.loading")
                   : messageTranslate("common.continue")}
-              </Button>
-              <Button onClick={props.state.totpRemoveStepUpCancel} size="sm" type="button" variant="ghost">
+              </ButtonIcon>
+              <ButtonIcon icon={mdiClose} onClick={props.state.totpRemoveStepUpCancel} type="button" variant="ghost">
                 {messageTranslate("common.cancel")}
-              </Button>
+              </ButtonIcon>
             </div>
           </form>
         </Show>

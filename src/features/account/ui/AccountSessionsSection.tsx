@@ -1,5 +1,6 @@
+import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -38,14 +39,14 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
                       </Show>
                     </div>
                     <Show when={!session.current}>
-                      <Button
+                      <ButtonIcon
                         disabled={props.state.pendingId() === `session:${session.id}`}
+                        icon={mdiLogout}
                         onClick={() => props.state.sessionRevoke(session.id)}
-                        size="sm"
                         variant="filledRed"
                       >
                         {messageTranslate("account.sessions.revoke")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
                   </div>
                   <AuthenticatedFieldList

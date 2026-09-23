@@ -112,6 +112,34 @@ describe("account workspace", () => {
     expect(stateSource).toContain("passkeyCount: () => security.passkeys().length")
   })
 
+  test("renders the demo landing page with the shared workspace and fixture-backed adapters", async () => {
+    const screen = await Bun.file(
+      new URL("../../src/features/account/ui/AccountDemoScreen.tsx", import.meta.url),
+    ).text()
+    const demoWorkspace = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspaceDemoAdapter.tsx", import.meta.url),
+    ).text()
+    const productionWorkspace = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
+    ).text()
+
+    expect(screen).toContain("<AccountWorkspaceDemoAdapter />")
+    expect(demoWorkspace).toContain("<AccountWorkspace")
+    expect(demoWorkspace).toContain('kind="overview"')
+    expect(demoWorkspace).toContain('screen="overview"')
+    expect(demoWorkspace).toContain('screen="organizations"')
+    expect(demoWorkspace).toContain('screen="consents"')
+    expect(demoWorkspace).toContain('screen="security-history"')
+    expect(demoWorkspace).toContain('screen="sessions"')
+    expect(demoWorkspace).toContain('screen="refresh-tokens"')
+    expect(demoWorkspace).not.toContain("ProductionAdapter")
+    expect(productionWorkspace).toContain("<AccountWorkspace")
+    expect(demoWorkspace).toContain("AccountWorkspaceDevicesApplications")
+    expect(productionWorkspace).toContain("AccountWorkspaceDevicesApplications")
+    expect(demoWorkspace).toContain("AccountWorkspaceAccess")
+    expect(productionWorkspace).toContain("AccountWorkspaceAccess")
+  })
+
   test("uses one organization selector and selected panel for the production and demo access compositions", async () => {
     const production = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
@@ -417,16 +445,20 @@ describe("account workspace", () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
     ).text()
+    const groupedContent = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspaceDevicesApplications.tsx", import.meta.url),
+    ).text()
 
-    expect(source).toContain("lg:grid-cols-2")
+    expect(groupedContent).toContain("lg:grid-cols-2")
+    expect(groupedContent).toContain('class="min-w-0 lg:col-span-2"')
     expect(source).toContain(
-      'class="min-w-0">\n            <AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />',
+      'activity={<AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />}',
     )
     expect(source).toContain(
-      'class="min-w-0">\n            <AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />',
+      'sessions={<AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />}',
     )
     expect(source).toContain(
-      'class="min-w-0 lg:col-span-2">\n            <AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />',
+      'applications={<AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />}',
     )
     expect(source).toContain('<AccountAccessProductionAdapter screen="consents" />')
 

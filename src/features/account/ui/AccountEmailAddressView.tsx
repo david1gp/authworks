@@ -1,8 +1,15 @@
 import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
+import { mdiEmailEditOutline } from "@adaptive-ds/mdi/mdiEmailEditOutline.js"
+import { mdiEmailFastOutline } from "@adaptive-ds/mdi/mdiEmailFastOutline.js"
+import { mdiEmailPlusOutline } from "@adaptive-ds/mdi/mdiEmailPlusOutline.js"
+import { mdiEmailRemoveOutline } from "@adaptive-ds/mdi/mdiEmailRemoveOutline.js"
+import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
+import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
+import { mdiStarOutline } from "@adaptive-ds/mdi/mdiStarOutline.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -42,9 +49,9 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
     <AuthenticatedSection
       actions={
         <>
-          <Button class="h-7 text-xs" onClick={props.onRetry} type="button" variant="outline">
+          <ButtonIcon class="h-7 text-xs" icon={mdiRefresh} onClick={props.onRetry} type="button" variant="outline">
             {messageTranslate("account.profile.emailRefresh")}
-          </Button>
+          </ButtonIcon>
           <AuthenticatedDialog
             class="h-7 text-xs"
             description={messageTranslate("account.profile.emailAddDescription")}
@@ -52,6 +59,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
             open={props.addDialogOpen}
             title={messageTranslate("account.profile.emailAddTitle")}
             triggerLabel={messageTranslate("account.profile.emailAdd")}
+            triggerIcon={mdiEmailPlusOutline}
             variant="outline"
           >
             <Show
@@ -70,11 +78,11 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                     />
                   </div>
                   <div>
-                    <Button disabled={props.status === "sending"} size="sm" type="submit">
+                    <ButtonIcon disabled={props.status === "sending"} icon={mdiEmailPlusOutline} type="submit">
                       {props.status === "sending"
                         ? messageTranslate("account.profile.emailSending")
                         : messageTranslate("account.profile.emailAdd")}
-                    </Button>
+                    </ButtonIcon>
                   </div>
                 </form>
               }
@@ -97,25 +105,29 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                   />
                 </div>
                 <div class="flex flex-wrap gap-1.5">
-                  <Button disabled={props.status === "verifying" || props.status === "sending"} size="sm" type="submit">
+                  <ButtonIcon
+                    disabled={props.status === "verifying" || props.status === "sending"}
+                    icon={mdiCheckCircleOutline}
+                    type="submit"
+                  >
                     {props.status === "verifying"
                       ? messageTranslate("account.profile.emailVerifying")
                       : messageTranslate("account.profile.emailVerify")}
-                  </Button>
-                  <Button
+                  </ButtonIcon>
+                  <ButtonIcon
                     disabled={props.status === "sending" || props.status === "verifying"}
+                    icon={mdiEmailFastOutline}
                     onClick={props.onAddResend}
-                    size="sm"
                     type="button"
                     variant="outline"
                   >
                     {props.status === "sending"
                       ? messageTranslate("account.profile.emailSending")
                       : messageTranslate("account.profile.emailResend")}
-                  </Button>
-                  <Button onClick={props.onAddCancel} size="sm" type="button" variant="ghost">
+                  </ButtonIcon>
+                  <ButtonIcon icon={mdiEmailEditOutline} onClick={props.onAddCancel} type="button" variant="ghost">
                     {messageTranslate("account.profile.emailDifferent")}
-                  </Button>
+                  </ButtonIcon>
                 </div>
               </form>
             </Show>
@@ -168,22 +180,22 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                 </div>
                 <div class="flex flex-wrap items-center gap-1.5 sm:justify-end">
                   <Show when={!address.isPrimary}>
-                    <Button
+                    <ButtonIcon
                       disabled={!address.verified || props.actionId !== undefined}
+                      icon={mdiStarOutline}
                       onClick={() => props.onPrimarySet(address.id)}
-                      size="sm"
                       type="button"
                       variant="outline"
                     >
                       {props.actionId === address.id && props.status === "sending"
                         ? messageTranslate("account.profile.emailUpdating")
                         : messageTranslate("account.profile.emailMakePrimary")}
-                    </Button>
+                    </ButtonIcon>
                   </Show>
-                  <Button
+                  <ButtonIcon
                     disabled={address.isPrimary || props.actionId !== undefined}
+                    icon={mdiEmailRemoveOutline}
                     onClick={() => props.onRemove(address.id)}
-                    size="sm"
                     title={
                       address.isPrimary ? messageTranslate("account.profile.emailPrimaryRemoveBlocked") : undefined
                     }
@@ -193,7 +205,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                     {props.actionId === address.id && props.status === "sending"
                       ? messageTranslate("account.profile.emailRemoving")
                       : messageTranslate("account.profile.emailRemove")}
-                  </Button>
+                  </ButtonIcon>
                 </div>
               </li>
             )}

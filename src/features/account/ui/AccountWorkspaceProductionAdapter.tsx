@@ -2,6 +2,8 @@ import { AccountProductionAdapter } from "./AccountProductionAdapter.js"
 import { AccountAccessProductionAdapter } from "./AccountAccessProductionAdapter.js"
 import { AccountOrganizationAccessProductionAdapter } from "./AccountOrganizationAccessProductionAdapter.js"
 import { AccountSecurityProductionAdapter } from "./AccountSecurityProductionAdapter.js"
+import { AccountWorkspaceAccess } from "./AccountWorkspaceAccess.js"
+import { AccountWorkspaceDevicesApplications } from "./AccountWorkspaceDevicesApplications.js"
 import { AccountWorkspace } from "./AccountWorkspace.js"
 import { accountWorkspaceProductionAdapterStateCreate } from "./accountWorkspaceProductionAdapterStateCreate.js"
 
@@ -10,24 +12,18 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
   return (
     <AccountWorkspace
       access={
-        <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
+        <AccountWorkspaceAccess>
           <AccountOrganizationAccessProductionAdapter />
           <AccountAccessProductionAdapter screen="consents" />
-        </div>
+        </AccountWorkspaceAccess>
       }
       dangerZone={<AccountProductionAdapter kind="delete" />}
       devicesApplications={
-        <div class="grid min-w-0 items-start gap-3 lg:grid-cols-2 [&>*]:min-w-0">
-          <div class="min-w-0">
-            <AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />
-          </div>
-          <div class="min-w-0">
-            <AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />
-          </div>
-          <div class="min-w-0 lg:col-span-2">
-            <AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />
-          </div>
-        </div>
+        <AccountWorkspaceDevicesApplications
+          activity={<AccountSecurityProductionAdapter realmId={props.realmId} screen="security-history" />}
+          sessions={<AccountSecurityProductionAdapter realmId={props.realmId} screen="sessions" />}
+          applications={<AccountSecurityProductionAdapter realmId={props.realmId} screen="refresh-tokens" />}
+        />
       }
       profile={
         <>

@@ -15,14 +15,14 @@ afterEach(async () => {
 })
 
 describe("account email-address state", () => {
-  test("lists addresses and adds a verified secondary address", async () => {
+  test("lists pending addresses and adds a verified secondary address", async () => {
     const adapter = accountDemoAdapterCreate(() => "success")
     const state = stateCreate({ adapter, initialStatus: "ready", kind: "email" })
     await state.load(true)
 
     expect(state.emailAddresses.get()).toMatchObject([
       { email: "avery.stone@example.com", isPrimary: true, verified: true },
-      { email: "avery.secondary@example.com", isPrimary: false, verified: true },
+      { email: "avery.secondary@example.com", isPrimary: false, verified: false },
     ])
 
     state.emailCandidate.set("avery.new@example.com")
@@ -63,17 +63,25 @@ describe("account email-address state", () => {
     expect(state.emailAddresses.get()).toHaveLength(2)
 
     await state.emailAddressPrimarySet("account-demo-email-secondary")
-    expect(state.user.get()?.email).toBe("avery.secondary@example.com")
+    expect(state.user.get()?.email).toBe("avery.stone@example.com")
     expect(state.emailAddresses.get().find((address) => address.id === "account-demo-email-secondary")?.isPrimary).toBe(
-      true,
+      false,
     )
+
+    state.emailCandidate.set("avery.new@example.com")
+    await state.emailAddressAddStart(submitEvent)
+    state.emailToken.set("demo-email-address-token-000000000000000000000")
+    await state.emailAddressAddVerify(submitEvent)
+    await state.emailAddressPrimarySet("account-demo-email-3")
+    expect(state.user.get()?.email).toBe("avery.new@example.com")
+    expect(state.emailAddresses.get().find((address) => address.id === "account-demo-email-3")?.isPrimary).toBe(true)
 
     const removal = state.emailAddressRemove("account-demo-email-primary")
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await removal
     expect(removeCalls).toBe(1)
-    expect(state.emailAddresses.get()).toHaveLength(1)
+    expect(state.emailAddresses.get()).toHaveLength(2)
   })
 
   test("validates add and verify input before calling the adapter", async () => {

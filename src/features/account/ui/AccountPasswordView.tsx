@@ -1,7 +1,8 @@
+import { mdiLockReset } from "@adaptive-ds/mdi/mdiLockReset.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -37,6 +38,7 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
       open={props.dialogOpen}
       title={messageTranslate("account.password.title")}
       triggerLabel={messageTranslate("account.password.submit")}
+      triggerIcon={mdiLockReset}
       variant="outline"
     >
       <form class="grid gap-2.5" onSubmit={props.onSubmit}>
@@ -87,9 +89,9 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
           <AuthenticatedNotice message={messageTranslate("account.password.changed")} />
         </Show>
         <div>
-          <Button size="sm" type="submit">
+          <ButtonIcon icon={mdiLockReset} type="submit">
             {messageTranslate("account.password.submit")}
-          </Button>
+          </ButtonIcon>
         </div>
       </form>
     </AuthenticatedDialog>

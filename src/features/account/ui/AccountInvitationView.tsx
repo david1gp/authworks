@@ -1,5 +1,7 @@
+import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
+import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
@@ -59,18 +61,18 @@ export function AccountInvitationView(props: {
                   ]}
                 />
                 <div class="mt-3 flex flex-wrap gap-2">
-                  <Button disabled={props.pendingId !== undefined} onClick={props.onAccept} size="sm">
+                  <ButtonIcon disabled={props.pendingId !== undefined} icon={mdiCheck} onClick={props.onAccept}>
                     {messageTranslate("common.continue")}
-                  </Button>
-                  <Button
+                  </ButtonIcon>
+                  <ButtonIcon
                     class={authenticatedDangerOutlineButtonClass}
                     disabled={props.pendingId !== undefined}
+                    icon={mdiClose}
                     onClick={props.onDecline}
-                    size="sm"
                     variant="outline"
                   >
                     {messageTranslate("common.decline")}
-                  </Button>
+                  </ButtonIcon>
                 </div>
               </AuthenticatedSection>
             )}

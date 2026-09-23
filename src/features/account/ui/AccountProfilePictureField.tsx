@@ -1,7 +1,8 @@
 import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
 import { mdiCloudUploadOutline } from "@adaptive-ds/mdi/mdiCloudUploadOutline.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
@@ -119,16 +120,16 @@ export function AccountProfilePictureField(props: {
           {messageTranslate("account.profile.pictureHint")}
         </p>
         <Show when={props.url.length > 0}>
-          <Button
+          <ButtonIcon
             class={authenticatedDangerOutlineButtonClass}
             disabled={state.busy()}
+            icon={mdiDelete}
             onClick={props.onRemove}
-            size="sm"
             type="button"
             variant="outline"
           >
             {messageTranslate("account.profile.pictureRemove")}
-          </Button>
+          </ButtonIcon>
         </Show>
       </div>
 

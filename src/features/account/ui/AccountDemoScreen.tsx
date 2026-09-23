@@ -2,14 +2,13 @@ import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { ttc } from "../../../ui/i18n/model/ttc.js"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
-import { DemoDirectory } from "../../demo/ui/DemoDirectory.js"
 import { DemoScenarioPlaceholder } from "../../demo/ui/DemoScenarioPlaceholder.js"
 import { AccountAccessDemoAdapter } from "./AccountAccessDemoAdapter.js"
 import { AccountDemoAdapter } from "./AccountDemoAdapter.js"
 import { AccountSecurityDemoAdapter } from "./AccountSecurityDemoAdapter.js"
+import { AccountWorkspaceDemoAdapter } from "./AccountWorkspaceDemoAdapter.js"
 import type { accountDemoAppStateCreate } from "./accountDemoAppStateCreate.js"
 
 export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoAppStateCreate> }) {
@@ -44,14 +43,9 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
           </div>
         </div>
       </header>
-      <main class="mx-auto w-full max-w-[1400px] px-4 py-4 sm:px-6 sm:py-6">
-        <Show when={props.state.isDirectory()} fallback={<AccountDemoDestination state={props.state} />}>
-          <DemoDirectory
-            eyebrow={() => messageTranslate("demo.account.eyebrow")}
-            title={() => messageTranslate("account.directory.title")}
-            description={() => messageTranslate("demo.account.description")}
-            groups={demoAccountScenarioGroups}
-          />
+      <main class="mx-auto w-full max-w-[1760px] px-4 py-4 sm:px-6 sm:py-6">
+        <Show when={props.state.isWorkspace()} fallback={<AccountDemoDestination state={props.state} />}>
+          <AccountWorkspaceDemoAdapter />
         </Show>
       </main>
     </div>

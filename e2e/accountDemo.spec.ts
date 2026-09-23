@@ -4,17 +4,27 @@ import { productionAccountSessionBootstrap } from "./productionAccountSessionBoo
 
 const realmId = "01900000-0000-7000-8000-000000000001"
 
-test("the account directory enumerates self-service destinations", async ({ page }) => {
+test("the account demo landing page composes the full example account workspace", async ({ page }) => {
+  const requests: string[] = []
+  page.on("request", (request) => {
+    if (request.resourceType() === "fetch" || request.resourceType() === "xhr") requests.push(request.url())
+  })
   await page.goto("/demo/account")
 
-  await expect(page.getByRole("heading", { name: "Your account", exact: true })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "Personal information", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Account", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Profile", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Security", exact: true })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "Application consents", exact: true })).toBeVisible()
-
-  await page.getByRole("link", { name: "Sessions and devices", exact: true }).click()
-  await expect(page.getByText("Stateless fixture preview", { exact: true })).toBeVisible()
-  await expect(page.getByRole("navigation", { name: "Fixture state" })).toBeVisible()
+  await expect(page.getByRole("heading", { name: /Recent security activity/ })).toBeVisible()
+  await expect(page.getByRole("heading", { name: /Sessions and devices/ })).toBeVisible()
+  await expect(page.getByRole("heading", { name: /Applications/ })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Access", exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Danger zone", exact: true })).toBeVisible()
+  await expect(page.getByText("Avery Stone", { exact: true }).first()).toBeVisible()
+  await expect(page.getByText("avery.secondary@example.com", { exact: true })).toBeVisible()
+  await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
+  await expect(page.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
+  await expect(page.getByText("Stateless fixture preview", { exact: true })).toHaveCount(0)
+  expect(requests).toEqual([])
 })
 
 test("organization, invitation, and consent demos are interactive and network-free", async ({ page }) => {

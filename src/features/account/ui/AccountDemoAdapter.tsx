@@ -9,23 +9,31 @@ import { AccountDemoFixtureHeader } from "./AccountDemoFixtureHeader.js"
 import { AccountPasswordView } from "./AccountPasswordView.js"
 import { AccountProfileView } from "./AccountProfileView.js"
 import { accountDemoAdapterStateCreate } from "./accountDemoAdapterStateCreate.js"
+import type { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
 
 export function AccountDemoAdapter(props: {
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
   readonly path: string
+  readonly passwordActionOnly?: boolean
+  readonly renderConfirmation?: boolean
+  readonly securityProgress?: ReturnType<typeof accountSecurityProgressStateCreate>
+  readonly showFixtureHeader?: boolean
+  readonly state?: ReturnType<typeof accountDemoAdapterStateCreate>
 }) {
   const fixture = demoScenarioPlaceholderStateCreate(() => demoAccountScenarioGroups)
   const location = useLocation()
-  const state = accountDemoAdapterStateCreate(() => props.kind)
+  const state = props.state ?? accountDemoAdapterStateCreate(() => props.kind)
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   const page = state.page
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
-      <AccountDemoFixtureHeader
-        description={scenario()?.description ?? ""}
-        stateOptions={fixture.stateOptions()}
-        title={scenario()?.title ?? ""}
-      />
+      {props.showFixtureHeader === false ? null : (
+        <AccountDemoFixtureHeader
+          description={scenario()?.description ?? ""}
+          stateOptions={fixture.stateOptions()}
+          title={scenario()?.title ?? ""}
+        />
+      )}
       <Switch>
         <Match when={props.kind === "password"}>
           <AccountPasswordView
@@ -40,6 +48,7 @@ export function AccountDemoAdapter(props: {
             onNewPasswordInput={page.newPassword.set}
             onRetry={page.load}
             onSubmit={page.passwordSubmit}
+            actionOnly={props.passwordActionOnly}
             status={page.status.get()}
             validationMessage={page.validationMessage.get()}
           />
@@ -113,13 +122,16 @@ export function AccountDemoAdapter(props: {
             pictureErrorMessage={page.pictureErrorMessage.get()}
             pictureStatus={page.pictureStatus.get()}
             pictureUrl={page.pictureUrl.get()}
+            securityProgress={props.securityProgress}
             status={page.status.get()}
             userName={page.user.get()?.userName ?? ""}
             validationMessage={page.validationMessage.get()}
           />
         </Match>
       </Switch>
-      <ConfirmDialog state={page.confirmation} titleKey="account.confirmTitle" />
+      {props.renderConfirmation === false ? null : (
+        <ConfirmDialog state={page.confirmation} titleKey="account.confirmTitle" />
+      )}
     </div>
   )
 }

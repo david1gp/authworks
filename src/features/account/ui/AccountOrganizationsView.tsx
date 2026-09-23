@@ -1,5 +1,6 @@
+import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -76,14 +77,14 @@ export function AccountOrganizationsView(props: {
                       <AccountRoleList values={item.membership.roles} />
                     </div>
                     <div class="mt-2.5">
-                      <Button
+                      <ButtonIcon
                         disabled={active() || props.pendingId !== undefined}
+                        icon={mdiCheckCircleOutline}
                         onClick={() => props.onSwitch(item.organization.id)}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("account.access.switchOrganization")}
-                      </Button>
+                      </ButtonIcon>
                     </div>
                   </AuthenticatedSection>
                 </li>

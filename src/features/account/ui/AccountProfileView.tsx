@@ -1,11 +1,12 @@
 import { mdiAccountDetailsOutline } from "@adaptive-ds/mdi/mdiAccountDetailsOutline.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingle } from "#ui/input/select/SelectSingle.jsx"
 import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
 import { selectSingleTextDefault } from "#ui/input/select/SelectSingleTexts.js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
@@ -254,9 +255,9 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                 <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
               </Show>
               <div>
-                <Button size="sm" type="submit">
+                <ButtonIcon icon={mdiContentSave} type="submit">
                   {messageTranslate("account.profile.save")}
-                </Button>
+                </ButtonIcon>
               </div>
             </form>
           </AuthenticatedSection>
