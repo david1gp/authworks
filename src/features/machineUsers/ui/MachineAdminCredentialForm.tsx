@@ -1,8 +1,9 @@
+import { mdiKeyPlus } from "@adaptive-ds/mdi/mdiKeyPlus.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { machineAdminCredentialFormStateCreate } from "./machineAdminCredentialFormStateCreate.js"
@@ -79,9 +80,9 @@ export function MachineAdminCredentialForm(props: {
         {messageTranslate("admin.machine.credentials.onceWarning")}
       </p>
 
-      <Button disabled={state.page.pendingId() !== undefined} type="submit" variant="filledBlue">
+      <ButtonIcon disabled={state.page.pendingId() !== undefined} icon={mdiKeyPlus} type="submit" variant="filledBlue">
         {messageTranslate("admin.machine.credentials.issue")}
-      </Button>
+      </ButtonIcon>
     </form>
   )
 }

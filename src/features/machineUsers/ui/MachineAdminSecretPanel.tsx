@@ -1,5 +1,7 @@
+import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
+import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
 import { Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MachineAdminIssuedSecret } from "./machineAdminIssuedSecret.js"
 import { machineAdminSecretPanelStateCreate } from "./machineAdminSecretPanelStateCreate.js"
@@ -68,18 +70,18 @@ export function MachineAdminSecretPanel(props: {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <Button onClick={state.copy} size="sm" variant="outline">
+        <ButtonIcon icon={mdiContentCopy} onClick={state.copy} variant="outline">
           {messageTranslate("admin.machine.secret.copy")}
-        </Button>
+        </ButtonIcon>
         {/* Acknowledgement stays reachable when the clipboard is denied, so the value is never trapped. */}
-        <Button
+        <ButtonIcon
           disabled={!state.copied() && !state.copyFailed()}
+          icon={mdiCheck}
           onClick={state.acknowledge}
-          size="sm"
           variant="filledBlue"
         >
           {messageTranslate("admin.machine.secret.acknowledge")}
-        </Button>
+        </ButtonIcon>
         <Show when={state.copied()}>
           <span class="text-xs font-medium text-success" role="status">
             {messageTranslate("admin.machine.secret.copied")}

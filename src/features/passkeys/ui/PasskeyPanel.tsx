@@ -123,6 +123,7 @@ export function PasskeyPanel(props: PasskeyPanelProps) {
               </div>
             </Show>
             <LoginSubmitButton
+              icon={mdiFingerprint}
               label={
                 props.mfaContinuation
                   ? messageTranslate("login.mfa.passkeyVerify")

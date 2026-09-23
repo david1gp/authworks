@@ -1,8 +1,10 @@
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
+import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
@@ -33,7 +35,6 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
                   class="gap-1.5"
                   disabled={props.state.pendingId() === "session:sign-out"}
                   onClick={props.state.adminSignOut}
-                  size="sm"
                   variant="outline"
                 >
                   <Icon path={mdiLogout} />
@@ -97,9 +98,9 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
               {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
             </Show>
             <div>
-              <Button size="sm" type="submit">
+              <ButtonIcon icon={mdiLogin} type="submit">
                 {messageTranslate("common.signIn")}
-              </Button>
+              </ButtonIcon>
             </div>
           </form>
         </AuthenticatedSection>

@@ -1,3 +1,4 @@
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { Match, Switch } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -116,6 +117,7 @@ export function PasswordResetPanel(props: PasswordResetPanelProps) {
             <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
             <LoginSubmitButton
               disabled={!state.valid()}
+              icon={mdiCheckCircle}
               label={messageTranslate("login.recovery.resetSubmitReference")}
               pending={props.pending}
               pendingLabel={messageTranslate("login.recovery.saving")}

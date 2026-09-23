@@ -1,5 +1,7 @@
+import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
+import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { createEffect, createUniqueId, on, onCleanup, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { confirmDialogFocusNextSelect } from "./confirmDialogFocusNextSelect.js"
@@ -91,12 +93,19 @@ export function ConfirmDialog(props: { readonly state: ConfirmState; readonly ti
             {state.message()}
           </p>
           <div class="mt-3.5 flex flex-wrap justify-end gap-2">
-            <Button autofocus data-confirm-cancel onClick={state.cancel} ref={cancel} variant="outline">
+            <ButtonIcon
+              autofocus
+              data-confirm-cancel
+              icon={mdiClose}
+              onClick={state.cancel}
+              ref={cancel}
+              variant="outline"
+            >
               {messageTranslate("common.cancel")}
-            </Button>
-            <Button data-confirm-accept onClick={state.accept} variant="filledRed">
+            </ButtonIcon>
+            <ButtonIcon data-confirm-accept icon={mdiCheck} onClick={state.accept} variant="filledRed">
               {state.acceptLabel() ?? messageTranslate("common.continue")}
-            </Button>
+            </ButtonIcon>
           </div>
         </div>
       </div>

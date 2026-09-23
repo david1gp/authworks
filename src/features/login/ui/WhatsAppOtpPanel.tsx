@@ -1,3 +1,5 @@
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiWhatsapp } from "@adaptive-ds/mdi/mdiWhatsapp.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -93,6 +95,7 @@ export function WhatsAppOtpPanel(props: WhatsAppOtpPanelProps) {
         <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
         <LoginSubmitButton
           disabled={!props.submitAllowed || (props.step === "phone" ? !props.phoneNumberValid : !props.codeValid)}
+          icon={props.step === "phone" ? mdiWhatsapp : mdiCheckCircle}
           label={messageTranslate(props.step === "phone" ? "login.whatsappOtp.send" : "common.continue")}
           pending={props.pending}
           pendingLabel={messageTranslate(

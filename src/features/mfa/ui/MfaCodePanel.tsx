@@ -1,3 +1,4 @@
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -46,6 +47,7 @@ export function MfaCodePanel(props: MfaCodePanelProps) {
         <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
         <LoginSubmitButton
           disabled={props.valid === false}
+          icon={mdiCheckCircle}
           label={messageTranslate("login.mfa.verify")}
           pending={props.pending}
         />

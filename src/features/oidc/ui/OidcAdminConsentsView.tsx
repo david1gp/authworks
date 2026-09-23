@@ -1,7 +1,8 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { For } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -20,14 +21,14 @@ import type { oidcAdminConsentsViewStateCreate } from "./oidcAdminConsentsViewSt
 export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof oidcAdminConsentsViewStateCreate> }) {
   const state = props.state
   const revokeButton = (consent: OidcConsent) => (
-    <Button
+    <ButtonIcon
       disabled={state.page.pendingId() !== undefined}
+      icon={mdiCancel}
       onClick={() => state.consentRevoke(consent.clientId)}
-      size="sm"
       variant="outline"
     >
       {messageTranslate("common.revoke")}
-    </Button>
+    </ButtonIcon>
   )
 
   return (

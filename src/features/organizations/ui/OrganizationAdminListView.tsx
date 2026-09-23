@@ -1,8 +1,10 @@
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
@@ -53,6 +55,7 @@ export function OrganizationAdminListView(props: {
             open={props.createOpen}
             title={messageTranslate("admin.organizations.list.create")}
             triggerLabel={messageTranslate("admin.organizations.list.create")}
+            triggerIcon={mdiPlus}
             variant="filledBlue"
           >
             <form class="grid gap-3" onSubmit={props.onCreateSubmit}>
@@ -67,9 +70,14 @@ export function OrganizationAdminListView(props: {
               <Show when={props.validationMessage}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <Button disabled={props.pendingId === "organization:create"} type="submit" variant="filledBlue">
+              <ButtonIcon
+                disabled={props.pendingId === "organization:create"}
+                icon={mdiContentSave}
+                type="submit"
+                variant="filledBlue"
+              >
                 {messageTranslate("common.save")}
-              </Button>
+              </ButtonIcon>
             </form>
           </AuthenticatedDialog>
         }

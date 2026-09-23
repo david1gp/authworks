@@ -1,3 +1,4 @@
+import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiCellphoneKey } from "@adaptive-ds/mdi/mdiCellphoneKey.js"
 import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
 import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
@@ -69,6 +70,7 @@ export function MfaPanel(props: {
           <div class="mt-6 grid gap-4">
             <LoginMessages errorMessage={props.errorMessage} />
             <LoginSubmitButton
+              icon={mdiArrowRight}
               label={messageTranslate("login.mfa.retryOptions")}
               onClick={props.onRetry}
               pending={props.pending === true}
@@ -89,6 +91,7 @@ export function MfaPanel(props: {
           />
           <div class="mt-6">
             <LoginSubmitButton
+              icon={mdiArrowRight}
               label={messageTranslate("login.mfa.continue")}
               onClick={props.onContinue}
               pending={props.pending === true}

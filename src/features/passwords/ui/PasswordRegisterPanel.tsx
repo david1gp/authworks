@@ -1,3 +1,4 @@
+import { mdiAccountPlus } from "@adaptive-ds/mdi/mdiAccountPlus.js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -82,7 +83,11 @@ export function PasswordRegisterPanel(props: PasswordRegisterPanelProps) {
           />
         </div>
         <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
-        <LoginSubmitButton label={messageTranslate("login.register.submit")} pending={props.pending} />
+        <LoginSubmitButton
+          icon={mdiAccountPlus}
+          label={messageTranslate("login.register.submit")}
+          pending={props.pending}
+        />
       </form>
       <LoginBackLink label={messageTranslate("login.register.signIn")} onBack={props.onBack} />
     </section>

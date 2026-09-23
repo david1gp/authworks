@@ -1,5 +1,6 @@
+import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -77,14 +78,14 @@ export function AdminUserSecurityView(props: { readonly state: ReturnType<typeof
                       </Show>
                     </p>
                   </div>
-                  <Button
+                  <ButtonIcon
                     disabled={props.state.pendingSessionId() !== undefined}
+                    icon={mdiLogout}
                     onClick={() => void props.state.sessionRevoke(session.id)}
-                    size="sm"
                     variant="outline"
                   >
                     {messageTranslate("account.sessions.revoke")}
-                  </Button>
+                  </ButtonIcon>
                 </li>
               )}
             </For>

@@ -1,3 +1,4 @@
+import { mdiEmailFastOutline } from "@adaptive-ds/mdi/mdiEmailFastOutline.js"
 import { Match, Switch } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -87,6 +88,7 @@ export function PasswordRecoveryRequestPanel(props: PasswordRecoveryRequestPanel
             <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
             <LoginSubmitButton
               disabled={!state.valid()}
+              icon={mdiEmailFastOutline}
               label={messageTranslate("login.recovery.submitReference")}
               pending={props.pending}
               pendingLabel={messageTranslate("login.recovery.sending")}

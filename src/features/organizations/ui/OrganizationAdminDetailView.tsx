@@ -1,8 +1,12 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -102,40 +106,40 @@ export function OrganizationAdminDetailView(props: {
                         value={props.name}
                       />
                     </div>
-                    <Button disabled={props.pendingId !== undefined} size="sm" type="submit">
+                    <ButtonIcon disabled={props.pendingId !== undefined} icon={mdiContentSave} type="submit">
                       {messageTranslate("common.save")}
-                    </Button>
+                    </ButtonIcon>
                   </div>
                   <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
                     <Show when={organization().status !== "active"}>
-                      <Button
+                      <ButtonIcon
                         disabled={props.pendingId !== undefined}
+                        icon={mdiCheckCircle}
                         onClick={() => props.onLifecycleSet("active")}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.lifecycle.activate")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
                     <Show when={organization().status === "active"}>
-                      <Button
+                      <ButtonIcon
                         disabled={props.pendingId !== undefined}
+                        icon={mdiCancel}
                         onClick={() => props.onLifecycleSet("inactive")}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.lifecycle.deactivate")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
                     <Show when={organization().status !== "removed"}>
-                      <Button
+                      <ButtonIcon
                         disabled={props.pendingId !== undefined}
+                        icon={mdiDelete}
                         onClick={() => props.onLifecycleSet("removed")}
-                        size="sm"
                         variant="filledRed"
                       >
                         {messageTranslate("admin.organizations.lifecycle.remove")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
                   </div>
                 </form>

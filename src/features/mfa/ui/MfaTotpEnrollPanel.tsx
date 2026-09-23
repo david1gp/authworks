@@ -1,3 +1,5 @@
+import { mdiCellphoneKey } from "@adaptive-ds/mdi/mdiCellphoneKey.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -54,6 +56,7 @@ export function MfaTotpEnrollPanel(props: MfaTotpEnrollPanelProps) {
             <div class="mt-6 grid gap-4">
               <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
               <LoginSubmitButton
+                icon={mdiCellphoneKey}
                 label={messageTranslate("login.totpEnroll.start")}
                 onClick={props.onStart}
                 pending={props.pending}
@@ -130,6 +133,7 @@ export function MfaTotpEnrollPanel(props: MfaTotpEnrollPanelProps) {
             <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
             <LoginSubmitButton
               disabled={props.code.length !== 6}
+              icon={mdiCheckCircle}
               label={messageTranslate("login.totpEnroll.submit")}
               pending={props.pending}
             />

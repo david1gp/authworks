@@ -1,6 +1,7 @@
+import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { A } from "@solidjs/router"
 import { Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -44,14 +45,14 @@ export function ImpersonationAdminView(props: {
                   <A class="text-xs font-medium text-accent hover:underline" href={state.eventsHref(props.basePath)}>
                     {messageTranslate("admin.impersonation.auditLink")}
                   </A>
-                  <Button
+                  <ButtonIcon
                     disabled={state.pendingId() !== undefined}
+                    icon={mdiLogout}
                     onClick={() => void state.impersonationEnd()}
-                    size="sm"
                     variant="filledRed"
                   >
                     {messageTranslate("admin.impersonation.end")}
-                  </Button>
+                  </ButtonIcon>
                 </>
               }
               padded

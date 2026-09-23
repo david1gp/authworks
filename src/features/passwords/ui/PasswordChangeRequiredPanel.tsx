@@ -1,3 +1,4 @@
+import { mdiLock } from "@adaptive-ds/mdi/mdiLock.js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -100,6 +101,7 @@ export function PasswordChangeRequiredPanel(props: PasswordChangeRequiredPanelPr
         </button>
         <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
         <LoginSubmitButton
+          icon={mdiLock}
           label={messageTranslate("login.password.changeSubmit")}
           pending={props.pending}
           pendingLabel={messageTranslate("login.password.saving")}

@@ -1,3 +1,5 @@
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiEmailFastOutline } from "@adaptive-ds/mdi/mdiEmailFastOutline.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -100,6 +102,7 @@ export function EmailOtpPanel(props: EmailOtpPanelProps) {
         <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
         <LoginSubmitButton
           disabled={props.step === "code" && props.code.length !== 6}
+          icon={props.step === "email" ? mdiEmailFastOutline : mdiCheckCircle}
           label={messageTranslate(props.step === "email" ? "login.emailOtp.send" : "login.emailOtp.verify")}
           pendingLabel={messageTranslate(
             props.step === "email" ? "login.emailOtp.sending" : "login.emailOtp.verifying",

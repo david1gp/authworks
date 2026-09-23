@@ -1,8 +1,12 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { Show } from "solid-js"
 import { Checkbox } from "#ui/input/check/Checkbox.jsx"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -99,45 +103,45 @@ export function ProjectAdminDetailView(props: {
                     )}
                   </Show>
                   <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
-                    <Button
+                    <ButtonIcon
                       disabled={state.page.pendingId() !== undefined}
-                      size="sm"
+                      icon={mdiContentSave}
                       type="submit"
                       variant="filledBlue"
                     >
                       {messageTranslate("common.save")}
-                    </Button>
+                    </ButtonIcon>
                     <Show when={project().status === "active"}>
-                      <Button
+                      <ButtonIcon
                         disabled={state.page.pendingId() !== undefined}
+                        icon={mdiCancel}
                         onClick={() => state.page.projectLifecycleSet(project().id, "inactive")}
-                        size="sm"
                         type="button"
                         variant="outline"
                       >
                         {messageTranslate("admin.projects.lifecycle.deactivate")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
                     <Show when={project().status === "inactive"}>
-                      <Button
+                      <ButtonIcon
                         disabled={state.page.pendingId() !== undefined}
+                        icon={mdiCheckCircle}
                         onClick={() => state.page.projectLifecycleSet(project().id, "active")}
-                        size="sm"
                         type="button"
                         variant="outline"
                       >
                         {messageTranslate("admin.projects.lifecycle.activate")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
-                    <Button
+                    <ButtonIcon
                       disabled={state.page.pendingId() !== undefined}
+                      icon={mdiDelete}
                       onClick={() => void state.projectDelete(project().id)}
-                      size="sm"
                       type="button"
                       variant="filledRed"
                     >
                       {messageTranslate("admin.projects.lifecycle.remove")}
-                    </Button>
+                    </ButtonIcon>
                   </div>
                 </form>
               </AuthenticatedSection>

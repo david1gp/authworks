@@ -1,5 +1,7 @@
+import { mdiArrowDown } from "@adaptive-ds/mdi/mdiArrowDown.js"
+import { mdiArrowUp } from "@adaptive-ds/mdi/mdiArrowUp.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -154,32 +156,32 @@ export function OrganizationAdminSecurityPolicyView(props: {
                     {index() + 1}. {messageTranslate(factorLabelKeys[factor])}
                   </span>
                   <div class="flex items-center gap-1.5">
-                    <Button
+                    <ButtonIcon
                       aria-label={messageTranslate("admin.organizations.policy.moveUp", {
                         factor: messageTranslate(factorLabelKeys[factor]),
                       })}
                       class="h-7 text-xs"
                       disabled={props.fieldInherited("preferredFactorOrder") || index() === 0}
+                      icon={mdiArrowUp}
                       onClick={() => props.onPreferredFactorMove(factor, -1)}
-                      size="sm"
                       type="button"
                       variant="outline"
                     >
                       {messageTranslate("admin.organizations.policy.up")}
-                    </Button>
-                    <Button
+                    </ButtonIcon>
+                    <ButtonIcon
                       aria-label={messageTranslate("admin.organizations.policy.moveDown", {
                         factor: messageTranslate(factorLabelKeys[factor]),
                       })}
                       class="h-7 text-xs"
                       disabled={props.fieldInherited("preferredFactorOrder") || index() === props.order.length - 1}
+                      icon={mdiArrowDown}
                       onClick={() => props.onPreferredFactorMove(factor, 1)}
-                      size="sm"
                       type="button"
                       variant="outline"
                     >
                       {messageTranslate("admin.organizations.policy.down")}
-                    </Button>
+                    </ButtonIcon>
                   </div>
                 </li>
               )}

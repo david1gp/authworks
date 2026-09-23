@@ -1,8 +1,18 @@
+import { mdiAccountCancel } from "@adaptive-ds/mdi/mdiAccountCancel.js"
+import { mdiAccountCheck } from "@adaptive-ds/mdi/mdiAccountCheck.js"
+import { mdiAccountOff } from "@adaptive-ds/mdi/mdiAccountOff.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiCloseCircle } from "@adaptive-ds/mdi/mdiCloseCircle.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
+import { mdiLock } from "@adaptive-ds/mdi/mdiLock.js"
+import { mdiAccountArrowRight } from "@adaptive-ds/mdi/mdiAccountArrowRight.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -70,6 +80,7 @@ export function AdminUserDetailView(props: {
                         class="inline-flex h-7 items-center rounded-control border border-line px-2 text-xs font-medium hover:bg-surface-hover"
                         href={`${props.impersonationHref}?userId=${encodeURIComponent(user().id)}`}
                       >
+                        <Icon class="mr-1 size-4" path={mdiAccountArrowRight} />
                         {messageTranslate("admin.impersonation.userAction")}
                       </A>
                     </Show>
@@ -153,9 +164,9 @@ export function AdminUserDetailView(props: {
                       {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                     </Show>
                     <div>
-                      <Button disabled={props.state.pendingId() !== undefined} size="sm" type="submit">
+                      <ButtonIcon disabled={props.state.pendingId() !== undefined} icon={mdiContentSave} type="submit">
                         {messageTranslate("admin.users.profileSave")}
-                      </Button>
+                      </ButtonIcon>
                     </div>
                   </form>
                 </AuthenticatedSection>
@@ -167,22 +178,22 @@ export function AdminUserDetailView(props: {
                     title={messageTranslate("admin.users.verificationTitle")}
                   >
                     <div class="flex flex-wrap gap-2">
-                      <Button
+                      <ButtonIcon
                         disabled={user().verificationState === "verified" || props.state.pendingId() !== undefined}
+                        icon={mdiCheckCircle}
                         onClick={() => void props.state.userVerificationSet("verified")}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.users.markVerified")}
-                      </Button>
-                      <Button
+                      </ButtonIcon>
+                      <ButtonIcon
                         disabled={user().verificationState === "unverified" || props.state.pendingId() !== undefined}
+                        icon={mdiCloseCircle}
                         onClick={() => void props.state.userVerificationSet("unverified")}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.users.markUnverified")}
-                      </Button>
+                      </ButtonIcon>
                     </div>
                   </AuthenticatedSection>
 
@@ -194,14 +205,22 @@ export function AdminUserDetailView(props: {
                     <div class="flex flex-wrap gap-2">
                       <For each={lifecycleChoices}>
                         {(choice) => (
-                          <Button
+                          <ButtonIcon
                             disabled={user().state === choice || props.state.pendingId() !== undefined}
+                            icon={
+                              choice === "active"
+                                ? mdiAccountCheck
+                                : choice === "inactive"
+                                  ? mdiAccountOff
+                                  : choice === "locked"
+                                    ? mdiLock
+                                    : mdiAccountCancel
+                            }
                             onClick={() => void props.state.userLifecycleSet(choice)}
-                            size="sm"
                             variant="outline"
                           >
                             {messageTranslate(`admin.users.lifecycle.${choice}`)}
-                          </Button>
+                          </ButtonIcon>
                         )}
                       </For>
                     </div>
@@ -212,14 +231,14 @@ export function AdminUserDetailView(props: {
 
                 <AuthenticatedSection
                   actions={
-                    <Button
+                    <ButtonIcon
                       disabled={props.state.pendingId() !== undefined}
+                      icon={mdiDelete}
                       onClick={() => void props.state.userDelete()}
-                      size="sm"
                       variant="outline"
                     >
                       {messageTranslate("admin.users.delete")}
-                    </Button>
+                    </ButtonIcon>
                   }
                   class="border-danger/35"
                   padded

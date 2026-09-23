@@ -1,8 +1,12 @@
+import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
@@ -31,6 +35,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
             open={state.createOpen()}
             title={messageTranslate("admin.projects.list.create")}
             triggerLabel={messageTranslate("admin.projects.list.create")}
+            triggerIcon={mdiPlus}
             variant="filledBlue"
           >
             <form class="grid gap-3" onSubmit={state.createSubmit}>
@@ -54,9 +59,14 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
               <Show when={state.formError()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <Button disabled={state.page.pendingId() !== undefined} type="submit" variant="filledBlue">
+              <ButtonIcon
+                disabled={state.page.pendingId() !== undefined}
+                icon={mdiContentSave}
+                type="submit"
+                variant="filledBlue"
+              >
                 {messageTranslate("common.save")}
-              </Button>
+              </ButtonIcon>
             </form>
           </AuthenticatedDialog>
         }
@@ -108,6 +118,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
                       type="button"
                     >
                       {project.name}
+                      <Icon class="ml-1 inline size-4" path={mdiArrowRight} />
                     </button>
                   }
                 />
@@ -147,6 +158,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
                         type="button"
                       >
                         {project.name}
+                        <Icon class="ml-1 inline size-4" path={mdiArrowRight} />
                       </button>
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.cell}>

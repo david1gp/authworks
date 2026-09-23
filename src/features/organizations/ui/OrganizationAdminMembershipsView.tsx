@@ -1,7 +1,9 @@
+import { mdiAccountPlus } from "@adaptive-ds/mdi/mdiAccountPlus.js"
+import { mdiAccountRemove } from "@adaptive-ds/mdi/mdiAccountRemove.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
@@ -65,9 +67,9 @@ export function OrganizationAdminMembershipsView(props: {
               roles={props.roles}
               selected={props.addRoles}
             />
-            <Button disabled={props.pendingId === "membership:create"} size="sm" type="submit">
+            <ButtonIcon disabled={props.pendingId === "membership:create"} icon={mdiAccountPlus} type="submit">
               {messageTranslate("admin.organizations.memberships.add")}
-            </Button>
+            </ButtonIcon>
           </div>
           <Show when={props.validationMessage}>
             {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
@@ -90,14 +92,14 @@ export function OrganizationAdminMembershipsView(props: {
               {(membership) => (
                 <AuthenticatedRecordItem
                   actions={
-                    <Button
+                    <ButtonIcon
                       disabled={props.pendingId === `membership:${membership.id}`}
+                      icon={mdiAccountRemove}
                       onClick={() => props.onRemove(membership.id, membership.userId)}
-                      size="sm"
                       variant="outline"
                     >
                       {messageTranslate("admin.organizations.memberships.remove")}
-                    </Button>
+                    </ButtonIcon>
                   }
                   fields={[]}
                   title={<span class="font-mono text-xs">{membership.userId}</span>}
@@ -151,14 +153,14 @@ export function OrganizationAdminMembershipsView(props: {
                       />
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.action}>
-                      <Button
+                      <ButtonIcon
                         disabled={props.pendingId === `membership:${membership.id}`}
+                        icon={mdiAccountRemove}
                         onClick={() => props.onRemove(membership.id, membership.userId)}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.memberships.remove")}
-                      </Button>
+                      </ButtonIcon>
                     </TableCell>
                   </TableRow>
                 )}

@@ -1,5 +1,10 @@
+import { mdiAutorenew } from "@adaptive-ds/mdi/mdiAutorenew.js"
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -100,45 +105,45 @@ export function OidcAdminClientDetailView(props: {
                     {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                   </Show>
                   <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
-                    <Button
+                    <ButtonIcon
                       disabled={state.page.pendingId() !== undefined}
-                      size="sm"
+                      icon={mdiContentSave}
                       type="submit"
                       variant="filledBlue"
                     >
                       {messageTranslate("common.save")}
-                    </Button>
+                    </ButtonIcon>
                     <Show when={client().status === "active"}>
-                      <Button
+                      <ButtonIcon
                         disabled={state.page.pendingId() !== undefined}
+                        icon={mdiCancel}
                         onClick={() => void state.page.clientLifecycleSet(client().id, "inactive")}
-                        size="sm"
                         type="button"
                         variant="outline"
                       >
                         {messageTranslate("admin.oidc.lifecycle.deactivate")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
                     <Show when={client().status === "inactive"}>
-                      <Button
+                      <ButtonIcon
                         disabled={state.page.pendingId() !== undefined}
+                        icon={mdiCheckCircle}
                         onClick={() => void state.page.clientLifecycleSet(client().id, "active")}
-                        size="sm"
                         type="button"
                         variant="outline"
                       >
                         {messageTranslate("admin.oidc.lifecycle.activate")}
-                      </Button>
+                      </ButtonIcon>
                     </Show>
-                    <Button
+                    <ButtonIcon
                       disabled={state.page.pendingId() !== undefined}
+                      icon={mdiDelete}
                       onClick={() => void state.clientRemove(client().id)}
-                      size="sm"
                       type="button"
                       variant="filledRed"
                     >
                       {messageTranslate("admin.oidc.lifecycle.remove")}
-                    </Button>
+                    </ButtonIcon>
                   </div>
                 </form>
               </AuthenticatedSection>
@@ -162,22 +167,22 @@ export function OidcAdminClientDetailView(props: {
                       </p>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                      <Button
+                      <ButtonIcon
                         disabled={state.page.pendingId() !== undefined}
+                        icon={mdiAutorenew}
                         onClick={() => void state.page.clientSecretRotate(client().id)}
-                        size="sm"
                         variant="filledBlue"
                       >
                         {messageTranslate("admin.oidc.secret.rotate")}
-                      </Button>
-                      <Button
+                      </ButtonIcon>
+                      <ButtonIcon
                         disabled={state.page.pendingId() !== undefined}
+                        icon={mdiCancel}
                         onClick={() => void state.page.clientSecretRevoke(client().id)}
-                        size="sm"
                         variant="filledRed"
                       >
                         {messageTranslate("admin.oidc.secret.revoke")}
-                      </Button>
+                      </ButtonIcon>
                     </div>
                   </div>
                 </Show>

@@ -1,7 +1,8 @@
 import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
 import { mdiInboxOutline } from "@adaptive-ds/mdi/mdiInboxOutline.js"
 import { mdiLockOutline } from "@adaptive-ds/mdi/mdiLockOutline.js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { LoaderSpin4Square } from "#ui/static/loaders/LoaderSpin4Square.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
@@ -67,9 +68,9 @@ export function ProductionStatePanel(props: {
                 : messageTranslate("shell.state.readyDetail"))}
       </p>
       {props.state === "error" && props.onRetry ? (
-        <Button class="mt-4" onClick={props.onRetry} size="sm" variant="outline">
+        <ButtonIcon class="mt-4" icon={mdiRefresh} onClick={props.onRetry} variant="outline">
           {messageTranslate("common.retry")}
-        </Button>
+        </ButtonIcon>
       ) : null}
     </section>
   )

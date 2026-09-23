@@ -1,3 +1,4 @@
+import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
@@ -89,6 +90,7 @@ export function PasswordPanel(props: PasswordPanelProps) {
         </label>
         <LoginSubmitButton
           disabled={!props.valid}
+          icon={mdiLogin}
           label={messageTranslate("login.password.submit")}
           pending={props.pending}
           pendingLabel={messageTranslate("login.password.signingIn")}

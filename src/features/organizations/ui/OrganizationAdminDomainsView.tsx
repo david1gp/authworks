@@ -1,7 +1,11 @@
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
+import { mdiMagnify } from "@adaptive-ds/mdi/mdiMagnify.js"
+import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
@@ -57,9 +61,9 @@ export function OrganizationAdminDomainsView(props: {
                   value={props.claimDomain}
                 />
               </div>
-              <Button disabled={props.pendingId === "domain:claim"} size="sm" type="submit">
+              <ButtonIcon disabled={props.pendingId === "domain:claim"} icon={mdiPlus} type="submit">
                 {messageTranslate("admin.organizations.domains.claim")}
-              </Button>
+              </ButtonIcon>
             </div>
             <label class="flex items-center gap-2 text-xs font-medium" for="domain-claim-primary">
               <input
@@ -92,9 +96,14 @@ export function OrganizationAdminDomainsView(props: {
                   value={props.discoveryDomain}
                 />
               </div>
-              <Button disabled={props.pendingId === "domain:discover"} size="sm" type="submit" variant="outline">
+              <ButtonIcon
+                disabled={props.pendingId === "domain:discover"}
+                icon={mdiMagnify}
+                type="submit"
+                variant="outline"
+              >
                 {messageTranslate("admin.organizations.domains.discovery")}
-              </Button>
+              </ButtonIcon>
             </div>
             <Show when={props.discoveryMessage}>
               {(message) => (
@@ -141,22 +150,22 @@ export function OrganizationAdminDomainsView(props: {
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5">
                       <Show when={!domain.verified}>
-                        <Button
+                        <ButtonIcon
                           disabled={props.pendingId === `domain:${domain.domain}`}
+                          icon={mdiCheckCircle}
                           onClick={() => props.onVerify(domain.domain)}
-                          size="sm"
                         >
                           {messageTranslate("admin.organizations.domains.verify")}
-                        </Button>
+                        </ButtonIcon>
                       </Show>
-                      <Button
+                      <ButtonIcon
                         disabled={props.pendingId === `domain:${domain.domain}`}
+                        icon={mdiDelete}
                         onClick={() => props.onRemove(domain.domain)}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.domains.remove")}
-                      </Button>
+                      </ButtonIcon>
                     </div>
                   </div>
                   <Show when={domain.verification}>

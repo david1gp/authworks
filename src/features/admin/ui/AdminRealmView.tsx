@@ -1,7 +1,10 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -113,9 +116,9 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                       {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                     </Show>
                     <div>
-                      <Button disabled={props.state.pendingId() !== undefined} size="sm" type="submit">
+                      <ButtonIcon disabled={props.state.pendingId() !== undefined} icon={mdiContentSave} type="submit">
                         {messageTranslate("admin.realm.save")}
-                      </Button>
+                      </ButtonIcon>
                     </div>
                   </form>
                 </AuthenticatedSection>
@@ -133,13 +136,13 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                         <p class="min-w-0 text-xs text-muted-foreground">
                           {messageTranslate("admin.realm.enableDescription")}
                         </p>
-                        <Button
+                        <ButtonIcon
                           disabled={props.state.pendingId() === "realm:lifecycle:active"}
+                          icon={mdiCheckCircle}
                           onClick={() => props.state.realmLifecycleApply("active")}
-                          size="sm"
                         >
                           {messageTranslate("admin.realm.enable")}
-                        </Button>
+                        </ButtonIcon>
                       </div>
                     }
                   >
@@ -156,14 +159,14 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                           value={props.state.lifecycleConfirmation.get()}
                         />
                       </div>
-                      <Button
+                      <ButtonIcon
                         disabled={props.state.pendingId() === "realm:lifecycle:disabled"}
+                        icon={mdiCancel}
                         onClick={() => props.state.realmLifecycleApply("disabled")}
-                        size="sm"
                         variant="outline"
                       >
                         {messageTranslate("admin.realm.disable")}
-                      </Button>
+                      </ButtonIcon>
                     </div>
                   </Show>
                 </AuthenticatedSection>

@@ -1,3 +1,5 @@
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
 import { Match, Show, Switch } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
@@ -70,6 +72,7 @@ export function MfaEmailOtpPanel(props: {
               <Show when={props.email}>{(email) => <p class="text-sm text-muted-foreground">{email()}</p>}</Show>
               <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
               <LoginSubmitButton
+                icon={mdiEmailOutline}
                 label={messageTranslate("login.mfa.emailOtpSend")}
                 onClick={props.onSend}
                 pending={props.pending}
@@ -84,6 +87,7 @@ export function MfaEmailOtpPanel(props: {
               </p>
               <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
               <LoginSubmitButton
+                icon={mdiEmailOutline}
                 label={messageTranslate("login.mfa.emailOtpEnroll")}
                 onClick={props.onEnroll}
                 pending={props.pending}
@@ -120,6 +124,7 @@ export function MfaEmailOtpPanel(props: {
               <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
               <LoginSubmitButton
                 disabled={props.code.length !== 6}
+                icon={mdiCheckCircle}
                 label={messageTranslate("login.mfa.verify")}
                 pending={props.pending}
               />

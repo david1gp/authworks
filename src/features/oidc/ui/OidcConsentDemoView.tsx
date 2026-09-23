@@ -1,6 +1,8 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { A } from "@solidjs/router"
 import { For, Match, Switch } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -87,12 +89,12 @@ export function OidcConsentDemoView(props: { readonly state: ReturnType<typeof o
                   })}
                 </p>
                 <div class="flex flex-wrap gap-2">
-                  <Button onClick={props.state.consentDecline} variant="outline">
+                  <ButtonIcon icon={mdiCancel} onClick={props.state.consentDecline} variant="outline">
                     {messageTranslate("common.decline")}
-                  </Button>
-                  <Button onClick={props.state.consentApprove} variant="filledBlue">
+                  </ButtonIcon>
+                  <ButtonIcon icon={mdiCheckCircle} onClick={props.state.consentApprove} variant="filledBlue">
                     {messageTranslate("common.continue")}
-                  </Button>
+                  </ButtonIcon>
                 </div>
               </div>
             </AuthenticatedSection>

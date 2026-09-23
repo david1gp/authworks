@@ -1,8 +1,13 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
+import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
@@ -27,33 +32,33 @@ export function ProjectAdminRolesGrantsView(props: {
   const grantActions = (grant: ProjectGrant) => (
     <>
       <Show when={grant.status === "active"}>
-        <Button
+        <ButtonIcon
           disabled={state.page.pendingId() !== undefined}
+          icon={mdiCancel}
           onClick={() => state.grantLifecycleSet(grant.id, "inactive")}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.deactivate")}
-        </Button>
+        </ButtonIcon>
       </Show>
       <Show when={grant.status === "inactive"}>
-        <Button
+        <ButtonIcon
           disabled={state.page.pendingId() !== undefined}
+          icon={mdiCheckCircle}
           onClick={() => state.grantLifecycleSet(grant.id, "active")}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.activate")}
-        </Button>
+        </ButtonIcon>
       </Show>
-      <Button
+      <ButtonIcon
         disabled={state.page.pendingId() !== undefined}
+        icon={mdiDelete}
         onClick={() => state.grantDelete(grant.id)}
-        size="sm"
         variant="filledRed"
       >
         {messageTranslate("common.revoke")}
-      </Button>
+      </ButtonIcon>
     </>
   )
   const grantOrganizationName = (grant: ProjectGrant) => (
@@ -85,6 +90,7 @@ export function ProjectAdminRolesGrantsView(props: {
               open={state.roleCreateOpen()}
               title={messageTranslate("admin.projects.roles.create")}
               triggerLabel={messageTranslate("admin.projects.roles.create")}
+              triggerIcon={mdiPlus}
               variant="filledBlue"
             >
               <form class="grid gap-3" onSubmit={state.roleCreateSubmit}>
@@ -115,9 +121,14 @@ export function ProjectAdminRolesGrantsView(props: {
                 <Show when={state.roleFormError()}>
                   {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                 </Show>
-                <Button disabled={state.page.pendingId() !== undefined} type="submit" variant="filledBlue">
+                <ButtonIcon
+                  disabled={state.page.pendingId() !== undefined}
+                  icon={mdiContentSave}
+                  type="submit"
+                  variant="filledBlue"
+                >
                   {messageTranslate("common.save")}
-                </Button>
+                </ButtonIcon>
               </form>
             </AuthenticatedDialog>
           }
@@ -135,14 +146,14 @@ export function ProjectAdminRolesGrantsView(props: {
                 {(role) => (
                   <AuthenticatedRecordItem
                     actions={
-                      <Button
+                      <ButtonIcon
                         disabled={state.page.pendingId() !== undefined}
+                        icon={mdiDelete}
                         onClick={() => state.roleDelete(role.id)}
-                        size="sm"
                         variant="filledRed"
                       >
                         {messageTranslate("admin.projects.lifecycle.remove")}
-                      </Button>
+                      </ButtonIcon>
                     }
                     fields={[
                       {
@@ -190,14 +201,14 @@ export function ProjectAdminRolesGrantsView(props: {
                       <TableCell class={`${authenticatedTableClasses.cell} font-medium`}>{role.displayName}</TableCell>
                       <TableCell class={authenticatedTableClasses.cell}>{role.group ?? "—"}</TableCell>
                       <TableCell class={authenticatedTableClasses.action}>
-                        <Button
+                        <ButtonIcon
                           disabled={state.page.pendingId() !== undefined}
+                          icon={mdiDelete}
                           onClick={() => state.roleDelete(role.id)}
-                          size="sm"
                           variant="filledRed"
                         >
                           {messageTranslate("admin.projects.lifecycle.remove")}
-                        </Button>
+                        </ButtonIcon>
                       </TableCell>
                     </TableRow>
                   )}
@@ -215,6 +226,7 @@ export function ProjectAdminRolesGrantsView(props: {
               open={state.grantCreateOpen()}
               title={messageTranslate("admin.projects.grants.create")}
               triggerLabel={messageTranslate("admin.projects.grants.create")}
+              triggerIcon={mdiPlus}
               variant="filledBlue"
             >
               <form class="grid gap-3" onSubmit={state.grantCreateSubmit}>
@@ -248,9 +260,14 @@ export function ProjectAdminRolesGrantsView(props: {
                 <Show when={state.grantFormError()}>
                   {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                 </Show>
-                <Button disabled={state.page.pendingId() !== undefined} type="submit" variant="filledBlue">
+                <ButtonIcon
+                  disabled={state.page.pendingId() !== undefined}
+                  icon={mdiContentSave}
+                  type="submit"
+                  variant="filledBlue"
+                >
                   {messageTranslate("common.save")}
-                </Button>
+                </ButtonIcon>
               </form>
             </AuthenticatedDialog>
           }

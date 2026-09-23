@@ -1,8 +1,13 @@
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
+import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
@@ -27,33 +32,33 @@ export function ProjectAdminApplicationsView(props: {
   const lifecycleActions = (application: ProjectApplication) => (
     <>
       <Show when={application.status === "active"}>
-        <Button
+        <ButtonIcon
           disabled={state.page.pendingId() !== undefined}
+          icon={mdiCancel}
           onClick={() => state.lifecycleSet(application.id, "inactive")}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.deactivate")}
-        </Button>
+        </ButtonIcon>
       </Show>
       <Show when={application.status === "inactive"}>
-        <Button
+        <ButtonIcon
           disabled={state.page.pendingId() !== undefined}
+          icon={mdiCheckCircle}
           onClick={() => state.lifecycleSet(application.id, "active")}
-          size="sm"
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.activate")}
-        </Button>
+        </ButtonIcon>
       </Show>
-      <Button
+      <ButtonIcon
         disabled={state.page.pendingId() !== undefined}
+        icon={mdiDelete}
         onClick={() => state.lifecycleSet(application.id, "removed")}
-        size="sm"
         variant="filledRed"
       >
         {messageTranslate("admin.projects.lifecycle.remove")}
-      </Button>
+      </ButtonIcon>
     </>
   )
 
@@ -72,6 +77,7 @@ export function ProjectAdminApplicationsView(props: {
             open={state.createOpen()}
             title={messageTranslate("admin.projects.applications.create")}
             triggerLabel={messageTranslate("admin.projects.applications.create")}
+            triggerIcon={mdiPlus}
             variant="filledBlue"
           >
             <form class="grid gap-3" onSubmit={state.createSubmit}>
@@ -94,9 +100,14 @@ export function ProjectAdminApplicationsView(props: {
               <Show when={state.formError()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <Button disabled={state.page.pendingId() !== undefined} type="submit" variant="filledBlue">
+              <ButtonIcon
+                disabled={state.page.pendingId() !== undefined}
+                icon={mdiContentSave}
+                type="submit"
+                variant="filledBlue"
+              >
                 {messageTranslate("common.save")}
-              </Button>
+              </ButtonIcon>
             </form>
           </AuthenticatedDialog>
         }

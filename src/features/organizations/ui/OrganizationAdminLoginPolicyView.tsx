@@ -1,7 +1,12 @@
+import { mdiAutorenew } from "@adaptive-ds/mdi/mdiAutorenew.js"
+import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
+import { mdiToggleSwitch } from "@adaptive-ds/mdi/mdiToggleSwitch.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
@@ -140,9 +145,9 @@ export function OrganizationAdminLoginPolicyView(props: {
                 </For>
               </div>
               <div>
-                <Button disabled={props.pendingId === "policy"} size="sm" type="submit">
+                <ButtonIcon disabled={props.pendingId === "policy"} icon={mdiContentSave} type="submit">
                   {messageTranslate("common.save")}
-                </Button>
+                </ButtonIcon>
               </div>
             </form>
           </AuthenticatedSection>
@@ -197,23 +202,23 @@ export function OrganizationAdminLoginPolicyView(props: {
                           />
                         </div>
                         <div class="flex flex-wrap items-center gap-1.5">
-                          <Button
+                          <ButtonIcon
                             disabled={props.pendingId === `provider:${provider.id}`}
+                            icon={mdiToggleSwitch}
                             onClick={() => props.onProviderEnabledToggle(provider)}
-                            size="sm"
                             variant="outline"
                           >
                             {provider.enabled ? messageTranslate("common.disable") : messageTranslate("common.enable")}
-                          </Button>
+                          </ButtonIcon>
                           <Show when={provider.enabled}>
-                            <Button
+                            <ButtonIcon
                               disabled={props.pendingId === `provider:${provider.id}`}
+                              icon={mdiCancel}
                               onClick={() => props.onProviderDisable(provider.id, provider.displayName)}
-                              size="sm"
                               variant="filledRed"
                             >
                               {messageTranslate("admin.organizations.providers.disable")}
-                            </Button>
+                            </ButtonIcon>
                           </Show>
                         </div>
                       </div>
@@ -249,17 +254,17 @@ export function OrganizationAdminLoginPolicyView(props: {
                             {messageTranslate("admin.organizations.providers.secretWriteOnly")}
                           </p>
                         </div>
-                        <Button
+                        <ButtonIcon
                           disabled={
                             props.pendingId === `provider:${provider.id}` ||
                             (props.providerSecrets[provider.id] ?? "").length === 0
                           }
+                          icon={mdiAutorenew}
                           onClick={() => props.onProviderSecretRotate(provider.id)}
-                          size="sm"
                           variant="outline"
                         >
                           {messageTranslate("admin.organizations.providers.rotateSecret")}
-                        </Button>
+                        </ButtonIcon>
                       </div>
                     </li>
                   )}
@@ -340,9 +345,9 @@ export function OrganizationAdminLoginPolicyView(props: {
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
               <div>
-                <Button disabled={props.pendingId === "provider:create"} size="sm" type="submit">
+                <ButtonIcon disabled={props.pendingId === "provider:create"} icon={mdiPlus} type="submit">
                   {messageTranslate("admin.organizations.providers.create")}
-                </Button>
+                </ButtonIcon>
               </div>
             </form>
           </AuthenticatedSection>

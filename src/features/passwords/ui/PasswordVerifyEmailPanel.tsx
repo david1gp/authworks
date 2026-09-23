@@ -1,3 +1,4 @@
+import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
 import { LoginMessages } from "../../login/ui/LoginMessages.js"
@@ -32,7 +33,11 @@ export function PasswordVerifyEmailPanel(props: PasswordVerifyEmailPanelProps) {
       ) : (
         <form class="mt-6 grid gap-4" novalidate onSubmit={props.onSubmit}>
           <LoginMessages errorMessage={props.errorMessage} validationMessage={props.validationMessage} />
-          <LoginSubmitButton label={messageTranslate("login.verify.submit")} pending={props.pending} />
+          <LoginSubmitButton
+            icon={mdiCheckCircleOutline}
+            label={messageTranslate("login.verify.submit")}
+            pending={props.pending}
+          />
         </form>
       )}
       <LoginBackLink onBack={props.onBack} />

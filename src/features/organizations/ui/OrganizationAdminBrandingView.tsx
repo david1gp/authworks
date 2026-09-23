@@ -1,7 +1,8 @@
+import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -143,9 +144,9 @@ export function OrganizationAdminBrandingView(props: {
 
           <AuthenticatedSection
             actions={
-              <Button disabled={props.pendingId === "branding"} size="sm" type="submit">
+              <ButtonIcon disabled={props.pendingId === "branding"} icon={mdiContentSave} type="submit">
                 {messageTranslate("common.save")}
-              </Button>
+              </ButtonIcon>
             }
             description={messageTranslate("admin.organizations.branding.description")}
             padded

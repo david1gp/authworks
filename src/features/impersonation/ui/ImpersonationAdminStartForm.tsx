@@ -1,7 +1,8 @@
+import { mdiAccountArrowRight } from "@adaptive-ds/mdi/mdiAccountArrowRight.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { authenticatedWarningOutlineButtonClass } from "../../../ui/authenticated/authenticatedWarningOutlineButtonClass.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -91,15 +92,15 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
         {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
       </Show>
 
-      <Button
+      <ButtonIcon
         class={`justify-self-start ${authenticatedWarningOutlineButtonClass}`}
         disabled={state.pendingId() !== undefined}
-        size="sm"
+        icon={mdiAccountArrowRight}
         type="submit"
         variant="outline"
       >
         {messageTranslate("admin.impersonation.start")}
-      </Button>
+      </ButtonIcon>
     </form>
   )
 }

@@ -1,3 +1,4 @@
+import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { Show } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { LoginBackLink } from "../../login/ui/LoginBackLink.js"
@@ -81,6 +82,7 @@ export function ExternalIdentityPanel(props: ExternalIdentityPanelProps) {
             }}
           >
             <LoginSubmitButton
+              icon={mdiLogin}
               label={
                 props.status === "failure"
                   ? messageTranslate("common.retry")

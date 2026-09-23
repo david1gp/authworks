@@ -1,7 +1,9 @@
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
+import { mdiChevronUp } from "@adaptive-ds/mdi/mdiChevronUp.js"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { CodeBlock } from "#ui/static/code/CodeBlock.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
@@ -58,16 +60,16 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
               {(item) => (
                 <AuthenticatedRecordItem
                   actions={
-                    <Button
+                    <ButtonIcon
                       class="h-7 text-xs"
+                      icon={props.state.expandedEventId() === item.id ? mdiChevronUp : mdiChevronDown}
                       onClick={() => props.state.eventExpandToggle(item.id)}
-                      size="sm"
                       variant="outline"
                     >
                       {props.state.expandedEventId() === item.id
                         ? messageTranslate("admin.events.hide")
                         : messageTranslate("admin.events.show")}
-                    </Button>
+                    </ButtonIcon>
                   }
                   fields={[
                     {
@@ -141,16 +143,16 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
                         {item.actorId ?? messageTranslate("admin.events.systemActor")}
                       </TableCell>
                       <TableCell class={authenticatedTableClasses.action}>
-                        <Button
+                        <ButtonIcon
                           class="h-7 text-xs"
+                          icon={props.state.expandedEventId() === item.id ? mdiChevronUp : mdiChevronDown}
                           onClick={() => props.state.eventExpandToggle(item.id)}
-                          size="sm"
                           variant="outline"
                         >
                           {props.state.expandedEventId() === item.id
                             ? messageTranslate("admin.events.hide")
                             : messageTranslate("admin.events.show")}
-                        </Button>
+                        </ButtonIcon>
                       </TableCell>
                     </TableRow>
                     <Show when={props.state.expandedEventId() === item.id}>

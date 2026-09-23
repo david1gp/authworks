@@ -1,4 +1,5 @@
 import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
+import { mdiMenuClose } from "@adaptive-ds/mdi/mdiMenuClose.js"
 import { A } from "@solidjs/router"
 import { For, type JSX } from "solid-js"
 import { Button } from "#ui/interactive/button/Button.jsx"
@@ -64,6 +65,7 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
           variant="ghost"
           onClick={() => state.sidebar.openDesktop.set(false)}
         >
+          <Icon path={mdiMenuClose} />
           {messageTranslate("admin.navigation.hide")}
         </Button>
       </div>

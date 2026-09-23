@@ -1,3 +1,4 @@
+import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { LoginBackLink } from "./LoginBackLink.js"
 import { LoginMessages } from "./LoginMessages.js"
@@ -20,6 +21,7 @@ export function LoginLogoutPanel(props: {
       <div class="mt-6 grid gap-4">
         <LoginMessages errorMessage={props.errorMessage} />
         <LoginSubmitButton
+          icon={mdiLogout}
           label={messageTranslate("login.logout.submit")}
           onClick={props.onLogout}
           pending={props.pending}

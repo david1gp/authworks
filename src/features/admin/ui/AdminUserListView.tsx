@@ -1,8 +1,9 @@
+import { mdiAccountPlus } from "@adaptive-ds/mdi/mdiAccountPlus.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
@@ -34,6 +35,7 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
             open={props.state.createOpen.get()}
             title={messageTranslate("admin.users.create")}
             triggerLabel={messageTranslate("admin.users.create")}
+            triggerIcon={mdiAccountPlus}
             variant="filledBlue"
           >
             <form class="grid gap-3" onSubmit={props.state.userCreateSubmit}>
@@ -65,9 +67,9 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
               <Show when={props.state.validationMessage()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <Button type="submit" variant="filledBlue">
+              <ButtonIcon icon={mdiAccountPlus} type="submit" variant="filledBlue">
                 {messageTranslate("admin.users.createSubmit")}
-              </Button>
+              </ButtonIcon>
             </form>
           </AuthenticatedDialog>
         }

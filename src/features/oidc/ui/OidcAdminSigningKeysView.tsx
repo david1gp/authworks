@@ -1,5 +1,8 @@
+import { mdiAutorenew } from "@adaptive-ds/mdi/mdiAutorenew.js"
+import { mdiKeyRemove } from "@adaptive-ds/mdi/mdiKeyRemove.js"
+import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -22,14 +25,14 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
     key.retiredAt === null ? "—" : localeDateFormat(key.retiredAt, { dateStyle: "medium" })
   const retireButton = (key: OidcSigningKey) => (
     <Show when={key.status === "active"}>
-      <Button
+      <ButtonIcon
         disabled={state.pendingId() !== undefined}
+        icon={mdiKeyRemove}
         onClick={() => void state.signingKeyRetire(key.id)}
-        size="sm"
         variant="outline"
       >
         {messageTranslate("admin.oidc.keys.retire")}
-      </Button>
+      </ButtonIcon>
     </Show>
   )
 
@@ -38,22 +41,22 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
       <AuthenticatedToolbar
         actions={
           <>
-            <Button
+            <ButtonIcon
               disabled={state.pendingId() !== undefined}
+              icon={mdiPlus}
               onClick={() => void state.signingKeyCreate()}
-              size="sm"
               variant="outline"
             >
               {messageTranslate("admin.oidc.keys.create")}
-            </Button>
-            <Button
+            </ButtonIcon>
+            <ButtonIcon
               disabled={state.pendingId() !== undefined}
+              icon={mdiAutorenew}
               onClick={() => void state.signingKeyRotate()}
-              size="sm"
               variant="filledBlue"
             >
               {messageTranslate("admin.oidc.keys.rotate")}
-            </Button>
+            </ButtonIcon>
           </>
         }
         label={messageTranslate("admin.oidc.keys.title")}
