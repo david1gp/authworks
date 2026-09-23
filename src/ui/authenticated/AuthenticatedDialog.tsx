@@ -1,9 +1,11 @@
 import Dialog from "@corvu/dialog"
+import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { type JSX, Show } from "solid-js"
-import { Button } from "#ui/interactive/button/Button.jsx"
+import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import type { ButtonVariant } from "#ui/interactive/button/buttonCva.js"
 import { buttonCva2 } from "#ui/interactive/button/buttonCva.js"
 import { classesButtonClickAnimation } from "#ui/interactive/button/classesButtonClickAnimation.js"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classesDialogContentMerge, classesDialogOverlayMerge } from "#ui/interactive/dialog/classesDialogContent.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { authenticatedDialogStateCreate } from "./authenticatedDialogStateCreate.js"
@@ -24,6 +26,7 @@ export function AuthenticatedDialog(props: {
   readonly open: boolean
   readonly title: string
   readonly triggerLabel?: JSX.Element
+  readonly triggerIcon?: string
   readonly variant?: ButtonVariant
 }) {
   const state = authenticatedDialogStateCreate(() => props.open)
@@ -36,6 +39,7 @@ export function AuthenticatedDialog(props: {
           disabled={props.disabled}
           ref={state.triggerRegister}
         >
+          <Show when={props.triggerIcon}>{(icon) => <Icon class="mr-1.5 size-4" path={icon()} />}</Show>
           {props.triggerLabel}
         </Dialog.Trigger>
       </Show>
@@ -51,7 +55,7 @@ export function AuthenticatedDialog(props: {
                 )}
               </Show>
             </div>
-            <Dialog.Close as={Button} class="h-8 text-xs" variant="outline">
+            <Dialog.Close as={ButtonIcon} class="h-8 text-xs" icon={mdiClose} variant="outline">
               {messageTranslate("common.close")}
             </Dialog.Close>
           </div>
