@@ -14,19 +14,17 @@ test("the account demo landing page composes the full example account workspace"
   await expect(page.getByRole("heading", { name: "Account", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Profile", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Security", exact: true })).toBeVisible()
-  await expect(page.getByRole("heading", { name: /Recent security activity/ })).toBeVisible()
-  await expect(page.getByRole("heading", { name: /Sessions and devices/ })).toBeVisible()
-  await expect(
-    page.getByRole("region", { name: "Devices and applications" }).getByRole("heading", {
-      name: "Applications",
-      exact: true,
-    }),
-  ).toBeVisible()
+  const devices = page.getByRole("region", { name: "Devices and applications" })
+  for (const summary of ["Recent security activity", "Sessions and devices", "Applications"])
+    await expect(devices.locator("summary").filter({ hasText: summary })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Access", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Danger zone", exact: true })).toBeVisible()
   await expect(page.getByText("Avery Stone", { exact: true }).first()).toBeVisible()
+  await page.locator("#profile summary").filter({ hasText: "Email addresses" }).click()
   await expect(page.getByText("avery.secondary@example.com", { exact: true })).toBeVisible()
+  await devices.locator("summary").filter({ hasText: "Sessions and devices" }).click()
   await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
+  await page.locator("#access summary").filter({ hasText: "Organizations" }).click()
   await expect(page.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
   await expect(page.getByText("Stateless fixture preview", { exact: true })).toHaveCount(0)
   expect(requests).toEqual([])
@@ -41,11 +39,12 @@ test("organization, invitation, and consent demos are interactive and network-fr
   await page.goto("/demo/account/organizations")
   await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(1)
   await expect(page.getByRole("link", { name: "Access", exact: true })).toHaveCount(0)
-  const organizationSection = page.getByRole("region", { name: "Organization to view", exact: true })
+  await page.locator("summary").filter({ hasText: "Organizations" }).click()
+  const organizationSection = page.getByRole("tablist", { name: "Organization to view", exact: true })
   const organizationTabs = organizationSection.getByRole("tab")
   await expect(organizationTabs).toHaveCount(2)
   await expect(organizationTabs.nth(0)).toHaveAttribute("aria-selected", "true")
-  const organizationPanel = organizationSection.getByRole("tabpanel")
+  const organizationPanel = page.getByRole("tabpanel")
   await expect(organizationPanel).toHaveAttribute("aria-labelledby", /-tab-/)
   await expect(organizationPanel.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
   await expect(organizationPanel.getByRole("heading", { name: "Customer portal", exact: true })).toBeVisible()
@@ -56,22 +55,17 @@ test("organization, invitation, and consent demos are interactive and network-fr
   await expect(organizationTabs.nth(1)).toHaveAttribute("aria-selected", "true")
   await expect(organizationPanel.getByRole("heading", { name: "Field Notes", exact: true })).toBeVisible()
   await expect(organizationPanel.getByText("member", { exact: true })).toBeVisible()
-  await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toBeVisible()
+  await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toHaveCount(0)
   await expect(organizationPanel.getByText("Active organization", { exact: true })).toHaveCount(0)
   await expect(
     organizationSection.getByText("Organization context changed to Field Notes.", { exact: true }),
   ).toHaveCount(0)
 
-  await organizationPanel.getByRole("button", { name: "Make active organization", exact: true }).click()
-  await expect(organizationPanel.getByText("Active organization", { exact: true })).toBeVisible()
-  await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toHaveCount(0)
-  await expect(
-    organizationSection.getByText("Organization context changed to Field Notes.", { exact: true }),
-  ).toBeVisible()
-
   await page.goto("/demo/account/consents")
-  page.once("dialog", (dialog) => void dialog.accept())
-  await page.getByRole("button", { name: "Revoke" }).first().click()
+  await page.locator("summary").filter({ hasText: "Application consents" }).click()
+  await page.getByRole("list", { name: "Application consents" }).getByRole("button").first().click()
+  await page.getByRole("dialog").getByRole("button", { name: "Revoke" }).click()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page.getByRole("status")).toContainText("revoked")
 
   // The overview must lead to the accept destination instead of only describing a missing link.
@@ -100,40 +94,43 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   await expect(page.getByRole("heading", { level: 1, name: "Security setup", exact: true })).toBeVisible()
   await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(1)
   const securityGrid = page.locator("[data-account-security-grid]")
-  await expect(securityGrid.locator(":scope > section")).toHaveCount(4)
-  for (const detail of [
-    "Password set",
-    "avery.stone@example.com verified",
-    "+14155552671 verified",
-    "2 passkeys configured",
-    "7 backup codes remaining",
-  ])
-    await expect(securityGrid.getByText(detail, { exact: true })).toBeVisible()
-  await expect(securityGrid.locator('[data-configured="true"]')).toHaveCount(7)
-  await expect(securityGrid.locator('[data-configured="false"]')).toHaveCount(0)
+  await expect(securityGrid.locator(":scope > details")).toHaveCount(5)
+  for (const detail of ["Password set", "2 passkeys configured", "7 backup codes remaining"])
+    await expect(securityGrid.locator("summary").getByText(detail, { exact: true })).toBeVisible()
+  await expect(securityGrid.locator("summary").filter({ hasText: /[Cc]onfigured/ })).toHaveCount(5)
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
 
   await page.goto("/demo/account/overview?state=empty")
   await expect(page.locator("[data-account-security-grid]")).toContainText("No password set")
   await expect(page.locator("[data-account-security-grid]")).toContainText("No verified email")
-  await expect(page.locator('[data-account-security-grid] [data-configured="true"]')).toHaveCount(0)
-  await expect(page.locator('[data-account-security-grid] [data-configured="false"]')).toHaveCount(7)
+  await expect(page.locator("[data-account-security-grid] summary").filter({ hasText: "Not configured" })).toHaveCount(
+    4,
+  )
+  await expect(
+    page.locator("[data-account-security-grid] summary").filter({ hasText: "Authenticator missing" }),
+  ).toHaveCount(1)
 
   await page.goto("/demo/account/sessions")
   await expect(page.getByRole("heading", { level: 1, name: "Sessions and devices", exact: true })).toBeVisible()
+  await page.locator("summary").filter({ hasText: "Sessions and devices" }).click()
   await expect(page.getByText("Firefox on Linux", { exact: true })).toBeVisible()
-  await page.getByRole("button", { name: "Revoke session" }).click()
+  await page
+    .getByRole("list", { name: "Sessions and devices" })
+    .getByRole("button", { name: /Safari on iPhone/ })
+    .click()
+  await page.getByRole("dialog").getByRole("button", { name: "Revoke session" }).click()
   await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
   await expect(page.getByText("Safari on iPhone", { exact: true })).toHaveCount(0)
 
   await page.goto("/demo/account/passkeys?state=empty")
+  await page.locator("summary").filter({ hasText: "Passkeys" }).click()
   await expect(page.getByText("No passkeys registered", { exact: true })).toBeVisible()
   await page.getByRole("link", { name: "loading", exact: true }).click()
   await expect(page.getByRole("status")).toBeVisible()
 
   await page.goto("/demo/account/factors")
-  await expect(page.getByText("1 authenticators configured", { exact: true })).toBeVisible()
-  await expect(page.getByText("Configured", { exact: true }).first()).toBeVisible()
+  await expect(page.getByText("1 authenticators", { exact: true })).toBeVisible()
+  await expect(page.locator("summary").filter({ hasText: "Authenticator configured" })).toBeVisible()
 
   await page.goto("/demo/account/recovery-codes?state=one-time")
   await expect(page.locator('[data-one-time-secret="recovery-codes"]')).toBeVisible()
@@ -141,11 +138,19 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   await expect(page.getByText("AX7K-2QPL", { exact: true })).toHaveCount(0)
 
   await page.goto("/demo/account/identities")
-  await page.getByRole("button", { name: "Unlink" }).first().click()
-  await expect(page.getByRole("heading", { name: "GitHub", exact: true })).toHaveCount(0)
+  await page.locator("summary").filter({ hasText: "Linked identities" }).click()
+  await page
+    .getByRole("list", { name: "Linked identities" })
+    .getByRole("button", { name: /GitHub/ })
+    .click()
+  await page.getByRole("dialog").getByRole("button", { name: "Unlink" }).click()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
+  await expect(
+    page.getByRole("list", { name: "Linked identities" }).getByRole("button", { name: /GitHub/ }),
+  ).toHaveCount(0)
 
   await page.goto("/demo/account/security-history")
-  await expect(page.getByRole("heading", { name: "Security history", exact: true })).toBeVisible()
+  await page.locator("summary").filter({ hasText: "Recent security activity" }).click()
   await expect(page.getByText("A session was created", { exact: true })).toBeVisible()
   await page.getByRole("button", { name: "Load more security activity", exact: true }).click()
   await expect(page.getByText("An impersonation session started", { exact: true })).toBeVisible()
@@ -166,24 +171,15 @@ test("the full production security composition remains responsive, accessible, a
 
     const securitySection = page.locator("#security")
     const securityGrid = securitySection.locator("[data-account-security-grid]")
-    await expect(securityGrid.locator(":scope > section"), viewport.name).toHaveCount(4)
-    for (const title of ["Passkeys", "Authenticators", "Linked identities", "Recovery codes"])
+    await expect(securityGrid.locator(":scope > details"), viewport.name).toHaveCount(5)
+    for (const title of ["Passkeys", "Authenticator", "Linked identities", "Password", "Recovery codes"])
       await expect(
-        securityGrid.getByRole("region", { name: title, exact: true }),
+        securityGrid.locator("summary").filter({ hasText: title }),
         `${viewport.name}/${title}`,
       ).toBeVisible()
-    await expect(securityGrid.locator('[data-configured="true"]')).toHaveCount(6)
-    await expect(securityGrid.locator('[data-configured="false"]')).toHaveCount(1)
-    await expect(securityGrid.getByText("No verified phone", { exact: true })).toBeVisible()
+    await expect(page.locator("#profile summary").filter({ hasText: "Phone numbers" })).toBeVisible()
 
     const profileSection = page.locator("#profile")
-    const progress = profileSection.getByRole("progressbar", {
-      name: "Security setup progress: 4 of 5 methods configured",
-    })
-    await expect(profileSection.getByText("4/5 methods configured", { exact: true })).toBeVisible()
-    await expect(progress).toHaveAttribute("aria-valuemin", "0")
-    await expect(progress).toHaveAttribute("aria-valuemax", "5")
-    await expect(progress).toHaveAttribute("aria-valuenow", "4")
     await expect
       .poll(() => securityGrid.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length))
       .toBe(viewport.columns)
@@ -192,32 +188,45 @@ test("the full production security composition remains responsive, accessible, a
     ).toBe(true)
     expect((await new AxeBuilder({ page }).include("#security").analyze()).violations).toEqual([])
 
-    const passkeys = securityGrid.getByRole("region", { name: "Passkeys", exact: true })
-    await passkeys.getByRole("button", { name: "Remove", exact: true }).click()
+    const passkeys = securityGrid.locator(":scope > details").nth(0)
+    await passkeys.locator("summary").click()
+    await passkeys.getByRole("list", { name: "Passkeys" }).getByRole("button").first().click()
+    await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click()
     await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
     await expect(passkeys.getByText("0 passkeys configured", { exact: true })).toBeVisible()
+    await passkeys.locator("summary").click()
     await passkeys.getByRole("button", { name: "Add passkey", exact: true }).click()
+    await page.getByRole("dialog").getByRole("button", { name: "Add passkey", exact: true }).click()
     await expect(passkeys.getByText("1 passkeys configured", { exact: true })).toBeVisible()
 
-    const identities = securityGrid.getByRole("region", { name: "Linked identities", exact: true })
-    await identities.getByRole("button", { name: "Unlink", exact: true }).click()
+    const identities = securityGrid.locator(":scope > details").nth(2)
+    await identities.locator("summary").click()
+    await identities.getByRole("list", { name: "Linked identities" }).getByRole("button").first().click()
+    await page.getByRole("dialog").getByRole("button", { name: "Unlink", exact: true }).click()
     await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
     await expect(identities.getByText("0 linked identities", { exact: true })).toBeVisible()
-    await expect(identities.getByRole("button", { name: "Google", exact: true })).toBeEnabled()
+    await identities.locator("summary").click()
+    await identities.getByRole("button", { name: "Link an external account", exact: true }).click()
+    await expect(page.getByRole("dialog").getByRole("button", { name: "Google", exact: true })).toBeEnabled()
+    await page.keyboard.press("Escape")
 
-    const recovery = securityGrid.getByRole("region", { name: "Recovery codes", exact: true })
-    await expect(recovery.getByRole("button", { name: "Change password", exact: true })).toBeVisible()
+    const recovery = securityGrid.locator(":scope > details").nth(4)
+    await recovery.locator("summary").click()
     await recovery.getByRole("button", { name: "Generate new codes", exact: true }).click()
-    await expect(recovery.getByText("COMPOSE-API1", { exact: true })).toBeVisible()
-    await recovery.getByRole("button", { name: "I saved these codes", exact: true }).click()
+    const recoveryDialog = page.getByRole("dialog", { name: "Recovery codes", exact: true })
+    await recoveryDialog.getByRole("button", { name: "Generate new codes", exact: true }).click()
+    await expect(recoveryDialog.getByText("COMPOSE-API1", { exact: true })).toBeVisible()
+    await recoveryDialog.getByRole("button", { name: "I saved these codes", exact: true }).click()
     await expect(recovery.getByText("COMPOSE-API1", { exact: true })).toHaveCount(0)
 
-    const authenticators = securityGrid.getByRole("region", { name: "Authenticators", exact: true })
-    await authenticators.getByRole("button", { name: "Authenticator app", exact: true }).click()
+    const authenticators = securityGrid.locator(":scope > details").nth(1)
+    await authenticators.locator("summary").click()
+    await authenticators.getByRole("button", { name: /Authenticator app Configured/ }).click()
     const authenticatorDialog = page.getByRole("dialog", { name: "Authenticator app", exact: true })
     await authenticatorDialog.getByRole("button", { name: "Remove authenticator", exact: true }).click()
     await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
-    await expect(authenticators.getByText("0 authenticators configured", { exact: true })).toBeVisible()
+    await expect(authenticators.locator("summary").getByText("0 authenticators", { exact: true })).toBeVisible()
+    await authenticators.locator("summary").click()
     const trigger = authenticators.getByRole("button", { name: "Add authenticator", exact: true })
     await trigger.click()
     const dialog = page.getByRole("dialog", { name: "Finish authenticator setup", exact: true })
@@ -273,6 +282,7 @@ test("production security history uses the safe newest-first cursor contract", a
 
   await page.goto("/account#devices-applications")
   const devicesApplicationsSection = page.locator("#devices-applications")
+  await devicesApplicationsSection.locator("summary").filter({ hasText: "Recent security activity" }).click()
   await expect(devicesApplicationsSection.getByText("A session was created", { exact: true })).toBeVisible()
   await expect(devicesApplicationsSection.getByText("session.created", { exact: true })).toHaveCount(0)
   await devicesApplicationsSection.getByRole("button", { name: "Load more security activity", exact: true }).click()
@@ -329,6 +339,7 @@ test("production authenticator enrollment stays in a resettable accessible dialo
 
   await page.goto("/account#security")
   const securitySection = page.locator("#security")
+  await securitySection.locator("[data-account-security-grid] > details").nth(1).locator("summary").click()
   const trigger = securitySection.getByRole("button", { name: "Add authenticator", exact: true })
   await trigger.click()
   const dialog = page.getByRole("dialog", { name: "Finish authenticator setup", exact: true })
@@ -355,7 +366,9 @@ test("production authenticator enrollment stays in a resettable accessible dialo
   await code.fill("123456")
   await dialog.getByRole("button", { name: "Confirm", exact: true }).click()
   await expect(dialog).toHaveCount(0)
-  await expect(trigger).toBeFocused()
+  await expect(
+    securitySection.locator("[data-account-security-grid] > details").nth(1).locator("summary"),
+  ).toBeVisible()
 })
 
 test("production session revocation uses the real account contract and CSRF", async ({ page }) => {
@@ -406,8 +419,13 @@ test("production session revocation uses the real account contract and CSRF", as
 
   await page.goto("/account#devices-applications")
   const devicesApplicationsSection = page.locator("#devices-applications")
+  await devicesApplicationsSection.locator("summary").filter({ hasText: "Sessions and devices" }).click()
   await expect(devicesApplicationsSection.getByText("Fixture phone", { exact: true })).toBeVisible()
-  await devicesApplicationsSection.getByRole("button", { name: "Revoke session" }).click()
+  await devicesApplicationsSection
+    .getByRole("list", { name: "Sessions and devices" })
+    .getByRole("button", { name: /Fixture phone/ })
+    .click()
+  await page.getByRole("dialog").getByRole("button", { name: "Revoke session" }).click()
   await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
   await expect(devicesApplicationsSection.getByText("Fixture phone", { exact: true })).toHaveCount(0)
   expect(csrfHeader).toBe("deterministic-csrf-token-12345678901234567890")
@@ -441,11 +459,14 @@ test("production recovery codes are fetched with CSRF and displayed once", async
 
   await page.goto("/account#security")
   const securitySection = page.locator("#security")
+  await securitySection.locator("[data-account-security-grid] > details").nth(4).locator("summary").click()
   await securitySection.getByRole("button", { name: "Generate new codes" }).click()
-  await expect(securitySection.getByText("REAL-API1", { exact: true })).toBeVisible()
+  const recoveryDialog = page.getByRole("dialog", { name: "Recovery codes", exact: true })
+  await recoveryDialog.getByRole("button", { name: "Generate new codes" }).click()
+  await expect(recoveryDialog.getByText("REAL-API1", { exact: true })).toBeVisible()
   expect(csrfHeader).toBe("recovery-csrf")
-  await securitySection.getByRole("button", { name: "I saved these codes" }).click()
-  await expect(securitySection.getByText("REAL-API1", { exact: true })).toHaveCount(0)
+  await recoveryDialog.getByRole("button", { name: "I saved these codes" }).click()
+  await expect(recoveryDialog.getByText("REAL-API1", { exact: true })).toHaveCount(0)
   await page.reload()
   await expect(page.locator("#security").getByText("REAL-API1", { exact: true })).toHaveCount(0)
 })

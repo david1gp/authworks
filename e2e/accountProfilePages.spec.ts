@@ -34,8 +34,10 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   })
 
   await page.goto("/demo/account/profile")
-  await expect(page.getByRole("heading", { name: "Personal information" })).toBeVisible()
-  const profileSection = page.getByRole("region", { name: "Profile", exact: true })
+  const profileSection = page.locator("main")
+  await expect(profileSection.locator("summary").filter({ hasText: "Personal information" })).toBeVisible()
+  await profileSection.locator("summary").filter({ hasText: "Sign-in details" }).click()
+  await profileSection.locator("summary").filter({ hasText: "Personal information" }).click()
   await expect(page.getByText("Avery Stone", { exact: true }).first()).toBeVisible()
   await expect(page.getByText("avery.stone@example.com", { exact: true })).toBeVisible()
   await expect(page.getByText("Verified", { exact: true }).first()).toBeVisible()
@@ -111,16 +113,19 @@ test("demo account pages are interactive and network-free", async ({ page }) => 
   await expect(passwordDialog.getByText("Your password was changed.")).toBeVisible()
 
   await page.goto("/demo/account/delete")
-  await page.getByText("Show account deletion options", { exact: true }).click()
-  await page.getByLabel(/Enter .* to confirm/).fill("not-the-email")
-  await page.getByRole("button", { name: "Delete account permanently" }).click()
-  await expect(page.getByText("The email address does not match.")).toBeVisible()
+  await page.getByText("Permanently delete this account", { exact: true }).click()
+  await page.getByRole("button", { name: "Show account deletion options" }).click()
+  const deleteDialog = page.getByRole("dialog", { name: "Permanently delete this account" })
+  await deleteDialog.getByLabel(/Enter .* to confirm/).fill("not-the-email")
+  await deleteDialog.getByRole("button", { name: "Delete account permanently" }).click()
+  await expect(deleteDialog.getByText("The email address does not match.")).toBeVisible()
   expect(apiRequests).toEqual([])
 })
 
 test("demo profile edits can be cancelled without changing the overview", async ({ page }) => {
   await page.goto("/demo/account/profile")
-  const profileSection = page.getByRole("region", { name: "Profile", exact: true })
+  const profileSection = page.locator("main")
+  await profileSection.locator("summary").filter({ hasText: "Personal information" }).click()
   await page.getByRole("button", { name: "Edit profile", exact: true }).click()
   const profileDialog = page.getByRole("dialog", { name: "Edit profile", exact: true })
   await profileDialog.getByLabel("Display name", { exact: true }).fill("Uncommitted name")
@@ -191,6 +196,8 @@ test("production profile uses the subject API and CSRF", async ({ page }) => {
 
   await page.goto("/account#profile")
   const profileSection = page.locator("#profile")
+  await profileSection.locator("summary").filter({ hasText: "Sign-in details" }).click()
+  await profileSection.locator("summary").filter({ hasText: "Personal information" }).click()
   await expect(page.getByText("Avery Stone", { exact: true }).first()).toBeVisible()
   await expect(page.getByText("Verified", { exact: true }).first()).toBeVisible()
   await expect(profileSection.getByRole("button", { name: "Change picture", exact: true })).toBeVisible()
@@ -338,10 +345,11 @@ test("production profile adds, verifies, and changes its phone number", async ({
 
   await page.goto("/account#profile")
   const profileSection = page.locator("#profile")
-  const phoneDetails = profileSection.getByRole("region", { name: "Phone numbers", exact: true })
+  const phoneDetails = profileSection.locator("summary").filter({ hasText: "Phone numbers" }).locator("..")
+  await phoneDetails.locator("summary").click()
   // The add/change flow lives in a dialog opened by the single compact control on the section.
   const phoneForm = page.getByRole("dialog")
-  await expect(phoneDetails.getByText("No phone numbers are available.", { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary").getByText("Not set", { exact: true })).toHaveCount(2)
   await phoneDetails.getByRole("button", { name: "Add phone number" }).click()
   await phoneForm.getByLabel("Phone number", { exact: true }).fill(firstPhoneNumber)
   await phoneForm.getByRole("button", { name: "Add phone number" }).click()
@@ -357,8 +365,8 @@ test("production profile adds, verifies, and changes its phone number", async ({
   // A successful verification closes the dialog and reports the result on the section itself.
   await expect(phoneForm).toHaveCount(0)
   await expect(phoneDetails.getByText("Your verified phone number was updated.", { exact: true })).toBeVisible()
-  await expect(phoneDetails.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
-  await expect(phoneDetails.getByText("Verified", { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary").getByText(firstPhoneNumber, { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary").getByText("Verified", { exact: true })).toBeVisible()
 
   await phoneDetails.getByRole("button", { name: "Change phone number" }).click()
   await phoneForm.getByLabel("New phone number").fill(replacementPhoneNumber)
@@ -372,20 +380,20 @@ test("production profile adds, verifies, and changes its phone number", async ({
   await expect(
     phoneForm.getByText(`Enter the code sent to ${replacementPhoneNumber} on WhatsApp.`, { exact: true }),
   ).toBeVisible()
-  await expect(phoneDetails.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary").getByText(firstPhoneNumber, { exact: true })).toBeVisible()
   await phoneForm.getByLabel("Six-digit verification code").fill("654321")
   await phoneForm.getByRole("button", { name: "Verify phone number" }).click()
   await expect(phoneForm.getByText("The account phone-change code is invalid.", { exact: true })).toBeVisible()
-  await expect(phoneDetails.getByText(firstPhoneNumber, { exact: true })).toBeVisible()
-  await expect(phoneDetails.getByText(replacementPhoneNumber, { exact: true })).toHaveCount(0)
+  await expect(phoneDetails.locator("summary").getByText(firstPhoneNumber, { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary").getByText(replacementPhoneNumber, { exact: true })).toHaveCount(0)
 
   await phoneForm.getByLabel("Six-digit verification code").fill("654322")
   await phoneForm.getByRole("button", { name: "Verify phone number" }).click()
   await expect(phoneForm).toHaveCount(0)
   await expect(phoneDetails.getByText("Your verified phone number was updated.", { exact: true })).toBeVisible()
-  await expect(phoneDetails.getByText(replacementPhoneNumber, { exact: true })).toBeVisible()
-  await expect(phoneDetails.getByText(firstPhoneNumber, { exact: true })).toHaveCount(0)
-  await expect(phoneDetails.getByText("Verified", { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary").getByText(replacementPhoneNumber, { exact: true })).toBeVisible()
+  await expect(phoneDetails.locator("summary").getByText(firstPhoneNumber, { exact: true })).toHaveCount(0)
+  await expect(phoneDetails.locator("summary").getByText("Verified", { exact: true })).toBeVisible()
   expect(phoneChangeRequests).toEqual([
     {
       body: { phoneNumber: firstPhoneNumber },
@@ -504,15 +512,20 @@ test("production email addresses use the lifecycle APIs and protect the primary 
 
   await page.goto("/account#profile")
   const profileSection = page.locator("#profile")
+  const emailSection = profileSection.locator("summary").filter({ hasText: "Email addresses" }).locator("..")
+  await emailSection.locator("summary").click()
   const emailAddressList = profileSection.getByRole("list", { name: "Email addresses", exact: true })
   const primaryRow = emailAddressList.getByRole("listitem").filter({
     has: page.getByText(user.email, { exact: true }),
   })
   await expect(primaryRow.getByText("Primary", { exact: true })).toBeVisible()
-  await expect(primaryRow.getByRole("button", { name: "Remove", exact: true })).toBeDisabled()
+  await primaryRow.getByRole("button").click()
+  await expect(
+    page.getByRole("dialog", { name: user.email }).getByRole("button", { name: "Remove", exact: true }),
+  ).toBeDisabled()
+  await page.keyboard.press("Escape")
 
   // The add/verify flow lives in a dialog opened by the single compact control on the section.
-  const emailSection = profileSection.getByRole("region", { name: "Email addresses", exact: true })
   await emailSection.getByRole("button", { name: "Add email address", exact: true }).click()
   const emailDialog = page.getByRole("dialog")
   await emailDialog.getByLabel("New email address").fill("avery.secondary@example.com")
@@ -526,9 +539,15 @@ test("production email addresses use the lifecycle APIs and protect the primary 
     has: page.getByText("avery.secondary@example.com", { exact: true }),
   })
   await expect(secondaryRow.getByText("Verified", { exact: true })).toBeVisible()
-  await secondaryRow.getByRole("button", { name: "Make primary", exact: true }).click()
+  await secondaryRow.getByRole("button").click()
+  await page
+    .getByRole("dialog", { name: "avery.secondary@example.com" })
+    .getByRole("button", { name: "Make primary", exact: true })
+    .click()
   await expect(secondaryRow.getByText("Primary", { exact: true })).toBeVisible()
-  await primaryRow.getByRole("button", { name: "Remove", exact: true }).click()
+  await page.keyboard.press("Escape")
+  await primaryRow.getByRole("button").click()
+  await page.getByRole("dialog", { name: user.email }).getByRole("button", { name: "Remove", exact: true }).click()
   await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
   await expect(primaryRow).toHaveCount(0)
   expect(requests).toEqual([
@@ -588,6 +607,7 @@ test("production password presents an API rejection", async ({ page }) => {
 
   await page.goto("/account#security")
   const securitySection = page.locator("#security")
+  await securitySection.locator("[data-account-security-grid] > details").nth(3).locator("summary").click()
   await securitySection.getByRole("button", { name: "Change password" }).click()
   const passwordDialog = page.getByRole("dialog", { name: "Change password" })
   await passwordDialog.getByLabel("Current password").fill("wrong-password")
