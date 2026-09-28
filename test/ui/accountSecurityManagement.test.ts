@@ -125,7 +125,7 @@ describe("account security management", () => {
     expect(state.width()).toBe("100%")
   })
 
-  test("renders exactly four responsive management cards in a three-column desktop grid", async () => {
+  test("renders five responsive management cards in a three-column desktop grid", async () => {
     const management = await Bun.file(
       new URL("../../src/features/account/ui/AccountSecurityManagement.tsx", import.meta.url),
     ).text()
@@ -134,7 +134,7 @@ describe("account security management", () => {
     ).text()
 
     expect(management).toContain("md:grid-cols-2 xl:grid-cols-3")
-    expect(management.match(/<Account(Passkeys|Factors|Identities|RecoveryCodes)Section/g)).toHaveLength(4)
+    expect(management.match(/<Account(Passkeys|Factors|Identities|Password|RecoveryCodes)Section/g)).toHaveLength(5)
     expect(management).not.toContain("AccountSecurityProgress")
     expect(
       await Bun.file(new URL("../../src/features/account/ui/AccountSecurityProgress.tsx", import.meta.url)).exists(),
@@ -171,13 +171,17 @@ describe("account security management", () => {
       ].map((name) => Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()),
     )
 
-    expect(sources[0]).toContain('title={messageTranslate("shell.nav.passkeys")}')
-    expect(sources[1]).toContain('title={messageTranslate("account.security.authenticators")}')
-    expect(sources[2]).toContain('title={messageTranslate("shell.nav.linkedIdentities")}')
-    expect(sources[3]).toContain('title={messageTranslate("shell.nav.recoveryCodes")}')
-    for (const source of sources) expect(source).toContain("<AccountSecurityStatus")
+    expect(sources[0]).toContain('summary={messageTranslate("shell.nav.passkeys")}')
+    expect(sources[1]).toContain('summary={messageTranslate("account.factors.authenticator")}')
+    expect(sources[2]).toContain('summary={messageTranslate("shell.nav.linkedIdentities")}')
+    expect(sources[3]).toContain('summary={messageTranslate("shell.nav.recoveryCodes")}')
+    expect(sources[2]).toContain("<AccountDisclosure")
+    expect(sources[3]).toContain("<AccountSecurityStatus")
+    expect(sources[0]).toContain("<AccountDisclosure")
+    expect(sources[1]).toContain("<AccountDisclosure")
 
-    expect(sources[3]).toContain("props.passwordAction")
+    expect(sources[3]).toContain("<AccountDisclosure")
+    expect(sources[3]).toContain("<AuthenticatedDialog")
     expect(sources[3]).toContain("onClick={props.state.recoveryCodesGenerate}")
     expect(sources[3]).toContain('data-one-time-secret="recovery-codes"')
     expect(sources[3]).not.toContain("AccountEmailAddressView")
@@ -198,7 +202,15 @@ describe("account security management", () => {
     expect(factors).toContain("onOpenChange={props.state.totpDialogOpenSet}")
     expect(factors).toContain('triggerLabel={messageTranslate("account.factors.addTotp")}')
     expect(factors).toContain('disabled={props.state.pendingId()?.startsWith("totp:")}')
-    expect(factors.indexOf("props.state.totpSetup()")).toBeLessThan(factors.indexOf("</AuthenticatedDialog>"))
+    expect(factors.indexOf("props.state.totpSetup()")).toBeGreaterThan(
+      factors.indexOf('triggerLabel={messageTranslate("account.factors.addTotp")}'),
+    )
+    expect(factors.indexOf("props.state.totpSetup()")).toBeLessThan(
+      factors.indexOf(
+        "</AuthenticatedDialog>",
+        factors.indexOf('triggerLabel={messageTranslate("account.factors.addTotp")}'),
+      ),
+    )
     expect(factors).toContain("{setup().secret}")
     expect(factors).toContain("{setup().otpauthUri}")
     expect(factors).toContain("props.state.totpError()")

@@ -1,24 +1,29 @@
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
+import { mdiHistory } from "@adaptive-ds/mdi/mdiHistory.js"
 import { For, Show } from "solid-js"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
-import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { AccountDisclosure } from "./AccountDisclosure.js"
 import { accountSecurityHistoryMessageKeyGet } from "./accountSecurityHistoryMessageKeyGet.js"
+import { accountSecurityHistorySectionStateCreate } from "./accountSecurityHistorySectionStateCreate.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
 export function AccountSecurityHistorySection(props: { readonly state: AccountSecurityViewState }) {
+  const state = accountSecurityHistorySectionStateCreate(() => props.state.securityHistory())
   return (
-    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
-      <AuthenticatedToolbar label={messageTranslate("shell.nav.securityHistory")}>
-        <div class="grid gap-0.5">
-          <h2 class="text-base font-semibold tracking-tight">{messageTranslate("shell.nav.securityHistory")}</h2>
-          <p class="text-sm text-muted-foreground">{messageTranslate("account.securityHistory.description")}</p>
-        </div>
-      </AuthenticatedToolbar>
-      <AuthenticatedSection label={messageTranslate("shell.nav.securityHistory")}>
+    <AccountDisclosure
+      class="h-full"
+      icon={mdiHistory}
+      status={state.summaryStatus()}
+      statusTone="neutral"
+      summary={messageTranslate("shell.nav.securityHistory")}
+      value={state.summaryValue()}
+      variant="card"
+    >
+      <div class="grid gap-3">
+        <p class="text-xs text-muted-foreground">{messageTranslate("account.securityHistory.description")}</p>
         <Show
           when={props.state.securityHistory().length > 0}
           fallback={
@@ -63,7 +68,7 @@ export function AccountSecurityHistorySection(props: { readonly state: AccountSe
             </div>
           </Show>
         </Show>
-      </AuthenticatedSection>
-    </div>
+      </div>
+    </AccountDisclosure>
   )
 }

@@ -1,6 +1,7 @@
 import type { JSX } from "solid-js"
 import { AccountFactorsSection } from "./AccountFactorsSection.js"
 import { AccountIdentitiesSection } from "./AccountIdentitiesSection.js"
+import { AccountPasswordSection } from "./AccountPasswordSection.js"
 import { AccountPasskeysSection } from "./AccountPasskeysSection.js"
 import { AccountRecoveryCodesSection } from "./AccountRecoveryCodesSection.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
@@ -17,7 +18,8 @@ export function AccountSecurityManagement(props: {
       <AccountPasskeysSection state={props.state} />
       <AccountFactorsSection state={props.state} />
       <AccountIdentitiesSection state={props.state} />
-      <AccountRecoveryCodesSection passwordAction={props.passwordAction} state={props.state} />
+      <AccountPasswordSection action={props.passwordAction} state={props.state} />
+      <AccountRecoveryCodesSection state={props.state} />
     </div>
   )
 }

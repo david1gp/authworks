@@ -34,7 +34,7 @@ export function accountProfilePictureFieldStateCreate(options: {
     open.set(next)
   }
   const selectFile = (file: File) => {
-    if (busy()) return
+    if (!open.get() || busy()) return
     if (!(userPictureConstraints.contentTypes as readonly string[]).includes(file.type)) {
       validationMessage.set(messageTranslate("account.profile.pictureTypeInvalid"))
       return
@@ -49,8 +49,12 @@ export function accountProfilePictureFieldStateCreate(options: {
   }
   const save = () => {
     const file = selectedFile.get()
-    if (file === undefined || busy()) return
+    if (!open.get() || file === undefined || busy()) return
     options.onUpload(file)
+  }
+  const remove = () => {
+    if (!open.get() || busy() || !options.url()) return
+    options.onRemove()
   }
   createEffect(() => {
     const current = options.status()
@@ -59,7 +63,7 @@ export function accountProfilePictureFieldStateCreate(options: {
   })
   onCleanup(previewClear)
   const openFilePicker = () => {
-    if (!busy()) fileInput?.click()
+    if (open.get() && !busy()) fileInput?.click()
   }
   const fileInputSet = (element: HTMLInputElement) => {
     fileInput = element
@@ -73,7 +77,7 @@ export function accountProfilePictureFieldStateCreate(options: {
   const onDragOver = (event: DragEvent) => {
     event.preventDefault()
     event.stopPropagation()
-    if (!busy()) isDragging.set(true)
+    if (open.get() && !busy()) isDragging.set(true)
   }
   const onDragEnter = onDragOver
   const onDragLeave = (event: DragEvent) => {
@@ -88,6 +92,7 @@ export function accountProfilePictureFieldStateCreate(options: {
     event.preventDefault()
     event.stopPropagation()
     isDragging.set(false)
+    if (!open.get()) return
     const file = event.dataTransfer?.files?.[0]
     if (file !== undefined) selectFile(file)
   }
@@ -113,6 +118,7 @@ export function accountProfilePictureFieldStateCreate(options: {
     openFilePicker,
     pictureFailed: picture.failed,
     previewUrl: () => previewUrl.get() || options.url(),
+    remove,
     save,
     selectedFile: selectedFile.get,
     validationMessage: validationMessage.get,

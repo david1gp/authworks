@@ -1,5 +1,8 @@
+import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { AccountDisclosure } from "./AccountDisclosure.js"
+import { AccountIdentityCopyButton } from "./AccountIdentityCopyButton.js"
 import { AccountProfilePictureField } from "./AccountProfilePictureField.js"
 import { AccountSecurityProgress } from "./AccountSecurityProgress.js"
 import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
@@ -20,11 +23,21 @@ export function AccountProfileIdentityStrip(props: {
   readonly userName: string
 }) {
   return (
-    <section
-      aria-label={messageTranslate("shell.nav.profile")}
-      class="grid min-w-0 gap-4 overflow-hidden rounded-panel border border-line bg-surface p-4 sm:p-5"
+    <AccountDisclosure
+      icon={mdiAccountCircleOutline}
+      status={messageTranslate(
+        !props.email
+          ? "account.profile.emailMissing"
+          : props.emailVerified
+            ? "account.profile.emailVerified"
+            : "account.profile.emailVerificationPending",
+      )}
+      statusTone={props.emailVerified ? "success" : "neutral"}
+      summary={messageTranslate("account.profile.signInTitle")}
+      value={props.displayName || props.userName || props.email || messageTranslate("account.profile.notSet")}
+      variant="card"
     >
-      <div class="grid min-w-0 items-center gap-5 sm:grid-cols-[auto_minmax(0,1fr)]">
+      <div class="grid min-w-0 items-start gap-4 sm:grid-cols-[auto_minmax(0,1fr)]">
         <AccountProfilePictureField
           errorMessage={props.pictureErrorMessage}
           onRemove={props.onPictureRemove}
@@ -32,36 +45,50 @@ export function AccountProfileIdentityStrip(props: {
           status={props.pictureStatus}
           url={props.pictureUrl}
         />
-        <div class="grid min-w-0 gap-4">
-          <div class="flex min-w-0 flex-wrap items-center gap-2">
-            <div class="grid min-w-0 flex-1 gap-1">
-              <p class="truncate text-2xl font-semibold tracking-tight">
-                {props.displayName || props.userName || props.email}
-              </p>
-              <p class="text-sm text-muted-foreground">{messageTranslate("account.profile.signInDescription")}</p>
-            </div>
-            <AuthenticatedStatus
-              label={
-                props.emailVerified
-                  ? messageTranslate("account.profile.verified")
-                  : messageTranslate("account.profile.verificationPending")
-              }
-              tone={props.emailVerified ? "success" : "warning"}
-            />
-          </div>
+        <div class="grid min-w-0 gap-3">
+          <p class="text-sm text-muted-foreground">{messageTranslate("account.profile.signInDescription")}</p>
           <dl class="grid min-w-0 divide-y divide-line-subtle border-y border-line-subtle sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-            <div class="min-w-0 px-3 py-2">
+            <div class="min-w-0 py-2 sm:pr-3">
               <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.userName")}</dt>
-              <dd class="truncate font-mono text-sm">{props.userName}</dd>
+              <dd class="flex min-w-0 items-center gap-1 font-mono text-sm">
+                <span class="min-w-0 break-all">{props.userName || messageTranslate("account.profile.notSet")}</span>
+                {props.userName ? (
+                  <AccountIdentityCopyButton
+                    label={messageTranslate("account.profile.userName")}
+                    value={props.userName}
+                  />
+                ) : null}
+              </dd>
             </div>
-            <div class="min-w-0 px-3 py-2">
+            <div class="min-w-0 py-2 sm:pl-3">
               <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.email")}</dt>
-              <dd class="truncate font-mono text-sm">{props.email}</dd>
+              <dd class="flex min-w-0 items-center gap-1 font-mono text-sm">
+                <span class="min-w-0 break-all">{props.email || messageTranslate("account.profile.notSet")}</span>
+                {props.email ? (
+                  <AccountIdentityCopyButton label={messageTranslate("account.profile.email")} value={props.email} />
+                ) : null}
+                {props.email ? (
+                  <AuthenticatedStatus
+                    label={messageTranslate(
+                      props.emailVerified ? "account.profile.verified" : "account.profile.verificationPending",
+                    )}
+                    tone={props.emailVerified ? "success" : "warning"}
+                  />
+                ) : null}
+              </dd>
             </div>
           </dl>
-          <div class="flex min-w-0 flex-wrap items-center gap-2 text-sm">
-            <span class="text-muted-foreground">{messageTranslate("account.profile.phoneNumber")}</span>
-            <span class="break-all font-mono">{props.phoneNumber ?? messageTranslate("account.profile.notSet")}</span>
+          <div class="flex min-w-0 flex-wrap items-center gap-1 text-sm">
+            <span class="mr-1 text-muted-foreground">{messageTranslate("account.profile.phoneNumber")}</span>
+            <span class="min-w-0 break-all font-mono">
+              {props.phoneNumber || messageTranslate("account.profile.notSet")}
+            </span>
+            {props.phoneNumber ? (
+              <AccountIdentityCopyButton
+                label={messageTranslate("account.profile.phoneNumber")}
+                value={props.phoneNumber}
+              />
+            ) : null}
             {props.phoneNumber ? (
               <AuthenticatedStatus
                 label={messageTranslate(
@@ -73,7 +100,11 @@ export function AccountProfileIdentityStrip(props: {
           </div>
         </div>
       </div>
-      {props.securityProgress ? <AccountSecurityProgress state={props.securityProgress} /> : null}
-    </section>
+      {props.securityProgress ? (
+        <div class="mt-4">
+          <AccountSecurityProgress state={props.securityProgress} />
+        </div>
+      ) : null}
+    </AccountDisclosure>
   )
 }

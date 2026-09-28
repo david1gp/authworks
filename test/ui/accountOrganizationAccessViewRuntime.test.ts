@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url"
 import { Window } from "happy-dom"
 import solid from "vite-plugin-solid"
 import type { OrganizationMe } from "../../src/features/organizations/public/organizationMeSchema.js"
+import type { AccountEffectiveAccessGroup } from "../../src/features/account/public/accountEffectiveAccessGroupSchema.js"
 
 type AccountOrganizationAccessView =
   typeof import("../../src/features/account/ui/AccountOrganizationAccessView.js")["AccountOrganizationAccessView"]
@@ -156,9 +157,10 @@ const domRestore = () => {
 }
 
 const renderView = async (
-  effectiveAccessStatus: "error" | "loading",
+  effectiveAccessStatus: "error" | "loading" | "ready",
   effectiveAccessError?: string,
   organizationStatus: "error" | "loading" | "ready" = "ready",
+  access?: { readonly group: AccountEffectiveAccessGroup; readonly onLoadMore: () => void },
 ) => {
   const browserWindow = domSetup()
   accountOrganizationAccessView ??= (await import(pathToFileURL(compiledViewPath).href)).AccountOrganizationAccessView
@@ -172,16 +174,16 @@ const renderView = async (
   const props = {
     activeOrganizationId: "alpha",
     effectiveAccessError,
+    effectiveAccessGroup: access?.group,
+    effectiveAccessNextPageToken: access === undefined ? undefined : "next-page",
     effectiveAccessPending: false,
     effectiveAccessStatus,
-    onEffectiveAccessLoadMore: () => {},
+    onEffectiveAccessLoadMore: access?.onLoadMore ?? (() => {}),
     onEffectiveAccessRetry: () => {},
-    onOrganizationActivate: () => {},
     onOrganizationRetry: () => {},
     onOrganizationSelect: () => {},
     organizations,
     organizationStatus,
-    pending: false,
     viewedOrganization: organizations[1],
     viewedOrganizationId: "beta",
   }
@@ -193,14 +195,20 @@ const renderView = async (
   return { dispose, root }
 }
 
-test("keeps selected organization membership and activation visible while effective access loads", async () => {
+test("shows a collapsed organization count and read-only membership while effective access loads", async () => {
   const { dispose, root } = await renderView("loading", undefined, "loading")
 
+  const card = root.querySelector("details")
+  expect(card?.open).toBe(false)
+  expect(card?.querySelector("summary")?.textContent).toContain("Loading")
+  expect(card?.querySelector("summary")?.textContent).not.toContain("Beta Organization")
+  card?.setAttribute("open", "")
   const panel = root.querySelector('[role="tabpanel"]')
   expect(panel?.textContent).toContain("Beta Organization")
   expect(panel?.textContent).toContain("beta")
   expect(panel?.textContent).toContain("member")
-  expect(panel?.textContent).toContain("Make active organization")
+  expect(panel?.textContent).not.toContain("Make active organization")
+  expect(root.textContent).not.toContain("Switch organization")
   expect(panel?.querySelector('[data-content-state="loading"]')).not.toBeNull()
   expect(root.querySelectorAll('[data-content-state="loading"]')).toHaveLength(1)
   expect(root.querySelector('[data-content-state="loading"]')).toBe(panel?.lastElementChild ?? null)
@@ -214,20 +222,83 @@ test("keeps selected organization membership and activation visible while effect
   domRestore()
 })
 
-test("keeps selected organization membership and activation visible when effective access fails", async () => {
+test("keeps selected organization membership and retry visible without session switching on access failure", async () => {
   const { dispose, root } = await renderView("error", "Effective access failed.", "error")
 
   const panel = root.querySelector('[role="tabpanel"]')
   expect(panel?.textContent).toContain("Beta Organization")
   expect(panel?.textContent).toContain("beta")
   expect(panel?.textContent).toContain("member")
-  expect(panel?.textContent).toContain("Make active organization")
+  expect(panel?.textContent).not.toContain("Make active organization")
   expect(panel?.querySelector('[data-content-state="error"]')?.textContent).toContain("Effective access failed.")
   expect(panel?.querySelector('[data-content-state="error"] button')?.textContent).toContain("Try again")
   expect(root.querySelectorAll('[data-content-state="error"]')).toHaveLength(1)
   expect(root.querySelectorAll('[data-content-state="error"] button')).toHaveLength(1)
   expect(root.querySelector('[data-content-state="error"]')).toBe(panel?.lastElementChild ?? null)
   expect(root.querySelector('[role="tablist"] [data-content-state]')).toBeNull()
+
+  dispose()
+  domRestore()
+})
+
+test("summarizes the membership count without showing helper text until expanded", async () => {
+  const { dispose, root } = await renderView("loading")
+
+  const card = root.querySelector("details")
+  expect(card?.querySelector("summary")?.textContent).toContain("2 organizations")
+  expect(card?.open).toBe(false)
+  expect(card?.querySelector("summary")?.textContent).not.toContain("Select an organization")
+  card?.setAttribute("open", "")
+  expect(card?.textContent).toContain("Select an organization to view its membership")
+  expect(root.querySelectorAll('[role="tab"]')).toHaveLength(2)
+  expect(root.querySelectorAll("button")).toHaveLength(2)
+
+  dispose()
+  domRestore()
+})
+
+test("keeps access provenance and pagination within the selected organization's expanded card", async () => {
+  const membership = organizationAccess("beta", "Beta Organization")
+  let loadMoreCount = 0
+  const { dispose, root } = await renderView("ready", undefined, "ready", {
+    group: {
+      organization: membership.organization,
+      entries: [
+        {
+          id: "project:beta:organization:beta",
+          organization: membership,
+          permissions: ["project.read"],
+          project: {
+            authorizationRequired: true,
+            createdAt: 1,
+            id: "beta-project",
+            name: "Beta project",
+            organizationId: "beta",
+            projectAccessRequired: true,
+            realmId: "realm-1",
+            status: "active",
+            updatedAt: 1,
+          },
+          roleKeys: ["member"],
+          source: "membership",
+        },
+      ],
+    },
+    onLoadMore: () => loadMoreCount++,
+  })
+
+  const card = root.querySelector("details")
+  expect(card?.open).toBe(false)
+  card?.setAttribute("open", "")
+  const panel = root.querySelector('[role="tabpanel"]')
+  expect(panel?.textContent).toContain("Beta project")
+  expect(panel?.textContent).toContain("Access source: membership")
+  const loadMore = [...(panel?.querySelectorAll("button") ?? [])].find((button) =>
+    button.textContent?.includes("Load more access"),
+  )
+  expect(loadMore).toBeDefined()
+  loadMore?.click()
+  expect(loadMoreCount).toBe(1)
 
   dispose()
   domRestore()

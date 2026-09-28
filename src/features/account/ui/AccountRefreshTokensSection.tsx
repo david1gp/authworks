@@ -1,101 +1,156 @@
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
+import { mdiKeyChain } from "@adaptive-ds/mdi/mdiKeyChain.js"
 import { mdiKeyRemove } from "@adaptive-ds/mdi/mdiKeyRemove.js"
 import { For, Show } from "solid-js"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
-import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
+import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { AccountDisclosure } from "./AccountDisclosure.js"
 import { AccountRoleList } from "./AccountRoleList.js"
 import { accountRefreshTokenStatusLabelGet } from "./accountRefreshTokenStatusLabelGet.js"
+import { accountRefreshTokensSectionStateCreate } from "./accountRefreshTokensSectionStateCreate.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
 export function AccountRefreshTokensSection(props: { readonly state: AccountSecurityViewState }) {
+  const state = accountRefreshTokensSectionStateCreate(
+    () => props.state.refreshTokens(),
+    () => props.state.refreshTokensNextPageToken(),
+  )
   return (
-    <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
-      <AuthenticatedToolbar
-        actions={
-          <Show when={props.state.refreshTokens().some((token) => token.status === "active")}>
-            <ButtonIcon
-              class="h-7 text-xs"
-              disabled={props.state.pendingId() === "refresh-tokens:all"}
-              icon={mdiKeyRemove}
-              onClick={props.state.refreshTokensRevokeAll}
-              variant="filledRed"
-            >
-              {messageTranslate("account.refreshTokens.revokeAll")}
-            </ButtonIcon>
-          </Show>
-        }
-        label={messageTranslate("shell.nav.applications")}
-      >
-        <div class="grid gap-0.5">
-          <h2 class="text-base font-semibold tracking-tight">{messageTranslate("shell.nav.applications")}</h2>
-          <p class="text-sm text-muted-foreground">{messageTranslate("account.refreshTokens.description")}</p>
-        </div>
-      </AuthenticatedToolbar>
-
-      <AuthenticatedSection label={messageTranslate("account.refreshTokens.title")}>
+    <AccountDisclosure
+      class="h-full"
+      icon={mdiKeyChain}
+      status={state.summaryStatus()}
+      statusTone={state.summaryTone()}
+      summary={messageTranslate("shell.nav.applications")}
+      value={state.summaryValue()}
+      variant="card"
+    >
+      <div class="grid gap-3">
+        <p class="text-xs text-muted-foreground">{messageTranslate("account.refreshTokens.description")}</p>
         <Show
           when={props.state.refreshTokens().length > 0}
           fallback={
-            <p class="px-3 py-2.5 text-sm text-muted-foreground">{messageTranslate("account.refreshTokens.empty")}</p>
+            <p class="px-2 py-2.5 text-sm text-muted-foreground">{messageTranslate("account.refreshTokens.empty")}</p>
           }
         >
-          <ul class="divide-y divide-line-subtle">
+          <ul aria-label={messageTranslate("account.refreshTokens.title")} class="divide-y divide-line-subtle">
             <For each={props.state.refreshTokens()}>
               {(token) => (
-                <li class="grid min-w-0 gap-2 px-3 py-2.5">
-                  <div class="flex min-w-0 flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
-                    <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                      <span class="min-w-0 truncate text-sm font-medium">{token.clientName}</span>
-                      <AuthenticatedStatus
-                        label={messageTranslate(accountRefreshTokenStatusLabelGet(token.status).key)}
-                        tone={accountRefreshTokenStatusLabelGet(token.status).tone}
+                <li class="min-w-0">
+                  <AuthenticatedDialog
+                    class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
+                    description={messageTranslate("account.refreshTokens.description")}
+                    onOpenChange={(open) => state.dialogOpenChange(token.familyId, open)}
+                    open={state.dialogOpen(token.familyId)}
+                    title={messageTranslate("account.refreshTokens.manage", { application: token.clientName })}
+                    triggerLabel={
+                      <span class="grid min-w-0 gap-0.5">
+                        <span class="flex min-w-0 flex-wrap items-center gap-2">
+                          <span class="min-w-0 break-words text-sm font-medium">{token.clientName}</span>
+                          <AuthenticatedStatus
+                            label={messageTranslate(accountRefreshTokenStatusLabelGet(token.status).key)}
+                            tone={accountRefreshTokenStatusLabelGet(token.status).tone}
+                          />
+                        </span>
+                        <span class="text-xs text-muted-foreground">
+                          {messageTranslate("account.refreshTokens.lastUsed", {
+                            date:
+                              token.lastUsedAt === null
+                                ? messageTranslate("account.refreshTokens.neverUsed")
+                                : localeDateFormat(token.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
+                          })}
+                        </span>
+                      </span>
+                    }
+                    variant="ghost"
+                  >
+                    <div class="grid gap-3">
+                      <AccountRoleList values={token.scope} />
+                      <AuthenticatedFieldList
+                        columns={3}
+                        fields={[
+                          {
+                            label: messageTranslate("admin.users.sessions.lastUsed"),
+                            value:
+                              token.lastUsedAt === null
+                                ? messageTranslate("account.refreshTokens.neverUsed")
+                                : localeDateFormat(token.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
+                          },
+                          {
+                            label: messageTranslate("admin.users.sessions.expires"),
+                            value: localeDateFormat(token.expiresAt, { dateStyle: "medium", timeStyle: "short" }),
+                          },
+                          {
+                            label: messageTranslate("account.refreshTokens.revoked"),
+                            value:
+                              token.revokedAt === null
+                                ? ""
+                                : localeDateFormat(token.revokedAt, { dateStyle: "medium", timeStyle: "short" }),
+                          },
+                        ]}
                       />
+                      <Show when={token.status === "active"}>
+                        <div>
+                          <ButtonIcon
+                            class={authenticatedDangerOutlineButtonClass}
+                            disabled={props.state.pendingId() !== undefined || !state.dialogOpen(token.familyId)}
+                            icon={mdiKeyRemove}
+                            onClick={() => state.tokenRevoke(token.familyId, props.state.refreshTokenRevoke)}
+                            type="button"
+                            variant="outline"
+                          >
+                            {messageTranslate("account.refreshTokens.revoke")}
+                          </ButtonIcon>
+                        </div>
+                      </Show>
                     </div>
-                    <Show when={token.status === "active"}>
-                      <ButtonIcon
-                        disabled={props.state.pendingId() === `refresh-token:${token.familyId}`}
-                        icon={mdiKeyRemove}
-                        onClick={() => props.state.refreshTokenRevoke(token.familyId)}
-                        variant="filledRed"
-                      >
-                        {messageTranslate("account.refreshTokens.revoke")}
-                      </ButtonIcon>
-                    </Show>
-                  </div>
-                  <AccountRoleList values={token.scope} />
-                  <AuthenticatedFieldList
-                    columns={3}
-                    fields={[
-                      {
-                        label: messageTranslate("admin.users.sessions.lastUsed"),
-                        value:
-                          token.lastUsedAt === null
-                            ? messageTranslate("account.refreshTokens.neverUsed")
-                            : localeDateFormat(token.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
-                      },
-                      {
-                        label: messageTranslate("admin.users.sessions.expires"),
-                        value: localeDateFormat(token.expiresAt, { dateStyle: "medium", timeStyle: "short" }),
-                      },
-                      {
-                        label: messageTranslate("account.refreshTokens.revoked"),
-                        value:
-                          token.revokedAt === null
-                            ? ""
-                            : localeDateFormat(token.revokedAt, { dateStyle: "medium", timeStyle: "short" }),
-                      },
-                    ]}
-                  />
+                  </AuthenticatedDialog>
                 </li>
               )}
             </For>
           </ul>
         </Show>
-      </AuthenticatedSection>
-    </div>
+        <Show when={props.state.refreshTokensNextPageToken()}>
+          <div>
+            <ButtonIcon
+              disabled={props.state.pendingId() !== undefined}
+              icon={mdiChevronDown}
+              onClick={props.state.refreshTokensLoadMore}
+              variant="outline"
+            >
+              {messageTranslate("account.refreshTokens.loadMore")}
+            </ButtonIcon>
+          </div>
+        </Show>
+        <Show when={state.canRevokeAll()}>
+          <div>
+            <AuthenticatedDialog
+              description={messageTranslate("account.refreshTokens.revokeAllConfirm")}
+              onOpenChange={state.allDialogOpenChange}
+              open={state.allDialogOpen()}
+              title={messageTranslate("account.refreshTokens.revokeAll")}
+              triggerIcon={mdiKeyRemove}
+              triggerLabel={messageTranslate("account.refreshTokens.revokeAll")}
+              variant="outline"
+            >
+              <ButtonIcon
+                disabled={props.state.pendingId() !== undefined || !state.allDialogOpen()}
+                icon={mdiKeyRemove}
+                onClick={() => state.tokensRevokeAll(props.state.refreshTokensRevokeAll)}
+                type="button"
+                variant="filledRed"
+              >
+                {messageTranslate("account.refreshTokens.revokeAll")}
+              </ButtonIcon>
+            </AuthenticatedDialog>
+          </div>
+        </Show>
+      </div>
+    </AccountDisclosure>
   )
 }

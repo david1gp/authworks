@@ -11,15 +11,17 @@ export function AccountWorkspace(props: {
   readonly security: JSX.Element
 }) {
   return (
-    <div class="mx-auto grid w-full max-w-7xl min-w-0 gap-8 [&>*]:min-w-0" data-account-workspace>
+    <div
+      class="mx-auto grid w-full max-w-7xl min-w-0 gap-6 pb-8 sm:gap-8 sm:pb-12 [&>*]:min-w-0"
+      data-account-workspace
+    >
       <h1 class="text-xl font-semibold tracking-tight">{messageTranslate("shell.nav.account")}</h1>
       <section
         aria-labelledby="account-workspace-profile-title"
-        class="grid scroll-mt-24 gap-3"
+        class="grid min-w-0 scroll-mt-24 gap-3 sm:gap-4 [&>*]:min-w-0"
         id={accountWorkspaceSectionIds.profile}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.profile.personalDescription")}
           id={accountWorkspaceSectionIds.profile}
           title={messageTranslate("shell.nav.profile")}
         />
@@ -28,11 +30,10 @@ export function AccountWorkspace(props: {
 
       <section
         aria-labelledby="account-workspace-security-title"
-        class="grid scroll-mt-24 gap-3"
+        class="grid min-w-0 scroll-mt-24 gap-3 sm:gap-4 [&>*]:min-w-0"
         id={accountWorkspaceSectionIds.security}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.workspace.securityDescription")}
           id={accountWorkspaceSectionIds.security}
           title={messageTranslate("shell.nav.security")}
         />
@@ -41,11 +42,10 @@ export function AccountWorkspace(props: {
 
       <section
         aria-labelledby="account-workspace-devices-applications-title"
-        class="grid scroll-mt-24 gap-3"
+        class="grid min-w-0 scroll-mt-24 gap-3 sm:gap-4 [&>*]:min-w-0"
         id={accountWorkspaceSectionIds.devicesApplications}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.workspace.devicesDescription")}
           id={accountWorkspaceSectionIds.devicesApplications}
           title={messageTranslate("account.workspace.devicesTitle")}
         />
@@ -54,11 +54,10 @@ export function AccountWorkspace(props: {
 
       <section
         aria-labelledby="account-workspace-access-title"
-        class="grid scroll-mt-24 gap-3"
+        class="grid min-w-0 scroll-mt-24 gap-3 sm:gap-4 [&>*]:min-w-0"
         id={accountWorkspaceSectionIds.access}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.workspace.accessDescription")}
           id={accountWorkspaceSectionIds.access}
           title={messageTranslate("shell.nav.access")}
         />
@@ -67,11 +66,10 @@ export function AccountWorkspace(props: {
 
       <section
         aria-labelledby="account-workspace-danger-zone-title"
-        class="grid scroll-mt-24 gap-3"
+        class="grid min-w-0 scroll-mt-24 gap-3 sm:gap-4 [&>*]:min-w-0"
         id={accountWorkspaceSectionIds.dangerZone}
       >
         <AccountSectionAnchorHeading
-          description={messageTranslate("account.workspace.dangerDescription")}
           id={accountWorkspaceSectionIds.dangerZone}
           title={messageTranslate("account.delete.dangerZone")}
         />

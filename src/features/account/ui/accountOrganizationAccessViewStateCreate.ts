@@ -1,4 +1,5 @@
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
 import { accountAccessBoundaryStateGet } from "./accountAccessBoundaryStateGet.js"
 import type { AccountAccessStatus } from "./accountAccessStatusSchema.js"
 
@@ -7,6 +8,7 @@ export function accountOrganizationAccessViewStateCreate(inputs: {
   readonly effectiveAccessStatus: () => AccountAccessStatus
   readonly organizationError: () => string | undefined
   readonly organizationStatus: () => AccountAccessStatus
+  readonly organizations: () => readonly OrganizationMe[]
 }) {
   const effectiveAccessBoundary = () =>
     accountAccessBoundaryStateGet(inputs.effectiveAccessStatus(), {
@@ -21,5 +23,15 @@ export function accountOrganizationAccessViewStateCreate(inputs: {
   return {
     effectiveAccessBoundary,
     organizationBoundary,
+    organizationSummary: () => {
+      if (inputs.organizationStatus() === "loading") return messageTranslate("common.loading")
+      if (inputs.organizationStatus() === "error") return messageTranslate("account.access.error")
+      return messageTranslate(
+        inputs.organizations().length === 1
+          ? "account.access.organizationCountOne"
+          : "account.access.organizationCount",
+        { count: inputs.organizations().length },
+      )
+    },
   }
 }

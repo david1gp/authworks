@@ -6,6 +6,11 @@ account.securityHistory.description,Review recent security-sensitive activity on
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
+account.access.consentCount,{count} toepassingstoestemmingen
+account.access.consentCountOne,{count} toepassingstoestemming
+account.access.consentManage,Toepassingstoestemming: {clientId}
+account.access.consentTitle,Toepassingstoestemmingen
+account.access.consentUpdated,Bijgewerkt op {date}
 account.access.consentEmpty,No applications have access to this account.
 account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,Instellen als actieve organisatie
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} organisaties
+account.access.organizationCountOne,{count} organisatie
 account.access.organizationDescription,Kies een organisatie om het lidmaatschap en de toegang te bekijken. Een organisatie bekijken verandert uw actieve organisatie niet.
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.organizationSelector,Te bekijken organisatie
@@ -59,6 +66,10 @@ account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
 account.directory.title,Your account
 account.factors.addTotp,Add authenticator
+account.factors.authenticator,Authenticatie-app
+account.factors.configured,Authenticatie-app ingesteld
+account.factors.count,{count} authenticatie-apps
+account.factors.missing,Geen authenticatie-app ingesteld
 account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,Ga verder in het venster van de provider en keer hier terug om de koppeling te bevestigen.
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,{provider}-account beheren ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Dit externe account ontkoppelen?
@@ -88,6 +101,7 @@ account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
 account.passkeys.deviceBound,Device-bound passkey
 account.passkeys.empty,No passkeys registered
+account.passkeys.manage,{kind} beheren ({id})
 account.passkeys.remove,Remove
 account.passkeys.synced,Synced passkey
 account.password.changed,Your password was changed.
@@ -100,16 +114,23 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.copy,{field} kopiëren
+account.profile.copied,{field} gekopieerd.
+account.profile.copyFailed,Kan {field} niet kopiëren. Selecteer de waarde en kopieer deze handmatig.
 account.profile.cancel,Annuleren
 account.profile.edit,Profiel bewerken
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
+account.profile.emailMissing,Geen e-mailadres ingesteld
+account.profile.emailVerified,E-mailadres geverifieerd
+account.profile.emailVerificationPending,Verificatie van e-mailadres in behandeling
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,Bekijk en beheer de adressen die aan uw account zijn gekoppeld.
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
 account.refreshTokens.active,Actief
+account.refreshTokens.activeShown,{count} actieve weergegeven
+account.refreshTokens.countOneShown,{count} toepassing weergegeven
+account.refreshTokens.countShown,{count} toepassingen weergegeven
 account.refreshTokens.description,"Bekijk de toepassingen die vernieuwingstokens voor dit account gebruiken. Alleen veilige metagegevens worden getoond; het intrekken van een familie maakt ook de bijbehorende toegangstokens ongeldig."
 account.refreshTokens.empty,Geen families van vernieuwingstokens beschikbaar
 account.refreshTokens.expired,Verlopen
 account.refreshTokens.expires,Verloopt op {date}
 account.refreshTokens.lastUsed,Laatst gebruikt op {date}
+account.refreshTokens.loadMore,Meer toepassingen laden
+account.refreshTokens.manage,Toepassing: {application}
 account.refreshTokens.neverUsed,Nog nooit gebruikt
+account.refreshTokens.noneActive,Geen actieve toepassingen
 account.refreshTokens.revoke,Familie intrekken
 account.refreshTokens.revokeAll,Alle families intrekken
 account.refreshTokens.revokeAllConfirm,Alle families van vernieuwingstokens voor dit account intrekken?
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,{count} gebeurtenis weergegeven
+account.securityHistory.countShown,{count} gebeurtenissen weergegeven
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
+account.sessions.count,{count} actieve sessies
+account.sessions.countOne,{count} actieve sessie
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
 account.sessions.empty,No active sessions
 account.sessions.lastUsed,Last used {date}
+account.sessions.manage,Sessie op {device}
 account.sessions.revoke,Revoke session
 account.sessions.revokeConfirm,Revoke this session immediately?
 account.sessions.unknownDevice,Unknown device

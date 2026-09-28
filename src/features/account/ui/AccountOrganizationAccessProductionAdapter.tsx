@@ -13,14 +13,11 @@ export function AccountOrganizationAccessProductionAdapter() {
       effectiveAccessStatus={state.effectiveAccess.status()}
       onEffectiveAccessLoadMore={state.effectiveAccess.effectiveAccessLoadMore}
       onEffectiveAccessRetry={state.effectiveAccess.reload}
-      onOrganizationActivate={state.organizations.organizationSwitch}
       onOrganizationRetry={state.organizations.reload}
       onOrganizationSelect={state.organizationSelect}
       organizationError={state.organizations.error()}
-      organizationNotice={state.organizations.notice()}
       organizations={state.organizations.organizations()}
       organizationStatus={state.organizations.status()}
-      pending={state.organizations.pendingId() !== undefined}
       viewedOrganization={state.organizations.viewedOrganization()}
       viewedOrganizationId={state.organizations.viewedOrganizationId()}
     />

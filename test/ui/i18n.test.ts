@@ -424,7 +424,8 @@ test("administration state validation and fixture-error keys are translated in e
 })
 
 const accountOrganizationAccessKeys = [
-  "account.access.makeActiveOrganization",
+  "account.access.organizationCount",
+  "account.access.organizationCountOne",
   "account.access.organizationDescription",
   "account.access.organizationSelector",
 ] as const
@@ -478,6 +479,53 @@ test("account overview and dialog labels are translated in every non-English cat
       expect(translationPlaceholdersGet(translated ?? ""), `${option.code}/${key}`).toEqual(
         translationPlaceholdersGet(englishCatalog[key]),
       )
+    }
+  }
+})
+
+const accountRedesignKeys = [
+  "account.factors.authenticator",
+  "account.factors.configured",
+  "account.factors.count",
+  "account.factors.missing",
+  "account.passkeys.manage",
+  "account.profile.copy",
+  "account.profile.copied",
+  "account.profile.copyFailed",
+  "account.profile.emailMissing",
+  "account.profile.emailVerified",
+  "account.profile.emailVerificationPending",
+  "account.profile.emailDescription",
+  "account.refreshTokens.activeShown",
+  "account.refreshTokens.countOneShown",
+  "account.refreshTokens.countShown",
+  "account.refreshTokens.loadMore",
+  "account.refreshTokens.manage",
+  "account.refreshTokens.noneActive",
+  "account.securityHistory.countOneShown",
+  "account.securityHistory.countShown",
+  "account.sessions.count",
+  "account.sessions.countOne",
+  "account.sessions.manage",
+] as const
+
+test("compact account redesign messages are localized without falling back to English", async () => {
+  for (const option of languagesSupported.filter((entry) => entry.code !== "en")) {
+    const parsed = translationCsvParse(
+      await Bun.file(new URL(`../../public/i18n/${option.code}.csv`, import.meta.url)).text(),
+    )
+    expect(parsed.success).toBe(true)
+    if (!parsed.success) continue
+
+    for (const key of accountRedesignKeys) {
+      const translated = parsed.data[key]
+      expect(translated, `${option.code}/${key}`).toBeTruthy()
+      expect(translationPlaceholdersGet(translated ?? ""), `${option.code}/${key}`).toEqual(
+        translationPlaceholdersGet(englishCatalog[key]),
+      )
+      // "Authenticator" is also the natural German term for this credential.
+      if (option.code === "de" && key === "account.factors.authenticator") continue
+      expect(translated, `${option.code}/${key} must not be an English copy`).not.toBe(englishCatalog[key])
     }
   }
 })

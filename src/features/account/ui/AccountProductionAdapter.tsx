@@ -38,11 +38,14 @@ export function AccountProductionAdapter(props: {
         <Match when={props.kind === "delete"}>
           <AccountDeleteView
             confirmation={state.deletionConfirmation.get()}
+            dialogOpen={state.deletionDialogOpen.get()}
             email={state.user.get()?.email ?? ""}
             errorMessage={state.errorMessage.get()}
             onConfirmationInput={state.deletionConfirmation.set}
             onDelete={state.accountDelete}
+            onDialogOpenChange={state.deletionDialogOpenSet}
             onRetry={state.load}
+            pending={state.deletionPending.get()}
             status={state.status.get()}
             validationMessage={state.validationMessage.get()}
           />

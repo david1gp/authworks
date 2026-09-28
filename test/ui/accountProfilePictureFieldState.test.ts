@@ -99,6 +99,7 @@ describe("account profile picture field state", () => {
         url: () => "https://assets.example.com/broken-avatar.png",
       })
       state.fileInputSet(input)
+      state.openChange(true)
 
       // Simulate image failing to load
       state.onPictureError()
@@ -141,6 +142,7 @@ describe("account profile picture field state", () => {
         status: () => "idle",
         url: () => "",
       })
+      state.openChange(true)
 
       let prevented = false
       let stopped = false
@@ -199,6 +201,7 @@ describe("account profile picture field state", () => {
         status: () => "idle",
         url: () => "",
       })
+      state.openChange(true)
 
       const file = new File(["test image content"], "avatar.png", { type: "image/png" })
       const dropEvent = {
@@ -228,6 +231,7 @@ describe("account profile picture field state", () => {
         status: () => "idle",
         url: () => "",
       })
+      state.openChange(true)
 
       const file = new File(["content"], "profile.webp", { type: "image/webp" })
       const input = {
@@ -261,6 +265,7 @@ describe("account profile picture field state", () => {
         url: () => "",
       })
       state.fileInputSet(input)
+      state.openChange(true)
 
       state.openFilePicker()
       expect(clicked).toBe(true)
@@ -310,6 +315,7 @@ describe("account profile picture field state", () => {
         url: () => "",
       })
       state.fileInputSet(input)
+      state.openChange(true)
 
       expect(state.busy()).toBe(true)
 
@@ -328,6 +334,52 @@ describe("account profile picture field state", () => {
       expect(state.busy()).toBe(true)
       state.openFilePicker()
       expect(clicked).toBe(false)
+      dispose()
+    })
+  })
+
+  test("allows upload and removal only while the picture dialog is open", () => {
+    createRoot((dispose) => {
+      let uploads = 0
+      let removals = 0
+      const state = accountProfilePictureFieldStateCreate({
+        onRemove: () => {
+          removals++
+        },
+        onUpload: () => {
+          uploads++
+        },
+        status: () => "idle",
+        url: () => "https://assets.example.com/avatar.png",
+      })
+      const file = new File(["image"], "avatar.png", { type: "image/png" })
+      const drop = () =>
+        state.onDrop({
+          dataTransfer: { files: [file] },
+          preventDefault: () => undefined,
+          stopPropagation: () => undefined,
+        } as unknown as DragEvent)
+
+      drop()
+      state.save()
+      state.remove()
+      expect(state.selectedFile()).toBeUndefined()
+      expect(uploads).toBe(0)
+      expect(removals).toBe(0)
+
+      state.openChange(true)
+      drop()
+      state.save()
+      state.remove()
+      expect(uploads).toBe(1)
+      expect(removals).toBe(1)
+
+      state.openChange(false)
+      expect(state.selectedFile()).toBeUndefined()
+      state.save()
+      state.remove()
+      expect(uploads).toBe(1)
+      expect(removals).toBe(1)
       dispose()
     })
   })

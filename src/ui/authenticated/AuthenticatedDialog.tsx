@@ -57,14 +57,14 @@ export function AuthenticatedDialog(props: {
         <Dialog.Content class={classesDialogContentMerge("w-[calc(100vw-2rem)] max-w-lg")}>
           <div class="mb-4 flex items-center justify-between gap-2">
             <div class="min-w-0">
-              <Dialog.Label class="text-base font-semibold">{props.title}</Dialog.Label>
+              <Dialog.Label class="break-all text-base font-semibold">{props.title}</Dialog.Label>
               <Show when={props.description}>
                 {(description) => (
                   <Dialog.Description class="text-sm text-muted-foreground">{description()}</Dialog.Description>
                 )}
               </Show>
             </div>
-            <Dialog.Close as={ButtonIcon} class="h-8 text-xs" icon={mdiClose} variant="outline">
+            <Dialog.Close as={ButtonIcon} class="h-8 shrink-0 text-xs" icon={mdiClose} variant="outline">
               {messageTranslate("common.close")}
             </Dialog.Close>
           </div>

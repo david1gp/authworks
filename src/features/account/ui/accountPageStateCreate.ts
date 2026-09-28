@@ -93,6 +93,8 @@ export function accountPageStateCreate(options: {
   const confirmPassword = createSignalObject("")
   const passwordDialogOpen = createSignalObject(false)
   const deletionConfirmation = createSignalObject("")
+  const deletionDialogOpen = createSignalObject(false)
+  const deletionPending = createSignalObject(false)
   const phoneAddDialogOpen = createSignalObject(false)
   const phoneCandidate = createSignalObject("")
   const phoneChallengeId = createSignalObject<string | undefined>(undefined)
@@ -222,6 +224,7 @@ export function accountPageStateCreate(options: {
     emailValidationMessage.set(undefined)
     emailStatus.set("idle")
     emailActionId.set(undefined)
+    if (loadKind === "delete") deletionDialogOpenSet(false)
     status.set("ready")
   }
   const profileSubmit = async (event: SubmitEvent) => {
@@ -286,18 +289,34 @@ export function accountPageStateCreate(options: {
     }
     passwordDialogOpen.set(open)
   }
+  const deletionDialogOpenSet = (open: boolean) => {
+    if (deletionPending.get()) return
+    if (!open) {
+      deletionConfirmation.set("")
+      validationMessage.set(undefined)
+    }
+    deletionDialogOpen.set(open)
+  }
   const accountDelete = async (event: SubmitEvent) => {
     event.preventDefault()
+    if (!deletionDialogOpen.get() || deletionPending.get() || status.get() !== "ready") return
     validationMessage.set(undefined)
     if (deletionConfirmation.get() !== user.get()?.email) {
       validationMessage.set(messageTranslate("account.delete.emailMismatch"))
       return
     }
-    if (!(await confirmation.confirm(messageTranslate("account.delete.warning")))) return
+    deletionPending.set(true)
+    if (!(await confirmation.confirm(messageTranslate("account.delete.warning")))) {
+      deletionPending.set(false)
+      return
+    }
     status.set("loading")
     const result = await options.adapter.deleteAccount()
+    deletionPending.set(false)
     if (!result.success) return resultFail(result)
     userApply(result.data.user)
+    deletionConfirmation.set("")
+    deletionDialogOpen.set(false)
     status.set("success")
   }
   const phoneOperationPrepare = () => {
@@ -553,6 +572,9 @@ export function accountPageStateCreate(options: {
     confirmPassword,
     currentPassword,
     deletionConfirmation,
+    deletionDialogOpen,
+    deletionDialogOpenSet,
+    deletionPending,
     displayName,
     emailAddDialogOpen,
     emailAddDialogOpenSet,

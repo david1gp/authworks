@@ -149,6 +149,7 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
       status: "revoked",
     },
   ])
+  const refreshTokensPageSize = createSignalObject(1)
   const passkeys = createSignalObject<PasskeyCredential[]>([
     {
       aaguid: "00000000-0000-0000-0000-000000000001",
@@ -511,7 +512,15 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
           .map((token) => (token.familyId === familyId ? { ...token, revokedAt, status: "revoked" as const } : token)),
       )
     },
-    refreshTokens: () => visible(refreshTokens.get()),
+    refreshTokens: () => visible(refreshTokens.get().slice(0, refreshTokensPageSize.get())),
+    refreshTokensLoadMore: () => {
+      if (selected() === "empty" || refreshTokensPageSize.get() >= refreshTokens.get().length) return
+      refreshTokensPageSize.set(refreshTokensPageSize.get() + 1)
+    },
+    refreshTokensNextPageToken: () =>
+      selected() === "empty" || refreshTokensPageSize.get() >= refreshTokens.get().length
+        ? undefined
+        : "demo-next-page",
     refreshTokensRevokeAll: async () => {
       if (!(await confirmation.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm")))) return
       const revokedAt = Date.now()

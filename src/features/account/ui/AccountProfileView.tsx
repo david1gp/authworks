@@ -7,16 +7,13 @@ import { SelectSingle } from "#ui/input/select/SelectSingle.jsx"
 import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
 import { selectSingleTextDefault } from "#ui/input/select/SelectSingleTexts.js"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
-import { Icon } from "#ui/static/icon/Icon.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
-import { authenticatedSelectStateCreate } from "../../../ui/authenticated/authenticatedSelectStateCreate.js"
 import { languagesSupported } from "../../../ui/i18n/model/languagesSupported.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
+import { AccountDisclosure } from "./AccountDisclosure.js"
 import { AccountEmailAddressView } from "./AccountEmailAddressView.js"
 import { AccountProfileIdentityStrip } from "./AccountProfileIdentityStrip.js"
 import { AccountProfilePhoneSection } from "./AccountProfilePhoneSection.js"
@@ -27,8 +24,8 @@ import { accountGenderOptionsGet } from "./accountGenderOptionsGet.js"
 import { accountGenderValueText } from "./accountGenderValueText.js"
 import type { AccountPhoneViewStatus } from "./accountPhoneViewStatus.js"
 import type { AccountPictureViewStatus } from "./accountPictureViewStatus.js"
+import { accountProfileViewStateCreate } from "./accountProfileViewStateCreate.js"
 import type { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
-import { accountViewBoundaryStateGet } from "./accountViewBoundaryStateGet.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 
 type AccountProfileViewProps = {
@@ -97,14 +94,19 @@ type AccountProfileViewProps = {
 }
 
 export function AccountProfileView(props: AccountProfileViewProps) {
-  const genderSelect = authenticatedSelectStateCreate()
-  const boundary = () => accountViewBoundaryStateGet(props.status, props.errorMessage)
+  const state = accountProfileViewStateCreate({
+    status: () => props.status,
+    errorMessage: () => props.errorMessage,
+    firstName: () => props.firstName,
+    lastName: () => props.lastName,
+    displayName: () => props.displayName,
+  })
   return (
     <AccountStateBoundary
-      detail={boundary().detail}
+      detail={state.boundary().detail}
       onRetry={props.onRetry}
-      state={boundary().state}
-      title={boundary().title}
+      state={state.boundary().state}
+      title={state.boundary().title}
     >
       <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
         {/* Contact methods: email addresses on the left, phone numbers on the right at desktop
@@ -169,17 +171,14 @@ export function AccountProfileView(props: AccountProfileViewProps) {
             userName={props.userName}
           />
 
-          <AuthenticatedToolbar label={messageTranslate("account.profile.personalInformation")}>
-            <div class="grid gap-0.5">
-              <h2 class="flex items-center gap-2 text-base font-semibold tracking-tight">
-                <Icon class="size-5 text-muted-foreground" path={mdiAccountDetailsOutline} />
-                {messageTranslate("account.profile.personalInformation")}
-              </h2>
-              <p class="text-sm text-muted-foreground">{messageTranslate("account.profile.personalDescription")}</p>
-            </div>
-          </AuthenticatedToolbar>
-          <AuthenticatedSection label={messageTranslate("account.profile.personalInformation")}>
-            <dl class="grid min-w-0 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <AccountDisclosure
+            icon={mdiAccountDetailsOutline}
+            summary={messageTranslate("account.profile.personalInformation")}
+            value={state.personalSummary() || messageTranslate("account.profile.notSet")}
+            variant="card"
+          >
+            <p class="mb-3 text-sm text-muted-foreground">{messageTranslate("account.profile.personalDescription")}</p>
+            <dl class="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div>
                 <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.firstName")}</dt>
                 <dd class="break-words text-sm">{props.firstName || messageTranslate("account.profile.notSet")}</dd>
@@ -211,7 +210,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                 </dd>
               </div>
             </dl>
-            <div class="px-4 pb-4">
+            <div class="mt-4">
               <AuthenticatedDialog
                 description={messageTranslate("account.profile.personalDescription")}
                 onOpenChange={props.onProfileDialogOpenChange}
@@ -260,12 +259,12 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     </div>
                     {/* The gender select is wrapped so its trigger never keeps a dangling
                       `aria-controls` reference while the vendored listbox is unmounted. */}
-                    <div class="grid min-w-0 gap-1" ref={genderSelect.containerSet}>
+                    <div class="grid min-w-0 gap-1" ref={state.genderSelect.containerSet}>
                       <Label>{messageTranslate("account.profile.gender")}</Label>
                       <SelectSingle
                         buttonProps={{
                           class: "h-9 w-full justify-between",
-                          onOpenChange: genderSelect.openChange,
+                          onOpenChange: state.genderSelect.openChange,
                           variant: "outline",
                         }}
                         class="w-full"
@@ -318,11 +317,11 @@ export function AccountProfileView(props: AccountProfileViewProps) {
               </AuthenticatedDialog>
             </div>
             <Show when={props.status === "success"}>
-              <div class="px-4 pb-4">
+              <div class="mt-3">
                 <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
               </div>
             </Show>
-          </AuthenticatedSection>
+          </AccountDisclosure>
         </Show>
       </div>
     </AccountStateBoundary>

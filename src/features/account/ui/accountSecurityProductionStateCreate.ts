@@ -40,6 +40,7 @@ export function accountSecurityProductionStateCreate(options: {
   const pendingId = createSignalObject<string | undefined>(undefined)
   const sessions = createSignalObject<SessionMe[]>([])
   const refreshTokens = createSignalObject<OidcRefreshTokenMetadata[]>([])
+  const refreshTokensNextPageToken = createSignalObject<string | undefined>(undefined)
   const securityHistory = createSignalObject<AccountSecurityHistoryItem[]>([])
   const securityHistoryNextPageToken = createSignalObject<string | undefined>(undefined)
   const passkeys = createSignalObject<PasskeyCredential[]>([])
@@ -101,9 +102,10 @@ export function accountSecurityProductionStateCreate(options: {
       sessions.set(result.data.items.filter((session) => session.revokedAt === null))
     }
     if (screen === "refresh-tokens") {
-      const result = await api.refreshTokensList(realmId)
+      const result = await api.refreshTokensList(realmId, { pageSize: 10 })
       if (!result.success) return failed(result.errorMessage)
       refreshTokens.set(result.data.items)
+      refreshTokensNextPageToken.set(result.data.nextPageToken)
     }
     if (screen === "security-history") {
       const result = await api.securityHistoryList(realmId, { pageSize: 10 })
@@ -401,6 +403,17 @@ export function accountSecurityProductionStateCreate(options: {
       return mutate(`refresh-token:${familyId}`, () => api.refreshTokenRevoke(options.realmId(), familyId))
     },
     refreshTokens: refreshTokens.get,
+    refreshTokensLoadMore: async () => {
+      const pageToken = refreshTokensNextPageToken.get()
+      if (pageToken === undefined || pendingId.get() !== undefined) return
+      pendingId.set("refresh-tokens:next")
+      const result = await api.refreshTokensList(options.realmId(), { pageSize: 10, pageToken })
+      pendingId.set(undefined)
+      if (!result.success) return failed(result.errorMessage)
+      refreshTokens.set([...refreshTokens.get(), ...result.data.items])
+      refreshTokensNextPageToken.set(result.data.nextPageToken)
+    },
+    refreshTokensNextPageToken: refreshTokensNextPageToken.get,
     refreshTokensRevokeAll: async () => {
       if (!(await confirmation.confirm(messageTranslate("account.refreshTokens.revokeAllConfirm")))) return
       void mutate("refresh-tokens:all", () => api.refreshTokensRevokeAll(options.realmId()))

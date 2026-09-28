@@ -5,6 +5,11 @@ account.factors.stepUpDescription,"Verify with multi-factor authentication, then
 account.securityHistory.description,Review recent security-sensitive activity on this account.
 account.access.accepted,تم قبول الدعوة
 account.access.active,المنظمة النشطة
+account.access.consentCount,{count} أذونات وصول للتطبيقات
+account.access.consentCountOne,{count} إذن وصول لتطبيق
+account.access.consentManage,إذن وصول التطبيق: {clientId}
+account.access.consentTitle,أذونات وصول التطبيقات
+account.access.consentUpdated,تم التحديث في {date}
 account.access.consentDescription,التطبيقات التي يمكنها الوصول إلى معلومات من حسابك.
 account.access.consentEmpty,لا توجد تطبيقات لديها حق الوصول إلى هذا الحساب.
 account.access.consentRevokeConfirm,هل تريد إلغاء وصول التطبيق {clientId}؟
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,جعل المنظمة نشطة
 account.access.membership,أدوار العضوية
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} منظمات
+account.access.organizationCountOne,{count} منظمة
 account.access.organizationDescription,اختر منظمة لعرض عضويتك ووصولك إليها. لا يؤدي عرض المنظمة إلى تغيير منظمتك النشطة.
 account.access.organizationEmpty,هذا الحساب لا ينتمي إلى أي منظمة.
 account.access.organizationSelector,المنظمة المراد عرضها
@@ -59,6 +66,10 @@ account.delete.title,حذف هذا الحساب نهائيًا
 account.delete.warning,لا يمكن التراجع عن هذا الإجراء. ستتوقف جلساتك وحق الوصول الخاص بك عن العمل.
 account.directory.title,حسابك
 account.factors.addTotp,إضافة تطبيق مصادقة
+account.factors.authenticator,تطبيق المصادقة
+account.factors.configured,تم إعداد تطبيق المصادقة
+account.factors.count,{count} تطبيقات مصادقة
+account.factors.missing,لم يتم إعداد تطبيق مصادقة
 account.factors.codeCount,{count} رموز استرداد
 account.factors.confirm,تأكيد
 account.factors.description,راجع طرق المصادقة المتاحة لحسابك وقم بإدارة تطبيق المصادقة الخاص بك.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,تابع في نافذة موفّر الخدمة ثم عد إلى هنا لتأكيد الربط.
 account.identities.description,الحسابات الخارجية المرتبطة بهويتك في Authworks. قم بإلغاء ربط الحسابات التي لم تعد تستخدمها.
 account.identities.empty,لا توجد هويات خارجية مرتبطة
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,إدارة حساب {provider} ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,إلغاء الربط
 account.identities.unlinkConfirm,هل تريد إلغاء ربط هذا الحساب الخارجي؟
@@ -88,6 +101,7 @@ account.passkeys.created,تم الإنشاء في {date}
 account.passkeys.description,تستخدم مفاتيح المرور قفل شاشة جهازك أو مفتاح الأمان لتسجيل الدخول الآمن.
 account.passkeys.deviceBound,مفتاح مرور مرتبط بالجهاز
 account.passkeys.empty,لم يتم تسجيل أي مفاتيح مرور
+account.passkeys.manage,إدارة {kind} ({id})
 account.passkeys.remove,إزالة
 account.passkeys.synced,مفتاح مرور متزامن
 account.password.changed,تم تغيير كلمة المرور الخاصة بك.
@@ -100,16 +114,23 @@ account.password.submit,تغيير كلمة المرور
 account.password.title,تغيير كلمة المرور
 account.password.tooShort,يجب أن تحتوي كلمة المرور الجديدة على 8 أحرف على الأقل.
 account.profile.displayName,الاسم المعروض
+account.profile.copy,نسخ {field}
+account.profile.copied,تم نسخ {field}.
+account.profile.copyFailed,تعذر نسخ {field}. حدد القيمة وانسخها يدويًا.
 account.profile.cancel,إلغاء
 account.profile.edit,تعديل الملف الشخصي
 account.profile.displayNameRequired,أدخل اسمًا معروضًا.
 account.profile.email,عنوان البريد الإلكتروني
+account.profile.emailMissing,لم يُضف بريد إلكتروني
+account.profile.emailVerified,تم التحقق من البريد الإلكتروني
+account.profile.emailVerificationPending,التحقق من البريد الإلكتروني قيد الانتظار
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,راجع عناوين البريد الإلكتروني المرتبطة بحسابك وأدرها.
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,احفظ رموز الاسترداد الخاصة بك 
 account.recovery.saved,لقد حفظت هذه الرموز
 account.recovery.summary,الوصول للاسترداد
 account.refreshTokens.active,نشط
+account.refreshTokens.activeShown,{count} نشطة معروضة
+account.refreshTokens.countOneShown,{count} تطبيق معروض
+account.refreshTokens.countShown,{count} تطبيقات معروضة
 account.refreshTokens.description,"راجع التطبيقات التي تستخدم رموز التحديث لهذا الحساب. لا تظهر سوى البيانات الوصفية الآمنة؛ ويؤدي إلغاء العائلة إلى إبطال رموز الوصول الخاصة بها أيضًا."
 account.refreshTokens.empty,لا تتوفر عائلات لرموز التحديث
 account.refreshTokens.expired,منتهي الصلاحية
 account.refreshTokens.expires,تنتهي الصلاحية {date}
 account.refreshTokens.lastUsed,آخر استخدام {date}
+account.refreshTokens.loadMore,تحميل المزيد من التطبيقات
+account.refreshTokens.manage,التطبيق: {application}
 account.refreshTokens.neverUsed,لم يُستخدم من قبل
+account.refreshTokens.noneActive,لا توجد تطبيقات نشطة
 account.refreshTokens.revoke,إلغاء العائلة
 account.refreshTokens.revokeAll,إلغاء جميع العائلات
 account.refreshTokens.revokeAllConfirm,هل تريد إلغاء جميع عائلات رموز التحديث لهذا الحساب؟
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,{count} حدث معروض
+account.securityHistory.countShown,{count} أحداث معروضة
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,انتهت صلاحية جلستك
 account.sessions.current,الجلسة الحالية
+account.sessions.count,{count} جلسات نشطة
+account.sessions.countOne,{count} جلسة نشطة
 account.sessions.description,راجع الأجهزة التي تم تسجيل الدخول إلى حسابك منها، وقم بإلغاء أي جلسة لا تتعرف عليها.
 account.sessions.empty,لا توجد جلسات نشطة
 account.sessions.lastUsed,آخر استخدام في {date}
+account.sessions.manage,جلسة على {device}
 account.sessions.revoke,إلغاء الجلسة
 account.sessions.revokeConfirm,هل تريد إلغاء هذه الجلسة فورًا؟
 account.sessions.unknownDevice,جهاز غير معروف

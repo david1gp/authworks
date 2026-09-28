@@ -1,81 +1,121 @@
-import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
+import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
 import { For, Show } from "solid-js"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { AccountDisclosure } from "./AccountDisclosure.js"
 import { AccountRoleList } from "./AccountRoleList.js"
-import { AccountSecurityStatus } from "./AccountSecurityStatus.js"
+import { accountPasskeysSectionStateCreate } from "./accountPasskeysSectionStateCreate.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
 export function AccountPasskeysSection(props: { readonly state: AccountSecurityViewState }) {
+  const state = accountPasskeysSectionStateCreate(() => props.state.passkeys())
   return (
-    <AuthenticatedSection
-      actions={
-        <ButtonIcon
-          disabled={props.state.pendingId() === "passkey:add"}
-          icon={mdiFingerprint}
-          onClick={props.state.passkeyAdd}
-          variant="outline"
-        >
-          {messageTranslate("account.passkeys.add")}
-        </ButtonIcon>
-      }
+    <AccountDisclosure
       class="h-full"
-      description={messageTranslate("account.passkeys.description")}
       icon={mdiFingerprint}
-      title={messageTranslate("shell.nav.passkeys")}
+      status={state.summaryStatus()}
+      statusTone={state.summaryTone()}
+      summary={messageTranslate("shell.nav.passkeys")}
+      value={state.summaryValue()}
+      variant="card"
     >
-      <AccountSecurityStatus
-        configured={props.state.passkeys().length > 0}
-        detail={messageTranslate("account.securityOverview.passkeyCount", { count: props.state.passkeys().length })}
-        label={messageTranslate(
-          props.state.passkeys().length > 0 ? "account.status.configured" : "account.status.notConfigured",
-        )}
-      />
-      <Show
-        when={props.state.passkeys().length > 0}
-        fallback={
-          <p class="px-3 py-5 text-center text-sm text-muted-foreground">
-            {messageTranslate("account.passkeys.empty")}
-          </p>
-        }
-      >
-        <ul class="divide-y divide-line-subtle border-t border-line-subtle">
+      <div class="grid gap-3">
+        <p class="text-xs text-muted-foreground">{messageTranslate("account.passkeys.description")}</p>
+        <ul aria-label={messageTranslate("shell.nav.passkeys")} class="divide-y divide-line-subtle">
+          <Show when={state.count() === 0}>
+            <li class="px-2 py-2.5 text-xs text-muted-foreground">{messageTranslate("account.passkeys.empty")}</li>
+          </Show>
           <For each={props.state.passkeys()}>
             {(credential) => (
-              <li class="grid min-w-0 gap-2 px-3 py-2.5">
-                <div class="flex min-w-0 flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
-                  <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-                    <span class="min-w-0 truncate text-sm font-medium">
-                      {credential.backedUp
-                        ? messageTranslate("account.passkeys.synced")
-                        : messageTranslate("account.passkeys.deviceBound")}
+              <li class="min-w-0">
+                <AuthenticatedDialog
+                  class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
+                  onOpenChange={(open) => state.dialogOpenChange(credential.id, open)}
+                  open={state.dialogOpen(credential.id)}
+                  title={messageTranslate("account.passkeys.manage", {
+                    kind: messageTranslate(
+                      credential.backedUp ? "account.passkeys.synced" : "account.passkeys.deviceBound",
+                    ),
+                    id: credential.id,
+                  })}
+                  triggerLabel={
+                    <span class="grid min-w-0 gap-1">
+                      <span class="text-sm font-medium">
+                        {messageTranslate(
+                          credential.backedUp ? "account.passkeys.synced" : "account.passkeys.deviceBound",
+                        )}
+                      </span>
+                      <AuthenticatedStatus
+                        label={messageTranslate("account.passkeys.created", {
+                          date: localeDateFormat(credential.createdAt, { dateStyle: "medium" }),
+                        })}
+                        tone="neutral"
+                      />
                     </span>
-                    <AuthenticatedStatus
-                      label={messageTranslate("account.passkeys.created", {
+                  }
+                  variant="ghost"
+                >
+                  <div class="grid gap-3">
+                    <p class="text-xs text-muted-foreground">
+                      {messageTranslate("account.passkeys.created", {
                         date: localeDateFormat(credential.createdAt, { dateStyle: "medium" }),
                       })}
-                      tone="neutral"
-                    />
+                    </p>
+                    <AccountRoleList values={credential.transports} />
+                    <Show when={props.state.error()}>
+                      {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
+                    </Show>
+                    <div>
+                      <ButtonIcon
+                        class={authenticatedDangerOutlineButtonClass}
+                        disabled={props.state.pendingId() !== undefined}
+                        icon={mdiDelete}
+                        onClick={() => props.state.passkeyRevoke(credential.id)}
+                        type="button"
+                        variant="outline"
+                      >
+                        {messageTranslate("account.passkeys.remove")}
+                      </ButtonIcon>
+                    </div>
                   </div>
-                  <ButtonIcon
-                    disabled={props.state.pendingId() === `passkey:${credential.id}`}
-                    icon={mdiDelete}
-                    onClick={() => props.state.passkeyRevoke(credential.id)}
-                    variant="filledRed"
-                  >
-                    {messageTranslate("account.passkeys.remove")}
-                  </ButtonIcon>
-                </div>
-                <AccountRoleList values={credential.transports} />
+                </AuthenticatedDialog>
               </li>
             )}
           </For>
+          <li class="min-w-0">
+            <AuthenticatedDialog
+              class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
+              description={messageTranslate("account.passkeys.description")}
+              onOpenChange={state.addDialogOpenChange}
+              open={state.addDialogOpen()}
+              title={messageTranslate("account.passkeys.add")}
+              triggerIcon={mdiFingerprint}
+              triggerLabel={messageTranslate("account.passkeys.add")}
+              variant="ghost"
+            >
+              <div class="grid gap-3">
+                <ButtonIcon
+                  disabled={props.state.pendingId() !== undefined}
+                  icon={mdiFingerprint}
+                  onClick={props.state.passkeyAdd}
+                  type="button"
+                >
+                  {messageTranslate("account.passkeys.add")}
+                </ButtonIcon>
+                <Show when={props.state.error()}>
+                  {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
+                </Show>
+              </div>
+            </AuthenticatedDialog>
+          </li>
         </ul>
-      </Show>
-    </AuthenticatedSection>
+      </div>
+    </AccountDisclosure>
   )
 }

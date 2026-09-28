@@ -3,35 +3,37 @@ import { Show } from "solid-js"
 import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
-import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
 import { AccountStateBoundary } from "./AccountStateBoundary.js"
-import { accountViewBoundaryStateGet } from "./accountViewBoundaryStateGet.js"
+import { accountDeleteViewStateCreate } from "./accountDeleteViewStateCreate.js"
 import type { AccountViewStatus } from "./accountViewStatusSchema.js"
 
 type AccountDeleteViewProps = {
   readonly confirmation: string
+  readonly dialogOpen: boolean
   readonly email: string
   readonly errorMessage?: string
   readonly onConfirmationInput: (value: string) => void
   readonly onDelete: (event: SubmitEvent) => void
+  readonly onDialogOpenChange: (open: boolean) => void
   readonly onRetry: () => void
+  readonly pending: boolean
   readonly status: AccountViewStatus
   readonly validationMessage?: string
 }
 
 export function AccountDeleteView(props: AccountDeleteViewProps) {
-  const boundary = () => accountViewBoundaryStateGet(props.status, props.errorMessage)
+  const state = accountDeleteViewStateCreate(props)
   return (
     <AccountStateBoundary
-      detail={boundary().detail}
+      detail={state.boundary().detail}
       onRetry={props.onRetry}
-      state={boundary().state}
-      title={boundary().title}
+      state={state.boundary().state}
+      title={state.boundary().title}
     >
       <Show
         when={props.status !== "success"}
@@ -43,41 +45,58 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
           />
         }
       >
-        <AuthenticatedSection
-          actions={<AuthenticatedStatus label={messageTranslate("account.delete.dangerZone")} tone="danger" />}
+        <AccountDisclosure
           class="border-danger/35"
-          description={messageTranslate("account.delete.warning")}
-          title={messageTranslate("account.delete.title")}
+          icon={mdiAccountRemoveOutline}
+          status={messageTranslate("account.delete.dangerZone")}
+          statusTone="danger"
+          summary={messageTranslate("account.delete.title")}
+          variant="card"
         >
-          {/* The whole destructive body stays collapsed behind a native disclosure so deletion is
-              never one stray click away, while keeping the typed confirmation guard intact. */}
-          <div class="px-3 py-3">
-            <AccountDisclosure summary={messageTranslate("account.delete.dangerZoneToggle")}>
-              <form class="grid gap-2.5 py-1" onSubmit={props.onDelete}>
-                <div class="grid min-w-0 gap-1">
-                  <Label for="account-delete-confirmation">
-                    {messageTranslate("account.delete.confirmLabel", { email: props.email })}
-                  </Label>
-                  <Input
-                    autocomplete="off"
-                    id="account-delete-confirmation"
-                    onInput={(event) => props.onConfirmationInput(event.currentTarget.value)}
-                    required
-                    value={props.confirmation}
-                  />
-                </div>
-                <Show when={props.validationMessage}>
-                  {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-                </Show>
-                <div>
-                  <ButtonIcon icon={mdiAccountRemoveOutline} type="submit" variant="filledRed">
-                    {messageTranslate("account.delete.submit")}
-                  </ButtonIcon>
-                </div>
-              </form>
-            </AccountDisclosure>
+          <div class="grid gap-3">
+            <p class="text-xs text-muted-foreground">{messageTranslate("account.delete.warning")}</p>
+            <div>
+              <AuthenticatedDialog
+                description={messageTranslate("account.delete.warning")}
+                onOpenChange={props.onDialogOpenChange}
+                open={props.dialogOpen}
+                title={messageTranslate("account.delete.title")}
+                triggerIcon={mdiAccountRemoveOutline}
+                triggerLabel={messageTranslate("account.delete.dangerZoneToggle")}
+                variant="outline"
+              >
+                <form class="grid gap-3" onSubmit={props.onDelete}>
+                  <div class="grid min-w-0 gap-1">
+                    <Label for="account-delete-confirmation">
+                      {messageTranslate("account.delete.confirmLabel", { email: props.email })}
+                    </Label>
+                    <Input
+                      autocomplete="off"
+                      disabled={props.pending}
+                      id="account-delete-confirmation"
+                      onInput={(event) => props.onConfirmationInput(event.currentTarget.value)}
+                      required
+                      value={props.confirmation}
+                    />
+                  </div>
+                  <Show when={props.validationMessage}>
+                    {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+                  </Show>
+                  <div>
+                    <ButtonIcon
+                      disabled={props.pending}
+                      icon={mdiAccountRemoveOutline}
+                      type="submit"
+                      variant="filledRed"
+                    >
+                      {messageTranslate("account.delete.submit")}
+                    </ButtonIcon>
+                  </div>
+                </form>
+              </AuthenticatedDialog>
+            </div>
           </div>
-        </AuthenticatedSection>
+        </AccountDisclosure>
       </Show>
     </AccountStateBoundary>
   )

@@ -124,7 +124,7 @@ export function AccountProfilePictureField(props: {
                 class={authenticatedDangerOutlineButtonClass}
                 disabled={state.busy()}
                 icon={mdiDelete}
-                onClick={props.onRemove}
+                onClick={state.remove}
                 type="button"
                 variant="outline"
               >

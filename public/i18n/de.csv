@@ -5,6 +5,11 @@ account.factors.stepUpDescription,"Verify with multi-factor authentication, then
 account.securityHistory.description,Review recent security-sensitive activity on this account.
 account.access.accepted,Einladung angenommen
 account.access.active,Aktive Organisation
+account.access.consentCount,{count} Anwendungsfreigaben
+account.access.consentCountOne,{count} Anwendungsfreigabe
+account.access.consentManage,Anwendungsfreigabe: {clientId}
+account.access.consentTitle,Anwendungsfreigaben
+account.access.consentUpdated,Aktualisiert am {date}
 account.access.consentDescription,Anwendungen mit Zugriff auf Informationen aus Ihrem Konto.
 account.access.consentEmpty,Keine Anwendung hat Zugriff auf dieses Konto.
 account.access.consentRevokeConfirm,Zugriff für {clientId} widerrufen?
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,Als aktive Organisation festlegen
 account.access.membership,Mitgliedsrollen
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} Organisationen
+account.access.organizationCountOne,{count} Organisation
 account.access.organizationDescription,"Wählen Sie eine Organisation aus, um ihre Mitgliedschaft und Zugriffsrechte anzuzeigen. Das Anzeigen einer Organisation ändert Ihre aktive Organisation nicht."
 account.access.organizationEmpty,Dieses Konto gehört keiner Organisation an.
 account.access.organizationSelector,Organisation zur Ansicht
@@ -59,6 +66,10 @@ account.delete.title,Dieses Konto dauerhaft löschen
 account.delete.warning,Diese Aktion kann nicht rückgängig gemacht werden. Ihre Sitzungen und Zugriffe werden beendet.
 account.directory.title,Ihr Konto
 account.factors.addTotp,Authenticator hinzufügen
+account.factors.authenticator,Authenticator
+account.factors.configured,Authenticator eingerichtet
+account.factors.count,{count} Authenticatoren
+account.factors.missing,Kein Authenticator eingerichtet
 account.factors.codeCount,{count} Wiederherstellungscodes
 account.factors.confirm,Bestätigen
 account.factors.description,Prüfen Sie die für Ihr Konto verfügbaren Authentifizierungsmethoden und verwalten Sie Ihre Authenticator-App.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,"Fahren Sie im Fenster des Anbieters fort und kehren Sie dann hierher zurück, um die Verknüpfung zu bestätigen."
 account.identities.description,"Externe Konten, die mit Ihrer Authworks-Identität verknüpft sind. Trennen Sie Konten, die Sie nicht mehr nutzen."
 account.identities.empty,Es sind keine externen Identitäten verknüpft
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,Konto bei {provider} verwalten ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Trennen
 account.identities.unlinkConfirm,Dieses externe Konto trennen?
@@ -88,6 +101,7 @@ account.passkeys.created,Erstellt am {date}
 account.passkeys.description,Passkeys nutzen die Bildschirmsperre Ihres Geräts oder einen Sicherheitsschlüssel für die sichere Anmeldung.
 account.passkeys.deviceBound,Gerätegebundener Passkey
 account.passkeys.empty,Keine Passkeys registriert
+account.passkeys.manage,{kind} verwalten ({id})
 account.passkeys.remove,Entfernen
 account.passkeys.synced,Synchronisierter Passkey
 account.password.changed,Ihr Passwort wurde geändert.
@@ -100,16 +114,23 @@ account.password.submit,Passwort ändern
 account.password.title,Passwort ändern
 account.password.tooShort,Das neue Passwort muss mindestens 8 Zeichen enthalten.
 account.profile.displayName,Anzeigename
+account.profile.copy,{field} kopieren
+account.profile.copied,{field} kopiert.
+account.profile.copyFailed,{field} konnte nicht kopiert werden. Wählen Sie den Wert aus und kopieren Sie ihn manuell.
 account.profile.cancel,Abbrechen
 account.profile.edit,Profil bearbeiten
 account.profile.displayNameRequired,Geben Sie einen Anzeigenamen ein.
 account.profile.email,E-Mail-Adresse
+account.profile.emailMissing,Keine E-Mail-Adresse hinterlegt
+account.profile.emailVerified,E-Mail-Adresse bestätigt
+account.profile.emailVerificationPending,E-Mail-Bestätigung ausstehend
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,Prüfen und verwalten Sie die mit Ihrem Konto verknüpften E-Mail-Adressen.
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,Speichern Sie jetzt Ihre Wiederherstellungscodes
 account.recovery.saved,Ich habe diese Codes gespeichert
 account.recovery.summary,Wiederherstellungszugriff
 account.refreshTokens.active,Aktiv
+account.refreshTokens.activeShown,{count} aktive angezeigt
+account.refreshTokens.countOneShown,{count} Anwendung angezeigt
+account.refreshTokens.countShown,{count} Anwendungen angezeigt
 account.refreshTokens.description,"Prüfen Sie die Anwendungen, die für dieses Konto Refresh-Tokens verwenden. Es werden nur sichere Metadaten angezeigt; der Widerruf einer Familie macht auch ihre Zugriffstoken ungültig."
 account.refreshTokens.empty,Keine Refresh-Token-Familien verfügbar
 account.refreshTokens.expired,Abgelaufen
 account.refreshTokens.expires,Läuft ab am {date}
 account.refreshTokens.lastUsed,Zuletzt verwendet am {date}
+account.refreshTokens.loadMore,Weitere Anwendungen laden
+account.refreshTokens.manage,Anwendung: {application}
 account.refreshTokens.neverUsed,Noch nie verwendet
+account.refreshTokens.noneActive,Keine aktiven Anwendungen
 account.refreshTokens.revoke,Familie widerrufen
 account.refreshTokens.revokeAll,Alle Familien widerrufen
 account.refreshTokens.revokeAllConfirm,Alle Refresh-Token-Familien für dieses Konto widerrufen?
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,{count} Ereignis angezeigt
+account.securityHistory.countShown,{count} Ereignisse angezeigt
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Ihre Sitzung ist abgelaufen
 account.sessions.current,Aktuelle Sitzung
+account.sessions.count,{count} aktive Sitzungen
+account.sessions.countOne,{count} aktive Sitzung
 account.sessions.description,"Prüfen Sie Geräte, auf denen Ihr Konto angemeldet ist, und widerrufen Sie jede Sitzung, die Sie nicht kennen."
 account.sessions.empty,Keine aktiven Sitzungen
 account.sessions.lastUsed,Zuletzt verwendet {date}
+account.sessions.manage,Sitzung auf {device}
 account.sessions.revoke,Sitzung widerrufen
 account.sessions.revokeConfirm,Diese Sitzung sofort widerrufen?
 account.sessions.unknownDevice,Unbekanntes Gerät

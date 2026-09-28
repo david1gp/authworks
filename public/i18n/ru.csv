@@ -6,6 +6,11 @@ account.securityHistory.description,Review recent security-sensitive activity on
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
+account.access.consentCount,Согласия для приложений: {count}
+account.access.consentCountOne,Согласия для приложений: {count}
+account.access.consentManage,Согласие для приложения: {clientId}
+account.access.consentTitle,Согласия для приложений
+account.access.consentUpdated,Обновлено {date}
 account.access.consentEmpty,No applications have access to this account.
 account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,Сделать активной орган
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} организации
+account.access.organizationCountOne,{count} организация
 account.access.organizationDescription,"Выберите организацию, чтобы просмотреть свое членство и доступ. Просмотр организации не меняет активную организацию."
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.organizationSelector,Организация для просмотра
@@ -59,6 +66,10 @@ account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
 account.directory.title,Your account
 account.factors.addTotp,Add authenticator
+account.factors.authenticator,Приложение-аутентификатор
+account.factors.configured,Приложение-аутентификатор настроено
+account.factors.count,Число приложений-аутентификаторов: {count}
+account.factors.missing,Приложение-аутентификатор не настроено
 account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,"Продолжите в окне провайдера, затем вернитесь сюда для подтверждения привязки."
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,Управление учётной записью {provider} ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Отвязать эту внешнюю учётную запись?
@@ -88,6 +101,7 @@ account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
 account.passkeys.deviceBound,Device-bound passkey
 account.passkeys.empty,No passkeys registered
+account.passkeys.manage,Управление {kind} ({id})
 account.passkeys.remove,Remove
 account.passkeys.synced,Synced passkey
 account.password.changed,Your password was changed.
@@ -100,16 +114,23 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.copy,Скопировать {field}
+account.profile.copied,Скопировано: {field}.
+account.profile.copyFailed,Не удалось скопировать {field}. Выделите значение и скопируйте его вручную.
 account.profile.cancel,Отмена
 account.profile.edit,Редактировать профиль
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
+account.profile.emailMissing,Адрес электронной почты не указан
+account.profile.emailVerified,Адрес электронной почты подтверждён
+account.profile.emailVerificationPending,Ожидается подтверждение адреса электронной почты
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,Просматривайте адреса электронной почты вашего аккаунта и управляйте ими.
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
 account.refreshTokens.active,Активен
+account.refreshTokens.activeShown,Показано активных: {count}
+account.refreshTokens.countOneShown,Показано приложений: {count}
+account.refreshTokens.countShown,Показано приложений: {count}
 account.refreshTokens.description,"Просмотрите приложения, использующие токены обновления для этой учетной записи. Показываются только безопасные метаданные; отзыв семейства также аннулирует его токены доступа."
 account.refreshTokens.empty,Нет доступных семейств токенов обновления
 account.refreshTokens.expired,Истек
 account.refreshTokens.expires,Истекает {date}
 account.refreshTokens.lastUsed,Последнее использование {date}
+account.refreshTokens.loadMore,Загрузить ещё приложения
+account.refreshTokens.manage,Приложение: {application}
 account.refreshTokens.neverUsed,Никогда не использовался
+account.refreshTokens.noneActive,Нет активных приложений
 account.refreshTokens.revoke,Отозвать семейство
 account.refreshTokens.revokeAll,Отозвать все семейства
 account.refreshTokens.revokeAllConfirm,Отозвать все семейства токенов обновления для этой учетной записи?
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,Показано событий: {count}
+account.securityHistory.countShown,Показано событий: {count}
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
+account.sessions.count,Активных сеансов: {count}
+account.sessions.countOne,Активных сеансов: {count}
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
 account.sessions.empty,No active sessions
 account.sessions.lastUsed,Last used {date}
+account.sessions.manage,Сеанс на устройстве {device}
 account.sessions.revoke,Revoke session
 account.sessions.revokeConfirm,Revoke this session immediately?
 account.sessions.unknownDevice,Unknown device

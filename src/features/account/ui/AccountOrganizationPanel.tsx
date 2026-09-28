@@ -1,5 +1,4 @@
 import { mdiBriefcaseAccountOutline } from "@adaptive-ds/mdi/mdiBriefcaseAccountOutline.js"
-import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiShieldKeyOutline } from "@adaptive-ds/mdi/mdiShieldKeyOutline.js"
@@ -21,8 +20,7 @@ import { accountOrganizationPanelStateCreate } from "./accountOrganizationPanelS
 
 /**
  * Detail panel of the organization selected in the Access section. It shows only member-visible,
- * organization-scoped data and offers one explicit activation action, so viewing an organization
- * never changes the session context by itself.
+ * organization-scoped data. Viewing an organization never changes the session context.
  */
 export function AccountOrganizationPanel(props: {
   readonly active: boolean
@@ -32,10 +30,8 @@ export function AccountOrganizationPanel(props: {
   readonly group?: AccountEffectiveAccessGroup
   readonly id: string
   readonly membership: OrganizationMe
-  readonly onActivate: (organizationId: string) => void
   readonly onEffectiveAccessLoadMore: () => void
   readonly onEffectiveAccessRetry: () => void
-  readonly pending: boolean
 }) {
   const state = accountOrganizationPanelStateCreate({
     group: () => props.group,
@@ -71,20 +67,6 @@ export function AccountOrganizationPanel(props: {
             </p>
             <AccountRoleList values={props.membership.membership.roles} />
           </div>
-
-          {/* The activation action stays explicit so that inspecting an organization is read-only. */}
-          <Show when={!props.active}>
-            <div class="mt-2.5">
-              <ButtonIcon
-                disabled={props.pending}
-                icon={mdiCheckCircleOutline}
-                onClick={() => props.onActivate(props.membership.organization.id)}
-                variant="outline"
-              >
-                {messageTranslate("account.access.makeActiveOrganization")}
-              </ButtonIcon>
-            </div>
-          </Show>
         </AuthenticatedSection>
       </section>
 

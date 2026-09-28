@@ -6,6 +6,11 @@ account.securityHistory.description,Review recent security-sensitive activity on
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
+account.access.consentCount,アプリへの同意 {count} 件
+account.access.consentCountOne,アプリへの同意 {count} 件
+account.access.consentManage,アプリへの同意: {clientId}
+account.access.consentTitle,アプリへの同意
+account.access.consentUpdated,更新日時: {date}
 account.access.consentEmpty,No applications have access to this account.
 account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,アクティブな組織に設定
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} 件の組織
+account.access.organizationCountOne,{count} 件の組織
 account.access.organizationDescription,組織を選択してメンバーシップとアクセス権を確認します。組織を表示してもアクティブな組織は変更されません。
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.organizationSelector,表示する組織
@@ -59,6 +66,10 @@ account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
 account.directory.title,Your account
 account.factors.addTotp,Add authenticator
+account.factors.authenticator,認証アプリ
+account.factors.configured,認証アプリを設定済み
+account.factors.count,認証アプリ {count} 件
+account.factors.missing,認証アプリが未設定
 account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,プロバイダーのウィンドウで操作を続けてから、ここに戻ってリンクを確認してください。
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,{provider} アカウントを管理（{account}）
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,この外部アカウントのリンクを解除しますか？
@@ -88,6 +101,7 @@ account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
 account.passkeys.deviceBound,Device-bound passkey
 account.passkeys.empty,No passkeys registered
+account.passkeys.manage,{kind} を管理（{id}）
 account.passkeys.remove,Remove
 account.passkeys.synced,Synced passkey
 account.password.changed,Your password was changed.
@@ -100,16 +114,23 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.copy,{field} をコピー
+account.profile.copied,{field} をコピーしました。
+account.profile.copyFailed,{field} をコピーできませんでした。値を選択して手動でコピーしてください。
 account.profile.cancel,キャンセル
 account.profile.edit,プロフィールを編集
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
+account.profile.emailMissing,メールアドレス未設定
+account.profile.emailVerified,メールアドレス確認済み
+account.profile.emailVerificationPending,メールアドレスの確認待ち
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,アカウントに登録されたメールアドレスを確認・管理します。
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
 account.refreshTokens.active,有効
+account.refreshTokens.activeShown,有効なものを {count} 件表示
+account.refreshTokens.countOneShown,アプリケーションを {count} 件表示
+account.refreshTokens.countShown,アプリケーションを {count} 件表示
 account.refreshTokens.description,"このアカウントでリフレッシュトークンを使用しているアプリケーションを確認します。安全なメタデータのみを表示し、ファミリーを失効させると関連するアクセストークンも無効になります。"
 account.refreshTokens.empty,利用可能なリフレッシュトークンファミリーはありません
 account.refreshTokens.expired,期限切れ
 account.refreshTokens.expires,有効期限 {date}
 account.refreshTokens.lastUsed,最終使用 {date}
+account.refreshTokens.loadMore,アプリケーションをさらに読み込む
+account.refreshTokens.manage,アプリケーション: {application}
 account.refreshTokens.neverUsed,未使用
+account.refreshTokens.noneActive,有効なアプリケーションはありません
 account.refreshTokens.revoke,ファミリーを失効
 account.refreshTokens.revokeAll,すべてのファミリーを失効
 account.refreshTokens.revokeAllConfirm,このアカウントのすべてのリフレッシュトークンファミリーを失効させますか？
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,イベントを {count} 件表示
+account.securityHistory.countShown,イベントを {count} 件表示
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
+account.sessions.count,有効なセッション {count} 件
+account.sessions.countOne,有効なセッション {count} 件
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
 account.sessions.empty,No active sessions
 account.sessions.lastUsed,Last used {date}
+account.sessions.manage,{device} のセッション
 account.sessions.revoke,Revoke session
 account.sessions.revokeConfirm,Revoke this session immediately?
 account.sessions.unknownDevice,Unknown device

@@ -4,7 +4,7 @@ import { AccountConsentsView } from "./AccountConsentsView.js"
 import { AccountEffectiveAccessView } from "./AccountEffectiveAccessView.js"
 import { AccountInvitationsView } from "./AccountInvitationsView.js"
 import { AccountInvitationView } from "./AccountInvitationView.js"
-import { AccountOrganizationsView } from "./AccountOrganizationsView.js"
+import { AccountOrganizationAccessProductionAdapter } from "./AccountOrganizationAccessProductionAdapter.js"
 import { accountAccessProductionStateCreate } from "./accountAccessProductionStateCreate.js"
 import type { AccountAccessScreen } from "./accountAccessScreenSchema.js"
 
@@ -14,16 +14,7 @@ export function AccountAccessProductionAdapter(props: { readonly screen: Account
     <>
       <Switch>
         <Match when={props.screen === "organizations"}>
-          <AccountOrganizationsView
-            activeOrganizationId={state.activeOrganizationId()}
-            error={state.error()}
-            notice={state.notice()}
-            onRetry={state.reload}
-            onSwitch={state.organizationSwitch}
-            organizations={state.organizations()}
-            pendingId={state.pendingId()}
-            status={state.status()}
-          />
+          <AccountOrganizationAccessProductionAdapter />
         </Match>
         <Match when={props.screen === "effective-access"}>
           <AccountEffectiveAccessView

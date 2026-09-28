@@ -56,11 +56,14 @@ export function AccountDemoAdapter(props: {
         <Match when={props.kind === "delete"}>
           <AccountDeleteView
             confirmation={page.deletionConfirmation.get()}
+            dialogOpen={page.deletionDialogOpen.get()}
             email={page.user.get()?.email ?? ""}
             errorMessage={page.errorMessage.get()}
             onConfirmationInput={page.deletionConfirmation.set}
             onDelete={page.accountDelete}
+            onDialogOpenChange={page.deletionDialogOpenSet}
             onRetry={page.load}
+            pending={page.deletionPending.get()}
             status={page.status.get()}
             validationMessage={page.validationMessage.get()}
           />

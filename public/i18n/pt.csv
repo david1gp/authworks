@@ -6,6 +6,11 @@ account.securityHistory.description,Review recent security-sensitive activity on
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
+account.access.consentCount,{count} autorizações de aplicações
+account.access.consentCountOne,{count} autorização de aplicação
+account.access.consentManage,Autorização de aplicação: {clientId}
+account.access.consentTitle,Autorizações de aplicações
+account.access.consentUpdated,Atualizado em {date}
 account.access.consentEmpty,No applications have access to this account.
 account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,Definir como organização ativa
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} organizações
+account.access.organizationCountOne,{count} organização
 account.access.organizationDescription,Selecione uma organização para ver sua associação e acesso. Ver uma organização não altera sua organização ativa.
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.organizationSelector,Organização a visualizar
@@ -59,6 +66,10 @@ account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
 account.directory.title,Your account
 account.factors.addTotp,Add authenticator
+account.factors.authenticator,Aplicação de autenticação
+account.factors.configured,Aplicação de autenticação configurada
+account.factors.count,{count} aplicações de autenticação
+account.factors.missing,Aplicação de autenticação não configurada
 account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,Continue na janela do provedor e volte aqui para confirmar a vinculação.
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,Gerir a conta {provider} ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Desvincular esta conta externa?
@@ -88,6 +101,7 @@ account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
 account.passkeys.deviceBound,Device-bound passkey
 account.passkeys.empty,No passkeys registered
+account.passkeys.manage,Gerir {kind} ({id})
 account.passkeys.remove,Remove
 account.passkeys.synced,Synced passkey
 account.password.changed,Your password was changed.
@@ -100,16 +114,23 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.copy,Copiar {field}
+account.profile.copied,{field} copiado.
+account.profile.copyFailed,Não foi possível copiar {field}. Selecione o valor e copie-o manualmente.
 account.profile.cancel,Cancelar
 account.profile.edit,Editar perfil
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
+account.profile.emailMissing,Endereço de email não definido
+account.profile.emailVerified,Endereço de email verificado
+account.profile.emailVerificationPending,Verificação de email pendente
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,Consulte e gira os endereços associados à sua conta.
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
 account.refreshTokens.active,Ativo
+account.refreshTokens.activeShown,{count} ativas apresentadas
+account.refreshTokens.countOneShown,{count} aplicação apresentada
+account.refreshTokens.countShown,{count} aplicações apresentadas
 account.refreshTokens.description,"Reveja as aplicações que usam tokens de atualização desta conta. Apenas metadados seguros são exibidos; revogar uma família também invalida os seus tokens de acesso."
 account.refreshTokens.empty,Nenhuma família de tokens de atualização disponível
 account.refreshTokens.expired,Expirado
 account.refreshTokens.expires,Expira em {date}
 account.refreshTokens.lastUsed,Último uso em {date}
+account.refreshTokens.loadMore,Carregar mais aplicações
+account.refreshTokens.manage,Aplicação: {application}
 account.refreshTokens.neverUsed,Nunca usado
+account.refreshTokens.noneActive,Sem aplicações ativas
 account.refreshTokens.revoke,Revogar família
 account.refreshTokens.revokeAll,Revogar todas as famílias
 account.refreshTokens.revokeAllConfirm,Revogar todas as famílias de tokens de atualização desta conta?
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,{count} evento apresentado
+account.securityHistory.countShown,{count} eventos apresentados
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
+account.sessions.count,{count} sessões ativas
+account.sessions.countOne,{count} sessão ativa
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
 account.sessions.empty,No active sessions
 account.sessions.lastUsed,Last used {date}
+account.sessions.manage,Sessão em {device}
 account.sessions.revoke,Revoke session
 account.sessions.revokeConfirm,Revoke this session immediately?
 account.sessions.unknownDevice,Unknown device

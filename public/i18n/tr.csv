@@ -6,6 +6,11 @@ account.securityHistory.description,Review recent security-sensitive activity on
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
+account.access.consentCount,{count} uygulama izni
+account.access.consentCountOne,{count} uygulama izni
+account.access.consentManage,Uygulama izni: {clientId}
+account.access.consentTitle,Uygulama izinleri
+account.access.consentUpdated,Güncellendi: {date}
 account.access.consentEmpty,No applications have access to this account.
 account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,Etkin kuruluş yap
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} kuruluş
+account.access.organizationCountOne,{count} kuruluş
 account.access.organizationDescription,Üyeliğinizi ve erişiminizi görüntülemek için bir kuruluş seçin. Bir kuruluşu görüntülemek etkin kuruluşunuzu değiştirmez.
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.organizationSelector,Görüntülenecek kuruluş
@@ -59,6 +66,10 @@ account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
 account.directory.title,Your account
 account.factors.addTotp,Add authenticator
+account.factors.authenticator,Kimlik doğrulama uygulaması
+account.factors.configured,Kimlik doğrulama uygulaması yapılandırıldı
+account.factors.count,{count} kimlik doğrulama uygulaması
+account.factors.missing,Kimlik doğrulama uygulaması yapılandırılmadı
 account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,Sağlayıcının penceresinde devam edin ve bağlantıyı onaylamak için buraya geri dönün.
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,{provider} hesabını yönet ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Bu harici hesabın bağlantısı kaldırılsın mı?
@@ -88,6 +101,7 @@ account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
 account.passkeys.deviceBound,Device-bound passkey
 account.passkeys.empty,No passkeys registered
+account.passkeys.manage,{kind} yönet ({id})
 account.passkeys.remove,Remove
 account.passkeys.synced,Synced passkey
 account.password.changed,Your password was changed.
@@ -100,16 +114,23 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.copy,{field} kopyala
+account.profile.copied,{field} kopyalandı.
+account.profile.copyFailed,{field} kopyalanamadı. Değeri seçip elle kopyalayın.
 account.profile.cancel,İptal
 account.profile.edit,Profili düzenle
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
+account.profile.emailMissing,E-posta adresi ayarlanmadı
+account.profile.emailVerified,E-posta adresi doğrulandı
+account.profile.emailVerificationPending,E-posta doğrulaması bekleniyor
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,Hesabınıza bağlı e-posta adreslerini görüntüleyin ve yönetin.
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
 account.refreshTokens.active,Aktif
+account.refreshTokens.activeShown,{count} etkin gösteriliyor
+account.refreshTokens.countOneShown,{count} uygulama gösteriliyor
+account.refreshTokens.countShown,{count} uygulama gösteriliyor
 account.refreshTokens.description,"Bu hesap için yenileme belirteçlerini kullanan uygulamaları inceleyin. Yalnızca güvenli meta veriler gösterilir; bir ailenin iptali ilişkili erişim belirteçlerini de geçersiz kılar."
 account.refreshTokens.empty,Kullanılabilir yenileme belirteci ailesi yok
 account.refreshTokens.expired,Süresi doldu
 account.refreshTokens.expires,Son kullanma: {date}
 account.refreshTokens.lastUsed,Son kullanım: {date}
+account.refreshTokens.loadMore,Daha fazla uygulama yükle
+account.refreshTokens.manage,Uygulama: {application}
 account.refreshTokens.neverUsed,Hiç kullanılmadı
+account.refreshTokens.noneActive,Etkin uygulama yok
 account.refreshTokens.revoke,Aileyi iptal et
 account.refreshTokens.revokeAll,Tüm aileleri iptal et
 account.refreshTokens.revokeAllConfirm,Bu hesap için tüm yenileme belirteci aileleri iptal edilsin mi?
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,{count} olay gösteriliyor
+account.securityHistory.countShown,{count} olay gösteriliyor
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
+account.sessions.count,{count} etkin oturum
+account.sessions.countOne,{count} etkin oturum
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
 account.sessions.empty,No active sessions
 account.sessions.lastUsed,Last used {date}
+account.sessions.manage,{device} cihazındaki oturum
 account.sessions.revoke,Revoke session
 account.sessions.revokeConfirm,Revoke this session immediately?
 account.sessions.unknownDevice,Unknown device

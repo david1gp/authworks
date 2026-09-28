@@ -275,7 +275,7 @@ describe("account security external identity state", () => {
     globalThis.fetch = (async (input: string | URL | Request) => {
       const url = String(input)
       if (url.endsWith("/sessions/csrf")) return jsonResponse({ csrfToken: "csrf-token" })
-      if (url.endsWith("/me/refresh-tokens"))
+      if (new URL(url).pathname.endsWith("/me/refresh-tokens"))
         return jsonResponse({
           items: [
             {
@@ -306,6 +306,64 @@ describe("account security external identity state", () => {
     expect(state.confirmation.open()).toBe(true)
     state.confirmation.accept()
     await revocation
+    expect(state.refreshTokens()[0]?.status).toBe("revoked")
+  })
+
+  test("paginates refresh-token families and reloads the first page after confirmed revoke-all", async () => {
+    const browserWindow = {
+      addEventListener: () => undefined,
+      location: { origin: "https://auth.example.test" },
+      removeEventListener: () => undefined,
+    } as unknown as Window
+    Object.defineProperty(globalThis, "window", { configurable: true, value: browserWindow })
+    const queries: string[] = []
+    let revoked = false
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = new URL(String(input))
+      if (url.pathname.endsWith("/sessions/csrf")) return jsonResponse({ csrfToken: "csrf-token" })
+      if (url.pathname.endsWith("/revoke-all")) {
+        revoked = true
+        return jsonResponse({ revoked: true })
+      }
+      if (!url.pathname.endsWith("/me/refresh-tokens")) throw new Error(`Unexpected request: ${url}`)
+      queries.push(url.search)
+      return jsonResponse({
+        items: [
+          {
+            clientId: "01900000-0000-7000-8000-000000000031",
+            clientName: url.searchParams.has("pageToken") ? "Second application" : "First application",
+            createdAt: 1,
+            expiresAt: 2,
+            familyId: url.searchParams.has("pageToken")
+              ? "01900000-0000-7000-8000-000000000034"
+              : "01900000-0000-7000-8000-000000000032",
+            lastUsedAt: 1,
+            revokedAt: revoked ? 3 : null,
+            scope: ["openid"],
+            status: revoked ? "revoked" : "active",
+          },
+        ],
+        ...(url.searchParams.has("pageToken") ? {} : { nextPageToken: "cursor-1" }),
+      })
+    }) as typeof fetch
+
+    const state = await stateCreate({
+      apiBaseUrl: "https://api.example.test",
+      realmId: () => "realm-one",
+      screen: () => "refresh-tokens",
+    })
+    expect(state.refreshTokens()).toHaveLength(1)
+    expect(state.refreshTokensNextPageToken()).toBe("cursor-1")
+    await state.refreshTokensLoadMore()
+    expect(state.refreshTokens().map((item) => item.clientName)).toEqual(["First application", "Second application"])
+    expect(state.refreshTokensNextPageToken()).toBeUndefined()
+    expect(queries.slice(0, 2)).toEqual(["?pageSize=10", "?pageSize=10&pageToken=cursor-1"])
+
+    const revocation = state.refreshTokensRevokeAll()
+    expect(state.confirmation.open()).toBe(true)
+    state.confirmation.accept()
+    await revocation
+    await waitFor(() => state.refreshTokens()[0]?.status === "revoked")
     expect(state.refreshTokens()[0]?.status).toBe("revoked")
   })
 

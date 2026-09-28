@@ -6,6 +6,11 @@ account.securityHistory.description,Review recent security-sensitive activity on
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
+account.access.consentCount,Згоди для застосунків: {count}
+account.access.consentCountOne,Згоди для застосунків: {count}
+account.access.consentManage,Згода для застосунку: {clientId}
+account.access.consentTitle,Згоди для застосунків
+account.access.consentUpdated,Оновлено {date}
 account.access.consentEmpty,No applications have access to this account.
 account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,Зробити активною орган
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} організації
+account.access.organizationCountOne,{count} організація
 account.access.organizationDescription,"Виберіть організацію, щоб переглянути своє членство й доступ. Перегляд організації не змінює вашу активну організацію."
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.organizationSelector,Організація для перегляду
@@ -59,6 +66,10 @@ account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
 account.directory.title,Your account
 account.factors.addTotp,Add authenticator
+account.factors.authenticator,Застосунок-автентифікатор
+account.factors.configured,Застосунок-автентифікатор налаштовано
+account.factors.count,Кількість застосунків-автентифікаторів: {count}
+account.factors.missing,Застосунок-автентифікатор не налаштовано
 account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,"Продовжте у вікні провайдера, потім поверніться сюди для підтвердження прив’язки."
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,Керування обліковим записом {provider} ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Від’єднати цей зовнішній обліковий запис?
@@ -88,6 +101,7 @@ account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
 account.passkeys.deviceBound,Device-bound passkey
 account.passkeys.empty,No passkeys registered
+account.passkeys.manage,Керування {kind} ({id})
 account.passkeys.remove,Remove
 account.passkeys.synced,Synced passkey
 account.password.changed,Your password was changed.
@@ -100,16 +114,23 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.copy,Скопіювати {field}
+account.profile.copied,Скопійовано: {field}.
+account.profile.copyFailed,Не вдалося скопіювати {field}. Виділіть значення та скопіюйте його вручну.
 account.profile.cancel,Скасувати
 account.profile.edit,Редагувати профіль
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
+account.profile.emailMissing,Адресу електронної пошти не вказано
+account.profile.emailVerified,Адресу електронної пошти підтверджено
+account.profile.emailVerificationPending,Очікується підтвердження адреси електронної пошти
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,Переглядайте адреси електронної пошти свого облікового запису та керуйте ними.
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
 account.refreshTokens.active,Активний
+account.refreshTokens.activeShown,Показано активних: {count}
+account.refreshTokens.countOneShown,Показано застосунків: {count}
+account.refreshTokens.countShown,Показано застосунків: {count}
 account.refreshTokens.description,"Перегляньте застосунки, які використовують токени оновлення для цього облікового запису. Показуються лише безпечні метадані; відкликання сімейства також робить недійсними його токени доступу."
 account.refreshTokens.empty,Немає доступних сімейств токенів оновлення
 account.refreshTokens.expired,Прострочений
 account.refreshTokens.expires,Завершується {date}
 account.refreshTokens.lastUsed,Останнє використання {date}
+account.refreshTokens.loadMore,Завантажити ще застосунки
+account.refreshTokens.manage,Застосунок: {application}
 account.refreshTokens.neverUsed,Ніколи не використовувався
+account.refreshTokens.noneActive,Немає активних застосунків
 account.refreshTokens.revoke,Відкликати сімейство
 account.refreshTokens.revokeAll,Відкликати всі сімейства
 account.refreshTokens.revokeAllConfirm,Відкликати всі сімейства токенів оновлення для цього облікового запису?
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,Показано подій: {count}
+account.securityHistory.countShown,Показано подій: {count}
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
+account.sessions.count,Активних сеансів: {count}
+account.sessions.countOne,Активних сеансів: {count}
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
 account.sessions.empty,No active sessions
 account.sessions.lastUsed,Last used {date}
+account.sessions.manage,Сеанс на пристрої {device}
 account.sessions.revoke,Revoke session
 account.sessions.revokeConfirm,Revoke this session immediately?
 account.sessions.unknownDevice,Unknown device

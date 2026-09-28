@@ -10,9 +10,11 @@ test("organization access view exposes loading, empty, and ready boundaries for 
     effectiveAccessStatus: () => effectiveAccessStatus,
     organizationError: () => undefined,
     organizationStatus: () => organizationStatus,
+    organizations: () => [],
   })
 
   expect(state.organizationBoundary()).toEqual({ state: "loading" })
+  expect(state.organizationSummary()).toBe("Loading")
   expect(state.effectiveAccessBoundary()).toEqual({ state: "loading" })
 
   organizationStatus = "empty"
@@ -21,6 +23,7 @@ test("organization access view exposes loading, empty, and ready boundaries for 
     detail: "This account does not belong to an organization.",
     state: "empty",
   })
+  expect(state.organizationSummary()).toBe("0 organizations")
   expect(state.effectiveAccessBoundary()).toEqual({
     detail: "This account has no active organization or project access.",
     state: "empty",
@@ -40,9 +43,11 @@ test("organization access view preserves response errors and permission boundari
     effectiveAccessStatus: () => effectiveAccessStatus,
     organizationError: () => "Organization access failed.",
     organizationStatus: () => organizationStatus,
+    organizations: () => [],
   })
 
   expect(state.organizationBoundary()).toEqual({ detail: "Organization access failed.", state: "error" })
+  expect(state.organizationSummary()).toBe("This account information could not be loaded.")
   expect(state.effectiveAccessBoundary()).toEqual({
     detail: "You do not have permission to perform this action.",
     state: "inaccessible",

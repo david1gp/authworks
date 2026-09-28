@@ -6,6 +6,11 @@ account.securityHistory.description,Review recent security-sensitive activity on
 account.access.accepted,Invitation accepted
 account.access.active,Active organization
 account.access.consentDescription,Applications that can access information from your account.
+account.access.consentCount,{count} 个应用授权
+account.access.consentCountOne,{count} 个应用授权
+account.access.consentManage,应用授权：{clientId}
+account.access.consentTitle,应用授权
+account.access.consentUpdated,更新于 {date}
 account.access.consentEmpty,No applications have access to this account.
 account.access.consentRevokeConfirm,Revoke access for {clientId}?
 account.access.consentRevoked,Application access was revoked.
@@ -39,6 +44,8 @@ account.access.makeActiveOrganization,设为活动组织
 account.access.membership,Membership roles
 account.access.organizationAccess,Organization access
 account.access.organizationAccess,Organization access
+account.access.organizationCount,{count} 个组织
+account.access.organizationCountOne,{count} 个组织
 account.access.organizationDescription,选择一个组织以查看您的成员资格和访问权限。查看组织不会更改您的活动组织。
 account.access.organizationEmpty,This account does not belong to an organization.
 account.access.organizationSelector,要查看的组织
@@ -59,6 +66,10 @@ account.delete.title,Permanently delete this account
 account.delete.warning,This action cannot be undone. Your sessions and access will stop working.
 account.directory.title,Your account
 account.factors.addTotp,Add authenticator
+account.factors.authenticator,身份验证器
+account.factors.configured,已配置身份验证器
+account.factors.count,{count} 个身份验证器
+account.factors.missing,未配置身份验证器
 account.factors.codeCount,{count} recovery codes
 account.factors.confirm,Confirm
 account.factors.description,Review the authentication methods available to your account and manage your authenticator app.
@@ -75,11 +86,13 @@ account.identities.alreadyLinked,This external account is already linked.
 account.identities.confirm,Confirm link
 account.identities.confirmDescription,Confirm linking your {provider} account to continue.
 account.identities.confirmTitle,Confirm external account
+account.identities.connecting,请在提供商窗口中继续操作，然后返回此处确认关联。
 account.identities.description,External accounts linked to your Authworks identity. Unlink accounts you no longer use.
 account.identities.empty,No external identities are linked
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
 account.identities.linkTitle,Link an external account
+account.identities.manage,管理 {provider} 账户（{account}）
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,要取消关联此外部账户吗？
@@ -88,6 +101,7 @@ account.passkeys.created,Created {date}
 account.passkeys.description,Passkeys use your device screen lock or security key for secure sign-in.
 account.passkeys.deviceBound,Device-bound passkey
 account.passkeys.empty,No passkeys registered
+account.passkeys.manage,管理 {kind}（{id}）
 account.passkeys.remove,Remove
 account.passkeys.synced,Synced passkey
 account.password.changed,Your password was changed.
@@ -100,16 +114,23 @@ account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.
 account.profile.displayName,Display name
+account.profile.copy,复制{field}
+account.profile.copied,已复制{field}。
+account.profile.copyFailed,无法复制{field}。请选择该值并手动复制。
 account.profile.cancel,取消
 account.profile.edit,编辑个人资料
 account.profile.displayNameRequired,Enter a display name.
 account.profile.email,Email address
+account.profile.emailMissing,未设置邮箱
+account.profile.emailVerified,邮箱已验证
+account.profile.emailVerificationPending,邮箱待验证
 account.profile.emailAdd,Add email address
 account.profile.emailAddDescription,Add another address to your account. It becomes available after you verify it.
 account.profile.emailAddTitle,Add email address
 account.profile.emailAddresses,Email addresses
 account.profile.emailAddressesEmpty,No email addresses are available.
 account.profile.emailAddressesSaved,Your email addresses were updated.
+account.profile.emailDescription,查看和管理关联到您账户的邮箱地址。
 account.profile.emailCodeSent,"Open the verification link sent to {email}, or paste its token below."
 account.profile.emailCodeSentGeneric,"Open the verification link sent to your new address, or paste its token below."
 account.profile.emailDifferent,Use a different address
@@ -188,12 +209,18 @@ account.recovery.saveNow,Save your recovery codes now
 account.recovery.saved,I saved these codes
 account.recovery.summary,Recovery access
 account.refreshTokens.active,有效
+account.refreshTokens.activeShown,已显示 {count} 个有效应用
+account.refreshTokens.countOneShown,已显示 {count} 个应用
+account.refreshTokens.countShown,已显示 {count} 个应用
 account.refreshTokens.description,"查看使用此账户刷新令牌的应用。仅显示安全元数据；撤销一个族也会使其访问令牌失效。"
 account.refreshTokens.empty,没有可用的刷新令牌族
 account.refreshTokens.expired,已过期
 account.refreshTokens.expires,过期时间 {date}
 account.refreshTokens.lastUsed,上次使用 {date}
+account.refreshTokens.loadMore,加载更多应用
+account.refreshTokens.manage,应用：{application}
 account.refreshTokens.neverUsed,从未使用
+account.refreshTokens.noneActive,没有有效的应用
 account.refreshTokens.revoke,撤销令牌族
 account.refreshTokens.revokeAll,撤销所有令牌族
 account.refreshTokens.revokeAllConfirm,要撤销此账户的所有刷新令牌族吗？
@@ -218,6 +245,8 @@ account.securityHistory.category.passwords,Passwords
 account.securityHistory.category.refreshTokens,Refresh tokens
 account.securityHistory.category.sessions,Sessions
 account.securityHistory.empty,No security activity is available
+account.securityHistory.countOneShown,已显示 {count} 条事件
+account.securityHistory.countShown,已显示 {count} 条事件
 account.securityHistory.event.accessTokenRevoked,An access token was revoked
 account.securityHistory.event.emailChangeFailed,An email address change failed
 account.securityHistory.event.emailChangeRequested,An email address change was requested
@@ -273,9 +302,12 @@ account.securityOverview.phoneMissing,No verified phone
 account.securityOverview.phoneVerified,{phone} verified
 account.sessionExpired,Your session has expired
 account.sessions.current,Current session
+account.sessions.count,{count} 个有效会话
+account.sessions.countOne,{count} 个有效会话
 account.sessions.description,Review devices where your account is signed in and revoke any session you do not recognize.
 account.sessions.empty,No active sessions
 account.sessions.lastUsed,Last used {date}
+account.sessions.manage,{device} 上的会话
 account.sessions.revoke,Revoke session
 account.sessions.revokeConfirm,Revoke this session immediately?
 account.sessions.unknownDevice,Unknown device

@@ -82,7 +82,7 @@ export function AccountInvitationsView(props: {
 
       <div>
         <A class="text-sm font-medium text-accent hover:underline" href={props.organizationsHref}>
-          {messageTranslate("account.access.switchOrganization")}
+          {messageTranslate("shell.nav.organizations")}
         </A>
       </div>
     </AuthenticatedPageBody>
