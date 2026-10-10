@@ -74,6 +74,7 @@ vite.config.js
 
 # Data
 /data
+.local-backup
 *.sqlite
 *.sqlite-*
 
