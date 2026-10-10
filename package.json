@@ -74,6 +74,7 @@
     "build:cli": "bun build ./src/outputs/cli.ts --outfile ./dist/cli/cli.js --target bun --format esm && chmod +x ./dist/cli/cli.js",
     "build:ui": "vite build",
     "smoke:public": "bash ./ops/public-smoke.sh",
+    "migration:remote-client-ids": "bun run scripts/zitadelRemoteClientIdsImport.ts",
     "verify:outputs": "bun run test:build",
     "check": "bun run format:check && bun run check:no-literal-ui-text && bun run typecheck && bun run test && bun run build && AUTHWORKS_REQUIRE_BUILT_OUTPUTS=1 bun test --max-concurrency=1 --dots --bail=1 test/build",
     "release": "bash ./ops/release.sh",
