@@ -46,7 +46,6 @@ export function AccountProfileIdentityStrip(props: {
           url={props.pictureUrl}
         />
         <div class="grid min-w-0 gap-3">
-          <p class="text-sm text-muted-foreground">{messageTranslate("account.profile.signInDescription")}</p>
           <dl class="grid min-w-0 divide-y divide-line-subtle border-y border-line-subtle sm:grid-cols-2 sm:divide-x sm:divide-y-0">
             <div class="min-w-0 py-2 sm:pr-3">
               <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.displayName")}</dt>

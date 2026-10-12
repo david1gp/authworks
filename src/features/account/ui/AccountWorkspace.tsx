@@ -17,7 +17,6 @@ export function AccountWorkspace(props: {
       class="mx-auto grid w-full max-w-7xl min-w-0 gap-6 pb-8 sm:gap-8 sm:pb-12 [&>*]:min-w-0"
       data-account-workspace
     >
-      <h1 class="text-xl font-semibold tracking-tight">{messageTranslate("shell.nav.account")}</h1>
       <section
         aria-labelledby="account-workspace-profile-title"
         class="grid min-w-0 scroll-mt-24 gap-3 sm:gap-4 [&>*]:min-w-0"

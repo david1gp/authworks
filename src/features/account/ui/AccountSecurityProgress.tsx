@@ -1,3 +1,6 @@
+import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
+import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
+import { mdiChevronRight } from "@adaptive-ds/mdi/mdiChevronRight.js"
 import { mdiShieldKeyOutline } from "@adaptive-ds/mdi/mdiShieldKeyOutline.js"
 import { For } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
@@ -44,19 +47,25 @@ export function AccountSecurityProgress(props: {
           {(item) => (
             <li class="min-w-0">
               <a
-                class="flex min-w-0 items-center justify-between gap-2 px-3 py-2 text-left transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+                class="flex min-w-0 items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
                 href={item.href}
               >
-                <span class="min-w-0">
+                <Icon
+                  aria-hidden="true"
+                  class={item.configured ? "size-6 shrink-0 text-success" : "size-6 shrink-0 text-danger"}
+                  path={item.configured ? mdiCheckCircleOutline : mdiAlertCircleOutline}
+                />
+                <span class="grid min-w-0 flex-1">
                   <span class="block text-xs font-semibold text-muted-foreground">{item.label}</span>
                   <span class="block break-words text-sm font-medium">{item.detail}</span>
                 </span>
                 <span
                   class="shrink-0 text-xs font-medium"
-                  classList={{ "text-success": item.configured, "text-muted-foreground": !item.configured }}
+                  classList={{ "text-success": item.configured, "text-danger": !item.configured }}
                 >
                   {messageTranslate(item.configured ? "account.status.configured" : "account.status.notConfigured")}
                 </span>
+                <Icon aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" path={mdiChevronRight} />
               </a>
             </li>
           )}

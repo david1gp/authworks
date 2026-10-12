@@ -263,10 +263,13 @@ describe("account workspace", () => {
     expect(overview).toContain("<AccountDisclosure")
     expect(overview).toContain('variant="card"')
     expect(overview.indexOf("<AccountDisclosure")).toBeLessThan(overview.indexOf("<AccountProfilePictureField"))
-    expect(overview.indexOf("<AccountDisclosure")).toBeLessThan(overview.indexOf("account.profile.signInDescription"))
+    expect(overview).not.toContain("account.profile.signInDescription")
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
     expect(progress).toContain("href={item.href}")
+    expect(progress).toContain("mdiCheckCircleOutline")
+    expect(progress).toContain("mdiAlertCircleOutline")
+    expect(progress).toContain("mdiChevronRight")
     expect(progress).toContain("props.state.items()")
     expect(progress).toContain('messageTranslate("account.security.recoveryMfa")')
     expect(progress).toContain("{props.state.text()}")
@@ -349,11 +352,11 @@ describe("account workspace", () => {
     expect(state.isActive(accountWorkspaceSectionIds.security)).toBe(false)
   })
 
-  test("renders a page-level Account heading without the removed shell header", async () => {
+  test("renders no page-level heading since the shell header is removed", async () => {
     const source = await Bun.file(new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url)).text()
 
-    expect(source).toContain('<h1 class="text-xl font-semibold tracking-tight">')
-    expect(source).toContain('messageTranslate("shell.nav.account")')
+    expect(source).not.toContain("<h1")
+    expect(source).not.toContain('messageTranslate("shell.nav.account")')
     expect(source).not.toContain("AuthenticatedPageHeader")
   })
 
