@@ -72,29 +72,60 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     context: ExternalIdentityRouteContext,
     input: {
       readonly code: string
+      readonly error?: string
       readonly interactionHandle?: string
+      readonly linkContext?: { readonly messageNonce: string; readonly providerId: string }
       readonly realmId: string
       readonly providerId: string
       readonly state: string
     },
   ) => {
-    const callback = await externalIdentityCallback({
-      code: input.code,
-      database: options.database,
-      deviceMetadata: externalIdentityDeviceMetadataGet(context),
-      realmId: input.realmId,
-      providerId: input.providerId,
-      providerPorts,
-      profilePictureImport: options.profilePictureImport,
-      state: input.state,
-    })
     const browserMode =
       sessionBrowserModeRequested(context, options.browserMode) ||
       (options.browserMode === true && context.req.header("accept")?.includes("text/html") === true)
+    // A provider-side denial (user cancelled, invalid request) carries no code. Model it as
+    // a failed callback so login flows keep their existing redirects below.
+    const providerError = input.error !== undefined && input.error.length > 0 ? input.error : undefined
+    const callback: Result<ExternalIdentityCallbackResponse> =
+      providerError !== undefined
+        ? {
+            code: "external-identities.invalid",
+            errorMessage: "The external identity callback is invalid.",
+            op: "externalIdentityCallback",
+            success: false,
+          }
+        : await externalIdentityCallback({
+            code: input.code,
+            database: options.database,
+            deviceMetadata: externalIdentityDeviceMetadataGet(context),
+            realmId: input.realmId,
+            providerId: input.providerId,
+            providerPorts,
+            profilePictureImport: options.profilePictureImport,
+            state: input.state,
+          })
     if (browserMode && callback.success && callback.data.kind === "link_confirmation") {
       const targetOrigin = externalIdentityBrowserOriginResolve(options.accountUiOrigin)
       if (!targetOrigin.success) return externalIdentityErrorResponseCreate(context, targetOrigin)
       return externalIdentityLinkBrowserResponseCreate({ callback: callback.data, targetOrigin: targetOrigin.data })
+    }
+    // Link popups have no login page to fall back to: report the failure to the opener so
+    // the dialog shows the error instead of hanging on "connecting" forever.
+    if (browserMode && input.linkContext !== undefined && !callback.success) {
+      const targetOrigin = externalIdentityBrowserOriginResolve(options.accountUiOrigin)
+      if (targetOrigin.success)
+        return externalIdentityLinkBrowserResponseCreate({
+          callback: {
+            errorMessage:
+              providerError !== undefined
+                ? externalIdentityProviderDeniedMessageCreate(providerError)
+                : "The external account linking could not be completed. Check the provider configuration and try again.",
+            kind: "link_failure",
+            messageNonce: input.linkContext.messageNonce,
+            providerId: input.linkContext.providerId,
+          },
+          targetOrigin: targetOrigin.data,
+        })
     }
     if (browserMode && input.interactionHandle !== undefined) {
       const resumePath = externalIdentityInteractionResumePathCreate(input.interactionHandle, options.publicOrigin)
@@ -441,9 +472,15 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       options.database.db,
     ).externalIdentityOAuthTransactionGetByState(context.req.param("realmId"), externalIdentitySecretHashCreate(state))
     const interactionHandle = transaction.success ? (transaction.data?.interactionHandle ?? undefined) : undefined
+    const linkContext =
+      transaction.success && transaction.data?.intent === "link"
+        ? { messageNonce: transaction.data.stateHash, providerId: context.req.param("providerId") }
+        : undefined
     return externalIdentityCallbackRouteHandle(context, {
       code: context.req.query("code") ?? "",
+      error: context.req.query("error"),
       interactionHandle,
+      linkContext,
       realmId: context.req.param("realmId"),
       providerId: context.req.param("providerId"),
       state,
@@ -472,7 +509,12 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
     }
     return externalIdentityCallbackRouteHandle(context, {
       code: context.req.query("code") ?? "",
+      error: context.req.query("error"),
       interactionHandle: transaction.data.interactionHandle ?? undefined,
+      linkContext:
+        transaction.data.intent === "link"
+          ? { messageNonce: transaction.data.stateHash, providerId: transaction.data.providerId }
+          : undefined,
       realmId: transaction.data.realmId,
       providerId: transaction.data.providerId,
       state,
@@ -833,6 +875,13 @@ function externalIdentityInteractionResumePathCreate(interactionHandle: string, 
     `/oauth2/authorize?interaction=${encodeURIComponent(interactionHandle)}`,
     publicOrigin,
   )
+}
+
+function externalIdentityProviderDeniedMessageCreate(error: string): string {
+  const code = /^[A-Za-z0-9_.-]{1,64}$/.test(error) ? error : "unknown_error"
+  if (code === "access_denied")
+    return "The provider request was denied before completing. Try again and approve the request."
+  return `The provider could not complete the request (${code}). Try again.`
 }
 
 function externalIdentityChallengeTokenGet(callback: Result<ExternalIdentityCallbackResponse>): string | undefined {

@@ -1,7 +1,10 @@
 import type { ExternalIdentityCallbackResponse } from "../public/externalIdentityCallbackResponseSchema.js"
 
 type ExternalIdentityLinkBrowserResponseCreateOptions = {
-  readonly callback: Extract<ExternalIdentityCallbackResponse, { readonly kind: "link_confirmation" }>
+  readonly callback: Extract<
+    ExternalIdentityCallbackResponse,
+    { readonly kind: "link_confirmation" } | { readonly kind: "link_failure" }
+  >
   readonly targetOrigin: string
 }
 

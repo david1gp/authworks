@@ -22,6 +22,12 @@ export const externalIdentityCallbackResponseSchema = v.variant("kind", [
     messageNonce: v.pipe(v.string(), v.minLength(1), v.maxLength(256)),
     providerId: v.pipe(v.string(), v.minLength(1)),
   }),
+  v.strictObject({
+    errorMessage: v.pipe(v.string(), v.minLength(1), v.maxLength(500)),
+    kind: v.literal("link_failure"),
+    messageNonce: v.pipe(v.string(), v.minLength(1), v.maxLength(256)),
+    providerId: v.pipe(v.string(), v.minLength(1)),
+  }),
 ])
 
 export type ExternalIdentityCallbackResponse = v.InferOutput<typeof externalIdentityCallbackResponseSchema>

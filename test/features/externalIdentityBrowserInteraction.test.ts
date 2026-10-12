@@ -737,3 +737,133 @@ test("interaction browser callbacks keep the MFA challenge alongside the OIDC re
     expect(completed.data.authentication.userId).toBe(enrolled.userId)
   })
 })
+
+test("link callbacks report exchange failures and provider denials to the opener", async () => {
+  await withDatabase(async (database) => {
+    const realm = realmCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { domain: "external-link-failure.example.com", name: "External link failure" },
+    })
+    expect(realm.success).toBe(true)
+    if (!realm.success) return
+    const provider = externalIdentityProviderCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "external-client",
+        clientSecret: "external-secret",
+        displayName: "GitHub",
+        redirectUri: `https://external-link-failure.example.com/realms/${realm.data.realm.id}/external-identity/callback`,
+        type: "github",
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(provider.success).toBe(true)
+    if (!provider.success) return
+    const user = userCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        email: "link-failure@example.com",
+        profile: { displayName: "Link failure" },
+        userName: "link-failure",
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(user.success).toBe(true)
+    if (!user.success) return
+    expect(
+      userRepositoryCreate(database.db).userUpdate(realm.data.realm.id, user.data.user.id, {
+        emailVerifiedAt: database.runtime.now(),
+        registrationVerificationMethod: "email",
+        registrationVerifiedAt: database.runtime.now(),
+        state: "active",
+        updatedAt: database.runtime.now(),
+      }).success,
+    ).toBe(true)
+    const session = sessionIssue({
+      assurance: "authenticated",
+      authenticationMethod: "password",
+      database,
+      realmId: realm.data.realm.id,
+      userId: user.data.user.id,
+    })
+    expect(session.success).toBe(true)
+    if (!session.success) return
+    const failingPort: ExternalIdentityProviderPort = {
+      authorizationUrlCreate(_configuration, input) {
+        return resultCreate(`https://provider.example/authorize?state=${encodeURIComponent(input.state)}`)
+      },
+      callbackExchange(_configuration, _input) {
+        return Promise.resolve({
+          code: "external-identities.invalid",
+          errorMessage: "The external identity callback is invalid.",
+          op: "externalIdentityProviderCallback",
+          success: false as const,
+        })
+      },
+    }
+    const app = externalIdentityServerAppCreate({
+      accountUiOrigin: "https://account.example.com",
+      browserMode: true,
+      database,
+      providerPorts: { github: failingPort },
+      publicOrigin: "https://api.example.com",
+    })
+    const startLink = async () => {
+      const started = await app.request(
+        `https://external-link-failure.example.com/realms/${realm.data.realm.id}/me/external-identities/${provider.data.provider.id}/link/start`,
+        {
+          body: "{}",
+          headers: { authorization: `Bearer ${session.data.token}`, "content-type": "application/json" },
+          method: "POST",
+        },
+      )
+      expect(started.status).toBe(200)
+      const body = (await started.json()) as { authorizationUrl: string; messageNonce?: string }
+      const state = new URL(body.authorizationUrl).searchParams.get("state") ?? ""
+      expect(state.length).toBeGreaterThan(0)
+      expect(body.messageNonce).toBeString()
+      return { messageNonce: body.messageNonce ?? "", state }
+    }
+
+    // A failed provider exchange closes the popup with a failure message for the opener.
+    const exchange = await startLink()
+    const failed = await app.request(
+      `https://external-link-failure.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/callback?code=provider-code&state=${encodeURIComponent(exchange.state)}`,
+      { headers: { accept: "text/html" } },
+    )
+    expect(failed.status).toBe(200)
+    expect(failed.headers.get("content-type")).toContain("text/html")
+    const failedBody = await failed.text()
+    expect(failedBody).toContain("link_failure")
+    expect(failedBody).toContain(exchange.messageNonce)
+    expect(failedBody).toContain("https://account.example.com")
+    expect(failedBody).not.toContain("confirmationToken")
+    expect(failedBody).toContain("window.close()")
+
+    // A provider-side denial (user cancelled at GitHub) reports the denial instead of hanging.
+    const denied = await startLink()
+    const denial = await app.request(
+      `https://external-link-failure.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/callback?error=access_denied&state=${encodeURIComponent(denied.state)}`,
+      { headers: { accept: "text/html" } },
+    )
+    expect(denial.status).toBe(200)
+    const denialBody = await denial.text()
+    expect(denialBody).toContain("link_failure")
+    expect(denialBody).toContain(denied.messageNonce)
+    expect(denialBody).toContain("denied")
+
+    // Login flows keep the existing login-failure redirect when the provider denies.
+    const loginDenied = await app.request(
+      `https://external-link-failure.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/callback?error=access_denied&state=${encodeURIComponent("unknown-state")}`,
+      { headers: { accept: "text/html" } },
+    )
+    expect(loginDenied.status).toBe(302)
+    expect(loginDenied.headers.get("location")).toBe(
+      `/login/idp/${encodeURIComponent(provider.data.provider.id)}/failure`,
+    )
+  })
+})
