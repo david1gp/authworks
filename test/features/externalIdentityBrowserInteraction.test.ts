@@ -9,6 +9,13 @@ import { externalIdentityLinkBrowserResponseCreate } from "../../src/features/ex
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
+import { mfaChallengeComplete } from "../../src/features/mfa/actions/mfaChallengeComplete.js"
+import { mfaPolicySet } from "../../src/features/mfa/actions/mfaPolicySet.js"
+import { mfaTotpEnrollmentConfirm } from "../../src/features/mfa/actions/mfaTotpEnrollmentConfirm.js"
+import { mfaTotpEnrollmentStart } from "../../src/features/mfa/actions/mfaTotpEnrollmentStart.js"
+import { mfaTotpCodeCreate } from "../../src/features/mfa/domain/mfaTotpCodeCreate.js"
+import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
+import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { sessionBrowserModeHeaderName } from "../../src/features/sessions/public/sessionBrowserModeHeaderName.js"
 import { userCreate } from "../../src/features/users/actions/userCreate.js"
@@ -475,5 +482,258 @@ test("shared external callback resolves Google and GitHub transactions without w
     const replay = await callback(replayState)
     expect(replay.status).toBe(400)
     expect(await replay.json()).toMatchObject({ error: { code: "external-identities.invalid" } })
+  })
+})
+
+async function createActiveUserWithTotp(
+  database: StorageDatabase,
+  testkit: ReturnType<typeof platformTestkitCreate>,
+  realmId: string,
+  email: string,
+  userName: string,
+) {
+  const user = userCreate({
+    context: realmSystemContextCreate(),
+    database,
+    input: { email, profile: { displayName: userName }, userName },
+    realmId,
+  })
+  expect(user.success).toBe(true)
+  if (!user.success) throw new Error(user.errorMessage)
+  expect(
+    userRepositoryCreate(database.db).userUpdate(realmId, user.data.user.id, {
+      emailVerifiedAt: database.runtime.now(),
+      registrationVerificationMethod: "email",
+      registrationVerifiedAt: database.runtime.now(),
+      state: "active",
+      updatedAt: database.runtime.now(),
+    }).success,
+  ).toBe(true)
+  const enrolled = mfaTotpEnrollmentStart({
+    database,
+    encryptionSecret: "mfa-test-secret",
+    realmId,
+    runtime: testkit.runtime,
+    userId: user.data.user.id,
+  })
+  expect(enrolled.success).toBe(true)
+  if (!enrolled.success) throw new Error(enrolled.errorMessage)
+  const code = mfaTotpCodeCreate(enrolled.data.secret, Math.floor(testkit.runtime.now() / 30_000))
+  expect(code.success).toBe(true)
+  if (!code.success) throw new Error(code.errorMessage)
+  const confirmed = mfaTotpEnrollmentConfirm({
+    database,
+    encryptionSecret: "mfa-test-secret",
+    input: { code: code.data, enrollmentId: enrolled.data.enrollment.id },
+    realmId,
+    runtime: testkit.runtime,
+    userId: user.data.user.id,
+  })
+  expect(confirmed.success).toBe(true)
+  if (!confirmed.success) throw new Error(confirmed.errorMessage)
+  return { secret: enrolled.data.secret, userId: user.data.user.id }
+}
+
+function mfaChallengePort(email: string): ExternalIdentityProviderPort {
+  return {
+    authorizationUrlCreate(_configuration, input) {
+      return resultCreate(`https://provider.example/authorize?state=${encodeURIComponent(input.state)}`)
+    },
+    callbackExchange(_configuration, input) {
+      return Promise.resolve(
+        resultCreate({
+          displayName: "MFA external user",
+          email,
+          emailVerified: true,
+          externalSubject: `mfa-external-subject-${email}`,
+          ...(input.nonce === undefined ? {} : { nonce: input.nonce }),
+          providerType: "google" as const,
+          username: "mfa-external",
+        }),
+      )
+    },
+  }
+}
+
+test("direct browser callbacks thread an org-forced MFA challenge through the login redirect", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = realmCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { domain: "external-mfa-direct.example.com", name: "External MFA direct" },
+    })
+    expect(realm.success).toBe(true)
+    if (!realm.success) return
+    const organization = organizationCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { name: "MFA organization" },
+      realmId: realm.data.realm.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+    expect(
+      organizationLoginPolicySet({
+        context: realmSystemContextCreate(),
+        database,
+        input: { requiredMfa: true },
+        organizationId: organization.data.organization.id,
+        realmId: realm.data.realm.id,
+      }).success,
+    ).toBe(true)
+    const email = "mfa-direct-user@example.com"
+    const enrolled = await createActiveUserWithTotp(database, testkit, realm.data.realm.id, email, "mfa-direct")
+    // The enrollment confirmation consumed the current TOTP step, so move to the next step before
+    // completing the login challenge. Without this the same code would be rejected as a replay.
+    testkit.advance(30_000)
+    const provider = externalIdentityProviderCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "external-client",
+        clientSecret: "external-secret",
+        displayName: "Google",
+        organizationId: organization.data.organization.id,
+        redirectUri: "https://external-mfa-direct.example.com/idps/callback",
+        type: "google",
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(provider.success).toBe(true)
+    if (!provider.success) return
+    const app = externalIdentityServerAppCreate({
+      browserMode: true,
+      database,
+      providerPorts: { google: mfaChallengePort(email) },
+      publicOrigin: "https://external-mfa-direct.example.com",
+    })
+    const start = await app.request(
+      `https://external-mfa-direct.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/start`,
+      {
+        body: JSON.stringify({ organizationId: organization.data.organization.id }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(start.status).toBe(200)
+    const authorizationUrl = (await start.json()) as { authorizationUrl?: string }
+    const state =
+      new URL(authorizationUrl.authorizationUrl ?? "https://provider.example/").searchParams.get("state") ?? ""
+    const callback = await app.request(
+      `https://external-mfa-direct.example.com/idps/callback?code=provider-code&state=${encodeURIComponent(state)}`,
+      { headers: { accept: "text/html" } },
+    )
+    expect(callback.status).toBe(302)
+    const location = callback.headers.get("location") ?? ""
+    expect(location.startsWith("/login/mfa?mfa_challenge=")).toBe(true)
+    expect(callback.headers.get("set-cookie")).toBeNull()
+    expect(await callback.text()).toBe("")
+    const challengeToken = new URL(location, "https://external-mfa-direct.example.com").searchParams.get(
+      "mfa_challenge",
+    )
+    expect(challengeToken).toBeString()
+    const code = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(code.success).toBe(true)
+    if (!code.success || challengeToken === null) return
+    const completed = mfaChallengeComplete({
+      database,
+      encryptionSecret: "mfa-test-secret",
+      input: { code: code.data, token: challengeToken },
+      realmId: realm.data.realm.id,
+      runtime: testkit.runtime,
+    })
+    expect(completed.success).toBe(true)
+    if (!completed.success) return
+    expect(completed.data.session?.session.assurance).toBe("multi_factor")
+    expect(completed.data.authentication.userId).toBe(enrolled.userId)
+  })
+})
+
+test("interaction browser callbacks keep the MFA challenge alongside the OIDC resume state", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = realmCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { domain: "external-mfa-interaction.example.com", name: "External MFA interaction" },
+    })
+    expect(realm.success).toBe(true)
+    if (!realm.success) return
+    expect(
+      mfaPolicySet({
+        context: realmSystemContextCreate("system"),
+        database,
+        input: { lockoutDurationMs: 900_000, maxAttempts: 5, mode: "required", totpWindow: 1 },
+        realmId: realm.data.realm.id,
+        runtime: testkit.runtime,
+      }).success,
+    ).toBe(true)
+    const email = "mfa-interaction-user@example.com"
+    const enrolled = await createActiveUserWithTotp(database, testkit, realm.data.realm.id, email, "mfa-interaction")
+    // The enrollment confirmation consumed the current TOTP step, so move to the next step before
+    // completing the login challenge. Without this the same code would be rejected as a replay.
+    testkit.advance(30_000)
+    const provider = externalIdentityProviderCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "external-client",
+        clientSecret: "external-secret",
+        displayName: "Google",
+        redirectUri: "https://external-mfa-interaction.example.com/callback",
+        type: "google",
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(provider.success).toBe(true)
+    if (!provider.success) return
+    const app = externalIdentityServerAppCreate({
+      browserMode: true,
+      database,
+      providerPorts: { google: mfaChallengePort(email) },
+      publicOrigin: "https://external-mfa-interaction.example.com",
+    })
+    const interaction = "B".repeat(43)
+    const start = await app.request(
+      `https://external-mfa-interaction.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/start`,
+      {
+        body: JSON.stringify({ interaction }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(start.status).toBe(200)
+    const authorizationUrl = (await start.json()) as { authorizationUrl?: string }
+    const state =
+      new URL(authorizationUrl.authorizationUrl ?? "https://provider.example/").searchParams.get("state") ?? ""
+    const callback = await app.request(
+      `https://external-mfa-interaction.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/callback?code=provider-code&state=${encodeURIComponent(state)}`,
+      { headers: { [sessionBrowserModeHeaderName]: "true" } },
+    )
+    expect(callback.status).toBe(302)
+    const location = callback.headers.get("location") ?? ""
+    const redirect = new URL(location, "https://external-mfa-interaction.example.com")
+    expect(redirect.pathname).toBe("/login/mfa")
+    expect(redirect.searchParams.get("interaction")).toBe(interaction)
+    expect(redirect.searchParams.get("return_to")).toBe(`/oauth2/authorize?interaction=${interaction}`)
+    const challengeToken = redirect.searchParams.get("mfa_challenge")
+    expect(challengeToken).toBeString()
+    expect(callback.headers.get("set-cookie")).toBeNull()
+    expect(await callback.text()).toBe("")
+    const code = mfaTotpCodeCreate(enrolled.secret, Math.floor(testkit.runtime.now() / 30_000))
+    expect(code.success).toBe(true)
+    if (!code.success || challengeToken === null) return
+    const completed = mfaChallengeComplete({
+      database,
+      encryptionSecret: "mfa-test-secret",
+      input: { code: code.data, token: challengeToken },
+      realmId: realm.data.realm.id,
+      runtime: testkit.runtime,
+    })
+    expect(completed.success).toBe(true)
+    if (!completed.success) return
+    expect(completed.data.session?.session.assurance).toBe("multi_factor")
+    expect(completed.data.authentication.userId).toBe(enrolled.userId)
   })
 })

@@ -34,6 +34,7 @@ import { externalIdentityProviderPortCreate } from "../domain/externalIdentityPr
 import { externalIdentitySecretHashCreate } from "../domain/externalIdentitySecretHashCreate.js"
 import { externalIdentityRepositoryCreate } from "../persistence/externalIdentityRepositoryCreate.js"
 import { externalIdentityLinkCompleteRequestSchema } from "../public/externalIdentityLinkCompleteRequestSchema.js"
+import type { ExternalIdentityCallbackResponse } from "../public/externalIdentityCallbackResponseSchema.js"
 import { externalIdentityProviderCreateRequestSchema } from "../public/externalIdentityProviderCreateRequestSchema.js"
 import { externalIdentityProviderUpdateRequestSchema } from "../public/externalIdentityProviderUpdateRequestSchema.js"
 import { externalIdentityStartRequestSchema } from "../public/externalIdentityStartRequestSchema.js"
@@ -108,6 +109,7 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         input.interactionHandle,
         resumePath.data,
         options.publicOrigin,
+        externalIdentityChallengeTokenGet(callback),
       )
     }
     if (browserMode) {
@@ -118,6 +120,12 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
         if (!browser.success) return externalIdentityErrorResponseCreate(context, browser)
         return context.redirect("/account", 302)
       }
+      // An organization or realm policy can force MFA, so a direct IdP sign-in can yield a
+      // challenge without a session. Thread the challenge token through the login redirect so
+      // the hosted login can complete verification instead of dropping the sign-in.
+      const challengeToken = externalIdentityChallengeTokenGet(callback)
+      if (challengeToken !== undefined)
+        return context.redirect(`/login/mfa?mfa_challenge=${encodeURIComponent(challengeToken)}`, 302)
       if (callback.success && callback.data.kind === "authenticated") return context.redirect("/login", 302)
       return context.redirect(`/login/idp/${encodeURIComponent(input.providerId)}/failure`, 302)
     }
@@ -827,11 +835,21 @@ function externalIdentityInteractionResumePathCreate(interactionHandle: string, 
   )
 }
 
+function externalIdentityChallengeTokenGet(callback: Result<ExternalIdentityCallbackResponse>): string | undefined {
+  if (!callback.success || callback.data.kind !== "authenticated") return undefined
+  const challenge = callback.data.challenge
+  if (challenge === undefined || callback.data.session !== undefined) return undefined
+  return externalIdentityChallengeTokenPattern.test(challenge.token) ? challenge.token : undefined
+}
+
+const externalIdentityChallengeTokenPattern = /^[A-Za-z0-9_-]{43,128}$/
+
 function externalIdentityLoginRedirectCreate(
   context: ExternalIdentityRouteContext,
   interactionHandle: string,
   resumePath: string,
   publicOrigin: string | undefined,
+  challengeToken?: string,
 ) {
   if (publicOrigin === undefined)
     return externalIdentityErrorResponseCreate(context, {
@@ -840,7 +858,15 @@ function externalIdentityLoginRedirectCreate(
       op: "externalIdentityLoginRedirectCreate",
       success: false,
     })
-  const loginPath = `/login?interaction=${encodeURIComponent(interactionHandle)}&return_to=${encodeURIComponent(resumePath)}`
+  const params = `interaction=${encodeURIComponent(interactionHandle)}&return_to=${encodeURIComponent(resumePath)}`
+  if (challengeToken !== undefined) {
+    const challenged = sessionReturnPathValidate(
+      `/login/mfa?${params}&mfa_challenge=${encodeURIComponent(challengeToken)}`,
+      publicOrigin,
+    )
+    if (challenged.success) return context.redirect(challenged.data, 302)
+  }
+  const loginPath = `/login?${params}`
   const validated = sessionReturnPathValidate(loginPath, publicOrigin)
   if (!validated.success) return externalIdentityErrorResponseCreate(context, validated)
   return context.redirect(validated.data, 302)

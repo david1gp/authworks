@@ -163,6 +163,10 @@ export function sessionRepositoryCreate(database: StorageExecutor) {
             .update(sessionTable)
             .set({
               assurance: "multi_factor",
+              // Step-up is a fresh authentication: refresh createdAt so recent-authentication
+              // checks (external identity link/unlink, email change) and OIDC auth_time
+              // observe the step-up time instead of the original login time.
+              createdAt: now,
               lastUsedAt: now,
               mfaMethod,
               tokenHash: nextTokenHash,

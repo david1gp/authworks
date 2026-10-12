@@ -92,6 +92,11 @@ export const englishCatalog = {
   "account.identities.linkTitle": "Link an external account",
   "account.identities.manage": "Manage {provider} account ({account})",
   "account.identities.popupBlocked": "Allow pop-ups to connect an external account.",
+  "account.identities.recentAuthRequired":
+    "For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry.",
+  "account.identities.signInAgain": "Sign in again",
+  "account.identities.stepUpDescription":
+    "Verify with multi-factor authentication, then the external account action will be retried.",
   "account.identities.unlink": "Unlink",
   "account.identities.unlinkConfirm": "Unlink this external account?",
   "account.passkeys.add": "Add passkey",

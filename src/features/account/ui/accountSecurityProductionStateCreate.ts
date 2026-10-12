@@ -63,10 +63,20 @@ export function accountSecurityProductionStateCreate(options: {
   const totpRemoveStepUpCode = createSignalObject("")
   const totpRemoveStepUpError = createSignalObject<string | undefined>(undefined)
   const totpRemoveStepUpEnrollmentId = createSignalObject<string | undefined>(undefined)
+  const identityStepUpChallenge = createSignalObject<MfaChallengeResponse | undefined>(undefined)
+  const identityStepUpCode = createSignalObject("")
+  const identityStepUpError = createSignalObject<string | undefined>(undefined)
+  const identityRecentAuthRequired = createSignalObject(false)
   const confirmation = confirmStateCreate()
   let totpFlowGeneration = 0
   let totpRemoveStepUpGeneration = 0
+  let identityStepUpGeneration = 0
   let identityLinkPopup: Window | null = null
+  type IdentityStepUpPendingAction =
+    | { readonly kind: "linkStart"; readonly providerId: string }
+    | { readonly kind: "linkConfirm" }
+    | { readonly kind: "unlink"; readonly providerId: string; readonly externalSubject: string }
+  let identityStepUpPendingAction: IdentityStepUpPendingAction | undefined
 
   const failed = (message: string) => {
     error.set(message)
@@ -255,6 +265,162 @@ export function accountSecurityProductionStateCreate(options: {
     pendingId.set(undefined)
     return totpRemoveExecute(enrollmentId)
   }
+  const identityRecentAuthFailed = (result: { readonly code?: string; readonly errorMessage?: string }) =>
+    result.code === "external-identities.unauthorized" &&
+    (result.errorMessage ?? "").toLowerCase().includes("recent authentication")
+  const identityStepUpReset = () => {
+    identityStepUpGeneration += 1
+    identityStepUpChallenge.set(undefined)
+    identityStepUpCode.set("")
+    identityStepUpError.set(undefined)
+    identityStepUpPendingAction = undefined
+  }
+  const identityStepUpCancel = () => {
+    if (pendingId.get()?.startsWith("identity:step-up") === true) pendingId.set(undefined)
+    identityStepUpReset()
+    identityRecentAuthRequired.set(false)
+  }
+  const identityStepUpStart = async (pendingAction: IdentityStepUpPendingAction) => {
+    const generation = ++identityStepUpGeneration
+    identityStepUpChallenge.set(undefined)
+    identityStepUpCode.set("")
+    identityStepUpError.set(undefined)
+    identityStepUpPendingAction = pendingAction
+    identityRecentAuthRequired.set(false)
+    pendingId.set("identity:step-up:start")
+    const result = await api.mfaStepUpStart(options.realmId())
+    if (generation !== identityStepUpGeneration) return false
+    if (result.success) {
+      identityStepUpChallenge.set(result.data)
+      pendingId.set("identity:step-up")
+      return true
+    }
+    pendingId.set(undefined)
+    // No MFA factor available (or step-up denied): fall back to full re-authentication.
+    identityRecentAuthRequired.set(true)
+    error.set(messageTranslate("account.identities.recentAuthRequired"))
+    return false
+  }
+  const identityLinkStartInner = async (providerId: string): Promise<boolean> => {
+    const popup = window.open("about:blank", "authworks-external-identity", "popup,width=520,height=720")
+    if (popup === null) {
+      error.set(messageTranslate("account.identities.popupBlocked"))
+      return false
+    }
+    identityLinkPopup = popup
+    identityLinkProvider.set(providerId)
+    identityLinkMessageNonce.set(undefined)
+    identityLinkCallbackOrigin.set(undefined)
+    pendingId.set(`identity:link:${providerId}`)
+    error.set(undefined)
+    identityRecentAuthRequired.set(false)
+    const started = await api.identityLinkStart(options.realmId(), providerId)
+    if (!started.success) {
+      popup.close()
+      identityLinkPopup = null
+      identityLinkProvider.set(undefined)
+      identityLinkMessageNonce.set(undefined)
+      identityLinkCallbackOrigin.set(undefined)
+      pendingId.set(undefined)
+      if (identityRecentAuthFailed(started)) {
+        await identityStepUpStart({ kind: "linkStart", providerId })
+        return false
+      }
+      error.set(started.errorMessage)
+      return false
+    }
+    if (started.data.messageNonce === undefined || started.data.callbackOrigin !== window.location.origin) {
+      popup.close()
+      identityLinkPopup = null
+      identityLinkProvider.set(undefined)
+      identityLinkMessageNonce.set(undefined)
+      identityLinkCallbackOrigin.set(undefined)
+      pendingId.set(undefined)
+      error.set(messageTranslate("account.identities.popupBlocked"))
+      return false
+    }
+    identityLinkMessageNonce.set(started.data.messageNonce)
+    identityLinkCallbackOrigin.set(started.data.callbackOrigin)
+    popup.location.href = started.data.authorizationUrl
+    return true
+  }
+  const identityLinkConfirmInner = async (): Promise<boolean> => {
+    const confirmation = identityLinkConfirmation.get()
+    const providerId = identityLinkProvider.get()
+    if (confirmation === undefined || providerId === undefined) return false
+    const completed = await mutate("identity:link:confirm", () =>
+      api.identityLinkComplete(options.realmId(), providerId, {
+        confirm: true,
+        confirmationToken: confirmation.confirmationToken,
+      }),
+    )
+    if (completed) {
+      identityLinkConfirmation.set(undefined)
+      identityLinkProvider.set(undefined)
+      identityLinkMessageNonce.set(undefined)
+      identityLinkCallbackOrigin.set(undefined)
+      return true
+    }
+    const failure = error.get() ?? ""
+    if (failure.toLowerCase().includes("recent authentication")) {
+      await identityStepUpStart({ kind: "linkConfirm" })
+      return false
+    }
+    return false
+  }
+  const identityUnlinkInner = async (providerId: string, externalSubject: string): Promise<boolean> => {
+    const result = await mutate(`identity:${providerId}`, () =>
+      api.identityUnlink(options.realmId(), providerId, externalSubject),
+    )
+    if (result) return true
+    const failure = error.get() ?? ""
+    if (failure.toLowerCase().includes("recent authentication")) {
+      await identityStepUpStart({ kind: "unlink", externalSubject, providerId })
+      return false
+    }
+    return false
+  }
+  const identityStepUpRetry = async (): Promise<boolean> => {
+    const pendingAction = identityStepUpPendingAction
+    if (pendingAction === undefined) return false
+    if (pendingAction.kind === "linkStart") {
+      await identityLinkStartInner(pendingAction.providerId)
+      return identityStepUpChallenge.get() !== undefined || identityRecentAuthRequired.get()
+    }
+    if (pendingAction.kind === "linkConfirm") {
+      await identityLinkConfirmInner()
+      return true
+    }
+    await identityUnlinkInner(pendingAction.providerId, pendingAction.externalSubject)
+    return true
+  }
+  const identityStepUpComplete = async (input: {
+    readonly code: string
+    readonly factor?: MfaChallengeCompleteRequest["factor"]
+  }): Promise<boolean> => {
+    const challenge = identityStepUpChallenge.get()
+    if (challenge === undefined || input.code.length === 0) return false
+    pendingId.set("identity:step-up:complete")
+    identityStepUpError.set(undefined)
+    const result = await api.mfaStepUpComplete(options.realmId(), {
+      code: input.code,
+      ...(input.factor === undefined ? {} : { factor: input.factor }),
+      token: challenge.token,
+    })
+    if (!result.success) {
+      pendingId.set(undefined)
+      identityStepUpError.set(result.errorMessage)
+      return false
+    }
+    // Step-up refreshes the session authentication time server-side; retry the pending link action.
+    identityStepUpChallenge.set(undefined)
+    identityStepUpCode.set("")
+    pendingId.set(undefined)
+    await load()
+    await identityStepUpRetry()
+    if (identityStepUpChallenge.get() === undefined) identityStepUpReset()
+    return true
+  }
   const totpStart = async () => {
     const generation = ++totpFlowGeneration
     totpDialogOpen.set(true)
@@ -286,6 +452,7 @@ export function accountSecurityProductionStateCreate(options: {
         oneTimeCodes.set([])
         totpFlowReset()
         totpRemoveStepUpCancel()
+        identityStepUpCancel()
         void load()
       },
     ),
@@ -305,64 +472,32 @@ export function accountSecurityProductionStateCreate(options: {
       identityLinkPopup?.close()
       identityLinkPopup = null
     },
-    identityLinkConfirm: async () => {
-      const confirmation = identityLinkConfirmation.get()
-      const providerId = identityLinkProvider.get()
-      if (confirmation === undefined || providerId === undefined) return
-      const completed = await mutate("identity:link:confirm", () =>
-        api.identityLinkComplete(options.realmId(), providerId, {
-          confirm: true,
-          confirmationToken: confirmation.confirmationToken,
-        }),
-      )
-      if (completed) {
-        identityLinkConfirmation.set(undefined)
-        identityLinkProvider.set(undefined)
-        identityLinkMessageNonce.set(undefined)
-        identityLinkCallbackOrigin.set(undefined)
-      }
-    },
+    identityLinkConfirm: () => identityLinkConfirmInner(),
     identityLinkConfirmation: identityLinkConfirmation.get,
     identityLinkProvider: identityLinkProvider.get,
     identityLinkStart: async (providerId: string) => {
       if (pendingId.get() !== undefined) return
-      const popup = window.open("about:blank", "authworks-external-identity", "popup,width=520,height=720")
-      if (popup === null) return error.set(messageTranslate("account.identities.popupBlocked"))
-      identityLinkPopup = popup
-      identityLinkProvider.set(providerId)
-      identityLinkMessageNonce.set(undefined)
-      identityLinkCallbackOrigin.set(undefined)
-      pendingId.set(`identity:link:${providerId}`)
-      error.set(undefined)
-      const started = await api.identityLinkStart(options.realmId(), providerId)
-      if (!started.success) {
-        popup.close()
-        identityLinkPopup = null
-        identityLinkProvider.set(undefined)
-        identityLinkMessageNonce.set(undefined)
-        identityLinkCallbackOrigin.set(undefined)
-        pendingId.set(undefined)
-        return error.set(started.errorMessage)
-      }
-      if (started.data.messageNonce === undefined || started.data.callbackOrigin !== window.location.origin) {
-        popup.close()
-        identityLinkPopup = null
-        identityLinkProvider.set(undefined)
-        identityLinkMessageNonce.set(undefined)
-        identityLinkCallbackOrigin.set(undefined)
-        pendingId.set(undefined)
-        return error.set(messageTranslate("account.identities.popupBlocked"))
-      }
-      identityLinkMessageNonce.set(started.data.messageNonce)
-      identityLinkCallbackOrigin.set(started.data.callbackOrigin)
-      popup.location.href = started.data.authorizationUrl
+      await identityLinkStartInner(providerId)
     },
     identityProviderLinked: (providerId: string) =>
       identities.get().some((identity) => identity.providerId === providerId),
     identityProviders: identityProviders.get,
+    identityRecentAuthRequired: identityRecentAuthRequired.get,
+    identityStepUpCancel,
+    identityStepUpChallenge: identityStepUpChallenge.get,
+    identityStepUpCode: identityStepUpCode.get,
+    identityStepUpCodeInput: (event: InputEvent & { currentTarget: HTMLInputElement }) =>
+      identityStepUpCode.set(event.currentTarget.value),
+    identityStepUpComplete,
+    identityStepUpError: identityStepUpError.get,
+    identityStepUpPending: () => {
+      const pending = pendingId.get()
+      return pending === "identity:step-up:start" || pending === "identity:step-up:complete"
+    },
+    identityStepUpStart,
     identityUnlink: async (providerId: string, externalSubject: string) => {
       if (!(await confirmation.confirm(messageTranslate("account.identities.unlinkConfirm")))) return
-      void mutate(`identity:${providerId}`, () => api.identityUnlink(options.realmId(), providerId, externalSubject))
+      await identityUnlinkInner(providerId, externalSubject)
     },
     methods: methods.get,
     oneTimeCodes: oneTimeCodes.get,

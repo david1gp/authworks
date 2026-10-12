@@ -94,6 +94,9 @@ account.identities.linkDescription,Connect another provider to use it as an auth
 account.identities.linkTitle,Link an external account
 account.identities.manage,Керування обліковим записом {provider} ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
+"account.identities.recentAuthRequired","For security, verify it is you before linking an external account. Complete multi-factor verification, or sign in again and retry."
+account.identities.signInAgain,Sign in again
+"account.identities.stepUpDescription","Verify with multi-factor authentication, then the external account action will be retried."
 account.identities.unlink,Unlink
 account.identities.unlinkConfirm,Від’єднати цей зовнішній обліковий запис?
 account.passkeys.add,Add passkey
