@@ -302,7 +302,6 @@ test("linked identity rows are labelled dialogs, help stays in the collapsed car
     "{() => props.state.identityLinkStart(provider.id)}",
     "{state.linkConfirm}",
     "{state.linkCancel}",
-    "{props.state.identityStepUpCancel}",
     "{signInAgain}",
     "{props.state.identityStepUpCancel}",
   ])

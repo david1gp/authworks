@@ -125,111 +125,61 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                     </div>
                   </Show>
                   <Show
-                    when={stepUpOpen()}
+                    when={props.state.identityLinkConfirmation()}
                     fallback={
                       <Show
-                        when={props.state.identityLinkConfirmation()}
+                        when={props.state.pendingId()?.startsWith("identity:link:")}
                         fallback={
-                          <Show
-                            when={props.state.pendingId()?.startsWith("identity:link:")}
-                            fallback={
-                              <div class="grid gap-2">
-                                <For each={state.availableProviders()}>
-                                  {(provider) => (
-                                    <ButtonIcon
-                                      disabled={props.state.pendingId() !== undefined}
-                                      icon={accountIdentityProviderIconGet(provider.type)}
-                                      onClick={() => props.state.identityLinkStart(provider.id)}
-                                      type="button"
-                                      variant="outline"
-                                    >
-                                      {provider.displayName}
-                                    </ButtonIcon>
-                                  )}
-                                </For>
-                              </div>
-                            }
-                          >
-                            <p aria-live="polite" class="text-sm text-muted-foreground" role="status">
-                              {messageTranslate("account.identities.connecting")}
-                            </p>
-                          </Show>
+                          <div class="grid gap-2">
+                            <For each={state.availableProviders()}>
+                              {(provider) => (
+                                <ButtonIcon
+                                  disabled={props.state.pendingId() !== undefined}
+                                  icon={accountIdentityProviderIconGet(provider.type)}
+                                  onClick={() => props.state.identityLinkStart(provider.id)}
+                                  type="button"
+                                  variant="outline"
+                                >
+                                  {provider.displayName}
+                                </ButtonIcon>
+                              )}
+                            </For>
+                          </div>
                         }
                       >
-                        <div class="grid gap-3">
-                          <p class="text-sm font-semibold">{messageTranslate("account.identities.confirmTitle")}</p>
-                          <p class="text-xs text-muted-foreground">
-                            {messageTranslate("account.identities.confirmDescription", {
-                              provider: state.linkProviderLabel(),
-                            })}
-                          </p>
-                          <div class="flex flex-wrap gap-1.5">
-                            <ButtonIcon
-                              disabled={props.state.pendingId() !== undefined}
-                              icon={mdiCheck}
-                              onClick={state.linkConfirm}
-                              type="button"
-                            >
-                              {messageTranslate("account.identities.confirm")}
-                            </ButtonIcon>
-                            <ButtonIcon
-                              disabled={props.state.pendingId() !== undefined}
-                              icon={mdiClose}
-                              onClick={state.linkCancel}
-                              type="button"
-                              variant="ghost"
-                            >
-                              {messageTranslate("common.cancel")}
-                            </ButtonIcon>
-                          </div>
-                        </div>
+                        <p aria-live="polite" class="text-sm text-muted-foreground" role="status">
+                          {messageTranslate("account.identities.connecting")}
+                        </p>
                       </Show>
                     }
                   >
-                    <form class="grid gap-3" onSubmit={stepUpSubmit}>
-                      <p class="text-sm text-muted-foreground">
-                        {messageTranslate("account.identities.stepUpDescription")}
+                    <div class="grid gap-3">
+                      <p class="text-sm font-semibold">{messageTranslate("account.identities.confirmTitle")}</p>
+                      <p class="text-xs text-muted-foreground">
+                        {messageTranslate("account.identities.confirmDescription", {
+                          provider: state.linkProviderLabel(),
+                        })}
                       </p>
-                      <div class="grid gap-1">
-                        <Label for="account-identity-link-step-up-code">
-                          {messageTranslate("account.factors.verificationCode")}
-                        </Label>
-                        <Input
-                          autocomplete="one-time-code"
-                          class="font-mono"
-                          disabled={props.state.identityStepUpPending()}
-                          id="account-identity-link-step-up-code"
-                          inputmode="numeric"
-                          maxlength={6}
-                          onInput={props.state.identityStepUpCodeInput}
-                          value={props.state.identityStepUpCode()}
-                        />
-                      </div>
-                      <Show when={props.state.identityStepUpError()}>
-                        {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
-                      </Show>
-                      <div class="flex flex-wrap gap-2">
+                      <div class="flex flex-wrap gap-1.5">
                         <ButtonIcon
-                          disabled={
-                            props.state.identityStepUpPending() || !/^\d{6}$/.test(props.state.identityStepUpCode())
-                          }
-                          icon={mdiArrowRight}
-                          type="submit"
+                          disabled={props.state.pendingId() !== undefined}
+                          icon={mdiCheck}
+                          onClick={state.linkConfirm}
+                          type="button"
                         >
-                          {props.state.identityStepUpPending()
-                            ? messageTranslate("common.loading")
-                            : messageTranslate("common.continue")}
+                          {messageTranslate("account.identities.confirm")}
                         </ButtonIcon>
                         <ButtonIcon
+                          disabled={props.state.pendingId() !== undefined}
                           icon={mdiClose}
-                          onClick={props.state.identityStepUpCancel}
+                          onClick={state.linkCancel}
                           type="button"
                           variant="ghost"
                         >
                           {messageTranslate("common.cancel")}
                         </ButtonIcon>
                       </div>
-                    </form>
+                    </div>
                   </Show>
                 </div>
               </AuthenticatedDialog>
@@ -242,7 +192,7 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
         onOpenChange={(open) => {
           if (!open) props.state.identityStepUpCancel()
         }}
-        open={stepUpOpen() && !state.linkDialogOpen()}
+        open={stepUpOpen()}
         title={messageTranslate("account.confirmTitle")}
       >
         <Show

@@ -72,10 +72,11 @@ export function accountSecurityProductionStateCreate(options: {
   let totpRemoveStepUpGeneration = 0
   let identityStepUpGeneration = 0
   let identityLinkPopup: Window | null = null
-  type IdentityStepUpPendingAction =
-    | { readonly kind: "linkStart"; readonly providerId: string }
-    | { readonly kind: "linkConfirm" }
-    | { readonly kind: "unlink"; readonly providerId: string; readonly externalSubject: string }
+  type IdentityStepUpPendingAction = {
+    readonly kind: "unlink"
+    readonly providerId: string
+    readonly externalSubject: string
+  }
   let identityStepUpPendingAction: IdentityStepUpPendingAction | undefined
 
   const failed = (message: string) => {
@@ -320,9 +321,6 @@ export function accountSecurityProductionStateCreate(options: {
     pendingId.set(undefined)
     return totpRemoveExecute(enrollmentId)
   }
-  const identityRecentAuthFailed = (result: { readonly code?: string; readonly errorMessage?: string }) =>
-    result.code === "external-identities.unauthorized" &&
-    (result.errorMessage ?? "").toLowerCase().includes("recent authentication")
   const identityStepUpReset = () => {
     identityStepUpGeneration += 1
     identityStepUpChallenge.set(undefined)
@@ -377,10 +375,6 @@ export function accountSecurityProductionStateCreate(options: {
       identityLinkMessageNonce.set(undefined)
       identityLinkCallbackOrigin.set(undefined)
       pendingId.set(undefined)
-      if (identityRecentAuthFailed(started)) {
-        await identityStepUpStart({ kind: "linkStart", providerId })
-        return false
-      }
       error.set(started.errorMessage)
       return false
     }
@@ -417,11 +411,6 @@ export function accountSecurityProductionStateCreate(options: {
       identityLinkCallbackOrigin.set(undefined)
       return true
     }
-    const failure = error.get() ?? ""
-    if (failure.toLowerCase().includes("recent authentication")) {
-      await identityStepUpStart({ kind: "linkConfirm" })
-      return false
-    }
     return false
   }
   const identityUnlinkInner = async (providerId: string, externalSubject: string): Promise<boolean> => {
@@ -439,14 +428,6 @@ export function accountSecurityProductionStateCreate(options: {
   const identityStepUpRetry = async (): Promise<boolean> => {
     const pendingAction = identityStepUpPendingAction
     if (pendingAction === undefined) return false
-    if (pendingAction.kind === "linkStart") {
-      await identityLinkStartInner(pendingAction.providerId)
-      return identityStepUpChallenge.get() !== undefined || identityRecentAuthRequired.get()
-    }
-    if (pendingAction.kind === "linkConfirm") {
-      await identityLinkConfirmInner()
-      return true
-    }
     await identityUnlinkInner(pendingAction.providerId, pendingAction.externalSubject)
     return true
   }
