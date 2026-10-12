@@ -20,8 +20,6 @@ import type { ExternalIdentityLinkCompleteRequest } from "../public/externalIden
 import { externalIdentityLinkCompleteRequestSchema } from "../public/externalIdentityLinkCompleteRequestSchema.js"
 import type { ExternalIdentityLinkCompleteResponse } from "../public/externalIdentityLinkCompleteResponseSchema.js"
 
-const externalIdentityRecentAuthenticationMs = 5 * 60 * 1_000
-
 type ExternalIdentityLinkCompleteOptions = {
   readonly database: StorageDatabase
   readonly input: ExternalIdentityLinkCompleteRequest
@@ -46,20 +44,13 @@ export function externalIdentityLinkComplete(
     options.session.subjectId !== options.userId
   )
     return resultErrorCreate(op, "The session does not belong to this user.", "external-identities.forbidden")
+  // The explicit confirmation after the provider round-trip is the authorizing gesture.
   if (options.session.assurance === "none")
-    return resultErrorCreate(
-      op,
-      "A recent authentication is required before linking an external identity.",
-      "external-identities.unauthorized",
-    )
+    return resultErrorCreate(op, "The session does not authorize linking.", "external-identities.unauthorized")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
-  if (!Number.isSafeInteger(now) || now < 0 || now - options.session.createdAt > externalIdentityRecentAuthenticationMs)
-    return resultErrorCreate(
-      op,
-      "A recent authentication is required before linking an external identity.",
-      "external-identities.unauthorized",
-    )
+  if (!Number.isSafeInteger(now) || now < 0)
+    return resultErrorCreate(op, "The external identity timestamp is invalid.", "external-identities.invalid-timestamp")
   const repository = externalIdentityRepositoryCreate(options.database.db)
   const pending = repository.externalIdentityOAuthTransactionGetByConfirmationToken(
     options.realmId,

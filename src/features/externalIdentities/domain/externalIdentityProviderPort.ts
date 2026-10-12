@@ -13,6 +13,7 @@ export type ExternalIdentityProviderPortConfiguration = {
 export type ExternalIdentityProviderPortStartInput = {
   readonly nonce?: string
   readonly pkceChallenge: string
+  readonly prompt?: "select_account"
   readonly state: string
 }
 

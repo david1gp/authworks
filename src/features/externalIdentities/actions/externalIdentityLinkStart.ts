@@ -24,7 +24,6 @@ import { externalIdentityStartRequestSchema } from "../public/externalIdentitySt
 import type { ExternalIdentityStartResponse } from "../public/externalIdentityStartResponseSchema.js"
 
 const externalIdentityLinkLifetimeMs = 10 * 60 * 1_000
-const externalIdentityRecentAuthenticationMs = 5 * 60 * 1_000
 
 type ExternalIdentityLinkStartOptions = {
   readonly database: StorageDatabase
@@ -52,22 +51,15 @@ export function externalIdentityLinkStart(
     options.session.subjectId !== options.userId
   )
     return resultErrorCreate(op, "The session does not belong to this user.", "external-identities.forbidden")
+  // Linking is authorized by the authenticated session plus the provider round-trip and the
+  // explicit confirmation that follows it, like every other OAuth connect flow. No session
+  // freshness window: the confirmation itself is the user gesture.
   if (options.session.assurance === "none")
-    return resultErrorCreate(
-      op,
-      "A recent authentication is required before linking an external identity.",
-      "external-identities.unauthorized",
-    )
+    return resultErrorCreate(op, "The session does not authorize linking.", "external-identities.unauthorized")
   const runtime = options.runtime ?? options.database.runtime
   const now = runtime.now()
   if (!Number.isSafeInteger(now) || now < 0)
     return resultErrorCreate(op, "The external identity timestamp is invalid.", "external-identities.invalid-timestamp")
-  if (now - options.session.createdAt > externalIdentityRecentAuthenticationMs)
-    return resultErrorCreate(
-      op,
-      "A recent authentication is required before linking an external identity.",
-      "external-identities.unauthorized",
-    )
   const repository = externalIdentityRepositoryCreate(options.database.db)
   const provider = repository.externalIdentityProviderGet(options.realmId, options.providerId)
   if (!provider.success) return provider
@@ -113,7 +105,7 @@ export function externalIdentityLinkStart(
       scopes: scopes.data,
       type: provider.data.type as keyof ExternalIdentityProviderPorts,
     },
-    { ...(nonce === undefined ? {} : { nonce }), pkceChallenge, state },
+    { ...(nonce === undefined ? {} : { nonce }), pkceChallenge, prompt: "select_account", state },
   )
   if (!authorizationUrl.success) return authorizationUrl
   const transactionId = uuidv7Create(runtime)

@@ -44,6 +44,10 @@ function externalIdentityProviderPortCreateFor(
         scope: configuration.scopes.join(" "),
         state: input.state,
       })
+      // Ask the provider for its account chooser so linking is not silently bound to
+      // whichever account happens to be signed in (GitHub, Google, and Microsoft all
+      // honor prompt=select_account).
+      if (input.prompt !== undefined) query.set("prompt", input.prompt)
       if (type !== "github" && input.nonce !== undefined) query.set("nonce", input.nonce)
       return resultCreate(`${endpoint}?${query.toString()}`)
     },
