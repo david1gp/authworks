@@ -32,79 +32,92 @@ type AccountPasswordViewProps = {
 export function AccountPasswordView(props: AccountPasswordViewProps) {
   const boundary = () => accountViewBoundaryStateGet(props.status, props.errorMessage)
   const hasPassword = () => props.hasPassword ?? true
+  const saved = () => props.status === "success"
+  const savedMessage = () => messageTranslate(hasPassword() ? "account.password.changed" : "account.password.set")
   const title = () => messageTranslate(hasPassword() ? "account.password.title" : "account.password.setTitle")
   const submit = () => messageTranslate(hasPassword() ? "account.password.submit" : "account.password.setSubmit")
   const dialog = () => (
     <AuthenticatedDialog
-      class="h-7 text-xs sm:justify-self-end"
+      class={hasPassword() ? "h-7 text-xs sm:justify-self-end" : "w-full text-xs"}
       description={messageTranslate("account.password.description")}
       onOpenChange={props.onDialogOpenChange}
       open={props.dialogOpen}
       title={title()}
       triggerLabel={submit()}
       triggerIcon={mdiLockReset}
-      variant="outline"
+      variant={hasPassword() ? "outline" : "contrast"}
     >
-      <form class="grid gap-2.5" onSubmit={props.onSubmit}>
-        <Show when={hasPassword()} fallback={null}>
-          <div class="grid min-w-0 gap-1">
-            <Label for="account-password-current">{messageTranslate("account.password.current")}</Label>
-            <Input
-              autocomplete="current-password"
-              id="account-password-current"
-              onInput={(event) => props.onCurrentPasswordInput(event.currentTarget.value)}
-              required={props.hasPassword !== undefined}
-              type="password"
-              value={props.currentPassword}
-            />
-            <Show when={props.hasPassword === undefined}>
-              <p class="text-xs text-muted-foreground">{messageTranslate("account.password.currentOptionalHint")}</p>
+      <Show
+        when={saved()}
+        fallback={
+          <form class="grid gap-2.5" onSubmit={props.onSubmit}>
+            <Show when={hasPassword()} fallback={null}>
+              <div class="grid min-w-0 gap-1">
+                <Label for="account-password-current">{messageTranslate("account.password.current")}</Label>
+                <Input
+                  autocomplete="current-password"
+                  id="account-password-current"
+                  onInput={(event) => props.onCurrentPasswordInput(event.currentTarget.value)}
+                  required={props.hasPassword !== undefined}
+                  type="password"
+                  value={props.currentPassword}
+                />
+                <Show when={props.hasPassword === undefined}>
+                  <p class="text-xs text-muted-foreground">
+                    {messageTranslate("account.password.currentOptionalHint")}
+                  </p>
+                </Show>
+              </div>
             </Show>
-          </div>
-        </Show>
-        <div class="grid min-w-0 gap-2.5 sm:grid-cols-2">
-          <div class="grid min-w-0 gap-1">
-            <Label for="account-password-new">{messageTranslate("account.password.new")}</Label>
-            <Input
-              autocomplete="new-password"
-              id="account-password-new"
-              minlength={8}
-              onInput={(event) => props.onNewPasswordInput(event.currentTarget.value)}
-              required
-              type="password"
-              value={props.newPassword}
-            />
-          </div>
-          <div class="grid min-w-0 gap-1">
-            <Label for="account-password-confirm">{messageTranslate("account.password.confirm")}</Label>
-            <Input
-              autocomplete="new-password"
-              id="account-password-confirm"
-              minlength={8}
-              onInput={(event) => props.onConfirmPasswordInput(event.currentTarget.value)}
-              required
-              type="password"
-              value={props.confirmPassword}
-            />
+            <div class="grid min-w-0 gap-2.5 sm:grid-cols-2">
+              <div class="grid min-w-0 gap-1">
+                <Label for="account-password-new">{messageTranslate("account.password.new")}</Label>
+                <Input
+                  autocomplete="new-password"
+                  id="account-password-new"
+                  minlength={8}
+                  onInput={(event) => props.onNewPasswordInput(event.currentTarget.value)}
+                  required
+                  type="password"
+                  value={props.newPassword}
+                />
+              </div>
+              <div class="grid min-w-0 gap-1">
+                <Label for="account-password-confirm">{messageTranslate("account.password.confirm")}</Label>
+                <Input
+                  autocomplete="new-password"
+                  id="account-password-confirm"
+                  minlength={8}
+                  onInput={(event) => props.onConfirmPasswordInput(event.currentTarget.value)}
+                  required
+                  type="password"
+                  value={props.confirmPassword}
+                />
+              </div>
+            </div>
+            <Show when={props.actionOnly ? props.errorMessage : undefined}>
+              {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+            </Show>
+            <Show when={props.validationMessage}>
+              {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+            </Show>
+            <div>
+              <ButtonIcon icon={mdiLockReset} type="submit">
+                {submit()}
+              </ButtonIcon>
+            </div>
+          </form>
+        }
+      >
+        <div class="grid gap-2.5">
+          <AuthenticatedNotice message={savedMessage()} tone="success" />
+          <div>
+            <ButtonIcon icon={mdiLockReset} onClick={() => props.onDialogOpenChange(false)}>
+              {messageTranslate("common.close")}
+            </ButtonIcon>
           </div>
         </div>
-        <Show when={props.actionOnly ? props.errorMessage : undefined}>
-          {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-        </Show>
-        <Show when={props.validationMessage}>
-          {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-        </Show>
-        <Show when={props.status === "success"}>
-          <AuthenticatedNotice
-            message={messageTranslate(hasPassword() ? "account.password.changed" : "account.password.set")}
-          />
-        </Show>
-        <div>
-          <ButtonIcon icon={mdiLockReset} type="submit">
-            {submit()}
-          </ButtonIcon>
-        </div>
-      </form>
+      </Show>
     </AuthenticatedDialog>
   )
   return (
