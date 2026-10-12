@@ -76,17 +76,23 @@ export function LoginScreenView(props: { readonly state: LoginPageState }) {
                   onRecentAccount={state.recentAccountSelect}
                   onRegister={() => state.go("register")}
                   onSelect={(method, providerId) => {
-                    if (method === "external-identity" && providerId !== undefined) state.providerSelect(providerId)
+                    if (method === "external-identity" && providerId !== undefined) {
+                      // Start the provider redirect immediately instead of parking on an
+                      // intermediate screen that repeats the same action. The provider screen
+                      // stays as the fallback surface for failures and direct visits.
+                      state.providerSelect(providerId)
+                      state.go("provider")
+                      void state.providerStart(providerId)
+                      return
+                    }
                     state.go(
-                      method === "external-identity"
-                        ? "provider"
-                        : method === "email-otp"
-                          ? "email-otp"
-                          : method === "whatsapp-otp"
-                            ? "whatsapp-otp"
-                            : method === "passkey"
-                              ? "passkey"
-                              : "password",
+                      method === "email-otp"
+                        ? "email-otp"
+                        : method === "whatsapp-otp"
+                          ? "whatsapp-otp"
+                          : method === "passkey"
+                            ? "passkey"
+                            : "password",
                     )
                   }}
                   pending={state.pending()}
