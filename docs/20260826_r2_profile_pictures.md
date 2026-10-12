@@ -30,7 +30,8 @@ Store Authworks user profile pictures in a dedicated Cloudflare R2 bucket in Leo
 - Production runtime configuration is installed in `/home/authworks/.config/authworks/authworks.env` with `authworks` ownership and mode `0600`, including all five `AUTHWORKS_R2_*` settings. The managed Authworks service has been restarted.
 - The dedicated production SSO test account uses the canonical test credentials and remains pictureless after account upload/removal verification.
 - The downloader honors both scalar and all-address pinned DNS lookup contracts without relaxing SSRF checks. Successful identity linking refreshes account profile state alongside linked identities.
-- Production runs the pinned DNS lookup and account profile-refresh fixes. The already-linked GitHub account has its missing picture populated through the normal guarded provider import, and the image was verified in the browser.
+- Google and GitHub share the missing-picture import path for sign-in and linking, including returning linked users. Existing manual or hosted pictures remain unchanged.
+- Production runs the pinned DNS lookup and account profile-refresh fixes. The already-linked GitHub account has its missing picture populated through the normal guarded provider import.
 
 ## Tasks
 
