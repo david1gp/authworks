@@ -12,6 +12,7 @@ export function AccountDisclosure(
   props: {
     readonly children: JSX.Element
     readonly class?: string
+    readonly open?: boolean
     readonly summary: string
   } & (
     | {
@@ -39,6 +40,7 @@ export function AccountDisclosure(
         props.variant === "card" ? "rounded-panel border-line bg-surface" : "rounded-control border-line-subtle",
         props.class,
       )}
+      open={props.open}
     >
       <Show
         when={props.variant === "card" ? props.icon : undefined}
