@@ -24,6 +24,14 @@ Store Authworks user profile pictures in a dedicated Cloudflare R2 bucket in Leo
 - Extract Google/GitHub picture URLs and host them after identity validation when the profile has no picture.
 - Reuse persisted picture URLs in existing public profile and admin views.
 
+## Current context
+
+- Cloudflare account `leonardo.mora` has the existing `contentoren-authworks` bucket, bucket-scoped credentials, and active public domain `assets.authworks.contentoren.de`; no duplicate resources are needed.
+- Production runtime configuration is installed in `/home/authworks/.config/authworks/authworks.env` with `authworks` ownership and mode `0600`, including all five `AUTHWORKS_R2_*` settings. The managed Authworks service has been restarted.
+- The dedicated production SSO test account uses the canonical test credentials and remains pictureless after account upload/removal verification.
+- The downloader honors both scalar and all-address pinned DNS lookup contracts without relaxing SSRF checks. Successful identity linking refreshes account profile state alongside linked identities.
+- Production runs the pinned DNS lookup and account profile-refresh fixes. The already-linked GitHub account has its missing picture populated through the normal guarded provider import, and the image was verified in the browser.
+
 ## Tasks
 
 - [x] 1. Provision the bucket, scoped credentials, custom domain, and `.env.production` settings.
