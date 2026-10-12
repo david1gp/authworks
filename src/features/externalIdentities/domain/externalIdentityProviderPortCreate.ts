@@ -74,13 +74,16 @@ async function providerTokenFetch(
   configuration: ExternalIdentityProviderPortConfiguration,
   input: ExternalIdentityProviderPortCallbackInput,
 ): Promise<ReturnType<typeof resultCreate<ProviderToken>> | ReturnType<typeof resultErrorCreate>> {
+  // GitHub documents only client_id, client_secret, code, redirect_uri, and code_verifier
+  // for the web authorization-code exchange (no grant_type); Google and Microsoft require
+  // grant_type=authorization_code.
   const body = new URLSearchParams({
     client_id: configuration.clientId,
     client_secret: configuration.clientSecret,
     code: input.code,
     code_verifier: input.pkceVerifier,
-    grant_type: "authorization_code",
     redirect_uri: configuration.redirectUri,
+    ...(configuration.type === "github" ? {} : { grant_type: "authorization_code" }),
   })
   try {
     const response = await fetcher(tokenEndpointGet(configuration.type), {
