@@ -285,7 +285,7 @@ test("linked identity rows are labelled dialogs, help stays in the collapsed car
   expect(card?.openingElement.getText(tree)).not.toContain("account.identities.description")
   expect(card?.getText(tree)).toContain('messageTranslate("account.identities.description")')
   const dialogs = elements.filter((element) => name(element) === "AuthenticatedDialog")
-  expect(dialogs).toHaveLength(2)
+  expect(dialogs).toHaveLength(3)
   expect(dialogs[0]?.openingElement.getText(tree)).toContain("title={state.identityTitle(identity)}")
   expect(dialogs[0]?.openingElement.getText(tree)).toContain("open={state.dialogOpen(identity.id)}")
   expect(dialogs[1]?.openingElement.getText(tree)).toContain(
@@ -298,11 +298,17 @@ test("linked identity rows are labelled dialogs, help stays in the collapsed car
   expect(rows.at(-1)).toBe(ancestor(dialogs[1]!, "Show"))
   expect(actions.map((action) => action.initializer?.getText(tree))).toEqual([
     "{() => props.state.identityUnlink(identity.providerId, identity.externalSubject)}",
+    "{signInAgain}",
     "{() => props.state.identityLinkStart(provider.id)}",
     "{state.linkConfirm}",
     "{state.linkCancel}",
+    "{signInAgain}",
+    "{props.state.identityStepUpCancel}",
   ])
-  for (const action of actions) expect(ancestor(action, "AuthenticatedDialog")).toBeDefined()
+  for (const action of actions) {
+    if (action.initializer?.getText(tree) === "{signInAgain}") continue
+    expect(ancestor(action, "AuthenticatedDialog")).toBeDefined()
+  }
 })
 
 test("linked identity dialog copy exists in every supported locale with intact account and provider placeholders", async () => {

@@ -474,6 +474,15 @@ export function accountSecurityDemoStateCreate(screen: () => AccountSecurityScre
     identityProviderLinked: (providerId: string) =>
       identities.get().some((identity) => identity.providerId === providerId),
     identityProviders: () => identityProviders.get(),
+    identityRecentAuthRequired: () => false,
+    identityStepUpCancel: () => undefined,
+    identityStepUpChallenge: () => undefined,
+    identityStepUpCode: () => "",
+    identityStepUpCodeInput: () => undefined,
+    identityStepUpComplete: async () => false,
+    identityStepUpError: () => undefined,
+    identityStepUpPending: () => false,
+    identityStepUpStart: async () => false,
     identityUnlink: async (providerId: string) => {
       if (!(await confirmation.confirm(messageTranslate("account.identities.unlinkConfirm")))) return
       identities.set(identities.get().filter((item) => item.providerId !== providerId))

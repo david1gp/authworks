@@ -1,10 +1,14 @@
 import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
+import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { mdiLinkOff } from "@adaptive-ds/mdi/mdiLinkOff.js"
 import { mdiLinkVariant } from "@adaptive-ds/mdi/mdiLinkVariant.js"
+import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { For, Show } from "solid-js"
+import { Input } from "#ui/input/input/Input.jsx"
+import { Label } from "#ui/input/label/Label.jsx"
 import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
@@ -18,6 +22,23 @@ import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
 export function AccountIdentitiesSection(props: { readonly state: AccountSecurityViewState }) {
   const state = accountIdentitiesSectionStateCreate(() => props.state)
+  const stepUpFactor = () => {
+    const challenge = props.state.identityStepUpChallenge()?.challenge
+    return challenge?.factor ?? challenge?.availableFactors?.[0] ?? "totp"
+  }
+  const stepUpOpen = () =>
+    props.state.identityStepUpChallenge() !== undefined ||
+    props.state.identityStepUpPending() ||
+    props.state.identityStepUpError() !== undefined
+  const stepUpSubmit = (event: SubmitEvent) => {
+    event.preventDefault()
+    if (!/^\d{6}$/.test(props.state.identityStepUpCode())) return
+    void props.state.identityStepUpComplete({ code: props.state.identityStepUpCode(), factor: stepUpFactor() })
+  }
+  const signInAgain = () => {
+    const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`
+    window.location.href = `/login?return_to=${encodeURIComponent(returnTo)}`
+  }
   return (
     <AccountDisclosure
       class="h-full"
@@ -96,6 +117,13 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                   <Show when={props.state.error()}>
                     {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
                   </Show>
+                  <Show when={props.state.identityRecentAuthRequired()}>
+                    <div>
+                      <ButtonIcon icon={mdiLogin} onClick={signInAgain} type="button" variant="outline">
+                        {messageTranslate("account.identities.signInAgain")}
+                      </ButtonIcon>
+                    </div>
+                  </Show>
                   <Show
                     when={props.state.identityLinkConfirmation()}
                     fallback={
@@ -159,6 +187,74 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
           </Show>
         </ul>
       </div>
+      <AuthenticatedDialog
+        description={messageTranslate("account.identities.stepUpDescription")}
+        onOpenChange={(open) => {
+          if (!open) props.state.identityStepUpCancel()
+        }}
+        open={stepUpOpen()}
+        title={messageTranslate("account.confirmTitle")}
+      >
+        <Show
+          when={props.state.identityStepUpChallenge()}
+          fallback={
+            <Show
+              when={props.state.identityStepUpPending()}
+              fallback={
+                <div class="grid gap-3">
+                  <Show when={props.state.identityStepUpError()}>
+                    {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
+                  </Show>
+                  <Show when={props.state.identityRecentAuthRequired()}>
+                    <div>
+                      <ButtonIcon icon={mdiLogin} onClick={signInAgain} type="button">
+                        {messageTranslate("account.identities.signInAgain")}
+                      </ButtonIcon>
+                    </div>
+                  </Show>
+                </div>
+              }
+            >
+              <p aria-live="polite" class="text-sm text-muted-foreground" role="status">
+                {messageTranslate("login.common.working")}
+              </p>
+            </Show>
+          }
+        >
+          <form class="grid gap-3" onSubmit={stepUpSubmit}>
+            <div class="grid gap-1">
+              <Label for="account-identity-step-up-code">{messageTranslate("account.factors.verificationCode")}</Label>
+              <Input
+                autocomplete="one-time-code"
+                class="font-mono"
+                disabled={props.state.identityStepUpPending()}
+                id="account-identity-step-up-code"
+                inputmode="numeric"
+                maxlength={6}
+                onInput={props.state.identityStepUpCodeInput}
+                value={props.state.identityStepUpCode()}
+              />
+            </div>
+            <Show when={props.state.identityStepUpError()}>
+              {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
+            </Show>
+            <div class="flex flex-wrap gap-2">
+              <ButtonIcon
+                disabled={props.state.identityStepUpPending() || !/^\d{6}$/.test(props.state.identityStepUpCode())}
+                icon={mdiArrowRight}
+                type="submit"
+              >
+                {props.state.identityStepUpPending()
+                  ? messageTranslate("common.loading")
+                  : messageTranslate("common.continue")}
+              </ButtonIcon>
+              <ButtonIcon icon={mdiClose} onClick={props.state.identityStepUpCancel} type="button" variant="ghost">
+                {messageTranslate("common.cancel")}
+              </ButtonIcon>
+            </div>
+          </form>
+        </Show>
+      </AuthenticatedDialog>
     </AccountDisclosure>
   )
 }
