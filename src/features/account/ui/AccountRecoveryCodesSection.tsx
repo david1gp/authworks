@@ -24,13 +24,11 @@ export function AccountRecoveryCodesSection(props: { readonly state: AccountSecu
     >
       <div class="grid gap-3">
         <p class="text-xs text-muted-foreground">{messageTranslate("account.factors.description")}</p>
-        <div class="divide-y divide-line-subtle">
-          <For each={state.statuses()}>
-            {(status) => (
-              <AccountSecurityStatus configured={status.configured} detail={status.detail} label={status.label} />
-            )}
-          </For>
-        </div>
+        <AccountSecurityStatus
+          configured={state.remaining() > 0}
+          detail={state.backupDetail()}
+          label={state.backupLabel()}
+        />
         <AuthenticatedDialog
           description={messageTranslate("account.recovery.remaining", { count: state.remaining() })}
           onOpenChange={state.dialogOpenChange}

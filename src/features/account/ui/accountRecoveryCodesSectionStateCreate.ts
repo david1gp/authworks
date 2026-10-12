@@ -2,7 +2,6 @@ import { useLocation, useNavigate } from "@solidjs/router"
 import type { Accessor } from "solid-js"
 import * as v from "valibot"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { accountRecoveryAccessStateCreate } from "./accountRecoveryAccessStateCreate.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
 const recoveryDialogSchema = v.literal("open")
@@ -10,10 +9,6 @@ const recoveryDialogSchema = v.literal("open")
 export function accountRecoveryCodesSectionStateCreate(security: Accessor<AccountSecurityViewState>) {
   const location = useLocation()
   const navigate = useNavigate()
-  const access = accountRecoveryAccessStateCreate({
-    methods: () => security().methods(),
-    user: () => security().user(),
-  })
   const remaining = () => security().methods().recoveryCodes.remaining
   const codesVisible = () => security().oneTimeCodes().length > 0
   const dialogOpen = () =>
@@ -35,11 +30,12 @@ export function accountRecoveryCodesSectionStateCreate(security: Accessor<Accoun
   }
 
   return {
+    backupDetail: () => messageTranslate("account.securityOverview.backupCodeCount", { count: remaining() }),
+    backupLabel: () => messageTranslate("account.securityOverview.backupCodes"),
     codesDismiss,
     dialogOpen,
     dialogOpenChange,
     remaining,
-    statuses: access.statuses,
     summaryStatus: () =>
       messageTranslate(remaining() > 0 ? "account.status.configured" : "account.status.notConfigured"),
     summaryTone: () => (remaining() > 0 ? ("success" as const) : ("neutral" as const)),
