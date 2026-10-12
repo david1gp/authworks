@@ -89,6 +89,7 @@ export const englishCatalog = {
   "account.identities.empty": "No external identities are linked",
   "account.identities.externalAccount": "external account",
   "account.identities.linkDescription": "Connect another provider to use it as an authentication method.",
+  "account.identities.linkIncomplete": "The provider window closed before linking finished. Try again.",
   "account.identities.linkTitle": "Link an external account",
   "account.identities.manage": "Manage {provider} account ({account})",
   "account.identities.popupBlocked": "Allow pop-ups to connect an external account.",

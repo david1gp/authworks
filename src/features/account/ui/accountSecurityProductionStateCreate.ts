@@ -157,6 +157,48 @@ export function accountSecurityProductionStateCreate(options: {
     await load()
     return true
   }
+  let identityLinkPoll: ReturnType<typeof setInterval> | undefined
+  const identityLinkPollStop = () => {
+    if (identityLinkPoll !== undefined) {
+      clearInterval(identityLinkPoll)
+      identityLinkPoll = undefined
+    }
+  }
+  const identityLinkPopupClear = () => {
+    identityLinkPollStop()
+    identityLinkPopup?.close()
+    identityLinkPopup = null
+    identityLinkMessageNonce.set(undefined)
+    identityLinkCallbackOrigin.set(undefined)
+  }
+  // The provider window closes itself after posting its result. When it closes without a
+  // result (user closed it, provider error page, blocked navigation), surface an error
+  // instead of hanging on "connecting" forever.
+  const identityLinkPollStart = (popup: Window, expiresAt: number) => {
+    identityLinkPollStop()
+    identityLinkPoll = setInterval(() => {
+      if (identityLinkPopup === null || identityLinkPopup !== popup) {
+        identityLinkPollStop()
+        return
+      }
+      if (identityLinkConfirmation.get() !== undefined) {
+        identityLinkPollStop()
+        return
+      }
+      let closed = false
+      try {
+        closed = popup.closed
+      } catch (_error) {
+        closed = false
+      }
+      if (closed || Date.now() > expiresAt) {
+        identityLinkPopupClear()
+        identityLinkProvider.set(undefined)
+        pendingId.set(undefined)
+        error.set(messageTranslate("account.identities.linkIncomplete"))
+      }
+    }, 500)
+  }
   const identityLinkMessageReceive = (event: MessageEvent<unknown>) => {
     const providerId = identityLinkProvider.get()
     const messageNonce = identityLinkMessageNonce.get()
@@ -170,9 +212,19 @@ export function accountSecurityProductionStateCreate(options: {
     )
       return
     const parsed = v.safeParse(externalIdentityCallbackResponseSchema, event.data)
-    if (!parsed.success || parsed.output.kind !== "link_confirmation") return
+    if (!parsed.success) return
+    if (parsed.output.kind === "link_failure") {
+      if (parsed.output.providerId !== providerId || parsed.output.messageNonce !== messageNonce) return
+      identityLinkPopupClear()
+      identityLinkProvider.set(undefined)
+      pendingId.set(undefined)
+      error.set(parsed.output.errorMessage)
+      return
+    }
+    if (parsed.output.kind !== "link_confirmation") return
     if (parsed.output.providerId !== providerId || parsed.output.messageNonce !== messageNonce) return
     identityLinkConfirmation.set(parsed.output)
+    identityLinkPollStop()
     identityLinkPopup?.close()
     identityLinkPopup = null
     identityLinkMessageNonce.set(undefined)
@@ -180,7 +232,10 @@ export function accountSecurityProductionStateCreate(options: {
     pendingId.set(undefined)
   }
   window.addEventListener("message", identityLinkMessageReceive)
-  onCleanup(() => window.removeEventListener("message", identityLinkMessageReceive))
+  onCleanup(() => {
+    window.removeEventListener("message", identityLinkMessageReceive)
+    identityLinkPollStop()
+  })
 
   const totpFlowReset = () => {
     totpFlowGeneration += 1
@@ -342,6 +397,7 @@ export function accountSecurityProductionStateCreate(options: {
     identityLinkMessageNonce.set(started.data.messageNonce)
     identityLinkCallbackOrigin.set(started.data.callbackOrigin)
     popup.location.href = started.data.authorizationUrl
+    identityLinkPollStart(popup, started.data.expiresAt)
     return true
   }
   const identityLinkConfirmInner = async (): Promise<boolean> => {
@@ -467,6 +523,7 @@ export function accountSecurityProductionStateCreate(options: {
     identityLinkCancel: () => {
       identityLinkConfirmation.set(undefined)
       identityLinkProvider.set(undefined)
+      identityLinkPollStop()
       identityLinkMessageNonce.set(undefined)
       identityLinkCallbackOrigin.set(undefined)
       identityLinkPopup?.close()

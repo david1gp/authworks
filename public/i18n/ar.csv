@@ -91,6 +91,7 @@ account.identities.description,الحسابات الخارجية المرتبط�
 account.identities.empty,لا توجد هويات خارجية مرتبطة
 account.identities.externalAccount,external account
 account.identities.linkDescription,Connect another provider to use it as an authentication method.
+"account.identities.linkIncomplete","The provider window closed before linking finished. Try again."
 account.identities.linkTitle,Link an external account
 account.identities.manage,إدارة حساب {provider} ({account})
 account.identities.popupBlocked,Allow pop-ups to connect an external account.
