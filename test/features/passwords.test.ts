@@ -1897,6 +1897,12 @@ test("authenticated password self-service changes are subject-bound and enumerat
     expect(wrongCurrent).toMatchObject({ code: "passwords.unauthorized", statusCode: 401, success: false })
     expect(JSON.stringify(wrongCurrent)).not.toContain("Correct Horse 12")
 
+    const missingCurrent = await client.passwordMeChange(alpha.id, {
+      newPassword: "Missing Current Horse 12",
+    })
+    expect(missingCurrent).toMatchObject({ code: "passwords.unauthorized", statusCode: 401, success: false })
+    expect(JSON.stringify(missingCurrent)).not.toContain("Missing Current Horse 12")
+
     const crossRealm = await app.request(`https://passwords-other.example.com/realms/${beta.id}/me/password`, {
       body: JSON.stringify({ currentPassword: "New Correct Horse 12", newPassword: "Cross Realm Horse 12" }),
       headers: { authorization: `Bearer ${issued.data.token}`, "content-type": "application/json" },
@@ -1931,12 +1937,10 @@ test("authenticated password self-service changes are subject-bound and enumerat
     database.sqlite
       .query("DELETE FROM password_credentials WHERE realm_id = ? AND user_id = ?")
       .run(alpha.id, loggedIn.data.authentication.userId)
-    const missingCredential = await client.passwordMeChange(alpha.id, {
-      currentPassword: "Cookie Horse 12",
+    const initialSet = await client.passwordMeChange(alpha.id, {
       newPassword: "Missing Credential Horse 12",
     })
-    expect(missingCredential).toMatchObject({ code: "passwords.unauthorized", statusCode: 401, success: false })
-    expect(JSON.stringify(missingCredential)).not.toContain("Missing Credential Horse 12")
+    expect(initialSet).toEqual({ data: { changed: true }, success: true })
   })
 })
 

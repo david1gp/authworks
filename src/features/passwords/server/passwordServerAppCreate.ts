@@ -342,6 +342,7 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     return passwordResultResponseCreate(
       context,
       passwordChange({
+        allowInitialSet: true,
         context: subject.data,
         database: options.database,
         input: input.output,
