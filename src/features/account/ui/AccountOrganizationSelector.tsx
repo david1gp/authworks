@@ -72,7 +72,7 @@ export function AccountOrganizationSelector(props: {
               >
                 <AccountOrganizationBrandMark branding={item.branding} class="size-7 border-0 bg-muted shadow-none" />
                 <span>{item.organization.name}</span>
-                <Show when={id() === props.activeOrganizationId}>
+                <Show when={props.organizations.length > 1 && id() === props.activeOrganizationId}>
                   <span class="rounded-full bg-accent/10 px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-accent uppercase">
                     {messageTranslate("account.access.active")}
                   </span>

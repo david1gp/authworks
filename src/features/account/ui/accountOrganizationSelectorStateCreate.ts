@@ -55,7 +55,8 @@ export function accountOrganizationSelectorStateCreate(inputs: {
     valueText: (organizationId: string) => {
       const organization = inputs.organizations().find((item) => item.organization.id === organizationId)
       if (organization === undefined) return organizationId
-      if (organization.organization.id !== inputs.activeOrganizationId()) return organization.organization.name
+      if (inputs.organizations().length <= 1 || organization.organization.id !== inputs.activeOrganizationId())
+        return organization.organization.name
       return `${organization.organization.name} (${messageTranslate("account.access.active")})`
     },
   }

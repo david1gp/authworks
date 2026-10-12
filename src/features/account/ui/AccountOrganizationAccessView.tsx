@@ -1,5 +1,5 @@
-import { Show } from "solid-js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
+import { Show } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
 import type { AccountEffectiveAccessGroup } from "../public/accountEffectiveAccessGroupSchema.js"
@@ -44,19 +44,21 @@ export function AccountOrganizationAccessView(props: {
     >
       <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
         <p class="text-sm text-muted-foreground">{messageTranslate("account.access.organizationDescription")}</p>
-        <AccountStateBoundary
-          detail={state.organizationBoundary().detail}
-          onRetry={props.onOrganizationRetry}
-          state={props.viewedOrganization ? "ready" : state.organizationBoundary().state}
-        >
-          <AccountOrganizationSelector
-            activeOrganizationId={props.activeOrganizationId}
-            onSelect={props.onOrganizationSelect}
-            organizations={props.organizations}
-            panelId="account-access-organization-panel"
-            viewedOrganizationId={props.viewedOrganizationId}
-          />
-        </AccountStateBoundary>
+        <Show when={props.organizations.length > 1}>
+          <AccountStateBoundary
+            detail={state.organizationBoundary().detail}
+            onRetry={props.onOrganizationRetry}
+            state={props.viewedOrganization ? "ready" : state.organizationBoundary().state}
+          >
+            <AccountOrganizationSelector
+              activeOrganizationId={props.activeOrganizationId}
+              onSelect={props.onOrganizationSelect}
+              organizations={props.organizations}
+              panelId="account-access-organization-panel"
+              viewedOrganizationId={props.viewedOrganizationId}
+            />
+          </AccountStateBoundary>
+        </Show>
 
         <Show
           when={props.viewedOrganization}
@@ -64,7 +66,7 @@ export function AccountOrganizationAccessView(props: {
         >
           {(membership) => (
             <AccountOrganizationPanel
-              active={membership().organization.id === props.activeOrganizationId}
+              active={props.organizations.length > 1 && membership().organization.id === props.activeOrganizationId}
               effectiveAccessBoundary={state.effectiveAccessBoundary()}
               effectiveAccessNextPageToken={props.effectiveAccessNextPageToken}
               effectiveAccessPending={props.effectiveAccessPending}
