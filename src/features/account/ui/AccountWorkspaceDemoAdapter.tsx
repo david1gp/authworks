@@ -1,6 +1,7 @@
 import { AccountAccessDemoAdapter } from "./AccountAccessDemoAdapter.js"
 import { AccountDemoAdapter } from "./AccountDemoAdapter.js"
 import { AccountSecurityDemoAdapter } from "./AccountSecurityDemoAdapter.js"
+import { AccountWorkspaceToolbar } from "./AccountWorkspaceToolbar.js"
 import { AccountWorkspace } from "./AccountWorkspace.js"
 import { AccountWorkspaceAccess } from "./AccountWorkspaceAccess.js"
 import { AccountWorkspaceDevicesApplications } from "./AccountWorkspaceDevicesApplications.js"
@@ -8,8 +9,13 @@ import { accountWorkspaceDemoAdapterStateCreate } from "./accountWorkspaceDemoAd
 
 export function AccountWorkspaceDemoAdapter() {
   const state = accountWorkspaceDemoAdapterStateCreate()
+  const userLabel = () => {
+    const user = state.profile.page.user.get()
+    return user?.profile.displayName || user?.email || user?.userName || ""
+  }
   return (
     <AccountWorkspace
+      profileActions={<AccountWorkspaceToolbar userLabel={userLabel()} />}
       access={
         <AccountWorkspaceAccess>
           <AccountAccessDemoAdapter screen="organizations" showFixtureHeader={false} />

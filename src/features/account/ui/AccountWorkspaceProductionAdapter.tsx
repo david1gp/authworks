@@ -4,13 +4,19 @@ import { AccountOrganizationAccessProductionAdapter } from "./AccountOrganizatio
 import { AccountSecurityProductionAdapter } from "./AccountSecurityProductionAdapter.js"
 import { AccountWorkspaceAccess } from "./AccountWorkspaceAccess.js"
 import { AccountWorkspaceDevicesApplications } from "./AccountWorkspaceDevicesApplications.js"
+import { AccountWorkspaceToolbar } from "./AccountWorkspaceToolbar.js"
 import { AccountWorkspace } from "./AccountWorkspace.js"
 import { accountWorkspaceProductionAdapterStateCreate } from "./accountWorkspaceProductionAdapterStateCreate.js"
 
 export function AccountWorkspaceProductionAdapter(props: { readonly realmId: string }) {
   const state = accountWorkspaceProductionAdapterStateCreate(() => props.realmId)
+  const userLabel = () => {
+    const user = state.profile.user.get()
+    return user?.profile.displayName || user?.email || user?.userName || ""
+  }
   return (
     <AccountWorkspace
+      profileActions={<AccountWorkspaceToolbar userLabel={userLabel()} />}
       access={
         <AccountWorkspaceAccess>
           <AccountOrganizationAccessProductionAdapter />

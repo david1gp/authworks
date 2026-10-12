@@ -1,4 +1,5 @@
 import type { JSX } from "solid-js"
+import { Show } from "solid-js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountSectionAnchorHeading } from "./AccountSectionAnchorHeading.js"
 import { accountWorkspaceSectionIds } from "./accountWorkspaceSectionIds.js"
@@ -8,6 +9,7 @@ export function AccountWorkspace(props: {
   readonly dangerZone: JSX.Element
   readonly devicesApplications: JSX.Element
   readonly profile: JSX.Element
+  readonly profileActions?: JSX.Element
   readonly security: JSX.Element
 }) {
   return (
@@ -21,10 +23,13 @@ export function AccountWorkspace(props: {
         class="grid min-w-0 scroll-mt-24 gap-3 sm:gap-4 [&>*]:min-w-0"
         id={accountWorkspaceSectionIds.profile}
       >
-        <AccountSectionAnchorHeading
-          id={accountWorkspaceSectionIds.profile}
-          title={messageTranslate("shell.nav.profile")}
-        />
+        <div class="flex min-w-0 flex-wrap items-center justify-between gap-2">
+          <AccountSectionAnchorHeading
+            id={accountWorkspaceSectionIds.profile}
+            title={messageTranslate("shell.nav.profile")}
+          />
+          <Show when={props.profileActions}>{(actions) => actions()}</Show>
+        </div>
         {props.profile}
       </section>
 

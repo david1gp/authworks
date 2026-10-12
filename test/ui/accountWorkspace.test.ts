@@ -99,11 +99,24 @@ describe("account workspace", () => {
     // The links live inside the sticky header's primary row, not in a separate sticky nav below it.
     expect(shell).not.toContain("sticky top-12")
     expect(shell.indexOf("state.accountSections()")).toBeLessThan(shell.indexOf("</header>"))
-    // The account shell hides the whole top navbar; users get a free-form toolbar above the content.
+    // The account shell hides the whole top navbar; the language/theme/sign-out toolbar lives
+    // inline with the Profile header inside the workspace so it aligns with the content below.
     expect(shell).toContain('when={props.kind !== "account"}')
-    expect(shell).toContain("data-account-toolbar")
-    expect(shell).toContain("<LanguageSelector />")
-    expect(shell).toContain("<ThemeButton />")
+    expect(shell).not.toContain("data-account-toolbar")
+
+    const workspace = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspace.tsx", import.meta.url),
+    ).text()
+    expect(workspace).toContain("profileActions")
+    expect(workspace).toContain("{props.profileActions}")
+
+    const toolbar = await Bun.file(
+      new URL("../../src/features/account/ui/AccountWorkspaceToolbar.tsx", import.meta.url),
+    ).text()
+    expect(toolbar).toContain("data-account-toolbar")
+    expect(toolbar).toContain("<LanguageSelector />")
+    expect(toolbar).toContain("<ThemeButton />")
+    expect(toolbar).toContain("/login/logout")
 
     expect(
       await Bun.file(new URL("../../src/features/account/ui/AccountSectionNav.tsx", import.meta.url)).exists(),

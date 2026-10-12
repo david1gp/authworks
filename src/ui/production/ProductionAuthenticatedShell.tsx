@@ -205,36 +205,7 @@ export function ProductionAuthenticatedShell(props: {
             : `min-h-[calc(100dvh-3rem)] ${state.contentClass()}`
         }
       >
-        <main class="mx-auto w-full max-w-[1760px] px-4 py-4 sm:px-6 sm:py-6 2xl:px-8">
-          <Show when={props.kind === "account"}>
-            <div class="mb-3 flex min-w-0 justify-end sm:mb-4" data-account-toolbar>
-              <div class="flex shrink-0 items-center gap-1 sm:gap-2">
-                <LanguageSelector />
-                <ThemeButton />
-                <div class="flex shrink-0 items-center gap-1.5 border-l border-line-subtle pl-1.5 sm:gap-2 sm:pl-2">
-                  <span
-                    aria-hidden="true"
-                    class="grid size-6 shrink-0 place-items-center rounded-full bg-accent-soft text-2xs font-semibold text-accent"
-                  >
-                    {state.actorInitial()}
-                  </span>
-                  <span class="hidden max-w-36 truncate text-xs font-medium text-foreground sm:inline">
-                    {state.session.actorLabel}
-                  </span>
-                  <A
-                    aria-label={messageTranslate("common.signOut")}
-                    class="grid size-7 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
-                    href={state.signOutHref}
-                    title={messageTranslate("common.signOut")}
-                  >
-                    <Icon path={mdiLogout} />
-                  </A>
-                </div>
-              </div>
-            </div>
-          </Show>
-          {props.children}
-        </main>
+        <main class="mx-auto w-full max-w-[1760px] px-4 py-4 sm:px-6 sm:py-6 2xl:px-8">{props.children}</main>
       </div>
     </div>
   )
