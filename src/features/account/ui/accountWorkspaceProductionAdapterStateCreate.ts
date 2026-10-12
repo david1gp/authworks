@@ -4,7 +4,11 @@ import { accountSecurityProgressStateCreate } from "./accountSecurityProgressSta
 
 export function accountWorkspaceProductionAdapterStateCreate(realmId: () => string) {
   const profile = accountProductionAdapterStateCreate(() => "email", { realmId: realmId() })
-  const security = accountSecurityProductionStateCreate({ realmId, screen: () => "overview" })
+  const security = accountSecurityProductionStateCreate({
+    onIdentityLinked: () => void profile.load(true),
+    realmId,
+    screen: () => "overview",
+  })
   const securityProgress = accountSecurityProgressStateCreate({
     methods: security.methods,
     passkeyCount: () => security.passkeys().length,

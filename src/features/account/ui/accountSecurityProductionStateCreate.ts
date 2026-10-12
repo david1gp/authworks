@@ -30,6 +30,7 @@ const emptyMethods: UserAuthenticationMethods = {
 
 export function accountSecurityProductionStateCreate(options: {
   readonly apiBaseUrl?: string
+  readonly onIdentityLinked?: () => void
   readonly realmId: () => string
   readonly screen: () => AccountSecurityScreen
 }) {
@@ -409,6 +410,7 @@ export function accountSecurityProductionStateCreate(options: {
       identityLinkProvider.set(undefined)
       identityLinkMessageNonce.set(undefined)
       identityLinkCallbackOrigin.set(undefined)
+      options.onIdentityLinked?.()
       return true
     }
     return false
