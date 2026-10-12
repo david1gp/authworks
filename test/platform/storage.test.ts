@@ -357,3 +357,58 @@ test("event rows are append-only and reset reconstructs an empty current schema"
     reopened.data.close()
   })
 })
+
+test("storage repairs legacy external identity provider scopes to the type default", async () => {
+  await withStorage(async (path) => {
+    const opened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
+    expect(opened.success).toBe(true)
+    if (!opened.success) return
+    opened.data.sqlite.run(
+      "INSERT INTO realms (id, name, primary_domain, status, created_at, updated_at, version) VALUES ('realm-1', 'Realm', 'repair.example.com', 'active', 1, 1, 1)",
+    )
+    const providerInsert =
+      "INSERT INTO external_identity_providers (id, realm_id, organization_id, type, display_name, enabled, allow_account_creation, client_id, client_secret, redirect_uri, scopes, created_at, updated_at, version) VALUES (?, 'realm-1', NULL, ?, ?, 1, 1, 'client', 'secret', 'https://repair.example.com/idps/callback', ?, 1, 1, 1)"
+    // Legacy rows bypass current validation, like the GitHub setup stored with only user:email.
+    opened.data.sqlite.run(providerInsert, ["provider-github-legacy", "github", "GitHub", '["user:email"]'])
+    opened.data.sqlite.run(providerInsert, ["provider-github-valid", "github", "GitHub", '["read:user","user:email"]'])
+    opened.data.sqlite.run(providerInsert, [
+      "provider-github-ordered",
+      "github",
+      "GitHub",
+      '["user:email","read:user"]',
+    ])
+    opened.data.sqlite.run(providerInsert, ["provider-google-minimal", "google", "Google", '["openid","email"]'])
+    opened.data.sqlite.run(providerInsert, ["provider-google-legacy", "google", "Google", '["openid"]'])
+    opened.data.sqlite.run(providerInsert, ["provider-microsoft-legacy", "microsoft", "Microsoft", '"openid"'])
+    opened.data.close()
+
+    const reopened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
+    expect(reopened.success).toBe(true)
+    if (!reopened.success) return
+    const scopesOf = (id: string) =>
+      (
+        reopened.data.sqlite.query("SELECT scopes FROM external_identity_providers WHERE id = ?").get(id) as {
+          scopes: string
+        }
+      ).scopes
+    expect(JSON.parse(scopesOf("provider-github-legacy"))).toEqual(["read:user", "user:email"])
+    expect(JSON.parse(scopesOf("provider-github-valid"))).toEqual(["read:user", "user:email"])
+    expect(JSON.parse(scopesOf("provider-github-ordered"))).toEqual(["user:email", "read:user"])
+    expect(JSON.parse(scopesOf("provider-google-minimal"))).toEqual(["openid", "email"])
+    expect(JSON.parse(scopesOf("provider-google-legacy"))).toEqual(["openid", "email", "profile"])
+    expect(JSON.parse(scopesOf("provider-microsoft-legacy"))).toEqual(["openid", "email", "profile"])
+    reopened.data.close()
+
+    // Idempotent across restarts.
+    const rereopened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
+    expect(rereopened.success).toBe(true)
+    if (!rereopened.success) return
+    const reread = (
+      rereopened.data.sqlite
+        .query("SELECT scopes FROM external_identity_providers WHERE id = ?")
+        .get("provider-github-legacy") as { scopes: string }
+    ).scopes
+    expect(JSON.parse(reread)).toEqual(["read:user", "user:email"])
+    rereopened.data.close()
+  })
+})

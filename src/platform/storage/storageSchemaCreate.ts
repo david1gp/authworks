@@ -614,6 +614,16 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     database.run(
       "CREATE INDEX IF NOT EXISTS event_user_subjects_realm_user_position_idx ON event_user_subjects (realm_id, user_id, event_position)",
     )
+    // Legacy provider rows can predate the scope validation (missing required scopes or
+    // unsupported entries) and would fail every sign-in and link flow. Repair only invalid
+    // rows back to the type default; every other value is left untouched. The statement is
+    // idempotent and runs on every open.
+    database.run(
+      "UPDATE external_identity_providers SET scopes = '[\"read:user\",\"user:email\"]' WHERE type = 'github' AND (json_type(scopes) != 'array' OR (SELECT COUNT(*) FROM json_each(external_identity_providers.scopes)) != 2 OR (SELECT COUNT(*) FROM json_each(external_identity_providers.scopes) WHERE typeof(value) != 'text' OR length(value) = 0 OR length(value) > 128 OR value NOT IN ('read:user', 'user:email')) > 0 OR (SELECT COUNT(DISTINCT value) FROM json_each(external_identity_providers.scopes)) != 2)",
+    )
+    database.run(
+      "UPDATE external_identity_providers SET scopes = '[\"openid\",\"email\",\"profile\"]' WHERE type IN ('google', 'microsoft') AND (json_type(scopes) != 'array' OR (SELECT COUNT(*) FROM json_each(external_identity_providers.scopes) WHERE typeof(value) != 'text' OR length(value) = 0 OR length(value) > 128 OR value NOT IN ('openid', 'email', 'profile')) > 0 OR (SELECT COUNT(*) FROM json_each(external_identity_providers.scopes)) != (SELECT COUNT(DISTINCT value) FROM json_each(external_identity_providers.scopes)) OR NOT EXISTS (SELECT 1 FROM json_each(external_identity_providers.scopes) WHERE value = 'openid') OR NOT EXISTS (SELECT 1 FROM json_each(external_identity_providers.scopes) WHERE value = 'email'))",
+    )
     return resultCreate(undefined)
   } catch (_error) {
     return resultErrorCreate(op, "The SQLite schema could not be created.")
