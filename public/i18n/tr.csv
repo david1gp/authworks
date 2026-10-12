@@ -107,9 +107,13 @@ account.passkeys.synced,Synced passkey
 account.password.changed,Your password was changed.
 account.password.confirm,Confirm new password
 account.password.current,Current password
+account.password.currentOptionalHint,Leave blank if no password is set yet.
 account.password.description,Use a unique password that you do not use for other services.
 account.password.mismatch,The new passwords do not match.
 account.password.new,New password
+account.password.set,Your password was set.
+account.password.setSubmit,Set password
+account.password.setTitle,Set password
 account.password.submit,Change password
 account.password.title,Change password
 account.password.tooShort,The new password must contain at least 8 characters.

@@ -55,7 +55,7 @@ type AccountPageAdapter = {
   readonly profilePictureRemove: () => Promise<Result<UserResponse>>
   readonly profilePictureUpload: (file: Blob) => Promise<Result<UserResponse>>
   readonly updatePassword: (input: {
-    currentPassword: string
+    currentPassword?: string
     newPassword: string
   }) => Promise<Result<PasswordMeChangeResponse>>
   readonly updateProfile: (input: UserProfileUpdateRequest) => Promise<Result<UserResponse>>
@@ -268,8 +268,9 @@ export function accountPageStateCreate(options: {
       return
     }
     status.set("loading")
+    const current = currentPassword.get()
     const result = await options.adapter.updatePassword({
-      currentPassword: currentPassword.get(),
+      ...(current.length > 0 ? { currentPassword: current } : {}),
       newPassword: newPassword.get(),
     })
     if (!result.success) return resultFail(result)

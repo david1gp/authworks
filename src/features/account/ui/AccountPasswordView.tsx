@@ -16,6 +16,7 @@ type AccountPasswordViewProps = {
   readonly confirmPassword: string
   readonly currentPassword: string
   readonly errorMessage?: string
+  readonly hasPassword?: boolean
   readonly newPassword: string
   readonly onDialogOpenChange: (open: boolean) => void
   readonly onConfirmPasswordInput: (value: string) => void
@@ -30,29 +31,37 @@ type AccountPasswordViewProps = {
 
 export function AccountPasswordView(props: AccountPasswordViewProps) {
   const boundary = () => accountViewBoundaryStateGet(props.status, props.errorMessage)
+  const hasPassword = () => props.hasPassword ?? true
+  const title = () => messageTranslate(hasPassword() ? "account.password.title" : "account.password.setTitle")
+  const submit = () => messageTranslate(hasPassword() ? "account.password.submit" : "account.password.setSubmit")
   const dialog = () => (
     <AuthenticatedDialog
       class="h-7 text-xs sm:justify-self-end"
       description={messageTranslate("account.password.description")}
       onOpenChange={props.onDialogOpenChange}
       open={props.dialogOpen}
-      title={messageTranslate("account.password.title")}
-      triggerLabel={messageTranslate("account.password.submit")}
+      title={title()}
+      triggerLabel={submit()}
       triggerIcon={mdiLockReset}
       variant="outline"
     >
       <form class="grid gap-2.5" onSubmit={props.onSubmit}>
-        <div class="grid min-w-0 gap-1">
-          <Label for="account-password-current">{messageTranslate("account.password.current")}</Label>
-          <Input
-            autocomplete="current-password"
-            id="account-password-current"
-            onInput={(event) => props.onCurrentPasswordInput(event.currentTarget.value)}
-            required
-            type="password"
-            value={props.currentPassword}
-          />
-        </div>
+        <Show when={hasPassword()} fallback={null}>
+          <div class="grid min-w-0 gap-1">
+            <Label for="account-password-current">{messageTranslate("account.password.current")}</Label>
+            <Input
+              autocomplete="current-password"
+              id="account-password-current"
+              onInput={(event) => props.onCurrentPasswordInput(event.currentTarget.value)}
+              required={props.hasPassword !== undefined}
+              type="password"
+              value={props.currentPassword}
+            />
+            <Show when={props.hasPassword === undefined}>
+              <p class="text-xs text-muted-foreground">{messageTranslate("account.password.currentOptionalHint")}</p>
+            </Show>
+          </div>
+        </Show>
         <div class="grid min-w-0 gap-2.5 sm:grid-cols-2">
           <div class="grid min-w-0 gap-1">
             <Label for="account-password-new">{messageTranslate("account.password.new")}</Label>
@@ -86,11 +95,13 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
           {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
         </Show>
         <Show when={props.status === "success"}>
-          <AuthenticatedNotice message={messageTranslate("account.password.changed")} />
+          <AuthenticatedNotice
+            message={messageTranslate(hasPassword() ? "account.password.changed" : "account.password.set")}
+          />
         </Show>
         <div>
           <ButtonIcon icon={mdiLockReset} type="submit">
-            {messageTranslate("account.password.submit")}
+            {submit()}
           </ButtonIcon>
         </div>
       </form>
@@ -106,7 +117,7 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
           state={boundary().state}
           title={boundary().title}
         >
-          <AuthenticatedSection class="max-w-2xl" title={messageTranslate("account.password.title")}>
+          <AuthenticatedSection class="max-w-2xl" title={title()}>
             <div class="grid min-w-0 gap-x-3 gap-y-2 px-3 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <div class="grid min-w-0 gap-1">
                 <span class="text-sm font-medium">{messageTranslate("shell.nav.password")}</span>

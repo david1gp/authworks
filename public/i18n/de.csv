@@ -107,9 +107,13 @@ account.passkeys.synced,Synchronisierter Passkey
 account.password.changed,Ihr Passwort wurde geändert.
 account.password.confirm,Neues Passwort bestätigen
 account.password.current,Aktuelles Passwort
+account.password.currentOptionalHint,Leave blank if no password is set yet.
 account.password.description,"Verwenden Sie ein eindeutiges Passwort, das Sie für keinen anderen Dienst nutzen."
 account.password.mismatch,Die neuen Passwörter stimmen nicht überein.
 account.password.new,Neues Passwort
+account.password.set,Your password was set.
+account.password.setSubmit,Set password
+account.password.setTitle,Set password
 account.password.submit,Passwort ändern
 account.password.title,Passwort ändern
 account.password.tooShort,Das neue Passwort muss mindestens 8 Zeichen enthalten.

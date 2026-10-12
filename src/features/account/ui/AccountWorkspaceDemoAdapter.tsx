@@ -51,7 +51,13 @@ export function AccountWorkspaceDemoAdapter() {
       security={
         <AccountSecurityDemoAdapter
           passwordAction={
-            <AccountDemoAdapter kind="password" passwordActionOnly path="/demo/account" showFixtureHeader={false} />
+            <AccountDemoAdapter
+              hasPassword={() => state.security.methods().password.available}
+              kind="password"
+              passwordActionOnly
+              path="/demo/account"
+              showFixtureHeader={false}
+            />
           }
           screen="overview"
           showFixtureHeader={false}

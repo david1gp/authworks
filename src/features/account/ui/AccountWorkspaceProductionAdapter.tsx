@@ -39,7 +39,13 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
       }
       security={
         <AccountSecurityProductionAdapter
-          passwordAction={<AccountProductionAdapter kind="password" passwordActionOnly />}
+          passwordAction={
+            <AccountProductionAdapter
+              hasPassword={() => state.security.methods().password.available}
+              kind="password"
+              passwordActionOnly
+            />
+          }
           realmId={props.realmId}
           screen="overview"
           state={state.security}

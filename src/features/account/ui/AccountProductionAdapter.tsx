@@ -7,6 +7,7 @@ import { accountProductionAdapterStateCreate } from "./accountProductionAdapterS
 import type { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
 
 export function AccountProductionAdapter(props: {
+  readonly hasPassword?: boolean | (() => boolean)
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
   readonly passwordActionOnly?: boolean
   readonly renderConfirmation?: boolean
@@ -14,6 +15,8 @@ export function AccountProductionAdapter(props: {
   readonly state?: ReturnType<typeof accountProductionAdapterStateCreate>
 }) {
   const state = props.state ?? accountProductionAdapterStateCreate(() => props.kind)
+  const hasPassword = () =>
+    typeof props.hasPassword === "function" ? props.hasPassword() : (props.hasPassword ?? true)
   return (
     <>
       <Switch>
@@ -22,6 +25,7 @@ export function AccountProductionAdapter(props: {
             confirmPassword={state.confirmPassword.get()}
             currentPassword={state.currentPassword.get()}
             errorMessage={state.errorMessage.get()}
+            hasPassword={hasPassword()}
             newPassword={state.newPassword.get()}
             dialogOpen={state.passwordDialogOpen.get()}
             onDialogOpenChange={state.passwordDialogOpenSet}

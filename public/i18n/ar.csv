@@ -107,9 +107,13 @@ account.passkeys.synced,مفتاح مرور متزامن
 account.password.changed,تم تغيير كلمة المرور الخاصة بك.
 account.password.confirm,تأكيد كلمة المرور الجديدة
 account.password.current,كلمة المرور الحالية
+account.password.currentOptionalHint,Leave blank if no password is set yet.
 account.password.description,استخدم كلمة مرور فريدة لا تستخدمها في خدمات أخرى.
 account.password.mismatch,كلمات المرور الجديدة غير متطابقة.
 account.password.new,كلمة المرور الجديدة
+account.password.set,Your password was set.
+account.password.setSubmit,Set password
+account.password.setTitle,Set password
 account.password.submit,تغيير كلمة المرور
 account.password.title,تغيير كلمة المرور
 account.password.tooShort,يجب أن تحتوي كلمة المرور الجديدة على 8 أحرف على الأقل.

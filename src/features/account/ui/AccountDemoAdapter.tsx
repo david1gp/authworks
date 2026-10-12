@@ -12,6 +12,7 @@ import { accountDemoAdapterStateCreate } from "./accountDemoAdapterStateCreate.j
 import type { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
 
 export function AccountDemoAdapter(props: {
+  readonly hasPassword?: boolean | (() => boolean)
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
   readonly path: string
   readonly passwordActionOnly?: boolean
@@ -25,6 +26,8 @@ export function AccountDemoAdapter(props: {
   const state = props.state ?? accountDemoAdapterStateCreate(() => props.kind)
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   const page = state.page
+  const hasPassword = () =>
+    typeof props.hasPassword === "function" ? props.hasPassword() : (props.hasPassword ?? true)
   return (
     <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
       {props.showFixtureHeader === false ? null : (
@@ -40,6 +43,7 @@ export function AccountDemoAdapter(props: {
             confirmPassword={page.confirmPassword.get()}
             currentPassword={page.currentPassword.get()}
             errorMessage={page.errorMessage.get()}
+            hasPassword={hasPassword()}
             newPassword={page.newPassword.get()}
             dialogOpen={page.passwordDialogOpen.get()}
             onDialogOpenChange={page.passwordDialogOpenSet}

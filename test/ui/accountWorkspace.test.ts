@@ -420,7 +420,8 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountWorkspaceProductionAdapter.tsx", import.meta.url),
     ).text()
     expect(workspace.match(/screen="overview"/g)).toHaveLength(1)
-    expect(workspace).toContain('passwordAction={<AccountProductionAdapter kind="password" passwordActionOnly />}')
+    expect(workspace).toContain("passwordActionOnly")
+    expect(workspace).toContain("hasPassword={() => state.security.methods().password.available}")
     expect(workspace).not.toContain('screen="passkeys"')
     expect(workspace).not.toContain('screen="factors"')
     expect(workspace).not.toContain('screen="recovery-codes"')
