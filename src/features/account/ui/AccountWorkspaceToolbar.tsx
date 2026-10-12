@@ -24,11 +24,6 @@ export function AccountWorkspaceToolbar(props: { readonly userLabel?: string }) 
             </span>
           )}
         </Show>
-        <Show when={props.userLabel}>
-          {(label) => (
-            <span class="hidden max-w-36 truncate text-xs font-medium text-foreground sm:inline">{label()}</span>
-          )}
-        </Show>
         <A
           aria-label={messageTranslate("common.signOut")}
           class="grid size-7 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
