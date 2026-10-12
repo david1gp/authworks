@@ -37,14 +37,7 @@ export function AccountProfileIdentityStrip(props: {
       value={props.displayName || props.userName || props.email || messageTranslate("account.profile.notSet")}
       variant="card"
     >
-      <div class="grid min-w-0 items-start gap-4 sm:grid-cols-[auto_minmax(0,1fr)]">
-        <AccountProfilePictureField
-          errorMessage={props.pictureErrorMessage}
-          onRemove={props.onPictureRemove}
-          onUpload={props.onPictureUpload}
-          status={props.pictureStatus}
-          url={props.pictureUrl}
-        />
+      <div class="grid min-w-0 items-start gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div class="grid min-w-0 gap-3">
           <dl class="grid min-w-0 divide-y divide-line-subtle border-y border-line-subtle sm:grid-cols-2 sm:divide-x sm:divide-y-0">
             <div class="min-w-0 py-2 sm:pr-3">
@@ -96,6 +89,13 @@ export function AccountProfileIdentityStrip(props: {
             </div>
           </dl>
         </div>
+        <AccountProfilePictureField
+          errorMessage={props.pictureErrorMessage}
+          onRemove={props.onPictureRemove}
+          onUpload={props.onPictureUpload}
+          status={props.pictureStatus}
+          url={props.pictureUrl}
+        />
       </div>
       {props.securityProgress ? (
         <div class="mt-4">

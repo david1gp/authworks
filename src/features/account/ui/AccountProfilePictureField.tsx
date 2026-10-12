@@ -29,7 +29,7 @@ export function AccountProfilePictureField(props: {
     url: () => props.url,
   })
   return (
-    <div class="grid justify-items-center gap-2 sm:justify-items-start">
+    <div class="grid justify-items-center gap-2 sm:justify-items-end">
       <AuthenticatedDialog
         class="!size-28 !rounded-full !p-0 overflow-hidden"
         onOpenChange={state.openChange}
