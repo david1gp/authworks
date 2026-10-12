@@ -143,7 +143,10 @@ function userProfilePictureHttpsFetch(url: URL, signal: AbortSignal, address: st
     const request = httpsRequest(
       {
         hostname: userProfilePictureHostnameNormalize(url.hostname),
-        lookup: (_hostname, _options, callback) => callback(null, address, isIP(address)),
+        lookup: (_hostname, options, callback) => {
+          if (options.all) return callback(null, [{ address, family: isIP(address) }])
+          return callback(null, address, isIP(address))
+        },
         method: "GET",
         path: `${url.pathname}${url.search}`,
         port: url.port === "" ? 443 : Number(url.port),

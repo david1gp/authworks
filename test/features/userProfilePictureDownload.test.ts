@@ -1,4 +1,6 @@
-import { expect, test } from "bun:test"
+import { expect, mock, spyOn, test } from "bun:test"
+import type { RequestOptions } from "node:https"
+import * as https from "node:https"
 import { userProfilePictureDownload } from "../../src/features/users/actions/userProfilePictureDownload.js"
 
 const image = Uint8Array.from([1, 2, 3])
@@ -6,6 +8,51 @@ const image = Uint8Array.from([1, 2, 3])
 function fetchCreate(handler: (input: string | URL | Request, init?: RequestInit) => Promise<Response>): typeof fetch {
   return Object.assign(handler, { preconnect: fetch.preconnect })
 }
+
+test.each([
+  { address: "8.8.8.8", family: 4 },
+  { address: "2606:4700:4700::1111", family: 6 },
+])(
+  "provider picture HTTPS lookup preserves the pinned address for array and scalar results ($address)",
+  async ({ address, family }) => {
+    let requestOptions: RequestOptions | undefined
+    const request = spyOn(https, "request").mockImplementation((options) => {
+      if (typeof options === "object" && !(options instanceof URL)) requestOptions = options
+      throw new Error("The HTTPS request is intercepted before any network connection.")
+    })
+
+    try {
+      await userProfilePictureDownload({
+        resolve: async () => [address, "1.1.1.1"],
+        sourceUrl: "https://provider.example/picture?size=64",
+      })
+
+      expect(request).toHaveBeenCalledTimes(1)
+      expect(requestOptions).toMatchObject({
+        hostname: "provider.example",
+        method: "GET",
+        path: "/picture?size=64",
+        port: 443,
+        servername: "provider.example",
+      })
+      const lookup = requestOptions?.lookup
+      expect(lookup).toBeDefined()
+      if (lookup === undefined) throw new Error("The HTTPS adapter must pin its lookup callback.")
+
+      const allCallback = mock()
+      lookup("provider.example", { hints: 32, all: true }, allCallback)
+      expect(allCallback.mock.calls).toEqual([[null, [{ address, family }]]])
+
+      for (const options of [{ all: false }, {}]) {
+        const scalarCallback = mock()
+        lookup("provider.example", options, scalarCallback)
+        expect(scalarCallback.mock.calls).toEqual([[null, address, family]])
+      }
+    } finally {
+      request.mockRestore()
+    }
+  },
+)
 
 test("provider picture downloads reject private, loopback, link-local, and mapped addresses", async () => {
   let fetched = false
