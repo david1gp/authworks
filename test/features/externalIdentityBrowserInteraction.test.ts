@@ -133,13 +133,51 @@ test("direct browser callbacks redirect into the UI instead of rendering raw JSO
     })
     expect(provider.success).toBe(true)
     if (!provider.success) return
+    const github = externalIdentityProviderCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "github-client",
+        clientSecret: "github-secret",
+        displayName: "GitHub",
+        redirectUri: "https://external-direct.example.com/idps/callback",
+        type: "github",
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(github.success).toBe(true)
+    if (!github.success) return
     const app = externalIdentityServerAppCreate({
       browserMode: true,
       database,
-      providerPorts: { google: providerPort() },
+      providerPorts: { github: providerPort("github"), google: providerPort() },
       publicOrigin: "https://external-direct.example.com",
     })
-    const start = await app.request(
+    for (const current of [provider.data.provider, github.data.provider]) {
+      const start = await app.request(
+        `https://external-direct.example.com/realms/${realm.data.realm.id}/external-identity/${current.id}/start`,
+        {
+          body: JSON.stringify({}),
+          headers: { "content-type": "application/json" },
+          method: "POST",
+        },
+      )
+      expect(start.status).toBe(200)
+      const authorizationUrl = (await start.json()) as { authorizationUrl?: string }
+      const state =
+        new URL(authorizationUrl.authorizationUrl ?? "https://provider.example/").searchParams.get("state") ?? ""
+      const callback = await app.request(
+        `https://external-direct.example.com/idps/callback?code=provider-code&state=${encodeURIComponent(state)}`,
+        { headers: { accept: "text/html" } },
+      )
+      expect(callback.status).toBe(302)
+      expect(callback.headers.get("location")).toBe("/account")
+      expect(callback.headers.get("set-cookie")).toContain("session=")
+      expect(await callback.text()).toBe("")
+    }
+
+    const replayStart = await app.request(
       `https://external-direct.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/start`,
       {
         body: JSON.stringify({}),
@@ -147,21 +185,17 @@ test("direct browser callbacks redirect into the UI instead of rendering raw JSO
         method: "POST",
       },
     )
-    expect(start.status).toBe(200)
-    const authorizationUrl = (await start.json()) as { authorizationUrl?: string }
-    const state =
-      new URL(authorizationUrl.authorizationUrl ?? "https://provider.example/").searchParams.get("state") ?? ""
-    const callback = await app.request(
-      `https://external-direct.example.com/idps/callback?code=provider-code&state=${encodeURIComponent(state)}`,
+    expect(replayStart.status).toBe(200)
+    const replayAuthorizationUrl = (await replayStart.json()) as { authorizationUrl?: string }
+    const replayState =
+      new URL(replayAuthorizationUrl.authorizationUrl ?? "https://provider.example/").searchParams.get("state") ?? ""
+    const replayConsumed = await app.request(
+      `https://external-direct.example.com/idps/callback?code=provider-code&state=${encodeURIComponent(replayState)}`,
       { headers: { accept: "text/html" } },
     )
-    expect(callback.status).toBe(302)
-    expect(callback.headers.get("location")).toBe("/account")
-    expect(callback.headers.get("set-cookie")).toContain("session=")
-    expect(await callback.text()).toBe("")
-
+    expect(replayConsumed.status).toBe(302)
     const replay = await app.request(
-      `https://external-direct.example.com/idps/callback?code=provider-code&state=${encodeURIComponent(state)}`,
+      `https://external-direct.example.com/idps/callback?code=provider-code&state=${encodeURIComponent(replayState)}`,
       { headers: { accept: "text/html" } },
     )
     expect(replay.status).toBe(302)
