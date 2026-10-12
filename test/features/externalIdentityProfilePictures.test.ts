@@ -16,6 +16,7 @@ import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { sessionAuthenticate } from "../../src/features/sessions/actions/sessionAuthenticate.js"
 import { userProfilePictureImport } from "../../src/features/users/actions/userProfilePictureImport.js"
+import { userProfileUpdate } from "../../src/features/users/actions/userProfileUpdate.js"
 import { userProfileTable } from "../../src/features/users/persistence/userProfileTable.js"
 import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../src/platform/errors/resultErrorCreate.js"
@@ -226,190 +227,295 @@ test("Google picture and GitHub avatar_url are extracted into internal provider 
   expect(githubIdentity).toMatchObject({ data: { picture: "https://github.example/avatar.png" }, success: true })
 })
 
-test("successful new, existing, and linking callbacks import missing pictures, preserve existing pictures, and issue sessions", async () => {
-  await withDatabase(async (database, testkit) => {
-    const realm = await createRealm(database, "external-picture-callback.example.com")
-    const googleProvider = await createProvider(database, realm.id, "google")
-    const githubProvider = await createProvider(database, realm.id, "github")
-    const sourceUrl = "https://provider.example/picture.png"
-    let fetchCount = 0
-    const imageFetcher = fetchCreate(async () => {
-      fetchCount += 1
-      return new Response(png, { headers: { "content-type": "image/png" } })
-    })
-    const uploads: { readonly key: string }[] = []
-    const storage = {
-      delete: async ({ key }: { readonly key: string }) => resultCreate(undefined),
-      put: async (input: { readonly key: string }) => {
-        uploads.push(input)
-        return resultCreate(undefined)
-      },
-    }
-    const importer = pictureImportCreate(database, imageFetcher, storage)
+type ExternalIdentityPictureMatrixCase = {
+  readonly flow: "link" | "sign-in"
+  readonly initial: "existing" | "missing"
+  readonly providerType: "github" | "google"
+}
 
-    const newUser = await callbackRun({
-      database,
-      port: testPort({ email: "new-picture@example.com", picture: sourceUrl, providerType: "google", subject: "new" }),
-      profilePictureImport: importer,
-      providerId: googleProvider.id,
-      realmId: realm.id,
-      runtime: testkit.runtime,
-    })
-    expect(newUser.success).toBe(true)
-    if (!newUser.success || newUser.data.kind !== "authenticated" || newUser.data.session === undefined) return
-    expect(sessionAuthenticate({ database, realmId: realm.id, token: newUser.data.session.token }).success).toBe(true)
-    const newProfile = database.db
-      .select()
+const externalIdentityPictureMatrix: readonly ExternalIdentityPictureMatrixCase[] = [
+  { flow: "sign-in", initial: "missing", providerType: "google" },
+  { flow: "sign-in", initial: "existing", providerType: "google" },
+  { flow: "sign-in", initial: "missing", providerType: "github" },
+  { flow: "sign-in", initial: "existing", providerType: "github" },
+  { flow: "link", initial: "missing", providerType: "google" },
+  { flow: "link", initial: "existing", providerType: "google" },
+  { flow: "link", initial: "missing", providerType: "github" },
+  { flow: "link", initial: "existing", providerType: "github" },
+]
+
+function profilePictureUrlGet(database: StorageDatabase, userId: string): string | null {
+  return (
+    database.db
+      .select({ pictureUrl: userProfileTable.pictureUrl })
       .from(userProfileTable)
-      .where(eq(userProfileTable.userId, newUser.data.authentication.userId))
-      .get()
-    expect(newProfile?.pictureContentType).toBe("image/png")
-    expect(newProfile?.pictureUrl).toContain("assets.authworks")
-    const newPictureUrl = newProfile?.pictureUrl
-    expect(uploads).toHaveLength(1)
+      .where(eq(userProfileTable.userId, userId))
+      .get()?.pictureUrl ?? null
+  )
+}
 
-    const fetchesBeforeOverwrite = fetchCount
-    const overwrite = await callbackRun({
-      database,
-      port: testPort({
-        email: "new-picture@example.com",
-        picture: "https://provider.example/should-not-be-fetched.png",
-        providerType: "google",
-        subject: "new",
-      }),
-      profilePictureImport: importer,
-      providerId: googleProvider.id,
-      realmId: realm.id,
-      runtime: testkit.runtime,
-    })
-    expect(overwrite.success).toBe(true)
-    expect(fetchCount).toBe(fetchesBeforeOverwrite)
-    expect(
-      database.db
-        .select({ pictureUrl: userProfileTable.pictureUrl })
-        .from(userProfileTable)
-        .where(eq(userProfileTable.userId, newUser.data.authentication.userId))
-        .get()?.pictureUrl,
-    ).toBe(newPictureUrl)
+for (const matrixCase of externalIdentityPictureMatrix) {
+  test(`Google/GitHub picture import (${matrixCase.providerType} ${matrixCase.flow} with ${matrixCase.initial} picture) sets missing pictures and preserves manual pictures`, async () => {
+    await withDatabase(async (database, testkit) => {
+      const tag = `${matrixCase.providerType}-${matrixCase.flow}-${matrixCase.initial}`
+      const realm = await createRealm(database, `external-picture-${tag}.example.com`)
+      const googleProvider = await createProvider(database, realm.id, "google")
+      const githubProvider = await createProvider(database, realm.id, "github")
+      const provider = matrixCase.providerType === "google" ? googleProvider : githubProvider
+      const sourceUrl = `https://provider.example/${tag}-picture.png`
+      const manualUrl = `https://manual.example/${tag}-avatar.png`
+      let fetchCount = 0
+      const uploads: { readonly key: string }[] = []
+      const imageFetcher = fetchCreate(async () => {
+        fetchCount += 1
+        return new Response(png, { headers: { "content-type": "image/png" } })
+      })
+      const storage = {
+        delete: async () => resultCreate(undefined),
+        put: async (input: { readonly key: string }) => {
+          uploads.push(input)
+          return resultCreate(undefined)
+        },
+      }
+      const importer = pictureImportCreate(database, imageFetcher, storage)
 
-    const existingPort = testPort({
-      email: "existing-picture@example.com",
-      providerType: "google",
-      subject: "existing",
-    })
-    const existingLogin = await callbackRun({
-      database,
-      port: existingPort,
-      providerId: googleProvider.id,
-      realmId: realm.id,
-      runtime: testkit.runtime,
-    })
-    expect(existingLogin.success).toBe(true)
-    if (
-      !existingLogin.success ||
-      existingLogin.data.kind !== "authenticated" ||
-      existingLogin.data.session === undefined
-    )
-      return
-    const existingUserId = existingLogin.data.authentication.userId
-    const existingPortWithPicture = testPort({
-      email: "existing-picture@example.com",
-      picture: sourceUrl,
-      providerType: "google",
-      subject: "existing",
-    })
-    const existingImported = await callbackRun({
-      database,
-      port: existingPortWithPicture,
-      profilePictureImport: importer,
-      providerId: googleProvider.id,
-      realmId: realm.id,
-      runtime: testkit.runtime,
-    })
-    expect(existingImported.success).toBe(true)
-    expect(
-      database.db
-        .select({ pictureUrl: userProfileTable.pictureUrl })
-        .from(userProfileTable)
-        .where(eq(userProfileTable.userId, existingUserId))
-        .get()?.pictureUrl,
-    ).toContain("assets.authworks")
+      if (matrixCase.flow === "sign-in") {
+        const subject = `signin-${tag}`
+        const email = `signin-${tag}@example.com`
+        if (matrixCase.initial === "existing") {
+          const seed = await callbackRun({
+            database,
+            port: testPort({ email, providerType: matrixCase.providerType, subject }),
+            providerId: provider.id,
+            realmId: realm.id,
+            runtime: testkit.runtime,
+          })
+          expect(seed.success).toBe(true)
+          if (!seed.success || seed.data.kind !== "authenticated" || seed.data.session === undefined) return
+          const userId = seed.data.authentication.userId
+          const manual = userProfileUpdate({
+            context: realmSystemContextCreate(),
+            database,
+            input: {},
+            picture: { contentType: "image/png", url: manualUrl },
+            realmId: realm.id,
+            userId,
+          })
+          expect(manual.success).toBe(true)
+          fetchCount = 0
+          uploads.length = 0
+          const callback = await callbackRun({
+            database,
+            port: testPort({ email, picture: sourceUrl, providerType: matrixCase.providerType, subject }),
+            profilePictureImport: importer,
+            providerId: provider.id,
+            realmId: realm.id,
+            runtime: testkit.runtime,
+          })
+          expect(callback.success).toBe(true)
+          if (!callback.success || callback.data.kind !== "authenticated" || callback.data.session === undefined) return
+          expect(sessionAuthenticate({ database, realmId: realm.id, token: callback.data.session.token }).success).toBe(
+            true,
+          )
+          expect(profilePictureUrlGet(database, userId)).toBe(manualUrl)
+          expect(fetchCount).toBe(0)
+          expect(uploads).toHaveLength(0)
+          return
+        }
+        const callback = await callbackRun({
+          database,
+          port: testPort({ email, picture: sourceUrl, providerType: matrixCase.providerType, subject }),
+          profilePictureImport: importer,
+          providerId: provider.id,
+          realmId: realm.id,
+          runtime: testkit.runtime,
+        })
+        expect(callback.success).toBe(true)
+        if (!callback.success || callback.data.kind !== "authenticated" || callback.data.session === undefined) return
+        expect(sessionAuthenticate({ database, realmId: realm.id, token: callback.data.session.token }).success).toBe(
+          true,
+        )
+        expect(profilePictureUrlGet(database, callback.data.authentication.userId)).toContain("assets.authworks")
+        expect(fetchCount).toBe(1)
+        expect(uploads).toHaveLength(1)
+        return
+      }
 
-    const linkingLoginPort = testPort({
-      email: "linking-picture@example.com",
-      providerType: "google",
-      subject: "linking",
-    })
-    const linkingLogin = await callbackRun({
-      database,
-      port: linkingLoginPort,
-      providerId: googleProvider.id,
-      realmId: realm.id,
-      runtime: testkit.runtime,
-    })
-    expect(linkingLogin.success).toBe(true)
-    if (!linkingLogin.success || linkingLogin.data.kind !== "authenticated" || linkingLogin.data.session === undefined)
-      return
-    const linkStarted = externalIdentityLinkStart({
-      database,
-      input: {},
-      providerId: githubProvider.id,
-      providerPorts: {
-        github: testPort({
-          email: "linked-picture@example.com",
+      const baseSubject = `link-base-${tag}`
+      const baseLogin = await callbackRun({
+        database,
+        port: testPort({ email: `link-base-${tag}@example.com`, providerType: "google", subject: baseSubject }),
+        providerId: googleProvider.id,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+      })
+      expect(baseLogin.success).toBe(true)
+      if (!baseLogin.success || baseLogin.data.kind !== "authenticated" || baseLogin.data.session === undefined) return
+      const userId = baseLogin.data.authentication.userId
+      const session = baseLogin.data.session.session
+      expect(sessionAuthenticate({ database, realmId: realm.id, token: baseLogin.data.session.token }).success).toBe(
+        true,
+      )
+      if (matrixCase.initial === "existing") {
+        const manual = userProfileUpdate({
+          context: realmSystemContextCreate(),
+          database,
+          input: {},
+          picture: { contentType: "image/png", url: manualUrl },
+          realmId: realm.id,
+          userId,
+        })
+        expect(manual.success).toBe(true)
+      }
+      fetchCount = 0
+      uploads.length = 0
+      const linkSubject = `link-${tag}`
+      const linkPortCreate = () =>
+        testPort({
+          email: `linked-${tag}@example.com`,
           picture: sourceUrl,
-          providerType: "github",
-          subject: "linked",
-        }),
-      },
-      realmId: realm.id,
-      session: linkingLogin.data.session.session,
-      userId: linkingLogin.data.authentication.userId,
-      runtime: testkit.runtime,
-    })
-    expect(linkStarted.success).toBe(true)
-    if (!linkStarted.success) return
-    const linkState = new URL(linkStarted.data.authorizationUrl).searchParams.get("state") ?? ""
-    const linkedCallback = await externalIdentityCallback({
-      code: "link-code",
-      database,
-      profilePictureImport: importer,
-      providerId: githubProvider.id,
-      providerPorts: {
-        github: testPort({
-          email: "linked-picture@example.com",
-          picture: sourceUrl,
-          providerType: "github",
-          subject: "linked",
-        }),
-      },
-      realmId: realm.id,
-      runtime: testkit.runtime,
-      state: linkState,
-    })
-    expect(linkedCallback).toMatchObject({ data: { kind: "link_confirmation" }, success: true })
-    expect(
-      database.db
-        .select({ pictureUrl: userProfileTable.pictureUrl })
-        .from(userProfileTable)
-        .where(eq(userProfileTable.userId, linkingLogin.data.authentication.userId))
-        .get()?.pictureUrl,
-    ).toContain("assets.authworks")
-    if (!linkedCallback.success || linkedCallback.data.kind !== "link_confirmation") return
-    expect(
-      externalIdentityLinkComplete({
+          providerType: matrixCase.providerType,
+          subject: linkSubject,
+        })
+      const linkStarted = externalIdentityLinkStart({
+        database,
+        input: {},
+        providerId: provider.id,
+        providerPorts: { github: linkPortCreate(), google: linkPortCreate() },
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        session,
+        userId,
+      })
+      expect(linkStarted.success).toBe(true)
+      if (!linkStarted.success) return
+      const linkState = new URL(linkStarted.data.authorizationUrl).searchParams.get("state") ?? ""
+      const linkedCallback = await externalIdentityCallback({
+        code: "link-code",
+        database,
+        profilePictureImport: importer,
+        providerId: provider.id,
+        providerPorts: { github: linkPortCreate(), google: linkPortCreate() },
+        realmId: realm.id,
+        runtime: testkit.runtime,
+        state: linkState,
+      })
+      expect(linkedCallback).toMatchObject({ data: { kind: "link_confirmation" }, success: true })
+      if (!linkedCallback.success || linkedCallback.data.kind !== "link_confirmation") return
+      if (matrixCase.initial === "existing") {
+        expect(profilePictureUrlGet(database, userId)).toBe(manualUrl)
+        expect(fetchCount).toBe(0)
+        expect(uploads).toHaveLength(0)
+      } else {
+        expect(profilePictureUrlGet(database, userId)).toContain("assets.authworks")
+        expect(fetchCount).toBe(1)
+        expect(uploads).toHaveLength(1)
+      }
+      const completed = externalIdentityLinkComplete({
         database,
         input: { confirm: true, confirmationToken: linkedCallback.data.confirmationToken },
-        providerId: githubProvider.id,
+        providerId: provider.id,
         realmId: realm.id,
-        session: linkingLogin.data.session.session,
-        userId: linkingLogin.data.authentication.userId,
         runtime: testkit.runtime,
-      }).success,
-    ).toBe(true)
+        session,
+        userId,
+      })
+      expect(completed.success).toBe(true)
+      if (matrixCase.initial === "existing") {
+        expect(profilePictureUrlGet(database, userId)).toBe(manualUrl)
+        expect(fetchCount).toBe(0)
+        expect(uploads).toHaveLength(0)
+      } else {
+        expect(profilePictureUrlGet(database, userId)).toContain("assets.authworks")
+        expect(fetchCount).toBe(1)
+        expect(uploads).toHaveLength(1)
+      }
+    })
   })
-})
+}
+for (const providerType of ["google", "github"] as const) {
+  test(`returning existing ${providerType} sign-in without picture then imports once and preserves hosted picture`, async () => {
+    await withDatabase(async (database, testkit) => {
+      const tag = `returning-${providerType}`
+      const realm = await createRealm(database, `external-picture-${tag}.example.com`)
+      const googleProvider = await createProvider(database, realm.id, "google")
+      const githubProvider = await createProvider(database, realm.id, "github")
+      const provider = providerType === "google" ? googleProvider : githubProvider
+      const subject = `returning-${tag}`
+      const email = `returning-${tag}@example.com`
+      const firstPictureUrl = `https://provider.example/${tag}-first.png`
+      const secondPictureUrl = `https://provider.example/${tag}-second.png`
+      let fetchCount = 0
+      const uploads: { readonly key: string }[] = []
+      const imageFetcher = fetchCreate(async () => {
+        fetchCount += 1
+        return new Response(png, { headers: { "content-type": "image/png" } })
+      })
+      const storage = {
+        delete: async () => resultCreate(undefined),
+        put: async (input: { readonly key: string }) => {
+          uploads.push(input)
+          return resultCreate(undefined)
+        },
+      }
+      const importer = pictureImportCreate(database, imageFetcher, storage)
 
+      const first = await callbackRun({
+        database,
+        port: testPort({ email, providerType, subject }),
+        profilePictureImport: importer,
+        providerId: provider.id,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+      })
+      expect(first.success).toBe(true)
+      if (!first.success || first.data.kind !== "authenticated" || first.data.session === undefined) return
+      const userId = first.data.authentication.userId
+      const identityId = first.data.identity.id
+      expect(sessionAuthenticate({ database, realmId: realm.id, token: first.data.session.token }).success).toBe(true)
+      expect(profilePictureUrlGet(database, userId)).toBeNull()
+      expect(fetchCount).toBe(0)
+      expect(uploads).toHaveLength(0)
+
+      const second = await callbackRun({
+        database,
+        port: testPort({ email, picture: firstPictureUrl, providerType, subject }),
+        profilePictureImport: importer,
+        providerId: provider.id,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+      })
+      expect(second.success).toBe(true)
+      if (!second.success || second.data.kind !== "authenticated" || second.data.session === undefined) return
+      expect(second.data.authentication.userId).toBe(userId)
+      expect(second.data.identity.id).toBe(identityId)
+      expect(sessionAuthenticate({ database, realmId: realm.id, token: second.data.session.token }).success).toBe(true)
+      const hosted = profilePictureUrlGet(database, userId)
+      expect(hosted).toContain("assets.authworks")
+      expect(fetchCount).toBe(1)
+      expect(uploads).toHaveLength(1)
+
+      fetchCount = 0
+      uploads.length = 0
+      const third = await callbackRun({
+        database,
+        port: testPort({ email, picture: secondPictureUrl, providerType, subject }),
+        profilePictureImport: importer,
+        providerId: provider.id,
+        realmId: realm.id,
+        runtime: testkit.runtime,
+      })
+      expect(third.success).toBe(true)
+      if (!third.success || third.data.kind !== "authenticated" || third.data.session === undefined) return
+      expect(third.data.authentication.userId).toBe(userId)
+      expect(third.data.identity.id).toBe(identityId)
+      expect(sessionAuthenticate({ database, realmId: realm.id, token: third.data.session.token }).success).toBe(true)
+      expect(profilePictureUrlGet(database, userId)).toBe(hosted)
+      expect(fetchCount).toBe(0)
+      expect(uploads).toHaveLength(0)
+    })
+  })
+}
 test("invalid, oversized, network, and R2 picture failures do not break session issuance", async () => {
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "external-picture-failures.example.com")
