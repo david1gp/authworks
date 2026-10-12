@@ -36,6 +36,7 @@ type LoginPageStateOptions = {
   readonly initialErrorMessage?: () => string | undefined
   readonly initialPasskeyStatus?: () => PasskeyAuthenticationStatus | undefined
   readonly initialMfaSetupUnavailable?: () => boolean
+  readonly initialMfaChallengeToken?: () => string | undefined
   readonly initialProviderId?: () => string | undefined
   readonly initialProviderSubroute?: () => ExternalIdentityLoginSubroute | undefined
   readonly initialStatus?: () => LoginViewStatus | undefined
@@ -77,7 +78,7 @@ export function loginPageStateCreate(options: LoginPageStateOptions) {
   const displayName = createSignalObject("")
   const userName = createSignalObject("")
   const challengeId = createSignalObject("")
-  const challengeToken = createSignalObject("")
+  const challengeToken = createSignalObject(options.initialMfaChallengeToken?.() ?? "")
   const selectedProviderId = createSignalObject<string | undefined>(options.initialProviderId?.())
   const resendAt = createSignalObject(0)
   const resendCountdown = createSignalObject(0)

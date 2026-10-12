@@ -47,6 +47,7 @@ const stateCreate = (
   initialDiscovery: LoginDiscovery = demoLoginBootstrap,
   onNavigate: (path: string) => void = () => {},
   recoveryToken: () => string = () => "recovery-token",
+  initialMfaChallengeToken: () => string | undefined = () => undefined,
 ) => {
   const browserWindow = new Window()
   previousGlobals.set("document", globalValues.document)
@@ -64,6 +65,7 @@ const stateCreate = (
       },
       basePath: "/demo/login",
       initialDiscovery: initialStatus === "loading" ? undefined : () => initialDiscovery,
+      initialMfaChallengeToken,
       initialStatus: initialStatus === undefined ? () => "ready" : () => initialStatus,
       navigate: onNavigate,
       recoveryToken,
@@ -324,6 +326,39 @@ describe("loginPageStateCreate lifecycle focus", () => {
 
     expect(resentChallengeId).toBe("mfa-email-challenge-1")
     expect(verifiedChallengeId).toBe("mfa-email-challenge-2")
+  })
+
+  test("forwards a redirect-seeded MFA challenge token during TOTP verification", async () => {
+    const [route] = createSignal<LoginScreen>("mfa-totp")
+    const seededToken = `s${"e".repeat(42)}`
+    let completedToken = ""
+    let resumed = 0
+    const state = stateCreate(
+      route,
+      "ready",
+      () => {
+        resumed += 1
+      },
+      "success",
+      {
+        mfaComplete: async (token, submittedCode) => {
+          completedToken = token
+          expect(submittedCode).toBe("123456")
+          return resultCreate({ userId: "mfa-user" })
+        },
+      },
+      demoLoginBootstrap,
+      () => {},
+      () => "recovery-token",
+      () => seededToken,
+    )
+    await flushEffects()
+
+    state.mfaCodeSet("123456")
+    await state.mfaSubmit({ preventDefault: () => {} } as SubmitEvent)
+
+    expect(completedToken).toBe(seededToken)
+    expect(resumed).toBe(1)
   })
 
   test("starts, resends, validates, and verifies a WhatsApp code through the adapter", async () => {

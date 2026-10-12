@@ -7,8 +7,9 @@ import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../src/platform/errors/resultErrorCodedCreate.js"
 
 describe("production login adapter", () => {
-  test("does not invent optional MFA transports and fails safely before discovery", async () => {
+  test("binds login-MFA email and passkey transports and fails safely without a challenge", async () => {
     const calls: string[] = []
+    const statuses: string[] = []
     const adapter = loginProductionAdapterCreate({
       api: apiCreate(calls),
       discovery: () => undefined,
@@ -22,11 +23,26 @@ describe("production login adapter", () => {
 
     expect(result.success).toBe(false)
     if (!result.success) expect(result.code).toBe("organizations.not-found")
-    expect(adapter.mfaEmailOtpStart).toBeUndefined()
+    expect(adapter.mfaEmailOtpStart).toBeDefined()
     expect(adapter.mfaEmailOtpEnroll).toBeUndefined()
-    expect(adapter.mfaEmailOtpResend).toBeUndefined()
-    expect(adapter.mfaEmailOtpVerify).toBeUndefined()
-    expect(adapter.mfaPasskeyAuthenticate).toBeUndefined()
+    expect(adapter.mfaEmailOtpResend).toBeDefined()
+    expect(adapter.mfaEmailOtpVerify).toBeDefined()
+    expect(adapter.mfaPasskeyAuthenticate).toBeDefined()
+    // Without a tracked login challenge token the bound transports fail closed without posting.
+    expect((await adapter.mfaEmailOtpStart?.())?.success).toBe(false)
+    expect((await adapter.mfaEmailOtpResend?.("challenge-1"))?.success).toBe(false)
+    expect((await adapter.mfaEmailOtpVerify?.("challenge-1", "123456"))?.success).toBe(false)
+    expect(
+      (
+        await adapter.mfaPasskeyAuthenticate?.({
+          statusSet: (status) => {
+            statuses.push(status)
+          },
+        })
+      )?.success,
+    ).toBe(false)
+    // Undiscovered: no ceremony is attempted, so no passkey status is reported either.
+    expect(statuses).toEqual([])
     expect(adapter.whatsappOtpAvailable?.()).toBe(false)
     expect(calls).toEqual([])
   })

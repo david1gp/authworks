@@ -27,12 +27,20 @@ export type LoginAdapter = {
   readonly interactionResume: () => void
   readonly logout: () => Promise<Result<{ readonly revoked: boolean }>>
   readonly mfaComplete: (token: string, code: string) => Promise<Result<LoginAuthenticationOutcome>>
-  /** Optional MFA email transport. Production leaves this absent until the contract exists; demos may fixture it. */
+  /** Tracks the active login challenge token so token-scoped second factors can complete it. */
+  readonly mfaChallengeTokenSet?: (token: string) => void
+  /**
+   * Optional MFA email transport. Production binds start, resend, and verify against the tracked
+   * login challenge token; enrollment stays demo-only until a login-scoped contract exists.
+   */
   readonly mfaEmailOtpEnroll?: () => Promise<Result<EmailOtpStartResponse>>
   readonly mfaEmailOtpResend?: (challengeId: string) => Promise<Result<EmailOtpStartResponse>>
   readonly mfaEmailOtpStart?: () => Promise<Result<EmailOtpStartResponse>>
   readonly mfaEmailOtpVerify?: (challengeId: string, code: string) => Promise<Result<LoginAuthenticationOutcome>>
-  /** Optional login-MFA passkey transport. The existing protected step-up API is not interchangeable with this. */
+  /**
+   * Optional login-MFA passkey transport. Production binds it to the login-scoped MFA ceremony
+   * endpoints keyed off the tracked login challenge token.
+   */
   readonly mfaPasskeyAuthenticate?: (options?: {
     readonly statusSet?: (status: PasskeyAuthenticationStatus) => void
   }) => Promise<Result<LoginAuthenticationOutcome>>

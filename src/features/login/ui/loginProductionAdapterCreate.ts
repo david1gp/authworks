@@ -1,11 +1,12 @@
 import * as v from "valibot"
+import type { Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
 import { passkeyAuthenticationRun } from "../../passkeys/ui/passkeyAuthenticationRun.js"
 import { passkeyCapabilityCheck } from "../../passkeys/ui/passkeyCapabilityCheck.js"
 import type { LoginRecentAccount } from "../model/loginRecentAccountSchema.js"
 import { loginRecentAccountSchema } from "../model/loginRecentAccountSchema.js"
-import type { LoginAdapter, LoginDiscovery } from "./loginAdapter.js"
+import type { LoginAdapter, LoginAuthenticationOutcome, LoginDiscovery } from "./loginAdapter.js"
 import type { loginApiCreate } from "./loginApiCreate.js"
 
 type LoginProductionAdapterOptions = {
@@ -29,6 +30,19 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
   const realmId = () => options.discovery()?.organization.realmId
   const organizationId = () => options.discovery()?.organization.id
   let whatsappAvailable = false
+  let challengeToken: string | undefined
+  const challengeRecord = (outcome: LoginAuthenticationOutcome): LoginAuthenticationOutcome => {
+    if (outcome.challenge !== undefined) challengeToken = outcome.challenge.token
+    return outcome
+  }
+  const challengeTokenRequired = (op: string): Result<string> =>
+    challengeToken === undefined
+      ? resultErrorCodedCreate(
+          op,
+          "The verification challenge is no longer available. Start sign-in again.",
+          "mfa.invalid",
+        )
+      : resultCreate(challengeToken)
 
   return {
     discover: async () => {
@@ -56,7 +70,9 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       if (realm === undefined) return notDiscovered("loginEmailOtpVerify")
       const result = await api.emailOtpVerify(realm, challengeId, code, organizationId())
       if (!result.success) return result
-      return resultCreate({ challenge: result.data.challenge, userId: result.data.authentication.userId })
+      return resultCreate(
+        challengeRecord({ challenge: result.data.challenge, userId: result.data.authentication.userId }),
+      )
     },
     interactionResume: options.interactionResume,
     logout: async () => {
@@ -66,12 +82,70 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       if (!result.success) return result
       return resultCreate({ revoked: true })
     },
+    mfaChallengeTokenSet: (token: string) => {
+      challengeToken = token
+    },
+    mfaEmailOtpResend: async () => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginMfaEmailOtpResend")
+      const token = challengeTokenRequired("loginMfaEmailOtpResend")
+      if (!token.success) return token
+      // The challenge email start is replay-safe: within the cooldown it returns the pending
+      // challenge instead of sending a duplicate, so it doubles as the resend transport.
+      return api.mfaEmailOtpChallengeStart(realm, token.data)
+    },
+    mfaEmailOtpStart: async () => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginMfaEmailOtpStart")
+      const token = challengeTokenRequired("loginMfaEmailOtpStart")
+      if (!token.success) return token
+      return api.mfaEmailOtpChallengeStart(realm, token.data)
+    },
+    mfaEmailOtpVerify: async (_challengeId, code) => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginMfaEmailOtpVerify")
+      const token = challengeTokenRequired("loginMfaEmailOtpVerify")
+      if (!token.success) return token
+      const result = await api.mfaChallengeComplete(realm, token.data, code)
+      if (!result.success) return result
+      return resultCreate(
+        challengeRecord({ challenge: result.data.challenge, userId: result.data.authentication.userId }),
+      )
+    },
+    mfaPasskeyAuthenticate: async (passkeyOptions) => {
+      const realm = realmId()
+      if (realm === undefined) return notDiscovered("loginMfaPasskeyAuthenticate")
+      const token = challengeTokenRequired("loginMfaPasskeyAuthenticate")
+      if (!token.success) {
+        passkeyOptions?.statusSet?.("failure")
+        return token
+      }
+      passkeyOptions?.statusSet?.("pending")
+      const start = await api.mfaPasskeyLoginStart(realm, token.data)
+      if (!start.success) {
+        passkeyOptions?.statusSet?.("failure")
+        return start
+      }
+      const ceremony = await passkeyAuthenticationRun(start.data, passkeyOptions)
+      if (!ceremony.success) return ceremony
+      const completed = await api.mfaPasskeyLoginComplete(realm, ceremony.data)
+      if (!completed.success) {
+        passkeyOptions?.statusSet?.("failure")
+        return completed
+      }
+      passkeyOptions?.statusSet?.("ready")
+      return resultCreate(
+        challengeRecord({ challenge: completed.data.challenge, userId: completed.data.authentication.userId }),
+      )
+    },
     mfaComplete: async (token, code) => {
       const realm = realmId()
       if (realm === undefined) return notDiscovered("loginMfaComplete")
       const result = await api.mfaChallengeComplete(realm, token, code)
       if (!result.success) return result
-      return resultCreate({ challenge: result.data.challenge, userId: result.data.authentication.userId })
+      return resultCreate(
+        challengeRecord({ challenge: result.data.challenge, userId: result.data.authentication.userId }),
+      )
     },
     mfaTotpEnrollConfirm: async (enrollmentId, code) => {
       const realm = realmId()
@@ -102,7 +176,9 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
         return completed
       }
       passkeyOptions?.statusSet?.("ready")
-      return resultCreate({ challenge: completed.data.challenge, userId: completed.data.authentication.userId })
+      return resultCreate(
+        challengeRecord({ challenge: completed.data.challenge, userId: completed.data.authentication.userId }),
+      )
     },
     passkeySupported: passkeyCapabilityCheck,
     passwordChange: async (currentPassword, newPassword) => {
@@ -117,7 +193,9 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       if (realm === undefined) return notDiscovered("loginPasswordLogin")
       const result = await api.passwordLogin(realm, identifier, password, organizationId())
       if (!result.success) return result
-      return resultCreate({ challenge: result.data.challenge, userId: result.data.authentication.userId })
+      return resultCreate(
+        challengeRecord({ challenge: result.data.challenge, userId: result.data.authentication.userId }),
+      )
     },
     providerStart: async (providerId) => {
       const realm = realmId()
@@ -214,7 +292,9 @@ export function loginProductionAdapterCreate(options: LoginProductionAdapterOpti
       if (realm === undefined) return notDiscovered("loginWhatsappOtpVerify")
       const result = await api.whatsappOtpVerify(realm, challengeId, code, organizationId())
       if (!result.success) return result
-      return resultCreate({ challenge: result.data.challenge, userId: result.data.authentication.userId })
+      return resultCreate(
+        challengeRecord({ challenge: result.data.challenge, userId: result.data.authentication.userId }),
+      )
     },
   }
 }

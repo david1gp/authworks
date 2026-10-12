@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "@solidjs/router"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
+import { loginChallengeTokenSelect } from "../model/loginChallengeTokenSelect.js"
 import { loginInteractionHandleSelect } from "../model/loginInteractionHandleSelect.js"
 import { loginPathResolve } from "../model/loginPathResolve.js"
 import { loginReturnPathSelect } from "../model/loginReturnPathSelect.js"
@@ -18,6 +19,7 @@ export function loginProductionStateCreate() {
   const api = loginApiCreate({ baseUrl: window.location.origin })
   const search = () => new URLSearchParams(location.search)
   const interactionHandle = () => loginInteractionHandleSelect(search().get("interaction"))
+  const mfaChallengeToken = () => loginChallengeTokenSelect(search().get("mfa_challenge"))
   const returnPath = () => loginReturnPathSelect(search().get("return_to"), "/account")
 
   const adapter = loginProductionAdapterCreate({
@@ -38,7 +40,7 @@ export function loginProductionStateCreate() {
     },
   })
 
-  return loginPageStateCreate({
+  const page = loginPageStateCreate({
     adapter,
     basePath: loginBasePath,
     clearToken: () => {
@@ -47,6 +49,7 @@ export function loginProductionStateCreate() {
       window.history.replaceState(window.history.state, "", `${next.pathname}${next.search}${next.hash}`)
     },
     navigate: (path) => navigate(`${path}${window.location.search}`),
+    initialMfaChallengeToken: mfaChallengeToken,
     initialProviderId: () => loginPathResolve(location.pathname, loginBasePath)?.providerId,
     initialProviderSubroute: () => loginPathResolve(location.pathname, loginBasePath)?.providerSubroute,
     initialMfaSetupUnavailable: () =>
@@ -56,4 +59,14 @@ export function loginProductionStateCreate() {
     screen: () => loginPathResolve(location.pathname, loginBasePath)?.screen ?? "unsupported",
     verificationToken: () => search().get("token") ?? "",
   })
+  const seededChallengeToken = mfaChallengeToken()
+  if (seededChallengeToken !== undefined) adapter.mfaChallengeTokenSet?.(seededChallengeToken)
+  if (search().get("mfa_challenge") !== null) {
+    // The challenge token is seeded into page state above, so drop it from the URL immediately.
+    // Keeping a bearer MFA token in history, logs, or later navigations would only widen exposure.
+    const next = new URL(window.location.href)
+    next.searchParams.delete("mfa_challenge")
+    window.history.replaceState(window.history.state, "", `${next.pathname}${next.search}${next.hash}`)
+  }
+  return page
 }

@@ -84,6 +84,12 @@ export function loginApiCreate(options: { readonly baseUrl: string; readonly fet
       guarded(realmId, `${realmPath(realmId)}/sessions/logout`, {}, sessionRevocationResponseSchema),
     mfaChallengeComplete: (realmId: string, token: string, code: string) =>
       post(`${realmPath(realmId)}/mfa/challenge/complete`, { code, token }, mfaLoginResponseSchema),
+    mfaEmailOtpChallengeStart: (realmId: string, token: string) =>
+      post(`${realmPath(realmId)}/mfa/challenge/email-otp/start`, { token }, emailOtpStartResponseSchema),
+    mfaPasskeyLoginStart: (realmId: string, token: string) =>
+      post(`${realmPath(realmId)}/passkeys/mfa/login/start`, { token }, passkeyAuthenticationStartResponseSchema),
+    mfaPasskeyLoginComplete: (realmId: string, input: PasskeyAuthenticationCompleteRequest) =>
+      post(`${realmPath(realmId)}/passkeys/mfa/login/complete`, input, passkeyAuthenticationCompleteResponseSchema),
     mfaTotpEnrollConfirm: (realmId: string, enrollmentId: string, code: string) =>
       guarded(
         realmId,

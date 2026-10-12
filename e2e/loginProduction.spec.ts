@@ -396,6 +396,65 @@ test("a second-factor challenge advances the production sign-in to verification"
   await expect(page).toHaveURL(/\/account$/)
 })
 
+test("an IdP MFA challenge in the login URL seeds verification without another sign-in", async ({ page }) => {
+  const challengeToken = "u".repeat(43)
+  let completedToken: string | undefined
+  await loginBackendMock(page, (route, pathname) => {
+    if (pathname.endsWith("/mfa/challenge/complete")) {
+      completedToken = (JSON.parse(route.request().postData() ?? "{}") as { token?: string }).token
+      return route.fulfill({ json: { authentication } })
+    }
+    return route.fulfill({ json: { authentication } })
+  })
+
+  await page.goto(`/login/mfa?mfa_challenge=${challengeToken}`)
+
+  // The bearer token is seeded into page state and stripped from the URL immediately, so a
+  // direct IdP sign-in that yields only a challenge can still complete verification here.
+  await expect(page).toHaveURL(/\/login\/mfa$/)
+  await page.getByRole("button", { name: "Authenticator app" }).click()
+  await page.getByLabel("Verification code").fill("123456")
+  await page.getByRole("button", { name: "Verify", exact: true }).click()
+  await expect(page).toHaveURL(/\/account$/)
+  expect(completedToken).toBe(challengeToken)
+})
+
+test("an IdP MFA challenge can complete with an emailed code instead of another sign-in", async ({ page }) => {
+  const challengeToken = "e".repeat(43)
+  let startedToken: string | undefined
+  let completedBody: { code?: string; token?: string } = {}
+  await loginBackendMock(page, (route, pathname) => {
+    if (pathname.endsWith("/mfa/challenge/email-otp/start")) {
+      startedToken = (JSON.parse(route.request().postData() ?? "{}") as { token?: string }).token
+      return route.fulfill({
+        json: { accepted: true, challengeId: "mfa-email-1", expiresAt: 2, retryAt: 0 },
+      })
+    }
+    if (pathname.endsWith("/mfa/challenge/complete")) {
+      completedBody = JSON.parse(route.request().postData() ?? "{}")
+      return route.fulfill({ json: { authentication } })
+    }
+    return route.fulfill({ json: { authentication } })
+  })
+
+  await page.goto(`/login/mfa?mfa_challenge=${challengeToken}`)
+
+  // Email and passkey second factors must be usable here, not grayed out: the server offers
+  // email codes to every verified address, so IdP sign-ins depend on this transport.
+  await expect(page.getByRole("button", { name: /Email code/ })).toBeEnabled()
+  await expect(page.getByRole("button", { name: /Passkey/ })).toBeEnabled()
+  await page.getByRole("button", { name: /Email code/ }).click()
+  await expect(page).toHaveURL(/\/login\/mfa\/email-otp$/)
+  await page.getByRole("button", { name: "Send code" }).click()
+  expect(startedToken).toBe(challengeToken)
+
+  await expect(page).toHaveURL(/\/login\/mfa\/email-otp\/code$/)
+  await page.getByLabel("Verification code").fill("123456")
+  await page.getByRole("button", { name: "Verify", exact: true }).click()
+  await expect(page).toHaveURL(/\/account$/)
+  expect(completedBody).toMatchObject({ code: "123456", token: challengeToken })
+})
+
 test("an OIDC interaction resumes at the authorization endpoint with its opaque handle", async ({ page }) => {
   const handle = "a".repeat(43)
   const resumed: string[] = []
