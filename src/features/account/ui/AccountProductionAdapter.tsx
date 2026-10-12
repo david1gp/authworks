@@ -9,12 +9,14 @@ import type { accountSecurityProgressStateCreate } from "./accountSecurityProgre
 export function AccountProductionAdapter(props: {
   readonly hasPassword?: boolean | (() => boolean)
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
+  readonly onPasswordChanged?: () => void
   readonly passwordActionOnly?: boolean
   readonly renderConfirmation?: boolean
   readonly securityProgress?: ReturnType<typeof accountSecurityProgressStateCreate>
   readonly state?: ReturnType<typeof accountProductionAdapterStateCreate>
 }) {
-  const state = props.state ?? accountProductionAdapterStateCreate(() => props.kind)
+  const state =
+    props.state ?? accountProductionAdapterStateCreate(() => props.kind, { onPasswordChanged: props.onPasswordChanged })
   const hasPassword = () =>
     typeof props.hasPassword === "function" ? props.hasPassword() : (props.hasPassword ?? true)
   return (

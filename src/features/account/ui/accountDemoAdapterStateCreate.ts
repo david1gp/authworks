@@ -6,6 +6,9 @@ import { accountPageStateCreate } from "./accountPageStateCreate.js"
 
 export function accountDemoAdapterStateCreate(
   kind: Accessor<"delete" | "email" | "overview" | "password" | "profile">,
+  options: {
+    readonly onPasswordChanged?: () => void
+  } = {},
 ) {
   const location = useLocation()
   const fixtureState = () => demoFixtureStateSelect(location.search, ["success", "loading", "error"])
@@ -13,6 +16,7 @@ export function accountDemoAdapterStateCreate(
     adapter: accountDemoAdapterCreate(fixtureState),
     initialStatus: fixtureState() === "loading" ? "loading" : undefined,
     kind: kind(),
+    onPasswordChanged: options.onPasswordChanged,
   })
   createEffect(() => {
     const selectedState = fixtureState()

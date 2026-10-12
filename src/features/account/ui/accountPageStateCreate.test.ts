@@ -110,3 +110,47 @@ describe("account deletion dialog state", () => {
     expect(retryState.deletionConfirmation.get()).toBe("")
   })
 })
+
+describe("account password change", () => {
+  test("notifies onPasswordChanged only after a successful password save", async () => {
+    const adapter = accountDemoAdapterCreate(() => "success")
+    let notifications = 0
+    const state = createRoot((dispose) => {
+      cleanups.push(dispose)
+      return accountPageStateCreate({
+        adapter,
+        initialStatus: "ready",
+        kind: "password",
+        onPasswordChanged: () => {
+          notifications += 1
+        },
+      })
+    })
+    state.newPassword.set("new-password-12")
+    state.confirmPassword.set("new-password-12")
+    await state.passwordSubmit(submitEvent)
+    expect(state.status.get()).toBe("success")
+    expect(notifications).toBe(1)
+  })
+
+  test("does not notify onPasswordChanged when the password save fails", async () => {
+    const adapter = accountDemoAdapterCreate(() => "error")
+    let notifications = 0
+    const state = createRoot((dispose) => {
+      cleanups.push(dispose)
+      return accountPageStateCreate({
+        adapter,
+        initialStatus: "ready",
+        kind: "password",
+        onPasswordChanged: () => {
+          notifications += 1
+        },
+      })
+    })
+    state.newPassword.set("new-password-12")
+    state.confirmPassword.set("new-password-12")
+    await state.passwordSubmit(submitEvent)
+    expect(state.status.get()).toBe("error")
+    expect(notifications).toBe(0)
+  })
+})

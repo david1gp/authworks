@@ -14,6 +14,7 @@ export function accountProductionAdapterStateCreate(
   kind: Accessor<"delete" | "email" | "overview" | "password" | "profile">,
   options: {
     readonly initialStatus?: AccountViewStatus
+    readonly onPasswordChanged?: () => void
     readonly realmId?: string
     readonly session?: ProductionSessionContextValue
   } = {},
@@ -89,6 +90,7 @@ export function accountProductionAdapterStateCreate(
     },
     initialStatus: options.initialStatus,
     kind,
+    onPasswordChanged: options.onPasswordChanged,
   })
   createEffect(
     on(

@@ -43,6 +43,7 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
             <AccountProductionAdapter
               hasPassword={() => state.security.methods().password.available}
               kind="password"
+              onPasswordChanged={() => state.security.reload()}
               passwordActionOnly
             />
           }

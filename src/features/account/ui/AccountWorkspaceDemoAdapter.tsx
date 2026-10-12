@@ -54,6 +54,7 @@ export function AccountWorkspaceDemoAdapter() {
             <AccountDemoAdapter
               hasPassword={() => state.security.methods().password.available}
               kind="password"
+              onPasswordChanged={() => state.security.reload()}
               passwordActionOnly
               path="/demo/account"
               showFixtureHeader={false}

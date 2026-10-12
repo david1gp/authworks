@@ -64,6 +64,7 @@ type AccountPageAdapter = {
 export function accountPageStateCreate(options: {
   readonly adapter: AccountPageAdapter
   readonly initialStatus?: AccountViewStatus
+  readonly onPasswordChanged?: () => void
   readonly kind:
     | "delete"
     | "email"
@@ -278,6 +279,7 @@ export function accountPageStateCreate(options: {
     newPassword.set("")
     confirmPassword.set("")
     status.set("success")
+    options.onPasswordChanged?.()
   }
   const passwordDialogOpenSet = (open: boolean) => {
     if (!open) {

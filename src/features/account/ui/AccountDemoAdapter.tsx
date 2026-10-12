@@ -14,6 +14,7 @@ import type { accountSecurityProgressStateCreate } from "./accountSecurityProgre
 export function AccountDemoAdapter(props: {
   readonly hasPassword?: boolean | (() => boolean)
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
+  readonly onPasswordChanged?: () => void
   readonly path: string
   readonly passwordActionOnly?: boolean
   readonly renderConfirmation?: boolean
@@ -23,7 +24,8 @@ export function AccountDemoAdapter(props: {
 }) {
   const fixture = demoScenarioPlaceholderStateCreate(() => demoAccountScenarioGroups)
   const location = useLocation()
-  const state = props.state ?? accountDemoAdapterStateCreate(() => props.kind)
+  const state =
+    props.state ?? accountDemoAdapterStateCreate(() => props.kind, { onPasswordChanged: props.onPasswordChanged })
   const scenario = () => demoFixtureScenarioSelect(location.pathname, demoAccountScenarioGroups)
   const page = state.page
   const hasPassword = () =>
