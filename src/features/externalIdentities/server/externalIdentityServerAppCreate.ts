@@ -16,6 +16,7 @@ import { sessionReturnPathValidate } from "../../sessions/domain/sessionReturnPa
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionBrowserCredentialResponseCreate } from "../../sessions/server/sessionBrowserCredentialResponseCreate.js"
 import { sessionBrowserModeRequested } from "../../sessions/server/sessionBrowserModeRequested.js"
+import { sessionBrowserModeHeaderName } from "../../sessions/public/sessionBrowserModeHeaderName.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { externalIdentityCallback } from "../actions/externalIdentityCallback.js"
 import { externalIdentityLinkComplete } from "../actions/externalIdentityLinkComplete.js"
@@ -94,19 +95,33 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       if (!targetOrigin.success) return externalIdentityErrorResponseCreate(context, targetOrigin)
       return externalIdentityLinkBrowserResponseCreate({ callback: callback.data, targetOrigin: targetOrigin.data })
     }
-    if (!browserMode || input.interactionHandle === undefined)
-      return externalIdentityResultResponseCreate(
+    if (browserMode && input.interactionHandle !== undefined) {
+      const resumePath = externalIdentityInteractionResumePathCreate(input.interactionHandle, options.publicOrigin)
+      if (!resumePath.success) return externalIdentityErrorResponseCreate(context, resumePath)
+      if (callback.success && callback.data.kind === "authenticated" && callback.data.session !== undefined) {
+        const browser = sessionBrowserCredentialResponseCreate(context, callback)
+        if (!browser.success) return externalIdentityErrorResponseCreate(context, browser)
+        return context.redirect(resumePath.data, 302)
+      }
+      return externalIdentityLoginRedirectCreate(
         context,
-        browserMode ? sessionBrowserCredentialResponseCreate(context, callback) : callback,
+        input.interactionHandle,
+        resumePath.data,
+        options.publicOrigin,
       )
-    const resumePath = externalIdentityInteractionResumePathCreate(input.interactionHandle, options.publicOrigin)
-    if (!resumePath.success) return externalIdentityErrorResponseCreate(context, resumePath)
-    if (callback.success && callback.data.kind === "authenticated" && callback.data.session !== undefined) {
-      const browser = sessionBrowserCredentialResponseCreate(context, callback)
-      if (!browser.success) return externalIdentityErrorResponseCreate(context, browser)
-      return context.redirect(resumePath.data, 302)
     }
-    return externalIdentityLoginRedirectCreate(context, input.interactionHandle, resumePath.data, options.publicOrigin)
+    if (browserMode) {
+      // Top-level browser navigation without an OIDC interaction (direct hosted-login sign-in).
+      // Never render raw JSON: the session cookie is set and the browser is redirected into the UI.
+      if (callback.success && callback.data.kind === "authenticated" && callback.data.session !== undefined) {
+        const browser = sessionBrowserCredentialResponseCreate(context, callback)
+        if (!browser.success) return externalIdentityErrorResponseCreate(context, browser)
+        return context.redirect("/account", 302)
+      }
+      if (callback.success && callback.data.kind === "authenticated") return context.redirect("/login", 302)
+      return context.redirect(`/login/idp/${encodeURIComponent(input.providerId)}/failure`, 302)
+    }
+    return externalIdentityResultResponseCreate(context, callback)
   }
 
   app.get(
@@ -433,13 +448,20 @@ export function externalIdentityServerAppCreate(options: ExternalIdentityServerA
       options.database.db,
     ).externalIdentityOAuthTransactionGetByStateHash(externalIdentitySecretHashCreate(state))
     if (!transaction.success) return externalIdentityErrorResponseCreate(context, transaction)
-    if (transaction.data === null)
+    if (transaction.data === null) {
+      if (
+        options.browserMode === true &&
+        (context.req.header("accept")?.includes("text/html") === true ||
+          context.req.header(sessionBrowserModeHeaderName) === "true")
+      )
+        return context.redirect("/login", 302)
       return externalIdentityErrorResponseCreate(context, {
         code: "external-identities.invalid",
         errorMessage: "The external identity callback is invalid.",
         op: "externalIdentityCallback",
         success: false,
       })
+    }
     return externalIdentityCallbackRouteHandle(context, {
       code: context.req.query("code") ?? "",
       interactionHandle: transaction.data.interactionHandle ?? undefined,

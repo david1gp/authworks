@@ -1442,13 +1442,14 @@ test("external identity browser callback issues an HttpOnly session cookie witho
       `https://external-browser.example.com/realms/${realm.id}/external-identity/${provider.id}/callback?code=code&state=${encodeURIComponent(state)}`,
       { headers: { [sessionBrowserModeHeaderName]: "true" } },
     )
-    expect(callback.status).toBe(200)
+    // Direct hosted-login sign-in has no OIDC interaction, so a browser callback redirects into
+    // the UI with the session cookie instead of rendering raw JSON.
+    expect(callback.status).toBe(302)
+    expect(callback.headers.get("location")).toBe("/account")
     const cookie = callback.headers.get("set-cookie") ?? ""
     const token = /^session=([^;]+);/.exec(cookie)?.[1]
-    const body = (await callback.json()) as { session?: unknown }
     expect(token).toHaveLength(43)
-    expect(body.session).toBeUndefined()
-    expect(JSON.stringify(body)).not.toContain(token ?? "")
+    expect(await callback.text()).toBe("")
     expect(cookie).toContain("HttpOnly")
     if (token !== undefined) expect(sessionAuthenticate({ database, realmId: realm.id, token }).success).toBe(true)
 

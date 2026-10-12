@@ -109,6 +109,66 @@ test("browser external callbacks issue only a cookie and resume opaque interacti
   })
 })
 
+test("direct browser callbacks redirect into the UI instead of rendering raw JSON", async () => {
+  await withDatabase(async (database) => {
+    const realm = realmCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { domain: "external-direct.example.com", name: "External direct" },
+    })
+    expect(realm.success).toBe(true)
+    if (!realm.success) return
+    const provider = externalIdentityProviderCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        allowAccountCreation: true,
+        clientId: "external-client",
+        clientSecret: "external-secret",
+        displayName: "Google",
+        redirectUri: "https://external-direct.example.com/idps/callback",
+        type: "google",
+      },
+      realmId: realm.data.realm.id,
+    })
+    expect(provider.success).toBe(true)
+    if (!provider.success) return
+    const app = externalIdentityServerAppCreate({
+      browserMode: true,
+      database,
+      providerPorts: { google: providerPort() },
+      publicOrigin: "https://external-direct.example.com",
+    })
+    const start = await app.request(
+      `https://external-direct.example.com/realms/${realm.data.realm.id}/external-identity/${provider.data.provider.id}/start`,
+      {
+        body: JSON.stringify({}),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(start.status).toBe(200)
+    const authorizationUrl = (await start.json()) as { authorizationUrl?: string }
+    const state =
+      new URL(authorizationUrl.authorizationUrl ?? "https://provider.example/").searchParams.get("state") ?? ""
+    const callback = await app.request(
+      `https://external-direct.example.com/idps/callback?code=provider-code&state=${encodeURIComponent(state)}`,
+      { headers: { accept: "text/html" } },
+    )
+    expect(callback.status).toBe(302)
+    expect(callback.headers.get("location")).toBe("/account")
+    expect(callback.headers.get("set-cookie")).toContain("session=")
+    expect(await callback.text()).toBe("")
+
+    const replay = await app.request(
+      `https://external-direct.example.com/idps/callback?code=provider-code&state=${encodeURIComponent(state)}`,
+      { headers: { accept: "text/html" } },
+    )
+    expect(replay.status).toBe(302)
+    expect(replay.headers.get("location")).toBe(`/login/idp/${encodeURIComponent(provider.data.provider.id)}/failure`)
+  })
+})
+
 test("browser link callbacks return a same-origin opener message without a token URL redirect", async () => {
   const response = externalIdentityLinkBrowserResponseCreate({
     callback: {
