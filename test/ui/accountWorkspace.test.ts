@@ -99,6 +99,11 @@ describe("account workspace", () => {
     // The links live inside the sticky header's primary row, not in a separate sticky nav below it.
     expect(shell).not.toContain("sticky top-12")
     expect(shell.indexOf("state.accountSections()")).toBeLessThan(shell.indexOf("</header>"))
+    // The account shell hides the whole top navbar; users get a free-form toolbar above the content.
+    expect(shell).toContain('when={props.kind !== "account"}')
+    expect(shell).toContain("data-account-toolbar")
+    expect(shell).toContain("<LanguageSelector />")
+    expect(shell).toContain("<ThemeButton />")
 
     expect(
       await Bun.file(new URL("../../src/features/account/ui/AccountSectionNav.tsx", import.meta.url)).exists(),
@@ -246,9 +251,10 @@ describe("account workspace", () => {
     expect(overview).toContain('variant="card"')
     expect(overview.indexOf("<AccountDisclosure")).toBeLessThan(overview.indexOf("<AccountProfilePictureField"))
     expect(overview.indexOf("<AccountDisclosure")).toBeLessThan(overview.indexOf("account.profile.signInDescription"))
-    expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(3)
+    expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
-    expect(progress).toContain('href="#security"')
+    expect(progress).toContain("href={item.href}")
+    expect(progress).toContain("props.state.items()")
     expect(progress).toContain('messageTranslate("account.security.recoveryMfa")')
     expect(progress).toContain("{props.state.text()}")
     expect(progress).toContain('role="progressbar"')
@@ -675,9 +681,11 @@ describe("account workspace", () => {
     ).text()
 
     // A native details/summary pair is collapsed by default and keyboard-operable without script.
+    // Cards may opt into an initially expanded state through the controlled `open` prop.
     expect(disclosure).toContain("<details")
     expect(disclosure).toContain("<summary")
-    expect(disclosure).not.toMatch(/<details[^>]*\sopen(?:[=\s>])/s)
+    expect(disclosure).toContain("open={props.open}")
+    expect(disclosure).not.toContain("<details open")
     expect(disclosure).toContain("focus-visible:ring-2")
   })
 
