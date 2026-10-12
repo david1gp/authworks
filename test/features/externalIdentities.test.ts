@@ -1683,3 +1683,80 @@ test("subject-bound external identity routes enforce IDOR, tenant, assurance, CS
     if (finalList.success) expect(finalList.data.items).toHaveLength(0)
   })
 })
+
+test("linking works with a stale session and requests the provider account chooser", async () => {
+  await withDatabase(async (database, testkit) => {
+    const realm = await createRealm(database, "external-link-stale.example.com")
+    const provider = await createProvider(database, realm.id, true, "github")
+    const ports = {
+      github: testPort("link-stale@example.com", { externalSubject: "stale-subject", providerType: "github" }),
+    }
+    const anonymous = realmTenantContextCreate(realm.id, "anonymous")
+    let token = ""
+    const registered = passwordRegister({
+      context: anonymous,
+      database,
+      input: {
+        email: "link-stale@example.com",
+        password: "Correct Horse 12",
+        profile: { displayName: "Link stale" },
+        userName: "link-stale",
+      },
+      realmId: realm.id,
+      onVerificationToken: (delivery) => {
+        token = delivery.token
+      },
+    })
+    expect(registered.success).toBe(true)
+    expect(passwordEmailVerify({ context: anonymous, database, input: { token }, realmId: realm.id }).success).toBe(
+      true,
+    )
+    const login = passwordLogin({
+      context: anonymous,
+      database,
+      input: { identifier: "link-stale", password: "Correct Horse 12" },
+      realmId: realm.id,
+    })
+    expect(login.success).toBe(true)
+    if (!login.success || login.data.session === undefined) return
+    // Age the session past any freshness window: the provider round-trip plus the explicit
+    // confirmation authorizes the link, exactly like every other OAuth connect flow.
+    testkit.advance(6 * 60 * 1_000)
+    const linkStart = externalIdentityLinkStart({
+      database,
+      input: {},
+      realmId: realm.id,
+      providerId: provider.id,
+      providerPorts: ports,
+      session: login.data.session.session,
+      userId: login.data.authentication.userId,
+      runtime: testkit.runtime,
+    })
+    expect(linkStart.success).toBe(true)
+    if (!linkStart.success) return
+    const authorizationUrl = new URL(linkStart.data.authorizationUrl)
+    expect(authorizationUrl.searchParams.get("prompt")).toBe("select_account")
+    const linkState = authorizationUrl.searchParams.get("state") ?? ""
+    const pending = await externalIdentityCallback({
+      code: "link-code",
+      database,
+      realmId: realm.id,
+      providerId: provider.id,
+      providerPorts: ports,
+      state: linkState,
+      runtime: testkit.runtime,
+    })
+    expect(pending.success).toBe(true)
+    if (!pending.success || pending.data.kind !== "link_confirmation") return
+    const linked = externalIdentityLinkComplete({
+      database,
+      input: { confirm: true, confirmationToken: pending.data.confirmationToken },
+      realmId: realm.id,
+      providerId: provider.id,
+      session: login.data.session.session,
+      userId: login.data.authentication.userId,
+      runtime: testkit.runtime,
+    })
+    expect(linked.success).toBe(true)
+  })
+})
