@@ -105,6 +105,120 @@ test("Leo Convex production ensure creates the exact fixed policy and hands off 
   }
 })
 
+test("Leo Convex production ensure creates beside old CRM and Multichat clients with overlapping callbacks", async () => {
+  const fixture = await productionFixtureCreate()
+  try {
+    const crm = await fixture.api.oidcClientCreate(
+      fixture.realmId,
+      legacyClientCreate("CRM", [expectedRedirectUris[0]!]),
+    )
+    const multichat = await fixture.api.oidcClientCreate(
+      fixture.realmId,
+      legacyClientCreate("Multichat", [expectedRedirectUris[2]!]),
+    )
+    expect(crm.success).toBe(true)
+    expect(multichat.success).toBe(true)
+    if (!crm.success || !multichat.success) return
+    const oldClients = [crm.data.client, multichat.data.client]
+
+    const envelopes: string[] = []
+    const ensured = await oidcLeoConvexProductionClientEnsure({
+      credentialEnvelopeWrite: (envelope) => envelopes.push(envelope),
+      fetch: fixture.fetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(ensured).toMatchObject({ success: true, data: { action: "created" } })
+    expect(envelopes).toHaveLength(1)
+
+    const listed = await fixture.api.oidcClientList(fixture.realmId)
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(listed.data.items).toHaveLength(3)
+    for (const oldClient of oldClients) {
+      expect(listed.data.items.find((client) => client.id === oldClient.id)).toEqual(oldClient)
+    }
+    expect(
+      listed.data.items.find((client) => client.name === "Leo Convex apps (migration testing)")?.redirectUris,
+    ).toEqual(expectedRedirectUris)
+  } finally {
+    await fixture.cleanup()
+  }
+})
+
+test("Leo Convex production ensure rejects duplicate shared-name clients without mutation or handoff", async () => {
+  const fixture = await productionFixtureCreate()
+  try {
+    const first = await fixture.api.oidcClientCreate(
+      fixture.realmId,
+      legacyClientCreate("Leo Convex apps (migration testing)", ["https://one.example/callback"]),
+    )
+    const second = await fixture.api.oidcClientCreate(
+      fixture.realmId,
+      legacyClientCreate("Leo Convex apps (migration testing)", ["https://two.example/callback"]),
+    )
+    expect(first.success).toBe(true)
+    expect(second.success).toBe(true)
+    if (!first.success || !second.success) return
+    const before = [first.data.client, second.data.client]
+    const envelopes: string[] = []
+
+    const ensured = await oidcLeoConvexProductionClientEnsure({
+      credentialEnvelopeWrite: (envelope) => envelopes.push(envelope),
+      fetch: fixture.fetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(ensured.success).toBe(false)
+    expect(envelopes).toHaveLength(0)
+    const listed = await fixture.api.oidcClientList(fixture.realmId)
+    expect(listed.success).toBe(true)
+    if (listed.success) expect(listed.data.items).toEqual(before)
+  } finally {
+    await fixture.cleanup()
+  }
+})
+
+test("Leo Convex production ensure reconciles only the exact shared-name client despite old callback matches", async () => {
+  const fixture = await productionFixtureCreate()
+  try {
+    const oldClient = await fixture.api.oidcClientCreate(
+      fixture.realmId,
+      legacyClientCreate("Old CRM", [expectedRedirectUris[0]!]),
+    )
+    const sharedClient = await fixture.api.oidcClientCreate(fixture.realmId, {
+      ...legacyClientCreate("Leo Convex apps (migration testing)", [expectedRedirectUris[2]!]),
+      allowedScopes: ["openid"],
+      idTokenUserinfoAssertion: false,
+      trusted: false,
+    })
+    expect(oldClient.success).toBe(true)
+    expect(sharedClient.success).toBe(true)
+    if (!oldClient.success || !sharedClient.success) return
+    const oldBefore = oldClient.data.client
+    const envelopes: string[] = []
+
+    const ensured = await oidcLeoConvexProductionClientEnsure({
+      credentialEnvelopeWrite: (envelope) => envelopes.push(envelope),
+      fetch: fixture.fetch,
+      homeDirectory: fixture.directory,
+    })
+    expect(ensured).toMatchObject({ success: true, data: { action: "updated" } })
+    expect(envelopes).toHaveLength(0)
+    const listed = await fixture.api.oidcClientList(fixture.realmId)
+    expect(listed.success).toBe(true)
+    if (!listed.success) return
+    expect(listed.data.items.find((client) => client.id === oldBefore.id)).toEqual(oldBefore)
+    expect(listed.data.items.find((client) => client.id === sharedClient.data.client.id)).toMatchObject({
+      allowedScopes: expectedScopes,
+      idTokenUserinfoAssertion: true,
+      name: "Leo Convex apps (migration testing)",
+      redirectUris: expectedRedirectUris,
+      trusted: true,
+    })
+  } finally {
+    await fixture.cleanup()
+  }
+})
+
 test("Leo Convex production ensure sanitizes protected-secret, realm, and upstream failures", async () => {
   const directory = await mkdtemp(join(tmpdir(), "authworks-leo-convex-failures-"))
   const envelopes: string[] = []
@@ -165,4 +279,37 @@ async function productionEnvironmentWrite(directory: string, content: string): P
   const environmentDirectory = join(directory, ".config", "authworks")
   await mkdir(environmentDirectory, { mode: 0o700, recursive: true })
   await writeFile(join(environmentDirectory, "authworks.env"), content, { mode: 0o600 })
+}
+
+async function productionFixtureCreate() {
+  const directory = await mkdtemp(join(tmpdir(), "authworks-leo-convex-matching-"))
+  const created = serverApplicationCreate({ databasePath: join(directory, "authworks.sqlite"), systemSecret })
+  if (!created.success) throw new Error("Could not create production test application")
+  await productionEnvironmentWrite(directory, `AUTHWORKS_SYSTEM_SECRET=${systemSecret}\n`)
+  const fetch = async (input: string | URL | Request, init?: RequestInit) =>
+    await created.data.fetch(new Request(input, init))
+  const realms = realmApiClientCreate({ baseUrl: productionOrigin, fetch, token: systemSecret })
+  const realm = await realms.realmCreate({ domain: "authworks.contentoren.de", name: "Production" })
+  if (!realm.success) throw new Error("Could not create production test realm")
+  return {
+    api: oidcApiClientCreate({ baseUrl: productionOrigin, fetch, token: systemSecret }),
+    cleanup: async () => await rm(directory, { force: true, recursive: true }),
+    directory,
+    fetch,
+    realmId: realm.data.realm.id,
+  }
+}
+
+function legacyClientCreate(name: string, redirectUris: string[]) {
+  return {
+    accessTokenRoleAssertion: false,
+    allowedScopes: ["openid", "profile"],
+    clientType: "confidential" as const,
+    idTokenUserinfoAssertion: true,
+    name,
+    postLogoutRedirectUris: [],
+    redirectUris,
+    requireConsent: false,
+    trusted: true,
+  }
 }

@@ -104,9 +104,7 @@ async function leoConvexClientEnsure(options: {
     clients.push(...listed.data.items)
     pageToken = listed.data.nextPageToken
   } while (pageToken !== undefined)
-  const matches = clients.filter(
-    (client) => client.name === clientName || redirectUris.some((uri) => client.redirectUris.includes(uri)),
-  )
+  const matches = clients.filter((client) => client.name === clientName)
   if (matches.length > 1)
     return resultErrorCodedCreate(
       "leoConvexClientEnsure",
@@ -114,13 +112,6 @@ async function leoConvexClientEnsure(options: {
       "oidc.conflict",
     )
   const existing = matches[0]
-  if (existing !== undefined && existing.name !== clientName)
-    return resultErrorCodedCreate(
-      "leoConvexClientEnsure",
-      "A registered redirect belongs to a differently named client; no changes were made.",
-      "oidc.conflict",
-    )
-
   if (existing === undefined) {
     const created = await options.api.oidcClientCreate(options.realmId, {
       accessTokenRoleAssertion: false,
