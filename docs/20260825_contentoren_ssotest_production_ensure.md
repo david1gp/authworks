@@ -49,6 +49,12 @@ command emits only one redacted JSON status:
 The other possible statuses are `updated` and `reused`. It never emits the
 email, password, system token, user ID, organization ID, or password hash.
 
+This fixed-purpose ensure command is only for the `ssotest` account. Do not use
+it to reset `testadmin` or any other account. For an operator-authorized
+password setup or replacement on another account, use the system-only password
+API described below through an authorized operator integration; this document
+does not define a generic reset command.
+
 ## Failure output and exit-code contract
 
 Successful output is unchanged. Every failed command writes no stdout and
@@ -197,3 +203,11 @@ The command uses the system-token-only endpoint
 or replaces the credential hash, clears lockout state, and appends the normal
 audit-safe password event when the credential changes. It is not a recovery or
 self-service endpoint and never returns credential material.
+
+Zitadel migration exports explicitly mark passwords
+`password-credentials-not-portable`: a user's existing Zitadel password,
+including `testadmin`'s, is not automatically an Authworks password. A local
+credential lookup only retrieves locally stored values; it does not create or
+reset an Authworks password. Keep password-login failures generic (for example,
+“credentials invalid”) to resist account enumeration; do not expose whether the
+account or password was the cause.

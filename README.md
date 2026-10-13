@@ -422,6 +422,16 @@ The first two commands print exactly one value. JSON output is exactly one objec
 `--field` accepts `username`, `password`, or `userId`; `--output json` and `--field` are mutually exclusive, and one
 of them is required. `credentials get` also accepts `--env-file PATH` and `--project NAME`/`--profile NAME`.
 
+Local credentials are not Authworks password provisioning. Zitadel migration
+exports mark passwords `password-credentials-not-portable`, so an existing
+Zitadel `testadmin` password is not automatically an Authworks password, and
+retrieving a locally stored password does not create or reset an Authworks
+password. For authorized operator setup/replacement, see the
+[system-only password API guidance](docs/20260825_contentoren_ssotest_production_ensure.md#operator-password-api);
+the fixed-purpose `ssotest` ensure described there must not be used to reset
+`testadmin`. Keep password-login failures generic (“credentials invalid”) to
+resist account enumeration rather than exposing a login failure reason.
+
 ### Project assignments, aliases, and administration boundaries
 
 The canonical assignment commands require explicit realm, project, user, and assignment IDs where applicable:
