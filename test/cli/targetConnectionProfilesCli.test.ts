@@ -305,12 +305,16 @@ test("target CLI commands resolve profile connections and preserve system-secret
     )
     const passkeys = await cliRunWithEnvironment(environment, "passkeys", "list", "--profile", "integration")
 
-    expect(oidc.exitCode).toBe(0)
+    expect(oidc.exitCode).not.toBe(0)
+    expect(oidc.stdout).toBe("")
+    expect(oidc.stderr).toContain("--system-token")
+    expect(oidc.stderr).toContain("AUTHWORKS_SYSTEM_SECRET")
+    expect(oidc.stderr).toContain("--token is a user session")
+    expect(oidc.stderr).not.toContain("profile-token")
     expect(mfa.exitCode).toBe(0)
     expect(impersonation.exitCode).toBe(0)
     expect(passkeys.exitCode).toBe(0)
     expect(requests).toEqual([
-      { authorization: undefined, body: "", pathname: "/system/realms/profile-realm/oidc/clients" },
       {
         authorization: "Bearer profile-token",
         body: '{"label":"CLI"}',

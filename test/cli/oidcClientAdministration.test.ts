@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { serverApplicationCreate } from "../../src/compositions/serverApplicationCreate.js"
+import { connectionProfilesStoreCreate } from "../../src/features/connectionProfiles/persistence/connectionProfilesStoreCreate.js"
 
 type CliRun = {
   readonly exitCode: number
@@ -26,6 +27,11 @@ test("OIDC client administration help exposes compatibility flags and negated bo
   expect(create.stdout).toContain("--access-token-role-assertion/--no-access-token-role-assertion")
   expect(create.stdout).toContain("--id-token-userinfo-assertion/--no-id-token-userinfo-assertion")
   expect(create.stdout).toContain("--additional-origins")
+  expect(create.stdout).toContain("requires system authorization")
+  expect(create.stdout).toContain("--token")
+  expect(create.stdout).toContain("not valid for system endpoints")
+  expect(create.stdout).toContain("--system-token")
+  expect(create.stdout).toContain("AUTHWORKS_SYSTEM_SECRET")
 
   const update = await cliRun("oidc", "client-update", "--help")
   expect(update.exitCode).toBe(0)
@@ -70,7 +76,7 @@ test("OIDC client compatibility settings parse, round trip through create/update
       "client-create",
       "--server",
       server.url.toString(),
-      "--token",
+      "--system-token",
       "oidc-client-administration-secret",
       "--realm-id",
       realmId,
@@ -99,7 +105,7 @@ test("OIDC client compatibility settings parse, round trip through create/update
       "client-update",
       "--server",
       server.url.toString(),
-      "--token",
+      "--system-token",
       "oidc-client-administration-secret",
       "--realm-id",
       realmId,
@@ -125,7 +131,7 @@ test("OIDC client compatibility settings parse, round trip through create/update
       "client-update",
       "--server",
       server.url.toString(),
-      "--token",
+      "--system-token",
       "oidc-client-administration-secret",
       "--realm-id",
       realmId,
@@ -148,7 +154,7 @@ test("OIDC client compatibility settings parse, round trip through create/update
       "client-get",
       "--server",
       server.url.toString(),
-      "--token",
+      "--system-token",
       "oidc-client-administration-secret",
       "--realm-id",
       realmId,
@@ -173,6 +179,7 @@ test("OIDC client compatibility settings parse, round trip through create/update
 
 test("OIDC client administration redacts connection tokens from subprocess errors", async () => {
   const token = "oidc-client-administration-redaction-token"
+  const systemToken = "oidc-client-administration-redaction-system-token"
   const server = Bun.serve({
     fetch(request) {
       const authorization = request.headers.get("authorization") ?? "missing authorization"
@@ -198,6 +205,8 @@ test("OIDC client administration redacts connection tokens from subprocess error
       server.url.toString(),
       "--token",
       token,
+      "--system-token",
+      systemToken,
       "--realm-id",
       "realm-id",
       "--client-id",
@@ -208,15 +217,142 @@ test("OIDC client administration redacts connection tokens from subprocess error
     expect(result.exitCode).not.toBe(0)
     expect(result.stdout).toBe("")
     expect(result.stderr).not.toContain(token)
+    expect(result.stderr).not.toContain(systemToken)
     expect(result.stderr).toContain("[REDACTED]")
   } finally {
     server.stop(true)
   }
 })
 
+test("OIDC system commands reject missing system credentials before API I/O", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "authworks-oidc-system-token-required-"))
+  const configHome = join(directory, "config")
+  let requests = 0
+  const server = Bun.serve({
+    fetch() {
+      requests += 1
+      return Response.json({ items: [] })
+    },
+    port: 0,
+  })
+
+  try {
+    const profile = await connectionProfilesStoreCreate({
+      environment: { XDG_CONFIG_HOME: configHome },
+    }).connectionProfileSet("user-session", {
+      server: server.url.toString(),
+      token: "saved-user-profile-token",
+    })
+    expect(profile.success).toBe(true)
+
+    const missing = await cliRunWithEnvironment(
+      { AUTHWORKS_SYSTEM_SECRET: undefined, AUTHWORKS_TOKEN: undefined, XDG_CONFIG_HOME: configHome },
+      "oidc",
+      "client-list",
+      "--server",
+      server.url.toString(),
+      "--realm-id",
+      "realm-id",
+    )
+    const explicitUserToken = await cliRunWithEnvironment(
+      { AUTHWORKS_SYSTEM_SECRET: undefined, AUTHWORKS_TOKEN: undefined, XDG_CONFIG_HOME: configHome },
+      "oidc",
+      "client-list",
+      "--server",
+      server.url.toString(),
+      "--realm-id",
+      "realm-id",
+      "--token",
+      "user-session-token",
+    )
+    const savedUserToken = await cliRunWithEnvironment(
+      { AUTHWORKS_SYSTEM_SECRET: undefined, AUTHWORKS_TOKEN: undefined, XDG_CONFIG_HOME: configHome },
+      "oidc",
+      "client-list",
+      "--profile",
+      "user-session",
+      "--realm-id",
+      "realm-id",
+    )
+
+    for (const result of [missing, explicitUserToken, savedUserToken]) {
+      expect(result.exitCode).not.toBe(0)
+      expect(result.stdout).toBe("")
+      expect(result.stderr).toContain("--system-token")
+      expect(result.stderr).toContain("AUTHWORKS_SYSTEM_SECRET")
+      expect(result.stderr).toContain("--token is a user session")
+      expect(result.stderr).toContain("browser realm-owner/admin UI")
+      expect(result.stderr).toContain("fixed-purpose ensure command")
+      expect(result.stderr).not.toContain("saved-user-profile-token")
+    }
+    expect(requests).toBe(0)
+  } finally {
+    server.stop(true)
+    await rm(directory, { force: true, recursive: true })
+  }
+})
+
+test("OIDC system commands accept explicit and environment credentials, with the explicit flag taking precedence", async () => {
+  const authorizations: Array<string | undefined> = []
+  const server = Bun.serve({
+    fetch(request) {
+      authorizations.push(request.headers.get("authorization") ?? undefined)
+      return Response.json({ items: [] })
+    },
+    port: 0,
+  })
+
+  try {
+    const environmentCredential = await cliRunWithEnvironment(
+      { AUTHWORKS_SYSTEM_SECRET: "environment-system-credential" },
+      "oidc",
+      "client-list",
+      "--server",
+      server.url.toString(),
+      "--realm-id",
+      "realm-id",
+      "--token",
+      "user-session-token",
+    )
+    const explicitCredential = await cliRunWithEnvironment(
+      { AUTHWORKS_SYSTEM_SECRET: "environment-system-credential" },
+      "oidc",
+      "client-list",
+      "--server",
+      server.url.toString(),
+      "--realm-id",
+      "realm-id",
+      "--token",
+      "user-session-token",
+      "--system-token",
+      "explicit-system-credential",
+    )
+
+    expect(environmentCredential.exitCode).toBe(0)
+    expect(explicitCredential.exitCode).toBe(0)
+    expect(authorizations).toEqual(["Bearer environment-system-credential", "Bearer explicit-system-credential"])
+    expect(environmentCredential.stdout).not.toContain("environment-system-credential")
+    expect(explicitCredential.stdout).not.toContain("explicit-system-credential")
+  } finally {
+    server.stop(true)
+  }
+})
+
 async function cliRun(...args: string[]): Promise<CliRun> {
+  return cliRunWithEnvironment({}, ...args)
+}
+
+async function cliRunWithEnvironment(
+  environmentOverrides: Record<string, string | undefined>,
+  ...args: string[]
+): Promise<CliRun> {
+  const environment = { ...process.env }
+  for (const [name, value] of Object.entries(environmentOverrides)) {
+    if (value === undefined) delete environment[name]
+    else environment[name] = value
+  }
   const child = Bun.spawn(["bun", "src/outputs/cli.ts", ...args], {
-    env: process.env,
+    env: environment,
     stderr: "pipe",
     stdout: "pipe",
   })

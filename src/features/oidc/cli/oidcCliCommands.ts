@@ -1,5 +1,6 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
+import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
 import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
@@ -14,6 +15,7 @@ import { oidcCodelineProductionOrganizationIdGetFailureOutputCreate } from "./oi
 import { oidcCodelineProductionSecretRotate } from "./oidcCodelineProductionSecretRotate.js"
 import { oidcCodelineSecretRotateExitCodeGet } from "./oidcCodelineSecretRotateExitCodeGet.js"
 import { oidcCodelineSecretRotateFailureOutputCreate } from "./oidcCodelineSecretRotateFailureOutputCreate.js"
+import { oidcLeoConvexProductionClientEnsure } from "./oidcLeoConvexProductionClientEnsure.js"
 import { oidcMultichatDevelopmentClientEnsure } from "./oidcMultichatDevelopmentClientEnsure.js"
 import { oidcMultichatDevelopmentSecretRotate } from "./oidcMultichatDevelopmentSecretRotate.js"
 import { oidcMultichatProductionClientEnsure } from "./oidcMultichatProductionClientEnsure.js"
@@ -127,7 +129,7 @@ const oidcClientCreateCommand = buildCommand({
       requireConsent: { brief: "Require consent", kind: "boolean" as const, optional: true as const },
     },
   },
-  docs: { brief: "Create an OIDC client" },
+  docs: { brief: "Create an OIDC client (requires system authorization)" },
 })
 
 const oidcClientListCommand = buildCommand({
@@ -350,6 +352,25 @@ const oidcMultichatDevelopmentClientEnsureCommand = buildCommand({
   },
   parameters: { flags: {} },
   docs: { brief: "Ensure the fixed development Multichat client with a one-time machine credential handoff" },
+})
+
+const oidcLeoConvexProductionClientEnsureCommand = buildCommand({
+  async func(this: ApplicationContext) {
+    try {
+      const result = await oidcLeoConvexProductionClientEnsure({
+        credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+        homeDirectory: "/home/authworks",
+      })
+      if (result.success) return
+      this.process.stderr.write(`${result.errorMessage ?? "The production Leo Convex client ensure failed."}\n`)
+      this.process.exitCode = 1
+    } catch (_error) {
+      this.process.stderr.write("The production Leo Convex client ensure failed.\n")
+      this.process.exitCode = 1
+    }
+  },
+  parameters: { flags: {} },
+  docs: { brief: "Ensure the fixed production Leo Convex OIDC client with a one-time machine credential handoff" },
 })
 
 const oidcMultichatProductionSecretRotateCommand = buildCommand({
@@ -593,7 +614,7 @@ const oidcLogoutCommand = buildCommand({
       state?: string
     },
   ) {
-    const connection = await oidcCliConnectionResolve(this, flags)
+    const connection = await oidcCliConnectionResolve(this, flags, false)
     if (!connection.success) {
       oidcCliResultWrite(this, connection)
       return
@@ -630,6 +651,7 @@ export const oidcCliCommands = buildRouteMap({
     codelineProductionSecretRotate: oidcCodelineProductionSecretRotateCommand,
     multichatProductionEnsure: oidcMultichatProductionClientEnsureCommand,
     multichatDevelopmentEnsure: oidcMultichatDevelopmentClientEnsureCommand,
+    leoConvexProductionEnsure: oidcLeoConvexProductionClientEnsureCommand,
     multichatProductionSecretRotate: oidcMultichatProductionSecretRotateCommand,
     multichatDevelopmentSecretRotate: oidcMultichatDevelopmentSecretRotateCommand,
     multichatProductionOrganizationIdGet: oidcMultichatProductionOrganizationIdGetCommand,
@@ -648,13 +670,19 @@ export const oidcCliCommands = buildRouteMap({
   docs: { brief: "OIDC client and signing-key administration" },
 })
 
-async function oidcCliConnectionResolve(context: ApplicationContext, flags: OidcCliFlags) {
+async function oidcCliConnectionResolve(context: ApplicationContext, flags: OidcCliFlags, requireSystemToken = true) {
   const connection = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
   if (!connection.success) return connection
+  const systemToken = connectionProfileCliSystemTokenResolve(flags.systemToken, context.process.env)
+  if (requireSystemToken && systemToken === undefined)
+    return resultErrorCreate(
+      "oidcCliConnectionResolve",
+      "This OIDC command requires a system credential. Provide --system-token or set AUTHWORKS_SYSTEM_SECRET. --token is a user session and is not valid for system endpoints. For interactive administration, use the browser realm-owner/admin UI, or use the application's fixed-purpose ensure command.",
+    )
   return {
     data: {
       ...connection.data,
-      systemToken: connectionProfileCliSystemTokenResolve(flags.systemToken ?? flags.token, context.process.env),
+      systemToken,
     },
     success: true as const,
   }
@@ -700,14 +728,14 @@ function oidcCommonFlags() {
       placeholder: "URL",
     },
     token: {
-      brief: "Bearer token",
+      brief: "User bearer token (not valid for system endpoints)",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
     systemToken: {
-      brief: "System bearer token",
+      brief: "System bearer token for system endpoints; overrides AUTHWORKS_SYSTEM_SECRET",
       kind: "parsed" as const,
       optional: true as const,
       parse: (value: string) => value,
