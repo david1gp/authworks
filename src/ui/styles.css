@@ -61,8 +61,8 @@
     --border: #e0e0e0;
     --border-subtle: #eeeeee;
     --border-strong: #c7c7c7;
-    --accent: #2563eb;
-    --accent-hover: #1d4ed8;
+    --accent: #047857;
+    --accent-hover: #065f46;
     --accent-contrast: #ffffff;
     --danger: #a33a22;
     /* Dark enough that the status pill text still clears 4.5:1 against its own soft tint. */
@@ -92,9 +92,9 @@
     --border: #3a3a3a;
     --border-subtle: #2e2e2e;
     --border-strong: #555555;
-    --accent: #60a5fa;
-    --accent-hover: #93c5fd;
-    --accent-contrast: #171a13;
+    --accent: #34d399;
+    --accent-hover: #6ee7b7;
+    --accent-contrast: #052e1f;
     --danger: #d6a28b;
     --success: #8fcf70;
     --warning: #d9b45c;

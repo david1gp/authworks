@@ -30,7 +30,7 @@ export function AuthenticatedSection(props: {
             <Show when={props.title}>
               {(title) => (
                 <h2 class="flex min-w-0 items-center gap-1.5 text-sm font-semibold tracking-tight">
-                  <Show when={props.icon}>{(icon) => <Icon class="size-4 text-muted-foreground" path={icon()} />}</Show>
+                  <Show when={props.icon}>{(icon) => <Icon class="size-4 text-accent" path={icon()} />}</Show>
                   <span class="truncate">{title()}</span>
                 </h2>
               )}

@@ -12,7 +12,7 @@ export function LanguageSelector(props: LanguageSelectorProps) {
   const state = languageSelectorStateCreate()
   return (
     <label class={`inline-flex min-w-0 items-center gap-1 sm:gap-2 ${props.class ?? ""}`}>
-      <Icon class="shrink-0 text-muted-foreground" path={mdiTranslateVariant} />
+      <Icon class="shrink-0 text-accent" path={mdiTranslateVariant} />
       <span class="sr-only">{messageTranslate("common.language")}</span>
       <select
         aria-label={messageTranslate("common.language")}

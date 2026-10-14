@@ -35,8 +35,13 @@ export function ThemeButton(p: ThemeButtonProps) {
     <ButtonIconOnly
       title={texts.currentTheme(texts[themeSignal.get()])}
       icon={themeIcon(themeSignal.get())}
-      variant={buttonVariant.ghost}
-      class={classMerge(p.showText && "min-w-24", p.class)}
+      variant={buttonVariant.none}
+      class={classMerge(
+        p.showText && "min-w-24",
+        "text-accent hover:text-accent-hover hover:bg-surface-hover",
+        p.class,
+      )}
+      iconClass="fill-current"
       onClick={themeRotate}
     >
       {p.showText && themeReady() && texts[themeSignal.get()]}

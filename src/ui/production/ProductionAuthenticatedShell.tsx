@@ -86,7 +86,7 @@ export function ProductionAuthenticatedShell(props: {
                 href="/admin"
                 title={messageTranslate("admin.navigation.label")}
               >
-                <Icon path={mdiShieldLockOutline} />
+                <Icon class="text-accent" path={mdiShieldLockOutline} />
                 <span class="hidden sm:inline">{messageTranslate("admin.navigation.label")}</span>
               </A>
             </Show>
@@ -98,7 +98,7 @@ export function ProductionAuthenticatedShell(props: {
                 href="/account"
                 title={messageTranslate("shell.nav.account")}
               >
-                <Icon path={mdiAccountCircleOutline} />
+                <Icon class="text-accent" path={mdiAccountCircleOutline} />
                 <span class="hidden sm:inline">{messageTranslate("shell.nav.account")}</span>
               </A>
             </Show>
@@ -130,7 +130,7 @@ export function ProductionAuthenticatedShell(props: {
           <div class="flex shrink-0 items-center gap-1 sm:gap-2">
             <Show when={state.organizationSwitchable()}>
               <div class="flex min-w-0 items-center gap-1 text-xs">
-                <Icon class="shrink-0 text-muted-foreground" path={mdiOfficeBuildingOutline} />
+                <Icon class="shrink-0 text-accent" path={mdiOfficeBuildingOutline} />
                 <select
                   aria-label={messageTranslate("shell.nav.organization")}
                   class="max-w-20 truncate rounded-control border border-line bg-surface px-1 py-1 text-xs text-foreground sm:max-w-36 md:max-w-48"
@@ -157,7 +157,7 @@ export function ProductionAuthenticatedShell(props: {
                 class="flex min-w-0 items-center gap-1 text-xs text-muted-foreground"
                 title={state.organizationLabel()}
               >
-                <Icon class="shrink-0 text-muted-foreground" path={mdiOfficeBuildingOutline} />
+                <Icon class="shrink-0 text-accent" path={mdiOfficeBuildingOutline} />
                 <span class="max-w-16 truncate text-xs font-medium text-foreground sm:max-w-32 md:max-w-48">
                   {state.organizationLabel()}
                 </span>
@@ -177,7 +177,7 @@ export function ProductionAuthenticatedShell(props: {
               </span>
               <A
                 aria-label={messageTranslate("common.signOut")}
-                class="grid size-7 shrink-0 place-items-center rounded-control text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground"
+                class="grid size-7 shrink-0 place-items-center rounded-control text-accent transition-colors hover:bg-surface-hover hover:text-accent-hover"
                 href={state.signOutHref}
                 title={messageTranslate("common.signOut")}
               >
