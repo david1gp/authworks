@@ -219,8 +219,8 @@ test("account workspace keeps identity details consolidated and targets sections
 
   await expect(activeProfileLink).toHaveAttribute("aria-current", "location")
   await expect(profileSection.getByRole("heading", { name: "Personal information", exact: true })).toBeVisible()
-  const identityDetails = profileSection.getByText("customer-user", { exact: true }).locator("..")
-  await expect(identityDetails.getByText("user@customer.example", { exact: true })).toBeVisible()
+  await expect(profileSection.getByText("@customer-user")).toBeVisible()
+  await expect(profileSection.getByText("user@customer.example", { exact: true })).toBeVisible()
   await expect(page.getByText("Sign-in details", { exact: true })).toHaveCount(0)
   await expect(page.locator("aside")).toHaveCount(0)
 

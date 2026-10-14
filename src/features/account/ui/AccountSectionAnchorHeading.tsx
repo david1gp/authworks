@@ -12,7 +12,7 @@ export function AccountSectionAnchorHeading(props: { readonly id: string; readon
         >
           <span>{props.title}</span>
           <Icon
-            class="size-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            class="size-4 text-accent opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
             path={mdiLinkVariant}
           />
         </a>

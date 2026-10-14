@@ -235,7 +235,7 @@ describe("account workspace", () => {
     expect(source).not.toContain("account.profile.signInDescription")
   })
 
-  test("collapses identity and personal details independently while keeping editing inside a dialog", async () => {
+  test("keeps identity details always visible while personal details collapse into a dialog", async () => {
     const source = await Bun.file(
       new URL("../../src/features/account/ui/AccountProfileView.tsx", import.meta.url),
     ).text()
@@ -260,9 +260,9 @@ describe("account workspace", () => {
       new URL("../../src/features/account/ui/AccountSecurityProgress.tsx", import.meta.url),
     ).text()
     expect(overview).toContain("<AccountProfilePictureField")
-    expect(overview).toContain("<AccountDisclosure")
-    expect(overview).toContain('variant="card"')
-    expect(overview.indexOf("<AccountDisclosure")).toBeLessThan(overview.indexOf("<AccountProfilePictureField"))
+    expect(overview).not.toContain("<AccountDisclosure")
+    expect(overview).toContain("rounded-panel")
+    expect(overview).not.toContain("account.profile.signInTitle")
     expect(overview).not.toContain("account.profile.signInDescription")
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")

@@ -1,6 +1,10 @@
-import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
+import { mdiAccountOutline } from "@adaptive-ds/mdi/mdiAccountOutline.js"
+import { mdiCheckDecagram } from "@adaptive-ds/mdi/mdiCheckDecagram.js"
+import { mdiClockOutline } from "@adaptive-ds/mdi/mdiClockOutline.js"
+import { mdiEmailOutline } from "@adaptive-ds/mdi/mdiEmailOutline.js"
+import { mdiPhoneOutline } from "@adaptive-ds/mdi/mdiPhoneOutline.js"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
-import { AccountDisclosure } from "./AccountDisclosure.js"
 import { AccountIdentityCopyButton } from "./AccountIdentityCopyButton.js"
 import { AccountProfilePictureField } from "./AccountProfilePictureField.js"
 import { AccountSecurityProgress } from "./AccountSecurityProgress.js"
@@ -29,79 +33,119 @@ export function AccountProfileIdentityStrip(props: {
     !props.phoneNumber
       ? messageTranslate("account.profile.notSet")
       : messageTranslate(props.phoneVerified ? "account.profile.verified" : "account.profile.verificationPending")
+
   return (
-    <AccountDisclosure
-      icon={mdiAccountCircleOutline}
-      open
-      summary={messageTranslate("account.profile.signInTitle")}
-      value={props.displayName || props.userName || props.email || messageTranslate("account.profile.notSet")}
-      variant="card"
-    >
-      <div class="grid min-w-0 items-start gap-4 sm:grid-cols-[minmax(0,1fr)_auto]">
-        <div class="grid min-w-0 gap-3">
-          <dl class="grid min-w-0 divide-y divide-line-subtle border-y border-line-subtle sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-            <div class="min-w-0 py-2 sm:pr-3">
-              <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.displayName")}</dt>
-              <dd class="flex min-w-0 items-center gap-1 text-sm">
-                <span class="min-w-0 break-all">{props.displayName || messageTranslate("account.profile.notSet")}</span>
-                {props.displayName ? (
-                  <AccountIdentityCopyButton
-                    label={messageTranslate("account.profile.displayName")}
-                    value={props.displayName}
-                  />
-                ) : null}
-              </dd>
-            </div>
-            <div class="min-w-0 py-2 sm:pl-3">
-              <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.userName")}</dt>
-              <dd class="flex min-w-0 items-center gap-1 font-mono text-sm">
-                <span class="min-w-0 break-all">{props.userName || messageTranslate("account.profile.notSet")}</span>
-                {props.userName ? (
-                  <AccountIdentityCopyButton
-                    label={messageTranslate("account.profile.userName")}
-                    value={props.userName}
-                  />
-                ) : null}
-              </dd>
-            </div>
-          </dl>
-          <dl class="grid min-w-0 divide-y divide-line-subtle border-y border-line-subtle sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-            <div class="min-w-0 py-2 sm:pr-3" title={emailTitle()}>
-              <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.email")}</dt>
-              <dd class="flex min-w-0 items-center gap-1 font-mono text-sm">
-                <span class="min-w-0 break-all">{props.email || messageTranslate("account.profile.notSet")}</span>
-                {props.email ? (
+    <div class="rounded-panel border border-line bg-surface p-4 sm:p-5">
+      <div class="flex items-start gap-3 sm:items-center sm:gap-5">
+        <div class="shrink-0">
+          <AccountProfilePictureField
+            errorMessage={props.pictureErrorMessage}
+            onRemove={props.onPictureRemove}
+            onUpload={props.onPictureUpload}
+            status={props.pictureStatus}
+            url={props.pictureUrl}
+          />
+        </div>
+        <div class="grid min-w-0 flex-1 gap-1">
+          <div class="flex min-w-0 items-center gap-1.5 text-lg font-semibold">
+            <Icon
+              aria-label={messageTranslate("account.profile.displayName")}
+              class="size-5 shrink-0 text-accent"
+              path={mdiAccountOutline}
+              title={messageTranslate("account.profile.displayName")}
+            />
+            <span
+              class="min-w-0 break-words"
+              classList={{
+                "font-normal text-muted-foreground": !props.displayName,
+              }}
+            >
+              {props.displayName || messageTranslate("account.profile.notSet")}
+            </span>
+            {props.displayName ? (
+              <AccountIdentityCopyButton
+                label={messageTranslate("account.profile.displayName")}
+                value={props.displayName}
+              />
+            ) : null}
+          </div>
+          <div
+            class="flex min-w-0 items-center gap-1.5 font-mono text-sm text-muted-foreground"
+            title={messageTranslate("account.profile.userName")}
+          >
+            <span class="min-w-0 break-all">
+              {props.userName ? `@${props.userName}` : messageTranslate("account.profile.notSet")}
+            </span>
+            {props.userName ? (
+              <AccountIdentityCopyButton label={messageTranslate("account.profile.userName")} value={props.userName} />
+            ) : null}
+          </div>
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-sm">
+            <div class="flex min-w-0 items-center gap-1.5">
+              <Icon
+                aria-label={messageTranslate("account.profile.email")}
+                class="size-4 shrink-0 text-accent"
+                path={mdiEmailOutline}
+                title={messageTranslate("account.profile.email")}
+              />
+              <span
+                class="min-w-0 break-all"
+                classList={{
+                  "text-muted-foreground": !props.email,
+                }}
+              >
+                {props.email || messageTranslate("account.profile.notSet")}
+              </span>
+              {props.email ? (
+                <>
                   <AccountIdentityCopyButton label={messageTranslate("account.profile.email")} value={props.email} />
-                ) : null}
-              </dd>
+                  <Icon
+                    aria-label={emailTitle()}
+                    class={props.emailVerified ? "size-4 shrink-0 text-success" : "size-4 shrink-0 text-warning"}
+                    path={props.emailVerified ? mdiCheckDecagram : mdiClockOutline}
+                    title={emailTitle()}
+                  />
+                </>
+              ) : null}
             </div>
-            <div class="min-w-0 py-2 sm:pl-3" title={phoneTitle()}>
-              <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.phoneNumber")}</dt>
-              <dd class="flex min-w-0 items-center gap-1 font-mono text-sm">
-                <span class="min-w-0 break-all">{props.phoneNumber || messageTranslate("account.profile.notSet")}</span>
-                {props.phoneNumber ? (
+            <div class="flex min-w-0 items-center gap-1.5">
+              <Icon
+                aria-label={messageTranslate("account.profile.phoneNumber")}
+                class="size-4 shrink-0 text-accent"
+                path={mdiPhoneOutline}
+                title={messageTranslate("account.profile.phoneNumber")}
+              />
+              <span
+                class="min-w-0 break-all"
+                classList={{
+                  "text-muted-foreground": !props.phoneNumber,
+                }}
+              >
+                {props.phoneNumber || messageTranslate("account.profile.notSet")}
+              </span>
+              {props.phoneNumber ? (
+                <>
                   <AccountIdentityCopyButton
                     label={messageTranslate("account.profile.phoneNumber")}
                     value={props.phoneNumber}
                   />
-                ) : null}
-              </dd>
+                  <Icon
+                    aria-label={phoneTitle()}
+                    class={props.phoneVerified ? "size-4 shrink-0 text-success" : "size-4 shrink-0 text-warning"}
+                    path={props.phoneVerified ? mdiCheckDecagram : mdiClockOutline}
+                    title={phoneTitle()}
+                  />
+                </>
+              ) : null}
             </div>
-          </dl>
+          </div>
         </div>
-        <AccountProfilePictureField
-          errorMessage={props.pictureErrorMessage}
-          onRemove={props.onPictureRemove}
-          onUpload={props.onPictureUpload}
-          status={props.pictureStatus}
-          url={props.pictureUrl}
-        />
       </div>
       {props.securityProgress ? (
         <div class="mt-4">
           <AccountSecurityProgress state={props.securityProgress} />
         </div>
       ) : null}
-    </AccountDisclosure>
+    </div>
   )
 }

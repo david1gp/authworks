@@ -22,7 +22,7 @@ export function AccountSecurityProgress(props: {
       <summary class="grid min-w-0 cursor-pointer list-none gap-2 px-3 py-2.5 transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary [&::-webkit-details-marker]:hidden">
         <div class="flex min-w-0 flex-wrap items-center justify-between gap-2">
           <h2 class="flex min-w-0 items-center gap-1.5 text-sm font-semibold tracking-tight">
-            <Icon class="size-4 text-muted-foreground" path={mdiShieldKeyOutline} />
+            <Icon class="size-4 text-accent" path={mdiShieldKeyOutline} />
             <span class="truncate">{messageTranslate("account.security.recoveryMfa")}</span>
           </h2>
           <span class="shrink-0 text-xs font-semibold tabular-nums text-foreground">{props.state.text()}</span>
@@ -65,7 +65,7 @@ export function AccountSecurityProgress(props: {
                 >
                   {messageTranslate(item.configured ? "account.status.configured" : "account.status.notConfigured")}
                 </span>
-                <Icon aria-hidden="true" class="size-4 shrink-0 text-muted-foreground" path={mdiChevronRight} />
+                <Icon aria-hidden="true" class="size-4 shrink-0 text-accent" path={mdiChevronRight} />
               </a>
             </li>
           )}

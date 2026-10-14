@@ -68,7 +68,7 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                     <span class="flex min-w-0 items-center gap-2">
                       <Icon
                         aria-hidden="true"
-                        class="size-4 shrink-0 text-muted-foreground"
+                        class="size-4 shrink-0 text-accent"
                         path={accountIdentityProviderIconGet(identity.providerType)}
                       />
                       <span class="grid min-w-0 gap-0.5">

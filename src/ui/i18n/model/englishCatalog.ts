@@ -210,7 +210,6 @@ export const englishCatalog = {
   "account.profile.save": "Save changes",
   "account.profile.saved": "Your profile was saved.",
   "account.profile.signInDescription": "These details identify your account.",
-  "account.profile.signInTitle": "Sign-in details",
   "account.profile.userName": "Username",
   "account.profile.verificationPending": "Verification pending",
   "account.profile.verified": "Verified",

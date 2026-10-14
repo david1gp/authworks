@@ -138,7 +138,7 @@ export function AccountOrganizationPanel(props: {
                         <AuthenticatedSection class="h-full" padded>
                           <div class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
                             <h3 class="flex min-w-0 items-center gap-2 truncate text-sm font-semibold tracking-tight">
-                              <Icon class="size-4 text-muted-foreground" path={mdiBriefcaseAccountOutline} />
+                              <Icon class="size-4 text-accent" path={mdiBriefcaseAccountOutline} />
                               <span class="truncate">{entry.project?.name}</span>
                             </h3>
                             <Show when={entry.project?.status}>

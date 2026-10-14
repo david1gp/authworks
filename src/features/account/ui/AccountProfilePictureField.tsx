@@ -31,7 +31,7 @@ export function AccountProfilePictureField(props: {
   return (
     <div class="grid justify-items-center gap-2 sm:justify-items-end">
       <AuthenticatedDialog
-        class="!size-28 !rounded-full !p-0 overflow-hidden"
+        class="!size-14 sm:!size-28 !rounded-full !p-0 overflow-hidden"
         onOpenChange={state.openChange}
         open={state.open()}
         title={messageTranslate("account.profile.picture")}
@@ -39,7 +39,7 @@ export function AccountProfilePictureField(props: {
           <>
             <span class="sr-only">{messageTranslate("account.profile.pictureChange")}</span>
             <Show
-              fallback={<Icon class="size-14 text-muted-foreground" path={mdiAccountCircleOutline} />}
+              fallback={<Icon class="size-8 sm:size-14 text-accent" path={mdiAccountCircleOutline} />}
               when={props.url && !state.pictureFailed()}
             >
               <img alt="" class="size-full object-cover" onError={state.onPictureError} src={props.url} />
@@ -61,7 +61,7 @@ export function AccountProfilePictureField(props: {
         <div class="grid justify-items-center gap-3">
           <div class="grid size-28 place-items-center overflow-hidden rounded-full border border-line bg-muted">
             <Show
-              fallback={<Icon class="size-12 text-muted-foreground" path={mdiAccountCircleOutline} />}
+              fallback={<Icon class="size-12 text-accent" path={mdiAccountCircleOutline} />}
               when={state.hasPicture() && !state.pictureFailed()}
             >
               <img
@@ -86,7 +86,7 @@ export function AccountProfilePictureField(props: {
             role="button"
             tabIndex={state.busy() ? -1 : 0}
           >
-            <Icon class="size-8 text-muted-foreground" path={mdiCloudUploadOutline} />
+            <Icon class="size-8 text-accent" path={mdiCloudUploadOutline} />
             <span class="text-sm">{messageTranslate("account.profile.pictureDropHint")}</span>
             <span class="rounded-panel border border-line px-3 py-1 text-sm">
               {messageTranslate("account.profile.pictureChoose")}
