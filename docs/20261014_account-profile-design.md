@@ -58,7 +58,7 @@ no "Sign-in details" heading:
    `AccountWorkspaceToolbar.tsx` (sign-out icon green `text-accent`). Update tests referencing "Sign-in details" or the badge.
    Status: done (incl. polish: compact green copy buttons, smaller mobile avatar, sans email/phone, green ThemeButton)
 3. **Verify, commit, deploy** — `bun run check`, targeted e2e, `/commits` skill, `prodctl deploy`, production browser check.
-   Status: pending
+   Status: done (deployed 0fc63f8)
 
 ## Verification rules
 
