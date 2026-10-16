@@ -3,8 +3,8 @@ import { mdiCloudUploadOutline } from "@adaptive-ds/mdi/mdiCloudUploadOutline.js
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
@@ -108,19 +108,24 @@ export function AccountProfilePictureField(props: {
             </span>
           </Show>
           <div class="flex flex-wrap justify-center gap-2">
-            <ButtonIcon
+            <AuthenticatedButton
               disabled={state.busy() || !state.selectedFile()}
               icon={mdiContentSave}
               onClick={state.save}
               type="button"
             >
               {messageTranslate("account.profile.save")}
-            </ButtonIcon>
-            <ButtonIcon disabled={state.busy()} onClick={() => state.openChange(false)} type="button" variant="outline">
+            </AuthenticatedButton>
+            <AuthenticatedButton
+              disabled={state.busy()}
+              onClick={() => state.openChange(false)}
+              type="button"
+              variant="outline"
+            >
               {messageTranslate("account.profile.cancel")}
-            </ButtonIcon>
+            </AuthenticatedButton>
             <Show when={props.url.length > 0}>
-              <ButtonIcon
+              <AuthenticatedButton
                 class={authenticatedDangerOutlineButtonClass}
                 disabled={state.busy()}
                 icon={mdiDelete}
@@ -129,7 +134,7 @@ export function AccountProfilePictureField(props: {
                 variant="outline"
               >
                 {messageTranslate("account.profile.pictureRemove")}
-              </ButtonIcon>
+              </AuthenticatedButton>
             </Show>
           </div>
         </div>

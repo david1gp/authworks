@@ -2,7 +2,7 @@ import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiKeyChain } from "@adaptive-ds/mdi/mdiKeyChain.js"
 import { mdiKeyRemove } from "@adaptive-ds/mdi/mdiKeyRemove.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -96,7 +96,7 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
                       />
                       <Show when={token.status === "active"}>
                         <div>
-                          <ButtonIcon
+                          <AuthenticatedButton
                             class={authenticatedDangerOutlineButtonClass}
                             disabled={props.state.pendingId() !== undefined || !state.dialogOpen(token.familyId)}
                             icon={mdiKeyRemove}
@@ -105,7 +105,7 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
                             variant="outline"
                           >
                             {messageTranslate("account.refreshTokens.revoke")}
-                          </ButtonIcon>
+                          </AuthenticatedButton>
                         </div>
                       </Show>
                     </div>
@@ -117,14 +117,15 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
         </Show>
         <Show when={props.state.refreshTokensNextPageToken()}>
           <div>
-            <ButtonIcon
+            <AuthenticatedButton
+              size="sm"
               disabled={props.state.pendingId() !== undefined}
               icon={mdiChevronDown}
               onClick={props.state.refreshTokensLoadMore}
               variant="outline"
             >
               {messageTranslate("account.refreshTokens.loadMore")}
-            </ButtonIcon>
+            </AuthenticatedButton>
           </div>
         </Show>
         <Show when={state.canRevokeAll()}>
@@ -135,10 +136,11 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
               open={state.allDialogOpen()}
               title={messageTranslate("account.refreshTokens.revokeAll")}
               triggerIcon={mdiKeyRemove}
+              triggerSize="sm"
               triggerLabel={messageTranslate("account.refreshTokens.revokeAll")}
               variant="outline"
             >
-              <ButtonIcon
+              <AuthenticatedButton
                 disabled={props.state.pendingId() !== undefined || !state.allDialogOpen()}
                 icon={mdiKeyRemove}
                 onClick={() => state.tokensRevokeAll(props.state.refreshTokensRevokeAll)}
@@ -146,7 +148,7 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
                 variant="filledRed"
               >
                 {messageTranslate("account.refreshTokens.revokeAll")}
-              </ButtonIcon>
+              </AuthenticatedButton>
             </AuthenticatedDialog>
           </div>
         </Show>

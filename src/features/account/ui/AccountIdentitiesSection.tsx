@@ -7,11 +7,11 @@ import { mdiLinkOff } from "@adaptive-ds/mdi/mdiLinkOff.js"
 import { mdiLinkVariant } from "@adaptive-ds/mdi/mdiLinkVariant.js"
 import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -85,7 +85,7 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                       {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
                     </Show>
                     <div>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         class={authenticatedDangerOutlineButtonClass}
                         disabled={props.state.pendingId() !== undefined}
                         icon={mdiLinkOff}
@@ -94,7 +94,7 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                         variant="outline"
                       >
                         {messageTranslate("account.identities.unlink")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </div>
                 </AuthenticatedDialog>
@@ -119,9 +119,9 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                   </Show>
                   <Show when={props.state.identityRecentAuthRequired()}>
                     <div>
-                      <ButtonIcon icon={mdiLogin} onClick={signInAgain} type="button" variant="outline">
+                      <AuthenticatedButton icon={mdiLogin} onClick={signInAgain} type="button" variant="outline">
                         {messageTranslate("account.identities.signInAgain")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </Show>
                   <Show
@@ -133,15 +133,16 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                           <div class="grid gap-2">
                             <For each={state.availableProviders()}>
                               {(provider) => (
-                                <ButtonIcon
+                                <AuthenticatedButton
                                   disabled={props.state.pendingId() !== undefined}
                                   icon={accountIdentityProviderIconGet(provider.type)}
                                   onClick={() => props.state.identityLinkStart(provider.id)}
+                                  size="sm"
                                   type="button"
                                   variant="outline"
                                 >
                                   {provider.displayName}
-                                </ButtonIcon>
+                                </AuthenticatedButton>
                               )}
                             </For>
                           </div>
@@ -161,15 +162,15 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                         })}
                       </p>
                       <div class="flex flex-wrap gap-1.5">
-                        <ButtonIcon
+                        <AuthenticatedButton
                           disabled={props.state.pendingId() !== undefined}
                           icon={mdiCheck}
                           onClick={state.linkConfirm}
                           type="button"
                         >
                           {messageTranslate("account.identities.confirm")}
-                        </ButtonIcon>
-                        <ButtonIcon
+                        </AuthenticatedButton>
+                        <AuthenticatedButton
                           disabled={props.state.pendingId() !== undefined}
                           icon={mdiClose}
                           onClick={state.linkCancel}
@@ -177,7 +178,7 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                           variant="ghost"
                         >
                           {messageTranslate("common.cancel")}
-                        </ButtonIcon>
+                        </AuthenticatedButton>
                       </div>
                     </div>
                   </Show>
@@ -207,9 +208,9 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                   </Show>
                   <Show when={props.state.identityRecentAuthRequired()}>
                     <div>
-                      <ButtonIcon icon={mdiLogin} onClick={signInAgain} type="button">
+                      <AuthenticatedButton icon={mdiLogin} onClick={signInAgain} type="button">
                         {messageTranslate("account.identities.signInAgain")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </Show>
                 </div>
@@ -224,7 +225,7 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
           <form class="grid gap-3" onSubmit={stepUpSubmit}>
             <div class="grid gap-1">
               <Label for="account-identity-step-up-code">{messageTranslate("account.factors.verificationCode")}</Label>
-              <Input
+              <AuthenticatedInput
                 autocomplete="one-time-code"
                 class="font-mono"
                 disabled={props.state.identityStepUpPending()}
@@ -239,7 +240,7 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
               {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
             </Show>
             <div class="flex flex-wrap gap-2">
-              <ButtonIcon
+              <AuthenticatedButton
                 disabled={props.state.identityStepUpPending() || !/^\d{6}$/.test(props.state.identityStepUpCode())}
                 icon={mdiArrowRight}
                 type="submit"
@@ -247,10 +248,15 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
                 {props.state.identityStepUpPending()
                   ? messageTranslate("common.loading")
                   : messageTranslate("common.continue")}
-              </ButtonIcon>
-              <ButtonIcon icon={mdiClose} onClick={props.state.identityStepUpCancel} type="button" variant="ghost">
+              </AuthenticatedButton>
+              <AuthenticatedButton
+                icon={mdiClose}
+                onClick={props.state.identityStepUpCancel}
+                type="button"
+                variant="ghost"
+              >
                 {messageTranslate("common.cancel")}
-              </ButtonIcon>
+              </AuthenticatedButton>
             </div>
           </form>
         </Show>

@@ -1,6 +1,7 @@
 import { A } from "@solidjs/router"
 import { Show } from "solid-js"
 import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
+import { AuthenticatedThemeToggle } from "../../../ui/authenticated/AuthenticatedThemeToggle.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { LanguageSelector } from "../../../ui/i18n/ui/LanguageSelector.js"
 import { demoAccountScenarioGroups } from "../../demo/demoAccountScenarioGroups.js"
@@ -38,8 +39,11 @@ export function AccountDemoScreen(props: { state: ReturnType<typeof accountDemoA
             >
               {messageTranslate("demo.nav.admin")}
             </A>
-            <LanguageSelector />
-            <ThemeButton />
+            <Show when={!props.state.isWorkspace()}>
+              <LanguageSelector class="authenticated-language-selector" />
+              <AuthenticatedThemeToggle class="hidden sm:inline-flex" />
+              <ThemeButton class="size-8 shrink-0 p-0 sm:hidden" />
+            </Show>
           </div>
         </div>
       </header>

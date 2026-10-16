@@ -1,15 +1,15 @@
 import { mdiAccountDetailsOutline } from "@adaptive-ds/mdi/mdiAccountDetailsOutline.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
 import { SelectSingle } from "#ui/input/select/SelectSingle.jsx"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
 import { selectSingleTextDefault } from "#ui/input/select/SelectSingleTexts.js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
-import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { languagesSupported } from "../../../ui/i18n/model/languagesSupported.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
@@ -223,7 +223,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                   <div class="grid min-w-0 items-start gap-2.5 sm:grid-cols-2 [&>*]:min-w-0">
                     <div class="grid min-w-0 gap-1">
                       <Label for="account-first-name">{messageTranslate("account.profile.firstName")}</Label>
-                      <Input
+                      <AuthenticatedInput
                         id="account-first-name"
                         maxlength={128}
                         onInput={(event) => props.onFirstNameInput(event.currentTarget.value)}
@@ -232,7 +232,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     </div>
                     <div class="grid min-w-0 gap-1">
                       <Label for="account-last-name">{messageTranslate("account.profile.lastName")}</Label>
-                      <Input
+                      <AuthenticatedInput
                         id="account-last-name"
                         maxlength={128}
                         onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
@@ -241,7 +241,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     </div>
                     <div class="grid min-w-0 gap-1">
                       <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
-                      <Input
+                      <AuthenticatedInput
                         id="account-display-name"
                         maxlength={128}
                         onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
@@ -250,7 +250,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     </div>
                     <div class="grid min-w-0 gap-1">
                       <Label for="account-nick-name">{messageTranslate("account.profile.nickName")}</Label>
-                      <Input
+                      <AuthenticatedInput
                         id="account-nick-name"
                         maxlength={128}
                         onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
@@ -282,7 +282,7 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                       <Label for="account-preferred-language">
                         {messageTranslate("account.profile.preferredLanguage")}
                       </Label>
-                      <SelectSingleNative
+                      <AuthenticatedSelect
                         getOptions={() => ["", ...languagesSupported.map((language) => language.code)]}
                         id="account-preferred-language"
                         valueSignal={props.preferredLanguage}
@@ -301,17 +301,17 @@ export function AccountProfileView(props: AccountProfileViewProps) {
                     {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                   </Show>
                   <div class="flex flex-wrap gap-2">
-                    <ButtonIcon disabled={props.profileSaving} icon={mdiContentSave} type="submit">
+                    <AuthenticatedButton disabled={props.profileSaving} icon={mdiContentSave} type="submit">
                       {messageTranslate("account.profile.save")}
-                    </ButtonIcon>
-                    <ButtonIcon
+                    </AuthenticatedButton>
+                    <AuthenticatedButton
                       disabled={props.profileSaving}
                       onClick={() => props.onProfileDialogOpenChange(false)}
                       type="button"
                       variant="outline"
                     >
                       {messageTranslate("account.profile.cancel")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </form>
               </AuthenticatedDialog>

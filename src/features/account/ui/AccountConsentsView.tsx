@@ -1,7 +1,7 @@
 import { mdiApplicationOutline } from "@adaptive-ds/mdi/mdiApplicationOutline.js"
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
@@ -94,7 +94,7 @@ export function AccountConsentsView(props: {
                             <AccountRoleList values={consent.scope} />
                           </div>
                           <div>
-                            <ButtonIcon
+                            <AuthenticatedButton
                               class={authenticatedDangerOutlineButtonClass}
                               disabled={state.revokeDisabled(consent.clientId)}
                               icon={mdiCancel}
@@ -103,7 +103,7 @@ export function AccountConsentsView(props: {
                               variant="outline"
                             >
                               {messageTranslate("common.revoke")}
-                            </ButtonIcon>
+                            </AuthenticatedButton>
                           </div>
                         </div>
                       </AuthenticatedDialog>

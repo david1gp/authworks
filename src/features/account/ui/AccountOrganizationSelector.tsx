@@ -1,7 +1,7 @@
 import { For, Show } from "solid-js"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
 import { Button } from "#ui/interactive/button/Button.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationMe } from "../../organizations/public/organizationMeSchema.js"
 import { AccountOrganizationBrandMark } from "./AccountOrganizationBrandMark.js"
@@ -31,7 +31,7 @@ export function AccountOrganizationSelector(props: {
       fallback={
         <label class="grid gap-1" for={`${props.panelId}-select`}>
           <span class="sr-only">{messageTranslate("account.access.organizationSelector")}</span>
-          <SelectSingleNative
+          <AuthenticatedSelect
             getOptions={() => [...state.organizationIds()]}
             id={`${props.panelId}-select`}
             valueSignal={state.selectValue}
@@ -73,7 +73,7 @@ export function AccountOrganizationSelector(props: {
                 <AccountOrganizationBrandMark branding={item.branding} class="size-7 border-0 bg-muted shadow-none" />
                 <span>{item.organization.name}</span>
                 <Show when={props.organizations.length > 1 && id() === props.activeOrganizationId}>
-                  <span class="rounded-full bg-accent/10 px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-accent uppercase">
+                  <span class="rounded-full bg-accent/10 px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
                     {messageTranslate("account.access.active")}
                   </span>
                 </Show>

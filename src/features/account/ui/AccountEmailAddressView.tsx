@@ -7,18 +7,18 @@ import { mdiEmailRemoveOutline } from "@adaptive-ds/mdi/mdiEmailRemoveOutline.js
 import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
 import { mdiStarOutline } from "@adaptive-ds/mdi/mdiStarOutline.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedDangerOutlineButtonClass } from "../../../ui/authenticated/authenticatedDangerOutlineButtonClass.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { UserEmailAddress } from "../../users/public/userEmailAddressSchema.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
-import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 import { accountEmailAddressViewStateCreate } from "./accountEmailAddressViewStateCreate.js"
+import type { AccountEmailViewStatus } from "./accountEmailViewStatus.js"
 
 type AccountEmailAddressViewProps = {
   readonly actionId?: string
@@ -57,9 +57,9 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
       <div class="grid gap-3">
         <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.emailDescription")}</p>
         <div class="flex flex-wrap gap-2">
-          <ButtonIcon class="h-8 text-xs" icon={mdiRefresh} onClick={props.onRetry} type="button" variant="outline">
+          <AuthenticatedButton size="sm" icon={mdiRefresh} onClick={props.onRetry} type="button" variant="outline">
             {messageTranslate("account.profile.emailRefresh")}
-          </ButtonIcon>
+          </AuthenticatedButton>
         </div>
         <ul aria-label={messageTranslate("account.profile.emailAddresses")} class="divide-y divide-line-subtle">
           <Show when={props.addresses.length === 0}>
@@ -111,7 +111,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                     </div>
                     <div class="flex flex-wrap gap-2">
                       <Show when={!address.isPrimary}>
-                        <ButtonIcon
+                        <AuthenticatedButton
                           disabled={!address.verified || props.actionId !== undefined}
                           icon={mdiStarOutline}
                           onClick={() => props.onPrimarySet(address.id)}
@@ -121,9 +121,9 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                           {props.actionId === address.id && props.status === "sending"
                             ? messageTranslate("account.profile.emailUpdating")
                             : messageTranslate("account.profile.emailMakePrimary")}
-                        </ButtonIcon>
+                        </AuthenticatedButton>
                       </Show>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         class={authenticatedDangerOutlineButtonClass}
                         disabled={address.isPrimary || props.actionId !== undefined}
                         icon={mdiEmailRemoveOutline}
@@ -137,7 +137,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                         {props.actionId === address.id && props.status === "sending"
                           ? messageTranslate("account.profile.emailRemoving")
                           : messageTranslate("account.profile.emailRemove")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                     <Show when={!props.addDialogOpen && props.errorMessage}>
                       {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
@@ -164,7 +164,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                   <form class="grid gap-3" onSubmit={props.onAddStart}>
                     <div class="grid min-w-0 gap-1">
                       <Label for="account-email-new">{messageTranslate("account.profile.emailNew")}</Label>
-                      <Input
+                      <AuthenticatedInput
                         autocomplete="email"
                         id="account-email-new"
                         onInput={(event) => props.onCandidateInput(event.currentTarget.value)}
@@ -174,11 +174,15 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                       />
                     </div>
                     <div>
-                      <ButtonIcon disabled={props.status === "sending"} icon={mdiEmailPlusOutline} type="submit">
+                      <AuthenticatedButton
+                        disabled={props.status === "sending"}
+                        icon={mdiEmailPlusOutline}
+                        type="submit"
+                      >
                         {props.status === "sending"
                           ? messageTranslate("account.profile.emailSending")
                           : messageTranslate("account.profile.emailAdd")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </form>
                 }
@@ -191,7 +195,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                   </p>
                   <div class="grid min-w-0 gap-1">
                     <Label for="account-email-token">{messageTranslate("account.profile.emailToken")}</Label>
-                    <Input
+                    <AuthenticatedInput
                       autocomplete="one-time-code"
                       class="font-mono"
                       id="account-email-token"
@@ -201,7 +205,7 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                     />
                   </div>
                   <div class="flex flex-wrap gap-1.5">
-                    <ButtonIcon
+                    <AuthenticatedButton
                       disabled={props.status === "verifying" || props.status === "sending"}
                       icon={mdiCheckCircleOutline}
                       type="submit"
@@ -209,8 +213,8 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                       {props.status === "verifying"
                         ? messageTranslate("account.profile.emailVerifying")
                         : messageTranslate("account.profile.emailVerify")}
-                    </ButtonIcon>
-                    <ButtonIcon
+                    </AuthenticatedButton>
+                    <AuthenticatedButton
                       disabled={props.status === "sending" || props.status === "verifying"}
                       icon={mdiEmailFastOutline}
                       onClick={props.onAddResend}
@@ -220,10 +224,15 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
                       {props.status === "sending"
                         ? messageTranslate("account.profile.emailSending")
                         : messageTranslate("account.profile.emailResend")}
-                    </ButtonIcon>
-                    <ButtonIcon icon={mdiEmailEditOutline} onClick={props.onAddCancel} type="button" variant="ghost">
+                    </AuthenticatedButton>
+                    <AuthenticatedButton
+                      icon={mdiEmailEditOutline}
+                      onClick={props.onAddCancel}
+                      type="button"
+                      variant="ghost"
+                    >
                       {messageTranslate("account.profile.emailDifferent")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </form>
               </Show>

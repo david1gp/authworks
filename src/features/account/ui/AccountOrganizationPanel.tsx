@@ -3,8 +3,8 @@ import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiShieldKeyOutline } from "@adaptive-ds/mdi/mdiShieldKeyOutline.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -62,9 +62,7 @@ export function AccountOrganizationPanel(props: {
           </div>
 
           <div class="mt-2.5 grid gap-1">
-            <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
-              {messageTranslate("account.access.membership")}
-            </p>
+            <p class="text-xs font-medium text-muted-foreground">{messageTranslate("account.access.membership")}</p>
             <AccountRoleList values={props.membership.membership.roles} />
           </div>
         </AuthenticatedSection>
@@ -159,13 +157,13 @@ export function AccountOrganizationPanel(props: {
                           <Show when={entry.grant}>
                             {(grant) => (
                               <div class="mt-1.5 grid gap-1">
-                                <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
+                                <p class="text-xs font-medium text-muted-foreground">
                                   {messageTranslate("admin.projects.grants.grantedOrganization")}
                                 </p>
                                 <p class="min-w-0 truncate font-mono text-xs text-muted-foreground">
                                   {grant().grantedOrganizationId}
                                 </p>
-                                <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
+                                <p class="text-xs font-medium text-muted-foreground">
                                   {messageTranslate("admin.projects.grants.roleKeys")}
                                 </p>
                                 <AccountRoleList values={grant().roleKeys} />
@@ -196,15 +194,16 @@ export function AccountOrganizationPanel(props: {
 
           <Show when={props.effectiveAccessNextPageToken}>
             <div>
-              <ButtonIcon
+              <AuthenticatedButton
                 disabled={props.effectiveAccessPending}
                 icon={mdiChevronDown}
                 onClick={props.onEffectiveAccessLoadMore}
+                size="sm"
                 type="button"
                 variant="outline"
               >
                 {messageTranslate("account.access.loadMore")}
-              </ButtonIcon>
+              </AuthenticatedButton>
             </div>
           </Show>
         </div>

@@ -1,9 +1,9 @@
 import { mdiLockReset } from "@adaptive-ds/mdi/mdiLockReset.js"
 import { Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -38,7 +38,8 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
   const submit = () => messageTranslate(hasPassword() ? "account.password.submit" : "account.password.setSubmit")
   const dialog = () => (
     <AuthenticatedDialog
-      class={hasPassword() ? "h-7 text-xs sm:justify-self-end" : "w-full text-xs"}
+      class={hasPassword() ? "sm:justify-self-end" : "w-full"}
+      triggerSize="sm"
       description={messageTranslate("account.password.description")}
       onOpenChange={props.onDialogOpenChange}
       open={props.dialogOpen}
@@ -54,7 +55,7 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
             <Show when={hasPassword()} fallback={null}>
               <div class="grid min-w-0 gap-1">
                 <Label for="account-password-current">{messageTranslate("account.password.current")}</Label>
-                <Input
+                <AuthenticatedInput
                   autocomplete="current-password"
                   id="account-password-current"
                   onInput={(event) => props.onCurrentPasswordInput(event.currentTarget.value)}
@@ -72,7 +73,7 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
             <div class="grid min-w-0 gap-2.5 sm:grid-cols-2">
               <div class="grid min-w-0 gap-1">
                 <Label for="account-password-new">{messageTranslate("account.password.new")}</Label>
-                <Input
+                <AuthenticatedInput
                   autocomplete="new-password"
                   id="account-password-new"
                   minlength={8}
@@ -84,7 +85,7 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
               </div>
               <div class="grid min-w-0 gap-1">
                 <Label for="account-password-confirm">{messageTranslate("account.password.confirm")}</Label>
-                <Input
+                <AuthenticatedInput
                   autocomplete="new-password"
                   id="account-password-confirm"
                   minlength={8}
@@ -102,9 +103,9 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
               {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
             </Show>
             <div>
-              <ButtonIcon icon={mdiLockReset} type="submit">
+              <AuthenticatedButton icon={mdiLockReset} type="submit">
                 {submit()}
-              </ButtonIcon>
+              </AuthenticatedButton>
             </div>
           </form>
         }
@@ -112,9 +113,9 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
         <div class="grid gap-2.5">
           <AuthenticatedNotice message={savedMessage()} tone="success" />
           <div>
-            <ButtonIcon icon={mdiLockReset} onClick={() => props.onDialogOpenChange(false)}>
+            <AuthenticatedButton icon={mdiLockReset} onClick={() => props.onDialogOpenChange(false)}>
               {messageTranslate("common.close")}
-            </ButtonIcon>
+            </AuthenticatedButton>
           </div>
         </div>
       </Show>

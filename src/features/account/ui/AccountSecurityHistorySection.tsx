@@ -1,7 +1,7 @@
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiHistory } from "@adaptive-ds/mdi/mdiHistory.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -56,15 +56,15 @@ export function AccountSecurityHistorySection(props: { readonly state: AccountSe
           </ul>
           <Show when={props.state.securityHistoryNextPageToken()}>
             <div class="border-t border-line-subtle px-3 py-2">
-              <ButtonIcon
-                class="h-7 text-xs"
+              <AuthenticatedButton
+                size="sm"
                 disabled={props.state.pendingId() === "security-history:next"}
                 icon={mdiChevronDown}
                 onClick={props.state.securityHistoryLoadMore}
                 variant="outline"
               >
                 {messageTranslate("account.securityHistory.loadMore")}
-              </ButtonIcon>
+              </AuthenticatedButton>
             </div>
           </Show>
         </Show>

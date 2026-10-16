@@ -1,7 +1,7 @@
 import { mdiDevices } from "@adaptive-ds/mdi/mdiDevices.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -85,7 +85,7 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
                       />
                       <Show when={!session.current}>
                         <div>
-                          <ButtonIcon
+                          <AuthenticatedButton
                             class={authenticatedDangerOutlineButtonClass}
                             disabled={props.state.pendingId() !== undefined || !state.dialogOpen(session.id)}
                             icon={mdiLogout}
@@ -94,7 +94,7 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
                             variant="outline"
                           >
                             {messageTranslate("account.sessions.revoke")}
-                          </ButtonIcon>
+                          </AuthenticatedButton>
                         </div>
                       </Show>
                     </div>

@@ -4,10 +4,10 @@ import { mdiPhonePlusOutline } from "@adaptive-ds/mdi/mdiPhonePlusOutline.js"
 import { mdiPhoneRefreshOutline } from "@adaptive-ds/mdi/mdiPhoneRefreshOutline.js"
 import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
 import { Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -90,7 +90,7 @@ export function AccountProfilePhoneSection(props: {
                           ? messageTranslate("account.profile.phoneNew")
                           : messageTranslate("account.profile.phoneNumber")}
                       </Label>
-                      <Input
+                      <AuthenticatedInput
                         autocomplete="tel"
                         id="account-phone-number"
                         inputmode="tel"
@@ -104,13 +104,17 @@ export function AccountProfilePhoneSection(props: {
                       <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.phoneHint")}</p>
                     </div>
                     <div>
-                      <ButtonIcon disabled={props.status === "sending"} icon={mdiPhonePlusOutline} type="submit">
+                      <AuthenticatedButton
+                        disabled={props.status === "sending"}
+                        icon={mdiPhonePlusOutline}
+                        type="submit"
+                      >
                         {props.status === "sending"
                           ? messageTranslate("account.profile.phoneSending")
                           : messageTranslate(
                               props.phoneNumber ? "account.profile.phoneChange" : "account.profile.phoneAdd",
                             )}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </form>
                 }
@@ -121,7 +125,7 @@ export function AccountProfilePhoneSection(props: {
                   </p>
                   <div class="grid min-w-0 max-w-xs gap-1">
                     <Label for="account-phone-code">{messageTranslate("account.profile.phoneCode")}</Label>
-                    <Input
+                    <AuthenticatedInput
                       autocomplete="one-time-code"
                       class="font-mono tracking-[0.2em]"
                       id="account-phone-code"
@@ -134,7 +138,7 @@ export function AccountProfilePhoneSection(props: {
                     />
                   </div>
                   <div class="flex flex-wrap gap-1.5">
-                    <ButtonIcon
+                    <AuthenticatedButton
                       disabled={props.status === "verifying" || props.status === "sending"}
                       icon={mdiCheckCircleOutline}
                       type="submit"
@@ -142,8 +146,8 @@ export function AccountProfilePhoneSection(props: {
                       {props.status === "verifying"
                         ? messageTranslate("account.profile.phoneVerifying")
                         : messageTranslate("account.profile.phoneVerify")}
-                    </ButtonIcon>
-                    <ButtonIcon
+                    </AuthenticatedButton>
+                    <AuthenticatedButton
                       disabled={props.status === "sending" || props.status === "verifying"}
                       icon={mdiRefresh}
                       onClick={props.onResend}
@@ -153,10 +157,15 @@ export function AccountProfilePhoneSection(props: {
                       {props.status === "sending"
                         ? messageTranslate("account.profile.phoneSending")
                         : messageTranslate("account.profile.phoneResend")}
-                    </ButtonIcon>
-                    <ButtonIcon icon={mdiPhoneRefreshOutline} onClick={props.onCancel} type="button" variant="ghost">
+                    </AuthenticatedButton>
+                    <AuthenticatedButton
+                      icon={mdiPhoneRefreshOutline}
+                      onClick={props.onCancel}
+                      type="button"
+                      variant="ghost"
+                    >
                       {messageTranslate("account.profile.phoneDifferent")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </form>
               </Show>

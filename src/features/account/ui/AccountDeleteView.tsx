@@ -1,9 +1,9 @@
 import { mdiAccountRemoveOutline } from "@adaptive-ds/mdi/mdiAccountRemoveOutline.js"
 import { Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
@@ -62,6 +62,7 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
                 open={props.dialogOpen}
                 title={messageTranslate("account.delete.title")}
                 triggerIcon={mdiAccountRemoveOutline}
+                triggerSize="sm"
                 triggerLabel={messageTranslate("account.delete.dangerZoneToggle")}
                 variant="outline"
               >
@@ -70,7 +71,7 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
                     <Label for="account-delete-confirmation">
                       {messageTranslate("account.delete.confirmLabel", { email: props.email })}
                     </Label>
-                    <Input
+                    <AuthenticatedInput
                       autocomplete="off"
                       disabled={props.pending}
                       id="account-delete-confirmation"
@@ -83,14 +84,14 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
                     {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                   </Show>
                   <div>
-                    <ButtonIcon
+                    <AuthenticatedButton
                       disabled={props.pending}
                       icon={mdiAccountRemoveOutline}
                       type="submit"
                       variant="filledRed"
                     >
                       {messageTranslate("account.delete.submit")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </form>
               </AuthenticatedDialog>

@@ -1,7 +1,7 @@
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiFingerprint } from "@adaptive-ds/mdi/mdiFingerprint.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -72,7 +72,7 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
                       {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
                     </Show>
                     <div>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         class={authenticatedDangerOutlineButtonClass}
                         disabled={props.state.pendingId() !== undefined}
                         icon={mdiDelete}
@@ -81,7 +81,7 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
                         variant="outline"
                       >
                         {messageTranslate("account.passkeys.remove")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </div>
                 </AuthenticatedDialog>
@@ -100,14 +100,14 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
               variant="ghost"
             >
               <div class="grid gap-3">
-                <ButtonIcon
+                <AuthenticatedButton
                   disabled={props.state.pendingId() !== undefined}
                   icon={mdiFingerprint}
                   onClick={props.state.passkeyAdd}
                   type="button"
                 >
                   {messageTranslate("account.passkeys.add")}
-                </ButtonIcon>
+                </AuthenticatedButton>
                 <Show when={props.state.error()}>
                   {(error) => <AuthenticatedNotice message={error()} tone="danger" />}
                 </Show>

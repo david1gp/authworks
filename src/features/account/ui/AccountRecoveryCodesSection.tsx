@@ -1,13 +1,13 @@
 import { mdiBackupRestore } from "@adaptive-ds/mdi/mdiBackupRestore.js"
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { AccountDisclosure } from "./AccountDisclosure.js"
-import { accountRecoveryCodesSectionStateCreate } from "./accountRecoveryCodesSectionStateCreate.js"
 import { AccountSecurityStatus } from "./AccountSecurityStatus.js"
+import { accountRecoveryCodesSectionStateCreate } from "./accountRecoveryCodesSectionStateCreate.js"
 import type { AccountSecurityViewState } from "./accountSecurityViewState.js"
 
 export function AccountRecoveryCodesSection(props: { readonly state: AccountSecurityViewState }) {
@@ -35,6 +35,7 @@ export function AccountRecoveryCodesSection(props: { readonly state: AccountSecu
           open={state.dialogOpen()}
           title={messageTranslate("shell.nav.recoveryCodes")}
           triggerIcon={mdiBackupRestore}
+          triggerSize="sm"
           triggerLabel={messageTranslate("account.recovery.generate")}
           variant="outline"
         >
@@ -43,14 +44,14 @@ export function AccountRecoveryCodesSection(props: { readonly state: AccountSecu
             <Show
               when={props.state.oneTimeCodes().length > 0}
               fallback={
-                <ButtonIcon
+                <AuthenticatedButton
                   disabled={props.state.pendingId() !== undefined}
                   icon={mdiBackupRestore}
                   onClick={props.state.recoveryCodesGenerate}
                   type="button"
                 >
                   {messageTranslate("account.recovery.generate")}
-                </ButtonIcon>
+                </AuthenticatedButton>
               }
             >
               <div class="border border-accent/35 bg-accent/5 px-3 py-3" data-one-time-secret="recovery-codes">
@@ -66,9 +67,9 @@ export function AccountRecoveryCodesSection(props: { readonly state: AccountSecu
                   </For>
                 </ul>
                 <div class="mt-2.5">
-                  <ButtonIcon icon={mdiCheck} onClick={state.codesDismiss} type="button" variant="outline">
+                  <AuthenticatedButton icon={mdiCheck} onClick={state.codesDismiss} type="button" variant="outline">
                     {messageTranslate("account.recovery.saved")}
-                  </ButtonIcon>
+                  </AuthenticatedButton>
                 </div>
               </div>
             </Show>
