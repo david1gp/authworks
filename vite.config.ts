@@ -44,6 +44,8 @@ export default defineConfig(({ mode }) => {
       strictPort: true,
       proxy: {
         "/api": `http://127.0.0.1:${apiPort}`,
+        "/organization-discovery": `http://127.0.0.1:${apiPort}`,
+        "/realms": `http://127.0.0.1:${apiPort}`,
       },
     },
     build: {
