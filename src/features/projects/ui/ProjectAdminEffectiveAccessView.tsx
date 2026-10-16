@@ -14,7 +14,7 @@ import type { ProjectAdminPageState } from "./projectAdminPageStateCreate.js"
 export function ProjectAdminEffectiveAccessView(props: { readonly state: ProjectAdminPageState }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.projects.access.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.projects.access.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <ProjectAdminProjectContext page={state} />
 
       <ProjectAdminStateBoundary
@@ -24,6 +24,7 @@ export function ProjectAdminEffectiveAccessView(props: { readonly state: Project
         status={state.status()}
       >
         <AuthenticatedSection
+          class="border-accent/20 bg-accent-soft"
           description={messageTranslate("admin.projects.access.description")}
           padded
           title={messageTranslate("admin.projects.access.roleKeys")}
@@ -98,7 +99,9 @@ export function ProjectAdminEffectiveAccessView(props: { readonly state: Project
               {(role) => (
                 <TableRow class={authenticatedTableClasses.row}>
                   <TableCell class={`${authenticatedTableClasses.cell} font-medium`}>{role.name}</TableCell>
-                  <TableCell class={authenticatedTableClasses.identifier}>{role.roleId}</TableCell>
+                  <TableCell class={authenticatedTableClasses.identifier} title={role.roleId}>
+                    {role.roleId}
+                  </TableCell>
                   <TableCell class={`${authenticatedTableClasses.cell} text-xs text-muted-foreground`}>
                     <Show when={role.permissions.length > 0} fallback="—">
                       {role.permissions.join(", ")}

@@ -2,24 +2,25 @@ import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
 
-const fieldClass = "grid gap-1"
+const fieldClass = "grid gap-1.5"
 
 export function AdminRealmView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
   return (
-    <section aria-label={messageTranslate("admin.realm.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.realm.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <Show when={props.state.notice()}>{(notice) => <AuthenticatedNotice message={notice()} />}</Show>
 
       <Show when={props.state.status() === "permission-denied" && props.state.realm()}>
@@ -75,11 +76,13 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                   description={messageTranslate("admin.realm.settingsDescription")}
                   title={messageTranslate("admin.realm.settingsTitle")}
                 >
-                  <form class="grid gap-3 px-3 py-3" onSubmit={props.state.realmSave}>
-                    <div class="grid gap-3 sm:grid-cols-2">
+                  <form class="grid max-w-3xl gap-4 px-5 py-5" onSubmit={props.state.realmSave}>
+                    <div class="grid gap-4 sm:grid-cols-2">
                       <div class={fieldClass}>
-                        <Label for="admin-realm-name">{messageTranslate("admin.realm.name")}</Label>
-                        <Input
+                        <Label class="text-[0.8125rem] font-medium" for="admin-realm-name">
+                          {messageTranslate("admin.realm.name")}
+                        </Label>
+                        <AuthenticatedInput
                           id="admin-realm-name"
                           maxlength={128}
                           onInput={(event) => props.state.realmName.set(event.currentTarget.value)}
@@ -87,9 +90,11 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                         />
                       </div>
                       <div class={fieldClass}>
-                        <Label for="admin-realm-status">{messageTranslate("admin.realm.status")}</Label>
+                        <Label class="text-[0.8125rem] font-medium" for="admin-realm-status">
+                          {messageTranslate("admin.realm.status")}
+                        </Label>
                         <select
-                          class="h-9 w-full rounded-control border border-line bg-surface px-2 text-sm text-foreground"
+                          class={authenticatedControlClasses.select}
                           id="admin-realm-status"
                           onChange={(event) =>
                             props.state.realmStatus.set(
@@ -104,8 +109,10 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                       </div>
                     </div>
                     <div class={fieldClass}>
-                      <Label for="admin-realm-domains">{messageTranslate("admin.realm.domains")}</Label>
-                      <Input
+                      <Label class="text-[0.8125rem] font-medium" for="admin-realm-domains">
+                        {messageTranslate("admin.realm.domains")}
+                      </Label>
+                      <AuthenticatedInput
                         id="admin-realm-domains"
                         onInput={(event) => props.state.realmDomains.set(event.currentTarget.value)}
                         value={props.state.realmDomains.get()}
@@ -116,16 +123,20 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                       {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                     </Show>
                     <div>
-                      <ButtonIcon disabled={props.state.pendingId() !== undefined} icon={mdiContentSave} type="submit">
+                      <AuthenticatedButton
+                        disabled={props.state.pendingId() !== undefined}
+                        icon={mdiContentSave}
+                        type="submit"
+                      >
                         {messageTranslate("admin.realm.save")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </form>
                 </AuthenticatedSection>
 
                 <AuthenticatedSection
                   actions={<AuthenticatedStatus label={messageTranslate("admin.realm.dangerZone")} tone="danger" />}
-                  class="border-danger/35"
+                  class="border-danger/35 [&>div:last-child]:max-w-3xl"
                   padded
                   title={messageTranslate("admin.realm.lifecycleTitle")}
                 >
@@ -136,37 +147,38 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                         <p class="min-w-0 text-xs text-muted-foreground">
                           {messageTranslate("admin.realm.enableDescription")}
                         </p>
-                        <ButtonIcon
+                        <AuthenticatedButton
+                          size="sm"
                           disabled={props.state.pendingId() === "realm:lifecycle:active"}
                           icon={mdiCheckCircle}
                           onClick={() => props.state.realmLifecycleApply("active")}
                         >
                           {messageTranslate("admin.realm.enable")}
-                        </ButtonIcon>
+                        </AuthenticatedButton>
                       </div>
                     }
                   >
                     <p class="text-xs text-muted-foreground">{messageTranslate("admin.realm.disableWarning")}</p>
-                    <div class="mt-2.5 grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <div class="mt-4 grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_auto]">
                       <div class={`${fieldClass} min-w-0`}>
-                        <Label for="admin-realm-confirm">
+                        <Label class="text-[0.8125rem] font-medium" for="admin-realm-confirm">
                           {messageTranslate("admin.realm.confirmLabel", { name: realm().name })}
                         </Label>
-                        <Input
+                        <AuthenticatedInput
                           autocomplete="off"
                           id="admin-realm-confirm"
                           onInput={(event) => props.state.lifecycleConfirmation.set(event.currentTarget.value)}
                           value={props.state.lifecycleConfirmation.get()}
                         />
                       </div>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         disabled={props.state.pendingId() === "realm:lifecycle:disabled"}
                         icon={mdiCancel}
                         onClick={() => props.state.realmLifecycleApply("disabled")}
                         variant="outline"
                       >
                         {messageTranslate("admin.realm.disable")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </Show>
                 </AuthenticatedSection>

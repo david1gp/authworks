@@ -1,7 +1,9 @@
+import { mdiAccountSwitchOutline } from "@adaptive-ds/mdi/mdiAccountSwitchOutline.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { A } from "@solidjs/router"
 import { Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { ImpersonationAdminSession } from "./impersonationAdminAdapter.js"
 import { impersonationAdminRemainingFormat } from "./impersonationAdminRemainingFormat.js"
@@ -22,34 +24,37 @@ export function ImpersonationAdminBanner(props: {
   return (
     <aside
       aria-label={messageTranslate("admin.impersonation.bannerLabel")}
-      class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1.5 border-b border-warning/35 bg-warning-soft px-3 py-1.5 text-xs text-warning"
+      class="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-warning/35 bg-warning-soft px-4 sm:px-6 py-2 text-[0.8125rem] text-warning"
       data-impersonation-banner
     >
-      <p class="min-w-0 font-medium" data-impersonation-summary>
-        {messageTranslate("admin.impersonation.bannerSummary", {
-          actor: props.session.actorLabel,
-          remaining: remaining(),
-          subject: props.session.subjectLabel,
-        })}
-      </p>
+      <div class="flex min-w-0 flex-1 basis-full items-start gap-2.5 sm:basis-0">
+        <Icon aria-hidden="true" class="mt-0.5 size-4 shrink-0" path={mdiAccountSwitchOutline} />
+        <p class="min-w-0 break-words font-medium" data-impersonation-summary>
+          {messageTranslate("admin.impersonation.bannerSummary", {
+            actor: props.session.actorLabel,
+            remaining: remaining(),
+            subject: props.session.subjectLabel,
+          })}
+        </p>
+      </div>
       <div class="flex flex-wrap items-center gap-2.5">
         <Show when={props.remainingSeconds < 60}>
-          <span class="text-2xs font-semibold uppercase tracking-[0.12em]" role="status">
+          <span class="text-xs font-medium" role="status">
             {messageTranslate("admin.impersonation.expiringSoon")}
           </span>
         </Show>
         <A class="text-xs font-medium underline underline-offset-2" href={props.eventsHref}>
           {messageTranslate("admin.impersonation.auditLink")}
         </A>
-        <ButtonIcon
-          class="h-7 text-xs"
+        <AuthenticatedButton
+          size="sm"
           disabled={props.pending}
           icon={mdiLogout}
           onClick={props.onEnd}
           variant="outline"
         >
           {messageTranslate("admin.impersonation.end")}
-        </ButtonIcon>
+        </AuthenticatedButton>
       </div>
     </aside>
   )

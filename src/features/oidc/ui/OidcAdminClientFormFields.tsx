@@ -1,8 +1,9 @@
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 
 /**
@@ -24,12 +25,11 @@ export function OidcAdminClientFormFields(props: {
   readonly scopesSupported: readonly string[]
   readonly trusted: SignalObject<boolean>
 }) {
-  const textareaClass =
-    "min-h-16 w-full break-all rounded-control border border-line bg-surface px-2 py-1.5 font-mono text-xs leading-5"
+  const textareaClass = `${authenticatedControlClasses.textarea} break-all font-mono text-[0.8125rem] leading-5`
   return (
     <>
-      <div class="grid gap-3 sm:grid-cols-2">
-        <div class="grid min-w-0 gap-1">
+      <div class="grid items-start gap-4 sm:grid-cols-2 [&_label]:text-[0.8125rem] [&_label]:font-medium">
+        <div class="grid min-w-0 gap-1.5">
           <Label for={`${props.idPrefix}-name`}>{messageTranslate("admin.oidc.clients.name")}</Label>
           <Input
             id={`${props.idPrefix}-name`}
@@ -39,7 +39,7 @@ export function OidcAdminClientFormFields(props: {
         </div>
         <Show when={props.clientType}>
           {(clientType) => (
-            <div class="grid min-w-0 gap-1">
+            <div class="grid min-w-0 gap-1.5">
               <Label for={`${props.idPrefix}-type`}>{messageTranslate("admin.oidc.clients.type")}</Label>
               <SelectSingleNative
                 getOptions={() => ["confidential", "public"]}
@@ -51,15 +51,15 @@ export function OidcAdminClientFormFields(props: {
                     : messageTranslate("admin.oidc.clients.typeConfidential")
                 }
               />
-              <p class="text-2xs leading-4 text-muted-foreground">{messageTranslate("admin.oidc.clients.typeHint")}</p>
+              <p class="text-xs leading-5 text-muted-foreground">{messageTranslate("admin.oidc.clients.typeHint")}</p>
             </div>
           )}
         </Show>
       </div>
 
-      {/* Exact URIs are long, so both lists sit side by side in monospace with wrapping preserved. */}
-      <div class="grid gap-3 lg:grid-cols-2">
-        <div class="grid min-w-0 gap-1">
+      {/* Exact URIs get the full form width, with monospace and wrapping preserved. */}
+      <div class="grid gap-4 border-t border-line-subtle pt-4 [&_label]:text-[0.8125rem] [&_label]:font-medium">
+        <div class="grid min-w-0 gap-1.5">
           <Label for={`${props.idPrefix}-redirects`}>{messageTranslate("admin.oidc.clients.redirectUris")}</Label>
           <textarea
             class={textareaClass}
@@ -68,11 +68,9 @@ export function OidcAdminClientFormFields(props: {
             rows={4}
             value={props.redirectUris.get()}
           />
-          <p class="text-2xs leading-4 text-muted-foreground">
-            {messageTranslate("admin.oidc.clients.exactMatchHint")}
-          </p>
+          <p class="text-xs leading-5 text-muted-foreground">{messageTranslate("admin.oidc.clients.exactMatchHint")}</p>
         </div>
-        <div class="grid min-w-0 gap-1">
+        <div class="grid min-w-0 gap-1.5">
           <Label for={`${props.idPrefix}-post-logout`}>{messageTranslate("admin.oidc.clients.postLogoutUris")}</Label>
           <textarea
             class={textareaClass}
@@ -84,8 +82,8 @@ export function OidcAdminClientFormFields(props: {
         </div>
       </div>
 
-      <fieldset class="grid min-w-0 gap-1.5">
-        <legend class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
+      <fieldset class="grid min-w-0 gap-4 border-t border-line-subtle pt-4">
+        <legend class="text-xs font-medium text-muted-foreground">
           {messageTranslate("admin.oidc.clients.compatibility")}
         </legend>
         <div class="grid gap-1.5 sm:grid-cols-2">
@@ -96,14 +94,14 @@ export function OidcAdminClientFormFields(props: {
             >
               <input
                 checked={props.idTokenUserinfoAssertion.get()}
-                class="mt-0.5 size-3.5 shrink-0"
+                class={`${authenticatedControlClasses.checkbox} mt-0.5 shrink-0`}
                 id={`${props.idPrefix}-id-token-userinfo-assertion`}
                 onChange={(event) => props.idTokenUserinfoAssertion.set(event.currentTarget.checked)}
                 type="checkbox"
               />
               <span class="min-w-0">{messageTranslate("admin.oidc.clients.idTokenUserinfoAssertion")}</span>
             </label>
-            <p class="text-2xs leading-4 text-muted-foreground">
+            <p class="text-xs leading-5 text-muted-foreground">
               {messageTranslate("admin.oidc.clients.idTokenUserinfoAssertionHint")}
             </p>
           </div>
@@ -114,20 +112,20 @@ export function OidcAdminClientFormFields(props: {
             >
               <input
                 checked={props.accessTokenRoleAssertion.get()}
-                class="mt-0.5 size-3.5 shrink-0"
+                class={`${authenticatedControlClasses.checkbox} mt-0.5 shrink-0`}
                 id={`${props.idPrefix}-access-token-role-assertion`}
                 onChange={(event) => props.accessTokenRoleAssertion.set(event.currentTarget.checked)}
                 type="checkbox"
               />
               <span class="min-w-0">{messageTranslate("admin.oidc.clients.accessTokenRoleAssertion")}</span>
             </label>
-            <p class="text-2xs leading-4 text-muted-foreground">
+            <p class="text-xs leading-5 text-muted-foreground">
               {messageTranslate("admin.oidc.clients.accessTokenRoleAssertionHint")}
             </p>
           </div>
         </div>
-        <div class="grid min-w-0 gap-1">
-          <Label for={`${props.idPrefix}-additional-origins`}>
+        <div class="grid min-w-0 gap-1.5">
+          <Label class="text-[0.8125rem] font-medium" for={`${props.idPrefix}-additional-origins`}>
             {messageTranslate("admin.oidc.clients.additionalOrigins")}
           </Label>
           <textarea
@@ -137,14 +135,14 @@ export function OidcAdminClientFormFields(props: {
             rows={3}
             value={props.additionalOrigins.get()}
           />
-          <p class="text-2xs leading-4 text-muted-foreground">
+          <p class="text-xs leading-5 text-muted-foreground">
             {messageTranslate("admin.oidc.clients.additionalOriginsHint")}
           </p>
         </div>
       </fieldset>
 
-      <fieldset class="grid min-w-0 gap-1.5">
-        <legend class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground">
+      <fieldset class="grid min-w-0 gap-3 border-t border-line-subtle pt-4">
+        <legend class="text-xs font-medium text-muted-foreground">
           {messageTranslate("admin.oidc.clients.scopes")}
         </legend>
         {/* Scopes are short tokens, so they wrap as compact chips instead of one row each. */}
@@ -154,7 +152,7 @@ export function OidcAdminClientFormFields(props: {
               <label class="flex items-center gap-1.5 rounded-control border border-line-subtle px-2 py-1 text-xs font-medium">
                 <input
                   checked={props.scopes().includes(scope)}
-                  class="size-3.5"
+                  class={authenticatedControlClasses.checkbox}
                   onChange={() => props.scopeToggle(scope)}
                   type="checkbox"
                 />
@@ -165,14 +163,14 @@ export function OidcAdminClientFormFields(props: {
         </div>
       </fieldset>
 
-      <div class="grid gap-1.5 sm:grid-cols-2">
+      <div class="grid gap-3 border-t border-line-subtle pt-4 sm:grid-cols-2">
         <label
           class="flex min-w-0 items-start gap-2 rounded-control border border-line-subtle px-2 py-1.5 text-xs font-medium"
           for={`${props.idPrefix}-require-consent`}
         >
           <input
             checked={props.requireConsent.get()}
-            class="mt-0.5 size-3.5 shrink-0"
+            class={`${authenticatedControlClasses.checkbox} mt-0.5 shrink-0`}
             id={`${props.idPrefix}-require-consent`}
             onChange={(event) => props.requireConsent.set(event.currentTarget.checked)}
             type="checkbox"
@@ -185,7 +183,7 @@ export function OidcAdminClientFormFields(props: {
         >
           <input
             checked={props.trusted.get()}
-            class="mt-0.5 size-3.5 shrink-0"
+            class={`${authenticatedControlClasses.checkbox} mt-0.5 shrink-0`}
             id={`${props.idPrefix}-trusted`}
             onChange={(event) => props.trusted.set(event.currentTarget.checked)}
             type="checkbox"
@@ -194,7 +192,7 @@ export function OidcAdminClientFormFields(props: {
         </label>
       </div>
       {/* The trust warning stays outside the label so the checkbox keeps its short accessible name. */}
-      <p class="text-2xs leading-4 text-muted-foreground">{messageTranslate("admin.oidc.clients.trustedHint")}</p>
+      <p class="text-xs leading-5 text-muted-foreground">{messageTranslate("admin.oidc.clients.trustedHint")}</p>
     </>
   )
 }

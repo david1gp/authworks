@@ -4,7 +4,7 @@ import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiKeyPlus } from "@adaptive-ds/mdi/mdiKeyPlus.js"
 import { Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -25,7 +25,7 @@ export function MachineAdminDetailView(props: {
 }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.machine.users.detailTitle")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.machine.users.detailTitle")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <MachineAdminNotice notice={state.page.notice()} />
       <Show when={state.page.issuedSecret()}>
         {(issued) => <MachineAdminSecretPanel issued={issued()} onAcknowledge={state.page.issuedSecretAcknowledge} />}
@@ -39,7 +39,7 @@ export function MachineAdminDetailView(props: {
       >
         <Show when={state.page.machineUser()}>
           {(machineUser) => (
-            <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+            <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
               <AuthenticatedSection
                 actions={
                   <AuthenticatedStatus
@@ -86,7 +86,7 @@ export function MachineAdminDetailView(props: {
               </AuthenticatedSection>
 
               {/* The write-only secret and the lifecycle share a row: both are short, guarded controls. */}
-              <div class="grid min-w-0 gap-3 xl:grid-cols-2 [&>*]:min-w-0">
+              <div class="grid min-w-0 gap-5 xl:grid-cols-2 [&>*]:min-w-0">
                 <AuthenticatedSection
                   description={messageTranslate("admin.machine.secret.description")}
                   padded
@@ -101,6 +101,7 @@ export function MachineAdminDetailView(props: {
                   </p>
                   <div class="mt-2 flex flex-wrap gap-2">
                     <ButtonIcon
+                      size="sm"
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiAutorenew}
                       onClick={() => void state.page.clientSecretRotate(machineUser().id)}
@@ -119,6 +120,7 @@ export function MachineAdminDetailView(props: {
                   <div class="flex flex-wrap gap-2">
                     <Show when={machineUser().status === "active"}>
                       <ButtonIcon
+                        size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCancel}
                         onClick={() => void state.page.machineUserLifecycleSet(machineUser().id, "inactive")}
@@ -129,6 +131,7 @@ export function MachineAdminDetailView(props: {
                     </Show>
                     <Show when={machineUser().status === "inactive"}>
                       <ButtonIcon
+                        size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCheckCircle}
                         onClick={() => void state.page.machineUserLifecycleSet(machineUser().id, "active")}
@@ -138,6 +141,7 @@ export function MachineAdminDetailView(props: {
                       </ButtonIcon>
                     </Show>
                     <ButtonIcon
+                      size="sm"
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiDelete}
                       onClick={() => void state.machineUserRemove(machineUser().id)}
@@ -152,7 +156,6 @@ export function MachineAdminDetailView(props: {
               <AuthenticatedSection
                 actions={
                   <AuthenticatedDialog
-                    class="h-7 text-xs"
                     description={messageTranslate("admin.machine.credentials.issueDescription")}
                     onOpenChange={state.issueOpenSet}
                     open={state.issueOpen()}

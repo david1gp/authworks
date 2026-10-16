@@ -2,10 +2,10 @@ import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js
 import { mdiInboxOutline } from "@adaptive-ds/mdi/mdiInboxOutline.js"
 import { mdiLockOutline } from "@adaptive-ds/mdi/mdiLockOutline.js"
 import { mdiRefresh } from "@adaptive-ds/mdi/mdiRefresh.js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { LoaderSpin4Square } from "#ui/static/loaders/LoaderSpin4Square.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
+import { AuthenticatedButton } from "../authenticated/AuthenticatedButton.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 
 export function ProductionStatePanel(props: {
@@ -23,7 +23,7 @@ export function ProductionStatePanel(props: {
         "mx-auto flex flex-col items-center justify-center text-center",
         props.compact
           ? "min-h-40 max-w-md px-4 py-8"
-          : "min-h-72 max-w-xl rounded-panel border border-line bg-surface px-6 py-12",
+          : "min-h-72 max-w-xl rounded-panel border border-line bg-surface px-6 py-12 shadow-panel",
       )}
       data-content-state={props.state}
     >
@@ -32,8 +32,9 @@ export function ProductionStatePanel(props: {
       ) : (
         <span
           class={classMerge(
-            "grid place-items-center rounded-panel bg-muted text-muted-foreground",
-            props.compact ? "mb-3 size-9" : "mb-5 size-12",
+            "grid size-11 place-items-center rounded-full",
+            props.state === "error" ? "bg-danger-soft text-danger" : "bg-accent-soft text-accent",
+            props.compact ? "mb-3" : "mb-5",
           )}
         >
           <Icon
@@ -47,7 +48,7 @@ export function ProductionStatePanel(props: {
           />
         </span>
       )}
-      <h2 class={props.compact ? "text-sm font-semibold" : "text-lg font-semibold tracking-tight"}>
+      <h2 class="text-base font-semibold">
         {props.title ??
           (props.state === "loading"
             ? messageTranslate("common.loading")
@@ -57,7 +58,7 @@ export function ProductionStatePanel(props: {
                 ? messageTranslate("shell.state.pageUnavailable")
                 : messageTranslate("shell.state.nothingHere"))}
       </h2>
-      <p class={classMerge("mt-1.5 max-w-md text-muted-foreground", props.compact ? "text-xs" : "text-sm")}>
+      <p class="mt-1.5 max-w-md text-sm text-muted-foreground">
         {props.detail ??
           (props.state === "loading"
             ? messageTranslate("shell.state.loadingDetail")
@@ -68,9 +69,9 @@ export function ProductionStatePanel(props: {
                 : messageTranslate("shell.state.readyDetail"))}
       </p>
       {props.state === "error" && props.onRetry ? (
-        <ButtonIcon class="mt-4" icon={mdiRefresh} onClick={props.onRetry} variant="outline">
+        <AuthenticatedButton class="mt-4" icon={mdiRefresh} onClick={props.onRetry} variant="outline">
           {messageTranslate("common.retry")}
-        </ButtonIcon>
+        </AuthenticatedButton>
       ) : null}
     </section>
   )

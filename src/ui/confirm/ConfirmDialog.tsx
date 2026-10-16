@@ -2,7 +2,9 @@ import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import Dialog from "@corvu/dialog"
 import { createEffect, onCleanup } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { classMerge } from "#ui/utils/classMerge.js"
+import { AuthenticatedButton } from "../authenticated/AuthenticatedButton.js"
+import { authenticatedDialogClasses } from "../authenticated/authenticatedDialogClasses.js"
 import type { MessageKey } from "../i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { confirmDialogStack } from "./confirmDialogStack.js"
@@ -25,24 +27,24 @@ export function ConfirmDialog(props: { readonly state: ConfirmState; readonly ti
   return (
     <Dialog onOpenChange={(open) => !open && state.cancel()} open={state.open()} role="alertdialog">
       <Dialog.Portal>
-        <Dialog.Overlay class="fixed inset-0 z-[60] bg-black/50" data-confirm-backdrop />
+        <Dialog.Overlay class={classMerge(authenticatedDialogClasses.overlay, "z-[60]")} data-confirm-backdrop />
         <Dialog.Content
-          class="fixed top-1/2 left-1/2 z-[70] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-panel border border-line bg-surface px-4 py-3.5 shadow-sm"
+          class={classMerge(authenticatedDialogClasses.content, "z-[70] w-[calc(100vw-2rem)] max-w-md")}
           data-confirm-dialog
         >
-          <Dialog.Label class="text-sm font-semibold tracking-tight">
+          <Dialog.Label class="text-lg font-semibold tracking-tight">
             {state.title() ?? messageTranslate(props.titleKey)}
           </Dialog.Label>
-          <Dialog.Description class="mt-1 break-words text-xs text-muted-foreground">
+          <Dialog.Description class="mt-1 break-words text-sm text-muted-foreground">
             {state.message()}
           </Dialog.Description>
-          <div class="mt-3.5 flex flex-wrap justify-end gap-2">
-            <ButtonIcon data-confirm-cancel icon={mdiClose} onClick={state.cancel} variant="outline">
+          <div class="mt-5 flex flex-wrap justify-end gap-2">
+            <AuthenticatedButton data-confirm-cancel icon={mdiClose} onClick={state.cancel} variant="outline">
               {messageTranslate("common.cancel")}
-            </ButtonIcon>
-            <ButtonIcon data-confirm-accept icon={mdiCheck} onClick={state.accept} variant="filledRed">
+            </AuthenticatedButton>
+            <AuthenticatedButton data-confirm-accept icon={mdiCheck} onClick={state.accept} variant="filledRed">
               {state.acceptLabel() ?? messageTranslate("common.continue")}
-            </ButtonIcon>
+            </AuthenticatedButton>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

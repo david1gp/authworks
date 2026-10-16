@@ -13,9 +13,9 @@ import { oidcAdminProtocolDocumentsViewStateCreate } from "./oidcAdminProtocolDo
 export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdminPageState }) {
   const state = oidcAdminProtocolDocumentsViewStateCreate({ page: props.state })
   return (
-    <section aria-label={messageTranslate("admin.oidc.documents.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.oidc.documents.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       {/* The page offers no mutation at all, so its intent is stated once above the documents. */}
-      <p class="grid gap-0.5 rounded-panel border border-line bg-muted px-3 py-2 text-xs" data-read-only-notice>
+      <p class="grid gap-1.5 rounded-panel border border-line bg-muted px-5 py-4 text-sm" data-read-only-notice>
         <span class="font-medium">{messageTranslate("admin.oidc.documents.description")}</span>
         <span class="text-muted-foreground">{messageTranslate("admin.oidc.documents.readOnly")}</span>
       </p>
@@ -26,7 +26,7 @@ export function OidcAdminProtocolDocumentsView(props: { readonly state: OidcAdmi
         onRetry={state.page.reload}
         status={state.page.status()}
       >
-        <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+        <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
           <Show when={state.page.discovery()}>
             <OidcAdminDocumentSection
               copied={state.copied("discovery")}

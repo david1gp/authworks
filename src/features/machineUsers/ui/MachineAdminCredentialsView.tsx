@@ -1,8 +1,8 @@
 import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { MachineAdminCredentialForm } from "./MachineAdminCredentialForm.js"
@@ -18,7 +18,7 @@ export function MachineAdminCredentialsView(props: {
 }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.machine.credentials.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.machine.credentials.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       {/* The subject selector is the page filter, so it shares the toolbar row with the issue action. */}
       <AuthenticatedToolbar
         actions={
@@ -39,13 +39,14 @@ export function MachineAdminCredentialsView(props: {
         <Label class="sr-only" for="machine-credential-subject">
           {messageTranslate("admin.machine.credentials.subject")}
         </Label>
-        <SelectSingleNative
-          class="max-w-xs"
-          getOptions={() => state.page.machineUsers().map((machineUser) => machineUser.id)}
-          id="machine-credential-subject"
-          valueSignal={state.machineUserIdSignal}
-          valueText={(machineUserId) => state.page.machineUserName(machineUserId)}
-        />
+        <div class="w-full sm:max-w-xs">
+          <SelectSingleNative
+            getOptions={() => state.page.machineUsers().map((machineUser) => machineUser.id)}
+            id="machine-credential-subject"
+            valueSignal={state.machineUserIdSignal}
+            valueText={(machineUserId) => state.page.machineUserName(machineUserId)}
+          />
+        </div>
       </AuthenticatedToolbar>
 
       <MachineAdminNotice notice={state.page.notice()} />

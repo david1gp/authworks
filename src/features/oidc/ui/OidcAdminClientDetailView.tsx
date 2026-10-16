@@ -4,7 +4,7 @@ import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -15,15 +15,15 @@ import { OidcAdminClientFormFields } from "./OidcAdminClientFormFields.js"
 import { OidcAdminNotice } from "./OidcAdminNotice.js"
 import { OidcAdminSecretPanel } from "./OidcAdminSecretPanel.js"
 import { OidcAdminStateBoundary } from "./OidcAdminStateBoundary.js"
-import { oidcAdminClientStatusTone } from "./oidcAdminClientStatusTone.js"
 import type { oidcAdminClientDetailViewStateCreate } from "./oidcAdminClientDetailViewStateCreate.js"
+import { oidcAdminClientStatusTone } from "./oidcAdminClientStatusTone.js"
 
 export function OidcAdminClientDetailView(props: {
   readonly state: ReturnType<typeof oidcAdminClientDetailViewStateCreate>
 }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.oidc.clients.detailTitle")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.oidc.clients.detailTitle")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <OidcAdminNotice notice={state.page.notice()} />
       <Show when={state.page.issuedSecret()}>
         {(issued) => (
@@ -44,7 +44,7 @@ export function OidcAdminClientDetailView(props: {
       >
         <Show when={state.page.client()}>
           {(client) => (
-            <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+            <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
               <AuthenticatedSection
                 actions={
                   <AuthenticatedStatus
@@ -86,7 +86,7 @@ export function OidcAdminClientDetailView(props: {
                 description={messageTranslate("admin.oidc.clients.settingsDescription")}
                 title={messageTranslate("admin.oidc.clients.settingsTitle")}
               >
-                <form class="grid gap-3 px-3 py-3" onSubmit={state.settingsSubmit}>
+                <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={state.settingsSubmit}>
                   <OidcAdminClientFormFields
                     accessTokenRoleAssertion={state.accessTokenRoleAssertion}
                     additionalOrigins={state.additionalOrigins}
@@ -168,6 +168,7 @@ export function OidcAdminClientDetailView(props: {
                     </div>
                     <div class="flex flex-wrap gap-2">
                       <ButtonIcon
+                        size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiAutorenew}
                         onClick={() => void state.page.clientSecretRotate(client().id)}
@@ -176,6 +177,7 @@ export function OidcAdminClientDetailView(props: {
                         {messageTranslate("admin.oidc.secret.rotate")}
                       </ButtonIcon>
                       <ButtonIcon
+                        size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCancel}
                         onClick={() => void state.page.clientSecretRevoke(client().id)}

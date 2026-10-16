@@ -1,7 +1,7 @@
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
 import { Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { oidcAdminSecretPanelStateCreate } from "./oidcAdminSecretPanelStateCreate.js"
 
@@ -23,7 +23,7 @@ export function OidcAdminSecretPanel(props: {
   return (
     <article
       aria-live="polite"
-      class="grid min-w-0 gap-2 rounded-panel border border-warning/45 bg-warning-soft px-3 py-2.5"
+      class="grid min-w-0 gap-4 rounded-panel border border-warning/45 bg-warning-soft px-5 py-4 shadow-panel"
       data-one-time-secret="oidc-client"
     >
       <div class="grid min-w-0 gap-0.5">
@@ -43,11 +43,12 @@ export function OidcAdminSecretPanel(props: {
         {props.secret}
       </code>
       <div class="flex flex-wrap items-center gap-2">
-        <ButtonIcon icon={mdiContentCopy} onClick={state.copy} variant="outline">
+        <ButtonIcon size="sm" icon={mdiContentCopy} onClick={state.copy} variant="outline">
           {messageTranslate("admin.oidc.secret.copy")}
         </ButtonIcon>
         {/* Acknowledgement stays reachable when the clipboard is denied, so the value is never trapped. */}
         <ButtonIcon
+          size="sm"
           disabled={!state.copied() && !state.copyFailed()}
           icon={mdiCheck}
           onClick={state.acknowledge}

@@ -1,5 +1,4 @@
 import { mdiAccountMultipleOutline } from "@adaptive-ds/mdi/mdiAccountMultipleOutline.js"
-import { mdiAccountSwitchOutline } from "@adaptive-ds/mdi/mdiAccountSwitchOutline.js"
 import { mdiApplicationOutline } from "@adaptive-ds/mdi/mdiApplicationOutline.js"
 import { mdiCheckDecagramOutline } from "@adaptive-ds/mdi/mdiCheckDecagramOutline.js"
 import { mdiClipboardTextOutline } from "@adaptive-ds/mdi/mdiClipboardTextOutline.js"
@@ -82,6 +81,8 @@ export function adminDemoAppStateCreate() {
     isActive: (href: string) =>
       location.pathname === href || (href !== "/demo/admin" && location.pathname.startsWith(`${href}/`)),
     navigationGroups,
+    hideSidebar: () => sidebar.openDesktop.set(false),
+    showHeaderBrand: () => sidebar.isMobile.get() || !sidebar.openDesktop.get(),
     sidebar,
   }
 }

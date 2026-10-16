@@ -3,6 +3,7 @@ import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import type { EventListResponse } from "../../events/public/eventListResponseSchema.js"
 import type { RealmResponse } from "../../realms/public/realmResponseSchema.js"
 import type { RealmUpdateRequest } from "../../realms/public/realmUpdateRequestSchema.js"
+import type { SessionListResponse } from "../../sessions/public/sessionListResponseSchema.js"
 import type { SessionSubjectType } from "../../sessions/public/sessionSubjectTypeSchema.js"
 import type { UserCreateRequest } from "../../users/public/userCreateRequestSchema.js"
 import type { UserLifecycleRequest } from "../../users/public/userLifecycleRequestSchema.js"
@@ -25,6 +26,7 @@ export type AdminAdapter = {
   readonly adminSignIn: (secret: string) => Promise<Result<AdminSession>>
   readonly adminSignOut: () => Promise<Result<{ readonly revoked: boolean }>>
   readonly sessionCurrent: () => Promise<Result<AdminSession>>
+  readonly sessionList: (query?: ListQuery) => Promise<Result<SessionListResponse>>
   readonly eventList: (query?: ListQuery) => Promise<Result<EventListResponse>>
   readonly realmGet: () => Promise<Result<RealmResponse>>
   readonly realmUpdate: (input: RealmUpdateRequest) => Promise<Result<RealmResponse>>

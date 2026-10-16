@@ -17,9 +17,9 @@ test("every status tone resolves to token-based classes rather than literal pale
 })
 
 test("the compact table classes override the vendored roomy header and cell padding", () => {
-  expect(authenticatedTableClasses.head).toContain("h-8")
-  expect(authenticatedTableClasses.head).toContain("text-2xs")
-  expect(authenticatedTableClasses.cell).toContain("py-2")
+  expect(authenticatedTableClasses.head).toContain("h-10")
+  expect(authenticatedTableClasses.head).toContain("text-xs")
+  expect(authenticatedTableClasses.cell).toContain("py-3")
   expect(authenticatedTableClasses.identifier).toContain("font-mono")
   expect(authenticatedTableClasses.identifier).toContain("truncate")
 })

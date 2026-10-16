@@ -2,6 +2,7 @@ import { Match, Switch } from "solid-js"
 import { AdminEventListView } from "./AdminEventListView.js"
 import { AdminRealmOverviewView } from "./AdminRealmOverviewView.js"
 import { AdminRealmView } from "./AdminRealmView.js"
+import { AdminSessionListView } from "./AdminSessionListView.js"
 import { AdminSignInView } from "./AdminSignInView.js"
 import { AdminUserDetailView } from "./AdminUserDetailView.js"
 import { AdminUserListView } from "./AdminUserListView.js"
@@ -16,8 +17,11 @@ export function AdminScreenView(props: {
 }) {
   return (
     <Switch>
-      <Match when={props.screen === "sign-in" || props.screen === "sessions"}>
+      <Match when={props.screen === "sign-in"}>
         <AdminSignInView state={props.state} />
+      </Match>
+      <Match when={props.screen === "sessions"}>
+        <AdminSessionListView state={props.state} />
       </Match>
       <Match when={props.screen === "overview"}>
         <AdminRealmOverviewView state={props.state} />

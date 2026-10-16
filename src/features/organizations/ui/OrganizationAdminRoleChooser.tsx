@@ -1,4 +1,5 @@
 import { For } from "solid-js"
+import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import type { OrganizationRoleId } from "../public/organizationRoleIdSchema.js"
 import type { OrganizationRole } from "../public/organizationRoleSchema.js"
 
@@ -13,8 +14,8 @@ export function OrganizationAdminRoleChooser(props: {
   readonly selected: readonly OrganizationRoleId[]
 }) {
   return (
-    <fieldset class="grid gap-2">
-      <legend class={props.legendHidden ? "sr-only" : "text-sm font-medium"}>{props.legend}</legend>
+    <fieldset class="grid min-w-0 gap-1.5">
+      <legend class={props.legendHidden ? "sr-only" : "text-[0.8125rem] font-medium"}>{props.legend}</legend>
       <div class="flex flex-wrap gap-3">
         <For each={props.roles}>
           {(role) => {
@@ -23,7 +24,7 @@ export function OrganizationAdminRoleChooser(props: {
               <label class="flex items-center gap-2 text-sm" for={id}>
                 <input
                   checked={props.selected.includes(role.id)}
-                  class="size-4 rounded border-line"
+                  class={authenticatedControlClasses.checkbox}
                   disabled={props.disabled}
                   id={id}
                   onChange={() => props.onToggle(role.id)}

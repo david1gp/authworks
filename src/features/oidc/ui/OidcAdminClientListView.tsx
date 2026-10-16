@@ -2,12 +2,12 @@ import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -24,8 +24,8 @@ import { OidcAdminNotice } from "./OidcAdminNotice.js"
 import { OidcAdminSecretPanel } from "./OidcAdminSecretPanel.js"
 import { OidcAdminStateBoundary } from "./OidcAdminStateBoundary.js"
 import { OidcAdminUriList } from "./OidcAdminUriList.js"
-import { oidcAdminClientStatusTone } from "./oidcAdminClientStatusTone.js"
 import type { oidcAdminClientListViewStateCreate } from "./oidcAdminClientListViewStateCreate.js"
+import { oidcAdminClientStatusTone } from "./oidcAdminClientStatusTone.js"
 
 export function OidcAdminClientListView(props: {
   readonly state: ReturnType<typeof oidcAdminClientListViewStateCreate>
@@ -43,17 +43,17 @@ export function OidcAdminClientListView(props: {
   }
   const clientOpenButton = (client: OidcClient) => (
     <button
-      class="text-left font-medium text-accent hover:underline"
+      class="text-start font-medium text-accent hover:underline"
       onClick={() => state.clientOpen(client.id)}
       type="button"
     >
       {client.name}
-      <Icon class="ml-1 inline size-4" path={mdiArrowRight} />
+      <Icon class="ms-1 inline size-4" path={mdiArrowRight} />
     </button>
   )
 
   return (
-    <section aria-label={messageTranslate("admin.oidc.clients.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.oidc.clients.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
         actions={
           <AuthenticatedDialog
@@ -65,7 +65,7 @@ export function OidcAdminClientListView(props: {
             triggerIcon={mdiPlus}
             variant="filledBlue"
           >
-            <form class="grid gap-3" onSubmit={state.createSubmit}>
+            <form class="grid max-w-3xl gap-4" onSubmit={state.createSubmit}>
               <OidcAdminClientFormFields
                 accessTokenRoleAssertion={state.accessTokenRoleAssertion}
                 additionalOrigins={state.additionalOrigins}
@@ -102,7 +102,7 @@ export function OidcAdminClientListView(props: {
           {messageTranslate("admin.oidc.clients.search")}
         </Label>
         <Input
-          class="max-w-xs"
+          class="w-full sm:max-w-xs"
           id="oidc-client-search"
           onInput={(event) => state.searchSet(event.currentTarget.value)}
           placeholder={messageTranslate("admin.oidc.clients.search")}

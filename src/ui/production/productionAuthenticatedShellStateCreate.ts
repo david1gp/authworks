@@ -66,6 +66,7 @@ export function productionAuthenticatedShellStateCreate(
       productionShellNavigationLinkVisible({ guard: session.guard, kind: kind(), target: "account" }),
     showAdminNavigation: () =>
       productionShellNavigationLinkVisible({ guard: session.guard, kind: kind(), target: "admin" }),
+    showHeaderBrand: () => sidebar.isMobile.get() || !sidebar.openDesktop.get(),
     session,
     sidebar,
     signOutHref: "/login/logout",

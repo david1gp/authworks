@@ -1,8 +1,8 @@
 import { mdiChevronLeft } from "@adaptive-ds/mdi/mdiChevronLeft.js"
 import { mdiChevronRight } from "@adaptive-ds/mdi/mdiChevronRight.js"
 import { Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
+import { AuthenticatedButton } from "./AuthenticatedButton.js"
 
 /**
  * Cursor pagination shared by every authenticated collection. It renders nothing when a single page
@@ -23,24 +23,24 @@ export function AuthenticatedPagination(props: {
       >
         <span class="min-w-0 truncate text-xs tabular-nums text-muted-foreground">{props.summary ?? ""}</span>
         <div class="flex items-center gap-1.5">
-          <ButtonIcon
-            class="h-7 text-xs"
+          <AuthenticatedButton
+            size="sm"
             disabled={!props.previousAvailable}
             onClick={props.onPrevious}
             icon={mdiChevronLeft}
             variant="outline"
           >
             {messageTranslate("common.previous")}
-          </ButtonIcon>
-          <ButtonIcon
-            class="h-7 text-xs"
+          </AuthenticatedButton>
+          <AuthenticatedButton
+            size="sm"
             disabled={!props.nextAvailable}
             onClick={props.onNext}
             iconRight={mdiChevronRight}
             variant="outline"
           >
             {messageTranslate("common.next")}
-          </ButtonIcon>
+          </AuthenticatedButton>
         </div>
       </nav>
     </Show>

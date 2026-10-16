@@ -14,9 +14,7 @@ export function ImpersonationAdminDemoAdapter() {
         eyebrow={messageTranslate("demo.fixture.preview")}
         meta={
           <>
-            <span class="text-2xs font-semibold uppercase tracking-[0.12em]">
-              {messageTranslate("demo.fixture.state")}
-            </span>
+            <span class="text-xs font-medium text-muted-foreground">{messageTranslate("demo.fixture.state")}</span>
             <DemoFixtureStateSelector options={state.stateOptions()} />
           </>
         }

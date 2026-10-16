@@ -2,8 +2,8 @@ import { mdiAutorenew } from "@adaptive-ds/mdi/mdiAutorenew.js"
 import { mdiKeyRemove } from "@adaptive-ds/mdi/mdiKeyRemove.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
@@ -26,6 +26,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
   const retireButton = (key: OidcSigningKey) => (
     <Show when={key.status === "active"}>
       <ButtonIcon
+        size="sm"
         disabled={state.pendingId() !== undefined}
         icon={mdiKeyRemove}
         onClick={() => void state.signingKeyRetire(key.id)}
@@ -37,7 +38,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
   )
 
   return (
-    <section aria-label={messageTranslate("admin.oidc.keys.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.oidc.keys.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
         actions={
           <>

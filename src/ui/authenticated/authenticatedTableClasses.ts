@@ -4,13 +4,14 @@
  */
 export const authenticatedTableClasses = {
   /** Right-aligned trailing action cell. */
-  action: "w-0 whitespace-nowrap py-1.5 pr-3 pl-2 text-right",
-  cell: "px-3 py-2 align-middle",
-  head: "h-8 px-3 text-2xs font-semibold tracking-[0.12em] uppercase",
-  header: "bg-muted/60 [&_tr]:border-line",
+  action: "w-0 whitespace-nowrap py-2 ps-2 pe-5 text-end",
+  cell: "px-3 py-3 align-middle first:ps-5 last:pe-5",
+  head: "h-10 px-3 text-start text-xs font-medium text-muted-foreground first:ps-5 last:pe-5",
+  header: "bg-muted/70 [&_tr]:border-line",
   /** Monospace, truncating cell for identifiers and other long technical values. */
-  identifier: "max-w-[22ch] truncate px-3 py-2 align-middle font-mono text-xs text-muted-foreground",
-  row: "border-line-subtle hover:bg-surface-hover",
+  identifier:
+    "max-w-[22ch] truncate px-3 py-3 align-middle font-mono text-[0.8125rem] text-muted-foreground first:ps-5 last:pe-5",
+  row: "border-line-subtle hover:bg-surface-hover/70",
   table: "text-sm",
   /**
    * Table half of a responsive pair: hidden below `md`, where `AuthenticatedRecordList` renders the

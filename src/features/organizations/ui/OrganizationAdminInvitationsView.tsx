@@ -2,15 +2,15 @@ import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { mdiEmailPlusOutline } from "@adaptive-ds/mdi/mdiEmailPlusOutline.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
-import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -56,7 +56,7 @@ export function OrganizationAdminInvitationsView(props: {
           <div class="min-w-0" data-one-time-secret="organization-invitation">
             <AuthenticatedSection
               actions={
-                <ButtonIcon icon={mdiClose} onClick={props.onTokenDismiss} variant="outline">
+                <ButtonIcon size="sm" icon={mdiClose} onClick={props.onTokenDismiss} variant="outline">
                   {messageTranslate("admin.organizations.invitations.tokenDismiss")}
                 </ButtonIcon>
               }
@@ -77,10 +77,12 @@ export function OrganizationAdminInvitationsView(props: {
         description={messageTranslate("admin.organizations.invitations.description")}
         title={messageTranslate("admin.organizations.invitations.create")}
       >
-        <form class="grid gap-3 px-3 py-3" onSubmit={props.onSubmit}>
-          <div class="grid items-end gap-3 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)_auto]">
-            <div class="grid min-w-0 gap-1">
-              <Label for="invitation-email">{messageTranslate("admin.organizations.invitations.email")}</Label>
+        <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.onSubmit}>
+          <div class="grid gap-4">
+            <div class="grid min-w-0 gap-1.5">
+              <Label class="text-[0.8125rem] font-medium" for="invitation-email">
+                {messageTranslate("admin.organizations.invitations.email")}
+              </Label>
               <Input
                 autocomplete="email"
                 id="invitation-email"
@@ -96,7 +98,12 @@ export function OrganizationAdminInvitationsView(props: {
               roles={props.roles}
               selected={props.selectedRoles}
             />
-            <ButtonIcon disabled={props.pendingId === "invitation:create"} icon={mdiEmailPlusOutline} type="submit">
+            <ButtonIcon
+              class="justify-self-start"
+              disabled={props.pendingId === "invitation:create"}
+              icon={mdiEmailPlusOutline}
+              type="submit"
+            >
               {messageTranslate("admin.organizations.invitations.create")}
             </ButtonIcon>
           </div>
@@ -120,6 +127,7 @@ export function OrganizationAdminInvitationsView(props: {
                   actions={
                     <Show when={invitation.status === "pending"}>
                       <ButtonIcon
+                        size="sm"
                         disabled={props.pendingId === `invitation:${invitation.id}`}
                         icon={mdiCancel}
                         onClick={() => props.onRevoke(invitation.id, invitation.email)}
@@ -193,6 +201,7 @@ export function OrganizationAdminInvitationsView(props: {
                     <TableCell class={authenticatedTableClasses.action}>
                       <Show when={invitation.status === "pending"}>
                         <ButtonIcon
+                          size="sm"
                           disabled={props.pendingId === `invitation:${invitation.id}`}
                           icon={mdiCancel}
                           onClick={() => props.onRevoke(invitation.id, invitation.email)}

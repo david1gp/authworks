@@ -1,12 +1,10 @@
-import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { mdiLogin } from "@adaptive-ds/mdi/mdiLogin.js"
+import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { Button } from "#ui/interactive/button/Button.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
-import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -31,15 +29,15 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
           <div data-admin-session="active">
             <AuthenticatedSection
               actions={
-                <Button
-                  class="gap-1.5"
+                <AuthenticatedButton
+                  size="sm"
+                  icon={mdiLogout}
                   disabled={props.state.pendingId() === "session:sign-out"}
                   onClick={props.state.adminSignOut}
                   variant="outline"
                 >
-                  <Icon path={mdiLogout} />
                   {messageTranslate("common.signOut")}
-                </Button>
+                </AuthenticatedButton>
               }
               description={messageTranslate("admin.signIn.expiresAt", {
                 date: localeDateFormat(session().expiresAt, { dateStyle: "medium", timeStyle: "short" }),
@@ -76,11 +74,16 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
       >
         {/* The page heading already reads "Administrator sign-in", so the panel keeps only its
             description instead of repeating that title as a second visible heading. */}
-        <AuthenticatedSection description={messageTranslate("admin.signIn.description")}>
-          <form class="grid gap-3 px-3 py-3" onSubmit={props.state.adminSignInSubmit}>
-            <div class="grid gap-1">
-              <Label for="admin-bootstrap-secret">{messageTranslate("admin.signIn.credential")}</Label>
-              <Input
+        <AuthenticatedSection
+          class="in-[[data-shell=focus]]:rounded-none in-[[data-shell=focus]]:border-0 in-[[data-shell=focus]]:bg-transparent in-[[data-shell=focus]]:shadow-none in-[[data-shell=focus]]:[&>div:first-child]:border-0 in-[[data-shell=focus]]:[&>div:first-child]:px-0 in-[[data-shell=focus]]:[&>div:first-child]:pt-0 in-[[data-shell=focus]]:[&_form]:px-0 in-[[data-shell=focus]]:[&_form]:pb-0"
+          description={messageTranslate("admin.signIn.description")}
+        >
+          <form class="grid max-w-3xl gap-4 px-5 py-5" onSubmit={props.state.adminSignInSubmit}>
+            <div class="grid gap-1.5">
+              <Label class="text-[0.8125rem] font-medium" for="admin-bootstrap-secret">
+                {messageTranslate("admin.signIn.credential")}
+              </Label>
+              <AuthenticatedInput
                 autocomplete="off"
                 id="admin-bootstrap-secret"
                 name="bootstrap-secret"
@@ -98,9 +101,9 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
               {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
             </Show>
             <div>
-              <ButtonIcon icon={mdiLogin} type="submit">
+              <AuthenticatedButton icon={mdiLogin} type="submit">
                 {messageTranslate("common.signIn")}
-              </ButtonIcon>
+              </AuthenticatedButton>
             </div>
           </form>
         </AuthenticatedSection>

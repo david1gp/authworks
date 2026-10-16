@@ -2,11 +2,11 @@ import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -20,8 +20,8 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { Organization } from "../public/organizationSchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
-import { organizationAdminStatusTone } from "./organizationAdminStatusTone.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
+import { organizationAdminStatusTone } from "./organizationAdminStatusTone.js"
 
 export function OrganizationAdminListView(props: {
   readonly createName: string
@@ -45,11 +45,10 @@ export function OrganizationAdminListView(props: {
   readonly validationMessage?: string
 }) {
   return (
-    <section aria-label={messageTranslate("admin.organizations.list.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.organizations.list.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
         actions={
           <AuthenticatedDialog
-            class="h-8 text-xs"
             description={messageTranslate("admin.organizations.list.description")}
             onOpenChange={props.onCreateOpenChange}
             open={props.createOpen}
@@ -58,9 +57,11 @@ export function OrganizationAdminListView(props: {
             triggerIcon={mdiPlus}
             variant="filledBlue"
           >
-            <form class="grid gap-3" onSubmit={props.onCreateSubmit}>
-              <div class="grid gap-1">
-                <Label for="organization-name">{messageTranslate("admin.organizations.list.name")}</Label>
+            <form class="grid gap-4" onSubmit={props.onCreateSubmit}>
+              <div class="grid gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="organization-name">
+                  {messageTranslate("admin.organizations.list.name")}
+                </Label>
                 <Input
                   id="organization-name"
                   onInput={(event) => props.onCreateNameInput(event.currentTarget.value)}
@@ -71,6 +72,7 @@ export function OrganizationAdminListView(props: {
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
               <ButtonIcon
+                class="justify-self-end"
                 disabled={props.pendingId === "organization:create"}
                 icon={mdiContentSave}
                 type="submit"
@@ -87,7 +89,7 @@ export function OrganizationAdminListView(props: {
           {messageTranslate("admin.organizations.list.search")}
         </Label>
         <Input
-          class="h-8 w-72 max-w-full text-sm"
+          class="w-full sm:w-72"
           id="organization-search"
           onInput={(event) => props.onSearchInput(event.currentTarget.value)}
           placeholder={messageTranslate("admin.organizations.list.search")}
@@ -123,6 +125,7 @@ export function OrganizationAdminListView(props: {
                   title={
                     <A
                       class="min-w-0 truncate text-accent hover:underline"
+                      title={organization.name}
                       href={props.detailHrefBuild(organization.id)}
                     >
                       {organization.name}
@@ -158,6 +161,7 @@ export function OrganizationAdminListView(props: {
                     <TableCell class={authenticatedTableClasses.cell}>
                       <A
                         class="min-w-0 truncate font-medium text-accent hover:underline"
+                        title={organization.name}
                         href={props.detailHrefBuild(organization.id)}
                       >
                         {organization.name}

@@ -16,7 +16,7 @@ type DemoDirectoryProps = {
 export function DemoDirectory(props: DemoDirectoryProps) {
   const state = demoDirectoryStateCreate(() => props.groups)
   return (
-    <div class="mx-auto grid w-full max-w-7xl gap-4">
+    <div class="mx-auto grid w-full max-w-7xl gap-6">
       <AuthenticatedPageHeader
         description={ttc(props.description())}
         eyebrow={ttc(props.eyebrow())}
@@ -34,7 +34,7 @@ export function DemoDirectory(props: DemoDirectoryProps) {
         }
         title={ttc(props.title())}
       />
-      <div class="grid gap-5">
+      <div class="grid gap-8">
         {props.groups.map((group) => (
           <DemoDirectoryGroup group={group} />
         ))}

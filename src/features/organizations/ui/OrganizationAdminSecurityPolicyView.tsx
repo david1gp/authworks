@@ -1,10 +1,11 @@
 import { mdiArrowDown } from "@adaptive-ds/mdi/mdiArrowDown.js"
 import { mdiArrowUp } from "@adaptive-ds/mdi/mdiArrowUp.js"
 import { For, Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MfaPolicyFactor } from "../../mfa/public/mfaPolicyFactorSchema.js"
@@ -16,9 +17,8 @@ const factorLabelKeys = {
   passkey: "admin.organizations.policy.factor.passkey",
   totp: "admin.organizations.policy.factor.totp",
 } as const satisfies Readonly<Record<MfaPolicyFactor, MessageKey>>
-const fieldsetClass = "min-w-0 rounded-control border border-line-subtle px-3 py-2.5"
-const selectClass =
-  "mt-2 h-9 w-full rounded-control border border-line bg-surface px-2 text-sm text-foreground sm:max-w-xs"
+const fieldsetClass = "min-w-0 rounded-control border border-line-subtle px-4 py-4"
+const selectClass = `${authenticatedControlClasses.select} mt-3 sm:max-w-xs`
 
 type SecurityPolicyKey = "allowedFactors" | "minimumStepUpAssurance" | "preferredFactorOrder" | "requiredMfa"
 
@@ -45,7 +45,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
       <label class="mt-2 flex items-center gap-2 text-xs font-medium">
         <input
           checked={!props.fieldInherited(key)}
-          class="size-4 rounded border-line"
+          class={authenticatedControlClasses.checkbox}
           onChange={(event) => props.onFieldOverrideSet(key, event.currentTarget.checked)}
           type="checkbox"
         />
@@ -70,7 +70,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
       padded
       title={messageTranslate("admin.organizations.policy.securityTitle")}
     >
-      <div class="grid min-w-0 gap-2.5 lg:grid-cols-2 [&>*]:min-w-0">
+      <div class="grid min-w-0 max-w-3xl gap-4 sm:grid-cols-2 [&>*]:min-w-0">
         <fieldset class={fieldsetClass}>
           {fieldLegend("requiredMfa", messageTranslate("admin.organizations.policy.requiredMfa"))}
           <p class="mt-1 text-xs text-muted-foreground">
@@ -130,7 +130,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
                 <label class="flex min-h-9 items-center gap-2 rounded-control border border-line-subtle px-2 text-xs font-medium">
                   <input
                     checked={props.allowedFactors.includes(factor)}
-                    class="size-4 rounded border-line"
+                    class={authenticatedControlClasses.checkbox}
                     disabled={props.fieldInherited("allowedFactors")}
                     onChange={() => props.onAllowedFactorToggle(factor)}
                     type="checkbox"
@@ -160,7 +160,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
                       aria-label={messageTranslate("admin.organizations.policy.moveUp", {
                         factor: messageTranslate(factorLabelKeys[factor]),
                       })}
-                      class="h-7 text-xs"
+                      size="sm"
                       disabled={props.fieldInherited("preferredFactorOrder") || index() === 0}
                       icon={mdiArrowUp}
                       onClick={() => props.onPreferredFactorMove(factor, -1)}
@@ -173,7 +173,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
                       aria-label={messageTranslate("admin.organizations.policy.moveDown", {
                         factor: messageTranslate(factorLabelKeys[factor]),
                       })}
-                      class="h-7 text-xs"
+                      size="sm"
                       disabled={props.fieldInherited("preferredFactorOrder") || index() === props.order.length - 1}
                       icon={mdiArrowDown}
                       onClick={() => props.onPreferredFactorMove(factor, 1)}

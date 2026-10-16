@@ -6,6 +6,7 @@ import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { Event as TenantEvent } from "../../events/public/eventSchema.js"
 import type { Realm } from "../../realms/public/realmSchema.js"
 import type { RealmStatus } from "../../realms/public/realmStatusSchema.js"
+import type { Session } from "../../sessions/public/sessionSchema.js"
 import type { User } from "../../users/public/userSchema.js"
 import type { UserState } from "../../users/public/userStateSchema.js"
 import type { UserVerificationState } from "../../users/public/userVerificationStateSchema.js"
@@ -53,6 +54,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
   const users = createSignalObject<readonly User[]>([])
   const user = createSignalObject<User | undefined>(undefined)
   const events = createSignalObject<readonly TenantEvent[]>([])
+  const sessions = createSignalObject<readonly Session[]>([])
   const realm = createSignalObject<Realm | undefined>(undefined)
   const searchSignal = createSignalObject("")
   // Search lives in the URL when the caller provides it, and falls back to local state otherwise.
@@ -97,7 +99,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     status.set("loading")
     error.set(undefined)
     notice.set(undefined)
-    if (options.screen() === "sign-in" || options.screen() === "sessions") {
+    if (options.screen() === "sign-in") {
       // An existing administrator session is shown when present, but the sign-in form must stay
       // reachable when there is none, so a failed probe is not an error.
       const current = await options.adapter.sessionCurrent()
@@ -109,6 +111,13 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       }
       session.set(current.data)
       return status.set("signed-in")
+    }
+    if (options.screen() === "sessions") {
+      const result = await options.adapter.sessionList(query())
+      if (!result.success) return fail(result)
+      sessions.set(result.data.items)
+      nextPageToken.set(result.data.nextPageToken)
+      return status.set(result.data.items.length === 0 ? "empty" : "ready")
     }
     if (options.screen() === "overview" || options.screen() === "realm") {
       const current = await options.adapter.sessionCurrent()
@@ -205,6 +214,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       )
     },
     session: session.get,
+    sessions: sessions.get,
     signInSecret,
     createDisplayName,
     createEmail,

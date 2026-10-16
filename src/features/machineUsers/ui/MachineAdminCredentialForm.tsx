@@ -1,10 +1,10 @@
 import { mdiKeyPlus } from "@adaptive-ds/mdi/mdiKeyPlus.js"
 import { Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { machineAdminCredentialFormStateCreate } from "./machineAdminCredentialFormStateCreate.js"
 
@@ -15,7 +15,10 @@ export function MachineAdminCredentialForm(props: {
 }) {
   const state = props.state
   return (
-    <form class="grid gap-3" onSubmit={state.submit}>
+    <form
+      class="grid max-w-3xl gap-4 [&_label]:text-[0.8125rem] [&_label]:font-medium [&_div.grid]:gap-y-1.5"
+      onSubmit={state.submit}
+    >
       <div class="grid gap-3 sm:grid-cols-2">
         <div class="grid min-w-0 gap-1">
           <Label for="machine-credential-kind">{messageTranslate("admin.machine.credentials.kind")}</Label>
@@ -32,7 +35,7 @@ export function MachineAdminCredentialForm(props: {
                 : messageTranslate("admin.machine.credentials.kindToken")
             }
           />
-          <p class="text-2xs leading-4 text-muted-foreground">
+          <p class="text-xs leading-4 text-muted-foreground">
             {messageTranslate("admin.machine.credentials.kindHint")}
           </p>
         </div>
@@ -55,7 +58,7 @@ export function MachineAdminCredentialForm(props: {
             onInput={(event) => state.scopes.set(event.currentTarget.value)}
             value={state.scopes.get()}
           />
-          <p class="text-2xs leading-4 text-muted-foreground">
+          <p class="text-xs leading-4 text-muted-foreground">
             {messageTranslate("admin.machine.credentials.scopesHint")}
           </p>
         </div>
@@ -67,7 +70,7 @@ export function MachineAdminCredentialForm(props: {
             type="date"
             value={state.expiresAt.get()}
           />
-          <p class="text-2xs leading-4 text-muted-foreground">
+          <p class="text-xs leading-4 text-muted-foreground">
             {messageTranslate("admin.machine.credentials.expiresHint")}
           </p>
         </div>
@@ -76,7 +79,7 @@ export function MachineAdminCredentialForm(props: {
       <Show when={state.formError()}>{(message) => <AuthenticatedNotice message={message()} tone="danger" />}</Show>
 
       {/* The issued value is shown once, so the warning sits directly above the irreversible action. */}
-      <p class="rounded-control border border-line-subtle bg-muted px-2 py-1.5 text-2xs leading-4 text-muted-foreground">
+      <p class="rounded-control border border-warning/35 bg-warning-soft px-3.5 py-3 text-xs leading-5 text-warning">
         {messageTranslate("admin.machine.credentials.onceWarning")}
       </p>
 

@@ -3,6 +3,7 @@ import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCode
 import type { DemoFixtureState } from "../../demo/demoFixtureStateSchema.js"
 import type { AdminAdapter } from "./adminAdapter.js"
 import { adminDemoSessionFixture } from "./adminDemoSessionFixture.js"
+import { adminDemoUserSessionsFixture } from "./adminDemoUserSessionsFixture.js"
 
 /**
  * Deterministic administrator sign-in and session behavior for `/demo/admin/**`. No network,
@@ -12,7 +13,7 @@ export function adminSessionDemoAdapterCreate(options: {
   readonly fixtureState: () => DemoFixtureState
   /** Realm screens assume an established session; the sign-in screen deliberately starts without one. */
   readonly signedInInitially?: boolean
-}): Pick<AdminAdapter, "adminSignIn" | "adminSignOut" | "sessionCurrent"> {
+}): Pick<AdminAdapter, "adminSignIn" | "adminSignOut" | "sessionCurrent" | "sessionList"> {
   const state = options.fixtureState
   // The demo starts without an administrator session so the sign-in form is reachable, exactly as
   // it is in production before the bootstrap exchange runs.
@@ -46,6 +47,23 @@ export function adminSessionDemoAdapterCreate(options: {
       if (state() === "expired") return expired("adminDemoSessionCurrent")
       if (!signedIn && options.signedInInitially !== true) return expired("adminDemoSessionCurrent")
       return resultCreate(structuredClone(adminDemoSessionFixture))
+    },
+    sessionList: async () => {
+      if (state() === "loading") return pending()
+      if (state() === "error")
+        return resultErrorCodedCreate(
+          "adminDemoSessionList",
+          "The deterministic administration fixture is unavailable.",
+          "realms.read-failed",
+        )
+      if (state() === "permission-denied")
+        return resultErrorCodedCreate(
+          "adminDemoSessionList",
+          "You do not have permission to list sessions.",
+          "realms.forbidden",
+        )
+      if (state() === "expired") return expired("adminDemoSessionList")
+      return resultCreate({ items: state() === "empty" ? [] : structuredClone([...adminDemoUserSessionsFixture]) })
     },
   }
 }

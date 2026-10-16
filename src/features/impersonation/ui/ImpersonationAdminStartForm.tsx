@@ -1,9 +1,10 @@
 import { mdiAccountArrowRight } from "@adaptive-ds/mdi/mdiAccountArrowRight.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { authenticatedWarningOutlineButtonClass } from "../../../ui/authenticated/authenticatedWarningOutlineButtonClass.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { impersonationAdminDurationOptions } from "./impersonationAdminDurationOptions.js"
@@ -17,7 +18,7 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
   const state = props.state
   return (
     <form
-      class="grid max-w-2xl gap-3"
+      class="grid max-w-3xl gap-4 [&_label]:text-[0.8125rem] [&_label]:font-medium [&_div.grid]:gap-1.5"
       onSubmit={(event) => {
         event.preventDefault()
         void state.impersonationStart()
@@ -26,7 +27,7 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
       <div class="grid gap-1">
         <Label for="impersonation-target">{messageTranslate("admin.impersonation.target")}</Label>
         <select
-          class="h-9 rounded-control border border-line bg-surface px-2 text-sm text-foreground"
+          class={authenticatedControlClasses.select}
           id="impersonation-target"
           onChange={(event) => state.targetUserId.set(event.currentTarget.value)}
           value={state.targetUserId.get()}
@@ -44,7 +45,7 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
       <div class="grid gap-1">
         <Label for="impersonation-organization">{messageTranslate("admin.impersonation.organization")}</Label>
         <select
-          class="h-9 rounded-control border border-line bg-surface px-2 text-sm text-foreground"
+          class={authenticatedControlClasses.select}
           id="impersonation-organization"
           onChange={(event) => state.organizationId.set(event.currentTarget.value)}
           value={state.organizationId.get()}
@@ -69,10 +70,10 @@ export function ImpersonationAdminStartForm(props: { readonly state: Impersonati
         <p class="text-xs text-muted-foreground">{messageTranslate("admin.impersonation.reasonHint")}</p>
       </div>
 
-      <div class="grid gap-1">
+      <div class="grid gap-1 sm:max-w-sm">
         <Label for="impersonation-duration">{messageTranslate("admin.impersonation.duration")}</Label>
         <select
-          class="h-9 rounded-control border border-line bg-surface px-2 text-sm text-foreground"
+          class={authenticatedControlClasses.select}
           id="impersonation-duration"
           onChange={(event) => state.durationSeconds.set(Number(event.currentTarget.value))}
           value={String(state.durationSeconds.get())}

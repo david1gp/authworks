@@ -1,13 +1,13 @@
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { For } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
@@ -22,6 +22,7 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
   const state = props.state
   const revokeButton = (consent: OidcConsent) => (
     <ButtonIcon
+      size="sm"
       disabled={state.page.pendingId() !== undefined}
       icon={mdiCancel}
       onClick={() => state.consentRevoke(consent.clientId)}
@@ -32,21 +33,22 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
   )
 
   return (
-    <section aria-label={messageTranslate("admin.oidc.consents.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.oidc.consents.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
         label={messageTranslate("admin.oidc.consents.title")}
         summary={messageTranslate("admin.oidc.consents.description")}
       >
-        <Label class="text-2xs font-semibold tracking-[0.12em] uppercase text-muted-foreground" for="oidc-consent-user">
+        <Label class="text-xs font-medium text-muted-foreground" for="oidc-consent-user">
           {messageTranslate("admin.oidc.consents.user")}
         </Label>
-        <SelectSingleNative
-          class="max-w-xs"
-          getOptions={() => state.page.users().map((user) => user.id)}
-          id="oidc-consent-user"
-          valueSignal={state.userIdSignal}
-          valueText={(userId) => state.page.userLabel(userId)}
-        />
+        <div class="w-full sm:max-w-xs">
+          <SelectSingleNative
+            getOptions={() => state.page.users().map((user) => user.id)}
+            id="oidc-consent-user"
+            valueSignal={state.userIdSignal}
+            valueText={(userId) => state.page.userLabel(userId)}
+          />
+        </div>
       </AuthenticatedToolbar>
 
       <OidcAdminNotice notice={state.page.notice()} />

@@ -11,7 +11,7 @@ import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
 /** Read-only overview of the current realm identity, domains, lifecycle, and admin session. */
 export function AdminRealmOverviewView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
   return (
-    <section aria-label={messageTranslate("admin.overview.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.overview.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <Show
         when={props.state.status() === "ready" && props.state.realm()}
         fallback={
@@ -30,6 +30,7 @@ export function AdminRealmOverviewView(props: { readonly state: ReturnType<typeo
         {(realm) => (
           <>
             <AuthenticatedSection
+              class="[&_h2]:text-xl [&_h2]:sm:text-2xl [&>div:first-child]:bg-accent-soft/40 [&>div:first-child]:py-5 [&>div:last-child]:py-5"
               actions={
                 <AuthenticatedStatus
                   label={
@@ -57,12 +58,12 @@ export function AdminRealmOverviewView(props: { readonly state: ReturnType<typeo
               />
             </AuthenticatedSection>
 
-            <div class="grid min-w-0 gap-3 lg:grid-cols-2 [&>*]:min-w-0">
+            <div class="grid min-w-0 gap-5 lg:grid-cols-2 [&>*]:min-w-0">
               <AuthenticatedSection title={messageTranslate("admin.realm.domains")}>
                 <ul class="divide-y divide-line-subtle">
                   <For each={realm().domains}>
                     {(domain) => (
-                      <li class="truncate px-3 py-1.5 font-mono text-xs text-muted-foreground" title={domain}>
+                      <li class="truncate px-5 py-3 font-mono text-[0.8125rem] text-muted-foreground" title={domain}>
                         {domain}
                       </li>
                     )}
@@ -79,6 +80,7 @@ export function AdminRealmOverviewView(props: { readonly state: ReturnType<typeo
                           identifier: true,
                           label: messageTranslate("admin.signIn.subject"),
                           value: session().subjectId,
+                          wide: true,
                         },
                         {
                           label: messageTranslate("admin.signIn.subjectType"),

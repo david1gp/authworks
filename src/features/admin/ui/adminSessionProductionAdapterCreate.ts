@@ -10,7 +10,7 @@ import type { adminApiCreate } from "./adminApiCreate.js"
 export function adminSessionProductionAdapterCreate(options: {
   readonly api: ReturnType<typeof adminApiCreate>
   readonly realmId: () => string
-}): Pick<AdminAdapter, "adminSignIn" | "adminSignOut" | "sessionCurrent"> {
+}): Pick<AdminAdapter, "adminSignIn" | "adminSignOut" | "sessionCurrent" | "sessionList"> {
   const missingRealm = (op: string) =>
     resultErrorCodedCreate(op, "The administered realm could not be resolved.", "realms.tenant-required")
 
@@ -45,6 +45,11 @@ export function adminSessionProductionAdapterCreate(options: {
         subjectId: result.data.session.subjectId,
         subjectType: result.data.session.subjectType,
       })
+    },
+    sessionList: async (query) => {
+      const realmId = options.realmId()
+      if (realmId.length === 0) return missingRealm("adminSessionList")
+      return options.api.sessionList(realmId, query)
     },
   }
 }

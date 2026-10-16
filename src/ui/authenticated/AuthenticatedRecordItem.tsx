@@ -12,7 +12,7 @@ export function AuthenticatedRecordItem(props: {
   readonly title: JSX.Element
 }) {
   return (
-    <li class="grid min-w-0 gap-2 px-3 py-2.5">
+    <li class="grid min-w-0 gap-2 px-5 py-3.5">
       <div class="flex min-w-0 flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
         <div class="min-w-0 flex-1 truncate text-sm font-medium">{props.title}</div>
         <Show when={props.status}>{(status) => <div class="flex flex-wrap items-center gap-1.5">{status()}</div>}</Show>

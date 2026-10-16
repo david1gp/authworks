@@ -4,14 +4,15 @@ import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { mdiToggleSwitch } from "@adaptive-ds/mdi/mdiToggleSwitch.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { authenticatedNavigationLinkClassGet } from "../../../ui/authenticated/authenticatedNavigationLinkClassGet.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -111,17 +112,17 @@ export function OrganizationAdminLoginPolicyView(props: {
         onRetry={props.onRetry}
         status={props.status}
       >
-        <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
+        <div class="grid min-w-0 max-w-3xl gap-5 [&>*]:min-w-0 [&_label]:text-[0.8125rem]">
           <AuthenticatedSection
             description={messageTranslate("admin.organizations.policy.description")}
             title={messageTranslate("admin.organizations.policy.title")}
           >
-            <form class="grid gap-2 px-3 py-3" onSubmit={props.onPolicySubmit}>
-              <div class="grid gap-1.5 lg:grid-cols-2">
+            <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.onPolicySubmit}>
+              <div class="grid gap-2 sm:grid-cols-2">
                 <For each={policyFields}>
                   {(field) => (
                     <label
-                      class="flex min-w-0 items-center justify-between gap-3 rounded-control border border-line-subtle px-2 py-1.5 text-xs font-medium"
+                      class="flex min-w-0 items-center justify-between gap-3 rounded-control border border-line-subtle px-3 py-3 text-[0.8125rem] font-medium"
                       for={`policy-${field.key}`}
                     >
                       <span class="flex min-w-0 flex-wrap items-center gap-1.5">
@@ -135,7 +136,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                       </span>
                       <input
                         checked={props.policy[field.key]}
-                        class="size-4 shrink-0 rounded border-line"
+                        class={authenticatedControlClasses.checkbox}
                         id={`policy-${field.key}`}
                         onChange={() => props.onPolicyToggle(field.key)}
                         type="checkbox"
@@ -144,8 +145,13 @@ export function OrganizationAdminLoginPolicyView(props: {
                   )}
                 </For>
               </div>
-              <div>
-                <ButtonIcon disabled={props.pendingId === "policy"} icon={mdiContentSave} type="submit">
+              <div class="flex justify-end">
+                <ButtonIcon
+                  disabled={props.pendingId === "policy"}
+                  icon={mdiContentSave}
+                  type="submit"
+                  variant="filledBlue"
+                >
                   {messageTranslate("common.save")}
                 </ButtonIcon>
               </div>
@@ -187,7 +193,7 @@ export function OrganizationAdminLoginPolicyView(props: {
               >
                 <For each={props.providers}>
                   {(provider) => (
-                    <li class="grid min-w-0 gap-2 px-3 py-2.5">
+                    <li class="grid min-w-0 gap-4 px-5 py-4">
                       <div class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
                         <div class="flex min-w-0 flex-wrap items-center gap-2">
                           <h3 class="min-w-0 truncate text-sm font-medium">{provider.displayName}</h3>
@@ -203,6 +209,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                         </div>
                         <div class="flex flex-wrap items-center gap-1.5">
                           <ButtonIcon
+                            size="sm"
                             disabled={props.pendingId === `provider:${provider.id}`}
                             icon={mdiToggleSwitch}
                             onClick={() => props.onProviderEnabledToggle(provider)}
@@ -212,6 +219,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                           </ButtonIcon>
                           <Show when={provider.enabled}>
                             <ButtonIcon
+                              size="sm"
                               disabled={props.pendingId === `provider:${provider.id}`}
                               icon={mdiCancel}
                               onClick={() => props.onProviderDisable(provider.id, provider.displayName)}
@@ -255,6 +263,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                           </p>
                         </div>
                         <ButtonIcon
+                          size="sm"
                           disabled={
                             props.pendingId === `provider:${provider.id}` ||
                             (props.providerSecrets[provider.id] ?? "").length === 0
@@ -274,12 +283,12 @@ export function OrganizationAdminLoginPolicyView(props: {
           </AuthenticatedSection>
 
           <AuthenticatedSection title={messageTranslate("admin.organizations.providers.create")}>
-            <form class="grid gap-3 px-3 py-3" onSubmit={props.onProviderCreateSubmit}>
-              <div class="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+            <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.onProviderCreateSubmit}>
+              <div class="grid gap-4 sm:grid-cols-2">
                 <div class="grid min-w-0 gap-1">
                   <Label for="provider-type">{messageTranslate("admin.organizations.providers.type")}</Label>
                   <select
-                    class="h-9 w-full rounded-control border border-line bg-surface px-2 text-sm text-foreground"
+                    class={authenticatedControlClasses.select}
                     id="provider-type"
                     onChange={(event) =>
                       props.onProviderCreateTypeInput(event.currentTarget.value as ExternalIdentityProviderType)
@@ -334,7 +343,7 @@ export function OrganizationAdminLoginPolicyView(props: {
               <label class="flex items-center gap-2 text-xs font-medium" for="provider-account-creation">
                 <input
                   checked={props.providerCreate.allowAccountCreation}
-                  class="size-4 rounded border-line"
+                  class={authenticatedControlClasses.checkbox}
                   id="provider-account-creation"
                   onChange={props.onProviderAccountCreationToggle}
                   type="checkbox"
@@ -344,8 +353,13 @@ export function OrganizationAdminLoginPolicyView(props: {
               <Show when={props.validationMessage}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <div>
-                <ButtonIcon disabled={props.pendingId === "provider:create"} icon={mdiPlus} type="submit">
+              <div class="flex justify-end">
+                <ButtonIcon
+                  disabled={props.pendingId === "provider:create"}
+                  icon={mdiPlus}
+                  type="submit"
+                  variant="filledBlue"
+                >
                   {messageTranslate("admin.organizations.providers.create")}
                 </ButtonIcon>
               </div>

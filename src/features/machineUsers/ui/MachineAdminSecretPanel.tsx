@@ -1,7 +1,7 @@
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
 import { Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { MachineAdminIssuedSecret } from "./machineAdminIssuedSecret.js"
 import { machineAdminSecretPanelStateCreate } from "./machineAdminSecretPanelStateCreate.js"
@@ -28,7 +28,7 @@ export function MachineAdminSecretPanel(props: {
   return (
     <article
       aria-live="polite"
-      class="grid min-w-0 gap-2 rounded-panel border border-warning/45 bg-warning-soft px-3 py-2.5"
+      class="grid min-w-0 gap-4 rounded-panel border border-warning/45 bg-warning-soft px-5 py-4"
       data-one-time-secret="machine-credential"
     >
       <div class="grid min-w-0 gap-0.5">
@@ -43,9 +43,7 @@ export function MachineAdminSecretPanel(props: {
       <Show when={props.issued.clientId}>
         {(clientId) => (
           <div class="grid min-w-0 gap-1">
-            <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-warning">
-              {messageTranslate("admin.machine.secret.clientId")}
-            </p>
+            <p class="text-xs font-medium text-muted-foreground">{messageTranslate("admin.machine.secret.clientId")}</p>
             <code
               class="block max-w-full break-all rounded-control border border-line bg-surface px-2 py-1.5 font-mono text-xs leading-5"
               data-client-id
@@ -57,9 +55,7 @@ export function MachineAdminSecretPanel(props: {
       </Show>
 
       <div class="grid min-w-0 gap-1">
-        <p class="text-2xs font-semibold tracking-[0.12em] uppercase text-warning">
-          {messageTranslate("admin.machine.secret.value")}
-        </p>
+        <p class="text-xs font-medium text-muted-foreground">{messageTranslate("admin.machine.secret.value")}</p>
         {/* The secret wraps rather than widening the page, so it stays fully readable on a phone. */}
         <code
           class="block max-w-full break-all rounded-control border border-line bg-surface px-2 py-1.5 font-mono text-xs leading-5"
@@ -70,11 +66,12 @@ export function MachineAdminSecretPanel(props: {
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <ButtonIcon icon={mdiContentCopy} onClick={state.copy} variant="outline">
+        <ButtonIcon size="sm" icon={mdiContentCopy} onClick={state.copy} variant="outline">
           {messageTranslate("admin.machine.secret.copy")}
         </ButtonIcon>
         {/* Acknowledgement stays reachable when the clipboard is denied, so the value is never trapped. */}
         <ButtonIcon
+          size="sm"
           disabled={!state.copied() && !state.copyFailed()}
           icon={mdiCheck}
           onClick={state.acknowledge}

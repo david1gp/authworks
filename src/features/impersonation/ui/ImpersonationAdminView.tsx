@@ -1,7 +1,7 @@
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { A } from "@solidjs/router"
 import { Show } from "solid-js"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -20,7 +20,7 @@ export function ImpersonationAdminView(props: {
 }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.impersonation.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.impersonation.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       {/* The banner stays visible in every guarded state, so an active session is never hidden. */}
       <Show when={state.active()}>
         {(session) => (
@@ -46,6 +46,7 @@ export function ImpersonationAdminView(props: {
                     {messageTranslate("admin.impersonation.auditLink")}
                   </A>
                   <ButtonIcon
+                    size="sm"
                     disabled={state.pendingId() !== undefined}
                     icon={mdiLogout}
                     onClick={() => void state.impersonationEnd()}
@@ -92,7 +93,7 @@ function ImpersonationAdminStartSection(props: { readonly state: ImpersonationAd
       description={messageTranslate("admin.impersonation.description")}
       title={messageTranslate("admin.impersonation.start")}
     >
-      <div class="px-3 py-3">
+      <div class="px-5 py-4">
         <ImpersonationAdminStartForm state={props.state} />
       </div>
     </AuthenticatedSection>

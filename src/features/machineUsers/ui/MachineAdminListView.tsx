@@ -2,12 +2,12 @@ import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -46,7 +46,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
   )
 
   return (
-    <section aria-label={messageTranslate("admin.machine.users.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.machine.users.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
         actions={
           <AuthenticatedDialog
@@ -58,7 +58,10 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
             triggerIcon={mdiPlus}
             variant="filledBlue"
           >
-            <form class="grid gap-3" onSubmit={state.createSubmit}>
+            <form
+              class="grid max-w-3xl gap-4 [&_label]:text-[0.8125rem] [&_label]:font-medium [&_div.grid]:gap-y-1.5"
+              onSubmit={state.createSubmit}
+            >
               <div class="grid gap-3 sm:grid-cols-2">
                 <div class="grid min-w-0 gap-1">
                   <Label for="machine-user-display-name">{messageTranslate("admin.machine.users.displayName")}</Label>
@@ -76,7 +79,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
                     onInput={(event) => state.userName.set(event.currentTarget.value)}
                     value={state.userName.get()}
                   />
-                  <p class="text-2xs leading-4 text-muted-foreground">
+                  <p class="text-xs leading-4 text-muted-foreground">
                     {messageTranslate("admin.machine.users.userNameHint")}
                   </p>
                 </div>
@@ -90,7 +93,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
                   onInput={(event) => state.scopes.set(event.currentTarget.value)}
                   value={state.scopes.get()}
                 />
-                <p class="text-2xs leading-4 text-muted-foreground">
+                <p class="text-xs leading-4 text-muted-foreground">
                   {messageTranslate("admin.machine.users.scopesHint")}
                 </p>
               </div>
@@ -100,7 +103,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
               </Show>
 
               {/* Creation issues client credentials once, so the warning precedes the action. */}
-              <p class="rounded-control border border-line-subtle bg-muted px-2 py-1.5 text-2xs leading-4 text-muted-foreground">
+              <p class="rounded-control border border-warning/35 bg-warning-soft px-3.5 py-3 text-xs leading-5 text-warning">
                 {messageTranslate("admin.machine.users.createSecretHint")}
               </p>
 
@@ -122,7 +125,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
           {messageTranslate("admin.machine.users.search")}
         </Label>
         <Input
-          class="max-w-xs"
+          class="w-full sm:max-w-xs"
           id="machine-user-search"
           onInput={(event) => state.searchSet(event.currentTarget.value)}
           placeholder={messageTranslate("admin.machine.users.search")}

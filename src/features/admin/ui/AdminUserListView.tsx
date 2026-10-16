@@ -1,11 +1,11 @@
 import { mdiAccountPlus } from "@adaptive-ds/mdi/mdiAccountPlus.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -25,11 +25,10 @@ type AdminUserListViewState = ReturnType<typeof adminPageStateCreate>
 
 export function AdminUserListView(props: { readonly detailHrefBase: string; readonly state: AdminUserListViewState }) {
   return (
-    <section aria-label={messageTranslate("admin.users.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.users.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
         actions={
           <AuthenticatedDialog
-            class="h-8 text-xs"
             description={messageTranslate("admin.users.createDescription")}
             onOpenChange={props.state.createOpen.set}
             open={props.state.createOpen.get()}
@@ -38,27 +37,33 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
             triggerIcon={mdiAccountPlus}
             variant="filledBlue"
           >
-            <form class="grid gap-3" onSubmit={props.state.userCreateSubmit}>
-              <div class="grid gap-1">
-                <Label for="admin-user-email">{messageTranslate("admin.users.email")}</Label>
-                <Input
+            <form class="grid gap-4" onSubmit={props.state.userCreateSubmit}>
+              <div class="grid gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="admin-user-email">
+                  {messageTranslate("admin.users.email")}
+                </Label>
+                <AuthenticatedInput
                   id="admin-user-email"
                   onInput={(event) => props.state.createEmail.set(event.currentTarget.value)}
                   type="email"
                   value={props.state.createEmail.get()}
                 />
               </div>
-              <div class="grid gap-1">
-                <Label for="admin-user-name">{messageTranslate("admin.users.userName")}</Label>
-                <Input
+              <div class="grid gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="admin-user-name">
+                  {messageTranslate("admin.users.userName")}
+                </Label>
+                <AuthenticatedInput
                   id="admin-user-name"
                   onInput={(event) => props.state.createUserName.set(event.currentTarget.value)}
                   value={props.state.createUserName.get()}
                 />
               </div>
-              <div class="grid gap-1">
-                <Label for="admin-user-display-name">{messageTranslate("admin.users.displayName")}</Label>
-                <Input
+              <div class="grid gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="admin-user-display-name">
+                  {messageTranslate("admin.users.displayName")}
+                </Label>
+                <AuthenticatedInput
                   id="admin-user-display-name"
                   onInput={(event) => props.state.createDisplayName.set(event.currentTarget.value)}
                   value={props.state.createDisplayName.get()}
@@ -67,9 +72,9 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
               <Show when={props.state.validationMessage()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <ButtonIcon icon={mdiAccountPlus} type="submit" variant="filledBlue">
+              <AuthenticatedButton class="justify-self-end" icon={mdiAccountPlus} type="submit" variant="filledBlue">
                 {messageTranslate("admin.users.createSubmit")}
-              </ButtonIcon>
+              </AuthenticatedButton>
             </form>
           </AuthenticatedDialog>
         }
@@ -79,8 +84,8 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
         <Label class="sr-only" for="admin-user-search">
           {messageTranslate("admin.users.search")}
         </Label>
-        <Input
-          class="h-8 w-72 max-w-full text-sm"
+        <AuthenticatedInput
+          class="w-full sm:w-80"
           id="admin-user-search"
           onInput={(event) => props.state.searchTerm.set(event.currentTarget.value)}
           placeholder={messageTranslate("admin.users.searchPlaceholder")}
@@ -148,6 +153,7 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
                       <A
                         class="min-w-0 truncate text-accent hover:underline"
                         href={`${props.detailHrefBase}/${item.id}`}
+                        title={item.userName}
                       >
                         {item.userName}
                       </A>
@@ -189,6 +195,7 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
                         <A
                           class="min-w-0 truncate font-medium text-accent hover:underline"
                           href={`${props.detailHrefBase}/${item.id}`}
+                          title={item.userName}
                         >
                           {item.userName}
                         </A>

@@ -13,8 +13,8 @@ import { demoScenarioPlaceholderStateCreate } from "./demoScenarioPlaceholderSta
 export function DemoScenarioPlaceholder(props: { backHref: string; groups: readonly DemoFixtureScenarioGroup[] }) {
   const state = demoScenarioPlaceholderStateCreate(() => props.groups)
   return (
-    <div class="mx-auto grid w-full max-w-5xl gap-3">
-      <A class="text-xs font-medium text-accent hover:underline" href={props.backHref}>
+    <div class="mx-auto grid w-full max-w-5xl gap-5">
+      <A class="text-[0.8125rem] font-medium text-accent hover:underline" href={props.backHref}>
         {messageTranslate("demo.directory.back")}
       </A>
       <Show
@@ -25,7 +25,7 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
               description={messageTranslate("demo.placeholder.notFoundDescription")}
               title={messageTranslate("demo.placeholder.notFoundTitle")}
             />
-            <AuthenticatedSection>
+            <AuthenticatedSection padded>
               <ProductionStatePanel
                 compact
                 detail={messageTranslate("demo.placeholder.notFoundDescription")}
@@ -49,7 +49,7 @@ export function DemoScenarioPlaceholder(props: { backHref: string; groups: reado
               }
               title={ttc(scenario().title)}
             />
-            <AuthenticatedSection label={messageTranslate("demo.fixture.state")}>
+            <AuthenticatedSection padded label={messageTranslate("demo.fixture.state")}>
               <Switch>
                 <Match when={state.selectedState() === "loading"}>
                   <ProductionStatePanel compact state="loading" title={messageTranslate("demo.placeholder.loading")} />

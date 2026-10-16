@@ -1,11 +1,11 @@
 import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiChevronUp } from "@adaptive-ds/mdi/mdiChevronUp.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { CodeBlock } from "#ui/static/code/CodeBlock.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
@@ -21,7 +21,7 @@ import { adminViewStatusPanelState } from "./adminViewStatusPanelState.js"
 
 export function AdminEventListView(props: { readonly state: ReturnType<typeof adminPageStateCreate> }) {
   return (
-    <section aria-label={messageTranslate("admin.events.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.events.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
         label={messageTranslate("admin.events.title")}
         summary={messageTranslate("admin.events.count", { count: props.state.events().length })}
@@ -29,8 +29,8 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
         <Label class="sr-only" for="admin-event-search">
           {messageTranslate("admin.events.search")}
         </Label>
-        <Input
-          class="h-8 w-72 max-w-full text-sm"
+        <AuthenticatedInput
+          class="w-full sm:w-72"
           id="admin-event-search"
           onInput={(event) => props.state.searchTerm.set(event.currentTarget.value)}
           placeholder={messageTranslate("admin.events.searchPlaceholder")}
@@ -60,8 +60,8 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
               {(item) => (
                 <AuthenticatedRecordItem
                   actions={
-                    <ButtonIcon
-                      class="h-7 text-xs"
+                    <AuthenticatedButton
+                      size="sm"
                       icon={props.state.expandedEventId() === item.id ? mdiChevronUp : mdiChevronDown}
                       onClick={() => props.state.eventExpandToggle(item.id)}
                       variant="outline"
@@ -69,7 +69,7 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
                       {props.state.expandedEventId() === item.id
                         ? messageTranslate("admin.events.hide")
                         : messageTranslate("admin.events.show")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   }
                   fields={[
                     {
@@ -80,8 +80,13 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
                       label: messageTranslate("admin.events.aggregate"),
                       value: (
                         <>
-                          <span class="block truncate">{item.aggregateType}</span>
-                          <span class="block truncate font-mono text-2xs font-normal text-muted-foreground">
+                          <span class="block truncate" title={item.aggregateType}>
+                            {item.aggregateType}
+                          </span>
+                          <span
+                            class="block truncate font-mono text-[0.8125rem] font-normal text-muted-foreground"
+                            title={item.aggregateId}
+                          >
                             {item.aggregateId}
                           </span>
                         </>
@@ -133,18 +138,26 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
                         {localeDateFormat(item.occurredAt, { dateStyle: "medium", timeStyle: "short" })}
                       </TableCell>
                       <TableCell class={`${authenticatedTableClasses.cell} font-medium`}>{item.eventType}</TableCell>
-                      <TableCell class={authenticatedTableClasses.cell}>
-                        <span class="block truncate">{item.aggregateType}</span>
-                        <span class="block max-w-[22ch] truncate font-mono text-2xs text-muted-foreground">
+                      <TableCell class={`${authenticatedTableClasses.cell} w-[28%]`}>
+                        <span class="block truncate" title={item.aggregateType}>
+                          {item.aggregateType}
+                        </span>
+                        <span
+                          class="block max-w-[28ch] truncate font-mono text-[0.8125rem] text-muted-foreground"
+                          title={item.aggregateId}
+                        >
                           {item.aggregateId}
                         </span>
                       </TableCell>
-                      <TableCell class={authenticatedTableClasses.identifier}>
+                      <TableCell
+                        class={`${authenticatedTableClasses.identifier} w-[22%] max-w-[28ch] truncate`}
+                        title={item.actorId ?? messageTranslate("admin.events.systemActor")}
+                      >
                         {item.actorId ?? messageTranslate("admin.events.systemActor")}
                       </TableCell>
                       <TableCell class={authenticatedTableClasses.action}>
-                        <ButtonIcon
-                          class="h-7 text-xs"
+                        <AuthenticatedButton
+                          size="sm"
                           icon={props.state.expandedEventId() === item.id ? mdiChevronUp : mdiChevronDown}
                           onClick={() => props.state.eventExpandToggle(item.id)}
                           variant="outline"
@@ -152,12 +165,12 @@ export function AdminEventListView(props: { readonly state: ReturnType<typeof ad
                           {props.state.expandedEventId() === item.id
                             ? messageTranslate("admin.events.hide")
                             : messageTranslate("admin.events.show")}
-                        </ButtonIcon>
+                        </AuthenticatedButton>
                       </TableCell>
                     </TableRow>
                     <Show when={props.state.expandedEventId() === item.id}>
                       <TableRow class={authenticatedTableClasses.row}>
-                        <TableCell class="px-3 py-2" colSpan={5}>
+                        <TableCell class="px-5 py-4" colSpan={5}>
                           <p class="mb-1.5 text-xs text-muted-foreground">
                             {messageTranslate("admin.events.redactionNotice")}
                           </p>

@@ -2,18 +2,18 @@ import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -26,7 +26,7 @@ import { projectAdminStatusTone } from "./projectAdminStatusTone.js"
 export function ProjectAdminListView(props: { readonly state: ReturnType<typeof projectAdminListViewStateCreate> }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.projects.list.title")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.projects.list.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <AuthenticatedToolbar
         actions={
           <AuthenticatedDialog
@@ -38,17 +38,21 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
             triggerIcon={mdiPlus}
             variant="filledBlue"
           >
-            <form class="grid gap-3" onSubmit={state.createSubmit}>
-              <div class="grid gap-1">
-                <Label for="project-name">{messageTranslate("admin.projects.list.name")}</Label>
+            <form class="grid gap-4" onSubmit={state.createSubmit}>
+              <div class="grid gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="project-name">
+                  {messageTranslate("admin.projects.list.name")}
+                </Label>
                 <Input
                   id="project-name"
                   onInput={(event) => state.name.set(event.currentTarget.value)}
                   value={state.name.get()}
                 />
               </div>
-              <div class="grid gap-1">
-                <Label for="project-organization">{messageTranslate("admin.projects.detail.organization")}</Label>
+              <div class="grid gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="project-organization">
+                  {messageTranslate("admin.projects.detail.organization")}
+                </Label>
                 <SelectSingleNative
                   getOptions={() => state.page.organizations().map((organization) => organization.id)}
                   id="project-organization"
@@ -76,7 +80,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
           {messageTranslate("admin.projects.list.search")}
         </Label>
         <Input
-          class="max-w-xs"
+          class="w-full sm:max-w-xs"
           id="project-search"
           onInput={(event) => state.searchSet(event.currentTarget.value)}
           placeholder={messageTranslate("admin.projects.list.search")}

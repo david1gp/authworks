@@ -1,11 +1,12 @@
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
@@ -54,28 +55,29 @@ export function OrganizationAdminBrandingView(props: {
         onRetry={props.onRetry}
         status={props.status}
       >
-        <form class="grid min-w-0 gap-3 [&>*]:min-w-0" onSubmit={props.onSubmit}>
-          <div class="grid min-w-0 gap-3 lg:grid-cols-2 [&>*]:min-w-0">
+        <form class="grid min-w-0 max-w-3xl gap-4 [&>*]:min-w-0 [&_label]:text-[0.8125rem]" onSubmit={props.onSubmit}>
+          <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
             <For each={["light", "dark"] as const}>
               {(key) => (
                 <AuthenticatedSection padded title={messageTranslate(themeLabelKeys[key])}>
-                  <div class="grid gap-2.5">
-                    <div class="grid gap-2.5 sm:grid-cols-2">
+                  <div class="grid gap-4">
+                    <div class="grid gap-4 sm:grid-cols-2">
                       <For each={themeColorFields}>
                         {(field) => {
                           const id = `branding-${key}-${field.key}`
                           const value = () => theme(key)[field.key]
                           return (
-                            <div class="grid min-w-0 gap-1">
+                            <div class="grid min-w-0 gap-1.5">
                               <Label for={id}>{messageTranslate(field.labelKey)}</Label>
                               <div class="flex items-center gap-2">
                                 <input
                                   aria-label={messageTranslate(field.labelKey)}
-                                  class="size-9 shrink-0 cursor-pointer rounded-control border border-line bg-transparent"
+                                  class={`${authenticatedControlClasses.input} max-w-9 shrink-0 cursor-pointer`}
                                   onInput={(event) =>
                                     props.onThemeColorInput(key, field.key, event.currentTarget.value)
                                   }
                                   type="color"
+                                  style={{ padding: "4px" }}
                                   value={value()}
                                 />
                                 <Input
@@ -120,7 +122,7 @@ export function OrganizationAdminBrandingView(props: {
                       class="rounded-control border border-line px-3 py-3"
                       style={{ background: theme(key).backgroundColor, color: theme(key).fontColor }}
                     >
-                      <p class="text-2xs font-semibold tracking-[0.12em] uppercase opacity-80">
+                      <p class="text-xs font-medium opacity-80">
                         {messageTranslate("admin.organizations.branding.preview")}
                       </p>
                       <p class="mt-1 text-sm font-semibold">{messageTranslate("app.name")}</p>
@@ -142,20 +144,12 @@ export function OrganizationAdminBrandingView(props: {
             </For>
           </div>
 
-          <AuthenticatedSection
-            actions={
-              <ButtonIcon disabled={props.pendingId === "branding"} icon={mdiContentSave} type="submit">
-                {messageTranslate("common.save")}
-              </ButtonIcon>
-            }
-            description={messageTranslate("admin.organizations.branding.description")}
-            padded
-          >
-            <div class="grid gap-2.5 sm:grid-cols-3">
+          <AuthenticatedSection description={messageTranslate("admin.organizations.branding.description")} padded>
+            <div class="grid gap-4 sm:grid-cols-2">
               <div class="grid min-w-0 gap-1">
                 <Label for="branding-theme-mode">{messageTranslate("admin.organizations.branding.themeMode")}</Label>
                 <select
-                  class="h-9 w-full rounded-control border border-line bg-surface px-2 text-sm text-foreground"
+                  class={authenticatedControlClasses.select}
                   id="branding-theme-mode"
                   onChange={(event) => props.onThemeModeInput(event.currentTarget.value as "dark" | "light" | "system")}
                   value={props.branding.themeMode}
@@ -187,7 +181,7 @@ export function OrganizationAdminBrandingView(props: {
             <label class="mt-2.5 flex items-center gap-2 text-xs font-medium" for="branding-watermark">
               <input
                 checked={props.branding.disableWatermark}
-                class="size-4 rounded border-line"
+                class={authenticatedControlClasses.checkbox}
                 id="branding-watermark"
                 onChange={props.onWatermarkToggle}
                 type="checkbox"
@@ -198,6 +192,16 @@ export function OrganizationAdminBrandingView(props: {
               {(message) => <AuthenticatedNotice class="mt-2.5" message={message()} tone="danger" />}
             </Show>
           </AuthenticatedSection>
+          <div class="flex justify-end">
+            <ButtonIcon
+              disabled={props.pendingId === "branding"}
+              icon={mdiContentSave}
+              type="submit"
+              variant="filledBlue"
+            >
+              {messageTranslate("common.save")}
+            </ButtonIcon>
+          </div>
         </form>
       </OrganizationAdminState>
     </AuthenticatedPageBody>

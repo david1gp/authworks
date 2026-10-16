@@ -7,5 +7,5 @@ import { classMerge } from "#ui/utils/classMerge.js"
  * second labelled region only produces a duplicate landmark name for assistive technology.
  */
 export function AuthenticatedPageBody(props: { readonly children: JSX.Element; readonly class?: string }) {
-  return <div class={classMerge("grid min-w-0 gap-3 [&>*]:min-w-0", props.class)}>{props.children}</div>
+  return <div class={classMerge("grid min-w-0 gap-5 [&>*]:min-w-0", props.class)}>{props.children}</div>
 }

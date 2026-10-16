@@ -4,11 +4,11 @@ import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -21,8 +21,8 @@ import type { OrganizationMembership } from "../public/organizationMembershipSch
 import type { Organization } from "../public/organizationSchema.js"
 import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
-import { organizationAdminStatusTone } from "./organizationAdminStatusTone.js"
 import type { OrganizationAdminStatus } from "./organizationAdminStatusSchema.js"
+import { organizationAdminStatusTone } from "./organizationAdminStatusTone.js"
 
 export function OrganizationAdminDetailView(props: {
   readonly backHref: string
@@ -40,7 +40,7 @@ export function OrganizationAdminDetailView(props: {
   readonly status: OrganizationAdminStatus
 }) {
   return (
-    <section aria-label={messageTranslate("admin.organizations.detailTitle")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.organizations.detailTitle")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <A class="text-xs font-medium text-accent hover:underline" href={props.backHref}>
         {messageTranslate("admin.organizations.list.title")}
       </A>
@@ -96,23 +96,26 @@ export function OrganizationAdminDetailView(props: {
                 description={messageTranslate("admin.organizations.detail.settingsDescription")}
                 title={messageTranslate("admin.organizations.detail.settingsTitle")}
               >
-                <form class="grid gap-3 px-3 py-3" onSubmit={props.onRenameSubmit}>
+                <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.onRenameSubmit}>
                   <div class="grid items-end gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-                    <div class="grid min-w-0 gap-1">
-                      <Label for="organization-detail-name">{messageTranslate("admin.organizations.list.name")}</Label>
+                    <div class="grid min-w-0 gap-1.5">
+                      <Label class="text-[0.8125rem] font-medium" for="organization-detail-name">
+                        {messageTranslate("admin.organizations.list.name")}
+                      </Label>
                       <Input
                         id="organization-detail-name"
                         onInput={(event) => props.onNameInput(event.currentTarget.value)}
                         value={props.name}
                       />
                     </div>
-                    <ButtonIcon disabled={props.pendingId !== undefined} icon={mdiContentSave} type="submit">
+                    <ButtonIcon size="sm" disabled={props.pendingId !== undefined} icon={mdiContentSave} type="submit">
                       {messageTranslate("common.save")}
                     </ButtonIcon>
                   </div>
                   <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
                     <Show when={organization().status !== "active"}>
                       <ButtonIcon
+                        size="sm"
                         disabled={props.pendingId !== undefined}
                         icon={mdiCheckCircle}
                         onClick={() => props.onLifecycleSet("active")}
@@ -123,6 +126,7 @@ export function OrganizationAdminDetailView(props: {
                     </Show>
                     <Show when={organization().status === "active"}>
                       <ButtonIcon
+                        size="sm"
                         disabled={props.pendingId !== undefined}
                         icon={mdiCancel}
                         onClick={() => props.onLifecycleSet("inactive")}
@@ -133,6 +137,7 @@ export function OrganizationAdminDetailView(props: {
                     </Show>
                     <Show when={organization().status !== "removed"}>
                       <ButtonIcon
+                        size="sm"
                         disabled={props.pendingId !== undefined}
                         icon={mdiDelete}
                         onClick={() => props.onLifecycleSet("removed")}
@@ -174,7 +179,11 @@ export function OrganizationAdminDetailView(props: {
                               wide: true,
                             },
                           ]}
-                          title={<span class="font-mono text-xs">{membership.userId}</span>}
+                          title={
+                            <span class="block truncate font-mono text-[0.8125rem]" title={membership.userId}>
+                              {membership.userId}
+                            </span>
+                          }
                         />
                       )}
                     </For>
@@ -199,7 +208,9 @@ export function OrganizationAdminDetailView(props: {
                       <For each={props.memberships}>
                         {(membership) => (
                           <TableRow class={authenticatedTableClasses.row}>
-                            <TableCell class={authenticatedTableClasses.identifier}>{membership.userId}</TableCell>
+                            <TableCell class={authenticatedTableClasses.identifier} title={membership.userId}>
+                              {membership.userId}
+                            </TableCell>
                             <TableCell class={authenticatedTableClasses.cell}>{membership.roles.join(", ")}</TableCell>
                           </TableRow>
                         )}

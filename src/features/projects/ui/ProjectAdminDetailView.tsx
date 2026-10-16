@@ -4,10 +4,10 @@ import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { Show } from "solid-js"
 import { Checkbox } from "#ui/input/check/Checkbox.jsx"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -22,7 +22,7 @@ export function ProjectAdminDetailView(props: {
 }) {
   const state = props.state
   return (
-    <section aria-label={messageTranslate("admin.projects.detailTitle")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.projects.detailTitle")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <ProjectAdminStateBoundary
         emptyDetail={messageTranslate("admin.projects.list.empty")}
         error={state.page.error()}
@@ -70,10 +70,12 @@ export function ProjectAdminDetailView(props: {
                 description={messageTranslate("admin.projects.detail.settingsDescription")}
                 title={messageTranslate("admin.projects.detail.settingsTitle")}
               >
-                <form class="grid gap-3 px-3 py-3" onSubmit={state.settingsSubmit}>
-                  <div class="grid items-end gap-3 sm:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
-                    <div class="grid min-w-0 gap-1">
-                      <Label for="project-detail-name">{messageTranslate("admin.projects.list.name")}</Label>
+                <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={state.settingsSubmit}>
+                  <div class="grid items-start gap-4 sm:grid-cols-2">
+                    <div class="grid min-w-0 gap-1.5">
+                      <Label class="text-[0.8125rem] font-medium" for="project-detail-name">
+                        {messageTranslate("admin.projects.list.name")}
+                      </Label>
                       <Input
                         id="project-detail-name"
                         onInput={(event) => state.name.set(event.currentTarget.value)}
@@ -82,6 +84,7 @@ export function ProjectAdminDetailView(props: {
                     </div>
                     <div class="grid gap-1.5">
                       <Checkbox
+                        class="text-[0.8125rem] font-medium"
                         checked={state.authorizationRequired.get()}
                         id="project-authorization-required"
                         onChange={state.authorizationRequired.set}
@@ -89,6 +92,7 @@ export function ProjectAdminDetailView(props: {
                         {messageTranslate("admin.projects.detail.authorizationRequired")}
                       </Checkbox>
                       <Checkbox
+                        class="text-[0.8125rem] font-medium"
                         checked={state.projectAccessRequired.get()}
                         id="project-access-required"
                         onChange={state.projectAccessRequired.set}
@@ -102,7 +106,7 @@ export function ProjectAdminDetailView(props: {
                       <AuthenticatedNotice message={messageTranslate("admin.projects.saved", { name: name() })} />
                     )}
                   </Show>
-                  <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
+                  <div class="flex flex-wrap items-center gap-2 border-t border-line-subtle pt-4">
                     <ButtonIcon
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiContentSave}
@@ -113,6 +117,7 @@ export function ProjectAdminDetailView(props: {
                     </ButtonIcon>
                     <Show when={project().status === "active"}>
                       <ButtonIcon
+                        size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCancel}
                         onClick={() => state.page.projectLifecycleSet(project().id, "inactive")}
@@ -124,6 +129,7 @@ export function ProjectAdminDetailView(props: {
                     </Show>
                     <Show when={project().status === "inactive"}>
                       <ButtonIcon
+                        size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCheckCircle}
                         onClick={() => state.page.projectLifecycleSet(project().id, "active")}
@@ -134,6 +140,7 @@ export function ProjectAdminDetailView(props: {
                       </ButtonIcon>
                     </Show>
                     <ButtonIcon
+                      size="sm"
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiDelete}
                       onClick={() => void state.projectDelete(project().id)}

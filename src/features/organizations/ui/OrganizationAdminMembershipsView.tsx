@@ -1,15 +1,15 @@
 import { mdiAccountPlus } from "@adaptive-ds/mdi/mdiAccountPlus.js"
 import { mdiAccountRemove } from "@adaptive-ds/mdi/mdiAccountRemove.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
-import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
@@ -50,10 +50,12 @@ export function OrganizationAdminMembershipsView(props: {
         description={messageTranslate("admin.organizations.memberships.description")}
         title={messageTranslate("admin.organizations.memberships.add")}
       >
-        <form class="grid gap-3 px-3 py-3" onSubmit={props.onAddSubmit}>
-          <div class="grid items-end gap-3 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)_auto]">
-            <div class="grid min-w-0 gap-1">
-              <Label for="membership-user-id">{messageTranslate("admin.organizations.memberships.userId")}</Label>
+        <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.onAddSubmit}>
+          <div class="grid gap-4">
+            <div class="grid min-w-0 gap-1.5">
+              <Label class="text-[0.8125rem] font-medium" for="membership-user-id">
+                {messageTranslate("admin.organizations.memberships.userId")}
+              </Label>
               <Input
                 id="membership-user-id"
                 onInput={(event) => props.onAddUserIdInput(event.currentTarget.value)}
@@ -67,7 +69,12 @@ export function OrganizationAdminMembershipsView(props: {
               roles={props.roles}
               selected={props.addRoles}
             />
-            <ButtonIcon disabled={props.pendingId === "membership:create"} icon={mdiAccountPlus} type="submit">
+            <ButtonIcon
+              class="justify-self-start"
+              disabled={props.pendingId === "membership:create"}
+              icon={mdiAccountPlus}
+              type="submit"
+            >
               {messageTranslate("admin.organizations.memberships.add")}
             </ButtonIcon>
           </div>
@@ -93,6 +100,7 @@ export function OrganizationAdminMembershipsView(props: {
                 <AuthenticatedRecordItem
                   actions={
                     <ButtonIcon
+                      size="sm"
                       disabled={props.pendingId === `membership:${membership.id}`}
                       icon={mdiAccountRemove}
                       onClick={() => props.onRemove(membership.id, membership.userId)}
@@ -102,7 +110,11 @@ export function OrganizationAdminMembershipsView(props: {
                     </ButtonIcon>
                   }
                   fields={[]}
-                  title={<span class="font-mono text-xs">{membership.userId}</span>}
+                  title={
+                    <span class="block truncate font-mono text-[0.8125rem]" title={membership.userId}>
+                      {membership.userId}
+                    </span>
+                  }
                 >
                   <OrganizationAdminRoleChooser
                     disabled={props.pendingId === `membership:${membership.id}`}
@@ -140,7 +152,9 @@ export function OrganizationAdminMembershipsView(props: {
               <For each={props.memberships}>
                 {(membership) => (
                   <TableRow class={authenticatedTableClasses.row}>
-                    <TableCell class={authenticatedTableClasses.identifier}>{membership.userId}</TableCell>
+                    <TableCell class={authenticatedTableClasses.identifier} title={membership.userId}>
+                      {membership.userId}
+                    </TableCell>
                     <TableCell class={authenticatedTableClasses.cell}>
                       <OrganizationAdminRoleChooser
                         disabled={props.pendingId === `membership:${membership.id}`}
@@ -154,6 +168,7 @@ export function OrganizationAdminMembershipsView(props: {
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.action}>
                       <ButtonIcon
+                        size="sm"
                         disabled={props.pendingId === `membership:${membership.id}`}
                         icon={mdiAccountRemove}
                         onClick={() => props.onRemove(membership.id, membership.userId)}

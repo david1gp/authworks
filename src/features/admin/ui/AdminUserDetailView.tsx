@@ -1,3 +1,4 @@
+import { mdiAccountArrowRight } from "@adaptive-ds/mdi/mdiAccountArrowRight.js"
 import { mdiAccountCancel } from "@adaptive-ds/mdi/mdiAccountCancel.js"
 import { mdiAccountCheck } from "@adaptive-ds/mdi/mdiAccountCheck.js"
 import { mdiAccountOff } from "@adaptive-ds/mdi/mdiAccountOff.js"
@@ -6,17 +7,17 @@ import { mdiCloseCircle } from "@adaptive-ds/mdi/mdiCloseCircle.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiLock } from "@adaptive-ds/mdi/mdiLock.js"
-import { mdiAccountArrowRight } from "@adaptive-ds/mdi/mdiAccountArrowRight.js"
 import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { authenticatedButtonClassGet } from "../../../ui/authenticated/authenticatedButtonClassGet.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
@@ -36,7 +37,7 @@ export function AdminUserDetailView(props: {
 }) {
   const draft = adminUserDetailStateCreate(props.state.user)
   return (
-    <section aria-label={messageTranslate("admin.users.detailTitle")} class="grid min-w-0 gap-3 [&>*]:min-w-0">
+    <section aria-label={messageTranslate("admin.users.detailTitle")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
       <A class="text-xs font-medium text-accent hover:underline" href={props.backHref}>
         {messageTranslate("admin.users.backToDirectory")}
       </A>
@@ -77,10 +78,10 @@ export function AdminUserDetailView(props: {
                     />
                     <Show when={user().state === "active" && props.state.status() !== "deleted"}>
                       <A
-                        class="inline-flex h-7 items-center rounded-control border border-line px-2 text-xs font-medium hover:bg-surface-hover"
+                        class={authenticatedButtonClassGet("outline", "sm")}
                         href={`${props.impersonationHref}?userId=${encodeURIComponent(user().id)}`}
                       >
-                        <Icon class="mr-1 size-4" path={mdiAccountArrowRight} />
+                        <Icon class="size-4" path={mdiAccountArrowRight} />
                         {messageTranslate("admin.impersonation.userAction")}
                       </A>
                     </Show>
@@ -122,13 +123,13 @@ export function AdminUserDetailView(props: {
               <Show when={props.state.status() !== "deleted"}>
                 <AuthenticatedSection title={messageTranslate("admin.users.profileTitle")}>
                   <form
-                    class="grid gap-3 px-3 py-3"
+                    class="grid max-w-3xl gap-4 px-5 py-4"
                     onSubmit={(event) => {
                       event.preventDefault()
                       void props.state.userProfileSave(draft.draft())
                     }}
                   >
-                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid gap-4 sm:grid-cols-2">
                       <ProfileField
                         id="admin-user-display-name-edit"
                         label={messageTranslate("admin.users.displayName")}
@@ -164,36 +165,42 @@ export function AdminUserDetailView(props: {
                       {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                     </Show>
                     <div>
-                      <ButtonIcon disabled={props.state.pendingId() !== undefined} icon={mdiContentSave} type="submit">
+                      <AuthenticatedButton
+                        disabled={props.state.pendingId() !== undefined}
+                        icon={mdiContentSave}
+                        type="submit"
+                      >
                         {messageTranslate("admin.users.profileSave")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </form>
                 </AuthenticatedSection>
 
-                <div class="grid min-w-0 gap-3 lg:grid-cols-2 [&>*]:min-w-0">
+                <div class="grid min-w-0 gap-5 lg:grid-cols-2 [&>*]:min-w-0">
                   <AuthenticatedSection
                     description={messageTranslate("admin.users.verificationDescription")}
                     padded
                     title={messageTranslate("admin.users.verificationTitle")}
                   >
                     <div class="flex flex-wrap gap-2">
-                      <ButtonIcon
+                      <AuthenticatedButton
+                        size="sm"
                         disabled={user().verificationState === "verified" || props.state.pendingId() !== undefined}
                         icon={mdiCheckCircle}
                         onClick={() => void props.state.userVerificationSet("verified")}
                         variant="outline"
                       >
                         {messageTranslate("admin.users.markVerified")}
-                      </ButtonIcon>
-                      <ButtonIcon
+                      </AuthenticatedButton>
+                      <AuthenticatedButton
+                        size="sm"
                         disabled={user().verificationState === "unverified" || props.state.pendingId() !== undefined}
                         icon={mdiCloseCircle}
                         onClick={() => void props.state.userVerificationSet("unverified")}
                         variant="outline"
                       >
                         {messageTranslate("admin.users.markUnverified")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </div>
                   </AuthenticatedSection>
 
@@ -205,7 +212,8 @@ export function AdminUserDetailView(props: {
                     <div class="flex flex-wrap gap-2">
                       <For each={lifecycleChoices}>
                         {(choice) => (
-                          <ButtonIcon
+                          <AuthenticatedButton
+                            size="sm"
                             disabled={user().state === choice || props.state.pendingId() !== undefined}
                             icon={
                               choice === "active"
@@ -220,7 +228,7 @@ export function AdminUserDetailView(props: {
                             variant="outline"
                           >
                             {messageTranslate(`admin.users.lifecycle.${choice}`)}
-                          </ButtonIcon>
+                          </AuthenticatedButton>
                         )}
                       </For>
                     </div>
@@ -231,14 +239,15 @@ export function AdminUserDetailView(props: {
 
                 <AuthenticatedSection
                   actions={
-                    <ButtonIcon
+                    <AuthenticatedButton
+                      size="sm"
                       disabled={props.state.pendingId() !== undefined}
                       icon={mdiDelete}
                       onClick={() => void props.state.userDelete()}
                       variant="outline"
                     >
                       {messageTranslate("admin.users.delete")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   }
                   class="border-danger/35"
                   padded
@@ -262,9 +271,11 @@ function ProfileField(props: {
   readonly value: string
 }) {
   return (
-    <div class="grid gap-1">
-      <Label for={props.id}>{props.label}</Label>
-      <Input
+    <div class="grid gap-1.5">
+      <Label class="text-[0.8125rem] font-medium" for={props.id}>
+        {props.label}
+      </Label>
+      <AuthenticatedInput
         id={props.id}
         maxlength={128}
         onInput={(event) => props.onInput(event.currentTarget.value)}

@@ -4,17 +4,17 @@ import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -33,6 +33,7 @@ export function ProjectAdminApplicationsView(props: {
     <>
       <Show when={application.status === "active"}>
         <ButtonIcon
+          size="sm"
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCancel}
           onClick={() => state.lifecycleSet(application.id, "inactive")}
@@ -43,6 +44,7 @@ export function ProjectAdminApplicationsView(props: {
       </Show>
       <Show when={application.status === "inactive"}>
         <ButtonIcon
+          size="sm"
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCheckCircle}
           onClick={() => state.lifecycleSet(application.id, "active")}
@@ -52,6 +54,7 @@ export function ProjectAdminApplicationsView(props: {
         </ButtonIcon>
       </Show>
       <ButtonIcon
+        size="sm"
         disabled={state.page.pendingId() !== undefined}
         icon={mdiDelete}
         onClick={() => state.lifecycleSet(application.id, "removed")}
@@ -65,7 +68,7 @@ export function ProjectAdminApplicationsView(props: {
   return (
     <section
       aria-label={messageTranslate("admin.projects.applications.title")}
-      class="grid min-w-0 gap-3 [&>*]:min-w-0"
+      class="grid min-w-0 gap-5 [&>*]:min-w-0"
     >
       <ProjectAdminProjectContext page={state.page} />
 
@@ -80,17 +83,21 @@ export function ProjectAdminApplicationsView(props: {
             triggerIcon={mdiPlus}
             variant="filledBlue"
           >
-            <form class="grid gap-3" onSubmit={state.createSubmit}>
-              <div class="grid gap-1">
-                <Label for="application-name">{messageTranslate("admin.projects.applications.name")}</Label>
+            <form class="grid gap-4" onSubmit={state.createSubmit}>
+              <div class="grid gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="application-name">
+                  {messageTranslate("admin.projects.applications.name")}
+                </Label>
                 <Input
                   id="application-name"
                   onInput={(event) => state.name.set(event.currentTarget.value)}
                   value={state.name.get()}
                 />
               </div>
-              <div class="grid gap-1">
-                <Label for="application-type">{messageTranslate("admin.projects.applications.type")}</Label>
+              <div class="grid gap-1.5">
+                <Label class="text-[0.8125rem] font-medium" for="application-type">
+                  {messageTranslate("admin.projects.applications.type")}
+                </Label>
                 <SelectSingleNative
                   getOptions={() => ["oidc", "api", "saml"]}
                   id="application-type"

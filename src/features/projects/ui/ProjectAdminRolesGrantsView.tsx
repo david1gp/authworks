@@ -4,18 +4,19 @@ import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
-import { Input } from "#ui/input/input/Input.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { SelectSingleNative } from "#ui/input/select/SelectSingleNative.jsx"
-import { ButtonIcon } from "#ui/interactive/button/ButtonIcon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
+import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
+import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
+import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
-import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
+import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
+import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { ProductionStatePanel } from "../../../ui/production/ProductionStatePanel.js"
@@ -33,6 +34,7 @@ export function ProjectAdminRolesGrantsView(props: {
     <>
       <Show when={grant.status === "active"}>
         <ButtonIcon
+          size="sm"
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCancel}
           onClick={() => state.grantLifecycleSet(grant.id, "inactive")}
@@ -43,6 +45,7 @@ export function ProjectAdminRolesGrantsView(props: {
       </Show>
       <Show when={grant.status === "inactive"}>
         <ButtonIcon
+          size="sm"
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCheckCircle}
           onClick={() => state.grantLifecycleSet(grant.id, "active")}
@@ -52,6 +55,7 @@ export function ProjectAdminRolesGrantsView(props: {
         </ButtonIcon>
       </Show>
       <ButtonIcon
+        size="sm"
         disabled={state.page.pendingId() !== undefined}
         icon={mdiDelete}
         onClick={() => state.grantDelete(grant.id)}
@@ -63,9 +67,11 @@ export function ProjectAdminRolesGrantsView(props: {
   )
   const grantOrganizationName = (grant: ProjectGrant) => (
     <span class="inline-flex min-w-0 flex-wrap items-center gap-1.5">
-      <span class="truncate">{state.page.organizationName(grant.grantedOrganizationId)}</span>
+      <span class="truncate" title={state.page.organizationName(grant.grantedOrganizationId)}>
+        {state.page.organizationName(grant.grantedOrganizationId)}
+      </span>
       <Show when={grant.grantedOrganizationId !== grant.organizationId}>
-        <span class="rounded-full bg-muted px-1.5 py-0.5 text-2xs text-muted-foreground">
+        <span class="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
           {messageTranslate("admin.projects.access.grantedOrganization")}
         </span>
       </Show>
@@ -93,25 +99,31 @@ export function ProjectAdminRolesGrantsView(props: {
               triggerIcon={mdiPlus}
               variant="filledBlue"
             >
-              <form class="grid gap-3" onSubmit={state.roleCreateSubmit}>
-                <div class="grid gap-1">
-                  <Label for="role-key">{messageTranslate("admin.projects.roles.key")}</Label>
+              <form class="grid gap-4" onSubmit={state.roleCreateSubmit}>
+                <div class="grid gap-1.5">
+                  <Label class="text-[0.8125rem] font-medium" for="role-key">
+                    {messageTranslate("admin.projects.roles.key")}
+                  </Label>
                   <Input
                     id="role-key"
                     onInput={(event) => state.roleKey.set(event.currentTarget.value)}
                     value={state.roleKey.get()}
                   />
                 </div>
-                <div class="grid gap-1">
-                  <Label for="role-display-name">{messageTranslate("admin.projects.roles.displayName")}</Label>
+                <div class="grid gap-1.5">
+                  <Label class="text-[0.8125rem] font-medium" for="role-display-name">
+                    {messageTranslate("admin.projects.roles.displayName")}
+                  </Label>
                   <Input
                     id="role-display-name"
                     onInput={(event) => state.roleDisplayName.set(event.currentTarget.value)}
                     value={state.roleDisplayName.get()}
                   />
                 </div>
-                <div class="grid gap-1">
-                  <Label for="role-group">{messageTranslate("admin.projects.roles.group")}</Label>
+                <div class="grid gap-1.5">
+                  <Label class="text-[0.8125rem] font-medium" for="role-group">
+                    {messageTranslate("admin.projects.roles.group")}
+                  </Label>
                   <Input
                     id="role-group"
                     onInput={(event) => state.roleGroup.set(event.currentTarget.value)}
@@ -147,6 +159,7 @@ export function ProjectAdminRolesGrantsView(props: {
                   <AuthenticatedRecordItem
                     actions={
                       <ButtonIcon
+                        size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiDelete}
                         onClick={() => state.roleDelete(role.id)}
@@ -197,11 +210,14 @@ export function ProjectAdminRolesGrantsView(props: {
                 <For each={state.page.roles()}>
                   {(role) => (
                     <TableRow class={authenticatedTableClasses.row}>
-                      <TableCell class={authenticatedTableClasses.identifier}>{role.key}</TableCell>
+                      <TableCell class={authenticatedTableClasses.identifier} title={role.key}>
+                        {role.key}
+                      </TableCell>
                       <TableCell class={`${authenticatedTableClasses.cell} font-medium`}>{role.displayName}</TableCell>
                       <TableCell class={authenticatedTableClasses.cell}>{role.group ?? "—"}</TableCell>
                       <TableCell class={authenticatedTableClasses.action}>
                         <ButtonIcon
+                          size="sm"
                           disabled={state.page.pendingId() !== undefined}
                           icon={mdiDelete}
                           onClick={() => state.roleDelete(role.id)}
@@ -229,9 +245,9 @@ export function ProjectAdminRolesGrantsView(props: {
               triggerIcon={mdiPlus}
               variant="filledBlue"
             >
-              <form class="grid gap-3" onSubmit={state.grantCreateSubmit}>
-                <div class="grid gap-1">
-                  <Label for="grant-organization">
+              <form class="grid gap-4" onSubmit={state.grantCreateSubmit}>
+                <div class="grid gap-1.5">
+                  <Label class="text-[0.8125rem] font-medium" for="grant-organization">
                     {messageTranslate("admin.projects.grants.grantedOrganization")}
                   </Label>
                   <SelectSingleNative
@@ -241,12 +257,15 @@ export function ProjectAdminRolesGrantsView(props: {
                     valueText={(id) => state.page.organizationName(id)}
                   />
                 </div>
-                <fieldset class="grid gap-1.5">
-                  <legend class="text-xs font-medium">{messageTranslate("admin.projects.grants.roleKeys")}</legend>
+                <fieldset class="grid gap-3 rounded-control border border-line bg-muted/40 p-4">
+                  <legend class="px-1 text-[0.8125rem] font-medium">
+                    {messageTranslate("admin.projects.grants.roleKeys")}
+                  </legend>
                   <For each={state.page.roles()}>
                     {(role) => (
-                      <label class="flex items-center gap-2 text-sm">
+                      <label class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                         <input
+                          class={authenticatedControlClasses.checkbox}
                           checked={state.grantRoleKeys.get().includes(role.key)}
                           onChange={() => state.grantRoleToggle(role.key)}
                           type="checkbox"
@@ -332,7 +351,9 @@ export function ProjectAdminRolesGrantsView(props: {
                       <TableCell class={`${authenticatedTableClasses.cell} font-medium`}>
                         {grantOrganizationName(grant)}
                       </TableCell>
-                      <TableCell class={`${authenticatedTableClasses.cell} max-w-xs`}>
+                      <TableCell
+                        class={`${authenticatedTableClasses.cell} max-w-xs break-words font-mono text-[0.8125rem]`}
+                      >
                         {grant.roleKeys.join(", ") || "—"}
                       </TableCell>
                       <TableCell class={authenticatedTableClasses.cell}>
