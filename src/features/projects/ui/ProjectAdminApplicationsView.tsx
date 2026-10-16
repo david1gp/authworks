@@ -6,15 +6,15 @@ import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -32,7 +32,7 @@ export function ProjectAdminApplicationsView(props: {
   const lifecycleActions = (application: ProjectApplication) => (
     <>
       <Show when={application.status === "active"}>
-        <ButtonIcon
+        <AuthenticatedButton
           size="sm"
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCancel}
@@ -40,10 +40,10 @@ export function ProjectAdminApplicationsView(props: {
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.deactivate")}
-        </ButtonIcon>
+        </AuthenticatedButton>
       </Show>
       <Show when={application.status === "inactive"}>
-        <ButtonIcon
+        <AuthenticatedButton
           size="sm"
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCheckCircle}
@@ -51,17 +51,17 @@ export function ProjectAdminApplicationsView(props: {
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.activate")}
-        </ButtonIcon>
+        </AuthenticatedButton>
       </Show>
-      <ButtonIcon
+      <AuthenticatedButton
         size="sm"
         disabled={state.page.pendingId() !== undefined}
         icon={mdiDelete}
         onClick={() => state.lifecycleSet(application.id, "removed")}
-        variant="filledRed"
+        variant="outlineRed"
       >
         {messageTranslate("admin.projects.lifecycle.remove")}
-      </ButtonIcon>
+      </AuthenticatedButton>
     </>
   )
 
@@ -88,7 +88,7 @@ export function ProjectAdminApplicationsView(props: {
                 <Label class="text-[0.8125rem] font-medium" for="application-name">
                   {messageTranslate("admin.projects.applications.name")}
                 </Label>
-                <Input
+                <AuthenticatedInput
                   id="application-name"
                   onInput={(event) => state.name.set(event.currentTarget.value)}
                   value={state.name.get()}
@@ -98,7 +98,7 @@ export function ProjectAdminApplicationsView(props: {
                 <Label class="text-[0.8125rem] font-medium" for="application-type">
                   {messageTranslate("admin.projects.applications.type")}
                 </Label>
-                <SelectSingleNative
+                <AuthenticatedSelect
                   getOptions={() => ["oidc", "api", "saml"]}
                   id="application-type"
                   valueSignal={state.applicationType}
@@ -107,14 +107,16 @@ export function ProjectAdminApplicationsView(props: {
               <Show when={state.formError()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <ButtonIcon
-                disabled={state.page.pendingId() !== undefined}
-                icon={mdiContentSave}
-                type="submit"
-                variant="filledBlue"
-              >
-                {messageTranslate("common.save")}
-              </ButtonIcon>
+              <div class="flex justify-end gap-2">
+                <AuthenticatedButton
+                  disabled={state.page.pendingId() !== undefined}
+                  icon={mdiContentSave}
+                  type="submit"
+                  variant="filledBlue"
+                >
+                  {messageTranslate("common.save")}
+                </AuthenticatedButton>
+              </div>
             </form>
           </AuthenticatedDialog>
         }

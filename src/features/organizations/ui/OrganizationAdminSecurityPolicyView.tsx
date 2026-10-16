@@ -1,7 +1,7 @@
 import { mdiArrowDown } from "@adaptive-ds/mdi/mdiArrowDown.js"
 import { mdiArrowUp } from "@adaptive-ds/mdi/mdiArrowUp.js"
 import { For, Show } from "solid-js"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -42,7 +42,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
       : messageTranslate("admin.organizations.policy.organizationValue")
   const inheritanceControl = (key: SecurityPolicyKey) => (
     <Show when={props.scope === "organization"}>
-      <label class="mt-2 flex items-center gap-2 text-xs font-medium">
+      <label class="mt-3 flex min-h-9 items-center gap-2 text-xs font-medium">
         <input
           checked={!props.fieldInherited(key)}
           class={authenticatedControlClasses.checkbox}
@@ -70,7 +70,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
       padded
       title={messageTranslate("admin.organizations.policy.securityTitle")}
     >
-      <div class="grid min-w-0 max-w-3xl gap-4 sm:grid-cols-2 [&>*]:min-w-0">
+      <div class="grid min-w-0 max-w-3xl gap-4 md:grid-cols-2 [&>*]:min-w-0">
         <fieldset class={fieldsetClass}>
           {fieldLegend("requiredMfa", messageTranslate("admin.organizations.policy.requiredMfa"))}
           <p class="mt-1 text-xs text-muted-foreground">
@@ -156,7 +156,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
                     {index() + 1}. {messageTranslate(factorLabelKeys[factor])}
                   </span>
                   <div class="flex items-center gap-1.5">
-                    <ButtonIcon
+                    <AuthenticatedButton
                       aria-label={messageTranslate("admin.organizations.policy.moveUp", {
                         factor: messageTranslate(factorLabelKeys[factor]),
                       })}
@@ -168,8 +168,8 @@ export function OrganizationAdminSecurityPolicyView(props: {
                       variant="outline"
                     >
                       {messageTranslate("admin.organizations.policy.up")}
-                    </ButtonIcon>
-                    <ButtonIcon
+                    </AuthenticatedButton>
+                    <AuthenticatedButton
                       aria-label={messageTranslate("admin.organizations.policy.moveDown", {
                         factor: messageTranslate(factorLabelKeys[factor]),
                       })}
@@ -181,7 +181,7 @@ export function OrganizationAdminSecurityPolicyView(props: {
                       variant="outline"
                     >
                       {messageTranslate("admin.organizations.policy.down")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </li>
               )}

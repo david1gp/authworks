@@ -1,8 +1,8 @@
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -80,7 +80,7 @@ export function OrganizationAdminBrandingView(props: {
                                   style={{ padding: "4px" }}
                                   value={value()}
                                 />
-                                <Input
+                                <AuthenticatedInput
                                   class="min-w-0 font-mono text-xs"
                                   id={id}
                                   onInput={(event) =>
@@ -94,12 +94,12 @@ export function OrganizationAdminBrandingView(props: {
                         }}
                       </For>
                     </div>
-                    <div class="grid gap-2.5 sm:grid-cols-2">
+                    <div class="grid gap-4 border-t border-line-subtle pt-4 sm:grid-cols-2">
                       <div class="grid min-w-0 gap-1">
                         <Label for={`branding-${key}-logoUrl`}>
                           {messageTranslate("admin.organizations.branding.logoUrl")}
                         </Label>
-                        <Input
+                        <AuthenticatedInput
                           id={`branding-${key}-logoUrl`}
                           onInput={(event) => props.onThemeAssetInput(key, "logoUrl", event.currentTarget.value)}
                           placeholder={messageTranslate("common.urlPlaceholder")}
@@ -110,7 +110,7 @@ export function OrganizationAdminBrandingView(props: {
                         <Label for={`branding-${key}-iconUrl`}>
                           {messageTranslate("admin.organizations.branding.iconUrl")}
                         </Label>
-                        <Input
+                        <AuthenticatedInput
                           id={`branding-${key}-iconUrl`}
                           onInput={(event) => props.onThemeAssetInput(key, "iconUrl", event.currentTarget.value)}
                           placeholder={messageTranslate("common.urlPlaceholder")}
@@ -119,7 +119,7 @@ export function OrganizationAdminBrandingView(props: {
                       </div>
                     </div>
                     <div
-                      class="rounded-control border border-line px-3 py-3"
+                      class="rounded-control border border-line px-4 py-4"
                       style={{ background: theme(key).backgroundColor, color: theme(key).fontColor }}
                     >
                       <p class="text-xs font-medium opacity-80">
@@ -161,7 +161,7 @@ export function OrganizationAdminBrandingView(props: {
               </div>
               <div class="grid min-w-0 gap-1">
                 <Label for="branding-terms">{messageTranslate("admin.organizations.branding.termsUrl")}</Label>
-                <Input
+                <AuthenticatedInput
                   id="branding-terms"
                   onInput={(event) => props.onLegalUrlInput("termsUrl", event.currentTarget.value)}
                   placeholder={messageTranslate("common.urlPlaceholder")}
@@ -170,7 +170,7 @@ export function OrganizationAdminBrandingView(props: {
               </div>
               <div class="grid min-w-0 gap-1">
                 <Label for="branding-privacy">{messageTranslate("admin.organizations.branding.privacyUrl")}</Label>
-                <Input
+                <AuthenticatedInput
                   id="branding-privacy"
                   onInput={(event) => props.onLegalUrlInput("privacyUrl", event.currentTarget.value)}
                   placeholder={messageTranslate("common.urlPlaceholder")}
@@ -178,7 +178,10 @@ export function OrganizationAdminBrandingView(props: {
                 />
               </div>
             </div>
-            <label class="mt-2.5 flex items-center gap-2 text-xs font-medium" for="branding-watermark">
+            <label
+              class="mt-4 flex min-h-10 items-center gap-3 rounded-control border border-line-subtle px-3 py-2 text-[0.8125rem] font-medium"
+              for="branding-watermark"
+            >
               <input
                 checked={props.branding.disableWatermark}
                 class={authenticatedControlClasses.checkbox}
@@ -193,14 +196,14 @@ export function OrganizationAdminBrandingView(props: {
             </Show>
           </AuthenticatedSection>
           <div class="flex justify-end">
-            <ButtonIcon
+            <AuthenticatedButton
               disabled={props.pendingId === "branding"}
               icon={mdiContentSave}
               type="submit"
               variant="filledBlue"
             >
               {messageTranslate("common.save")}
-            </ButtonIcon>
+            </AuthenticatedButton>
           </div>
         </form>
       </OrganizationAdminState>

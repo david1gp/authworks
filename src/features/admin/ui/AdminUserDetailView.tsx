@@ -169,6 +169,7 @@ export function AdminUserDetailView(props: {
                         disabled={props.state.pendingId() !== undefined}
                         icon={mdiContentSave}
                         type="submit"
+                        variant="filledBlue"
                       >
                         {messageTranslate("admin.users.profileSave")}
                       </AuthenticatedButton>

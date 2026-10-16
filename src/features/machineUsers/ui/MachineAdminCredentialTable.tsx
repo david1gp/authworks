@@ -1,7 +1,7 @@
 import { mdiKeyRemove } from "@adaptive-ds/mdi/mdiKeyRemove.js"
 import { For, Show } from "solid-js"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
@@ -46,15 +46,15 @@ export function MachineAdminCredentialTable(props: { readonly state: MachineAdmi
   // A revoked credential offers no further action; revocation is final.
   const revokeButton = (credential: MachineCredential) => (
     <Show when={state.credentialState(credential) !== "revoked"}>
-      <ButtonIcon
+      <AuthenticatedButton
         size="sm"
         disabled={state.pendingId() !== undefined}
         icon={mdiKeyRemove}
         onClick={() => void state.credentialRevoke(credential.id)}
-        variant="filledRed"
+        variant="outlineRed"
       >
         {messageTranslate("admin.machine.credentials.revoke")}
-      </ButtonIcon>
+      </AuthenticatedButton>
     </Show>
   )
 

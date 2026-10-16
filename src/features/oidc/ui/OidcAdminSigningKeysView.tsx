@@ -3,7 +3,7 @@ import { mdiKeyRemove } from "@adaptive-ds/mdi/mdiKeyRemove.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
@@ -25,7 +25,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
     key.retiredAt === null ? "—" : localeDateFormat(key.retiredAt, { dateStyle: "medium" })
   const retireButton = (key: OidcSigningKey) => (
     <Show when={key.status === "active"}>
-      <ButtonIcon
+      <AuthenticatedButton
         size="sm"
         disabled={state.pendingId() !== undefined}
         icon={mdiKeyRemove}
@@ -33,7 +33,7 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
         variant="outline"
       >
         {messageTranslate("admin.oidc.keys.retire")}
-      </ButtonIcon>
+      </AuthenticatedButton>
     </Show>
   )
 
@@ -42,22 +42,22 @@ export function OidcAdminSigningKeysView(props: { readonly state: OidcAdminPageS
       <AuthenticatedToolbar
         actions={
           <>
-            <ButtonIcon
+            <AuthenticatedButton
               disabled={state.pendingId() !== undefined}
               icon={mdiPlus}
               onClick={() => void state.signingKeyCreate()}
               variant="outline"
             >
               {messageTranslate("admin.oidc.keys.create")}
-            </ButtonIcon>
-            <ButtonIcon
+            </AuthenticatedButton>
+            <AuthenticatedButton
               disabled={state.pendingId() !== undefined}
               icon={mdiAutorenew}
               onClick={() => void state.signingKeyRotate()}
               variant="filledBlue"
             >
               {messageTranslate("admin.oidc.keys.rotate")}
-            </ButtonIcon>
+            </AuthenticatedButton>
           </>
         }
         label={messageTranslate("admin.oidc.keys.title")}

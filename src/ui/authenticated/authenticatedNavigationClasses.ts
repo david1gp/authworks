@@ -8,15 +8,15 @@ export const authenticatedNavigationClasses = {
   /** Desktop content offset applied while the rail is open. */
   contentOffset: "lg:ltr:ml-60 lg:rtl:mr-60",
   /** Sidebar brand row; the header has its own content-column framing. */
-  brandRow: "flex h-14 shrink-0 items-center gap-2.5 border-b border-line px-4",
+  brandRow: "flex h-14 shrink-0 items-center gap-2.5 border-b border-line px-4 max-lg:hidden",
   brandLink: "min-w-0 flex-1 truncate text-[0.9375rem] font-semibold tracking-tight",
-  footer: "shrink-0 border-t border-line px-2 py-2",
+  footer: "shrink-0 border-t border-line px-2 py-2 max-lg:hidden",
   footerButton: "w-full justify-start text-muted-foreground hover:text-foreground",
   frame: "flex h-full min-h-0 flex-col bg-surface",
   groupHeading: "px-2 pb-1.5 text-xs font-medium text-muted-foreground",
   groupSection: "mt-5 first:mt-0",
   link: "flex h-8 items-center gap-2.5 rounded-control px-2 text-sm font-medium transition-colors [&>svg]:size-4.5 [&>svg]:shrink-0",
-  linkActive: "bg-accent-soft text-accent",
+  linkActive: "bg-accent-soft font-semibold text-accent dark:bg-accent/20 dark:text-accent-hover",
   linkInactive: "text-foreground/80 hover:bg-surface-hover hover:text-foreground",
   nav: "min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pt-3 pb-3",
   header:
@@ -24,7 +24,7 @@ export const authenticatedNavigationClasses = {
   headerStart: "flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3",
   headerEnd: "flex shrink-0 items-center gap-1.5 sm:gap-3",
   headerBrand: "flex min-w-0 items-center gap-1.5 sm:gap-2",
-  headerBrandMark: "size-7",
+  headerBrandMark: "size-7 rounded-[9px] text-sm leading-none",
   headerLink: "max-w-16 truncate text-[0.8125rem] text-muted-foreground hover:text-foreground sm:max-w-none",
   sidebarToggle: "size-8 shrink-0 p-0 text-muted-foreground hover:bg-surface-hover hover:text-foreground",
   mobileContent: "h-[min(42rem,calc(95dvh-10rem))] w-[min(18rem,calc(100vw-5rem))]",

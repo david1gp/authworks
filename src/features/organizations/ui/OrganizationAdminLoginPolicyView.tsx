@@ -5,9 +5,9 @@ import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { mdiToggleSwitch } from "@adaptive-ds/mdi/mdiToggleSwitch.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -118,42 +118,42 @@ export function OrganizationAdminLoginPolicyView(props: {
             title={messageTranslate("admin.organizations.policy.title")}
           >
             <form class="grid max-w-3xl gap-4 px-5 py-4" onSubmit={props.onPolicySubmit}>
-              <div class="grid gap-2 sm:grid-cols-2">
+              <div class="grid items-start gap-2 sm:grid-cols-2">
                 <For each={policyFields}>
                   {(field) => (
                     <label
-                      class="flex min-w-0 items-center justify-between gap-3 rounded-control border border-line-subtle px-3 py-3 text-[0.8125rem] font-medium"
+                      class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-1.5 rounded-control border border-line-subtle px-3 py-3 text-[0.8125rem] font-medium"
                       for={`policy-${field.key}`}
                     >
-                      <span class="flex min-w-0 flex-wrap items-center gap-1.5">
-                        <span class="min-w-0 truncate">{messageTranslate(field.labelKey)}</span>
-                        <Show when={props.overrides[field.key] === undefined || props.overrides[field.key] === null}>
-                          <AuthenticatedStatus
-                            label={messageTranslate("admin.organizations.policy.inherited")}
-                            tone="neutral"
-                          />
-                        </Show>
-                      </span>
                       <input
                         checked={props.policy[field.key]}
-                        class={authenticatedControlClasses.checkbox}
+                        class={`${authenticatedControlClasses.checkbox} mt-0.5`}
                         id={`policy-${field.key}`}
                         onChange={() => props.onPolicyToggle(field.key)}
                         type="checkbox"
                       />
+                      <span class="min-w-0">{messageTranslate(field.labelKey)}</span>
+                      <Show when={props.overrides[field.key] === undefined || props.overrides[field.key] === null}>
+                        <span class="col-start-2">
+                          <AuthenticatedStatus
+                            label={messageTranslate("admin.organizations.policy.inherited")}
+                            tone="neutral"
+                          />
+                        </span>
+                      </Show>
                     </label>
                   )}
                 </For>
               </div>
               <div class="flex justify-end">
-                <ButtonIcon
+                <AuthenticatedButton
                   disabled={props.pendingId === "policy"}
                   icon={mdiContentSave}
                   type="submit"
                   variant="filledBlue"
                 >
                   {messageTranslate("common.save")}
-                </ButtonIcon>
+                </AuthenticatedButton>
               </div>
             </form>
           </AuthenticatedSection>
@@ -196,7 +196,9 @@ export function OrganizationAdminLoginPolicyView(props: {
                     <li class="grid min-w-0 gap-4 px-5 py-4">
                       <div class="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
                         <div class="flex min-w-0 flex-wrap items-center gap-2">
-                          <h3 class="min-w-0 truncate text-sm font-medium">{provider.displayName}</h3>
+                          <h3 class="min-w-0 truncate text-sm font-medium" title={provider.displayName}>
+                            {provider.displayName}
+                          </h3>
                           <AuthenticatedStatus label={provider.type} tone="neutral" />
                           <AuthenticatedStatus
                             label={
@@ -208,7 +210,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                           />
                         </div>
                         <div class="flex flex-wrap items-center gap-1.5">
-                          <ButtonIcon
+                          <AuthenticatedButton
                             size="sm"
                             disabled={props.pendingId === `provider:${provider.id}`}
                             icon={mdiToggleSwitch}
@@ -216,17 +218,17 @@ export function OrganizationAdminLoginPolicyView(props: {
                             variant="outline"
                           >
                             {provider.enabled ? messageTranslate("common.disable") : messageTranslate("common.enable")}
-                          </ButtonIcon>
+                          </AuthenticatedButton>
                           <Show when={provider.enabled}>
-                            <ButtonIcon
+                            <AuthenticatedButton
                               size="sm"
                               disabled={props.pendingId === `provider:${provider.id}`}
                               icon={mdiCancel}
                               onClick={() => props.onProviderDisable(provider.id, provider.displayName)}
-                              variant="filledRed"
+                              variant="outlineRed"
                             >
                               {messageTranslate("admin.organizations.providers.disable")}
-                            </ButtonIcon>
+                            </AuthenticatedButton>
                           </Show>
                         </div>
                       </div>
@@ -251,7 +253,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                           <Label for={`provider-secret-${provider.id}`}>
                             {messageTranslate("admin.organizations.providers.clientSecret")}
                           </Label>
-                          <Input
+                          <AuthenticatedInput
                             autocomplete="off"
                             id={`provider-secret-${provider.id}`}
                             onInput={(event) => props.onProviderSecretInput(provider.id, event.currentTarget.value)}
@@ -262,7 +264,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                             {messageTranslate("admin.organizations.providers.secretWriteOnly")}
                           </p>
                         </div>
-                        <ButtonIcon
+                        <AuthenticatedButton
                           size="sm"
                           disabled={
                             props.pendingId === `provider:${provider.id}` ||
@@ -273,7 +275,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                           variant="outline"
                         >
                           {messageTranslate("admin.organizations.providers.rotateSecret")}
-                        </ButtonIcon>
+                        </AuthenticatedButton>
                       </div>
                     </li>
                   )}
@@ -302,7 +304,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                   <Label for="provider-display-name">
                     {messageTranslate("admin.organizations.providers.displayName")}
                   </Label>
-                  <Input
+                  <AuthenticatedInput
                     id="provider-display-name"
                     onInput={(event) => props.onProviderCreateInput("displayName", event.currentTarget.value)}
                     value={props.providerCreate.displayName}
@@ -310,7 +312,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                 </div>
                 <div class="grid min-w-0 gap-1">
                   <Label for="provider-client-id">{messageTranslate("admin.organizations.providers.clientId")}</Label>
-                  <Input
+                  <AuthenticatedInput
                     id="provider-client-id"
                     onInput={(event) => props.onProviderCreateInput("clientId", event.currentTarget.value)}
                     value={props.providerCreate.clientId}
@@ -320,7 +322,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                   <Label for="provider-client-secret">
                     {messageTranslate("admin.organizations.providers.clientSecret")}
                   </Label>
-                  <Input
+                  <AuthenticatedInput
                     autocomplete="off"
                     id="provider-client-secret"
                     onInput={(event) => props.onProviderCreateInput("clientSecret", event.currentTarget.value)}
@@ -332,7 +334,7 @@ export function OrganizationAdminLoginPolicyView(props: {
                   <Label for="provider-redirect-uri">
                     {messageTranslate("admin.organizations.providers.redirectUri")}
                   </Label>
-                  <Input
+                  <AuthenticatedInput
                     id="provider-redirect-uri"
                     onInput={(event) => props.onProviderCreateInput("redirectUri", event.currentTarget.value)}
                     placeholder={messageTranslate("common.urlPlaceholder")}
@@ -340,7 +342,10 @@ export function OrganizationAdminLoginPolicyView(props: {
                   />
                 </div>
               </div>
-              <label class="flex items-center gap-2 text-xs font-medium" for="provider-account-creation">
+              <label
+                class="flex min-h-10 items-center gap-3 rounded-control border border-line-subtle px-3 py-2 text-[0.8125rem] font-medium"
+                for="provider-account-creation"
+              >
                 <input
                   checked={props.providerCreate.allowAccountCreation}
                   class={authenticatedControlClasses.checkbox}
@@ -354,14 +359,14 @@ export function OrganizationAdminLoginPolicyView(props: {
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
               <div class="flex justify-end">
-                <ButtonIcon
+                <AuthenticatedButton
                   disabled={props.pendingId === "provider:create"}
                   icon={mdiPlus}
                   type="submit"
                   variant="filledBlue"
                 >
                   {messageTranslate("admin.organizations.providers.create")}
-                </ButtonIcon>
+                </AuthenticatedButton>
               </div>
             </form>
           </AuthenticatedSection>

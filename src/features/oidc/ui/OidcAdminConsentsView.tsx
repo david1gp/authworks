@@ -2,12 +2,12 @@ import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { For } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
 import { localeDateFormat } from "../../../ui/i18n/model/localeDateFormat.js"
@@ -21,7 +21,7 @@ import type { oidcAdminConsentsViewStateCreate } from "./oidcAdminConsentsViewSt
 export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof oidcAdminConsentsViewStateCreate> }) {
   const state = props.state
   const revokeButton = (consent: OidcConsent) => (
-    <ButtonIcon
+    <AuthenticatedButton
       size="sm"
       disabled={state.page.pendingId() !== undefined}
       icon={mdiCancel}
@@ -29,7 +29,7 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
       variant="outline"
     >
       {messageTranslate("common.revoke")}
-    </ButtonIcon>
+    </AuthenticatedButton>
   )
 
   return (
@@ -42,7 +42,7 @@ export function OidcAdminConsentsView(props: { readonly state: ReturnType<typeof
           {messageTranslate("admin.oidc.consents.user")}
         </Label>
         <div class="w-full sm:max-w-xs">
-          <SelectSingleNative
+          <AuthenticatedSelect
             getOptions={() => state.page.users().map((user) => user.id)}
             id="oidc-consent-user"
             valueSignal={state.userIdSignal}

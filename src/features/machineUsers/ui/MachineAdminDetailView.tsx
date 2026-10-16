@@ -4,7 +4,7 @@ import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { mdiKeyPlus } from "@adaptive-ds/mdi/mdiKeyPlus.js"
 import { Show } from "solid-js"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -100,7 +100,7 @@ export function MachineAdminDetailView(props: {
                     {messageTranslate("admin.machine.secret.redacted")}
                   </p>
                   <div class="mt-2 flex flex-wrap gap-2">
-                    <ButtonIcon
+                    <AuthenticatedButton
                       size="sm"
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiAutorenew}
@@ -108,7 +108,7 @@ export function MachineAdminDetailView(props: {
                       variant="filledBlue"
                     >
                       {messageTranslate("admin.machine.secret.rotate")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </AuthenticatedSection>
 
@@ -119,7 +119,7 @@ export function MachineAdminDetailView(props: {
                 >
                   <div class="flex flex-wrap gap-2">
                     <Show when={machineUser().status === "active"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCancel}
@@ -127,10 +127,10 @@ export function MachineAdminDetailView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.machine.lifecycle.deactivate")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
                     <Show when={machineUser().status === "inactive"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCheckCircle}
@@ -138,17 +138,17 @@ export function MachineAdminDetailView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.machine.lifecycle.activate")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
-                    <ButtonIcon
+                    <AuthenticatedButton
                       size="sm"
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiDelete}
                       onClick={() => void state.machineUserRemove(machineUser().id)}
-                      variant="filledRed"
+                      variant="outlineRed"
                     >
                       {messageTranslate("admin.machine.lifecycle.remove")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </AuthenticatedSection>
               </div>

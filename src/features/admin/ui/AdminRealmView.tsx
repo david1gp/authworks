@@ -127,6 +127,7 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                         disabled={props.state.pendingId() !== undefined}
                         icon={mdiContentSave}
                         type="submit"
+                        variant="filledBlue"
                       >
                         {messageTranslate("admin.realm.save")}
                       </AuthenticatedButton>
@@ -172,6 +173,7 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                         />
                       </div>
                       <AuthenticatedButton
+                        size="sm"
                         disabled={props.state.pendingId() === "realm:lifecycle:disabled"}
                         icon={mdiCancel}
                         onClick={() => props.state.realmLifecycleApply("disabled")}

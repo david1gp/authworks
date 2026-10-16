@@ -6,15 +6,15 @@ import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -33,7 +33,7 @@ export function ProjectAdminRolesGrantsView(props: {
   const grantActions = (grant: ProjectGrant) => (
     <>
       <Show when={grant.status === "active"}>
-        <ButtonIcon
+        <AuthenticatedButton
           size="sm"
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCancel}
@@ -41,10 +41,10 @@ export function ProjectAdminRolesGrantsView(props: {
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.deactivate")}
-        </ButtonIcon>
+        </AuthenticatedButton>
       </Show>
       <Show when={grant.status === "inactive"}>
-        <ButtonIcon
+        <AuthenticatedButton
           size="sm"
           disabled={state.page.pendingId() !== undefined}
           icon={mdiCheckCircle}
@@ -52,17 +52,17 @@ export function ProjectAdminRolesGrantsView(props: {
           variant="outline"
         >
           {messageTranslate("admin.projects.lifecycle.activate")}
-        </ButtonIcon>
+        </AuthenticatedButton>
       </Show>
-      <ButtonIcon
+      <AuthenticatedButton
         size="sm"
         disabled={state.page.pendingId() !== undefined}
         icon={mdiDelete}
         onClick={() => state.grantDelete(grant.id)}
-        variant="filledRed"
+        variant="outlineRed"
       >
         {messageTranslate("common.revoke")}
-      </ButtonIcon>
+      </AuthenticatedButton>
     </>
   )
   const grantOrganizationName = (grant: ProjectGrant) => (
@@ -91,6 +91,7 @@ export function ProjectAdminRolesGrantsView(props: {
         <AuthenticatedSection
           actions={
             <AuthenticatedDialog
+              triggerSize="sm"
               description={messageTranslate("admin.projects.roles.description")}
               onOpenChange={state.roleCreateOpenSet}
               open={state.roleCreateOpen()}
@@ -104,7 +105,7 @@ export function ProjectAdminRolesGrantsView(props: {
                   <Label class="text-[0.8125rem] font-medium" for="role-key">
                     {messageTranslate("admin.projects.roles.key")}
                   </Label>
-                  <Input
+                  <AuthenticatedInput
                     id="role-key"
                     onInput={(event) => state.roleKey.set(event.currentTarget.value)}
                     value={state.roleKey.get()}
@@ -114,7 +115,7 @@ export function ProjectAdminRolesGrantsView(props: {
                   <Label class="text-[0.8125rem] font-medium" for="role-display-name">
                     {messageTranslate("admin.projects.roles.displayName")}
                   </Label>
-                  <Input
+                  <AuthenticatedInput
                     id="role-display-name"
                     onInput={(event) => state.roleDisplayName.set(event.currentTarget.value)}
                     value={state.roleDisplayName.get()}
@@ -124,7 +125,7 @@ export function ProjectAdminRolesGrantsView(props: {
                   <Label class="text-[0.8125rem] font-medium" for="role-group">
                     {messageTranslate("admin.projects.roles.group")}
                   </Label>
-                  <Input
+                  <AuthenticatedInput
                     id="role-group"
                     onInput={(event) => state.roleGroup.set(event.currentTarget.value)}
                     value={state.roleGroup.get()}
@@ -133,14 +134,16 @@ export function ProjectAdminRolesGrantsView(props: {
                 <Show when={state.roleFormError()}>
                   {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                 </Show>
-                <ButtonIcon
-                  disabled={state.page.pendingId() !== undefined}
-                  icon={mdiContentSave}
-                  type="submit"
-                  variant="filledBlue"
-                >
-                  {messageTranslate("common.save")}
-                </ButtonIcon>
+                <div class="flex justify-end gap-2">
+                  <AuthenticatedButton
+                    disabled={state.page.pendingId() !== undefined}
+                    icon={mdiContentSave}
+                    type="submit"
+                    variant="filledBlue"
+                  >
+                    {messageTranslate("common.save")}
+                  </AuthenticatedButton>
+                </div>
               </form>
             </AuthenticatedDialog>
           }
@@ -158,15 +161,15 @@ export function ProjectAdminRolesGrantsView(props: {
                 {(role) => (
                   <AuthenticatedRecordItem
                     actions={
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiDelete}
                         onClick={() => state.roleDelete(role.id)}
-                        variant="filledRed"
+                        variant="outlineRed"
                       >
                         {messageTranslate("admin.projects.lifecycle.remove")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     }
                     fields={[
                       {
@@ -216,15 +219,15 @@ export function ProjectAdminRolesGrantsView(props: {
                       <TableCell class={`${authenticatedTableClasses.cell} font-medium`}>{role.displayName}</TableCell>
                       <TableCell class={authenticatedTableClasses.cell}>{role.group ?? "—"}</TableCell>
                       <TableCell class={authenticatedTableClasses.action}>
-                        <ButtonIcon
+                        <AuthenticatedButton
                           size="sm"
                           disabled={state.page.pendingId() !== undefined}
                           icon={mdiDelete}
                           onClick={() => state.roleDelete(role.id)}
-                          variant="filledRed"
+                          variant="outlineRed"
                         >
                           {messageTranslate("admin.projects.lifecycle.remove")}
-                        </ButtonIcon>
+                        </AuthenticatedButton>
                       </TableCell>
                     </TableRow>
                   )}
@@ -237,6 +240,7 @@ export function ProjectAdminRolesGrantsView(props: {
         <AuthenticatedSection
           actions={
             <AuthenticatedDialog
+              triggerSize="sm"
               description={messageTranslate("admin.projects.grants.description")}
               onOpenChange={state.grantCreateOpenSet}
               open={state.grantCreateOpen()}
@@ -250,7 +254,7 @@ export function ProjectAdminRolesGrantsView(props: {
                   <Label class="text-[0.8125rem] font-medium" for="grant-organization">
                     {messageTranslate("admin.projects.grants.grantedOrganization")}
                   </Label>
-                  <SelectSingleNative
+                  <AuthenticatedSelect
                     getOptions={() => state.grantableOrganizations().map((organization) => organization.id)}
                     id="grant-organization"
                     valueSignal={state.grantOrganizationId}
@@ -279,14 +283,16 @@ export function ProjectAdminRolesGrantsView(props: {
                 <Show when={state.grantFormError()}>
                   {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                 </Show>
-                <ButtonIcon
-                  disabled={state.page.pendingId() !== undefined}
-                  icon={mdiContentSave}
-                  type="submit"
-                  variant="filledBlue"
-                >
-                  {messageTranslate("common.save")}
-                </ButtonIcon>
+                <div class="flex justify-end gap-2">
+                  <AuthenticatedButton
+                    disabled={state.page.pendingId() !== undefined}
+                    icon={mdiContentSave}
+                    type="submit"
+                    variant="filledBlue"
+                  >
+                    {messageTranslate("common.save")}
+                  </AuthenticatedButton>
+                </div>
               </form>
             </AuthenticatedDialog>
           }

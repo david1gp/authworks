@@ -5,9 +5,9 @@ import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -54,6 +54,7 @@ export function OidcAdminClientListView(props: {
 
   return (
     <section aria-label={messageTranslate("admin.oidc.clients.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
+      <p class="text-sm text-muted-foreground">{messageTranslate("admin.oidc.clients.description")}</p>
       <AuthenticatedToolbar
         actions={
           <AuthenticatedDialog
@@ -84,24 +85,25 @@ export function OidcAdminClientListView(props: {
               <Show when={state.formError()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <ButtonIcon
-                disabled={state.page.pendingId() !== undefined}
-                icon={mdiContentSave}
-                type="submit"
-                variant="filledBlue"
-              >
-                {messageTranslate("common.save")}
-              </ButtonIcon>
+              <div class="flex justify-end gap-2">
+                <AuthenticatedButton
+                  disabled={state.page.pendingId() !== undefined}
+                  icon={mdiContentSave}
+                  type="submit"
+                  variant="filledBlue"
+                >
+                  {messageTranslate("common.save")}
+                </AuthenticatedButton>
+              </div>
             </form>
           </AuthenticatedDialog>
         }
         label={messageTranslate("admin.oidc.clients.title")}
-        summary={messageTranslate("admin.oidc.clients.description")}
       >
         <Label class="sr-only" for="oidc-client-search">
           {messageTranslate("admin.oidc.clients.search")}
         </Label>
-        <Input
+        <AuthenticatedInput
           class="w-full sm:max-w-xs"
           id="oidc-client-search"
           onInput={(event) => state.searchSet(event.currentTarget.value)}

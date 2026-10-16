@@ -6,7 +6,7 @@ export function AuthenticatedBrandMark(props: { readonly class?: string }) {
     <span
       aria-hidden="true"
       class={classMerge(
-        "grid size-8 shrink-0 place-items-center rounded-[10px] bg-accent font-bold text-accent-contrast",
+        "grid size-8 shrink-0 place-items-center rounded-[10px] bg-accent text-base leading-none font-bold text-accent-contrast",
         props.class,
       )}
     >

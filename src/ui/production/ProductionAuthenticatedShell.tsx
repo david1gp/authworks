@@ -1,5 +1,7 @@
 import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
+import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
+import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
 import { mdiOfficeBuildingOutline } from "@adaptive-ds/mdi/mdiOfficeBuildingOutline.js"
 import { mdiShieldLockOutline } from "@adaptive-ds/mdi/mdiShieldLockOutline.js"
 import { A } from "@solidjs/router"
@@ -107,6 +109,11 @@ export function ProductionAuthenticatedShell(props: {
                 <SidebarToggle
                   {...state.sidebar}
                   class={authenticatedNavigationClasses.sidebarToggle}
+                  iconClass="size-4.5 rtl:-scale-x-100"
+                  iconDesktopOpen={mdiDockLeft}
+                  iconDesktopClose={mdiDockLeft}
+                  iconMobileOpen={mdiMenu}
+                  iconMobileClose={mdiMenu}
                   variant="ghost"
                 />
               </Show>
@@ -117,7 +124,7 @@ export function ProductionAuthenticatedShell(props: {
                   href={state.homeHref()}
                 >
                   <AuthenticatedBrandMark class={authenticatedNavigationClasses.headerBrandMark} />
-                  <span class={`${authenticatedNavigationClasses.brandLink} hidden sm:inline`}>
+                  <span class={`${authenticatedNavigationClasses.brandLink} sr-only sm:not-sr-only`}>
                     {messageTranslate("app.name")}
                   </span>
                 </A>
@@ -126,7 +133,7 @@ export function ProductionAuthenticatedShell(props: {
                 <A
                   aria-current={state.isActive("/admin") ? "page" : undefined}
                   aria-label={messageTranslate("admin.navigation.label")}
-                  class="flex h-8 shrink-0 items-center gap-1.5 rounded-full px-1.5 text-[0.8125rem] font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground aria-[current=page]:bg-accent-soft aria-[current=page]:text-accent xl:px-2.5"
+                  class="hidden h-8 shrink-0 items-center gap-1.5 rounded-full px-1.5 text-[0.8125rem] font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground aria-[current=page]:bg-accent-soft aria-[current=page]:text-accent sm:flex xl:px-2.5"
                   href="/admin"
                   title={messageTranslate("admin.navigation.label")}
                 >
@@ -138,7 +145,7 @@ export function ProductionAuthenticatedShell(props: {
                 <A
                   aria-current={state.isActive("/account") ? "page" : undefined}
                   aria-label={messageTranslate("shell.nav.account")}
-                  class="flex h-8 shrink-0 items-center gap-1.5 rounded-full px-1.5 text-[0.8125rem] font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground aria-[current=page]:bg-accent-soft aria-[current=page]:text-accent xl:px-2.5"
+                  class="hidden h-8 shrink-0 items-center gap-1.5 rounded-full px-1.5 text-[0.8125rem] font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground aria-[current=page]:bg-accent-soft aria-[current=page]:text-accent sm:flex xl:px-2.5"
                   href="/account"
                   title={messageTranslate("shell.nav.account")}
                 >
@@ -173,11 +180,14 @@ export function ProductionAuthenticatedShell(props: {
 
             <div class={`${authenticatedNavigationClasses.headerEnd} max-xl:gap-1.5 max-sm:gap-1`}>
               <Show when={state.organizationSwitchable()}>
-                <div class="authenticated-pill-select inline-flex min-w-0 items-center text-xs">
+                <div
+                  class="authenticated-pill-select inline-flex min-w-0 items-center text-xs"
+                  title={state.organizationLabel()}
+                >
                   <Icon class="hidden shrink-0 sm:block" path={mdiOfficeBuildingOutline} />
                   <select
                     aria-label={messageTranslate("shell.nav.organization")}
-                    class="max-w-10 truncate text-foreground sm:max-w-16 xl:max-w-28"
+                    class="max-w-16 truncate text-foreground xl:max-w-28"
                     aria-busy={state.organizationSwitchPending()}
                     disabled={state.organizationSwitchPending()}
                     value={state.organizationId()}
@@ -207,7 +217,7 @@ export function ProductionAuthenticatedShell(props: {
                   </span>
                 </div>
               </Show>
-              <LanguageSelector class="authenticated-language-selector max-sm:[&>select]:max-w-8 max-sm:[&>svg]:hidden sm:[&>select]:max-w-16 xl:[&>select]:max-w-none" />
+              <LanguageSelector class="authenticated-language-selector" />
               <AuthenticatedThemeToggle class="hidden sm:inline-flex" />
               <ThemeButton class="size-8 shrink-0 p-0 sm:hidden" />
               <div class="flex shrink-0 items-center gap-1 sm:gap-2">

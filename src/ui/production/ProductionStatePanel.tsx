@@ -20,7 +20,7 @@ export function ProductionStatePanel(props: {
     <section
       aria-live={props.state === "loading" ? "polite" : undefined}
       class={classMerge(
-        "mx-auto flex flex-col items-center justify-center text-center",
+        "mx-auto flex flex-col items-center justify-center text-center in-[[data-shell=focus]]:min-h-0 in-[[data-shell=focus]]:rounded-none in-[[data-shell=focus]]:border-0 in-[[data-shell=focus]]:bg-transparent in-[[data-shell=focus]]:px-0 in-[[data-shell=focus]]:py-2 in-[[data-shell=focus]]:shadow-none",
         props.compact
           ? "min-h-40 max-w-md px-4 py-8"
           : "min-h-72 max-w-xl rounded-panel border border-line bg-surface px-6 py-12 shadow-panel",

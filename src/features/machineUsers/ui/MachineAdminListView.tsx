@@ -5,9 +5,9 @@ import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -47,6 +47,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
 
   return (
     <section aria-label={messageTranslate("admin.machine.users.title")} class="grid min-w-0 gap-5 [&>*]:min-w-0">
+      <p class="text-sm text-muted-foreground">{messageTranslate("admin.machine.users.description")}</p>
       <AuthenticatedToolbar
         actions={
           <AuthenticatedDialog
@@ -62,10 +63,10 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
               class="grid max-w-3xl gap-4 [&_label]:text-[0.8125rem] [&_label]:font-medium [&_div.grid]:gap-y-1.5"
               onSubmit={state.createSubmit}
             >
-              <div class="grid gap-3 sm:grid-cols-2">
+              <div class="grid items-start gap-3 sm:grid-cols-2">
                 <div class="grid min-w-0 gap-1">
                   <Label for="machine-user-display-name">{messageTranslate("admin.machine.users.displayName")}</Label>
-                  <Input
+                  <AuthenticatedInput
                     id="machine-user-display-name"
                     onInput={(event) => state.displayName.set(event.currentTarget.value)}
                     value={state.displayName.get()}
@@ -73,7 +74,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
                 </div>
                 <div class="grid min-w-0 gap-1">
                   <Label for="machine-user-user-name">{messageTranslate("admin.machine.users.userName")}</Label>
-                  <Input
+                  <AuthenticatedInput
                     class="font-mono text-xs"
                     id="machine-user-user-name"
                     onInput={(event) => state.userName.set(event.currentTarget.value)}
@@ -87,7 +88,7 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
 
               <div class="grid min-w-0 gap-1">
                 <Label for="machine-user-scopes">{messageTranslate("admin.machine.users.scopes")}</Label>
-                <Input
+                <AuthenticatedInput
                   class="font-mono text-xs"
                   id="machine-user-scopes"
                   onInput={(event) => state.scopes.set(event.currentTarget.value)}
@@ -107,24 +108,25 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
                 {messageTranslate("admin.machine.users.createSecretHint")}
               </p>
 
-              <ButtonIcon
-                disabled={state.page.pendingId() !== undefined}
-                icon={mdiContentSave}
-                type="submit"
-                variant="filledBlue"
-              >
-                {messageTranslate("common.save")}
-              </ButtonIcon>
+              <div class="flex justify-end gap-2">
+                <AuthenticatedButton
+                  disabled={state.page.pendingId() !== undefined}
+                  icon={mdiContentSave}
+                  type="submit"
+                  variant="filledBlue"
+                >
+                  {messageTranslate("common.save")}
+                </AuthenticatedButton>
+              </div>
             </form>
           </AuthenticatedDialog>
         }
         label={messageTranslate("admin.machine.users.title")}
-        summary={messageTranslate("admin.machine.users.description")}
       >
         <Label class="sr-only" for="machine-user-search">
           {messageTranslate("admin.machine.users.search")}
         </Label>
-        <Input
+        <AuthenticatedInput
           class="w-full sm:max-w-xs"
           id="machine-user-search"
           onInput={(event) => state.searchSet(event.currentTarget.value)}

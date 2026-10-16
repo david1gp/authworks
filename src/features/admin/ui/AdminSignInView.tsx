@@ -28,6 +28,7 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
         {(session) => (
           <div data-admin-session="active">
             <AuthenticatedSection
+              class="in-[[data-shell=focus]]:rounded-none in-[[data-shell=focus]]:border-0 in-[[data-shell=focus]]:bg-transparent in-[[data-shell=focus]]:shadow-none in-[[data-shell=focus]]:[&>div]:border-0 in-[[data-shell=focus]]:[&>div]:px-0 in-[[data-shell=focus]]:[&>div:first-child]:pt-0 in-[[data-shell=focus]]:[&>div:last-child]:pb-0"
               actions={
                 <AuthenticatedButton
                   size="sm"
@@ -101,7 +102,12 @@ export function AdminSignInView(props: { readonly state: ReturnType<typeof admin
               {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
             </Show>
             <div>
-              <AuthenticatedButton icon={mdiLogin} type="submit">
+              <AuthenticatedButton
+                class="in-[[data-shell=focus]]:w-full"
+                icon={mdiLogin}
+                type="submit"
+                variant="filledBlue"
+              >
                 {messageTranslate("common.signIn")}
               </AuthenticatedButton>
             </div>

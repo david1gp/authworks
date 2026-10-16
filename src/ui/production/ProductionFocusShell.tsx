@@ -1,4 +1,5 @@
 import type { JSX } from "solid-js"
+import { ThemeButton } from "#ui/interactive/theme/ThemeButton.jsx"
 import { AuthenticatedBrandMark } from "../authenticated/AuthenticatedBrandMark.js"
 import { AuthenticatedThemeToggle } from "../authenticated/AuthenticatedThemeToggle.js"
 import { messageTranslate } from "../i18n/model/messageTranslate.js"
@@ -11,7 +12,8 @@ export function ProductionFocusShell(props: { readonly children: JSX.Element; re
     <div class="authenticated-focus-canvas relative flex min-h-dvh items-center justify-center px-3 py-20 text-foreground sm:px-6">
       <header class="absolute end-4 top-4 flex items-center gap-2">
         <LanguageSelector class="authenticated-language-selector" />
-        <AuthenticatedThemeToggle />
+        <AuthenticatedThemeToggle class="hidden sm:flex" />
+        <ThemeButton class="size-8 shrink-0 p-0 sm:hidden" />
       </header>
       <main class="w-full max-w-[470px]" data-shell="focus">
         <div class="overflow-hidden rounded-[18px] border border-line bg-surface shadow-overlay">

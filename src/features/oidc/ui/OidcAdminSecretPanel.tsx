@@ -1,7 +1,7 @@
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
 import { mdiContentCopy } from "@adaptive-ds/mdi/mdiContentCopy.js"
 import { Show } from "solid-js"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { oidcAdminSecretPanelStateCreate } from "./oidcAdminSecretPanelStateCreate.js"
 
@@ -43,11 +43,11 @@ export function OidcAdminSecretPanel(props: {
         {props.secret}
       </code>
       <div class="flex flex-wrap items-center gap-2">
-        <ButtonIcon size="sm" icon={mdiContentCopy} onClick={state.copy} variant="outline">
+        <AuthenticatedButton size="sm" icon={mdiContentCopy} onClick={state.copy} variant="outline">
           {messageTranslate("admin.oidc.secret.copy")}
-        </ButtonIcon>
+        </AuthenticatedButton>
         {/* Acknowledgement stays reachable when the clipboard is denied, so the value is never trapped. */}
-        <ButtonIcon
+        <AuthenticatedButton
           size="sm"
           disabled={!state.copied() && !state.copyFailed()}
           icon={mdiCheck}
@@ -55,7 +55,7 @@ export function OidcAdminSecretPanel(props: {
           variant="filledBlue"
         >
           {messageTranslate("admin.oidc.secret.acknowledge")}
-        </ButtonIcon>
+        </AuthenticatedButton>
         <Show when={state.copied()}>
           <span class="text-xs font-medium text-success" role="status">
             {messageTranslate("admin.oidc.secret.copied")}

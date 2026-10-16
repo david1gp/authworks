@@ -4,7 +4,7 @@ import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { Show } from "solid-js"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -105,16 +105,16 @@ export function OidcAdminClientDetailView(props: {
                     {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
                   </Show>
                   <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
-                    <ButtonIcon
+                    <AuthenticatedButton
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiContentSave}
                       type="submit"
                       variant="filledBlue"
                     >
                       {messageTranslate("common.save")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                     <Show when={client().status === "active"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCancel}
                         onClick={() => void state.page.clientLifecycleSet(client().id, "inactive")}
@@ -122,10 +122,10 @@ export function OidcAdminClientDetailView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.oidc.lifecycle.deactivate")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
                     <Show when={client().status === "inactive"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCheckCircle}
                         onClick={() => void state.page.clientLifecycleSet(client().id, "active")}
@@ -133,17 +133,17 @@ export function OidcAdminClientDetailView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.oidc.lifecycle.activate")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
-                    <ButtonIcon
+                    <AuthenticatedButton
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiDelete}
                       onClick={() => void state.clientRemove(client().id)}
                       type="button"
-                      variant="filledRed"
+                      variant="outlineRed"
                     >
                       {messageTranslate("admin.oidc.lifecycle.remove")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </form>
               </AuthenticatedSection>
@@ -155,36 +155,36 @@ export function OidcAdminClientDetailView(props: {
                   }
                   when={client().clientType === "confidential"}
                 >
-                  <div class="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-                    <div class="grid min-w-0 gap-1.5">
-                      <p class="text-xs text-muted-foreground">{messageTranslate("admin.oidc.secret.description")}</p>
+                  <div class="grid gap-2">
+                    <p class="text-xs text-muted-foreground">{messageTranslate("admin.oidc.secret.description")}</p>
+                    <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
                       {/* The stored secret is unreadable, so only its redacted placeholder is presented. */}
                       <p
-                        class="min-w-0 truncate rounded-control border border-line-subtle bg-muted px-2 py-1.5 font-mono text-xs text-muted-foreground"
+                        class="min-w-0 flex-1 truncate rounded-control border border-line-subtle bg-muted px-2 py-1.5 font-mono text-xs text-muted-foreground"
                         data-secret-redacted
                       >
                         {messageTranslate("admin.oidc.secret.redacted")}
                       </p>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                      <ButtonIcon
-                        size="sm"
-                        disabled={state.page.pendingId() !== undefined}
-                        icon={mdiAutorenew}
-                        onClick={() => void state.page.clientSecretRotate(client().id)}
-                        variant="filledBlue"
-                      >
-                        {messageTranslate("admin.oidc.secret.rotate")}
-                      </ButtonIcon>
-                      <ButtonIcon
-                        size="sm"
-                        disabled={state.page.pendingId() !== undefined}
-                        icon={mdiCancel}
-                        onClick={() => void state.page.clientSecretRevoke(client().id)}
-                        variant="filledRed"
-                      >
-                        {messageTranslate("admin.oidc.secret.revoke")}
-                      </ButtonIcon>
+                      <div class="flex shrink-0 flex-wrap gap-2">
+                        <AuthenticatedButton
+                          size="sm"
+                          disabled={state.page.pendingId() !== undefined}
+                          icon={mdiAutorenew}
+                          onClick={() => void state.page.clientSecretRotate(client().id)}
+                          variant="filledBlue"
+                        >
+                          {messageTranslate("admin.oidc.secret.rotate")}
+                        </AuthenticatedButton>
+                        <AuthenticatedButton
+                          size="sm"
+                          disabled={state.page.pendingId() !== undefined}
+                          icon={mdiCancel}
+                          onClick={() => void state.page.clientSecretRevoke(client().id)}
+                          variant="outlineRed"
+                        >
+                          {messageTranslate("admin.oidc.secret.revoke")}
+                        </AuthenticatedButton>
+                      </div>
                     </div>
                   </div>
                 </Show>

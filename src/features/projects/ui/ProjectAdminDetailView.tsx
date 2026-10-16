@@ -5,9 +5,9 @@ import { mdiDelete } from "@adaptive-ds/mdi/mdiDelete.js"
 import { Show } from "solid-js"
 import { Checkbox } from "#ui/input/check/Checkbox.jsx"
 import { Label } from "#ui/input/label/Label.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
@@ -76,7 +76,7 @@ export function ProjectAdminDetailView(props: {
                       <Label class="text-[0.8125rem] font-medium" for="project-detail-name">
                         {messageTranslate("admin.projects.list.name")}
                       </Label>
-                      <Input
+                      <AuthenticatedInput
                         id="project-detail-name"
                         onInput={(event) => state.name.set(event.currentTarget.value)}
                         value={state.name.get()}
@@ -107,16 +107,16 @@ export function ProjectAdminDetailView(props: {
                     )}
                   </Show>
                   <div class="flex flex-wrap items-center gap-2 border-t border-line-subtle pt-4">
-                    <ButtonIcon
+                    <AuthenticatedButton
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiContentSave}
                       type="submit"
                       variant="filledBlue"
                     >
                       {messageTranslate("common.save")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                     <Show when={project().status === "active"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCancel}
@@ -125,10 +125,10 @@ export function ProjectAdminDetailView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.projects.lifecycle.deactivate")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
                     <Show when={project().status === "inactive"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={state.page.pendingId() !== undefined}
                         icon={mdiCheckCircle}
@@ -137,18 +137,18 @@ export function ProjectAdminDetailView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.projects.lifecycle.activate")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
-                    <ButtonIcon
+                    <AuthenticatedButton
                       size="sm"
                       disabled={state.page.pendingId() !== undefined}
                       icon={mdiDelete}
                       onClick={() => void state.projectDelete(project().id)}
                       type="button"
-                      variant="filledRed"
+                      variant="outlineRed"
                     >
                       {messageTranslate("admin.projects.lifecycle.remove")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                 </form>
               </AuthenticatedSection>

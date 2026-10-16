@@ -2,7 +2,7 @@ import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { MachineAdminCredentialForm } from "./MachineAdminCredentialForm.js"
@@ -40,7 +40,7 @@ export function MachineAdminCredentialsView(props: {
           {messageTranslate("admin.machine.credentials.subject")}
         </Label>
         <div class="w-full sm:max-w-xs">
-          <SelectSingleNative
+          <AuthenticatedSelect
             getOptions={() => state.page.machineUsers().map((machineUser) => machineUser.id)}
             id="machine-credential-subject"
             valueSignal={state.machineUserIdSignal}

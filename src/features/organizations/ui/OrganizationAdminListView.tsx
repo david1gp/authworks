@@ -4,9 +4,9 @@ import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
@@ -62,7 +62,7 @@ export function OrganizationAdminListView(props: {
                 <Label class="text-[0.8125rem] font-medium" for="organization-name">
                   {messageTranslate("admin.organizations.list.name")}
                 </Label>
-                <Input
+                <AuthenticatedInput
                   id="organization-name"
                   onInput={(event) => props.onCreateNameInput(event.currentTarget.value)}
                   value={props.createName}
@@ -71,15 +71,16 @@ export function OrganizationAdminListView(props: {
               <Show when={props.validationMessage}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <ButtonIcon
-                class="justify-self-end"
-                disabled={props.pendingId === "organization:create"}
-                icon={mdiContentSave}
-                type="submit"
-                variant="filledBlue"
-              >
-                {messageTranslate("common.save")}
-              </ButtonIcon>
+              <div class="flex justify-end gap-2">
+                <AuthenticatedButton
+                  disabled={props.pendingId === "organization:create"}
+                  icon={mdiContentSave}
+                  type="submit"
+                  variant="filledBlue"
+                >
+                  {messageTranslate("common.save")}
+                </AuthenticatedButton>
+              </div>
             </form>
           </AuthenticatedDialog>
         }
@@ -88,7 +89,7 @@ export function OrganizationAdminListView(props: {
         <Label class="sr-only" for="organization-search">
           {messageTranslate("admin.organizations.list.search")}
         </Label>
-        <Input
+        <AuthenticatedInput
           class="w-full sm:w-72"
           id="organization-search"
           onInput={(event) => props.onSearchInput(event.currentTarget.value)}

@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js"
-import { Show } from "solid-js"
+import { children, Show } from "solid-js"
 
 /**
  * Dense filter/action bar. Search and filters sit at the start, a live result summary and actions at
@@ -11,6 +11,8 @@ export function AuthenticatedToolbar(props: {
   readonly label: string
   readonly summary?: string
 }) {
+  const actions = children(() => props.actions)
+
   return (
     <div
       aria-label={props.label}
@@ -18,12 +20,20 @@ export function AuthenticatedToolbar(props: {
       role="group"
     >
       <Show when={props.children}>
-        {(children) => <div class="flex min-w-0 basis-full flex-wrap items-center gap-2 sm:flex-1">{children()}</div>}
+        {(children) => (
+          <div class="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:flex-1">{children()}</div>
+        )}
       </Show>
-      <Show when={props.summary}>
-        {(summary) => <span class="text-[0.8125rem] tabular-nums text-muted-foreground">{summary()}</span>}
+      <Show when={props.summary || actions.toArray().length > 0}>
+        <div class="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start sm:gap-3">
+          <Show when={props.summary}>
+            {(summary) => <span class="text-[0.8125rem] tabular-nums text-muted-foreground">{summary()}</span>}
+          </Show>
+          <Show when={actions.toArray().length > 0}>
+            <div class="ms-auto flex items-center gap-1.5">{actions()}</div>
+          </Show>
+        </div>
       </Show>
-      <Show when={props.actions}>{(actions) => <div class="flex items-center gap-1.5">{actions()}</div>}</Show>
     </div>
   )
 }

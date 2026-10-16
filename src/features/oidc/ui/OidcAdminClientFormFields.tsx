@@ -1,8 +1,8 @@
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import type { SignalObject } from "#ui/utils/createSignalObject.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
-import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 
@@ -31,7 +31,7 @@ export function OidcAdminClientFormFields(props: {
       <div class="grid items-start gap-4 sm:grid-cols-2 [&_label]:text-[0.8125rem] [&_label]:font-medium">
         <div class="grid min-w-0 gap-1.5">
           <Label for={`${props.idPrefix}-name`}>{messageTranslate("admin.oidc.clients.name")}</Label>
-          <Input
+          <AuthenticatedInput
             id={`${props.idPrefix}-name`}
             onInput={(event) => props.name.set(event.currentTarget.value)}
             value={props.name.get()}
@@ -41,7 +41,7 @@ export function OidcAdminClientFormFields(props: {
           {(clientType) => (
             <div class="grid min-w-0 gap-1.5">
               <Label for={`${props.idPrefix}-type`}>{messageTranslate("admin.oidc.clients.type")}</Label>
-              <SelectSingleNative
+              <AuthenticatedSelect
                 getOptions={() => ["confidential", "public"]}
                 id={`${props.idPrefix}-type`}
                 valueSignal={clientType()}
@@ -163,7 +163,7 @@ export function OidcAdminClientFormFields(props: {
         </div>
       </fieldset>
 
-      <div class="grid gap-3 border-t border-line-subtle pt-4 sm:grid-cols-2">
+      <div class="grid items-start gap-3 border-t border-line-subtle pt-4 sm:grid-cols-2">
         <label
           class="flex min-w-0 items-start gap-2 rounded-control border border-line-subtle px-2 py-1.5 text-xs font-medium"
           for={`${props.idPrefix}-require-consent`}
@@ -177,22 +177,26 @@ export function OidcAdminClientFormFields(props: {
           />
           <span class="min-w-0">{messageTranslate("admin.oidc.clients.requireConsent")}</span>
         </label>
-        <label
-          class="flex min-w-0 items-start gap-2 rounded-control border border-line-subtle px-2 py-1.5 text-xs font-medium"
-          for={`${props.idPrefix}-trusted`}
-        >
-          <input
-            checked={props.trusted.get()}
-            class={`${authenticatedControlClasses.checkbox} mt-0.5 shrink-0`}
-            id={`${props.idPrefix}-trusted`}
-            onChange={(event) => props.trusted.set(event.currentTarget.checked)}
-            type="checkbox"
-          />
-          <span class="min-w-0">{messageTranslate("admin.oidc.clients.trusted")}</span>
-        </label>
+        <div class="grid min-w-0 gap-1.5">
+          <label
+            class="flex min-w-0 items-start gap-2 rounded-control border border-line-subtle px-2 py-1.5 text-xs font-medium"
+            for={`${props.idPrefix}-trusted`}
+          >
+            <input
+              aria-describedby={`${props.idPrefix}-trusted-hint`}
+              checked={props.trusted.get()}
+              class={`${authenticatedControlClasses.checkbox} mt-0.5 shrink-0`}
+              id={`${props.idPrefix}-trusted`}
+              onChange={(event) => props.trusted.set(event.currentTarget.checked)}
+              type="checkbox"
+            />
+            <span class="min-w-0">{messageTranslate("admin.oidc.clients.trusted")}</span>
+          </label>
+          <p class="text-xs leading-5 text-muted-foreground" id={`${props.idPrefix}-trusted-hint`}>
+            {messageTranslate("admin.oidc.clients.trustedHint")}
+          </p>
+        </div>
       </div>
-      {/* The trust warning stays outside the label so the checkbox keeps its short accessible name. */}
-      <p class="text-xs leading-5 text-muted-foreground">{messageTranslate("admin.oidc.clients.trustedHint")}</p>
     </>
   )
 }

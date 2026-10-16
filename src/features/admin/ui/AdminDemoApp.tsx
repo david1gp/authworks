@@ -1,4 +1,6 @@
 import { mdiArrowLeft } from "@adaptive-ds/mdi/mdiArrowLeft.js"
+import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
+import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
 import { mdiMenuClose } from "@adaptive-ds/mdi/mdiMenuClose.js"
 import { A } from "@solidjs/router"
 import { For, type JSX, Show } from "solid-js"
@@ -31,7 +33,7 @@ function AdminDemoNavigation({ state }: { readonly state: ReturnType<typeof admi
           href="/demo"
           onClick={state.destinationSelect}
         >
-          <Icon path={mdiArrowLeft} />
+          <Icon class="rtl:-scale-x-100" path={mdiArrowLeft} />
           <span class="truncate">{messageTranslate("demo.nav.label")}</span>
         </A>
         <For each={state.navigationGroups}>
@@ -102,21 +104,32 @@ export function AdminDemoApp(props: { children?: JSX.Element }) {
       >
         <header class={authenticatedNavigationClasses.header}>
           <div class={authenticatedNavigationClasses.headerStart}>
-            <SidebarToggle {...state.sidebar} class={authenticatedNavigationClasses.sidebarToggle} variant="ghost" />
+            <SidebarToggle
+              {...state.sidebar}
+              class={authenticatedNavigationClasses.sidebarToggle}
+              iconClass="size-4.5 rtl:-scale-x-100"
+              iconDesktopOpen={mdiDockLeft}
+              iconDesktopClose={mdiDockLeft}
+              iconMobileOpen={mdiMenu}
+              iconMobileClose={mdiMenu}
+              variant="ghost"
+            />
             <Show when={state.showHeaderBrand()}>
               <A class={authenticatedNavigationClasses.headerBrand} href="/demo/admin">
                 <AuthenticatedBrandMark class={authenticatedNavigationClasses.headerBrandMark} />
-                <span class={authenticatedNavigationClasses.brandLink}>{messageTranslate("app.name")}</span>
+                <span class={`${authenticatedNavigationClasses.brandLink} sr-only sm:not-sr-only`}>
+                  {messageTranslate("app.name")}
+                </span>
               </A>
             </Show>
           </div>
           <div class={authenticatedNavigationClasses.headerEnd}>
-            <A class={authenticatedNavigationClasses.headerLink} href="/demo">
+            <A class={`${authenticatedNavigationClasses.headerLink} hidden sm:inline`} href="/demo">
               {messageTranslate("demo.nav.label")}
             </A>
             <LanguageSelector class="authenticated-language-selector" />
             <AuthenticatedThemeToggle class="hidden sm:inline-flex" />
-            <ThemeButton class="sm:hidden" />
+            <ThemeButton class="size-8 shrink-0 p-0 sm:hidden" />
           </div>
         </header>
         <div class={authenticatedNavigationClasses.content}>{props.children}</div>

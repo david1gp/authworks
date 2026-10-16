@@ -5,15 +5,15 @@ import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
-import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { AuthenticatedToolbar } from "../../../ui/authenticated/AuthenticatedToolbar.js"
 import { authenticatedTableClasses } from "../../../ui/authenticated/authenticatedTableClasses.js"
@@ -43,7 +43,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
                 <Label class="text-[0.8125rem] font-medium" for="project-name">
                   {messageTranslate("admin.projects.list.name")}
                 </Label>
-                <Input
+                <AuthenticatedInput
                   id="project-name"
                   onInput={(event) => state.name.set(event.currentTarget.value)}
                   value={state.name.get()}
@@ -53,7 +53,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
                 <Label class="text-[0.8125rem] font-medium" for="project-organization">
                   {messageTranslate("admin.projects.detail.organization")}
                 </Label>
-                <SelectSingleNative
+                <AuthenticatedSelect
                   getOptions={() => state.page.organizations().map((organization) => organization.id)}
                   id="project-organization"
                   valueSignal={state.organizationId}
@@ -63,14 +63,16 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
               <Show when={state.formError()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <ButtonIcon
-                disabled={state.page.pendingId() !== undefined}
-                icon={mdiContentSave}
-                type="submit"
-                variant="filledBlue"
-              >
-                {messageTranslate("common.save")}
-              </ButtonIcon>
+              <div class="flex justify-end gap-2">
+                <AuthenticatedButton
+                  disabled={state.page.pendingId() !== undefined}
+                  icon={mdiContentSave}
+                  type="submit"
+                  variant="filledBlue"
+                >
+                  {messageTranslate("common.save")}
+                </AuthenticatedButton>
+              </div>
             </form>
           </AuthenticatedDialog>
         }
@@ -79,7 +81,7 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
         <Label class="sr-only" for="project-search">
           {messageTranslate("admin.projects.list.search")}
         </Label>
-        <Input
+        <AuthenticatedInput
           class="w-full sm:max-w-xs"
           id="project-search"
           onInput={(event) => state.searchSet(event.currentTarget.value)}

@@ -6,9 +6,9 @@ import { A } from "@solidjs/router"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedRecordItem } from "../../../ui/authenticated/AuthenticatedRecordItem.js"
 import { AuthenticatedRecordList } from "../../../ui/authenticated/AuthenticatedRecordList.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
@@ -102,19 +102,25 @@ export function OrganizationAdminDetailView(props: {
                       <Label class="text-[0.8125rem] font-medium" for="organization-detail-name">
                         {messageTranslate("admin.organizations.list.name")}
                       </Label>
-                      <Input
+                      <AuthenticatedInput
                         id="organization-detail-name"
                         onInput={(event) => props.onNameInput(event.currentTarget.value)}
                         value={props.name}
                       />
                     </div>
-                    <ButtonIcon size="sm" disabled={props.pendingId !== undefined} icon={mdiContentSave} type="submit">
+                    <AuthenticatedButton
+                      size="sm"
+                      disabled={props.pendingId !== undefined}
+                      icon={mdiContentSave}
+                      type="submit"
+                      variant="filledBlue"
+                    >
                       {messageTranslate("common.save")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   </div>
                   <div class="flex flex-wrap gap-2 border-t border-line-subtle pt-3">
                     <Show when={organization().status !== "active"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={props.pendingId !== undefined}
                         icon={mdiCheckCircle}
@@ -122,10 +128,10 @@ export function OrganizationAdminDetailView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.lifecycle.activate")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
                     <Show when={organization().status === "active"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={props.pendingId !== undefined}
                         icon={mdiCancel}
@@ -133,18 +139,18 @@ export function OrganizationAdminDetailView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.lifecycle.deactivate")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
                     <Show when={organization().status !== "removed"}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={props.pendingId !== undefined}
                         icon={mdiDelete}
                         onClick={() => props.onLifecycleSet("removed")}
-                        variant="filledRed"
+                        variant="outlineRed"
                       >
                         {messageTranslate("admin.organizations.lifecycle.remove")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </Show>
                   </div>
                 </form>

@@ -3,7 +3,7 @@ import { mdiOpenInNew } from "@adaptive-ds/mdi/mdiOpenInNew.js"
 import type { JSX } from "solid-js"
 import { Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 
@@ -24,9 +24,9 @@ export function OidcAdminDocumentSection(props: {
     <AuthenticatedSection
       actions={
         <>
-          <ButtonIcon size="sm" icon={mdiContentCopy} onClick={props.onCopy} variant="outline">
+          <AuthenticatedButton size="sm" icon={mdiContentCopy} onClick={props.onCopy} variant="outline">
             {messageTranslate("admin.oidc.documents.copy")}
-          </ButtonIcon>
+          </AuthenticatedButton>
           {/* A fixture endpoint resolves nowhere, so no broken link is offered. */}
           <Show when={props.openHref}>
             {(href) => (

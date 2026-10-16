@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js"
-import { Show } from "solid-js"
+import { children, Show } from "solid-js"
 import { Icon } from "#ui/static/icon/Icon.jsx"
 import { classMerge } from "#ui/utils/classMerge.js"
 
@@ -17,6 +17,8 @@ export function AuthenticatedSection(props: {
   readonly padded?: boolean
   readonly title?: string
 }) {
+  const actions = children(() => props.actions)
+
   return (
     <section
       aria-label={props.label ?? props.title}
@@ -24,7 +26,7 @@ export function AuthenticatedSection(props: {
     >
       {/* The bar also carries description-only and action-only panels, so a section whose name is
           already spoken by the page heading can drop its title without losing its controls. */}
-      <Show when={props.title !== undefined || props.description !== undefined || props.actions !== undefined}>
+      <Show when={props.title !== undefined || props.description !== undefined || actions.toArray().length > 0}>
         <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line-subtle px-5 py-3.5">
           <div class="min-w-0">
             <Show when={props.title}>
@@ -49,8 +51,8 @@ export function AuthenticatedSection(props: {
               )}
             </Show>
           </div>
-          <Show when={props.actions}>
-            {(actions) => <div class="flex flex-wrap items-center gap-2">{actions()}</div>}
+          <Show when={actions.toArray().length > 0}>
+            <div class="flex flex-wrap items-center gap-2">{actions()}</div>
           </Show>
         </div>
       </Show>

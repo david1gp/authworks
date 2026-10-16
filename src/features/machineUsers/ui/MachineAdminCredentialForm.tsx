@@ -1,10 +1,10 @@
 import { mdiKeyPlus } from "@adaptive-ds/mdi/mdiKeyPlus.js"
 import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
-import { AuthenticatedSelect as SelectSingleNative } from "../../../ui/authenticated/AuthenticatedSelect.js"
+import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import type { machineAdminCredentialFormStateCreate } from "./machineAdminCredentialFormStateCreate.js"
 
@@ -19,10 +19,10 @@ export function MachineAdminCredentialForm(props: {
       class="grid max-w-3xl gap-4 [&_label]:text-[0.8125rem] [&_label]:font-medium [&_div.grid]:gap-y-1.5"
       onSubmit={state.submit}
     >
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="grid items-start gap-3 sm:grid-cols-2">
         <div class="grid min-w-0 gap-1">
           <Label for="machine-credential-kind">{messageTranslate("admin.machine.credentials.kind")}</Label>
-          <SelectSingleNative
+          <AuthenticatedSelect
             getOptions={() => ["personal_access_token", "api_key"]}
             id="machine-credential-kind"
             valueSignal={{
@@ -41,7 +41,7 @@ export function MachineAdminCredentialForm(props: {
         </div>
         <div class="grid min-w-0 gap-1">
           <Label for="machine-credential-name">{messageTranslate("admin.machine.credentials.name")}</Label>
-          <Input
+          <AuthenticatedInput
             id="machine-credential-name"
             onInput={(event) => state.name.set(event.currentTarget.value)}
             value={state.name.get()}
@@ -49,10 +49,10 @@ export function MachineAdminCredentialForm(props: {
         </div>
       </div>
 
-      <div class="grid gap-3 sm:grid-cols-2">
+      <div class="grid items-start gap-3 sm:grid-cols-2">
         <div class="grid min-w-0 gap-1">
           <Label for="machine-credential-scopes">{messageTranslate("admin.machine.credentials.scopes")}</Label>
-          <Input
+          <AuthenticatedInput
             class="font-mono text-xs"
             id="machine-credential-scopes"
             onInput={(event) => state.scopes.set(event.currentTarget.value)}
@@ -64,7 +64,7 @@ export function MachineAdminCredentialForm(props: {
         </div>
         <div class="grid min-w-0 gap-1">
           <Label for="machine-credential-expires">{messageTranslate("admin.machine.credentials.expires")}</Label>
-          <Input
+          <AuthenticatedInput
             id="machine-credential-expires"
             onInput={(event) => state.expiresAt.set(event.currentTarget.value)}
             type="date"
@@ -83,9 +83,16 @@ export function MachineAdminCredentialForm(props: {
         {messageTranslate("admin.machine.credentials.onceWarning")}
       </p>
 
-      <ButtonIcon disabled={state.page.pendingId() !== undefined} icon={mdiKeyPlus} type="submit" variant="filledBlue">
-        {messageTranslate("admin.machine.credentials.issue")}
-      </ButtonIcon>
+      <div class="flex justify-end gap-2">
+        <AuthenticatedButton
+          disabled={state.page.pendingId() !== undefined}
+          icon={mdiKeyPlus}
+          type="submit"
+          variant="filledBlue"
+        >
+          {messageTranslate("admin.machine.credentials.issue")}
+        </AuthenticatedButton>
+      </div>
     </form>
   )
 }

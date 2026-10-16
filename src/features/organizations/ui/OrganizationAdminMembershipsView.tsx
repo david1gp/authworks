@@ -3,8 +3,8 @@ import { mdiAccountRemove } from "@adaptive-ds/mdi/mdiAccountRemove.js"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "#ui/table/Table.jsx"
-import { AuthenticatedButton as ButtonIcon } from "../../../ui/authenticated/AuthenticatedButton.js"
-import { AuthenticatedInput as Input } from "../../../ui/authenticated/AuthenticatedInput.js"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
+import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
 import { AuthenticatedNotice } from "../../../ui/authenticated/AuthenticatedNotice.js"
 import { AuthenticatedPageBody } from "../../../ui/authenticated/AuthenticatedPageBody.js"
 import { AuthenticatedPagination } from "../../../ui/authenticated/AuthenticatedPagination.js"
@@ -56,7 +56,7 @@ export function OrganizationAdminMembershipsView(props: {
               <Label class="text-[0.8125rem] font-medium" for="membership-user-id">
                 {messageTranslate("admin.organizations.memberships.userId")}
               </Label>
-              <Input
+              <AuthenticatedInput
                 id="membership-user-id"
                 onInput={(event) => props.onAddUserIdInput(event.currentTarget.value)}
                 value={props.addUserId}
@@ -69,14 +69,15 @@ export function OrganizationAdminMembershipsView(props: {
               roles={props.roles}
               selected={props.addRoles}
             />
-            <ButtonIcon
+            <AuthenticatedButton
               class="justify-self-start"
               disabled={props.pendingId === "membership:create"}
               icon={mdiAccountPlus}
               type="submit"
+              variant="filledBlue"
             >
               {messageTranslate("admin.organizations.memberships.add")}
-            </ButtonIcon>
+            </AuthenticatedButton>
           </div>
           <Show when={props.validationMessage}>
             {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
@@ -99,7 +100,7 @@ export function OrganizationAdminMembershipsView(props: {
               {(membership) => (
                 <AuthenticatedRecordItem
                   actions={
-                    <ButtonIcon
+                    <AuthenticatedButton
                       size="sm"
                       disabled={props.pendingId === `membership:${membership.id}`}
                       icon={mdiAccountRemove}
@@ -107,7 +108,7 @@ export function OrganizationAdminMembershipsView(props: {
                       variant="outline"
                     >
                       {messageTranslate("admin.organizations.memberships.remove")}
-                    </ButtonIcon>
+                    </AuthenticatedButton>
                   }
                   fields={[]}
                   title={
@@ -167,7 +168,7 @@ export function OrganizationAdminMembershipsView(props: {
                       />
                     </TableCell>
                     <TableCell class={authenticatedTableClasses.action}>
-                      <ButtonIcon
+                      <AuthenticatedButton
                         size="sm"
                         disabled={props.pendingId === `membership:${membership.id}`}
                         icon={mdiAccountRemove}
@@ -175,7 +176,7 @@ export function OrganizationAdminMembershipsView(props: {
                         variant="outline"
                       >
                         {messageTranslate("admin.organizations.memberships.remove")}
-                      </ButtonIcon>
+                      </AuthenticatedButton>
                     </TableCell>
                   </TableRow>
                 )}

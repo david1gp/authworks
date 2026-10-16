@@ -72,9 +72,11 @@ export function AdminUserListView(props: { readonly detailHrefBase: string; read
               <Show when={props.state.validationMessage()}>
                 {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
               </Show>
-              <AuthenticatedButton class="justify-self-end" icon={mdiAccountPlus} type="submit" variant="filledBlue">
-                {messageTranslate("admin.users.createSubmit")}
-              </AuthenticatedButton>
+              <div class="flex justify-end gap-2">
+                <AuthenticatedButton icon={mdiAccountPlus} type="submit" variant="filledBlue">
+                  {messageTranslate("admin.users.createSubmit")}
+                </AuthenticatedButton>
+              </div>
             </form>
           </AuthenticatedDialog>
         }
