@@ -1,4 +1,6 @@
 import { mdiArrowDown } from "@adaptive-ds/mdi/mdiArrowDown.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { mdiArrowUp } from "@adaptive-ds/mdi/mdiArrowUp.js"
 import { For, Show } from "solid-js"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
@@ -18,7 +20,7 @@ const factorLabelKeys = {
   totp: "admin.organizations.policy.factor.totp",
 } as const satisfies Readonly<Record<MfaPolicyFactor, MessageKey>>
 const fieldsetClass = "min-w-0 rounded-control border border-line-subtle px-4 py-4"
-const selectClass = `${authenticatedControlClasses.select} mt-3 sm:max-w-xs`
+const selectClass = `${authenticatedControlClasses.select} appearance-none pe-9`
 
 type SecurityPolicyKey = "allowedFactors" | "minimumStepUpAssurance" | "preferredFactorOrder" | "requiredMfa"
 
@@ -81,16 +83,22 @@ export function OrganizationAdminSecurityPolicyView(props: {
             })}
           </p>
           {inheritanceControl("requiredMfa")}
-          <select
-            aria-label={messageTranslate("admin.organizations.policy.requiredMfa")}
-            class={selectClass}
-            disabled={props.fieldInherited("requiredMfa")}
-            onChange={(event) => props.onRequiredMfaInput(event.currentTarget.value === "required")}
-            value={props.requiredMfa ? "required" : "optional"}
-          >
-            <option value="optional">{messageTranslate("admin.organizations.policy.notRequired")}</option>
-            <option value="required">{messageTranslate("admin.organizations.policy.required")}</option>
-          </select>
+          <div class="relative w-full min-w-0 mt-3 sm:max-w-xs">
+            <select
+              aria-label={messageTranslate("admin.organizations.policy.requiredMfa")}
+              class={selectClass}
+              disabled={props.fieldInherited("requiredMfa")}
+              onChange={(event) => props.onRequiredMfaInput(event.currentTarget.value === "required")}
+              value={props.requiredMfa ? "required" : "optional"}
+            >
+              <option value="optional">{messageTranslate("admin.organizations.policy.notRequired")}</option>
+              <option value="required">{messageTranslate("admin.organizations.policy.required")}</option>
+            </select>
+            <Icon
+              path={mdiChevronDown}
+              class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+          </div>
         </fieldset>
 
         <fieldset class={fieldsetClass}>
@@ -101,21 +109,29 @@ export function OrganizationAdminSecurityPolicyView(props: {
             })}
           </p>
           {inheritanceControl("minimumStepUpAssurance")}
-          <select
-            aria-label={messageTranslate("admin.organizations.policy.minimumAssurance")}
-            class={selectClass}
-            disabled={props.fieldInherited("minimumStepUpAssurance")}
-            onChange={(event) => props.onAssuranceInput(event.currentTarget.value as OrganizationLoginPolicyAssurance)}
-            value={props.assurance}
-          >
-            <option value="none">{messageTranslate("admin.organizations.policy.assurance.none")}</option>
-            <option value="authenticated">
-              {messageTranslate("admin.organizations.policy.assurance.authenticated")}
-            </option>
-            <option value="multi_factor">
-              {messageTranslate("admin.organizations.policy.assurance.multi_factor")}
-            </option>
-          </select>
+          <div class="relative w-full min-w-0 mt-3 sm:max-w-xs">
+            <select
+              aria-label={messageTranslate("admin.organizations.policy.minimumAssurance")}
+              class={selectClass}
+              disabled={props.fieldInherited("minimumStepUpAssurance")}
+              onChange={(event) =>
+                props.onAssuranceInput(event.currentTarget.value as OrganizationLoginPolicyAssurance)
+              }
+              value={props.assurance}
+            >
+              <option value="none">{messageTranslate("admin.organizations.policy.assurance.none")}</option>
+              <option value="authenticated">
+                {messageTranslate("admin.organizations.policy.assurance.authenticated")}
+              </option>
+              <option value="multi_factor">
+                {messageTranslate("admin.organizations.policy.assurance.multi_factor")}
+              </option>
+            </select>
+            <Icon
+              path={mdiChevronDown}
+              class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+          </div>
         </fieldset>
 
         <fieldset class={fieldsetClass}>

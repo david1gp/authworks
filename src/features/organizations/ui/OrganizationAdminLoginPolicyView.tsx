@@ -1,4 +1,6 @@
 import { mdiAutorenew } from "@adaptive-ds/mdi/mdiAutorenew.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { mdiPlus } from "@adaptive-ds/mdi/mdiPlus.js"
@@ -289,16 +291,22 @@ export function OrganizationAdminLoginPolicyView(props: {
               <div class="grid gap-4 sm:grid-cols-2">
                 <div class="grid min-w-0 gap-1">
                   <Label for="provider-type">{messageTranslate("admin.organizations.providers.type")}</Label>
-                  <select
-                    class={authenticatedControlClasses.select}
-                    id="provider-type"
-                    onChange={(event) =>
-                      props.onProviderCreateTypeInput(event.currentTarget.value as ExternalIdentityProviderType)
-                    }
-                    value={props.providerCreate.type}
-                  >
-                    <For each={providerTypes}>{(type) => <option value={type}>{type}</option>}</For>
-                  </select>
+                  <div class="relative w-full min-w-0">
+                    <select
+                      class={`${authenticatedControlClasses.select} appearance-none pe-9`}
+                      id="provider-type"
+                      onChange={(event) =>
+                        props.onProviderCreateTypeInput(event.currentTarget.value as ExternalIdentityProviderType)
+                      }
+                      value={props.providerCreate.type}
+                    >
+                      <For each={providerTypes}>{(type) => <option value={type}>{type}</option>}</For>
+                    </select>
+                    <Icon
+                      path={mdiChevronDown}
+                      class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                  </div>
                 </div>
                 <div class="grid min-w-0 gap-1">
                   <Label for="provider-display-name">

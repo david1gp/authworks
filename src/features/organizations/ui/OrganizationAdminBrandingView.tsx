@@ -1,4 +1,6 @@
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { For, Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
@@ -148,16 +150,24 @@ export function OrganizationAdminBrandingView(props: {
             <div class="grid gap-4 sm:grid-cols-2">
               <div class="grid min-w-0 gap-1">
                 <Label for="branding-theme-mode">{messageTranslate("admin.organizations.branding.themeMode")}</Label>
-                <select
-                  class={authenticatedControlClasses.select}
-                  id="branding-theme-mode"
-                  onChange={(event) => props.onThemeModeInput(event.currentTarget.value as "dark" | "light" | "system")}
-                  value={props.branding.themeMode}
-                >
-                  <option value="system">{messageTranslate("common.theme.system")}</option>
-                  <option value="light">{messageTranslate("common.theme.light")}</option>
-                  <option value="dark">{messageTranslate("common.theme.dark")}</option>
-                </select>
+                <div class="relative w-full min-w-0">
+                  <select
+                    class={`${authenticatedControlClasses.select} appearance-none pe-9`}
+                    id="branding-theme-mode"
+                    onChange={(event) =>
+                      props.onThemeModeInput(event.currentTarget.value as "dark" | "light" | "system")
+                    }
+                    value={props.branding.themeMode}
+                  >
+                    <option value="system">{messageTranslate("common.theme.system")}</option>
+                    <option value="light">{messageTranslate("common.theme.light")}</option>
+                    <option value="dark">{messageTranslate("common.theme.dark")}</option>
+                  </select>
+                  <Icon
+                    path={mdiChevronDown}
+                    class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                  />
+                </div>
               </div>
               <div class="grid min-w-0 gap-1">
                 <Label for="branding-terms">{messageTranslate("admin.organizations.branding.termsUrl")}</Label>
