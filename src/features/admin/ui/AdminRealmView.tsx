@@ -1,8 +1,10 @@
 import { mdiCancel } from "@adaptive-ds/mdi/mdiCancel.js"
 import { mdiCheckCircle } from "@adaptive-ds/mdi/mdiCheckCircle.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiContentSave } from "@adaptive-ds/mdi/mdiContentSave.js"
 import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
+import { Icon } from "#ui/static/icon/Icon.jsx"
 import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedFieldList } from "../../../ui/authenticated/AuthenticatedFieldList.js"
 import { AuthenticatedInput } from "../../../ui/authenticated/AuthenticatedInput.js"
@@ -93,19 +95,25 @@ export function AdminRealmView(props: { readonly state: ReturnType<typeof adminP
                         <Label class="text-[0.8125rem] font-medium" for="admin-realm-status">
                           {messageTranslate("admin.realm.status")}
                         </Label>
-                        <select
-                          class={authenticatedControlClasses.select}
-                          id="admin-realm-status"
-                          onChange={(event) =>
-                            props.state.realmStatus.set(
-                              event.currentTarget.value === "disabled" ? "disabled" : "active",
-                            )
-                          }
-                          value={props.state.realmStatus.get()}
-                        >
-                          <option value="active">{messageTranslate("admin.realm.statusActive")}</option>
-                          <option value="disabled">{messageTranslate("admin.realm.statusDisabled")}</option>
-                        </select>
+                        <div class="relative w-full min-w-0">
+                          <select
+                            class={`${authenticatedControlClasses.select} appearance-none pe-9`}
+                            id="admin-realm-status"
+                            onChange={(event) =>
+                              props.state.realmStatus.set(
+                                event.currentTarget.value === "disabled" ? "disabled" : "active",
+                              )
+                            }
+                            value={props.state.realmStatus.get()}
+                          >
+                            <option value="active">{messageTranslate("admin.realm.statusActive")}</option>
+                            <option value="disabled">{messageTranslate("admin.realm.statusDisabled")}</option>
+                          </select>
+                          <Icon
+                            path={mdiChevronDown}
+                            class="pointer-events-none absolute end-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                          />
+                        </div>
                       </div>
                     </div>
                     <div class={fieldClass}>
