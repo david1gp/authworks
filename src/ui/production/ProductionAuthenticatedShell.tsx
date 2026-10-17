@@ -1,4 +1,5 @@
 import { mdiAccountCircleOutline } from "@adaptive-ds/mdi/mdiAccountCircleOutline.js"
+import { mdiChevronDown } from "@adaptive-ds/mdi/mdiChevronDown.js"
 import { mdiDockLeft } from "@adaptive-ds/mdi/mdiDockLeft.js"
 import { mdiLogout } from "@adaptive-ds/mdi/mdiLogout.js"
 import { mdiMenu } from "@adaptive-ds/mdi/mdiMenu.js"
@@ -185,18 +186,24 @@ export function ProductionAuthenticatedShell(props: {
                   title={state.organizationLabel()}
                 >
                   <Icon class="hidden shrink-0 sm:block" path={mdiOfficeBuildingOutline} />
-                  <select
-                    aria-label={messageTranslate("shell.nav.organization")}
-                    class="max-w-16 truncate text-foreground xl:max-w-28"
-                    aria-busy={state.organizationSwitchPending()}
-                    disabled={state.organizationSwitchPending()}
-                    value={state.organizationId()}
-                    onChange={state.organizationChange}
-                  >
-                    <For each={state.session.organizations}>
-                      {(organization) => <option value={organization.id}>{organization.label}</option>}
-                    </For>
-                  </select>
+                  <div class="relative w-full min-w-0">
+                    <select
+                      aria-label={messageTranslate("shell.nav.organization")}
+                      class="max-w-16 appearance-none truncate pr-10! text-foreground xl:max-w-28"
+                      aria-busy={state.organizationSwitchPending()}
+                      disabled={state.organizationSwitchPending()}
+                      value={state.organizationId()}
+                      onChange={state.organizationChange}
+                    >
+                      <For each={state.session.organizations}>
+                        {(organization) => <option value={organization.id}>{organization.label}</option>}
+                      </For>
+                    </select>
+                    <Icon
+                      path={mdiChevronDown}
+                      class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-foreground"
+                    />
+                  </div>
                   <Show when={state.organizationError()}>
                     {(error) => (
                       <span aria-live="assertive" class="sr-only" role="alert">
