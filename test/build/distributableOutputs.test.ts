@@ -25,8 +25,14 @@ test("built library, server, and CLI outputs are executable", async () => {
   const uiHtml = await uiIndex.text()
   expect(uiHtml).toContain("/assets/")
   expect(uiHtml).toContain('rel="icon"')
+  expect(uiHtml).toContain("/favicon.svg?v=c36289c5")
+  expect(uiHtml).toContain("/favicon.ico?v=d7aa01ce")
+  expect(uiHtml).not.toContain('href="/favicon.svg"')
+  expect(uiHtml).not.toContain('href="/favicon.ico"')
   expect(uiHtml).not.toContain("/src/ui/main.tsx")
   expect(await Bun.file("dist/ui/favicon.svg").exists()).toBe(true)
+  expect(await Bun.file("dist/ui/logo.svg").exists()).toBe(true)
+  expect(await Bun.file("dist/ui/favicon.ico").exists()).toBe(true)
 
   const packageJson = (await Bun.file("package.json").json()) as {
     readonly files?: readonly string[]
