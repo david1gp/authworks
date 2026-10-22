@@ -19,6 +19,9 @@ import { oidcLeoConvexProductionClientEnsure } from "./oidcLeoConvexProductionCl
 import { oidcMultichatDevelopmentClientEnsure } from "./oidcMultichatDevelopmentClientEnsure.js"
 import { oidcMultichatDevelopmentSecretRotate } from "./oidcMultichatDevelopmentSecretRotate.js"
 import { oidcMultichatProductionClientEnsure } from "./oidcMultichatProductionClientEnsure.js"
+import { oidcProjectBoundaryRegistry } from "./oidcProjectBoundaryRegistry.js"
+import { oidcProjectDevelopmentClientEnsure } from "./oidcProjectDevelopmentClientEnsure.js"
+import { oidcProjectProductionClientEnsure } from "./oidcProjectProductionClientEnsure.js"
 import { oidcMultichatProductionOrganizationIdGet } from "./oidcMultichatProductionOrganizationIdGet.js"
 import { oidcMultichatProductionSecretRotate } from "./oidcMultichatProductionSecretRotate.js"
 import { oidcProductionSigningKeyEnsure } from "./oidcProductionSigningKeyEnsure.js"
@@ -354,6 +357,63 @@ const oidcMultichatDevelopmentClientEnsureCommand = buildCommand({
   docs: { brief: "Ensure the fixed development Multichat client with a one-time machine credential handoff" },
 })
 
+function oidcProjectEnsureCommandCreate(projectSlug: string, environment: "production" | "development") {
+  const project = oidcProjectBoundaryRegistry[projectSlug]
+  const displayName = project?.displayName ?? projectSlug
+  const environmentLabel = environment === "production" ? "production" : "development"
+  return buildCommand({
+    async func(this: ApplicationContext) {
+      try {
+        const ensure =
+          environment === "production" ? oidcProjectProductionClientEnsure : oidcProjectDevelopmentClientEnsure
+        const result = await ensure({
+          credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+          homeDirectory: "/home/authworks",
+          project: projectSlug,
+        })
+        if (result.success) return
+        this.process.stderr.write(result.errorMessage ?? `The ${environmentLabel} ${displayName} client ensure failed.`)
+        this.process.exitCode = 1
+      } catch (_error) {
+        this.process.stderr.write(`The ${environmentLabel} ${displayName} client ensure failed.`)
+        this.process.exitCode = 1
+      }
+    },
+    parameters: { flags: {} },
+    docs: {
+      brief: `Ensure the fixed ${environmentLabel} ${displayName} client with a one-time machine credential handoff`,
+    },
+  })
+}
+
+const authworksEventorenProductionEnsureCommand = oidcProjectEnsureCommandCreate("eventoren", "production")
+const authworksEventorenDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("eventoren", "development")
+const authworksSolidConvexProductionEnsureCommand = oidcProjectEnsureCommandCreate("solid-convex", "production")
+const authworksSolidConvexDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("solid-convex", "development")
+const authworksSemesterkurProductionEnsureCommand = oidcProjectEnsureCommandCreate("semesterkur", "production")
+const authworksSemesterkurDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("semesterkur", "development")
+const authworksCoachingcompanyProductionEnsureCommand = oidcProjectEnsureCommandCreate("coachingcompany", "production")
+const authworksCoachingcompanyDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate(
+  "coachingcompany",
+  "development",
+)
+const authworksFilmschauspielschuleProductionEnsureCommand = oidcProjectEnsureCommandCreate(
+  "filmschauspielschule",
+  "production",
+)
+const authworksFilmschauspielschuleDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate(
+  "filmschauspielschule",
+  "development",
+)
+const authworksCrmProductionEnsureCommand = oidcProjectEnsureCommandCreate("crm", "production")
+const authworksCrmDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("crm", "development")
+const authworksAllgroupsChatProductionEnsureCommand = oidcProjectEnsureCommandCreate("allgroups-chat", "production")
+const authworksAllgroupsChatDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("allgroups-chat", "development")
+const authworksAkademieProductionEnsureCommand = oidcProjectEnsureCommandCreate("akademie", "production")
+const authworksAkademieDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("akademie", "development")
+const authworksArchiveProductionEnsureCommand = oidcProjectEnsureCommandCreate("archive", "production")
+const authworksArchiveDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("archive", "development")
+
 const oidcLeoConvexProductionClientEnsureCommand = buildCommand({
   async func(this: ApplicationContext) {
     try {
@@ -651,6 +711,24 @@ export const oidcCliCommands = buildRouteMap({
     codelineProductionSecretRotate: oidcCodelineProductionSecretRotateCommand,
     multichatProductionEnsure: oidcMultichatProductionClientEnsureCommand,
     multichatDevelopmentEnsure: oidcMultichatDevelopmentClientEnsureCommand,
+    authworksEventorenProductionEnsure: authworksEventorenProductionEnsureCommand,
+    authworksEventorenDevelopmentEnsure: authworksEventorenDevelopmentEnsureCommand,
+    authworksSolidConvexProductionEnsure: authworksSolidConvexProductionEnsureCommand,
+    authworksSolidConvexDevelopmentEnsure: authworksSolidConvexDevelopmentEnsureCommand,
+    authworksSemesterkurProductionEnsure: authworksSemesterkurProductionEnsureCommand,
+    authworksSemesterkurDevelopmentEnsure: authworksSemesterkurDevelopmentEnsureCommand,
+    authworksCoachingcompanyProductionEnsure: authworksCoachingcompanyProductionEnsureCommand,
+    authworksCoachingcompanyDevelopmentEnsure: authworksCoachingcompanyDevelopmentEnsureCommand,
+    authworksFilmschauspielschuleProductionEnsure: authworksFilmschauspielschuleProductionEnsureCommand,
+    authworksFilmschauspielschuleDevelopmentEnsure: authworksFilmschauspielschuleDevelopmentEnsureCommand,
+    authworksCrmProductionEnsure: authworksCrmProductionEnsureCommand,
+    authworksCrmDevelopmentEnsure: authworksCrmDevelopmentEnsureCommand,
+    authworksAllgroupsChatProductionEnsure: authworksAllgroupsChatProductionEnsureCommand,
+    authworksAllgroupsChatDevelopmentEnsure: authworksAllgroupsChatDevelopmentEnsureCommand,
+    authworksAkademieProductionEnsure: authworksAkademieProductionEnsureCommand,
+    authworksAkademieDevelopmentEnsure: authworksAkademieDevelopmentEnsureCommand,
+    authworksArchiveProductionEnsure: authworksArchiveProductionEnsureCommand,
+    authworksArchiveDevelopmentEnsure: authworksArchiveDevelopmentEnsureCommand,
     leoConvexProductionEnsure: oidcLeoConvexProductionClientEnsureCommand,
     multichatProductionSecretRotate: oidcMultichatProductionSecretRotateCommand,
     multichatDevelopmentSecretRotate: oidcMultichatDevelopmentSecretRotateCommand,
