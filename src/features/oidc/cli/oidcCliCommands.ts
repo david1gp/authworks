@@ -21,7 +21,9 @@ import { oidcMultichatDevelopmentSecretRotate } from "./oidcMultichatDevelopment
 import { oidcMultichatProductionClientEnsure } from "./oidcMultichatProductionClientEnsure.js"
 import { oidcProjectBoundaryRegistry } from "./oidcProjectBoundaryRegistry.js"
 import { oidcProjectDevelopmentClientEnsure } from "./oidcProjectDevelopmentClientEnsure.js"
+import { oidcProjectDevelopmentSecretRotate } from "./oidcProjectDevelopmentSecretRotate.js"
 import { oidcProjectProductionClientEnsure } from "./oidcProjectProductionClientEnsure.js"
+import { oidcProjectProductionSecretRotate } from "./oidcProjectProductionSecretRotate.js"
 import { oidcMultichatProductionOrganizationIdGet } from "./oidcMultichatProductionOrganizationIdGet.js"
 import { oidcMultichatProductionSecretRotate } from "./oidcMultichatProductionSecretRotate.js"
 import { oidcProductionSigningKeyEnsure } from "./oidcProductionSigningKeyEnsure.js"
@@ -414,6 +416,40 @@ const authworksAkademieDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate
 const authworksArchiveProductionEnsureCommand = oidcProjectEnsureCommandCreate("archive", "production")
 const authworksArchiveDevelopmentEnsureCommand = oidcProjectEnsureCommandCreate("archive", "development")
 
+function oidcProjectSecretRotateCommandCreate(projectSlug: string, environment: "production" | "development") {
+  const project = oidcProjectBoundaryRegistry[projectSlug]
+  const displayName = project?.displayName ?? projectSlug
+  const environmentLabel = environment === "production" ? "production" : "development"
+  return buildCommand({
+    async func(this: ApplicationContext) {
+      try {
+        const rotate =
+          environment === "production" ? oidcProjectProductionSecretRotate : oidcProjectDevelopmentSecretRotate
+        const result = await rotate({
+          credentialEnvelopeWrite: (envelope) => this.process.stdout.write(`${envelope}\n`),
+          homeDirectory: "/home/authworks",
+          project: projectSlug,
+        })
+        if (result.success) return
+        this.process.stderr.write(
+          result.errorMessage ?? `The ${environmentLabel} ${displayName} secret rotation failed.`,
+        )
+        this.process.exitCode = 1
+      } catch (_error) {
+        this.process.stderr.write(`The ${environmentLabel} ${displayName} secret rotation failed.`)
+        this.process.exitCode = 1
+      }
+    },
+    parameters: { flags: {} },
+    docs: {
+      brief: `Rotate only the exact fixed ${environmentLabel} ${displayName} client secret for machine handoff`,
+    },
+  })
+}
+
+const authworksArchiveProductionSecretRotateCommand = oidcProjectSecretRotateCommandCreate("archive", "production")
+const authworksArchiveDevelopmentSecretRotateCommand = oidcProjectSecretRotateCommandCreate("archive", "development")
+
 const oidcLeoConvexProductionClientEnsureCommand = buildCommand({
   async func(this: ApplicationContext) {
     try {
@@ -729,6 +765,8 @@ export const oidcCliCommands = buildRouteMap({
     authworksAkademieDevelopmentEnsure: authworksAkademieDevelopmentEnsureCommand,
     authworksArchiveProductionEnsure: authworksArchiveProductionEnsureCommand,
     authworksArchiveDevelopmentEnsure: authworksArchiveDevelopmentEnsureCommand,
+    authworksArchiveProductionSecretRotate: authworksArchiveProductionSecretRotateCommand,
+    authworksArchiveDevelopmentSecretRotate: authworksArchiveDevelopmentSecretRotateCommand,
     leoConvexProductionEnsure: oidcLeoConvexProductionClientEnsureCommand,
     multichatProductionSecretRotate: oidcMultichatProductionSecretRotateCommand,
     multichatDevelopmentSecretRotate: oidcMultichatDevelopmentSecretRotateCommand,

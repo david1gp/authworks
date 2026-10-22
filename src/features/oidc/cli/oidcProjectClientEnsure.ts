@@ -63,7 +63,16 @@ export async function oidcProjectClientEnsure(options: {
   })
   if (!target.success) return target
 
-  if (target.data === undefined) {
+  if (target.data?.adopted === true)
+    return resultCreate({
+      action: "unchanged",
+      client: target.data.client,
+      credentials: "preserved",
+      environment: options.environment,
+      pkce: "S256",
+    })
+
+  if (target.data?.client === undefined) {
     const created = await options.api.oidcClientCreate(options.realmId, {
       allowedScopes: [...oidcProjectAllowedScopes],
       clientType: "confidential",
@@ -95,14 +104,15 @@ export async function oidcProjectClientEnsure(options: {
     })
   }
 
-  if (target.data.clientType !== "confidential")
+  const existing = target.data.client
+  if (existing.clientType !== "confidential")
     return resultErrorCodedCreate(
       op,
       `The existing ${options.project.displayName} ${options.environment} OIDC client is not confidential; no changes were made.`,
       "oidc.conflict",
     )
 
-  let client = target.data
+  let client = existing
   let changed = false
   const update = oidcProjectClientUpdateCreate(client, configuration)
   if (Object.keys(update).length > 0) {
@@ -131,7 +141,7 @@ async function oidcProjectClientFind(options: {
   readonly configuration: OidcProjectClientConfiguration
   readonly project: OidcProjectBoundaryConfig
   readonly realmId: string
-}): Promise<Result<OidcClient | undefined>> {
+}): Promise<Result<{ readonly adopted: boolean; readonly client: OidcClient } | undefined>> {
   const matches: OidcClient[] = []
   let pageToken: string | undefined
   do {
@@ -157,13 +167,21 @@ async function oidcProjectClientFind(options: {
       "oidc.conflict",
     )
   const client = matches[0]
-  if (client !== undefined && client.name !== options.configuration.name)
+  if (client === undefined) return resultCreate(undefined)
+  if (client.name === options.configuration.name) return resultCreate({ adopted: false, client })
+  if (options.project.adoptSharedClientByRedirectUri !== true)
     return resultErrorCodedCreate(
       "oidcProjectClientFind",
       `A fixed ${options.project.displayName} redirect URI belongs to a differently named OIDC client; no changes were made.`,
       "oidc.conflict",
     )
-  return resultCreate(client)
+  if (client.status !== "active" || client.clientType !== "confidential")
+    return resultErrorCodedCreate(
+      "oidcProjectClientFind",
+      `The shared ${options.project.displayName} OIDC client holding a fixed redirect URI is not an active confidential client; no changes were made.`,
+      "oidc.conflict",
+    )
+  return resultCreate({ adopted: true, client })
 }
 
 function oidcProjectClientUpdateCreate(client: OidcClient, configuration: OidcProjectClientConfiguration) {

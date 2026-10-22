@@ -7,6 +7,7 @@ export type OidcProjectBoundaryConfig = {
   readonly developmentName: string
   readonly productionRedirectUris: readonly string[]
   readonly developmentRedirectUris: readonly string[]
+  readonly adoptSharedClientByRedirectUri?: true
 }
 
 const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
@@ -63,6 +64,10 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     ],
   },
   {
+    // The live "CRM SSO (preview + production)" client predates the split
+    // production/development boundary and holds the preview + production
+    // callbacks under one differently named client. Adopt it by redirect-URI
+    // match: never rename, delete, or rotate it.
     slug: "crm",
     displayName: "CRM",
     productionName: "CRM production",
@@ -72,6 +77,7 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
       "http://127.0.0.1:5173/auth/authworks/callback",
       "https://api.preview.crm.contentoren.de/api/auth/authworks/callback",
     ],
+    adoptSharedClientByRedirectUri: true,
   },
   {
     slug: "allgroups-chat",
