@@ -29,8 +29,8 @@ const expectedRedirectUris: Record<string, { development: string[]; production: 
     production: ["https://allgroups.chat/login/authworks/callback"],
   },
   akademie: {
-    development: ["https://preview.akademie.contentoren.de/login/authworks/callback"],
-    production: ["https://akademie.contentoren.de/login/authworks/callback"],
+    development: ["https://api.preview.akademie.contentoren.de/api/auth/authworks"],
+    production: ["https://api.akademie.contentoren.de/api/auth/authworks"],
   },
   coachingcompany: {
     development: [

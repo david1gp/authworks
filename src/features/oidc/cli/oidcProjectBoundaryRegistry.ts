@@ -89,8 +89,8 @@ const oidcProjectBoundaryConfigs: readonly OidcProjectBoundaryConfig[] = [
     displayName: "Akademie",
     productionName: "Akademie production",
     developmentName: "Akademie development",
-    productionRedirectUris: ["https://akademie.contentoren.de/login/authworks/callback"],
-    developmentRedirectUris: ["https://preview.akademie.contentoren.de/login/authworks/callback"],
+    productionRedirectUris: ["https://api.akademie.contentoren.de/api/auth/authworks"],
+    developmentRedirectUris: ["https://api.preview.akademie.contentoren.de/api/auth/authworks"],
   },
   {
     slug: "archive",
