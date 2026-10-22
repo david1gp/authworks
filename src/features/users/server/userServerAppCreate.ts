@@ -651,6 +651,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       options.database,
       context.req.param("realmId"),
       authorizationPermissionDefinitions.userRead,
+      context.req.param("userId"),
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const result = userGet({
@@ -673,6 +674,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       options.database,
       context.req.param("realmId"),
       authorizationPermissionDefinitions.userManage,
+      context.req.param("userId"),
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const body = await userRequestJsonRead(context)
@@ -702,6 +704,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       options.database,
       context.req.param("realmId"),
       authorizationPermissionDefinitions.userManage,
+      context.req.param("userId"),
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const body = await userRequestJsonRead(context)
@@ -731,6 +734,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       options.database,
       context.req.param("realmId"),
       authorizationPermissionDefinitions.userManage,
+      context.req.param("userId"),
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     const body = await userRequestJsonRead(context)
@@ -760,6 +764,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
       options.database,
       context.req.param("realmId"),
       authorizationPermissionDefinitions.userManage,
+      context.req.param("userId"),
     )
     if (!authenticated.success) return userErrorResponseCreate(context, authenticated)
     return userResultResponseCreate(
@@ -972,12 +977,14 @@ function userAdministratorAuthorize(
   database: StorageDatabase,
   realmId: string,
   permission: "user.read" | "user.manage",
+  targetUserId?: string,
 ): Result<RealmTenantContext> {
   return realmAdministratorContextAuthorize({
     actor: context.get("authorizationActor"),
     database,
     permission,
     realmId,
+    ...(targetUserId === undefined ? {} : { targetUserId }),
   })
 }
 

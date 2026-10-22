@@ -15,6 +15,7 @@ type RealmAdministratorContextAuthorizeOptions = {
   readonly minimumAssurance?: SessionAssurance
   readonly permission: AuthorizationPermission
   readonly realmId: string
+  readonly targetUserId?: string
 }
 
 export function realmAdministratorContextAuthorize(
@@ -49,6 +50,17 @@ export function realmAdministratorContextAuthorize(
   if (options.actor.kind !== "user")
     return resultErrorCodedCreate(op, "The actor is not authorized for this permission.", "authorization.forbidden")
 
+  let targetOrganizationIds: Set<string> | undefined
+  if (options.targetUserId !== undefined) {
+    const targetOrganizations = realmAdministratorTargetOrganizationIds(
+      options.database,
+      options.realmId,
+      options.targetUserId,
+    )
+    if (!targetOrganizations.success) return targetOrganizations
+    targetOrganizationIds = targetOrganizations.data
+  }
+
   let pageToken: string | undefined
   do {
     const memberships = organizationMembershipAccessList({
@@ -64,6 +76,7 @@ export function realmAdministratorContextAuthorize(
         (!membership.roles.includes("owner") && !membership.roles.includes("admin"))
       )
         continue
+      if (targetOrganizationIds !== undefined && !targetOrganizationIds.has(membership.organizationId)) continue
       const authorized = authorizationEnforce({
         actor: options.actor,
         minimumAssurance: options.minimumAssurance,
@@ -78,6 +91,29 @@ export function realmAdministratorContextAuthorize(
   } while (pageToken !== undefined)
 
   return resultErrorCodedCreate(op, "The actor is not authorized for this permission.", "authorization.forbidden")
+}
+
+function realmAdministratorTargetOrganizationIds(
+  database: StorageDatabase,
+  realmId: string,
+  targetUserId: string,
+): Result<Set<string>> {
+  const organizationIds = new Set<string>()
+  let pageToken: string | undefined
+  do {
+    const memberships = organizationMembershipAccessList({
+      database,
+      query: { pageSize: 100, pageToken },
+      realmId,
+      userId: targetUserId,
+    })
+    if (!memberships.success) return memberships
+    for (const membership of memberships.data.items) {
+      if (membership.status === "active") organizationIds.add(membership.organizationId)
+    }
+    pageToken = memberships.data.nextPageToken
+  } while (pageToken !== undefined)
+  return resultCreate(organizationIds)
 }
 
 function assuranceRankGet(assurance: SessionAssurance): number {
