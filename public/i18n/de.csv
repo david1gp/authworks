@@ -969,6 +969,67 @@ common.theme.dark,Dunkel
 common.theme.light,Hell
 common.theme.system,System
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,Suche löschen
+ui.authenticated.demo.adminBlurb,Admin: verwaltet Mitglieder und Projekte und Zugangsdaten ohne Eigentümer.
+ui.authenticated.demo.chipBlurb,Kompakte Kennzeichen für Rolle und Status und Projektsichtbarkeit.
+ui.authenticated.demo.emptyBlurb,Leerer Zustand: kein Datensatz passt zum Filter.
+ui.authenticated.demo.guestBlurb,Gast: zeitlich befristeter Lesezugriff für Prüfer und Partner.
+ui.authenticated.demo.inviteBlurb,Offene Einladungen: unbestätigte Einladungen warten auf Antwort.
+ui.authenticated.demo.keyboardHint,Pfeiltasten bewegen und Home und Ende springen und Enter wählt und Escape schließt.
+ui.authenticated.demo.loadingBlurb,Ladezustand: simuliert Latenz mit Platzhalterzeilen.
+ui.authenticated.demo.memberBlurb,Mitglied: meldet sich an und nutzt freigegebene Projekte ohne Verwaltung.
+ui.authenticated.demo.ownedBlurb,Eigen: nur die besitzende Organisation greift auf dieses Projekt zu.
+ui.authenticated.demo.ownerBlurb,Eigentümer: volle Kontrolle über Einstellungen und Branding und Domains und Eigentümer.
+ui.authenticated.demo.peopleBlurb,Personen: menschliche Nutzer mit Avatar und Rollenplakette und letzter Anmeldung.
+ui.authenticated.demo.profileName,Alex Morgan
+ui.authenticated.demo.roleAdmin,Rollenadministrator
+ui.authenticated.demo.roleGuest,Gast
+ui.authenticated.demo.roleMember,Mitglied
+ui.authenticated.demo.roleOwner,Eigentümer
+ui.authenticated.demo.rolesBlurb,Organisationsrollen: Eigentümer bleibt ohne Eigentümerverwaltung deaktiviert.
+ui.authenticated.demo.sectionsBlurb,Bereichsvorschau: allgemeine Einstellungen und Branding und Anmeldung und Domains.
+ui.authenticated.demo.serviceBlurb,Dienstkonten: nichtmenschliche Identitäten mit Zugangsdaten.
+ui.authenticated.demo.sharedBlurb,Geteilt: eine Partnerorganisation greift über eine Freigabe zu.
+ui.authenticated.demo.sortCaption,Exakte Übereinstimmung: die Tabellen-URL unten trägt die aktive Sortierung.
+ui.authenticated.moreActions,Weitere Aktionen
+ui.authenticated.never,Nie
+ui.authenticated.search,Suchen
+ui.authenticated.sortBy,Nach {column} sortieren
+ui.authenticated.demo.actions,Zeilenmenü ausprobieren
+ui.authenticated.demo.avatarDescription,Foto mit Initialen-Fallback in festen Farbtönen.
+ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.chipsDescription,"Kompakte Pillen für Anzahlen, Kennzeichen und Kategorien."
+ui.authenticated.demo.chipsTitle,Chips
+ui.authenticated.demo.dataDescription,"Sortierbare Kopfzeilen, Zeilenlinks, Ladezustand und leerer Zustand."
+ui.authenticated.demo.dataTitle,Datentabelle
+ui.authenticated.demo.description,Kontextunabhängige Bausteine für die Verwaltungsansichten.
+ui.authenticated.demo.emptyDescription,Kein Datensatz passt zu diesen großzügigen Filtern.
+ui.authenticated.demo.emptyTitle,Nichts anzuzeigen
+ui.authenticated.demo.menuArchive,Archivieren
+ui.authenticated.demo.menuDelete,Löschen
+ui.authenticated.demo.menuRename,Umbenennen
+ui.authenticated.demo.optionDescription,"Klarsprachige Zusammenfassung, was diese Auswahl erlaubt."
+ui.authenticated.demo.optionsDescription,Auswählbare Karten für Rollen- und Optionsauswahl.
+ui.authenticated.demo.optionsTitle,Optionskarten
+ui.authenticated.demo.profileDescription,"Avatar, Titel, Untertitel, Chips, Meta und Aktionen."
+ui.authenticated.demo.profileTitle,Profilkopf
+ui.authenticated.demo.rowDelete,Zeile löschen
+ui.authenticated.demo.rowEdit,Zeile bearbeiten
+ui.authenticated.demo.searchDescription,Entprelltes Schreiben der URL-Abfrage über history.replaceState.
+ui.authenticated.demo.searchPlaceholder,Datensätze filtern
+ui.authenticated.demo.searchTitle,Suchfeld
+ui.authenticated.demo.skeletonDescription,Schimmerblöcke in Aufrufergröße.
+ui.authenticated.demo.skeletonTitle,Platzhalter
+ui.authenticated.demo.statHint,Über alle Organisationen
+ui.authenticated.demo.statsDescription,"Kompakte Kennzahlenkacheln, die erste verlinkt ihre Sammlung."
+ui.authenticated.demo.statsTitle,Kennzahlen
+ui.authenticated.demo.subNavDescription,"Vertikale Bereichsnavigation, mobil als Bildlaufzeile."
+ui.authenticated.demo.subNavTitle,Unternavigation
+ui.authenticated.demo.tabsDescription,Jeder Tab besitzt seine eigene URL.
+ui.authenticated.demo.tabsTitle,Tabs
+ui.authenticated.demo.timeDescription,Relativer Text mit absolutem Zeitpunkt im Titelattribut.
+ui.authenticated.demo.timeTitle,Relative Zeit
+ui.authenticated.demo.title,Authenticated UI Kit
 demo.account.description,"Erkunden Sie die von Authworks unterstützten Funktionen für Profil-, Organisations-, Sicherheits- und Anwendungszugriffsverwaltung ohne Netzwerk. Jedes Ziel verfügt über einen expliziten Fixture-Zustandsvertrag."
 demo.account.eyebrow,Self-Service-Identität
 demo.account.group.access.description,Von diesem Konto erteilte Anwendungen und Berechtigungen.
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,Schreibgeschützte Discovery-
 demo.admin.scenario.protocol_documents.title,Protokolldokumente
 demo.admin.scenario.realm_overview.description,"Realm-Identität, Domains, Lebenszyklusstatus und aktuelle Sitzung prüfen."
 demo.admin.scenario.realm_overview.title,Realm-Übersicht
-demo.admin.scenario.realm_settings.description,"Aktuellen Realm-Namen, Domains, Status und Lebenszyklus verwalten."
-demo.admin.scenario.realm_settings.title,Allgemeine Einstellungen
+demo.admin.scenario.realm_settings.description,"Realm-Identität prüfen und Namen, Domains, Status und Lebenszyklus verwalten."
+demo.admin.scenario.realm_settings.title,Übersicht und Einstellungen
 demo.admin.scenario.roles_grants.description,Projektrollen und Organisationszugriffsfreigaben konfigurieren.
 demo.admin.scenario.roles_grants.title,Rollen und Freigaben
 demo.admin.scenario.sessions.description,Realm-Sitzungen mit Subjekt- und Gerätekontext prüfen.
@@ -1541,6 +1602,36 @@ shell.nav.sessions,Sitzungen
 shell.nav.sessionsDevices,Sitzungen und Geräte
 shell.nav.signingKeys,Signaturschlüssel
 shell.nav.users,Benutzer
+demo.admin.scenario.configuration.description,"Allgemeine Einstellungen, Branding, Anmeldung und Domains der Organisation."
+demo.admin.scenario.configuration.title,Konfiguration
+demo.admin.scenario.realm_administrators.description,Realm-Administratorstatus für Realm-Benutzer erteilen oder entziehen.
+demo.admin.scenario.realm_administrators.title,Administratoren
+demo.admin.scenario.roles.description,Organisationsrollen und Projektrollenzuweisungen.
+demo.admin.scenario.roles.title,Rollen
+shell.nav.organizationSwitcher,Organisation
+admin.directory.administrators.placeholder,Realm-Administratoren folgen in Kürze.
+admin.directory.roles.placeholder,Rollenverwaltung folgt in Kürze.
+admin.directory.users.placeholder,Das neue Benutzerverzeichnis folgt in Kürze.
+admin.organizations.configuration.branding,Branding
+admin.organizations.configuration.brandingDescription,"Hell- und Dunkelmodus, Logo und rechtliche Links mit Live-Vorschau."
+admin.organizations.configuration.domains,Domains
+admin.organizations.configuration.domainsDescription,Verifizierte Domains und Organisationssuche.
+admin.organizations.configuration.general,Allgemein
+admin.organizations.configuration.generalDescription,"Organisationsname, Status und Gefahrenzone."
+admin.organizations.configuration.placeholder,Die neue Organisationskonfiguration folgt in Kürze.
+admin.organizations.configuration.signIn,Anmeldung und Sicherheit
+admin.organizations.configuration.signInDescription,Organisations-Anmelde- und Sicherheitsrichtlinien.
+admin.projects.detail.accessTab,Zugriff
+admin.projects.detail.applicationsTab,Anwendungen
+admin.projects.detail.overviewTab,Übersicht
+admin.projects.detail.placeholder,Die Projektdetails mit Tabs folgen in Kürze.
+admin.projects.detail.rolesTab,Rollen
+admin.realm.overview.placeholder,Die zusammengefasste Realm-Übersicht folgt in Kürze.
+shell.nav.configuration,Konfiguration
+shell.nav.realmAdministrators,Administratoren
+shell.nav.realmGroup,Realm-Bereich
+shell.nav.realmOverviewSettings,Übersicht und Einstellungen
+shell.nav.roles,Rollen
 shell.nav.verifyEmail,E-Mail bestätigen
 shell.state.errorDetail,"Die Seite konnte nicht vorbereitet werden. Versuchen Sie es erneut, wenn Sie bereit sind."
 shell.state.inaccessibleDetail,Sie haben im aktuellen Kontext keinen Zugriff auf dieses Ziel.

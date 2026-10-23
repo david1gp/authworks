@@ -969,6 +969,67 @@ common.theme.dark,Koyu
 common.theme.light,Açık
 common.theme.system,Sistem
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,Aramayı temizle
+ui.authenticated.demo.adminBlurb,Yönetici: sahip olmadan üye ve proje ve kimlik bilgisi yönetir.
+ui.authenticated.demo.chipBlurb,Rol ve durum ve proje görünürlüğü için kompakt rozetler.
+ui.authenticated.demo.emptyBlurb,Boş durum: hiçbir kayıt filtreye uymuyor.
+ui.authenticated.demo.guestBlurb,Misafir: denetçi ve ortaklara süreli okuma erişimi.
+ui.authenticated.demo.inviteBlurb,Bekleyen davetler: kabul edilmemiş davetler alıcı bekliyor.
+ui.authenticated.demo.keyboardHint,Oklar hareket eder ve Home ve End atlar ve Enter seçer ve Escape kapatır.
+ui.authenticated.demo.loadingBlurb,Yükleme düğmesi: iskelet satırlarla gecikmeyi canlandırır.
+ui.authenticated.demo.memberBlurb,Üye: yönetim olmadan verilen projelerde oturum açar ve kullanır.
+ui.authenticated.demo.ownedBlurb,Sahipli: yalnız sahip kuruluş bu projeye erişir.
+ui.authenticated.demo.ownerBlurb,Sahip: ayar ve marka ve alan adı ve sahiplerde tam denetim.
+ui.authenticated.demo.peopleBlurb,Kişiler: avatar ve rol ve son oturumlu insan kullanıcılar.
+ui.authenticated.demo.profileName,Alex Morgan
+ui.authenticated.demo.roleAdmin,Rol yöneticisi
+ui.authenticated.demo.roleGuest,Misafir
+ui.authenticated.demo.roleMember,Üye
+ui.authenticated.demo.roleOwner,Sahip
+ui.authenticated.demo.rolesBlurb,Kuruluş rolleri: Sahip yönetimi yoksa Sahip kapalı kalır.
+ui.authenticated.demo.sectionsBlurb,Bölüm önizleme: genel ayarlar ve marka ve oturum ve alan adları.
+ui.authenticated.demo.serviceBlurb,Hizmet hesapları: kimlik bilgili insan dışı kimlikler.
+ui.authenticated.demo.sharedBlurb,Paylaşılan: ortak kuruluş tek yetkiyle erişir.
+ui.authenticated.demo.sortCaption,Tam eşleşme: aşağıdaki tablo URL etkin sıralamayı taşır.
+ui.authenticated.moreActions,Diğer işlemler
+ui.authenticated.never,Asla
+ui.authenticated.search,Ara
+ui.authenticated.sortBy,{column} ölçütüne göre sırala
+ui.authenticated.demo.actions,Satır menüsünü dene
+ui.authenticated.demo.avatarDescription,Deterministik tonlarda baş harf yedekli fotoğraf.
+ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.chipsDescription,"Sayılar, işaretler ve kategoriler için kompakt haplar."
+ui.authenticated.demo.chipsTitle,Rozetler
+ui.authenticated.demo.dataDescription,"Sıralanabilir başlıklar, satır bağlantıları, iskelet yükleme ve boş durum."
+ui.authenticated.demo.dataTitle,Veri tablosu
+ui.authenticated.demo.description,Yönetim ekranları için bağlamdan bağımsız yapı taşları.
+ui.authenticated.demo.emptyDescription,Bu geniş filtrelere uyan kayıt yok.
+ui.authenticated.demo.emptyTitle,Gösterilecek öğe yok
+ui.authenticated.demo.menuArchive,Arşivle
+ui.authenticated.demo.menuDelete,Sil
+ui.authenticated.demo.menuRename,Yeniden adlandır
+ui.authenticated.demo.optionDescription,Bu seçimin neye izin verdiğinin sade özeti.
+ui.authenticated.demo.optionsDescription,Rol ve seçenek seçiciler için seçilebilir kartlar.
+ui.authenticated.demo.optionsTitle,Seçenek kartları
+ui.authenticated.demo.profileDescription,"Avatar, başlık, alt başlık, rozetler, meta ve işlemler."
+ui.authenticated.demo.profileTitle,Profil başlığı
+ui.authenticated.demo.rowDelete,Satırı sil
+ui.authenticated.demo.rowEdit,Satırı düzenle
+ui.authenticated.demo.searchDescription,history.replaceState ile gecikmeli URL sorgusu yazma.
+ui.authenticated.demo.searchPlaceholder,Kayıtları filtrele
+ui.authenticated.demo.searchTitle,Arama alanı
+ui.authenticated.demo.skeletonDescription,Arayan tarafından boyutlandırılan ışıltı blokları.
+ui.authenticated.demo.skeletonTitle,İskelet
+ui.authenticated.demo.statHint,Tüm kuruluşlarda
+ui.authenticated.demo.statsDescription,"Kompakt KPI kutuları, ilki koleksiyonuna bağlanır."
+ui.authenticated.demo.statsTitle,İstatistikler
+ui.authenticated.demo.subNavDescription,Kaydırma satırına daralan dikey bölüm gezgini.
+ui.authenticated.demo.subNavTitle,Alt gezinme
+ui.authenticated.demo.tabsDescription,Her sekmenin kendi URL adresi vardır.
+ui.authenticated.demo.tabsTitle,Sekmeler
+ui.authenticated.demo.timeDescription,Başlık özniteliğinde mutlak zamanlı göreli metin.
+ui.authenticated.demo.timeTitle,Göreli zaman
+ui.authenticated.demo.title,Kimlik doğrulamalı UI kiti
 demo.account.description,"Authworks tarafından desteklenen profil, kuruluş, güvenlik ve uygulama erişim yönetimi deneyimlerinin ağsız bir haritası. Her hedefin açık bir veri durumu sözleşmesi vardır."
 demo.account.eyebrow,Self servis kimlik
 demo.account.group.access.description,Bu hesap tarafından verilen uygulamalar ve izinler.
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,Salt okunur keşif ve JWKS u�
 demo.admin.scenario.protocol_documents.title,Protokol belgeleri
 demo.admin.scenario.realm_overview.description,"Realm kimliğini, alan adlarını, yaşam döngüsü durumunu ve mevcut oturumu gözden geçirin."
 demo.admin.scenario.realm_overview.title,Realm genel bakış
-demo.admin.scenario.realm_settings.description,"Mevcut realm adını, alan adlarını, durumunu ve yaşam döngüsünü yönetin."
-demo.admin.scenario.realm_settings.title,Genel ayarlar
+demo.admin.scenario.realm_settings.description,"Realm kimliğini inceleme ve ad, alan adları, durum ve yaşam döngüsü yönetimi."
+demo.admin.scenario.realm_settings.title,Genel bakış ve ayarlar
 demo.admin.scenario.roles_grants.description,Proje rollerini ve kuruluş erişim yetkilerini yapılandırın.
 demo.admin.scenario.roles_grants.title,Roller ve yetkiler
 demo.admin.scenario.sessions.description,Özne ve cihaz bağlamıyla realm oturumlarını gözden geçirin.
@@ -1541,6 +1602,36 @@ shell.nav.sessions,Oturumlar
 shell.nav.sessionsDevices,Oturumlar ve cihazlar
 shell.nav.signingKeys,İmzalama anahtarları
 shell.nav.users,Kullanıcılar
+demo.admin.scenario.configuration.description,"Genel ayarlar, marka, oturum açma ve alan adları."
+demo.admin.scenario.configuration.title,Yapılandırma
+demo.admin.scenario.realm_administrators.description,Realm yöneticisi statüsü verme veya kaldırma.
+demo.admin.scenario.realm_administrators.title,Yöneticiler
+demo.admin.scenario.roles.description,Kuruluş rolleri ve proje rolü atamaları.
+demo.admin.scenario.roles.title,Roller
+shell.nav.organizationSwitcher,Kuruluş
+admin.directory.administrators.placeholder,Realm yöneticisi yönetimi çok yakında.
+admin.directory.roles.placeholder,Rol yönetimi çok yakında.
+admin.directory.users.placeholder,Yeni kullanıcı dizini çok yakında.
+admin.organizations.configuration.branding,Marka
+admin.organizations.configuration.brandingDescription,"Canlı önizlemeli açık ve koyu renkler, logo ve yasal bağlantılar."
+admin.organizations.configuration.domains,Alan adları
+admin.organizations.configuration.domainsDescription,Doğrulanmış alan adları ve kuruluş bulma.
+admin.organizations.configuration.general,Genel
+admin.organizations.configuration.generalDescription,"Kuruluş adı, durumu ve tehlike bölgesi."
+admin.organizations.configuration.placeholder,Yeni kuruluş yapılandırması çok yakında.
+admin.organizations.configuration.signIn,Oturum açma ve güvenlik
+admin.organizations.configuration.signInDescription,Kuruluş oturum açma ve güvenlik formları.
+admin.projects.detail.accessTab,Erişim
+admin.projects.detail.applicationsTab,Uygulamalar
+admin.projects.detail.overviewTab,Genel bakış
+admin.projects.detail.placeholder,Sekmeli proje ayrıntısı çok yakında.
+admin.projects.detail.rolesTab,Roller
+admin.realm.overview.placeholder,Birleştirilmiş realm görünümü çok yakında.
+shell.nav.configuration,Yapılandırma
+shell.nav.realmAdministrators,Yöneticiler
+shell.nav.realmGroup,Realm grubu
+shell.nav.realmOverviewSettings,Genel bakış ve ayarlar
+shell.nav.roles,Roller
 shell.nav.verifyEmail,E-postayı doğrula
 shell.state.errorDetail,Sayfa hazırlanamadı. Hazır olduğunuzda tekrar deneyin.
 shell.state.inaccessibleDetail,Mevcut bağlamda bu hedefe erişiminiz yok.

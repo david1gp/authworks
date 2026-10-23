@@ -969,6 +969,67 @@ common.theme.dark,Sötét
 common.theme.light,Világos
 common.theme.system,Rendszer
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,Keresés törlése
+ui.authenticated.demo.adminBlurb,Admin: tagokat és projekteket és hitelesítő adatokat kezel tulajdonosok nélkül.
+ui.authenticated.demo.chipBlurb,Kompakt jelvények szerephez és állapothoz és projektláthatósághoz.
+ui.authenticated.demo.emptyBlurb,Üres állapot: egyetlen rekord sem illeszkedik a szűrőre.
+ui.authenticated.demo.guestBlurb,Vendég: időkorlátos olvasási hozzáférés auditoroknak és partnereknek.
+ui.authenticated.demo.inviteBlurb,Függő meghívók: el nem fogadott meghívók várakoznak.
+ui.authenticated.demo.keyboardHint,Nyilak mozgatnak és Home és End ugranak és Enter választ és Escape zár.
+ui.authenticated.demo.loadingBlurb,Betöltéskapcsoló: késleltetést szimulál vázsorokkal.
+ui.authenticated.demo.memberBlurb,Tag: bejelentkezik és megkapott projekteket használ adminisztráció nélkül.
+ui.authenticated.demo.ownedBlurb,Saját: csak a tulajdonos szervezet éri el ezt a projektet.
+ui.authenticated.demo.ownerBlurb,Tulajdonos: teljes kontroll beállítások és arculat és domainek és tulajdonosok felett.
+ui.authenticated.demo.peopleBlurb,Személyek: emberi felhasználók avatarral és szereppel és utolsó belépéssel.
+ui.authenticated.demo.profileName,Alex Morgan
+ui.authenticated.demo.roleAdmin,Szerepadminisztrátor
+ui.authenticated.demo.roleGuest,Vendég
+ui.authenticated.demo.roleMember,Tag
+ui.authenticated.demo.roleOwner,Tulajdonos
+ui.authenticated.demo.rolesBlurb,Szervezeti szerepek: Tulajdonos letiltva marad tulajdonoskezelés nélkül.
+ui.authenticated.demo.sectionsBlurb,Szekció-előnézet: általános beállítások és arculat és belépés és domainek.
+ui.authenticated.demo.serviceBlurb,Szolgáltatásfiókok: nem emberi identitások hitelesítő adatokkal.
+ui.authenticated.demo.sharedBlurb,Megosztott: partnerszervezet egyetlen engedéllyel fér hozzá.
+ui.authenticated.demo.sortCaption,Pontos egyezés: a táblázat URL-je hordozza az aktív rendezést.
+ui.authenticated.moreActions,További műveletek
+ui.authenticated.never,Soha
+ui.authenticated.search,Keresés
+ui.authenticated.sortBy,Rendezés: {column}
+ui.authenticated.demo.actions,Próbáld ki a sormenüt
+ui.authenticated.demo.avatarDescription,Fénykép determinisztikus tónusú monogram-tartalékkal.
+ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.chipsDescription,"Kompakt jelvények számokhoz, jelzőkhöz és kategóriákhoz."
+ui.authenticated.demo.chipsTitle,Jelvények
+ui.authenticated.demo.dataDescription,"Rendezhető fejlécek, sorhivatkozások, váz-betöltés és üres állapot."
+ui.authenticated.demo.dataTitle,Adattábla
+ui.authenticated.demo.description,Környezetfüggetlen építőelemek a felügyeleti képernyőkhöz.
+ui.authenticated.demo.emptyDescription,Egyetlen rekord sem felel meg ezeknek a tág szűrőknek.
+ui.authenticated.demo.emptyTitle,Nincs megjeleníthető elem
+ui.authenticated.demo.menuArchive,Archiválás
+ui.authenticated.demo.menuDelete,Törlés
+ui.authenticated.demo.menuRename,Átnevezés
+ui.authenticated.demo.optionDescription,"Közérthető összefoglaló arról, mit tesz lehetővé a választás."
+ui.authenticated.demo.optionsDescription,Kiválasztható kártyák szerep- és beállításválasztókhoz.
+ui.authenticated.demo.optionsTitle,Beállításkártyák
+ui.authenticated.demo.profileDescription,"Avatar, cím, alcím, jelvények, metaadatok és műveletek."
+ui.authenticated.demo.profileTitle,Profilfejléc
+ui.authenticated.demo.rowDelete,Sor törlése
+ui.authenticated.demo.rowEdit,Sor szerkesztése
+ui.authenticated.demo.searchDescription,Késleltetett URL-lekérdezésírás history.replaceState segítségével.
+ui.authenticated.demo.searchPlaceholder,Rekordok szűrése
+ui.authenticated.demo.searchTitle,Keresőmező
+ui.authenticated.demo.skeletonDescription,A hívó által méretezett csillogó blokkok.
+ui.authenticated.demo.skeletonTitle,Váz
+ui.authenticated.demo.statHint,Minden szervezetben
+ui.authenticated.demo.statsDescription,"Kompakt mutatólapkák, az első a gyűjteményére hivatkozik."
+ui.authenticated.demo.statsTitle,Mutatók
+ui.authenticated.demo.subNavDescription,"Függőleges szekciónavigáció, mobilon gördülő sorrá."
+ui.authenticated.demo.subNavTitle,Alnavigáció
+ui.authenticated.demo.tabsDescription,Minden lap saját URL-lel rendelkezik.
+ui.authenticated.demo.tabsTitle,Lapok
+ui.authenticated.demo.timeDescription,Relatív szöveg az abszolút idővel a címattribútumban.
+ui.authenticated.demo.timeTitle,Relatív idő
+ui.authenticated.demo.title,Hitelesített felületkészlet
 demo.account.description,"Hálózatmentes áttekintés a profil-, szervezet-, biztonság- és alkalmazáshozzáférés-kezelésről, amelyet az Authworks támogat. Minden cél explicit mintaállapot-szerződéssel rendelkezik."
 demo.account.eyebrow,Önkiszolgáló identitás
 demo.account.group.access.description,A fiók által megadott alkalmazások és engedélyek.
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,Csak olvasható felderítési
 demo.admin.scenario.protocol_documents.title,Protokolldokumentumok
 demo.admin.scenario.realm_overview.description,"A realm identitásának, domainjeinek, életciklus-állapotának és az aktuális munkamenetnek az áttekintése."
 demo.admin.scenario.realm_overview.title,Realm áttekintése
-demo.admin.scenario.realm_settings.description,"Az aktuális realm nevének, domainjeinek, állapotának és életciklusának kezelése."
-demo.admin.scenario.realm_settings.title,Általános beállítások
+demo.admin.scenario.realm_settings.description,"A realm identitásának áttekintése és a név, domainek, állapot és életciklus kezelése."
+demo.admin.scenario.realm_settings.title,Áttekintés és beállítások
 demo.admin.scenario.roles_grants.description,Projektszerepkörök és szervezeti hozzáférési jogosultságok konfigurálása.
 demo.admin.scenario.roles_grants.title,Szerepkörök és jogosultságok
 demo.admin.scenario.sessions.description,Realm-munkamenetek áttekintése alany- és eszközkörnyezettel.
@@ -1541,6 +1602,36 @@ shell.nav.sessions,Munkamenetek
 shell.nav.sessionsDevices,Munkamenetek és eszközök
 shell.nav.signingKeys,Aláíró kulcsok
 shell.nav.users,Felhasználók
+demo.admin.scenario.configuration.description,"Általános beállítások, arculat, bejelentkezés és domainek."
+demo.admin.scenario.configuration.title,Beállítások
+demo.admin.scenario.realm_administrators.description,Realm-adminisztrátori státusz megadása vagy visszavonása.
+demo.admin.scenario.realm_administrators.title,Adminisztrátorok
+demo.admin.scenario.roles.description,Szervezeti szerepkörök és projekt-szerepkörök.
+demo.admin.scenario.roles.title,Szerepkörök
+shell.nav.organizationSwitcher,Szervezet
+admin.directory.administrators.placeholder,A realm-adminisztrátorok kezelése hamarosan.
+admin.directory.roles.placeholder,Szerepkörkezelés hamarosan.
+admin.directory.users.placeholder,Az új felhasználói címtár hamarosan.
+admin.organizations.configuration.branding,Arculat
+admin.organizations.configuration.brandingDescription,"Világos és sötét színek, logó és jogi hivatkozások élő előnézettel."
+admin.organizations.configuration.domains,Domainek
+admin.organizations.configuration.domainsDescription,Hitelesített domainek és szervezeti felderítés.
+admin.organizations.configuration.general,Általános
+admin.organizations.configuration.generalDescription,"Szervezet neve, állapota és veszélyzóna."
+admin.organizations.configuration.placeholder,Az új szervezeti beállítások hamarosan.
+admin.organizations.configuration.signIn,Bejelentkezés és biztonság
+admin.organizations.configuration.signInDescription,Szervezeti bejelentkezési és biztonsági űrlapok.
+admin.projects.detail.accessTab,Hozzáférés
+admin.projects.detail.applicationsTab,Alkalmazások
+admin.projects.detail.overviewTab,Áttekintés
+admin.projects.detail.placeholder,A lapfüles projektrészletek hamarosan.
+admin.projects.detail.rolesTab,Szerepkörök
+admin.realm.overview.placeholder,Az egyesített realm-áttekintés hamarosan.
+shell.nav.configuration,Beállítások
+shell.nav.realmAdministrators,Adminisztrátorok
+shell.nav.realmGroup,Tartomány
+shell.nav.realmOverviewSettings,Áttekintés és beállítások
+shell.nav.roles,Szerepkörök
 shell.nav.verifyEmail,E-mail megerősítése
 shell.state.errorDetail,"Az oldalt nem sikerült előkészíteni. Próbálja újra, ha készen áll."
 shell.state.inaccessibleDetail,Nincs hozzáférése ehhez a célhoz a jelenlegi környezetben.

@@ -969,6 +969,67 @@ common.theme.dark,داكن
 common.theme.light,فاتح
 common.theme.system,النظام
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,مسح البحث
+ui.authenticated.demo.adminBlurb,المشرف: يدير الأعضاء والمشاريع وبيانات الاعتماد دون المالكين.
+ui.authenticated.demo.chipBlurb,شارات مدمجة للدور والحالة وظهور المشروع.
+ui.authenticated.demo.emptyBlurb,حالة فارغة: لا يطابق أي سجل عامل التصفية.
+ui.authenticated.demo.guestBlurb,ضيف: وصول قراءة محدود زمنيا للمدققين والشركاء.
+ui.authenticated.demo.inviteBlurb,دعوات معلقة: دعوات غير مقبولة بانتظار مستلم.
+ui.authenticated.demo.keyboardHint,الأسهم تتحرك وHome وEnd تقفزان وEnter يختار وEscape يغلق.
+ui.authenticated.demo.loadingBlurb,مفتاح التحميل: يحاكي زمن الاستجابة بصفوف هيكلية.
+ui.authenticated.demo.memberBlurb,عضو: يسجل الدخول ويستخدم المشاريع الممنوحة دون إدارة.
+ui.authenticated.demo.ownedBlurb,مملوك: المنظمة المالكة وحدها تصل إلى هذا المشروع.
+ui.authenticated.demo.ownerBlurb,المالك: تحكم كامل في الإعدادات والهوية والنطاقات والمالكين.
+ui.authenticated.demo.peopleBlurb,الأشخاص: مستخدمون بشريون بصورة ودور وآخر تسجيل دخول.
+ui.authenticated.demo.profileName,أليكس مورغان
+ui.authenticated.demo.roleAdmin,مدير الدور
+ui.authenticated.demo.roleGuest,ضيف
+ui.authenticated.demo.roleMember,عضو
+ui.authenticated.demo.roleOwner,مالك
+ui.authenticated.demo.rolesBlurb,أدوار المنظمة: يبقى المالك معطلا ما لم تُدر المالكين.
+ui.authenticated.demo.sectionsBlurb,معاينة الأقسام: إعدادات عامة وهوية وتسجيل دخول ونطاقات.
+ui.authenticated.demo.serviceBlurb,حسابات الخدمة: هويات غير بشرية ببيانات اعتماد.
+ui.authenticated.demo.sharedBlurb,مشترك: منظمة شريكة تصل عبر منح واحد.
+ui.authenticated.demo.sortCaption,تطابق تام: رابط الجدول أدناه يحمل الفرز النشط.
+ui.authenticated.moreActions,إجراءات أخرى
+ui.authenticated.never,أبداً
+ui.authenticated.search,بحث
+ui.authenticated.sortBy,ترتيب حسب {column}
+ui.authenticated.demo.actions,جرّب قائمة الصف
+ui.authenticated.demo.avatarDescription,صورة مع أحرف أولى احتياطية بألوان ثابتة.
+ui.authenticated.demo.avatarTitle,الصورة الرمزية
+ui.authenticated.demo.chipsDescription,شارات مدمجة للأعداد والعلامات والفئات.
+ui.authenticated.demo.chipsTitle,شارات
+ui.authenticated.demo.dataDescription,ترويسات قابلة للترتيب وروابط للصفوف وهيكل تحميل وموضع فارغ.
+ui.authenticated.demo.dataTitle,جدول البيانات
+ui.authenticated.demo.description,مكوّنات بناء محايدة السياق لشاشات الإدارة.
+ui.authenticated.demo.emptyDescription,لا يوجد أي سجل يطابق هذه المرشحات.
+ui.authenticated.demo.emptyTitle,لا يوجد ما يُعرض
+ui.authenticated.demo.menuArchive,أرشفة
+ui.authenticated.demo.menuDelete,حذف
+ui.authenticated.demo.menuRename,إعادة تسمية
+ui.authenticated.demo.optionDescription,ملخص بلغة واضحة لما يتيحه هذا الخيار.
+ui.authenticated.demo.optionsDescription,بطاقات قابلة للاختيار لمنتقي الأدوار والخيارات.
+ui.authenticated.demo.optionsTitle,بطاقات الخيارات
+ui.authenticated.demo.profileDescription,الصورة والعنوان والعنوان الفرعي والشارات والبيانات والإجراءات.
+ui.authenticated.demo.profileTitle,ترويسة الملف
+ui.authenticated.demo.rowDelete,حذف الصف
+ui.authenticated.demo.rowEdit,تحرير الصف
+ui.authenticated.demo.searchDescription,كتابة استعلام URL مؤجلة عبر history.replaceState.
+ui.authenticated.demo.searchPlaceholder,تصفية السجلات
+ui.authenticated.demo.searchTitle,حقل البحث
+ui.authenticated.demo.skeletonDescription,كتل متلألئة بحجم يحدده المستدعي.
+ui.authenticated.demo.skeletonTitle,هيكل مؤقت
+ui.authenticated.demo.statHint,عبر جميع المنظمات
+ui.authenticated.demo.statsDescription,بلاطات مؤشرات مدمجة، الأول يرتبط بمجموعته.
+ui.authenticated.demo.statsTitle,بلاطات الإحصاءات
+ui.authenticated.demo.subNavDescription,تنقل أقسام عمودي ينهار إلى صف تمرير.
+ui.authenticated.demo.subNavTitle,تنقل فرعي
+ui.authenticated.demo.tabsDescription,كل تبويب يملك عنوان URL خاصاً به.
+ui.authenticated.demo.tabsTitle,تبويبات
+ui.authenticated.demo.timeDescription,نص نسبي مع الوقت المطلق في سمة العنوان.
+ui.authenticated.demo.timeTitle,الوقت النسبي
+ui.authenticated.demo.title,مجموعة واجهة المصادقة
 demo.account.description,خريطة بدون اتصال بالشبكة لتجارب إدارة الملف الشخصي والمنظمة والأمان والوصول إلى التطبيقات التي يدعمها Authworks. كل وجهة لها عقد صريح لحالة البيانات التجريبية.
 demo.account.eyebrow,الهوية بالخدمة الذاتية
 demo.account.group.access.description,التطبيقات والأذونات الممنوحة من قبل هذا الحساب.
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,فحص نقاط نهاية ا
 demo.admin.scenario.protocol_documents.title,وثائق البروتوكول
 demo.admin.scenario.realm_overview.description,مراجعة هوية النطاق والنطاقات الفرعية وحالة دورة الحياة والجلسة الحالية.
 demo.admin.scenario.realm_overview.title,نظرة عامة على النطاق
-demo.admin.scenario.realm_settings.description,إدارة اسم النطاق الحالي والنطاقات الفرعية والحالة ودورة الحياة.
-demo.admin.scenario.realm_settings.title,الإعدادات العامة
+demo.admin.scenario.realm_settings.description,مراجعة هوية النطاق وإدارة الاسم والنطاقات والحالة ودورة الحياة.
+demo.admin.scenario.realm_settings.title,نظرة عامة وإعدادات
 demo.admin.scenario.roles_grants.description,تكوين أدوار المشروع ومنح وصول المنظمة.
 demo.admin.scenario.roles_grants.title,الأدوار والمنح
 demo.admin.scenario.sessions.description,مراجعة جلسات النطاق مع سياق الفاعل والجهاز.
@@ -1541,6 +1602,36 @@ shell.nav.sessions,الجلسات
 shell.nav.sessionsDevices,الجلسات والأجهزة
 shell.nav.signingKeys,مفاتيح التوقيع
 shell.nav.users,المستخدمون
+demo.admin.scenario.configuration.description,إعدادات المنظمة العامة والهوية وتسجيل الدخول والنطاقات.
+demo.admin.scenario.configuration.title,الإعدادات
+demo.admin.scenario.realm_administrators.description,منح أو إلغاء صفة مسؤول النطاق لمستخدمي النطاق.
+demo.admin.scenario.realm_administrators.title,المسؤولون
+demo.admin.scenario.roles.description,أدوار المنظمة وتعيينات أدوار المشاريع.
+demo.admin.scenario.roles.title,الأدوار
+shell.nav.organizationSwitcher,المنظمة
+admin.directory.administrators.placeholder,إدارة مسؤولي النطاق قريبًا.
+admin.directory.roles.placeholder,إدارة الأدوار قريبًا.
+admin.directory.users.placeholder,دليل المستخدمين الجديد قريبًا.
+admin.organizations.configuration.branding,الهوية البصرية
+admin.organizations.configuration.brandingDescription,ألوان فاتحة وداكنة وشعار وروابط قانونية مع معاينة مباشرة.
+admin.organizations.configuration.domains,النطاقات
+admin.organizations.configuration.domainsDescription,النطاقات المتحقق منها واكتشاف المنظمة.
+admin.organizations.configuration.general,عام
+admin.organizations.configuration.generalDescription,اسم المنظمة وحالتها ومنطقة الخطر.
+admin.organizations.configuration.placeholder,إعدادات المنظمة الجديدة قريبًا.
+admin.organizations.configuration.signIn,تسجيل الدخول والأمان
+admin.organizations.configuration.signInDescription,نماذج تسجيل الدخول وسياسة الأمان للمنظمة.
+admin.projects.detail.accessTab,الوصول
+admin.projects.detail.applicationsTab,التطبيقات
+admin.projects.detail.overviewTab,نظرة عامة
+admin.projects.detail.placeholder,تفاصيل المشروع المبوبة قريبًا.
+admin.projects.detail.rolesTab,الأدوار
+admin.realm.overview.placeholder,نظرة عامة وإعدادات النطاق المدمجة قريبًا.
+shell.nav.configuration,الإعدادات
+shell.nav.realmAdministrators,المسؤولون
+shell.nav.realmGroup,النطاق
+shell.nav.realmOverviewSettings,نظرة عامة وإعدادات
+shell.nav.roles,الأدوار
 shell.nav.verifyEmail,التحقق من البريد الإلكتروني
 shell.state.errorDetail,تعذر إعداد الصفحة. حاول مرة أخرى عندما تكون جاهزاً.
 shell.state.inaccessibleDetail,ليس لديك حق الوصول إلى هذه الوجهة في السياق الحالي.

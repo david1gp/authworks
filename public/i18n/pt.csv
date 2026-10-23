@@ -969,6 +969,67 @@ common.theme.dark,Escuro
 common.theme.light,Claro
 common.theme.system,Sistema
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,Limpar pesquisa
+ui.authenticated.demo.adminBlurb,Administração: gere membros e projetos e credenciais sem proprietários.
+ui.authenticated.demo.chipBlurb,Selos compactos de função e estado e visibilidade do projeto.
+ui.authenticated.demo.emptyBlurb,Estado vazio: nenhum registro corresponde ao filtro.
+ui.authenticated.demo.guestBlurb,Convidado: acesso de leitura temporário para auditores e parceiros.
+ui.authenticated.demo.inviteBlurb,Convites pendentes: convites não aceitos aguardam.
+ui.authenticated.demo.keyboardHint,Setas movem e Início e Fim saltam e Enter escolhe e Escape fecha.
+ui.authenticated.demo.loadingBlurb,Interruptor de carga: simula a latência com linhas esqueleto.
+ui.authenticated.demo.memberBlurb,Membro: inicia sessão e usa projetos concedidos sem administrar.
+ui.authenticated.demo.ownedBlurb,Próprio: só a organização proprietária acessa este projeto.
+ui.authenticated.demo.ownerBlurb,Proprietário: controle total de ajustes e identidade e domínios e proprietários.
+ui.authenticated.demo.peopleBlurb,Pessoas: usuários humanos com avatar e função e último acesso.
+ui.authenticated.demo.profileName,Alex Morgan
+ui.authenticated.demo.roleAdmin,Administrador de função
+ui.authenticated.demo.roleGuest,Convidado
+ui.authenticated.demo.roleMember,Membro
+ui.authenticated.demo.roleOwner,Proprietário
+ui.authenticated.demo.rolesBlurb,Funções da organização: Proprietário segue desativado sem gestão de proprietários.
+ui.authenticated.demo.sectionsBlurb,Prévia de seções: ajustes gerais e identidade e acesso e domínios.
+ui.authenticated.demo.serviceBlurb,Contas de serviço: identidades não humanas com credenciais.
+ui.authenticated.demo.sharedBlurb,Compartilhado: uma organização parceira acessa via uma concessão.
+ui.authenticated.demo.sortCaption,Correspondência exata: a URL da tabela traz a ordenação ativa.
+ui.authenticated.moreActions,Mais ações
+ui.authenticated.never,Nunca
+ui.authenticated.search,Pesquisar
+ui.authenticated.sortBy,Ordenar por {column}
+ui.authenticated.demo.actions,Experimente o menu de linha
+ui.authenticated.demo.avatarDescription,Foto com iniciais alternativas em tons determinísticos.
+ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.chipsDescription,"Pílulas compactas para contagens, sinalizadores e categorias."
+ui.authenticated.demo.chipsTitle,Etiquetas
+ui.authenticated.demo.dataDescription,"Cabeçalhos ordenáveis, links de linha, carregamento esqueleto e estado vazio."
+ui.authenticated.demo.dataTitle,Tabela de dados
+ui.authenticated.demo.description,Blocos neutros para as telas de administração.
+ui.authenticated.demo.emptyDescription,Nenhum registro corresponde a estes filtros generosos.
+ui.authenticated.demo.emptyTitle,Nada a mostrar
+ui.authenticated.demo.menuArchive,Arquivar
+ui.authenticated.demo.menuDelete,Excluir
+ui.authenticated.demo.menuRename,Renomear
+ui.authenticated.demo.optionDescription,Resumo claro do que esta escolha permite.
+ui.authenticated.demo.optionsDescription,Cartões selecionáveis para funções e opções.
+ui.authenticated.demo.optionsTitle,Cartões de opção
+ui.authenticated.demo.profileDescription,"Avatar, título, subtítulo, etiquetas, metadados e ações."
+ui.authenticated.demo.profileTitle,Cabeçalho do perfil
+ui.authenticated.demo.rowDelete,Excluir linha
+ui.authenticated.demo.rowEdit,Editar linha
+ui.authenticated.demo.searchDescription,Escrita diferida da consulta URL via history.replaceState.
+ui.authenticated.demo.searchPlaceholder,Filtrar registros
+ui.authenticated.demo.searchTitle,Campo de pesquisa
+ui.authenticated.demo.skeletonDescription,Blocos brilhantes dimensionados pelo chamador.
+ui.authenticated.demo.skeletonTitle,Esqueleto
+ui.authenticated.demo.statHint,Em todas as organizações
+ui.authenticated.demo.statsDescription,"Blocos KPI compactos, o primeiro vincula sua coleção."
+ui.authenticated.demo.statsTitle,Indicadores
+ui.authenticated.demo.subNavDescription,Navegação vertical que colapsa para linha rolável.
+ui.authenticated.demo.subNavTitle,Subnavegação
+ui.authenticated.demo.tabsDescription,Cada guia tem seu próprio URL.
+ui.authenticated.demo.tabsTitle,Guias
+ui.authenticated.demo.timeDescription,Texto relativo com a hora absoluta no atributo de título.
+ui.authenticated.demo.timeTitle,Hora relativa
+ui.authenticated.demo.title,Kit de interface autenticada
 demo.account.description,"Um mapa sem rede das experiências de gestão de perfil, organização, segurança e acesso a aplicações suportadas pelo Authworks. Cada destino tem um contrato explícito de estado da fixture."
 demo.account.eyebrow,Identidade autosserviço
 demo.account.group.access.description,Aplicações e permissões concedidas por esta conta.
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,Inspecione pontos finais só 
 demo.admin.scenario.protocol_documents.title,Documentos de protocolo
 demo.admin.scenario.realm_overview.description,"Reveja a identidade do realm, domínios, estado do ciclo de vida e a sessão atual."
 demo.admin.scenario.realm_overview.title,Visão geral do realm
-demo.admin.scenario.realm_settings.description,"Gerir o nome do realm atual, domínios, estado e ciclo de vida."
-demo.admin.scenario.realm_settings.title,Definições gerais
+demo.admin.scenario.realm_settings.description,"Rever a identidade do realm e gerir nome, domínios, estado e ciclo de vida."
+demo.admin.scenario.realm_settings.title,Resumo e definições
 demo.admin.scenario.roles_grants.description,Configure funções de projeto e concessões de acesso da organização.
 demo.admin.scenario.roles_grants.title,Funções e concessões
 demo.admin.scenario.sessions.description,Reveja as sessões do realm com contexto de sujeito e dispositivo.
@@ -1541,6 +1602,36 @@ shell.nav.sessions,Sessões
 shell.nav.sessionsDevices,Sessões e dispositivos
 shell.nav.signingKeys,Chaves de assinatura
 shell.nav.users,Utilizadores
+demo.admin.scenario.configuration.description,"Definições gerais, marca, acesso e domínios."
+demo.admin.scenario.configuration.title,Configuração
+demo.admin.scenario.realm_administrators.description,Conceder ou revogar o estado de administrador do realm.
+demo.admin.scenario.realm_administrators.title,Administradores
+demo.admin.scenario.roles.description,Funções da organização e atribuições de funções.
+demo.admin.scenario.roles.title,Funções
+shell.nav.organizationSwitcher,Organização
+admin.directory.administrators.placeholder,A gestão de administradores do realm chega em breve.
+admin.directory.roles.placeholder,A gestão de funções chega em breve.
+admin.directory.users.placeholder,O novo diretório de utilizadores chega em breve.
+admin.organizations.configuration.branding,Marca
+admin.organizations.configuration.brandingDescription,"Cores claras e escuras, logótipo e ligações legais com pré-visualização."
+admin.organizations.configuration.domains,Domínios
+admin.organizations.configuration.domainsDescription,Domínios verificados e deteção da organização.
+admin.organizations.configuration.general,Geral
+admin.organizations.configuration.generalDescription,"Nome, estado e zona de perigo da organização."
+admin.organizations.configuration.placeholder,A nova configuração da organização chega em breve.
+admin.organizations.configuration.signIn,Início de sessão e segurança
+admin.organizations.configuration.signInDescription,Formulários de acesso e política de segurança.
+admin.projects.detail.accessTab,Acesso
+admin.projects.detail.applicationsTab,Aplicações
+admin.projects.detail.overviewTab,Resumo
+admin.projects.detail.placeholder,O detalhe do projeto com separadores chega em breve.
+admin.projects.detail.rolesTab,Funções
+admin.realm.overview.placeholder,O resumo unificado do realm chega em breve.
+shell.nav.configuration,Configuração
+shell.nav.realmAdministrators,Administradores
+shell.nav.realmGroup,Domínio
+shell.nav.realmOverviewSettings,Resumo e definições
+shell.nav.roles,Funções
 shell.nav.verifyEmail,Verificar e-mail
 shell.state.errorDetail,Não foi possível preparar a página. Tente novamente quando estiver pronto.
 shell.state.inaccessibleDetail,Não tem acesso a este destino no contexto atual.

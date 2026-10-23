@@ -969,6 +969,67 @@ common.theme.dark,Темна
 common.theme.light,Світла
 common.theme.system,Система
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,Очистити пошук
+ui.authenticated.demo.adminBlurb,Адмін: керує учасниками і проєктами й обліковими даними без власників.
+ui.authenticated.demo.chipBlurb,Компактні мітки ролі й статусу й видимості проєкту.
+ui.authenticated.demo.emptyBlurb,Порожньо: жоден запис не відповідає фільтру.
+ui.authenticated.demo.guestBlurb,Гість: тимчасовий доступ на читання для аудиторів і партнерів.
+ui.authenticated.demo.inviteBlurb,Очікуючі запрошення: неприйняті запрошення чекають отримувача.
+ui.authenticated.demo.keyboardHint,Стрілки рухають а Home й End стрибають а Enter обирає а Escape закриває.
+ui.authenticated.demo.loadingBlurb,Перемикач завантаження: імітує затримку рядками-заглушками.
+ui.authenticated.demo.memberBlurb,Учасник: входить і користується наданими проєктами без адміністрування.
+ui.authenticated.demo.ownedBlurb,Власний: лише організація-власник відкриває цей проєкт.
+ui.authenticated.demo.ownerBlurb,Власник: повний контроль налаштувань і стилю й доменів і власників.
+ui.authenticated.demo.peopleBlurb,Люди: користувачі з аватаром і роллю й останнім входом.
+ui.authenticated.demo.profileName,Алекс Морган
+ui.authenticated.demo.roleAdmin,Адміністратор ролі
+ui.authenticated.demo.roleGuest,Гість
+ui.authenticated.demo.roleMember,Учасник
+ui.authenticated.demo.roleOwner,Власник
+ui.authenticated.demo.rolesBlurb,Ролі організації: Власник вимкнений без керування власниками.
+ui.authenticated.demo.sectionsBlurb,Розділи: загальні налаштування і стиль і вхід і домени.
+ui.authenticated.demo.serviceBlurb,Сервісні акаунти: нелюдські сутності з обліковими даними.
+ui.authenticated.demo.sharedBlurb,Спільний: партнерська організація має доступ через один грант.
+ui.authenticated.demo.sortCaption,Точна відповідність: URL таблиці нижче несе активне сортування.
+ui.authenticated.moreActions,Інші дії
+ui.authenticated.never,Ніколи
+ui.authenticated.search,Пошук
+ui.authenticated.sortBy,Сортувати за {column}
+ui.authenticated.demo.actions,Спробуйте меню рядка
+ui.authenticated.demo.avatarDescription,Фото з ініціалами-заглушкою в детермінованих тонах.
+ui.authenticated.demo.avatarTitle,Аватар
+ui.authenticated.demo.chipsDescription,"Компактні пігулки для лічильників, прапорців і категорій."
+ui.authenticated.demo.chipsTitle,Мітки
+ui.authenticated.demo.dataDescription,"Сортувальні заголовки, посилання рядків, скелетонне завантаження та порожній стан."
+ui.authenticated.demo.dataTitle,Таблиця даних
+ui.authenticated.demo.description,Контекстно-незалежні блоки екранів адміністрування.
+ui.authenticated.demo.emptyDescription,Жоден запис не відповідає цим широким фільтрам.
+ui.authenticated.demo.emptyTitle,Немає чого показати
+ui.authenticated.demo.menuArchive,Архівувати
+ui.authenticated.demo.menuDelete,Видалити
+ui.authenticated.demo.menuRename,Перейменувати
+ui.authenticated.demo.optionDescription,"Зрозуміле резюме того, що дозволяє цей вибір."
+ui.authenticated.demo.optionsDescription,Вибірні картки для ролей і параметрів.
+ui.authenticated.demo.optionsTitle,Картки варіантів
+ui.authenticated.demo.profileDescription,"Аватар, заголовок, підзаголовок, мітки, метадані та дії."
+ui.authenticated.demo.profileTitle,Шапка профілю
+ui.authenticated.demo.rowDelete,Видалити рядок
+ui.authenticated.demo.rowEdit,Редагувати рядок
+ui.authenticated.demo.searchDescription,Відкладений запис URL-запиту через history.replaceState.
+ui.authenticated.demo.searchPlaceholder,Фільтрувати записи
+ui.authenticated.demo.searchTitle,Поле пошуку
+ui.authenticated.demo.skeletonDescription,Мерехтливі блоки розміром викликача.
+ui.authenticated.demo.skeletonTitle,Скелетон
+ui.authenticated.demo.statHint,У всіх організаціях
+ui.authenticated.demo.statsDescription,"Компактні KPI-плитки, перша посилається на свою колекцію."
+ui.authenticated.demo.statsTitle,Показники
+ui.authenticated.demo.subNavDescription,"Вертикальна навігація, що згортається в рядок прокручування."
+ui.authenticated.demo.subNavTitle,Піднавігація
+ui.authenticated.demo.tabsDescription,Кожна вкладка має власний URL.
+ui.authenticated.demo.tabsTitle,Вкладки
+ui.authenticated.demo.timeDescription,Відносний текст з абсолютним часом в атрибуті title.
+ui.authenticated.demo.timeTitle,Відносний час
+ui.authenticated.demo.title,UI-набір автентифікації
 demo.account.description,"Автономна карта інтерфейсів керування профілем, організацією, безпекою та доступом до додатків, які підтримує Authworks. Кожне призначення має чіткий контракт стану тестових даних."
 demo.account.eyebrow,Самообслуговування ідентифікації
 demo.account.group.access.description,"Додатки та дозволи, надані цим обліковим записом."
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,Переглядайте до
 demo.admin.scenario.protocol_documents.title,Документи протоколу
 demo.admin.scenario.realm_overview.description,"Переглядайте ідентичність реалму, домени, стан життєвого циклу та поточний сеанс."
 demo.admin.scenario.realm_overview.title,Огляд реалму
-demo.admin.scenario.realm_settings.description,"Керуйте назвою поточного реалму, доменами, станом та життєвим циклом."
-demo.admin.scenario.realm_settings.title,Загальні налаштування
+demo.admin.scenario.realm_settings.description,"Перегляд ідентичності realm та керування назвою, доменами, статусом і життєвим циклом."
+demo.admin.scenario.realm_settings.title,Огляд і налаштування
 demo.admin.scenario.roles_grants.description,Налаштуйте проєктні ролі та гранти доступу організації.
 demo.admin.scenario.roles_grants.title,Ролі та гранти
 demo.admin.scenario.sessions.description,Переглядайте сеанси реалму з контекстом суб'єкта та пристрою.
@@ -1541,6 +1602,36 @@ shell.nav.sessions,Сесії
 shell.nav.sessionsDevices,Сеанси та пристрої
 shell.nav.signingKeys,Ключі підпису
 shell.nav.users,Користувачі
+demo.admin.scenario.configuration.description,"Загальні налаштування, брендинг, вхід і домени."
+demo.admin.scenario.configuration.title,Конфігурація
+demo.admin.scenario.realm_administrators.description,Надання або відкликання статусу адміністратора realm.
+demo.admin.scenario.realm_administrators.title,Адміністратори
+demo.admin.scenario.roles.description,Ролі організації та призначення ролей проєктів.
+demo.admin.scenario.roles.title,Ролі
+shell.nav.organizationSwitcher,Організація
+admin.directory.administrators.placeholder,Керування адміністраторами realm незабаром.
+admin.directory.roles.placeholder,Керування ролями незабаром.
+admin.directory.users.placeholder,Новий каталог користувачів незабаром.
+admin.organizations.configuration.branding,Брендинг
+admin.organizations.configuration.brandingDescription,"Світлі й темні кольори, логотип та юридичні посилання з попереднім переглядом."
+admin.organizations.configuration.domains,Домени
+admin.organizations.configuration.domainsDescription,Підтверджені домени та виявлення організації.
+admin.organizations.configuration.general,Загальне
+admin.organizations.configuration.generalDescription,"Назва, статус та небезпечна зона організації."
+admin.organizations.configuration.placeholder,Нова конфігурація організації незабаром.
+admin.organizations.configuration.signIn,Вхід і безпека
+admin.organizations.configuration.signInDescription,Форми входу та політики безпеки організації.
+admin.projects.detail.accessTab,Доступ
+admin.projects.detail.applicationsTab,Застосунки
+admin.projects.detail.overviewTab,Огляд
+admin.projects.detail.placeholder,Деталі проєкту з вкладками незабаром.
+admin.projects.detail.rolesTab,Ролі
+admin.realm.overview.placeholder,Об'єднаний огляд realm незабаром.
+shell.nav.configuration,Конфігурація
+shell.nav.realmAdministrators,Адміністратори
+shell.nav.realmGroup,Область
+shell.nav.realmOverviewSettings,Огляд і налаштування
+shell.nav.roles,Ролі
 shell.nav.verifyEmail,Підтвердити ел. пошту
 shell.state.errorDetail,"Не вдалося підготувати сторінку. Спробуйте ще раз, коли будете готові."
 shell.state.inaccessibleDetail,У вас немає доступу до цього призначення в поточному контексті.

@@ -969,6 +969,67 @@ common.theme.dark,ダーク
 common.theme.light,ライト
 common.theme.system,システム
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,検索をクリア
+ui.authenticated.demo.adminBlurb,管理者: 所有者を除くメンバーとプロジェクトと資格情報を管理。
+ui.authenticated.demo.chipBlurb,役割と状態とプロジェクト可視性の小型トークン。
+ui.authenticated.demo.emptyBlurb,空状態: フィルタに一致するレコードなし。
+ui.authenticated.demo.guestBlurb,ゲスト: 監査人とパートナー向け期限付き読み取りアクセス。
+ui.authenticated.demo.inviteBlurb,保留中の招待: 未承諾の招待が受信待ち。
+ui.authenticated.demo.keyboardHint,矢印で移動しHomeとEndで跳躍しEnterで選択しEscapeで閉じる。
+ui.authenticated.demo.loadingBlurb,読込切替: スケルトン行で遅延を再現。
+ui.authenticated.demo.memberBlurb,メンバー: 管理なしで付与プロジェクトにサインインし利用。
+ui.authenticated.demo.ownedBlurb,所有: 所有組織のみがこのプロジェクトにアクセス可能。
+ui.authenticated.demo.ownerBlurb,所有者: 設定とブランドとドメインと所有者を完全管理。
+ui.authenticated.demo.peopleBlurb,人物: アバターと役割と最終サインインを持つ人間ユーザー。
+ui.authenticated.demo.profileName,アレックス・モーガン
+ui.authenticated.demo.roleAdmin,ロール管理者
+ui.authenticated.demo.roleGuest,ゲスト
+ui.authenticated.demo.roleMember,メンバー
+ui.authenticated.demo.roleOwner,所有者
+ui.authenticated.demo.rolesBlurb,組織役割: 所有者管理なしでは所有者は無効のまま。
+ui.authenticated.demo.sectionsBlurb,区分プレビュー: 一般設定とブランドとサインインとドメイン。
+ui.authenticated.demo.serviceBlurb,サービスアカウント: 資格情報を持つ非人間ID。
+ui.authenticated.demo.sharedBlurb,共有: パートナー組織が単一付与でアクセス保持。
+ui.authenticated.demo.sortCaption,完全一致: 下の表URLが有効な並替えを保持。
+ui.authenticated.moreActions,その他の操作
+ui.authenticated.never,なし
+ui.authenticated.search,検索
+ui.authenticated.sortBy,{column}で並べ替え
+ui.authenticated.demo.actions,行メニューを試す
+ui.authenticated.demo.avatarDescription,決定的なトーンのイニシャルフォールバック付き写真。
+ui.authenticated.demo.avatarTitle,アバター
+ui.authenticated.demo.chipsDescription,件数・フラグ・カテゴリ用のコンパクトなピル。
+ui.authenticated.demo.chipsTitle,チップ
+ui.authenticated.demo.dataDescription,ソート可能なヘッダー、行リンク、スケルトン読み込み、空状態。
+ui.authenticated.demo.dataTitle,データテーブル
+ui.authenticated.demo.description,管理画面用のコンテキスト非依存ビルディングブロック。
+ui.authenticated.demo.emptyDescription,これらの条件に一致するレコードはありません。
+ui.authenticated.demo.emptyTitle,表示するものがありません
+ui.authenticated.demo.menuArchive,アーカイブ
+ui.authenticated.demo.menuDelete,削除
+ui.authenticated.demo.menuRename,名前変更
+ui.authenticated.demo.optionDescription,この選択で許可される内容の平易な概要。
+ui.authenticated.demo.optionsDescription,ロール・オプション選択用の選択可能カード。
+ui.authenticated.demo.optionsTitle,オプションカード
+ui.authenticated.demo.profileDescription,アバター、タイトル、サブタイトル、チップ、メタ、操作。
+ui.authenticated.demo.profileTitle,プロフィールヘッダー
+ui.authenticated.demo.rowDelete,行を削除
+ui.authenticated.demo.rowEdit,行を編集
+ui.authenticated.demo.searchDescription,history.replaceStateによるデバウンスURLクエリ書き込み。
+ui.authenticated.demo.searchPlaceholder,レコードを絞り込む
+ui.authenticated.demo.searchTitle,検索フィールド
+ui.authenticated.demo.skeletonDescription,呼び出し側がサイズ指定するシマーブロック。
+ui.authenticated.demo.skeletonTitle,スケルトン
+ui.authenticated.demo.statHint,すべての組織で
+ui.authenticated.demo.statsDescription,コンパクトなKPIタイル、先頭はコレクションへリンク。
+ui.authenticated.demo.statsTitle,統計タイル
+ui.authenticated.demo.subNavDescription,スクロール行に折りたたまれる縦型セクションナビ。
+ui.authenticated.demo.subNavTitle,サブナビ
+ui.authenticated.demo.tabsDescription,各タブが独自のURLを持ちます。
+ui.authenticated.demo.tabsTitle,タブ
+ui.authenticated.demo.timeDescription,title属性に絶対時刻を持つ相対テキスト。
+ui.authenticated.demo.timeTitle,相対時刻
+ui.authenticated.demo.title,認証UIキット
 demo.account.description,Authworksがサポートするプロファイル、組織、セキュリティ、およびアプリケーションアクセス管理体験のネットワーク不要なマップ。各遷移先には明示的なフィクスチャ状態契約があります。
 demo.account.eyebrow,セルフサービスID
 demo.account.group.access.description,このアカウントによって付与されたアプリケーションと権限。
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,読み取り専用のディ�
 demo.admin.scenario.protocol_documents.title,プロトコル文書
 demo.admin.scenario.realm_overview.description,レルムのID、ドメイン、ライフサイクルステータス、および現在のセッションを確認します。
 demo.admin.scenario.realm_overview.title,レルムの概要
-demo.admin.scenario.realm_settings.description,現在のレルム名、ドメイン、ステータス、およびライフサイクルを管理します。
-demo.admin.scenario.realm_settings.title,一般設定
+demo.admin.scenario.realm_settings.description,RealmのIDを確認し、名前、ドメイン、ステータス、ライフサイクルを管理。
+demo.admin.scenario.realm_settings.title,概要と設定
 demo.admin.scenario.roles_grants.description,プロジェクトロールと組織アクセス付与を設定します。
 demo.admin.scenario.roles_grants.title,ロールと付与
 demo.admin.scenario.sessions.description,サブジェクトとデバイスのコンテキストを含むレルムセッションを確認します。
@@ -1541,6 +1602,36 @@ shell.nav.sessions,セッション
 shell.nav.sessionsDevices,セッションとデバイス
 shell.nav.signingKeys,署名鍵
 shell.nav.users,ユーザー
+demo.admin.scenario.configuration.description,組織の全般設定、ブランド、サインイン、ドメイン。
+demo.admin.scenario.configuration.title,設定
+demo.admin.scenario.realm_administrators.description,Realmユーザーの管理者ステータスを付与または取り消し。
+demo.admin.scenario.realm_administrators.title,管理者
+demo.admin.scenario.roles.description,組織ロールとプロジェクトロールの割り当て。
+demo.admin.scenario.roles.title,ロール
+shell.nav.organizationSwitcher,組織
+admin.directory.administrators.placeholder,Realm管理者の管理は近日公開です。
+admin.directory.roles.placeholder,ロール管理は近日公開です。
+admin.directory.users.placeholder,新しいユーザーディレクトリは近日公開です。
+admin.organizations.configuration.branding,ブランディング
+admin.organizations.configuration.brandingDescription,ライト・ダークの色、ロゴ、法的リンクをライブプレビュー付きで。
+admin.organizations.configuration.domains,ドメイン
+admin.organizations.configuration.domainsDescription,検証済みドメインと組織検出。
+admin.organizations.configuration.general,全般
+admin.organizations.configuration.generalDescription,組織名、ステータス、危険ゾーン。
+admin.organizations.configuration.placeholder,新しい組織設定は近日公開です。
+admin.organizations.configuration.signIn,サインインとセキュリティ
+admin.organizations.configuration.signInDescription,組織のログインとセキュリティポリシー。
+admin.projects.detail.accessTab,アクセス
+admin.projects.detail.applicationsTab,アプリケーション
+admin.projects.detail.overviewTab,概要
+admin.projects.detail.placeholder,タブ付きプロジェクト詳細は近日公開です。
+admin.projects.detail.rolesTab,ロール
+admin.realm.overview.placeholder,統合されたRealm概要は近日公開です。
+shell.nav.configuration,設定
+shell.nav.realmAdministrators,管理者
+shell.nav.realmGroup,レルム
+shell.nav.realmOverviewSettings,概要と設定
+shell.nav.roles,ロール
 shell.nav.verifyEmail,メールアドレスを確認
 shell.state.errorDetail,ページを準備できませんでした。準備ができたら再試行してください。
 shell.state.inaccessibleDetail,現在のコンテキストではこの宛先へのアクセス権がありません。

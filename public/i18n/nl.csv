@@ -969,6 +969,67 @@ common.theme.dark,Donker
 common.theme.light,Licht
 common.theme.system,Systeem
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,Zoekopdracht wissen
+ui.authenticated.demo.adminBlurb,Beheerder: beheert leden en projecten en logingegevens zonder eigenaren.
+ui.authenticated.demo.chipBlurb,Compacte tokens voor rol en status en projectzichtbaarheid.
+ui.authenticated.demo.emptyBlurb,Lege staat: geen enkel record past bij het filter.
+ui.authenticated.demo.guestBlurb,Gast: tijdelijke leestoegang voor auditors en partners.
+ui.authenticated.demo.inviteBlurb,Openstaande uitnodigingen: niet-aanvaarde uitnodigingen wachten.
+ui.authenticated.demo.keyboardHint,Pijlen bewegen en Home en End springen en Enter kiest en Escape sluit.
+ui.authenticated.demo.loadingBlurb,Laadschakelaar: simuleert latentie met skeletrijen.
+ui.authenticated.demo.memberBlurb,Lid: meldt zich aan en gebruikt verleende projecten zonder beheer.
+ui.authenticated.demo.ownedBlurb,Eigen: alleen de eigen organisatie opent dit project.
+ui.authenticated.demo.ownerBlurb,Eigenaar: volledige controle over instellingen en stijl en domeinen en eigenaren.
+ui.authenticated.demo.peopleBlurb,Personen: menselijke gebruikers met avatar en rol en laatste aanmelding.
+ui.authenticated.demo.profileName,Alex Morgan
+ui.authenticated.demo.roleAdmin,Rolbeheerder
+ui.authenticated.demo.roleGuest,Gast
+ui.authenticated.demo.roleMember,Lid
+ui.authenticated.demo.roleOwner,Eigenaar
+ui.authenticated.demo.rolesBlurb,Organisatierollen: Eigenaar blijft uitgeschakeld zonder eigenaarsbeheer.
+ui.authenticated.demo.sectionsBlurb,Sectievoorbeeld: algemene instellingen en stijl en aanmelding en domeinen.
+ui.authenticated.demo.serviceBlurb,Serviceaccounts: niet-menselijke identiteiten met logingegevens.
+ui.authenticated.demo.sharedBlurb,Gedeeld: een partnerorganisatie opent via één toekenning.
+ui.authenticated.demo.sortCaption,Exacte match: de tabel-URL hieronder draagt de actieve sortering.
+ui.authenticated.moreActions,Meer acties
+ui.authenticated.never,Nooit
+ui.authenticated.search,Zoeken
+ui.authenticated.sortBy,Sorteren op {column}
+ui.authenticated.demo.actions,Probeer het rijmenu
+ui.authenticated.demo.avatarDescription,Foto met initialen-terugval in deterministische tonen.
+ui.authenticated.demo.avatarTitle,Avatar
+ui.authenticated.demo.chipsDescription,"Compacte pills voor aantallen, markeringen en categorieën."
+ui.authenticated.demo.chipsTitle,Chips
+ui.authenticated.demo.dataDescription,"Sorteerbare koppen, rijkoppelingen, skeletladen en lege staat."
+ui.authenticated.demo.dataTitle,Gegevenstabel
+ui.authenticated.demo.description,Contextonafhankelijke bouwstenen voor beheerschermen.
+ui.authenticated.demo.emptyDescription,Geen enkel record past bij deze ruime filters.
+ui.authenticated.demo.emptyTitle,Niets te tonen
+ui.authenticated.demo.menuArchive,Archiveren
+ui.authenticated.demo.menuDelete,Verwijderen
+ui.authenticated.demo.menuRename,Hernoemen
+ui.authenticated.demo.optionDescription,Duidelijke samenvatting van wat deze keuze toestaat.
+ui.authenticated.demo.optionsDescription,Selecteerbare kaarten voor rol- en optiekiezers.
+ui.authenticated.demo.optionsTitle,Optiekaarten
+ui.authenticated.demo.profileDescription,"Avatar, titel, ondertitel, chips, meta en acties."
+ui.authenticated.demo.profileTitle,Profielkop
+ui.authenticated.demo.rowDelete,Rij verwijderen
+ui.authenticated.demo.rowEdit,Rij bewerken
+ui.authenticated.demo.searchDescription,Debounced URL-query schrijven via history.replaceState.
+ui.authenticated.demo.searchPlaceholder,Records filteren
+ui.authenticated.demo.searchTitle,Zoekveld
+ui.authenticated.demo.skeletonDescription,Shimmerblokken op aanroeperformaat.
+ui.authenticated.demo.skeletonTitle,Skelet
+ui.authenticated.demo.statHint,In alle organisaties
+ui.authenticated.demo.statsDescription,"Compacte KPI-tegels, de eerste linkt zijn verzameling."
+ui.authenticated.demo.statsTitle,Statistieken
+ui.authenticated.demo.subNavDescription,Verticale sectienavigatie die inklapt tot scrollrij.
+ui.authenticated.demo.subNavTitle,Subnavigatie
+ui.authenticated.demo.tabsDescription,Elke tab heeft een eigen URL.
+ui.authenticated.demo.tabsTitle,Tabs
+ui.authenticated.demo.timeDescription,Relatieve tekst met absolute tijd in het titelattribuut.
+ui.authenticated.demo.timeTitle,Relatieve tijd
+ui.authenticated.demo.title,Geverifieerde UI-kit
 demo.account.description,"Een netwerkvrije kaart van de ervaringen met profiel-, organisatie-, beveiligings- en applicatietoegangsbeheer die Authworks ondersteunt. Elke bestemming heeft een expliciet fixture-statuscontract."
 demo.account.eyebrow,Selfservice-identiteit
 demo.account.group.access.description,Applicaties en machtigingen verleend door dit account.
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,Inspecteer alleen-lezen detec
 demo.admin.scenario.protocol_documents.title,Protocoldocumenten
 demo.admin.scenario.realm_overview.description,"Controleer realm-identiteit, domeinen, levenscyclusstatus en de huidige sessie."
 demo.admin.scenario.realm_overview.title,Realm-overzicht
-demo.admin.scenario.realm_settings.description,"Beheer de huidige realmnaam, domeinen, status en levenscyclus."
-demo.admin.scenario.realm_settings.title,Algemene instellingen
+demo.admin.scenario.realm_settings.description,"Realm-identiteit bekijken en naam, domeinen, status en levenscyclus beheren."
+demo.admin.scenario.realm_settings.title,Overzicht en instellingen
 demo.admin.scenario.roles_grants.description,Configureer projectrollen en organisatietoegangstoekenningen.
 demo.admin.scenario.roles_grants.title,Rollen en toekenningen
 demo.admin.scenario.sessions.description,Controleer realm-sessies met subject- en apparaatcontext.
@@ -1541,6 +1602,36 @@ shell.nav.sessions,Sessies
 shell.nav.sessionsDevices,Sessies en apparaten
 shell.nav.signingKeys,Ondertekeningssleutels
 shell.nav.users,Gebruikers
+demo.admin.scenario.configuration.description,"Algemene instellingen, huisstijl, aanmelden en domeinen."
+demo.admin.scenario.configuration.title,Configuratie
+demo.admin.scenario.realm_administrators.description,Realmbeheerdersstatus verlenen of intrekken.
+demo.admin.scenario.realm_administrators.title,Beheerders
+demo.admin.scenario.roles.description,Organisatierollen en projectroltoewijzingen.
+demo.admin.scenario.roles.title,Rollen
+shell.nav.organizationSwitcher,Organisatie
+admin.directory.administrators.placeholder,Realmbeheer volgt binnenkort.
+admin.directory.roles.placeholder,Rolbeheer volgt binnenkort.
+admin.directory.users.placeholder,De nieuwe gebruikersdirectory volgt binnenkort.
+admin.organizations.configuration.branding,Huisstijl
+admin.organizations.configuration.brandingDescription,"Lichte en donkere kleuren, logo en juridische links met livevoorbeeld."
+admin.organizations.configuration.domains,Domeinen
+admin.organizations.configuration.domainsDescription,Geverifieerde domeinen en organisatiedetectie.
+admin.organizations.configuration.general,Algemeen
+admin.organizations.configuration.generalDescription,"Naam, status en gevarenzone van de organisatie."
+admin.organizations.configuration.placeholder,De nieuwe organisatieconfiguratie volgt binnenkort.
+admin.organizations.configuration.signIn,Aanmelden en beveiliging
+admin.organizations.configuration.signInDescription,Aanmeld- en beveiligingsformulieren van de organisatie.
+admin.projects.detail.accessTab,Toegang
+admin.projects.detail.applicationsTab,Applicaties
+admin.projects.detail.overviewTab,Overzicht
+admin.projects.detail.placeholder,Het projectdetail met tabbladen volgt binnenkort.
+admin.projects.detail.rolesTab,Rollen
+admin.realm.overview.placeholder,Het samengevoegde realmoverzicht volgt binnenkort.
+shell.nav.configuration,Configuratie
+shell.nav.realmAdministrators,Beheerders
+shell.nav.realmGroup,Realmgroep
+shell.nav.realmOverviewSettings,Overzicht en instellingen
+shell.nav.roles,Rollen
 shell.nav.verifyEmail,E-mail verifiëren
 shell.state.errorDetail,De pagina kon niet worden voorbereid. Probeer het opnieuw als u klaar bent.
 shell.state.inaccessibleDetail,U hebt in de huidige context geen toegang tot deze bestemming.

@@ -969,6 +969,67 @@ common.theme.dark,Ciemny
 common.theme.light,Jasny
 common.theme.system,System
 common.urlPlaceholder,https://
+ui.authenticated.clearSearch,Wyczyść wyszukiwanie
+ui.authenticated.demo.adminBlurb,Admin: zarządza członkami i projektami i poświadczeniami bez właścicieli.
+ui.authenticated.demo.chipBlurb,Zwarte tokeny roli i stanu i widoczności projektu.
+ui.authenticated.demo.emptyBlurb,Stan pusty: żaden rekord nie pasuje do filtra.
+ui.authenticated.demo.guestBlurb,Gość: czasowy dostęp do odczytu dla audytorów i partnerów.
+ui.authenticated.demo.inviteBlurb,Oczekujące zaproszenia: niezaakceptowane zaproszenia czekają.
+ui.authenticated.demo.keyboardHint,Strzałki ruszają i Home i End skaczą i Enter wybiera i Escape zamyka.
+ui.authenticated.demo.loadingBlurb,Przełącznik ładowania: symuluje opóźnienie wierszami szkieletu.
+ui.authenticated.demo.memberBlurb,Członek: loguje się i używa nadanych projektów bez administrowania.
+ui.authenticated.demo.ownedBlurb,Własny: tylko organizacja właścicielska otwiera ten projekt.
+ui.authenticated.demo.ownerBlurb,Właściciel: pełna kontrola ustawień i marki i domen i właścicieli.
+ui.authenticated.demo.peopleBlurb,Osoby: użytkownicy z awatarem i rolą i ostatnim logowaniem.
+ui.authenticated.demo.profileName,Alex Morgan
+ui.authenticated.demo.roleAdmin,Administrator roli
+ui.authenticated.demo.roleGuest,Gość
+ui.authenticated.demo.roleMember,Członek
+ui.authenticated.demo.roleOwner,Właściciel
+ui.authenticated.demo.rolesBlurb,Role organizacji: Właściciel bez zarządzania właścicielami bez zmian.
+ui.authenticated.demo.sectionsBlurb,Podgląd sekcji: ustawienia ogólne i marka i logowanie i domeny.
+ui.authenticated.demo.serviceBlurb,Konta usług: tożsamości nieludzkie z poświadczeniami.
+ui.authenticated.demo.sharedBlurb,Współdzielony: organizacja partnerska ma dostęp przez jedno nadanie.
+ui.authenticated.demo.sortCaption,Dokładne dopasowanie: URL tabeli poniżej niesie aktywne sortowanie.
+ui.authenticated.moreActions,Więcej działań
+ui.authenticated.never,Nigdy
+ui.authenticated.search,Szukaj
+ui.authenticated.sortBy,Sortuj według {column}
+ui.authenticated.demo.actions,Wypróbuj menu wiersza
+ui.authenticated.demo.avatarDescription,Zdjęcie z inicjałami zastępczymi w tonacjach deterministycznych.
+ui.authenticated.demo.avatarTitle,Awatar
+ui.authenticated.demo.chipsDescription,"Kompaktowe pigułki dla liczb, flag i kategorii."
+ui.authenticated.demo.chipsTitle,Oznaczenia
+ui.authenticated.demo.dataDescription,"Sortowalne nagłówki, linki wierszy, ładowanie szkieletowe i stan pusty."
+ui.authenticated.demo.dataTitle,Tabela danych
+ui.authenticated.demo.description,Niezależne od kontekstu bloki ekranów administracyjnych.
+ui.authenticated.demo.emptyDescription,Żaden rekord nie pasuje do tych szerokich filtrów.
+ui.authenticated.demo.emptyTitle,Brak elementów
+ui.authenticated.demo.menuArchive,Archiwizuj
+ui.authenticated.demo.menuDelete,Usuń
+ui.authenticated.demo.menuRename,Zmień nazwę
+ui.authenticated.demo.optionDescription,"Przystępne podsumowanie tego, na co zezwala wybór."
+ui.authenticated.demo.optionsDescription,Wybieralne karty dla ról i opcji.
+ui.authenticated.demo.optionsTitle,Karty opcji
+ui.authenticated.demo.profileDescription,"Awatar, tytuł, podtytuł, oznaczenia, metadane i działania."
+ui.authenticated.demo.profileTitle,Nagłówek profilu
+ui.authenticated.demo.rowDelete,Usuń wiersz
+ui.authenticated.demo.rowEdit,Edytuj wiersz
+ui.authenticated.demo.searchDescription,Opóźniony zapis zapytania URL przez history.replaceState.
+ui.authenticated.demo.searchPlaceholder,Filtruj rekordy
+ui.authenticated.demo.searchTitle,Pole wyszukiwania
+ui.authenticated.demo.skeletonDescription,Bloki shimmer w rozmiarze wywołującego.
+ui.authenticated.demo.skeletonTitle,Szkielet
+ui.authenticated.demo.statHint,We wszystkich organizacjach
+ui.authenticated.demo.statsDescription,"Kompaktowe kafelki KPI, pierwszy linkuje swoją kolekcję."
+ui.authenticated.demo.statsTitle,Statystyki
+ui.authenticated.demo.subNavDescription,Pionowa nawigacja sekcji zwijana do wiersza przewijania.
+ui.authenticated.demo.subNavTitle,Podnawigacja
+ui.authenticated.demo.tabsDescription,Każda karta ma własny adres URL.
+ui.authenticated.demo.tabsTitle,Karty
+ui.authenticated.demo.timeDescription,Tekst względny z czasem bezwzględnym w atrybucie tytułu.
+ui.authenticated.demo.timeTitle,Czas względny
+ui.authenticated.demo.title,Zestaw UI uwierzytelniania
 demo.account.description,"Bezsieciowa mapa zarządzania profilem, organizacją, bezpieczeństwem i dostępem do aplikacji obsługiwanych przez Authworks. Każde miejsce docelowe ma jawny kontrakt stanu danych testowych."
 demo.account.eyebrow,Samoobsługa tożsamości
 demo.account.group.access.description,Aplikacje i uprawnienia przyznane przez to konto.
@@ -1068,8 +1129,8 @@ demo.admin.scenario.protocol_documents.description,Sprawdzaj tylko do odczytu pu
 demo.admin.scenario.protocol_documents.title,Dokumenty protokołu
 demo.admin.scenario.realm_overview.description,"Przeglądaj tożsamość realmu, domeny, stan cyklu życia i bieżącą sesję."
 demo.admin.scenario.realm_overview.title,Przegląd realmu
-demo.admin.scenario.realm_settings.description,"Zarządzaj bieżącą nazwą realmu, domenami, stanem i cyklem życia."
-demo.admin.scenario.realm_settings.title,Ustawienia ogólne
+demo.admin.scenario.realm_settings.description,"Przegląd tożsamości realm oraz zarządzanie nazwą, domenami, stanem i cyklem życia."
+demo.admin.scenario.realm_settings.title,Przegląd i ustawienia
 demo.admin.scenario.roles_grants.description,Konfiguruj role projektu i uprawnienia dostępu organizacji.
 demo.admin.scenario.roles_grants.title,Role i uprawnienia
 demo.admin.scenario.sessions.description,Przeglądaj sesje realmu z kontekstem podmiotu i urządzenia.
@@ -1541,6 +1602,36 @@ shell.nav.sessions,Sesje
 shell.nav.sessionsDevices,Sesje i urządzenia
 shell.nav.signingKeys,Klucze podpisujące
 shell.nav.users,Użytkownicy
+demo.admin.scenario.configuration.description,"Ustawienia ogólne, identyfikacja, logowanie i domeny."
+demo.admin.scenario.configuration.title,Konfiguracja
+demo.admin.scenario.realm_administrators.description,Nadawanie lub odbieranie statusu administratora realm.
+demo.admin.scenario.realm_administrators.title,Administratorzy
+demo.admin.scenario.roles.description,Role organizacji i przypisania ról projektowych.
+demo.admin.scenario.roles.title,Role
+shell.nav.organizationSwitcher,Organizacja
+admin.directory.administrators.placeholder,Zarządzanie administratorami realm już wkrótce.
+admin.directory.roles.placeholder,Zarządzanie rolami już wkrótce.
+admin.directory.users.placeholder,Nowy katalog użytkowników już wkrótce.
+admin.organizations.configuration.branding,Identyfikacja
+admin.organizations.configuration.brandingDescription,"Jasne i ciemne kolory, logo i linki prawne z podglądem."
+admin.organizations.configuration.domains,Domeny
+admin.organizations.configuration.domainsDescription,Zweryfikowane domeny i wykrywanie organizacji.
+admin.organizations.configuration.general,Ogólne
+admin.organizations.configuration.generalDescription,"Nazwa, stan i strefa niebezpieczna organizacji."
+admin.organizations.configuration.placeholder,Nowa konfiguracja organizacji już wkrótce.
+admin.organizations.configuration.signIn,Logowanie i bezpieczeństwo
+admin.organizations.configuration.signInDescription,Formularze logowania i zasad bezpieczeństwa.
+admin.projects.detail.accessTab,Dostęp
+admin.projects.detail.applicationsTab,Aplikacje
+admin.projects.detail.overviewTab,Przegląd
+admin.projects.detail.placeholder,Szczegóły projektu w kartach już wkrótce.
+admin.projects.detail.rolesTab,Role
+admin.realm.overview.placeholder,Połączony przegląd realm już wkrótce.
+shell.nav.configuration,Konfiguracja
+shell.nav.realmAdministrators,Administratorzy
+shell.nav.realmGroup,Domena
+shell.nav.realmOverviewSettings,Przegląd i ustawienia
+shell.nav.roles,Role
 shell.nav.verifyEmail,Zweryfikuj e-mail
 shell.state.errorDetail,"Nie udało się przygotować strony. Spróbuj ponownie, gdy będziesz gotowy."
 shell.state.inaccessibleDetail,Nie masz dostępu do tego miejsca docelowego w bieżącym kontekście.
