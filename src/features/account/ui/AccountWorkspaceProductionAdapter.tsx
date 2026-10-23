@@ -1,11 +1,11 @@
-import { AccountProductionAdapter } from "./AccountProductionAdapter.js"
 import { AccountAccessProductionAdapter } from "./AccountAccessProductionAdapter.js"
 import { AccountOrganizationAccessProductionAdapter } from "./AccountOrganizationAccessProductionAdapter.js"
+import { AccountProductionAdapter } from "./AccountProductionAdapter.js"
 import { AccountSecurityProductionAdapter } from "./AccountSecurityProductionAdapter.js"
+import { AccountWorkspace } from "./AccountWorkspace.js"
 import { AccountWorkspaceAccess } from "./AccountWorkspaceAccess.js"
 import { AccountWorkspaceDevicesApplications } from "./AccountWorkspaceDevicesApplications.js"
 import { AccountWorkspaceToolbar } from "./AccountWorkspaceToolbar.js"
-import { AccountWorkspace } from "./AccountWorkspace.js"
 import { accountWorkspaceProductionAdapterStateCreate } from "./accountWorkspaceProductionAdapterStateCreate.js"
 
 export function AccountWorkspaceProductionAdapter(props: { readonly realmId: string }) {
@@ -32,10 +32,7 @@ export function AccountWorkspaceProductionAdapter(props: { readonly realmId: str
         />
       }
       profile={
-        <>
-          <AccountProductionAdapter kind="overview" securityProgress={state.securityProgress} state={state.profile} />
-          <AccountProductionAdapter kind="email" renderConfirmation={false} state={state.profile} />
-        </>
+        <AccountProductionAdapter kind="overview" securityProgress={state.securityProgress} state={state.profile} />
       }
       security={
         <AccountSecurityProductionAdapter

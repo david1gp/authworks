@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { createRoot, createSignal } from "solid-js"
+import { accountProductionAdapterStateCreate } from "../../src/features/account/ui/accountProductionAdapterStateCreate.js"
 import type { UserCurrentResponse } from "../../src/features/users/public/userCurrentResponseSchema.js"
 import type { User } from "../../src/features/users/public/userSchema.js"
 import type { ProductionSessionContextValue } from "../../src/ui/production/productionSessionContextValue.js"
-import { accountProductionAdapterStateCreate } from "../../src/features/account/ui/accountProductionAdapterStateCreate.js"
 
 const realmId = "01900000-0000-7000-8000-000000000001"
 const secondRealmId = "01900000-0000-7000-8000-000000000003"
@@ -434,12 +434,13 @@ describe("account production adapter state", () => {
     expect(requests).toEqual(["me", "me", "emails", "me", "me"])
 
     setKind("overview")
-    await waitFor(() => requests.length === 6 && state.status.get() === "ready")
-    expect(requests).toEqual(["me", "me", "emails", "me", "me", "me"])
+    await waitFor(() => requests.length === 7 && state.status.get() === "ready")
+    // The overview page shows the email card, so it loads the address list like the email page.
+    expect(requests).toEqual(["me", "me", "emails", "me", "me", "me", "emails"])
 
     setKind("profile")
-    await waitFor(() => requests.length === 7 && state.status.get() === "ready")
-    expect(requests).toEqual(["me", "me", "emails", "me", "me", "me", "me"])
+    await waitFor(() => requests.length === 8 && state.status.get() === "ready")
+    expect(requests).toEqual(["me", "me", "emails", "me", "me", "me", "emails", "me"])
   })
 
   test("ignores a stale /me result when a retained route changes to email", async () => {

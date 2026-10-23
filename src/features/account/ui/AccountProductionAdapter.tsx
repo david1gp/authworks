@@ -1,4 +1,4 @@
-import { Match, Show, Switch } from "solid-js"
+import { Match, Switch } from "solid-js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { AccountDeleteView } from "./AccountDeleteView.js"
 import { AccountPasswordView } from "./AccountPasswordView.js"
@@ -11,7 +11,6 @@ export function AccountProductionAdapter(props: {
   readonly kind: "delete" | "email" | "overview" | "password" | "profile"
   readonly onPasswordChanged?: () => void
   readonly passwordActionOnly?: boolean
-  readonly renderConfirmation?: boolean
   readonly securityProgress?: ReturnType<typeof accountSecurityProgressStateCreate>
   readonly state?: ReturnType<typeof accountProductionAdapterStateCreate>
 }) {
@@ -123,9 +122,7 @@ export function AccountProductionAdapter(props: {
           />
         </Match>
       </Switch>
-      <Show when={props.renderConfirmation !== false}>
-        <ConfirmDialog state={state.confirmation} titleKey="account.confirmTitle" />
-      </Show>
+      <ConfirmDialog state={state.confirmation} titleKey="account.confirmTitle" />
     </>
   )
 }

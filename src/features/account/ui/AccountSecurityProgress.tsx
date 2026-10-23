@@ -47,20 +47,20 @@ export function AccountSecurityProgress(props: {
           {(item) => (
             <li class="min-w-0">
               <a
-                class="flex min-w-0 items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
+                class="flex min-w-0 items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
                 href={item.href}
               >
                 <Icon
                   aria-hidden="true"
-                  class={item.configured ? "size-6 shrink-0 text-success" : "size-6 shrink-0 text-danger"}
+                  class={item.configured ? "size-5 shrink-0 text-success" : "size-5 shrink-0 text-danger"}
                   path={item.configured ? mdiCheckCircleOutline : mdiAlertCircleOutline}
                 />
                 <span class="grid min-w-0 flex-1">
-                  <span class="block text-xs font-semibold text-muted-foreground">{item.label}</span>
-                  <span class="block break-words text-sm font-medium">{item.detail}</span>
+                  <span class="block truncate text-xs font-semibold text-muted-foreground">{item.label}</span>
+                  <span class="block min-w-0 break-words text-sm font-medium">{item.detail}</span>
                 </span>
                 <span
-                  class="shrink-0 text-xs font-medium"
+                  class="shrink-0 whitespace-nowrap text-xs font-medium"
                   classList={{ "text-success": item.configured, "text-danger": !item.configured }}
                 >
                   {messageTranslate(item.configured ? "account.status.configured" : "account.status.notConfigured")}

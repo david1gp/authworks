@@ -101,6 +101,206 @@ export function AccountProfileView(props: AccountProfileViewProps) {
     lastName: () => props.lastName,
     displayName: () => props.displayName,
   })
+  const personalInformationCard = () => (
+    <AccountDisclosure
+      class={props.kind === "overview" ? "lg:col-span-2 xl:col-span-1" : undefined}
+      icon={mdiAccountDetailsOutline}
+      summary={messageTranslate("account.profile.personalInformation")}
+      value={state.personalSummary() || messageTranslate("account.profile.notSet")}
+      variant="card"
+    >
+      <p class="mb-3 text-sm text-muted-foreground">{messageTranslate("account.profile.personalDescription")}</p>
+      <dl
+        class={
+          props.kind === "overview"
+            ? "grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2"
+            : "grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+        }
+      >
+        <div>
+          <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.firstName")}</dt>
+          <dd class="break-words text-sm">{props.firstName || messageTranslate("account.profile.notSet")}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.lastName")}</dt>
+          <dd class="break-words text-sm">{props.lastName || messageTranslate("account.profile.notSet")}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.displayName")}</dt>
+          <dd class="break-words text-sm">{props.displayName}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.nickName")}</dt>
+          <dd class="break-words text-sm">{props.nickName || messageTranslate("account.profile.notSet")}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.gender")}</dt>
+          <dd class="text-sm">
+            {accountGenderValueText(props.genderSignal.get()) || messageTranslate("account.profile.gender.unspecified")}
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.preferredLanguage")}</dt>
+          <dd class="text-sm">
+            {languagesSupported.find((language) => language.code === props.preferredLanguage.get())?.nativeName ??
+              messageTranslate("account.profile.preferredLanguage.unspecified")}
+          </dd>
+        </div>
+      </dl>
+      <div class="mt-4">
+        <AuthenticatedDialog
+          description={messageTranslate("account.profile.personalDescription")}
+          onOpenChange={props.onProfileDialogOpenChange}
+          open={props.profileDialogOpen}
+          title={messageTranslate("account.profile.edit")}
+          triggerLabel={messageTranslate("account.profile.edit")}
+          variant="outline"
+        >
+          <form class="grid min-w-0 gap-3" onSubmit={props.onSubmit}>
+            <div class="grid min-w-0 items-start gap-2.5 sm:grid-cols-2 [&>*]:min-w-0">
+              <div class="grid min-w-0 gap-1">
+                <Label for="account-first-name">{messageTranslate("account.profile.firstName")}</Label>
+                <AuthenticatedInput
+                  id="account-first-name"
+                  maxlength={128}
+                  onInput={(event) => props.onFirstNameInput(event.currentTarget.value)}
+                  value={props.firstName}
+                />
+              </div>
+              <div class="grid min-w-0 gap-1">
+                <Label for="account-last-name">{messageTranslate("account.profile.lastName")}</Label>
+                <AuthenticatedInput
+                  id="account-last-name"
+                  maxlength={128}
+                  onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
+                  value={props.lastName}
+                />
+              </div>
+              <div class="grid min-w-0 gap-1">
+                <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
+                <AuthenticatedInput
+                  id="account-display-name"
+                  maxlength={128}
+                  onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
+                  value={props.displayName}
+                />
+              </div>
+              <div class="grid min-w-0 gap-1">
+                <Label for="account-nick-name">{messageTranslate("account.profile.nickName")}</Label>
+                <AuthenticatedInput
+                  id="account-nick-name"
+                  maxlength={128}
+                  onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
+                  value={props.nickName}
+                />
+              </div>
+              {/* The gender select is wrapped so its trigger never keeps a dangling
+                `aria-controls` reference while the vendored listbox is unmounted. */}
+              <div class="grid min-w-0 gap-1" ref={state.genderSelect.containerSet}>
+                <Label>{messageTranslate("account.profile.gender")}</Label>
+                <SelectSingle
+                  buttonProps={{
+                    class: "h-9 w-full justify-between",
+                    onOpenChange: state.genderSelect.openChange,
+                    variant: "outline",
+                  }}
+                  class="w-full"
+                  getOptions={() => accountGenderOptionsGet(props.genderSignal.get())}
+                  renderItem={accountGenderItemRender}
+                  texts={{
+                    ...selectSingleTextDefault,
+                    selectEntry: messageTranslate("account.profile.gender.unspecified"),
+                  }}
+                  valueSignal={props.genderSignal}
+                  valueText={accountGenderValueText}
+                />
+              </div>
+              <div class="grid min-w-0 gap-1">
+                <Label for="account-preferred-language">{messageTranslate("account.profile.preferredLanguage")}</Label>
+                <AuthenticatedSelect
+                  getOptions={() => ["", ...languagesSupported.map((language) => language.code)]}
+                  id="account-preferred-language"
+                  valueSignal={props.preferredLanguage}
+                  valueText={(code) => {
+                    if (code === "") return messageTranslate("account.profile.preferredLanguage.unspecified")
+                    return languagesSupported.find((language) => language.code === code)?.nativeName ?? code
+                  }}
+                />
+              </div>
+            </div>
+
+            <Show when={props.validationMessage}>
+              {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+            </Show>
+            <Show when={props.errorMessage}>
+              {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
+            </Show>
+            <div class="flex flex-wrap gap-2">
+              <AuthenticatedButton disabled={props.profileSaving} icon={mdiContentSave} type="submit">
+                {messageTranslate("account.profile.save")}
+              </AuthenticatedButton>
+              <AuthenticatedButton
+                disabled={props.profileSaving}
+                onClick={() => props.onProfileDialogOpenChange(false)}
+                type="button"
+                variant="outline"
+              >
+                {messageTranslate("account.profile.cancel")}
+              </AuthenticatedButton>
+            </div>
+          </form>
+        </AuthenticatedDialog>
+      </div>
+      <Show when={props.status === "success"}>
+        <div class="mt-3">
+          <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
+        </div>
+      </Show>
+    </AccountDisclosure>
+  )
+  const contactCards = () => (
+    <>
+      <AccountEmailAddressView
+        actionId={props.emailActionId}
+        addDialogOpen={props.emailAddDialogOpen}
+        addresses={props.emailAddresses}
+        candidate={props.emailCandidate}
+        challengeActive={props.emailChallengeActive}
+        errorMessage={props.emailErrorMessage}
+        onAddCancel={props.onEmailCancel}
+        onAddDialogOpenChange={props.onEmailAddDialogOpenChange}
+        onAddResend={props.onEmailResend}
+        onAddStart={props.onEmailStart}
+        onAddVerify={props.onEmailVerify}
+        onCandidateInput={props.onEmailInput}
+        onPrimarySet={props.onEmailPrimarySet}
+        onRemove={props.onEmailRemove}
+        onRetry={props.onRetry}
+        onTokenInput={props.onEmailTokenInput}
+        status={props.emailStatus}
+        token={props.emailToken}
+        validationMessage={props.emailValidationMessage}
+      />
+      <AccountProfilePhoneSection
+        addDialogOpen={props.phoneAddDialogOpen}
+        candidate={props.phoneCandidate}
+        challengeActive={props.phoneChallengeActive}
+        code={props.phoneCode}
+        errorMessage={props.phoneErrorMessage}
+        onAddDialogOpenChange={props.onPhoneAddDialogOpenChange}
+        onCancel={props.onPhoneCancel}
+        onCodeInput={props.onPhoneCodeInput}
+        onInput={props.onPhoneInput}
+        onResend={props.onPhoneResend}
+        onStart={props.onPhoneStart}
+        onVerify={props.onPhoneVerify}
+        phoneNumber={props.phoneNumber}
+        status={props.phoneStatus}
+        validationMessage={props.phoneValidationMessage}
+        verified={props.phoneVerified}
+      />
+    </>
+  )
   return (
     <AccountStateBoundary
       detail={state.boundary().detail}
@@ -109,50 +309,10 @@ export function AccountProfileView(props: AccountProfileViewProps) {
       title={state.boundary().title}
     >
       <div class="grid min-w-0 gap-3 [&>*]:min-w-0">
-        {/* Contact methods: email addresses on the left, phone numbers on the right at desktop
-            widths, stacked below `lg`. Both sections keep their own list and one add dialog. */}
+        {/* Standalone email page: email addresses on the left, phone numbers on the right at
+            desktop widths, stacked below `lg`. Both sections keep their own list and one add dialog. */}
         <Show when={props.kind === "email"}>
-          <div class="grid min-w-0 items-start gap-3 lg:grid-cols-2 [&>*]:min-w-0">
-            <AccountEmailAddressView
-              actionId={props.emailActionId}
-              addDialogOpen={props.emailAddDialogOpen}
-              addresses={props.emailAddresses}
-              candidate={props.emailCandidate}
-              challengeActive={props.emailChallengeActive}
-              errorMessage={props.emailErrorMessage}
-              onAddCancel={props.onEmailCancel}
-              onAddDialogOpenChange={props.onEmailAddDialogOpenChange}
-              onAddResend={props.onEmailResend}
-              onAddStart={props.onEmailStart}
-              onAddVerify={props.onEmailVerify}
-              onCandidateInput={props.onEmailInput}
-              onPrimarySet={props.onEmailPrimarySet}
-              onRemove={props.onEmailRemove}
-              onRetry={props.onRetry}
-              onTokenInput={props.onEmailTokenInput}
-              status={props.emailStatus}
-              token={props.emailToken}
-              validationMessage={props.emailValidationMessage}
-            />
-            <AccountProfilePhoneSection
-              addDialogOpen={props.phoneAddDialogOpen}
-              candidate={props.phoneCandidate}
-              challengeActive={props.phoneChallengeActive}
-              code={props.phoneCode}
-              errorMessage={props.phoneErrorMessage}
-              onAddDialogOpenChange={props.onPhoneAddDialogOpenChange}
-              onCancel={props.onPhoneCancel}
-              onCodeInput={props.onPhoneCodeInput}
-              onInput={props.onPhoneInput}
-              onResend={props.onPhoneResend}
-              onStart={props.onPhoneStart}
-              onVerify={props.onPhoneVerify}
-              phoneNumber={props.phoneNumber}
-              status={props.phoneStatus}
-              validationMessage={props.phoneValidationMessage}
-              verified={props.phoneVerified}
-            />
-          </div>
+          <div class="grid min-w-0 items-start gap-3 lg:grid-cols-2 [&>*]:min-w-0">{contactCards()}</div>
         </Show>
 
         <Show when={props.kind !== "email"}>
@@ -171,157 +331,15 @@ export function AccountProfileView(props: AccountProfileViewProps) {
             userName={props.userName}
           />
 
-          <AccountDisclosure
-            icon={mdiAccountDetailsOutline}
-            summary={messageTranslate("account.profile.personalInformation")}
-            value={state.personalSummary() || messageTranslate("account.profile.notSet")}
-            variant="card"
-          >
-            <p class="mb-3 text-sm text-muted-foreground">{messageTranslate("account.profile.personalDescription")}</p>
-            <dl class="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.firstName")}</dt>
-                <dd class="break-words text-sm">{props.firstName || messageTranslate("account.profile.notSet")}</dd>
-              </div>
-              <div>
-                <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.lastName")}</dt>
-                <dd class="break-words text-sm">{props.lastName || messageTranslate("account.profile.notSet")}</dd>
-              </div>
-              <div>
-                <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.displayName")}</dt>
-                <dd class="break-words text-sm">{props.displayName}</dd>
-              </div>
-              <div>
-                <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.nickName")}</dt>
-                <dd class="break-words text-sm">{props.nickName || messageTranslate("account.profile.notSet")}</dd>
-              </div>
-              <div>
-                <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.gender")}</dt>
-                <dd class="text-sm">
-                  {accountGenderValueText(props.genderSignal.get()) ||
-                    messageTranslate("account.profile.gender.unspecified")}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs text-muted-foreground">{messageTranslate("account.profile.preferredLanguage")}</dt>
-                <dd class="text-sm">
-                  {languagesSupported.find((language) => language.code === props.preferredLanguage.get())?.nativeName ??
-                    messageTranslate("account.profile.preferredLanguage.unspecified")}
-                </dd>
-              </div>
-            </dl>
-            <div class="mt-4">
-              <AuthenticatedDialog
-                description={messageTranslate("account.profile.personalDescription")}
-                onOpenChange={props.onProfileDialogOpenChange}
-                open={props.profileDialogOpen}
-                title={messageTranslate("account.profile.edit")}
-                triggerLabel={messageTranslate("account.profile.edit")}
-                variant="outline"
-              >
-                <form class="grid min-w-0 gap-3" onSubmit={props.onSubmit}>
-                  <div class="grid min-w-0 items-start gap-2.5 sm:grid-cols-2 [&>*]:min-w-0">
-                    <div class="grid min-w-0 gap-1">
-                      <Label for="account-first-name">{messageTranslate("account.profile.firstName")}</Label>
-                      <AuthenticatedInput
-                        id="account-first-name"
-                        maxlength={128}
-                        onInput={(event) => props.onFirstNameInput(event.currentTarget.value)}
-                        value={props.firstName}
-                      />
-                    </div>
-                    <div class="grid min-w-0 gap-1">
-                      <Label for="account-last-name">{messageTranslate("account.profile.lastName")}</Label>
-                      <AuthenticatedInput
-                        id="account-last-name"
-                        maxlength={128}
-                        onInput={(event) => props.onLastNameInput(event.currentTarget.value)}
-                        value={props.lastName}
-                      />
-                    </div>
-                    <div class="grid min-w-0 gap-1">
-                      <Label for="account-display-name">{messageTranslate("account.profile.displayName")}</Label>
-                      <AuthenticatedInput
-                        id="account-display-name"
-                        maxlength={128}
-                        onInput={(event) => props.onDisplayNameInput(event.currentTarget.value)}
-                        value={props.displayName}
-                      />
-                    </div>
-                    <div class="grid min-w-0 gap-1">
-                      <Label for="account-nick-name">{messageTranslate("account.profile.nickName")}</Label>
-                      <AuthenticatedInput
-                        id="account-nick-name"
-                        maxlength={128}
-                        onInput={(event) => props.onNickNameInput(event.currentTarget.value)}
-                        value={props.nickName}
-                      />
-                    </div>
-                    {/* The gender select is wrapped so its trigger never keeps a dangling
-                      `aria-controls` reference while the vendored listbox is unmounted. */}
-                    <div class="grid min-w-0 gap-1" ref={state.genderSelect.containerSet}>
-                      <Label>{messageTranslate("account.profile.gender")}</Label>
-                      <SelectSingle
-                        buttonProps={{
-                          class: "h-9 w-full justify-between",
-                          onOpenChange: state.genderSelect.openChange,
-                          variant: "outline",
-                        }}
-                        class="w-full"
-                        getOptions={() => accountGenderOptionsGet(props.genderSignal.get())}
-                        renderItem={accountGenderItemRender}
-                        texts={{
-                          ...selectSingleTextDefault,
-                          selectEntry: messageTranslate("account.profile.gender.unspecified"),
-                        }}
-                        valueSignal={props.genderSignal}
-                        valueText={accountGenderValueText}
-                      />
-                    </div>
-                    <div class="grid min-w-0 gap-1">
-                      <Label for="account-preferred-language">
-                        {messageTranslate("account.profile.preferredLanguage")}
-                      </Label>
-                      <AuthenticatedSelect
-                        getOptions={() => ["", ...languagesSupported.map((language) => language.code)]}
-                        id="account-preferred-language"
-                        valueSignal={props.preferredLanguage}
-                        valueText={(code) => {
-                          if (code === "") return messageTranslate("account.profile.preferredLanguage.unspecified")
-                          return languagesSupported.find((language) => language.code === code)?.nativeName ?? code
-                        }}
-                      />
-                    </div>
-                  </div>
-
-                  <Show when={props.validationMessage}>
-                    {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-                  </Show>
-                  <Show when={props.errorMessage}>
-                    {(message) => <AuthenticatedNotice message={message()} tone="danger" />}
-                  </Show>
-                  <div class="flex flex-wrap gap-2">
-                    <AuthenticatedButton disabled={props.profileSaving} icon={mdiContentSave} type="submit">
-                      {messageTranslate("account.profile.save")}
-                    </AuthenticatedButton>
-                    <AuthenticatedButton
-                      disabled={props.profileSaving}
-                      onClick={() => props.onProfileDialogOpenChange(false)}
-                      type="button"
-                      variant="outline"
-                    >
-                      {messageTranslate("account.profile.cancel")}
-                    </AuthenticatedButton>
-                  </div>
-                </form>
-              </AuthenticatedDialog>
+          {/* Workspace overview: identity strip on top, then personal info, email addresses, and
+              phone numbers share one row from `lg` up and stack below it. The standalone profile
+              page keeps the full-width personal information card instead. */}
+          <Show when={props.kind === "overview"} fallback={personalInformationCard()}>
+            <div class="grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2 lg:items-start xl:grid-cols-3">
+              {personalInformationCard()}
+              {contactCards()}
             </div>
-            <Show when={props.status === "success"}>
-              <div class="mt-3">
-                <AuthenticatedNotice message={messageTranslate("account.profile.saved")} />
-              </div>
-            </Show>
-          </AccountDisclosure>
+          </Show>
         </Show>
       </div>
     </AccountStateBoundary>

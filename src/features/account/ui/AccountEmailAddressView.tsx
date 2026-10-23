@@ -52,7 +52,6 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
       status={state.summaryStatus()}
       statusTone={state.summaryTone()}
       variant="card"
-      class="h-full"
     >
       <div class="grid gap-3">
         <p class="text-xs text-muted-foreground">{messageTranslate("account.profile.emailDescription")}</p>

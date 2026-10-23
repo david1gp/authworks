@@ -3,7 +3,7 @@ import { accountSecurityDemoStateCreate } from "./accountSecurityDemoStateCreate
 import { accountSecurityProgressStateCreate } from "./accountSecurityProgressStateCreate.js"
 
 export function accountWorkspaceDemoAdapterStateCreate() {
-  const profile = accountDemoAdapterStateCreate(() => "email")
+  const profile = accountDemoAdapterStateCreate(() => "overview")
   const security = accountSecurityDemoStateCreate(() => "overview")
   const securityProgress = accountSecurityProgressStateCreate({
     methods: security.methods,

@@ -169,11 +169,13 @@ describe("account workspace", () => {
 
     expect(source).toContain("const state = accountWorkspaceProductionAdapterStateCreate(() => props.realmId)")
     expect(source).toContain("securityProgress={state.securityProgress}")
-    expect(source).toContain(
-      '<AccountProductionAdapter kind="email" renderConfirmation={false} state={state.profile} />',
-    )
+    // The profile slot mounts one overview adapter. The email and phone cards live inside it, so
+    // a second adapter would duplicate them and mount a second confirmation dialog.
+    expect(source.match(/<AccountProductionAdapter kind="overview"/g)).toHaveLength(1)
+    expect(source).not.toContain('kind="email"')
+    expect(source).not.toContain("renderConfirmation")
     expect(source).toContain("state={state.security}")
-    expect(stateSource).toContain('accountProductionAdapterStateCreate(() => "email"')
+    expect(stateSource).toContain('accountProductionAdapterStateCreate(() => "overview"')
     expect(stateSource).toContain("accountSecurityProgressStateCreate({")
     expect(stateSource).toContain("methods: security.methods")
     expect(stateSource).toContain("passkeyCount: () => security.passkeys().length")
@@ -193,6 +195,10 @@ describe("account workspace", () => {
     expect(screen).toContain("<AccountWorkspaceDemoAdapter />")
     expect(demoWorkspace).toContain("<AccountWorkspace")
     expect(demoWorkspace).toContain('kind="overview"')
+    // The demo workspace mounts one profile adapter; the contact cards are part of it.
+    expect(demoWorkspace.match(/kind="overview"/g)).toHaveLength(1)
+    expect(demoWorkspace).not.toContain('kind="email"')
+    expect(demoWorkspace).not.toContain("renderConfirmation")
     expect(demoWorkspace).toContain('screen="overview"')
     expect(demoWorkspace).toContain('screen="organizations"')
     expect(demoWorkspace).toContain('screen="consents"')
@@ -275,8 +281,17 @@ describe("account workspace", () => {
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('variant="card"')
     expect(source).toContain('value={state.personalSummary() || messageTranslate("account.profile.notSet")}')
+    // The personal card spans the two-column overview row at lg and one of three at xl, so it
+    // never stretches its siblings open.
+    expect(source).toContain("lg:col-span-2 xl:col-span-1")
+    expect(source).not.toContain('class="h-full"')
     expect(source.indexOf("<AccountDisclosure")).toBeLessThan(source.indexOf("account.profile.personalDescription"))
     expect(source).toContain("sm:grid-cols-2 lg:grid-cols-3")
+    // The overview card spans two columns at lg and one of three at xl, so its field list
+    // uses three columns at lg and returns to two at xl. The standalone profile page keeps
+    // the full-width three-column field list.
+    expect(source).toContain('props.kind === "overview"')
+    expect(source).toContain("sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-2")
     expect(source).toContain("<dl")
     expect(source.indexOf("<AuthenticatedDialog")).toBeLessThan(source.indexOf("<form"))
     expect(source).toContain("onOpenChange={props.onProfileDialogOpenChange}")
@@ -294,6 +309,8 @@ describe("account workspace", () => {
     expect(overview).not.toContain("account.profile.signInDescription")
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
+    // Wide screens balance the identity strip into equal halves instead of the narrow lg panel.
+    expect(overview).toContain("xl:grid-cols-2")
     expect(progress).toContain("href={item.href}")
     expect(progress).toContain("mdiCheckCircleOutline")
     expect(progress).toContain("mdiAlertCircleOutline")
@@ -521,6 +538,11 @@ describe("account workspace", () => {
     // The phone section is no longer a second, separately placed block further down the page.
     expect(profile.match(/<AccountProfilePhoneSection/g)).toHaveLength(1)
     expect(profile).not.toContain("AccountSplitColumns")
+    // The workspace overview shares one row between personal information, email addresses, and
+    // phone numbers; the contact cards are rendered there exactly once. The personal card
+    // spans two columns at lg and one of three at xl, and no card stretches its siblings.
+    expect(profile).toContain("lg:grid-cols-2 lg:items-start xl:grid-cols-3")
+    expect(profile.match(/<AccountEmailAddressView/g)).toHaveLength(1)
 
     for (const name of ["AccountEmailAddressView", "AccountProfilePhoneSection"]) {
       const source = await Bun.file(new URL(`../../src/features/account/ui/${name}.tsx`, import.meta.url)).text()
@@ -535,7 +557,19 @@ describe("account workspace", () => {
       // No always-visible add form outside the dialog.
       expect(source.indexOf("<AuthenticatedDialog")).toBeLessThan(source.indexOf("<form"))
       expect(source).not.toContain("<ProductionStatePanel")
+      // Closed cards keep their natural height so opening one never stretches its siblings.
+      expect(source).not.toContain('class="h-full"')
     }
+  })
+
+  test("loads the email address list for the page kinds that show the email card", async () => {
+    const state = await Bun.file(
+      new URL("../../src/features/account/ui/accountPageStateCreate.ts", import.meta.url),
+    ).text()
+
+    // The overview row shows the email card, so its state loads the address list too.
+    expect(state).toContain('loadKind === "email" || loadKind === "overview"')
+    expect(state).toContain("options.adapter.emailAddressList()")
   })
 
   test("removes the contact-method filler empty-state copy from the catalog", async () => {
