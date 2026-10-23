@@ -2,6 +2,7 @@ export { realmAdministratorContextAuthorize } from "../actions/realmAdministrato
 export { realmBootstrapAdminAuthenticate } from "../actions/realmBootstrapAdminAuthenticate.js"
 export { realmGet } from "../actions/realmGet.js"
 export { realmTenantContextResolve } from "../actions/realmTenantContextResolve.js"
-export { realmSystemContextCreate } from "../domain/realmSystemContextCreate.js"
 export type { RealmSystemContext } from "../domain/realmSystemContext.js"
+export { realmSystemContextCreate } from "../domain/realmSystemContextCreate.js"
 export type { RealmTenantContext } from "../domain/realmTenantContext.js"
+export { realmAdministratorIs } from "./realmAdministratorIs.js"

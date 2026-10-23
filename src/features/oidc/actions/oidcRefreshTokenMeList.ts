@@ -33,6 +33,8 @@ export function oidcRefreshTokenMeList(options: {
   if (options.query?.pageToken !== undefined) {
     const cursor = listCursorDecode(options.query.pageToken)
     if (!cursor.success) return cursor
+    if (cursor.data.k === null)
+      return resultErrorCodedCreate(op, "The refresh-token cursor is invalid.", "oidc.invalid")
     if (sortField === "familyId" && typeof cursor.data.k !== "string")
       return resultErrorCodedCreate(op, "The refresh-token cursor is invalid.", "oidc.invalid")
     if (sortField === "lastUsedAt" && typeof cursor.data.k !== "number")

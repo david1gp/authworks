@@ -8,6 +8,7 @@ import { machineUserApiClientCreate } from "../../src/features/machineUsers/clie
 import { machineUserServerAppCreate } from "../../src/features/machineUsers/server/machineUserServerAppCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
+import { realmAdministratorGrant } from "../../src/features/realms/actions/realmAdministratorGrant.js"
 import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -166,6 +167,8 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
       realmId: alpha.id,
     })
     expect(membership.success).toBe(true)
+    const granted = realmAdministratorGrant({ context: system, database, realmId: alpha.id, userId: admin.id })
+    expect(granted.success).toBe(true)
 
     const adminSession = sessionIssue({
       assurance: "multi_factor",

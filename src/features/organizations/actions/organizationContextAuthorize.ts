@@ -1,11 +1,14 @@
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { realmAdministratorIs } from "../../realms/server/realmAdministratorIs.js"
+import type { SessionAssurance } from "../../sessions/public/sessionAssuranceSchema.js"
 import { organizationRolesDecode } from "../domain/organizationRolesDecode.js"
 import type { OrganizationMembershipRow } from "../persistence/organizationMembershipTable.js"
 import { organizationRepositoryCreate } from "../persistence/organizationRepositoryCreate.js"
@@ -13,8 +16,10 @@ import type { OrganizationRow } from "../persistence/organizationTable.js"
 
 type OrganizationContextAuthorizeOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
+  readonly database: StorageDatabase
   readonly organization: OrganizationRow
   readonly repository: ReturnType<typeof organizationRepositoryCreate>
+  readonly minimumAssurance?: SessionAssurance
   readonly requiredPermission?: AuthorizationPermission
   readonly requiredRole?: "member" | "admin"
   readonly membership?: OrganizationMembershipRow | null
@@ -46,6 +51,23 @@ export function organizationContextAuthorize(options: OrganizationContextAuthori
       organizationId: options.organization.id,
       permission,
     })
+  if (options.context.actor.kind === "user") {
+    const administrator = realmAdministratorIs({
+      database: options.database,
+      realmId: options.organization.realmId,
+      userId: options.context.actorId,
+    })
+    if (!administrator.success) return administrator
+    if (administrator.data)
+      return authorizationEnforce({
+        actor: options.context.actor,
+        realmId: options.organization.realmId,
+        organizationId: options.organization.id,
+        minimumAssurance: options.minimumAssurance,
+        permission,
+        roles: ["realm_admin"],
+      })
+  }
   const membership =
     options.membership === undefined
       ? options.repository.organizationMembershipGetByOrganizationUser(options.organization.id, options.context.actorId)

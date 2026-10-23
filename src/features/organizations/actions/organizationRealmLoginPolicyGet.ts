@@ -30,7 +30,8 @@ export function organizationRealmLoginPolicyGet(
     const authorized = authorizationEnforce({
       actor: options.context.actor,
       realmId: options.realmId,
-      permission: authorizationPermissionDefinitions.organizationRead,
+      permission: authorizationPermissionDefinitions.realmRead,
+      roles: ["realm_admin"],
     })
     if (!authorized.success) return authorized
   }

@@ -333,24 +333,46 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "impersonation-permissions.example.com")
     const admin = createActiveUser(database, realm.id, "permission-admin")
+    const member = createActiveUser(database, realm.id, "permission-member")
     const target = createActiveUser(database, realm.id, "permission-target")
     const organization = organizationCreate({
       context: realmSystemContextCreate("system"),
       database,
-      input: { name: "Permissions", ownerUserId: target.id },
+      input: { name: "Permissions", ownerUserId: admin.id },
       realmId: realm.id,
     })
     expect(organization.success).toBe(true)
     if (!organization.success) return
-    expect(
-      organizationMembershipCreate({
-        context: realmSystemContextCreate("system"),
-        database,
-        input: { roles: ["member"], userId: admin.id },
-        realmId: realm.id,
-        organizationId: organization.data.organization.id,
-      }).success,
-    ).toBe(true)
+    for (const userId of [member.id, target.id]) {
+      expect(
+        organizationMembershipCreate({
+          context: realmSystemContextCreate("system"),
+          database,
+          input: { roles: ["member"], userId },
+          realmId: realm.id,
+          organizationId: organization.data.organization.id,
+        }).success,
+      ).toBe(true)
+    }
+    const memberActor = authorizationActorContextCreate({
+      actorId: member.id,
+      assurance: "multi_factor",
+      authenticationMethod: "trusted",
+      realmId: realm.id,
+      kind: "user",
+      scopes: ["user.impersonate"],
+    })
+    const memberAttempt = impersonationStart({
+      actor: memberActor,
+      database,
+      durationMs: 1_000,
+      realmId: realm.id,
+      organizationId: organization.data.organization.id,
+      reason: "Permission test",
+      targetUserId: target.id,
+    })
+    expect(memberAttempt.success).toBe(false)
+
     const actor = authorizationActorContextCreate({
       actorId: admin.id,
       assurance: "multi_factor",
@@ -360,7 +382,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
       scopes: ["user.read"],
     })
 
-    const unrelatedPermission = impersonationStart({
+    const ownerByRole = impersonationStart({
       actor,
       database,
       durationMs: 1_000,
@@ -369,7 +391,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
       reason: "Permission test",
       targetUserId: target.id,
     })
-    expect(unrelatedPermission.success).toBe(false)
+    expect(ownerByRole.success).toBe(true)
 
     const allowedActor = { ...actor, scopes: ["user.impersonate"] }
     const started = impersonationStart({
@@ -393,7 +415,7 @@ test("impersonation authorization is explicit and marked sessions cannot widen t
         actor: authenticated.data.actor,
         realmId: realm.id,
         organizationId: organization.data.organization.id,
-        permission: "organization.manage",
+        permission: "realm.write",
         roles: ["owner"],
       }),
     ).toMatchObject({ data: { allowed: false, reason: "impersonation_limit" }, success: true })

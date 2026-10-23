@@ -7,6 +7,7 @@ import type { AuthorizationPermission } from "../../authorization/public/authori
 import { organizationMembershipAccessList } from "../../organizations/actions/organizationMembershipAccessList.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { realmAdministratorIs } from "../../realms/server/realmAdministratorIs.js"
 
 type ProjectOrganizationAuthorizeOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
@@ -32,6 +33,22 @@ export function projectOrganizationAuthorize(options: ProjectOrganizationAuthori
       organizationId: options.organizationId,
       permission: options.permission,
     })
+  if (options.context.actor.kind === "user") {
+    const administrator = realmAdministratorIs({
+      database: options.database,
+      realmId: options.realmId,
+      userId: options.context.actorId,
+    })
+    if (!administrator.success) return administrator
+    if (administrator.data)
+      return authorizationEnforce({
+        actor: options.context.actor,
+        realmId: options.realmId,
+        organizationId: options.organizationId,
+        permission: options.permission,
+        roles: ["realm_admin"],
+      })
+  }
   const memberships = organizationMembershipAccessList({
     database: options.database,
     realmId: options.realmId,

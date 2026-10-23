@@ -7,8 +7,6 @@ import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
-import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
-import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
@@ -21,6 +19,7 @@ import { machineCredentialList } from "../actions/machineCredentialList.js"
 import { machineCredentialRevoke } from "../actions/machineCredentialRevoke.js"
 import { machinePersonalAccessTokenCreate } from "../actions/machinePersonalAccessTokenCreate.js"
 import { machineUserClientSecretRotate } from "../actions/machineUserClientSecretRotate.js"
+import { machineUserContextAuthorize } from "../actions/machineUserContextAuthorize.js"
 import { machineUserCreate } from "../actions/machineUserCreate.js"
 import { machineUserGet } from "../actions/machineUserGet.js"
 import { machineUserLifecycleSet } from "../actions/machineUserLifecycleSet.js"
@@ -365,7 +364,7 @@ async function machineRouteHandle(
   authenticate: MachineAuthenticator,
   database: StorageDatabase,
   browserProtectedMiddleware: MiddlewareHandler | undefined,
-  permission: AuthorizationPermission,
+  permission: "machine.credential.manage" | "machine.user.manage",
   minimumAssurance: SessionAssurance | undefined,
   handler: (authenticated: MachineRequestContext) => Response | Promise<Response>,
 ): Promise<Response | void> {
@@ -377,18 +376,22 @@ async function machineRouteHandle(
 
   let response: Response | undefined
   const middlewareResponse = await browserProtectedMiddleware(context, async () => {
-    const authenticated = realmAdministratorContextAuthorize({
-      actor: context.get("authorizationActor"),
+    const actor = context.get("authorizationActor")
+    const realmId = machineParamGet(context, "realmId")
+    const tenantContext: RealmTenantContext = { actor, actorId: actor.actorId, kind: "tenant", realmId }
+    const authorized = machineUserContextAuthorize({
+      context: tenantContext,
       database,
       minimumAssurance,
+      organizationId: machineOrganizationIdGet(context),
       permission,
-      realmId: machineParamGet(context, "realmId"),
+      realmId,
     })
-    if (!authenticated.success) {
-      response = machineErrorResponseCreate(context, authenticated)
+    if (!authorized.success) {
+      response = machineErrorResponseCreate(context, authorized)
       return
     }
-    response = await handler(authenticated.data)
+    response = await handler(tenantContext)
   })
   return response ?? middlewareResponse
 }

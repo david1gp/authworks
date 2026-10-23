@@ -137,8 +137,80 @@ const realmBootstrapCommand = buildCommand({
   docs: { brief: "Create the one-time bootstrap administrator secret" },
 })
 
+type RealmAdministratorCliFlags = RealmCliFlags & {
+  readonly realmId?: string
+  readonly userId?: string
+}
+
+const realmAdministratorCommand = (action: "list" | "grant" | "revoke") =>
+  buildCommand({
+    async func(this: ApplicationContext, flags: RealmAdministratorCliFlags) {
+      const connection = await realmCliConnectionResolve(this, flags)
+      if (connection === undefined) return
+      const realmId = scopeIdResolve(this, connection.realmId, "realm")
+      if (realmId === undefined) return
+      const client = realmCliClientCreate(connection)
+      if (action === "list") {
+        realmCliResultWrite(this, await client.realmAdministratorList(realmId), [connection.token])
+        return
+      }
+      if (flags.userId === undefined || flags.userId.trim().length === 0) {
+        this.process.stderr.write("Expected input for flag --user-id\n")
+        this.process.exitCode = 1
+        return
+      }
+      if (action === "grant")
+        realmCliResultWrite(this, await client.realmAdministratorGrant(realmId, { userId: flags.userId }), [
+          connection.token,
+        ])
+      else realmCliResultWrite(this, await client.realmAdministratorRevoke(realmId, flags.userId), [connection.token])
+    },
+    parameters: {
+      flags: {
+        ...connectionProfileCliCentralFlags(),
+        realmId: {
+          brief: "Realm UUID",
+          kind: "parsed",
+          optional: true,
+          parse: (value: string) => value,
+          placeholder: "REALM_ID",
+        },
+        server: {
+          brief: "Authworks server URL",
+          kind: "parsed",
+          optional: true,
+          parse: (value: string) => value,
+          placeholder: "URL",
+        },
+        token: {
+          brief: "System bearer token",
+          kind: "parsed",
+          optional: true,
+          parse: (value: string) => value,
+          placeholder: "TOKEN",
+        },
+        userId: {
+          brief: "User UUID",
+          kind: "parsed",
+          optional: true,
+          parse: (value: string) => value,
+          placeholder: "USER_ID",
+        },
+      },
+    },
+    docs: { brief: `Realm administrators ${action}` },
+  })
+
 export const realmCliCommands = buildRouteMap({
   routes: {
+    administrators: buildRouteMap({
+      docs: { brief: "Realm administrators" },
+      routes: {
+        grant: realmAdministratorCommand("grant"),
+        list: realmAdministratorCommand("list"),
+        revoke: realmAdministratorCommand("revoke"),
+      },
+    }),
     bootstrapAdmin: realmBootstrapCommand,
     create: realmCreateCommand,
     list: realmListCommand,

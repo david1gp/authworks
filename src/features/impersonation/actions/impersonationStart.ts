@@ -6,15 +6,18 @@ import { resultErrorCodedCreate as resultErrorCreate } from "../../../platform/e
 import { uuidv7Create } from "../../../platform/ids/uuidv7Create.js"
 import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import { authorizationRolePermissionsResolve } from "../../authorization/actions/authorizationRolePermissionsResolve.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { eventSecurityEventAppend } from "../../events/server/eventSecurityEventAppend.js"
+import { organizationMembershipAccessList } from "../../organizations/actions/organizationMembershipAccessList.js"
 import { organizationRolesDecode } from "../../organizations/domain/organizationRolesDecode.js"
 import { organizationMembershipTable } from "../../organizations/persistence/organizationMembershipTable.js"
 import { organizationTable } from "../../organizations/persistence/organizationTable.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
+import { realmAdministratorIs } from "../../realms/server/realmAdministratorIs.js"
 import { sessionIssue } from "../../sessions/actions/sessionIssue.js"
 import type { SessionCredentialResponse } from "../../sessions/public/sessionCredentialResponseSchema.js"
 import { userTable } from "../../users/persistence/userTable.js"
@@ -92,7 +95,7 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<S
 
   const committed = storageTransactionRun(options.database, (transaction) => {
     let permissions = access.data.permissions
-    if (options.organizationId !== undefined && options.actor.kind === "user") {
+    if (access.data.actorOrganizationMembershipRequired && options.organizationId !== undefined) {
       const actorMembership = transaction
         .select({ roles: organizationMembershipTable.roles })
         .from(organizationMembershipTable)
@@ -233,9 +236,47 @@ export function impersonationStart(options: ImpersonationStartOptions): Result<S
   return committed
 }
 
-function impersonationAccessResolve(options: ImpersonationStartOptions): Result<{ permissions: string[] }> {
+function impersonationAccessResolve(
+  options: ImpersonationStartOptions,
+): Result<{ actorOrganizationMembershipRequired: boolean; permissions: string[] }> {
+  const gate = realmAdministratorContextAuthorize({
+    actor: options.actor,
+    database: options.database,
+    permission: impersonationPermission,
+    realmId: options.realmId,
+    targetUserId: options.targetUserId,
+  })
+  if (!gate.success) return gate
+  if (options.actor.kind === "bootstrap_admin") {
+    const resolved = authorizationRolePermissionsResolve({ roles: ["realm_admin"] })
+    if (!resolved.success) return resolved
+    return resultCreate({
+      actorOrganizationMembershipRequired: false,
+      permissions: resolved.data.filter((rule) => rule.effect === "allow").map((rule) => rule.permission),
+    })
+  }
+  if (options.actor.kind !== "user")
+    return resultErrorCreate(
+      "impersonationAuthorization",
+      "The actor is not authorized to impersonate users.",
+      "authorization.impersonation-forbidden",
+    )
+  const administrator = realmAdministratorIs({
+    database: options.database,
+    realmId: options.realmId,
+    userId: options.actor.actorId,
+  })
+  if (!administrator.success) return administrator
+  if (administrator.data) {
+    const resolved = authorizationRolePermissionsResolve({ roles: ["realm_admin"] })
+    if (!resolved.success) return resolved
+    return resultCreate({
+      actorOrganizationMembershipRequired: false,
+      permissions: resolved.data.filter((rule) => rule.effect === "allow").map((rule) => rule.permission),
+    })
+  }
   const roles = [...(options.roles ?? [])]
-  if (options.organizationId !== undefined && options.actor.kind === "user") {
+  if (options.organizationId !== undefined) {
     const membership = options.database.db
       .select({ roles: organizationMembershipTable.roles, realmId: organizationMembershipTable.realmId })
       .from(organizationMembershipTable)
@@ -256,29 +297,34 @@ function impersonationAccessResolve(options: ImpersonationStartOptions): Result<
     const decoded = organizationRolesDecode(membership.roles)
     if (!decoded.success) return decoded
     roles.push(...decoded.data)
-  }
-  const actorPolicies = options.actor.scopes?.map((permission) => ({ effect: "allow" as const, permission })) ?? []
-  const enforced = authorizationEnforce({
-    actor: options.actor,
-    realmId: options.realmId,
-    organizationId: options.organizationId,
-    permission: impersonationPermission,
-    policies: actorPolicies,
-    roles,
-  })
-  if (!enforced.success) return enforced
-  if (options.actor.kind === "bootstrap_admin") {
-    const resolved = authorizationRolePermissionsResolve({ roles: ["realm_admin"] })
-    if (!resolved.success) return resolved
-    return resultCreate({
-      permissions: resolved.data.filter((rule) => rule.effect === "allow").map((rule) => rule.permission),
+    const enforced = authorizationEnforce({
+      actor: options.actor,
+      realmId: options.realmId,
+      organizationId: options.organizationId,
+      permission: impersonationPermission,
+      roles: decoded.data,
     })
+    if (!enforced.success) return enforced
+  } else {
+    const memberships = organizationMembershipAccessList({
+      database: options.database,
+      realmId: options.realmId,
+      userId: options.actor.actorId,
+    })
+    if (!memberships.success) return memberships
+    for (const membership of memberships.data.items) {
+      if (membership.status !== "active") continue
+      roles.push(...membership.roles)
+    }
   }
   const resolved = authorizationRolePermissionsResolve({ roles })
   if (!resolved.success) return resolved
   const permissions = new Set(resolved.data.filter((rule) => rule.effect === "allow").map((rule) => rule.permission))
   for (const permission of options.actor.scopes ?? []) permissions.add(permission)
-  return resultCreate({ permissions: [...permissions] })
+  return resultCreate({
+    actorOrganizationMembershipRequired: options.organizationId !== undefined,
+    permissions: [...permissions],
+  })
 }
 
 function impersonationSecurityNotificationInvoke(

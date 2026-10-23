@@ -8,6 +8,7 @@ import type { AuthorizationPermission } from "../../authorization/public/authori
 import { organizationMembershipAccessList } from "../../organizations/actions/organizationMembershipAccessList.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { realmAdministratorIs } from "../../realms/server/realmAdministratorIs.js"
 import { userRepositoryCreate } from "../../users/persistence/userRepositoryCreate.js"
 import { projectRoleKeysDecode } from "../domain/projectRoleKeysDecode.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
@@ -41,6 +42,25 @@ export function projectContextAuthorize(
     })
     if (!authorized.success) return authorized
     return resultCreate({ roleKeys: [] })
+  }
+  if (options.context.actor.kind === "user") {
+    const administrator = realmAdministratorIs({
+      database: options.database,
+      realmId: options.realmId,
+      userId: options.context.actorId,
+    })
+    if (!administrator.success) return administrator
+    if (administrator.data) {
+      const authorized = authorizationEnforce({
+        actor: options.context.actor,
+        realmId: options.realmId,
+        organizationId: options.project.organizationId,
+        permission: options.permission,
+        roles: ["realm_admin"],
+      })
+      if (!authorized.success) return authorized
+      return resultCreate({ roleKeys: [] })
+    }
   }
   const actorUser = userRepositoryCreate(options.database.db).userGet(options.realmId, options.context.actorId)
   if (!actorUser.success) return actorUser

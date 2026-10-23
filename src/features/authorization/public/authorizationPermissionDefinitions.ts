@@ -3,6 +3,7 @@ import type { AuthorizationPermission } from "./authorizationPermissionSchema.js
 export const authorizationPermissionDefinitions = {
   realmRead: "realm.read",
   realmWrite: "realm.write",
+  realmPurge: "realm.purge",
   machineCredentialManage: "machine.credential.manage",
   machineUserManage: "machine.user.manage",
   oidcRead: "oidc.read",

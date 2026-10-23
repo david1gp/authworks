@@ -3,10 +3,10 @@ import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { authorizationUserActorContextCreate } from "../../src/features/authorization/domain/authorizationUserActorContextCreate.js"
-import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
-import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
 import { oidcConsentList } from "../../src/features/oidc/actions/oidcConsentList.js"
 import { oidcConsentRevoke } from "../../src/features/oidc/actions/oidcConsentRevoke.js"
+import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
+import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
 import { realmAdministratorContextAuthorize } from "../../src/features/realms/actions/realmAdministratorContextAuthorize.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -203,7 +203,7 @@ test("realm administrator checks scope target users to shared organizations", as
     ).toBe(true)
     expect(
       realmAdministratorContextAuthorize({ actor: actorA, database, permission: "user.read", realmId }).success,
-    ).toBe(true)
+    ).toBe(false)
   })
 })
 
@@ -288,5 +288,14 @@ test("administrators cannot manage consents of users outside their organizations
         userId: memberBId,
       }),
     ).toMatchObject({ success: true, data: { revoked: false } })
+    expect(
+      oidcConsentList({
+        administrator: true,
+        context: contextFor(ownerAId),
+        database,
+        realmId,
+        userId: ownerBId,
+      }).success,
+    ).toBe(false)
   })
 })

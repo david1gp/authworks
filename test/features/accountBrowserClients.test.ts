@@ -38,7 +38,7 @@ describe("account browser clients", () => {
       requests.push(new Request(input, init))
       return jsonResponse(
         String(input).endsWith("/me")
-          ? { capabilities: { realmRead: true }, user: accountDemoUserFixture }
+          ? { capabilities: { realmAdministrator: true, realmRead: true }, user: accountDemoUserFixture }
           : { user: accountDemoUserFixture },
       )
     }

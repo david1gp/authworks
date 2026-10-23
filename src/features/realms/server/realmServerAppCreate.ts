@@ -13,6 +13,9 @@ import { authorizationPermissionDefinitions } from "../../authorization/public/a
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { realmAdministratorContextAuthorize } from "../actions/realmAdministratorContextAuthorize.js"
+import { realmAdministratorGrant } from "../actions/realmAdministratorGrant.js"
+import { realmAdministratorList } from "../actions/realmAdministratorList.js"
+import { realmAdministratorRevoke } from "../actions/realmAdministratorRevoke.js"
 import { realmBootstrapAdminAuthenticate } from "../actions/realmBootstrapAdminAuthenticate.js"
 import { realmBootstrapAdminCreate } from "../actions/realmBootstrapAdminCreate.js"
 import { realmCreate } from "../actions/realmCreate.js"
@@ -21,6 +24,7 @@ import { realmList } from "../actions/realmList.js"
 import { realmTenantContextResolve } from "../actions/realmTenantContextResolve.js"
 import { realmUpdate } from "../actions/realmUpdate.js"
 import { realmSystemContextCreate } from "../domain/realmSystemContextCreate.js"
+import { realmAdministratorGrantRequestSchema } from "../public/realmAdministratorGrantRequestSchema.js"
 import { realmCreateRequestSchema } from "../public/realmCreateRequestSchema.js"
 import { realmUpdateRequestSchema } from "../public/realmUpdateRequestSchema.js"
 
@@ -142,6 +146,57 @@ export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
     )
   })
 
+  app.get("/system/realms/:realmId/administrators", (context) => {
+    const authorization = systemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return realmErrorResponseCreate(context, authorization)
+    return realmResultResponseCreate(
+      context,
+      realmAdministratorList({
+        context: realmSystemContextCreate(),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.post("/system/realms/:realmId/administrators", async (context) => {
+    const authorization = systemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return realmErrorResponseCreate(context, authorization)
+    const body = await requestJsonRead(context)
+    if (!body.success) return realmErrorResponseCreate(context, body)
+    const input = v.safeParse(realmAdministratorGrantRequestSchema, body.data)
+    if (!input.success)
+      return realmErrorResponseCreate(context, {
+        code: "realms.invalid",
+        errorMessage: "The realm administrator request is invalid.",
+        op: "realmAdministratorGrant",
+      })
+    return realmResultResponseCreate(
+      context,
+      realmAdministratorGrant({
+        context: realmSystemContextCreate(),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: input.output.userId,
+      }),
+      200,
+    )
+  })
+
+  app.delete("/system/realms/:realmId/administrators/:userId", (context) => {
+    const authorization = systemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return realmErrorResponseCreate(context, authorization)
+    return realmResultResponseCreate(
+      context,
+      realmAdministratorRevoke({
+        context: realmSystemContextCreate(),
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
   app.get(
     "/realms/:realmId",
     async (context, next) => {
@@ -200,6 +255,72 @@ export function realmServerAppCreate(options: RealmServerAppCreateOptions) {
         database: options.database,
         input: input.output,
         realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.get("/realms/:realmId/administrators", realmReadMiddleware, (context) => {
+    const tenant = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      permission: authorizationPermissionDefinitions.realmRead,
+      realmId: context.req.param("realmId"),
+    })
+    if (!tenant.success) return realmErrorResponseCreate(context, tenant)
+    return realmResultResponseCreate(
+      context,
+      realmAdministratorList({
+        context: tenant.data,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/administrators", realmWriteMiddleware, async (context) => {
+    const tenant = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      permission: authorizationPermissionDefinitions.realmWrite,
+      realmId: context.req.param("realmId"),
+    })
+    if (!tenant.success) return realmErrorResponseCreate(context, tenant)
+    const body = await requestJsonRead(context)
+    if (!body.success) return realmErrorResponseCreate(context, body)
+    const input = v.safeParse(realmAdministratorGrantRequestSchema, body.data)
+    if (!input.success)
+      return realmErrorResponseCreate(context, {
+        code: "realms.invalid",
+        errorMessage: "The realm administrator request is invalid.",
+        op: "realmAdministratorGrant",
+      })
+    return realmResultResponseCreate(
+      context,
+      realmAdministratorGrant({
+        context: tenant.data,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: input.output.userId,
+      }),
+      201,
+    )
+  })
+
+  app.delete("/realms/:realmId/administrators/:userId", realmWriteMiddleware, (context) => {
+    const tenant = realmAdministratorContextAuthorize({
+      actor: context.get("authorizationActor"),
+      database: options.database,
+      permission: authorizationPermissionDefinitions.realmWrite,
+      realmId: context.req.param("realmId"),
+    })
+    if (!tenant.success) return realmErrorResponseCreate(context, tenant)
+    return realmResultResponseCreate(
+      context,
+      realmAdministratorRevoke({
+        context: tenant.data,
+        database: options.database,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
       }),
     )
   })

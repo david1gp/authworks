@@ -7,9 +7,9 @@ import { oidcClientCreate } from "../../src/features/oidc/actions/oidcClientCrea
 import { oidcApiClientCreate } from "../../src/features/oidc/client/oidcApiClientCreate.js"
 import { oidcRepositoryCreate } from "../../src/features/oidc/persistence/oidcRepositoryCreate.js"
 import { oidcServerAppCreate } from "../../src/features/oidc/server/oidcServerAppCreate.js"
-import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
+import { realmAdministratorGrant } from "../../src/features/realms/actions/realmAdministratorGrant.js"
 import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -178,13 +178,13 @@ test("OIDC realm administration uses browser sessions, exact settings, paginatio
     expect(rotatedByBootstrap.status).toBe(403)
 
     const adminUserId = await createUser(database, realm.id, "oidc-admin-user")
-    const organization = organizationCreate({
+    const granted = realmAdministratorGrant({
       context: realmSystemContextCreate(),
       database,
-      input: { name: "OIDC administrators", ownerUserId: adminUserId },
       realmId: realm.id,
+      userId: adminUserId,
     })
-    expect(organization.success).toBe(true)
+    expect(granted.success).toBe(true)
     const adminSession = sessionIssue({
       assurance: "multi_factor",
       authenticationMethod: "password",

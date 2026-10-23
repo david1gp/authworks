@@ -10,6 +10,7 @@ import { organizationLoginPolicyResolve } from "../../organizations/actions/orga
 import { organizationLoginContextValidate } from "../../organizations/server/organizationLoginContextValidate.js"
 import { organizationMembershipContextValidate } from "../../organizations/server/organizationMembershipContextValidate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
+import { realmAdministratorIs } from "../../realms/server/realmAdministratorIs.js"
 import { sessionAuthenticate } from "../actions/sessionAuthenticate.js"
 import { sessionBrowserCookieExtract } from "../domain/sessionBrowserCookieExtract.js"
 import { sessionCsrfTokenValidate } from "../domain/sessionCsrfTokenValidate.js"
@@ -91,14 +92,23 @@ export function sessionProtectedMiddlewareCreate(
       organizationId !== undefined &&
       authenticated.data.actor.kind === "user"
     ) {
-      const membership = organizationMembershipContextValidate({
-        executor: options.database.db,
-        organizationId,
+      const administrator = realmAdministratorIs({
+        database: options.database,
         realmId,
         userId: authenticated.data.actor.actorId,
       })
-      if (!membership.success)
+      if (!administrator.success)
         return sessionMiddlewareErrorResponseCreate(context, "Session authorization is invalid.", "unauthorized")
+      if (!administrator.data) {
+        const membership = organizationMembershipContextValidate({
+          executor: options.database.db,
+          organizationId,
+          realmId,
+          userId: authenticated.data.actor.actorId,
+        })
+        if (!membership.success)
+          return sessionMiddlewareErrorResponseCreate(context, "Session authorization is invalid.", "unauthorized")
+      }
     }
     if (cookieAuthenticated && sessionRequestIsUnsafe(context.req.method)) {
       const origin = sessionRequestOriginValidate(context.req.raw, options.publicOrigin ?? defaultPublicOrigin)
@@ -114,9 +124,22 @@ export function sessionProtectedMiddlewareCreate(
       organizationId,
       realmId,
     })
-    if (!policy.success)
+    // Removed (or otherwise inactive) organizations have no login policy;
+    // fall back to the realm policy so realm-scoped routes that address such
+    // orgs by id (e.g. organization purge) stay reachable. Per-route
+    // authorization still applies.
+    const effectivePolicy =
+      policy.success === true
+        ? policy
+        : organizationLoginPolicyResolve({
+            database: options.database,
+            executor: options.database.db,
+            realmId,
+          })
+    if (!effectivePolicy.success)
       return sessionMiddlewareErrorResponseCreate(context, "Session policy is unavailable.", "unauthorized")
-    const assurance = assuranceStrongerGet(options.minimumAssurance, policy.data.minimumStepUpAssurance)
+    const policyData = effectivePolicy.data
+    const assurance = assuranceStrongerGet(options.minimumAssurance, policyData.minimumStepUpAssurance)
     if (assurance !== undefined && assuranceRankGet(authenticated.data.actor.assurance) < assuranceRankGet(assurance)) {
       const details: SessionAssuranceRequiredDetails = {
         action: "step_up",

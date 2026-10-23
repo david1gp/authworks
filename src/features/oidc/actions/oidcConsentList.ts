@@ -7,8 +7,8 @@ import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
-import { realmGet } from "../../realms/actions/realmGet.js"
 import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
+import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
@@ -34,7 +34,7 @@ export function oidcConsentList(options: OidcConsentListOptions): Result<OidcCon
     const administrator = realmAdministratorContextAuthorize({
       actor: options.context.actor,
       database: options.database,
-      permission: authorizationPermissionDefinitions.oidcRead,
+      permission: authorizationPermissionDefinitions.userRead,
       realmId: options.realmId,
       targetUserId: options.userId,
     })

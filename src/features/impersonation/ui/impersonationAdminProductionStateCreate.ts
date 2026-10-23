@@ -20,7 +20,7 @@ export function impersonationAdminProductionStateCreate() {
   onMount(() => {
     void productionRealmIdResolve({
       baseUrl,
-      domain: typeof window === "undefined" ? "localhost" : window.location.host,
+      domain: typeof window === "undefined" ? "localhost" : window.location.hostname,
       fallbackRealmId: fallbackRealmId(),
     }).then(realmId.set)
   })

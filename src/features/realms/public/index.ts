@@ -1,3 +1,6 @@
+export * from "./realmAdministratorGrantRequestSchema.js"
+export * from "./realmAdministratorListResponseSchema.js"
+export * from "./realmAdministratorSchema.js"
 export * from "./realmBootstrapAdminResponseSchema.js"
 export * from "./realmBootstrapAdminSchema.js"
 export * from "./realmCreateRequestSchema.js"

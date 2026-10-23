@@ -6,14 +6,12 @@ import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromS
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
-import { organizationMembershipAccessList } from "../../organizations/actions/organizationMembershipAccessList.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
-import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { sessionAuthenticate } from "../../sessions/actions/sessionAuthenticate.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
@@ -68,9 +66,10 @@ export function eventServerAppCreate(options: EventServerAppCreateOptions) {
     },
     (context) => {
       const realmId = context.req.param("realmId")
-      const authorized = eventTenantAuthorize({
+      const authorized = realmAdministratorContextAuthorize({
         actor: context.get("authorizationActor"),
         database: options.database,
+        permission: authorizationPermissionDefinitions.eventRead,
         realmId,
       })
       if (!authorized.success) return eventErrorResponseCreate(context, authorized)
@@ -121,78 +120,32 @@ function eventBearerAuthenticate(
   }
 }
 
-function eventTenantAuthorize(options: {
-  readonly actor: AuthorizationActorContext
-  readonly database: StorageDatabase
-  readonly realmId: string
-}): Result<RealmTenantContext> {
-  const op = "eventTenantAuthorize"
-  if (options.actor.realmId !== options.realmId)
-    return {
-      code: "authorization.tenant-mismatch",
-      errorMessage: "The actor is not available in this tenant context.",
-      op,
-      success: false,
-    }
-  if (options.actor.kind === "bootstrap_admin")
-    return { data: eventTenantContextCreate(options.actor, options.realmId), success: true }
-  if (options.actor.kind !== "user")
-    return {
-      code: "authorization.forbidden",
-      errorMessage: "The actor is not authorized for this permission.",
-      op,
-      success: false,
-    }
-
-  const memberships = eventTenantMembershipsRead(options.database, options.realmId, options.actor.actorId)
-  if (!memberships.success) return memberships
-  for (const membership of memberships.data) {
-    if (membership.status !== "active") continue
-    const authorized = authorizationEnforce({
-      actor: options.actor,
-      organizationId: membership.organizationId,
-      permission: authorizationPermissionDefinitions.eventRead,
-      realmId: options.realmId,
-      roles: membership.roles,
-    })
-    if (authorized.success) return { data: eventTenantContextCreate(options.actor, options.realmId), success: true }
-  }
-  return {
-    code: "authorization.forbidden",
-    errorMessage: "The actor is not authorized for this permission.",
-    op,
-    success: false,
-  }
-}
-
-function eventTenantContextCreate(actor: AuthorizationActorContext, realmId: string): RealmTenantContext {
-  return {
-    actor,
-    actorId: actor.actorId,
-    kind: "tenant",
-    realmId,
-  }
-}
-
-function eventTenantMembershipsRead(
+function eventTenantAuthenticate(
   database: StorageDatabase,
-  realmId: string,
-  userId: string,
-): Result<ReadonlyArray<{ organizationId: string; roles: string[]; status: string }>> {
-  const memberships: Array<{ organizationId: string; roles: string[]; status: string }> = []
-  let pageToken: string | undefined
-  do {
-    const page = organizationMembershipAccessList({
-      database,
-      query: { pageSize: 100, pageToken },
-      realmId,
-      userId,
-    })
-    if (!page.success) return page
-    memberships.push(...page.data.items)
-    pageToken = page.data.nextPageToken
-  } while (pageToken !== undefined)
-  return { data: memberships, success: true }
+  host: string | undefined,
+  requestUrl: string,
+  authorization: string | undefined,
+) {
+  const resolvedHost = host ?? new URL(requestUrl).hostname
+  const normalizedHost = resolvedHost.startsWith("[")
+    ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
+    : resolvedHost.split(":")[0]
+  const tenant = realmTenantContextResolve({ database, host: normalizedHost ?? "" })
+  if (!tenant.success) return tenant
+  const authenticated = realmBootstrapAdminAuthenticate({
+    context: tenant.data,
+    database,
+    secret: eventBearerTokenGet(authorization) ?? "",
+  })
+  if (!authenticated.success && authenticated.code === "realms.unauthorized")
+    return { ...authenticated, code: "events.unauthorized" }
+  return authenticated
+}
+
+function eventBearerTokenGet(authorization: string | undefined): string | null {
+  if (authorization === undefined) return null
+  const match = /^Bearer (.+)$/.exec(authorization)
+  return match?.[1] ?? null
 }
 
 function eventErrorResponseCreate(
@@ -235,32 +188,4 @@ function eventSystemAuthorizationGet(authorization: string | undefined, configur
       success: false as const,
     }
   return { data: undefined, success: true as const }
-}
-
-function eventTenantAuthenticate(
-  database: StorageDatabase,
-  host: string | undefined,
-  requestUrl: string,
-  authorization: string | undefined,
-) {
-  const resolvedHost = host ?? new URL(requestUrl).hostname
-  const normalizedHost = resolvedHost.startsWith("[")
-    ? resolvedHost.slice(1, resolvedHost.indexOf("]"))
-    : resolvedHost.split(":")[0]
-  const tenant = realmTenantContextResolve({ database, host: normalizedHost ?? "" })
-  if (!tenant.success) return tenant
-  const authenticated = realmBootstrapAdminAuthenticate({
-    context: tenant.data,
-    database,
-    secret: eventBearerTokenGet(authorization) ?? "",
-  })
-  if (!authenticated.success && authenticated.code === "realms.unauthorized")
-    return { ...authenticated, code: "events.unauthorized" }
-  return authenticated
-}
-
-function eventBearerTokenGet(authorization: string | undefined): string | null {
-  if (authorization === undefined) return null
-  const match = /^Bearer (.+)$/.exec(authorization)
-  return match?.[1] ?? null
 }

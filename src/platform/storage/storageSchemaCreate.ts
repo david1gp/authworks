@@ -1,6 +1,13 @@
+import { and, asc, eq, like, ne, sql } from "drizzle-orm"
 import { type Result } from "#result"
+import { organizationMembershipTable } from "../../features/organizations/persistence/organizationMembershipTable.js"
+import { organizationTable } from "../../features/organizations/persistence/organizationTable.js"
+import { realmAdministratorTable } from "../../features/realms/persistence/realmAdministratorTable.js"
+import { realmTable } from "../../features/realms/persistence/realmTable.js"
+import { userTable } from "../../features/users/persistence/userTable.js"
 import { resultCreate } from "../errors/resultCreate.js"
 import { resultErrorCreate } from "../errors/resultErrorCreate.js"
+import { storageDataMigrationTable } from "./storageDataMigrationTable.js"
 import type { StorageExecutor } from "./storageSchema.js"
 
 export function storageSchemaCreate(database: StorageExecutor): Result<void> {
@@ -155,9 +162,16 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE UNIQUE INDEX IF NOT EXISTS organization_invitations_pending_email_idx ON organization_invitations (organization_id, email) WHERE status = 'pending'",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('initial', 'active', 'inactive', 'locked', 'suspended', 'deleted')), email_verified_at INTEGER CHECK (email_verified_at IS NULL OR email_verified_at >= 0), phone_number TEXT, phone_number_verified_at INTEGER CHECK (phone_number_verified_at IS NULL OR phone_number_verified_at >= 0), registration_verified_at INTEGER CHECK (registration_verified_at IS NULL OR registration_verified_at >= 0), registration_verification_method TEXT CHECK (registration_verification_method IS NULL OR registration_verification_method IN ('email', 'whatsapp')), deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, email TEXT NOT NULL, state TEXT NOT NULL CHECK (state IN ('initial', 'active', 'inactive', 'locked', 'suspended', 'deleted')), email_verified_at INTEGER CHECK (email_verified_at IS NULL OR email_verified_at >= 0), phone_number TEXT, phone_number_verified_at INTEGER CHECK (phone_number_verified_at IS NULL OR phone_number_verified_at >= 0), registration_verified_at INTEGER CHECK (registration_verified_at IS NULL OR registration_verified_at >= 0), registration_verification_method TEXT CHECK (registration_verification_method IS NULL OR registration_verification_method IN ('email', 'whatsapp')), deleted_at INTEGER CHECK (deleted_at IS NULL OR deleted_at >= 0), last_sign_in_at INTEGER CHECK (last_sign_in_at IS NULL OR last_sign_in_at >= 0), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), UNIQUE (realm_id, email), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
     )
     database.run("CREATE UNIQUE INDEX IF NOT EXISTS users_realm_id_id_idx ON users (realm_id, id)")
+    try {
+      database.run(
+        "ALTER TABLE users ADD COLUMN last_sign_in_at INTEGER CHECK (last_sign_in_at IS NULL OR last_sign_in_at >= 0)",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "last_sign_in_at")) throw error
+    }
     try {
       database.run("ALTER TABLE users ADD COLUMN phone_number TEXT")
     } catch (error) {
@@ -188,6 +202,7 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE UNIQUE INDEX IF NOT EXISTS users_realm_verified_phone_idx ON users (realm_id, phone_number) WHERE phone_number IS NOT NULL AND phone_number_verified_at IS NOT NULL",
     )
     database.run("CREATE INDEX IF NOT EXISTS users_realm_id_idx ON users (realm_id)")
+    database.run("CREATE INDEX IF NOT EXISTS users_realm_last_sign_in_idx ON users (realm_id, last_sign_in_at)")
     database.run(
       "CREATE TABLE IF NOT EXISTS user_emails (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, email TEXT NOT NULL, verified_at INTEGER CHECK (verified_at IS NULL OR verified_at >= 0), is_primary INTEGER NOT NULL CHECK (is_primary IN (0, 1)), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
     )
@@ -626,11 +641,13 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     database.run(
       "CREATE INDEX IF NOT EXISTS events_aggregate_version_idx ON events (aggregate_type, aggregate_id, aggregate_version)",
     )
+    database.run("CREATE TABLE IF NOT EXISTS event_purges (aggregate_id TEXT PRIMARY KEY NOT NULL)")
     database.run(
       "CREATE TRIGGER IF NOT EXISTS events_append_only_update BEFORE UPDATE ON events BEGIN SELECT RAISE(ABORT, 'events are append-only'); END",
     )
+    database.run("DROP TRIGGER IF EXISTS events_append_only_delete")
     database.run(
-      "CREATE TRIGGER IF NOT EXISTS events_append_only_delete BEFORE DELETE ON events BEGIN SELECT RAISE(ABORT, 'events are append-only'); END",
+      "CREATE TRIGGER events_append_only_delete BEFORE DELETE ON events WHEN OLD.aggregate_id NOT IN (SELECT aggregate_id FROM event_purges) BEGIN SELECT RAISE(ABORT, 'events are append-only'); END",
     )
     database.run(
       "CREATE TABLE IF NOT EXISTS event_user_subjects (event_position INTEGER PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_id TEXT NOT NULL, event_type TEXT NOT NULL, category TEXT NOT NULL, display_code TEXT NOT NULL, FOREIGN KEY (event_position) REFERENCES events(position) ON DELETE CASCADE, FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (realm_id, user_id) REFERENCES users(realm_id, id) ON DELETE CASCADE)",
@@ -648,10 +665,87 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     database.run(
       "UPDATE external_identity_providers SET scopes = '[\"openid\",\"email\",\"profile\"]' WHERE type IN ('google', 'microsoft') AND (json_type(scopes) != 'array' OR (SELECT COUNT(*) FROM json_each(external_identity_providers.scopes) WHERE typeof(value) != 'text' OR length(value) = 0 OR length(value) > 128 OR value NOT IN ('openid', 'email', 'profile')) > 0 OR (SELECT COUNT(*) FROM json_each(external_identity_providers.scopes)) != (SELECT COUNT(DISTINCT value) FROM json_each(external_identity_providers.scopes)) OR NOT EXISTS (SELECT 1 FROM json_each(external_identity_providers.scopes) WHERE value = 'openid') OR NOT EXISTS (SELECT 1 FROM json_each(external_identity_providers.scopes) WHERE value = 'email'))",
     )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS realm_administrators (realm_id TEXT NOT NULL, user_id TEXT NOT NULL, created_at INTEGER NOT NULL CHECK (created_at >= 0), created_by TEXT, PRIMARY KEY (realm_id, user_id), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS storage_data_migrations (name TEXT PRIMARY KEY NOT NULL, applied_at INTEGER NOT NULL CHECK (applied_at >= 0))",
+    )
+    // Users created before last_sign_in_at existed keep NULL until their next sign-in.
+    // Backfill them from non-impersonation user sessions. The statement is idempotent:
+    // guarded rows are never rewritten, so it runs safely on every open.
+    database.run(
+      "UPDATE users SET last_sign_in_at = (SELECT MAX(s.created_at) FROM sessions s WHERE s.user_id = users.id AND s.realm_id = users.realm_id AND s.subject_type = 'user' AND s.authentication_method != 'impersonation' AND s.impersonator_id IS NULL) WHERE last_sign_in_at IS NULL AND EXISTS (SELECT 1 FROM sessions s WHERE s.user_id = users.id AND s.realm_id = users.realm_id AND s.subject_type = 'user' AND s.authentication_method != 'impersonation' AND s.impersonator_id IS NULL)",
+    )
+    storageRealmAdministratorsBackfill(database)
     return resultCreate(undefined)
   } catch (_error) {
     return resultErrorCreate(op, "The SQLite schema could not be created.")
   }
+}
+
+function storageRealmAdministratorsBackfill(database: StorageExecutor): void {
+  const marker = database
+    .select({ name: storageDataMigrationTable.name })
+    .from(storageDataMigrationTable)
+    .where(eq(storageDataMigrationTable.name, "realm_administrators_backfill_v1"))
+    .get()
+  if (marker !== undefined) return
+  const realms = database.select({ id: realmTable.id }).from(realmTable).all()
+  const backfilledAt = Date.now()
+  for (const realm of realms) {
+    const existing = database
+      .select({ value: sql<number>`1` })
+      .from(realmAdministratorTable)
+      .where(eq(realmAdministratorTable.realmId, realm.id))
+      .limit(1)
+      .get()
+    if (existing !== undefined) continue
+    const oldest = database
+      .select({ createdAt: organizationTable.createdAt, id: organizationTable.id })
+      .from(organizationTable)
+      .where(and(eq(organizationTable.realmId, realm.id), eq(organizationTable.status, "active")))
+      .orderBy(asc(organizationTable.createdAt), asc(organizationTable.id))
+      .limit(1)
+      .get()
+    if (oldest === undefined) continue
+    const members = database
+      .select({
+        roles: organizationMembershipTable.roles,
+        state: userTable.state,
+        userId: organizationMembershipTable.userId,
+      })
+      .from(organizationMembershipTable)
+      .innerJoin(
+        userTable,
+        and(
+          eq(userTable.id, organizationMembershipTable.userId),
+          eq(userTable.realmId, organizationMembershipTable.realmId),
+        ),
+      )
+      .where(
+        and(
+          eq(organizationMembershipTable.realmId, realm.id),
+          eq(organizationMembershipTable.organizationId, oldest.id),
+          like(organizationMembershipTable.roles, '%"owner"%'),
+          ne(userTable.state, "deleted"),
+        ),
+      )
+      .all()
+    for (const member of members) {
+      if (!member.roles.includes('"owner"')) continue
+      database
+        .insert(realmAdministratorTable)
+        .values({ createdAt: backfilledAt, createdBy: null, realmId: realm.id, userId: member.userId })
+        .onConflictDoNothing()
+        .run()
+    }
+  }
+  database
+    .insert(storageDataMigrationTable)
+    .values({ appliedAt: Date.now(), name: "realm_administrators_backfill_v1" })
+    .onConflictDoNothing()
+    .run()
 }
 
 function storageSchemaDuplicateColumnIsExpected(error: unknown, columnName: string): boolean {

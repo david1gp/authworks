@@ -9,6 +9,7 @@ import { storageEventAppend } from "../../../platform/storage/storageEventAppend
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
+import { realmAdministratorIs } from "../../realms/server/realmAdministratorIs.js"
 import type { SessionAssuranceRequiredDetails } from "../../sessions/public/sessionAssuranceRequiredDetailsSchema.js"
 import { sessionOrganizationContextSet } from "../../sessions/server/sessionOrganizationContextSet.js"
 import { organizationPublicViewCreate } from "../domain/organizationPublicViewCreate.js"
@@ -77,16 +78,25 @@ export function organizationSwitch(options: OrganizationSwitchOptions): Result<O
     )
       return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
     if (options.context.kind === "tenant" && options.context.actor.kind === "user") {
-      const membership = organizationMembershipContextValidate({
-        executor: transaction,
-        organizationId: organization.data.id,
+      const administrator = realmAdministratorIs({
+        database: transaction,
         realmId: options.realmId,
         userId: options.context.actorId,
       })
-      if (!membership.success) return membership
+      if (!administrator.success) return administrator
+      if (!administrator.data) {
+        const membership = organizationMembershipContextValidate({
+          executor: transaction,
+          organizationId: organization.data.id,
+          realmId: options.realmId,
+          userId: options.context.actorId,
+        })
+        if (!membership.success) return membership
+      }
     }
     const authorized = organizationContextAuthorize({
       context: options.context,
+      database: options.database,
       organization: organization.data,
       repository,
       requiredPermission: "organization.switch",

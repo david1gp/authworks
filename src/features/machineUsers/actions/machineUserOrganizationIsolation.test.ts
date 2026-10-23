@@ -2,19 +2,24 @@ import { expect, test } from "bun:test"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { storageDatabaseOpen } from "../../../platform/storage/storageDatabaseOpen.js"
+import { platformTestkitCreate } from "../../../platform/testkit/platformTestkitCreate.js"
+import { organizationCreate } from "../../organizations/actions/organizationCreate.js"
+import { realmAdministratorGrant } from "../../realms/actions/realmAdministratorGrant.js"
+import { realmCreate } from "../../realms/actions/realmCreate.js"
+import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
+import { realmTenantContextCreate } from "../../realms/domain/realmTenantContextCreate.js"
+import { userCreate } from "../../users/actions/userCreate.js"
+import { userLifecycleSet } from "../../users/actions/userLifecycleSet.js"
 import { machineApiKeyCreate } from "./machineApiKeyCreate.js"
 import { machineClientCredentialsIssue } from "./machineClientCredentialsIssue.js"
 import { machineCredentialAuthenticate } from "./machineCredentialAuthenticate.js"
+import { machineCredentialList } from "./machineCredentialList.js"
 import { machineCredentialRevoke } from "./machineCredentialRevoke.js"
 import { machineUserCreate } from "./machineUserCreate.js"
 import { machineUserGet } from "./machineUserGet.js"
 import { machineUserList } from "./machineUserList.js"
-import { organizationCreate } from "../../organizations/actions/organizationCreate.js"
-import { realmCreate } from "../../realms/actions/realmCreate.js"
-import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
-import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
-import { storageDatabaseOpen } from "../../../platform/storage/storageDatabaseOpen.js"
-import { platformTestkitCreate } from "../../../platform/testkit/platformTestkitCreate.js"
 
 async function withDatabase<T>(operation: (database: StorageDatabase) => Promise<T>) {
   const directory = await mkdtemp(join(tmpdir(), "authworks-machine-user-org-isolation-"))
@@ -252,5 +257,151 @@ test("scopes token authentication to the organization that owns the credential",
         token: apiKey.data.secret,
       }).success,
     ).toBe(false)
+  })
+})
+
+test("organization admins manage only their own organization while realm administrators manage both", async () => {
+  await withDatabase(async (database) => {
+    const realmCreated = realmCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { domain: "org-admin-scope.example.com", name: "org-admin-scope.example.com" },
+    })
+    expect(realmCreated.success).toBe(true)
+    if (!realmCreated.success) return
+    const realmId = realmCreated.data.realm.id
+    const system = realmSystemContextCreate()
+    const userSeed = (userName: string) => {
+      const created = userCreate({
+        context: system,
+        database,
+        input: { email: `${userName}@example.com`, profile: { displayName: userName }, userName },
+        realmId,
+      })
+      expect(created.success).toBe(true)
+      if (!created.success) throw new Error(created.errorMessage)
+      const activated = userLifecycleSet({
+        context: system,
+        database,
+        input: { state: "active" },
+        realmId,
+        userId: created.data.user.id,
+      })
+      expect(activated.success).toBe(true)
+      if (!activated.success) throw new Error(activated.errorMessage)
+      return created.data.user.id
+    }
+    const adminA = userSeed("org-scope-admin-a")
+    const adminB = userSeed("org-scope-admin-b")
+    const realmAdministrator = userSeed("org-scope-realm-administrator")
+    const organizationA = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Scoped A", ownerUserId: adminA },
+      realmId,
+    })
+    expect(organizationA.success).toBe(true)
+    if (!organizationA.success) return
+    const organizationB = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Scoped B", ownerUserId: adminB },
+      realmId,
+    })
+    expect(organizationB.success).toBe(true)
+    if (!organizationB.success) return
+    expect(realmAdministratorGrant({ context: system, database, realmId, userId: realmAdministrator }).success).toBe(
+      true,
+    )
+
+    const tenant = (userId: string) => realmTenantContextCreate(realmId, userId)
+    const organizationAId = organizationA.data.organization.id
+    const organizationBId = organizationB.data.organization.id
+    expect(
+      machineUserCreate({
+        context: tenant(adminA),
+        database,
+        input: { displayName: "Foreign", userName: "foreign" },
+        organizationId: organizationBId,
+        realmId,
+      }).success,
+    ).toBe(false)
+    const local = machineUserCreate({
+      context: tenant(adminA),
+      database,
+      input: { displayName: "Local", userName: "local" },
+      organizationId: organizationAId,
+      realmId,
+    })
+    expect(local.success).toBe(true)
+    if (!local.success) return
+    const machineUserId = local.data.machineUser.id
+    expect(
+      machineUserGet({ context: tenant(adminA), database, machineUserId, organizationId: organizationAId, realmId })
+        .success,
+    ).toBe(true)
+    expect(
+      machineUserGet({ context: tenant(adminA), database, machineUserId, organizationId: organizationBId, realmId })
+        .success,
+    ).toBe(false)
+    expect(
+      machineCredentialList({
+        context: tenant(adminA),
+        database,
+        machineUserId,
+        organizationId: organizationBId,
+        realmId,
+      }).success,
+    ).toBe(false)
+    expect(
+      machineCredentialRevoke({
+        context: tenant(adminA),
+        credentialId: "missing-credential",
+        database,
+        organizationId: organizationBId,
+        realmId,
+      }).success,
+    ).toBe(false)
+    expect(
+      machineCredentialRevoke({
+        context: tenant(adminB),
+        credentialId: "missing-credential",
+        database,
+        organizationId: organizationAId,
+        realmId,
+      }).success,
+    ).toBe(false)
+
+    const administratorTenant = tenant(realmAdministrator)
+    const createdIds = ["realm-worker-a", "realm-worker-b"]
+    for (const [index, organizationId] of [organizationAId, organizationBId].entries()) {
+      const created = machineUserCreate({
+        context: administratorTenant,
+        database,
+        input: { displayName: `Realm ${index}`, userName: createdIds[index] ?? `realm-worker-${index}` },
+        organizationId,
+        realmId,
+      })
+      expect(created.success).toBe(true)
+      if (!created.success) return
+      expect(
+        machineUserGet({
+          context: administratorTenant,
+          database,
+          machineUserId: created.data.machineUser.id,
+          organizationId,
+          realmId,
+        }).success,
+      ).toBe(true)
+      expect(
+        machineCredentialList({
+          context: administratorTenant,
+          database,
+          machineUserId: created.data.machineUser.id,
+          organizationId,
+          realmId,
+        }).success,
+      ).toBe(true)
+    }
   })
 })

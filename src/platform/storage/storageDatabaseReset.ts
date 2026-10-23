@@ -19,6 +19,7 @@ export function storageDatabaseReset(database: StorageDatabase): Result<void> {
     return database.db.transaction((transaction) => {
       transaction.run("DROP TRIGGER IF EXISTS events_append_only_update")
       transaction.run("DROP TRIGGER IF EXISTS events_append_only_delete")
+      transaction.run("DROP TABLE IF EXISTS event_purges")
       transaction.run("DROP TRIGGER IF EXISTS users_user_name_verified_email_collision_insert")
       transaction.run("DROP TRIGGER IF EXISTS users_user_name_verified_email_collision_update")
       transaction.run("DROP TRIGGER IF EXISTS user_emails_verified_user_name_collision_insert")
@@ -134,6 +135,9 @@ export function storageDatabaseReset(database: StorageDatabase): Result<void> {
       transaction.run("DROP TABLE IF EXISTS realm_login_policies")
       transaction.run("DROP TABLE IF EXISTS organization_branding")
       transaction.run("DROP TABLE IF EXISTS organization_domains")
+      transaction.run("DROP TABLE IF EXISTS storage_data_migrations")
+      transaction.run("DROP TABLE IF EXISTS realm_administrators")
+      transaction.run("DROP INDEX IF EXISTS users_realm_last_sign_in_idx")
       transaction.run("DROP TABLE IF EXISTS organization_memberships")
       transaction.run("DROP TABLE IF EXISTS user_email_change_challenges")
       transaction.run("DROP TABLE IF EXISTS user_emails")

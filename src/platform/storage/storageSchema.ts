@@ -40,6 +40,7 @@ import { projectGrantTable } from "../../features/projects/persistence/projectGr
 import { projectRoleTable } from "../../features/projects/persistence/projectRoleTable.js"
 import { projectTable } from "../../features/projects/persistence/projectTable.js"
 import { projectUserAssignmentTable } from "../../features/projects/persistence/projectUserAssignmentTable.js"
+import { realmAdministratorTable } from "../../features/realms/persistence/realmAdministratorTable.js"
 import { realmBootstrapAdminTable } from "../../features/realms/persistence/realmBootstrapAdminTable.js"
 import { realmDomainTable } from "../../features/realms/persistence/realmDomainTable.js"
 import { realmTable } from "../../features/realms/persistence/realmTable.js"
@@ -53,6 +54,7 @@ import { whatsappOtpChallengeTable } from "../../features/whatsappOtp/persistenc
 import { zitadelMigrationSourceRecordTable } from "../../features/zitadelMigration/persistence/zitadelMigrationSourceRecordTable.js"
 import { rateLimitTable } from "../rateLimit/rateLimitTable.js"
 import { storageCurrentStateTable } from "./storageCurrentStateTable.js"
+import { storageDataMigrationTable } from "./storageDataMigrationTable.js"
 import { storageEventTable } from "./storageEventTable.js"
 
 export const storageSchema = {
@@ -60,6 +62,7 @@ export const storageSchema = {
   externalIdentityOAuthTransactionTable,
   externalIdentityProviderTable,
   externalIdentityTable,
+  realmAdministratorTable,
   realmBootstrapAdminTable,
   realmDomainTable,
   realmTable,
@@ -106,6 +109,7 @@ export const storageSchema = {
   whatsappOtpChallengeTable,
   rateLimitTable,
   storageCurrentStateTable,
+  storageDataMigrationTable,
   storageEventTable,
   eventUserSubjectTable,
   zitadelMigrationSourceRecordTable,

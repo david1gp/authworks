@@ -10,6 +10,15 @@ import { listQueryToSearchParams } from "../../../platform/http/listQueryToSearc
 import { Secret } from "../../../platform/secrets/Secret.js"
 import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserRequest.js"
 import {
+  type RealmAdministratorGrantRequest,
+  realmAdministratorGrantRequestSchema,
+} from "../public/realmAdministratorGrantRequestSchema.js"
+import {
+  type RealmAdministratorListResponse,
+  realmAdministratorListResponseSchema,
+} from "../public/realmAdministratorListResponseSchema.js"
+import { type RealmAdministrator, realmAdministratorSchema } from "../public/realmAdministratorSchema.js"
+import {
   type RealmBootstrapAdminResponse,
   realmBootstrapAdminResponseSchema,
 } from "../public/realmBootstrapAdminResponseSchema.js"
@@ -60,6 +69,80 @@ export function realmApiClientCreate(options: RealmApiClientCreateOptions) {
         { method: "POST" },
         realmBootstrapAdminResponseSchema,
       )
+    },
+    realmAdministratorList(realmId: string): Promise<Result<RealmAdministratorListResponse>> {
+      return request(
+        `/system/realms/${encodeURIComponent(realmId)}/administrators`,
+        { method: "GET" },
+        realmAdministratorListResponseSchema,
+      )
+    },
+    realmAdministratorGrant(
+      realmId: string,
+      input: RealmAdministratorGrantRequest,
+    ): Promise<Result<{ administrator: RealmAdministrator }>> {
+      const parsed = v.safeParse(realmAdministratorGrantRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "realmApiClientAdministratorGrant",
+            "The realm administrator request is invalid.",
+            "realms.invalid",
+          ),
+        )
+      return request(
+        `/system/realms/${encodeURIComponent(realmId)}/administrators`,
+        { body: JSON.stringify(parsed.output), method: "POST" },
+        v.strictObject({ administrator: realmAdministratorSchema }),
+      )
+    },
+    realmAdministratorRevoke(realmId: string, userId: string): Promise<Result<{ userId: string }>> {
+      return request(
+        `/system/realms/${encodeURIComponent(realmId)}/administrators/${encodeURIComponent(userId)}`,
+        { method: "DELETE" },
+        v.strictObject({ userId: v.string() }),
+      )
+    },
+    realmTenantAdministratorList(realmId: string): Promise<Result<RealmAdministratorListResponse>> {
+      return request(
+        `/realms/${encodeURIComponent(realmId)}/administrators`,
+        { credentials: "include", method: "GET" },
+        realmAdministratorListResponseSchema,
+      )
+    },
+    realmTenantAdministratorGrant(
+      realmId: string,
+      input: RealmAdministratorGrantRequest,
+    ): Promise<Result<{ administrator: RealmAdministrator }>> {
+      const parsed = v.safeParse(realmAdministratorGrantRequestSchema, input)
+      if (!parsed.success)
+        return Promise.resolve(
+          resultErrorCreate(
+            "realmApiClientTenantAdministratorGrant",
+            "The realm administrator request is invalid.",
+            "realms.invalid",
+          ),
+        )
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { body: JSON.stringify(parsed.output), method: "POST" },
+        op: "realmTenantAdministratorGrant",
+        path: `/realms/${encodeURIComponent(realmId)}/administrators`,
+        realmId,
+        schema: v.strictObject({ administrator: realmAdministratorSchema }),
+      })
+    },
+    realmTenantAdministratorRevoke(realmId: string, userId: string): Promise<Result<{ userId: string }>> {
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "DELETE" },
+        op: "realmTenantAdministratorRevoke",
+        path: `/realms/${encodeURIComponent(realmId)}/administrators/${encodeURIComponent(userId)}`,
+        realmId,
+        schema: v.strictObject({ userId: v.string() }),
+      })
     },
     realmCreate(input: RealmCreateRequest): Promise<Result<RealmResponse>> {
       return request("/system/realms", { body: JSON.stringify(input), method: "POST" }, realmResponseSchema)

@@ -264,14 +264,16 @@ test("effective account access uses the impersonated session subject", async () 
       input: { name: "Impersonator organization", ownerUserId: impersonator.id },
       realmId: realm.id,
     })
-    const subjectOrganization = organizationCreate({
-      context: realmSystemContextCreate(),
+    expect(impersonatorOrganization.success).toBe(true)
+    if (!impersonatorOrganization.success) return
+    const subjectMembership = organizationMembershipCreate({
+      context: realmTenantContextCreate(realm.id, impersonator.id),
       database,
-      input: { name: "Subject organization", ownerUserId: subject.id },
+      input: { roles: ["member"], userId: subject.id },
+      organizationId: impersonatorOrganization.data.organization.id,
       realmId: realm.id,
     })
-    expect(impersonatorOrganization.success && subjectOrganization.success).toBe(true)
-    if (!impersonatorOrganization.success || !subjectOrganization.success) return
+    expect(subjectMembership.success).toBe(true)
 
     const issued = impersonationStart({
       actor: {
@@ -300,10 +302,7 @@ test("effective account access uses the impersonated session subject", async () 
     const body = await response.json()
     expect(
       body.items.map((item: { organization: { organization: { id: string } } }) => item.organization.organization.id),
-    ).toEqual([subjectOrganization.data.organization.id])
-    expect(
-      body.items.map((item: { organization: { organization: { id: string } } }) => item.organization.organization.id),
-    ).not.toContain(impersonatorOrganization.data.organization.id)
+    ).toEqual([impersonatorOrganization.data.organization.id])
   })
 })
 

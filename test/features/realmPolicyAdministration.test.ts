@@ -5,10 +5,10 @@ import { join } from "node:path"
 import { Hono } from "hono"
 import { externalIdentityServerAppCreate } from "../../src/features/externalIdentities/server/externalIdentityServerAppCreate.js"
 import { mfaServerAppCreate } from "../../src/features/mfa/server/mfaServerAppCreate.js"
-import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { passwordEmailVerify } from "../../src/features/passwords/actions/passwordEmailVerify.js"
 import { passwordRegister } from "../../src/features/passwords/actions/passwordRegister.js"
 import { passwordServerAppCreate } from "../../src/features/passwords/server/passwordServerAppCreate.js"
+import { realmAdministratorGrant } from "../../src/features/realms/actions/realmAdministratorGrant.js"
 import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -111,7 +111,7 @@ test("realm policy and provider administration is session-bound, permissioned, s
     const csrf = await app.request(`https://realm-policy-admin.example.com/realms/${alpha.id}/sessions/csrf`, {
       headers: { ...bootstrapHeaders, host: "realm-policy-admin.example.com" },
     })
-    const csrfToken = ((await csrf.json()) as { csrfToken: string }).csrfToken
+    await csrf.json()
     const missingCsrf = await app.request(`https://realm-policy-admin.example.com/realms/${alpha.id}/password-policy`, {
       body: JSON.stringify({
         lockoutDurationMs: 900_000,
@@ -160,13 +160,13 @@ test("realm policy and provider administration is session-bound, permissioned, s
     expect(denied.status).toBe(403)
 
     const adminUserId = await userCreateForTest(database, alpha.id, "realm-admin")
-    const organization = organizationCreate({
+    const granted = realmAdministratorGrant({
       context: realmSystemContextCreate(),
       database,
-      input: { name: "Realm administrators", ownerUserId: adminUserId },
       realmId: alpha.id,
+      userId: adminUserId,
     })
-    expect(organization.success).toBe(true)
+    expect(granted.success).toBe(true)
     const authenticatedAdminSession = sessionIssue({
       assurance: "authenticated",
       authenticationMethod: "password",
