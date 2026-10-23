@@ -48,6 +48,7 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
         <AccountDisclosure
           class="border-danger/35"
           icon={mdiAccountRemoveOutline}
+          iconTone="danger"
           status={messageTranslate("account.delete.dangerZone")}
           statusTone="danger"
           summary={messageTranslate("account.delete.title")}

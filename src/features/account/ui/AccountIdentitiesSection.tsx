@@ -1,7 +1,5 @@
-import { mdiAlertCircleOutline } from "@adaptive-ds/mdi/mdiAlertCircleOutline.js"
 import { mdiArrowRight } from "@adaptive-ds/mdi/mdiArrowRight.js"
 import { mdiCheck } from "@adaptive-ds/mdi/mdiCheck.js"
-import { mdiCheckCircleOutline } from "@adaptive-ds/mdi/mdiCheckCircleOutline.js"
 import { mdiClose } from "@adaptive-ds/mdi/mdiClose.js"
 import { mdiLinkOff } from "@adaptive-ds/mdi/mdiLinkOff.js"
 import { mdiLinkVariant } from "@adaptive-ds/mdi/mdiLinkVariant.js"
@@ -44,7 +42,6 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
       class="h-full"
       icon={mdiLinkVariant}
       status={state.summaryStatus()}
-      statusIcon={state.count() > 0 ? mdiCheckCircleOutline : mdiAlertCircleOutline}
       statusTone={state.summaryTone()}
       summary={messageTranslate("shell.nav.linkedIdentities")}
       value={state.summaryValue()}

@@ -34,12 +34,40 @@ describe("account workspace", () => {
 
     expect(disclosure).toContain('readonly variant: "card"')
     expect(disclosure).toContain("readonly icon: string")
+    expect(disclosure).toContain('readonly iconTone?: "accent" | "danger"')
+    expect(disclosure).toContain("readonly statusTone?:")
     expect(disclosure).toContain("{props.summary}")
     expect(disclosure).toContain("{value()}")
     expect(disclosure).toContain("{status()}")
     expect(disclosure).toContain("group-open:rotate-180")
+    expect(disclosure).toContain("group/summary")
+    // The summary carries only the named group; the plain `group` stays on the details element so
+    // the chevron rotation still reads the open state of its parent details.
+    expect(disclosure).not.toContain("group group/summary")
+    expect(disclosure).toContain("<AccountCardIcon")
+    expect(disclosure).toContain("rounded-full px-2 py-0.5 text-2xs font-medium")
+    expect(disclosure).not.toContain("statusIcon")
+    // The subject icon moved into the card tile; only the chevron keeps the small accent icon.
+    expect(disclosure).not.toContain('class="size-5 text-accent"')
     expect(workspace).toContain("scroll-mt-24 gap-3 sm:gap-4")
     expect(workspace).toContain("gap-6 pb-8 sm:gap-8")
+  })
+
+  test("renders the card icon tile with a status badge that overlaps its corner", async () => {
+    const cardIcon = await Bun.file(
+      new URL("../../src/features/account/ui/AccountCardIcon.tsx", import.meta.url),
+    ).text()
+
+    expect(cardIcon).toContain("relative inline-flex size-11 shrink-0 items-center justify-center rounded-xl")
+    expect(cardIcon).toContain("bg-accent-soft text-accent")
+    expect(cardIcon).toContain("bg-danger-soft text-danger")
+    expect(cardIcon).toContain('class="size-6 sm:size-7"')
+    expect(cardIcon).toContain("absolute -right-1.5 -bottom-1.5")
+    expect(cardIcon).toContain("ring-2 ring-surface")
+    // The badge cut-out follows the summary hover background through the named group.
+    expect(cardIcon).toContain("group-hover/summary:bg-surface-hover")
+    expect(cardIcon).toContain("mdiCheckCircle")
+    expect(cardIcon).toContain("mdiAlertCircle")
   })
 
   test("creates account section navigation items targeting workspace section anchors", () => {
@@ -371,7 +399,10 @@ describe("account workspace", () => {
     expect(source).toContain(
       'status={messageTranslate(state.enrolled() ? "account.factors.configured" : "account.factors.missing")}',
     )
-    expect(source).toContain("statusIcon={state.enrolled() ? mdiCheckCircleOutline : mdiAlertCircleOutline}")
+    expect(source).toContain('statusTone={state.enrolled() ? "success" : "danger"}')
+    expect(source).not.toContain("statusIcon")
+    expect(source).not.toContain("mdiCheckCircleOutline")
+    expect(source).not.toContain("mdiAlertCircleOutline")
     expect(source).toContain('value={messageTranslate("account.factors.count", { count: state.enrollments().length })}')
     expect(source.indexOf("<AccountDisclosure")).toBeLessThan(source.indexOf("account.factors.description"))
     expect(source).toContain("<For each={state.enrollments()}>")
@@ -714,6 +745,7 @@ describe("account workspace", () => {
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('variant="card"')
     expect(source).toContain("icon={mdiAccountRemoveOutline}")
+    expect(source).toContain('iconTone="danger"')
     expect(source).toContain('statusTone="danger"')
     expect(source.indexOf("<AccountDisclosure")).toBeLessThan(
       source.indexOf('messageTranslate("account.delete.warning")'),
