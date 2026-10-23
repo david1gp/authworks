@@ -100,7 +100,7 @@ function machineRoutesRegister(
       "machine.user.manage",
       undefined,
       (authenticated) => {
-        const query = listQueryFromSearchParams(context.req.query())
+        const query = machineListQueryGet(context)
         if (!query.success) return machineErrorResponseCreate(context, query)
         return machineResultResponseCreate(
           context,
@@ -108,6 +108,7 @@ function machineRoutesRegister(
             context: authenticated,
             database: options.database,
             query: query.data,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
           }),
         )
@@ -139,6 +140,7 @@ function machineRoutesRegister(
             context: authenticated,
             database: options.database,
             input: input.output,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
           }),
           201,
@@ -161,6 +163,7 @@ function machineRoutesRegister(
           machineUserGet({
             context: authenticated,
             database: options.database,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
             machineUserId: machineParamGet(context, "machineUserId"),
           }),
@@ -193,6 +196,7 @@ function machineRoutesRegister(
             context: authenticated,
             database: options.database,
             input: input.output,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
             machineUserId: machineParamGet(context, "machineUserId"),
           }),
@@ -215,6 +219,7 @@ function machineRoutesRegister(
           machineUserClientSecretRotate({
             context: authenticated,
             database: options.database,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
             machineUserId: machineParamGet(context, "machineUserId"),
           }),
@@ -232,13 +237,14 @@ function machineRoutesRegister(
       "machine.credential.manage",
       undefined,
       (authenticated) => {
-        const query = listQueryFromSearchParams(context.req.query())
+        const query = machineListQueryGet(context)
         if (!query.success) return machineErrorResponseCreate(context, query)
         return machineResultResponseCreate(
           context,
           machineCredentialList({
             context: authenticated,
             database: options.database,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
             machineUserId: machineParamGet(context, "machineUserId"),
             query: query.data,
@@ -275,6 +281,7 @@ function machineRoutesRegister(
             context: authenticated,
             database: options.database,
             input: input.output,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
           }),
           201,
@@ -310,6 +317,7 @@ function machineRoutesRegister(
             context: authenticated,
             database: options.database,
             input: input.output,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
           }),
           201,
@@ -343,6 +351,7 @@ function machineRoutesRegister(
             credentialId: machineParamGet(context, "credentialId"),
             database: options.database,
             input: input.output,
+            organizationId: machineOrganizationIdGet(context),
             realmId: machineParamGet(context, "realmId"),
           }),
         )
@@ -426,6 +435,18 @@ function machineBearerTokenGet(authorization: string | undefined): string | null
 
 function machineParamGet(context: { req: { param: (name: string) => string | undefined } }, name: string): string {
   return context.req.param(name) ?? ""
+}
+
+function machineOrganizationIdGet(context: { req: { query: () => Record<string, string | undefined> } }): string {
+  return context.req.query()["organizationId"] ?? ""
+}
+
+function machineListQueryGet(context: { req: { query: () => Record<string, string | undefined> } }) {
+  const query: Record<string, string> = {}
+  for (const [key, value] of Object.entries(context.req.query())) {
+    if (key !== "organizationId" && value !== undefined) query[key] = value
+  }
+  return listQueryFromSearchParams(query)
 }
 
 async function machineRequestJsonRead(context: { req: { json: <T>() => Promise<T> } }) {

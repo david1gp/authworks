@@ -88,6 +88,10 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
   const managementPath = (realmId: string, suffix = "") => `/system/realms/${encodeURIComponent(realmId)}${suffix}`
   const browserPath = (realmId: string, suffix = "") => `/realms/${encodeURIComponent(realmId)}${suffix}`
+  const organizationQuery = (organizationId: string, query?: ListQuery) => {
+    const base = listQueryToSearchParams(query)
+    return `${base}${base.length === 0 ? "?" : "&"}organizationId=${encodeURIComponent(organizationId)}`
+  }
   const browserRequestInit = (init: RequestInit): RequestInit => {
     const headers = new Headers(init.headers)
     if (options.csrfToken !== undefined) headers.set("x-csrf-token", options.csrfToken)
@@ -99,6 +103,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
   return {
     machineApiKeyCreate(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
       input: MachineApiKeyCreateRequest,
     ): Promise<Result<MachineCredentialIssueResponse>> {
@@ -112,7 +117,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return managementRequest(
-        managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/api-keys`),
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/api-keys`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialIssueResponseSchema,
       )
@@ -120,11 +125,12 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineCredentialList(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
       query?: ListQuery,
     ): Promise<Result<MachineCredentialListResponse>> {
       return managementRequest(
-        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/credentials`)}${listQueryToSearchParams(query)}`,
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/credentials`)}${organizationQuery(organizationId, query)}`,
         { method: "GET" },
         machineCredentialListResponseSchema,
       )
@@ -132,6 +138,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineCredentialRevoke(
       realmId: string,
+      organizationId: string,
       credentialId: string,
       input: MachineCredentialRevokeRequest = {},
     ): Promise<Result<MachineCredentialRevokeResponse>> {
@@ -145,7 +152,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return managementRequest(
-        managementPath(realmId, `/machine-credentials/${encodeURIComponent(credentialId)}/revoke`),
+        `${managementPath(realmId, `/machine-credentials/${encodeURIComponent(credentialId)}/revoke`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialRevokeResponseSchema,
       )
@@ -153,6 +160,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machinePersonalAccessTokenCreate(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
       input: MachinePersonalAccessTokenCreateRequest,
     ): Promise<Result<MachineCredentialIssueResponse>> {
@@ -166,7 +174,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return managementRequest(
-        managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/personal-access-tokens`),
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/personal-access-tokens`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialIssueResponseSchema,
       )
@@ -174,16 +182,21 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserClientSecretRotate(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
     ): Promise<Result<MachineUserSecretRotateResponse>> {
       return managementRequest(
-        managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/client-secret/rotate`),
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/client-secret/rotate`)}${organizationQuery(organizationId)}`,
         { method: "POST" },
         machineUserSecretRotateResponseSchema,
       )
     },
 
-    machineUserCreate(realmId: string, input: MachineUserCreateRequest): Promise<Result<MachineUserCreateResponse>> {
+    machineUserCreate(
+      realmId: string,
+      organizationId: string,
+      input: MachineUserCreateRequest,
+    ): Promise<Result<MachineUserCreateResponse>> {
       const parsed = v.safeParse(machineUserCreateRequestSchema, input)
       if (!parsed.success)
         return Promise.resolve(
@@ -194,15 +207,19 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return managementRequest(
-        managementPath(realmId, "/machine-users"),
+        `${managementPath(realmId, "/machine-users")}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineUserCreateResponseSchema,
       )
     },
 
-    machineUserGet(realmId: string, machineUserId: string): Promise<Result<MachineUserResponse>> {
+    machineUserGet(
+      realmId: string,
+      organizationId: string,
+      machineUserId: string,
+    ): Promise<Result<MachineUserResponse>> {
       return managementRequest(
-        managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}`),
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}`)}${organizationQuery(organizationId)}`,
         { method: "GET" },
         machineUserResponseSchema,
       )
@@ -210,6 +227,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserLifecycleSet(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
       input: MachineUserLifecycleRequest,
     ): Promise<Result<MachineUserResponse>> {
@@ -223,15 +241,19 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return managementRequest(
-        managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/lifecycle`),
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/lifecycle`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineUserResponseSchema,
       )
     },
 
-    machineUserList(realmId: string, query?: ListQuery): Promise<Result<MachineUserListResponse>> {
+    machineUserList(
+      realmId: string,
+      organizationId: string,
+      query?: ListQuery,
+    ): Promise<Result<MachineUserListResponse>> {
       return managementRequest(
-        `${managementPath(realmId, "/machine-users")}${listQueryToSearchParams(query)}`,
+        `${managementPath(realmId, "/machine-users")}${organizationQuery(organizationId, query)}`,
         { method: "GET" },
         machineUserListResponseSchema,
       )
@@ -239,6 +261,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserTenantCreate(
       realmId: string,
+      organizationId: string,
       input: MachineUserCreateRequest,
     ): Promise<Result<MachineUserCreateResponse>> {
       const parsed = v.safeParse(machineUserCreateRequestSchema, input)
@@ -251,15 +274,19 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return browserRequest(
-        browserPath(realmId, "/machine-users"),
+        `${browserPath(realmId, "/machine-users")}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineUserCreateResponseSchema,
       )
     },
 
-    machineUserTenantGet(realmId: string, machineUserId: string): Promise<Result<MachineUserResponse>> {
+    machineUserTenantGet(
+      realmId: string,
+      organizationId: string,
+      machineUserId: string,
+    ): Promise<Result<MachineUserResponse>> {
       return browserRequest(
-        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}`),
+        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}`)}${organizationQuery(organizationId)}`,
         { method: "GET" },
         machineUserResponseSchema,
       )
@@ -267,6 +294,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserTenantLifecycleSet(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
       input: MachineUserLifecycleRequest,
     ): Promise<Result<MachineUserResponse>> {
@@ -280,15 +308,19 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return browserRequest(
-        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/lifecycle`),
+        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/lifecycle`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineUserResponseSchema,
       )
     },
 
-    machineUserTenantList(realmId: string, query?: ListQuery): Promise<Result<MachineUserListResponse>> {
+    machineUserTenantList(
+      realmId: string,
+      organizationId: string,
+      query?: ListQuery,
+    ): Promise<Result<MachineUserListResponse>> {
       return browserRequest(
-        `${browserPath(realmId, "/machine-users")}${listQueryToSearchParams(query)}`,
+        `${browserPath(realmId, "/machine-users")}${organizationQuery(organizationId, query)}`,
         { method: "GET" },
         machineUserListResponseSchema,
       )
@@ -296,10 +328,11 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserTenantClientSecretRotate(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
     ): Promise<Result<MachineUserSecretRotateResponse>> {
       return browserRequest(
-        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/client-secret/rotate`),
+        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/client-secret/rotate`)}${organizationQuery(organizationId)}`,
         { method: "POST" },
         machineUserSecretRotateResponseSchema,
       )
@@ -307,11 +340,12 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserTenantCredentialList(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
       query?: ListQuery,
     ): Promise<Result<MachineCredentialListResponse>> {
       return browserRequest(
-        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/credentials`)}${listQueryToSearchParams(query)}`,
+        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/credentials`)}${organizationQuery(organizationId, query)}`,
         { method: "GET" },
         machineCredentialListResponseSchema,
       )
@@ -319,6 +353,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserTenantPersonalAccessTokenCreate(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
       input: MachinePersonalAccessTokenCreateRequest,
     ): Promise<Result<MachineCredentialIssueResponse>> {
@@ -332,7 +367,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return browserRequest(
-        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/personal-access-tokens`),
+        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/personal-access-tokens`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialIssueResponseSchema,
       )
@@ -340,6 +375,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserTenantApiKeyCreate(
       realmId: string,
+      organizationId: string,
       machineUserId: string,
       input: MachineApiKeyCreateRequest,
     ): Promise<Result<MachineCredentialIssueResponse>> {
@@ -353,7 +389,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return browserRequest(
-        browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/api-keys`),
+        `${browserPath(realmId, `/machine-users/${encodeURIComponent(machineUserId)}/api-keys`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialIssueResponseSchema,
       )
@@ -361,6 +397,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineUserTenantCredentialRevoke(
       realmId: string,
+      organizationId: string,
       credentialId: string,
       input: MachineCredentialRevokeRequest = {},
     ): Promise<Result<MachineCredentialRevokeResponse>> {
@@ -374,7 +411,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return browserRequest(
-        browserPath(realmId, `/machine-credentials/${encodeURIComponent(credentialId)}/revoke`),
+        `${browserPath(realmId, `/machine-credentials/${encodeURIComponent(credentialId)}/revoke`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialRevokeResponseSchema,
       )
@@ -390,6 +427,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
 
     machineCredentialIssue(
       realmId: string,
+      organizationId: string,
       input: MachineCredentialIssueRequest,
     ): Promise<Result<MachineCredentialIssueResponse>> {
       const parsed = v.safeParse(machineCredentialIssueRequestSchema, input)
@@ -402,7 +440,7 @@ export function machineUserApiClientCreate(options: MachineUserApiClientCreateOp
           ),
         )
       return managementRequest(
-        managementPath(realmId, `/machine-users/${encodeURIComponent(parsed.output.machineUserId)}/api-keys`),
+        `${managementPath(realmId, `/machine-users/${encodeURIComponent(parsed.output.machineUserId)}/api-keys`)}${organizationQuery(organizationId)}`,
         { body: JSON.stringify(parsed.output), method: "POST" },
         machineCredentialIssueResponseSchema,
       )

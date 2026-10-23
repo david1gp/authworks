@@ -18,7 +18,7 @@ type MachineCliFlags = {
   readonly systemToken?: string
   readonly token?: string
 }
-type MachineRealmFlags = MachineCliFlags & { readonly realmId?: string }
+type MachineRealmFlags = MachineCliFlags & { readonly realmId?: string; readonly organizationId?: string }
 type MachineUserFlags = MachineRealmFlags & { readonly machineUserId: string }
 
 const machineUserCreateCommand = buildCommand({
@@ -29,10 +29,11 @@ const machineUserCreateCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(connection.data).machineUserCreate(realmId, {
+      await machineCliClientCreate(connection.data).machineUserCreate(realmId, organizationId, {
         displayName: flags.displayName,
         scopes: machineScopesSplit(flags.scopes),
         userName: flags.userName,
@@ -44,6 +45,7 @@ const machineUserCreateCommand = buildCommand({
     flags: {
       ...machineCommonFlags(),
       realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
       userName: machineTextFlag("Machine username"),
       displayName: machineTextFlag("Machine display name"),
       scopes: { ...machineTextFlag("Comma-separated scopes"), optional: true as const },
@@ -57,14 +59,26 @@ const machineUserListCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(connection.data).machineUserList(realmId, machineListQueryCreate(flags)),
+      await machineCliClientCreate(connection.data).machineUserList(
+        realmId,
+        organizationId,
+        machineListQueryCreate(flags),
+      ),
       [connection.data.token, connection.data.systemToken],
     )
   },
-  parameters: { flags: { ...machineCommonFlags(), ...machineListFlags(), realmId: machineRealmIdFlag() } },
+  parameters: {
+    flags: {
+      ...machineCommonFlags(),
+      ...machineListFlags(),
+      realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
+    },
+  },
   docs: { brief: "List machine users" },
 })
 
@@ -73,10 +87,11 @@ const machineUserGetCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(connection.data).machineUserGet(realmId, flags.machineUserId),
+      await machineCliClientCreate(connection.data).machineUserGet(realmId, organizationId, flags.machineUserId),
       [connection.data.token, connection.data.systemToken],
     )
   },
@@ -84,6 +99,7 @@ const machineUserGetCommand = buildCommand({
     flags: {
       ...machineCommonFlags(),
       realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
       machineUserId: machineIdFlag("Machine user UUID"),
     },
   },
@@ -95,10 +111,15 @@ const machineUserSecretRotateCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(connection.data).machineUserClientSecretRotate(realmId, flags.machineUserId),
+      await machineCliClientCreate(connection.data).machineUserClientSecretRotate(
+        realmId,
+        organizationId,
+        flags.machineUserId,
+      ),
       [connection.data.token, connection.data.systemToken],
     )
   },
@@ -106,6 +127,7 @@ const machineUserSecretRotateCommand = buildCommand({
     flags: {
       ...machineCommonFlags(),
       realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
       machineUserId: machineIdFlag("Machine user UUID"),
     },
   },
@@ -117,12 +139,18 @@ const machineUserLifecycleCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(connection.data).machineUserLifecycleSet(realmId, flags.machineUserId, {
-        status: flags.status,
-      }),
+      await machineCliClientCreate(connection.data).machineUserLifecycleSet(
+        realmId,
+        organizationId,
+        flags.machineUserId,
+        {
+          status: flags.status,
+        },
+      ),
       [connection.data.token, connection.data.systemToken],
     )
   },
@@ -130,6 +158,7 @@ const machineUserLifecycleCommand = buildCommand({
     flags: {
       ...machineCommonFlags(),
       realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
       machineUserId: machineIdFlag("Machine user UUID"),
       status: {
         brief: "Machine user status",
@@ -147,15 +176,21 @@ const machinePersonalAccessTokenCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(connection.data).machinePersonalAccessTokenCreate(realmId, flags.machineUserId, {
-        expiresAt: flags.expiresAt,
-        machineUserId: flags.machineUserId,
-        name: flags.name,
-        scopes: machineScopesSplit(flags.scopes),
-      }),
+      await machineCliClientCreate(connection.data).machinePersonalAccessTokenCreate(
+        realmId,
+        organizationId,
+        flags.machineUserId,
+        {
+          expiresAt: flags.expiresAt,
+          machineUserId: flags.machineUserId,
+          name: flags.name,
+          scopes: machineScopesSplit(flags.scopes),
+        },
+      ),
       [connection.data.token, connection.data.systemToken],
     )
   },
@@ -163,6 +198,7 @@ const machinePersonalAccessTokenCommand = buildCommand({
     flags: {
       ...machineCommonFlags(),
       realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
       machineUserId: machineIdFlag("Machine user UUID"),
       name: machineTextFlag("Token name"),
       scopes: machineTextFlag("Comma-separated scopes"),
@@ -177,10 +213,11 @@ const machineApiKeyCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(connection.data).machineApiKeyCreate(realmId, flags.machineUserId, {
+      await machineCliClientCreate(connection.data).machineApiKeyCreate(realmId, organizationId, flags.machineUserId, {
         expiresAt: flags.expiresAt,
         machineUserId: flags.machineUserId,
         name: flags.name,
@@ -193,6 +230,7 @@ const machineApiKeyCommand = buildCommand({
     flags: {
       ...machineCommonFlags(),
       realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
       machineUserId: machineIdFlag("Machine user UUID"),
       name: machineTextFlag("API key name"),
       scopes: machineTextFlag("Comma-separated scopes"),
@@ -207,11 +245,13 @@ const machineCredentialListCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
       await machineCliClientCreate(connection.data).machineCredentialList(
         realmId,
+        organizationId,
         flags.machineUserId,
         machineListQueryCreate(flags),
       ),
@@ -223,6 +263,7 @@ const machineCredentialListCommand = buildCommand({
       ...machineCommonFlags(),
       ...machineListFlags(),
       realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
       machineUserId: machineIdFlag("Machine user UUID"),
     },
   },
@@ -234,12 +275,18 @@ const machineCredentialRevokeCommand = buildCommand({
     const connection = await machineCliConnectionResolve(this, flags)
     if (!connection.success) return machineCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
-    if (realmId === undefined) return
+    const organizationId = scopeIdResolve(this, connection.data.organizationId, "organization")
+    if (realmId === undefined || organizationId === undefined) return
     machineCliResultWrite(
       this,
-      await machineCliClientCreate(connection.data).machineCredentialRevoke(realmId, flags.credentialId, {
-        reason: flags.reason,
-      }),
+      await machineCliClientCreate(connection.data).machineCredentialRevoke(
+        realmId,
+        organizationId,
+        flags.credentialId,
+        {
+          reason: flags.reason,
+        },
+      ),
       [connection.data.token, connection.data.systemToken],
     )
   },
@@ -247,6 +294,7 @@ const machineCredentialRevokeCommand = buildCommand({
     flags: {
       ...machineCommonFlags(),
       realmId: machineRealmIdFlag(),
+      organizationId: machineOrganizationIdFlag(),
       credentialId: machineIdFlag("Credential UUID"),
       reason: { ...machineTextFlag("Revocation reason"), optional: true as const },
     },
@@ -271,7 +319,7 @@ export const machineUserCliCommands = buildRouteMap({
 
 async function machineCliConnectionResolve(
   context: ApplicationContext,
-  flags: MachineCliFlags & { readonly realmId?: string },
+  flags: MachineCliFlags & { readonly realmId?: string; readonly organizationId?: string },
 ) {
   const connection = await connectionProfileCliConnectionResolve(flags, { environment: context.process.env })
   if (!connection.success) return connection
@@ -386,6 +434,10 @@ function machineIdFlag(brief: string) {
 
 function machineRealmIdFlag() {
   return { ...machineIdFlag("Realm UUID"), optional: true as const }
+}
+
+function machineOrganizationIdFlag() {
+  return { ...machineIdFlag("Organization UUID"), optional: true as const }
 }
 
 function machineTextFlag(brief: string) {
