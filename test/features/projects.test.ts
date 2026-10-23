@@ -18,10 +18,13 @@ import { projectGrantLifecycleSet } from "../../src/features/projects/actions/pr
 import { projectGrantUpdate } from "../../src/features/projects/actions/projectGrantUpdate.js"
 import { projectLifecycleSet } from "../../src/features/projects/actions/projectLifecycleSet.js"
 import { projectRoleCreate } from "../../src/features/projects/actions/projectRoleCreate.js"
+import { projectRoleDelete } from "../../src/features/projects/actions/projectRoleDelete.js"
 import { projectRoleList } from "../../src/features/projects/actions/projectRoleList.js"
 import { projectRoleUpdate } from "../../src/features/projects/actions/projectRoleUpdate.js"
 import { projectUpdate } from "../../src/features/projects/actions/projectUpdate.js"
+import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.js"
 import { userCreate } from "../../src/features/users/actions/userCreate.js"
+import { userLifecycleSet } from "../../src/features/users/actions/userLifecycleSet.js"
 import { projectApiClientCreate } from "../../src/features/projects/client/projectApiClientCreate.js"
 import { projectServerAppCreate } from "../../src/features/projects/server/projectServerAppCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
@@ -732,4 +735,189 @@ test("project routes, API client, and CLI expose public contracts", async () => 
   const helpOutput = await new Response(helpProcess.stdout).text()
   expect(await helpProcess.exited).toBe(0)
   expect(helpOutput).toContain("Project, application, role, grant, and assignment administration")
+})
+
+test("project tenant routes admit organization members for reads and deny their writes", async () => {
+  await withDatabase(async (database) => {
+    const domain = "member-routes.example.com"
+    const realm = await createRealm(database, domain)
+    const app = projectServerAppCreate({ database, publicOrigin: `https://${domain}` })
+    const organization = await createOrganization(database, realm.id, "Owner", "route-owner")
+    const ownerContext = realmTenantContextCreate(realm.id, "route-owner")
+    const memberUser = userCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: { email: "route-member@example.com", profile: { displayName: "Route member" }, userName: "route-member" },
+      realmId: realm.id,
+    })
+    expect(memberUser.success).toBe(true)
+    if (!memberUser.success) return
+    const memberActive = userLifecycleSet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { state: "active" },
+      realmId: realm.id,
+      userId: memberUser.data.user.id,
+    })
+    expect(memberActive.success).toBe(true)
+    const outsiderUser = userCreate({
+      context: realmSystemContextCreate(),
+      database,
+      input: {
+        email: "route-outsider@example.com",
+        profile: { displayName: "Route outsider" },
+        userName: "route-outsider",
+      },
+      realmId: realm.id,
+    })
+    expect(outsiderUser.success).toBe(true)
+    if (!outsiderUser.success) return
+    const outsiderActive = userLifecycleSet({
+      context: realmSystemContextCreate(),
+      database,
+      input: { state: "active" },
+      realmId: realm.id,
+      userId: outsiderUser.data.user.id,
+    })
+    expect(outsiderActive.success).toBe(true)
+    const membership = organizationMembershipCreate({
+      context: ownerContext,
+      database,
+      input: { roles: ["member"], userId: memberUser.data.user.id },
+      organizationId: organization.id,
+      realmId: realm.id,
+    })
+    expect(membership.success).toBe(true)
+    const project = projectCreate({
+      context: ownerContext,
+      database,
+      input: {
+        authorizationRequired: false,
+        name: "Member routes project",
+        organizationId: organization.id,
+        projectAccessRequired: false,
+      },
+      realmId: realm.id,
+    })
+    expect(project.success).toBe(true)
+    if (!project.success) return
+    const sessionFor = async (userId: string) => {
+      const issued = sessionIssue({
+        assurance: "authenticated",
+        authenticationMethod: "password",
+        database,
+        realmId: realm.id,
+        subjectId: userId,
+        userId,
+      })
+      expect(issued.success).toBe(true)
+      if (!issued.success) throw new Error("The route session could not be issued.")
+      return issued.data.token
+    }
+    const memberToken = await sessionFor(memberUser.data.user.id)
+    const outsiderToken = await sessionFor(outsiderUser.data.user.id)
+    const memberGet = await app.request(`https://${domain}/realms/${realm.id}/projects/${project.data.project.id}`, {
+      headers: { authorization: `Bearer ${memberToken}` },
+    })
+    expect(memberGet.status).toBe(200)
+    const outsiderGet = await app.request(`https://${domain}/realms/${realm.id}/projects/${project.data.project.id}`, {
+      headers: { authorization: `Bearer ${outsiderToken}` },
+    })
+    expect(outsiderGet.status).toBe(403)
+    const memberRoles = await app.request(
+      `https://${domain}/realms/${realm.id}/projects/${project.data.project.id}/roles`,
+      {
+        headers: { authorization: `Bearer ${memberToken}` },
+      },
+    )
+    expect(memberRoles.status).toBe(200)
+    const memberRoleWrite = await app.request(
+      `https://${domain}/realms/${realm.id}/projects/${project.data.project.id}/roles`,
+      {
+        body: JSON.stringify({ displayName: "Member role", key: "member-role" }),
+        headers: { authorization: `Bearer ${memberToken}`, "content-type": "application/json" },
+        method: "POST",
+      },
+    )
+    expect(memberRoleWrite.status).toBe(403)
+  })
+})
+
+test("project role deletion authorizes before reporting idempotent success", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "project-role-delete.example.com")
+    const ownerOrganization = await createOrganization(database, realm.id, "Owner", "owner-user")
+    const ownerContext = actorTenantContext(
+      authorizationUserActorContextCreate(realm.id, "owner-user", ownerOrganization.id),
+    )
+    const memberAdded = organizationMembershipCreate({
+      context: ownerContext,
+      database,
+      input: { roles: ["member"], userId: "member-user" },
+      realmId: realm.id,
+      organizationId: ownerOrganization.id,
+    })
+    expect(memberAdded.success).toBe(true)
+    const memberContext = actorTenantContext(
+      authorizationUserActorContextCreate(realm.id, "member-user", ownerOrganization.id),
+    )
+    const project = projectCreate({
+      context: ownerContext,
+      database,
+      input: {
+        authorizationRequired: false,
+        name: "Role delete project",
+        organizationId: ownerOrganization.id,
+        projectAccessRequired: false,
+      },
+      realmId: realm.id,
+    })
+    expect(project.success).toBe(true)
+    if (!project.success) return
+    const role = projectRoleCreate({
+      context: ownerContext,
+      database,
+      input: { displayName: "Reader", key: "reader" },
+      realmId: realm.id,
+      projectId: project.data.project.id,
+    })
+    expect(role.success).toBe(true)
+    if (!role.success) return
+    expect(
+      projectRoleDelete({
+        context: memberContext,
+        database,
+        realmId: realm.id,
+        projectId: project.data.project.id,
+        roleId: "missing-role",
+      }).success,
+    ).toBe(false)
+    expect(
+      projectRoleDelete({
+        context: memberContext,
+        database,
+        realmId: realm.id,
+        projectId: project.data.project.id,
+        roleId: role.data.role.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      projectRoleDelete({
+        context: ownerContext,
+        database,
+        realmId: realm.id,
+        projectId: project.data.project.id,
+        roleId: "missing-role",
+      }),
+    ).toMatchObject({ success: true, data: { deleted: true } })
+    expect(
+      projectRoleDelete({
+        context: ownerContext,
+        database,
+        realmId: realm.id,
+        projectId: project.data.project.id,
+        roleId: role.data.role.id,
+      }),
+    ).toMatchObject({ success: true, data: { deleted: true } })
+  })
 })

@@ -7,7 +7,9 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -55,6 +57,16 @@ export function oidcConsentRevoke(options: OidcConsentRevokeOptions): Result<Oid
   if (options.context !== undefined) {
     const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
     if (!authorized.success) return authorized
+    if (options.administrator === true && options.context.kind === "tenant" && options.context.actor.kind === "user") {
+      const administrator = realmAdministratorContextAuthorize({
+        actor: options.context.actor,
+        database: options.database,
+        permission: authorizationPermissionDefinitions.oidcWrite,
+        realmId: options.realmId,
+        targetUserId: userId,
+      })
+      if (!administrator.success) return administrator
+    }
     if (
       !options.administrator &&
       options.context.kind === "tenant" &&

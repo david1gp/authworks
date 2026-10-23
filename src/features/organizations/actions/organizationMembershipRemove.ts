@@ -46,15 +46,16 @@ export function organizationMembershipRemove(options: OrganizationMembershipRemo
     if (!organization.success) return organization
     if (organization.data === null || organization.data.status !== "active")
       return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
+    const roles = organizationRolesDecode(current.data.roles)
+    if (!roles.success) return roles
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
       repository,
       requiredPermission: "organization.members.manage",
+      requireOwner: roles.data.includes("owner"),
     })
     if (!authorized.success) return authorized
-    const roles = organizationRolesDecode(current.data.roles)
-    if (!roles.success) return roles
     if (roles.data.includes("owner")) {
       const memberships = repository.organizationMembershipList(current.data.organizationId)
       if (!memberships.success) return memberships

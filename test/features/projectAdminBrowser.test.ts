@@ -341,10 +341,17 @@ test("browser project administration enforces delegated permissions, tenant isol
     })
     expect(memberSession.success).toBe(true)
     if (!memberSession.success) return
-    const denied = await app.request(`https://project-client.example.com/realms/${realm.data.realm.id}/projects`, {
-      headers: { cookie: `session=${memberSession.data.token}`, host: "project-client.example.com" },
-    })
-    expect(denied.status).toBe(403)
+    const memberProjects = await app.request(
+      `https://project-client.example.com/realms/${realm.data.realm.id}/projects`,
+      {
+        headers: { cookie: `session=${memberSession.data.token}`, host: "project-client.example.com" },
+      },
+    )
+    expect(memberProjects.status).toBe(200)
+    const memberProjectsBody = (await memberProjects.json()) as { items?: { id?: string }[] }
+    expect(memberProjectsBody.items?.map((project) => project.id).sort()).toEqual(
+      [first.data.project.id, second.data.project.id].sort(),
+    )
     const assignmentDenied = await app.request(
       `https://project-client.example.com/realms/${realm.data.realm.id}/projects/${first.data.project.id}/assignments`,
       { headers: { cookie: `session=${memberSession.data.token}`, host: "project-client.example.com" } },

@@ -18,6 +18,7 @@ type OrganizationContextAuthorizeOptions = {
   readonly requiredPermission?: AuthorizationPermission
   readonly requiredRole?: "member" | "admin"
   readonly membership?: OrganizationMembershipRow | null
+  readonly requireOwner?: boolean
 }
 
 export function organizationContextAuthorize(options: OrganizationContextAuthorizeOptions): Result<void> {
@@ -54,6 +55,12 @@ export function organizationContextAuthorize(options: OrganizationContextAuthori
     return resultErrorCodedCreate(op, "The actor is not a member of this organization.", "organizations.not-member")
   const roles = organizationRolesDecode(membership.data.roles)
   if (!roles.success) return roles
+  if (options.requireOwner === true && !roles.data.includes("owner"))
+    return resultErrorCodedCreate(
+      op,
+      "Only organization owners can grant or revoke the owner role.",
+      "organizations.forbidden",
+    )
   return authorizationEnforce({
     actor: options.context.actor,
     realmId: options.organization.realmId,

@@ -22,6 +22,7 @@ export function userAuthenticationMethodsAdministratorGet(
     database: options.database,
     permission: authorizationPermissionDefinitions.userRead,
     realmId: options.realmId,
+    targetUserId: options.userId,
   })
   if (!authorized.success) return authorized
   return userAuthenticationMethodsRead({

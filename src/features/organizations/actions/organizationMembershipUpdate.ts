@@ -67,15 +67,16 @@ export function organizationMembershipUpdate(
     if (!organization.success) return organization
     if (organization.data === null || organization.data.status !== "active")
       return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
+    const oldRoles = organizationRolesDecode(current.data.roles)
+    if (!oldRoles.success) return oldRoles
     const authorized = organizationContextAuthorize({
       context: options.context,
       organization: organization.data,
       repository,
       requiredPermission: "organization.members.manage",
+      requireOwner: oldRoles.data.includes("owner") || parsed.data.roles.includes("owner"),
     })
     if (!authorized.success) return authorized
-    const oldRoles = organizationRolesDecode(current.data.roles)
-    if (!oldRoles.success) return oldRoles
     if (oldRoles.data.includes("owner") && !parsed.data.roles.includes("owner")) {
       const ownerCount = organizationMembershipOwnerCount(repository, current.data.organizationId)
       if (!ownerCount.success) return ownerCount

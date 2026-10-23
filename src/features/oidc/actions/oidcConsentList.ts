@@ -6,7 +6,9 @@ import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
 import { listRowsPage } from "../../../platform/http/listRowsPage.js"
 import { listSortByResolve } from "../../../platform/http/listSortByResolve.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
+import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { oidcClientContextAuthorize } from "../domain/oidcClientContextAuthorize.js"
@@ -28,6 +30,16 @@ export function oidcConsentList(options: OidcConsentListOptions): Result<OidcCon
   const op = "oidcConsentList"
   const authorized = oidcClientContextAuthorize({ context: options.context, realmId: options.realmId })
   if (!authorized.success) return authorized
+  if (options.administrator === true && options.context.kind === "tenant" && options.context.actor.kind === "user") {
+    const administrator = realmAdministratorContextAuthorize({
+      actor: options.context.actor,
+      database: options.database,
+      permission: authorizationPermissionDefinitions.oidcRead,
+      realmId: options.realmId,
+      targetUserId: options.userId,
+    })
+    if (!administrator.success) return administrator
+  }
   if (
     !options.administrator &&
     options.context.kind === "tenant" &&

@@ -35,17 +35,9 @@ export function projectRoleDelete(options: ProjectRoleDeleteOptions): Result<{ d
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = projectRepositoryCreate(transaction)
-    const current = repository.projectRoleGet(options.roleId)
-    if (!current.success) return current
-    if (
-      current.data === null ||
-      current.data.realmId !== options.realmId ||
-      current.data.projectId !== options.projectId
-    )
-      return resultCreate({ deleted: true, roleId: options.roleId })
     const project = repository.projectGet(options.projectId)
     if (!project.success) return project
-    if (project.data === null || project.data.status !== "active")
+    if (project.data === null || project.data.realmId !== options.realmId || project.data.status !== "active")
       return resultErrorCodedCreate(op, "The project was not found.", "projects.not-found")
     const authorized = projectContextAuthorize({
       context: options.context,
@@ -55,6 +47,14 @@ export function projectRoleDelete(options: ProjectRoleDeleteOptions): Result<{ d
       project: project.data,
     })
     if (!authorized.success) return authorized
+    const current = repository.projectRoleGet(options.roleId)
+    if (!current.success) return current
+    if (
+      current.data === null ||
+      current.data.realmId !== options.realmId ||
+      current.data.projectId !== options.projectId
+    )
+      return resultCreate({ deleted: true, roleId: options.roleId })
     const grants = repository.projectGrantList(options.projectId)
     if (!grants.success) return grants
     const roleKey = current.data.key

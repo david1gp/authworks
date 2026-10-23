@@ -23,6 +23,7 @@ export function sessionAdministratorRevoke(
     database: options.database,
     permission: authorizationPermissionDefinitions.userManage,
     realmId: options.realmId,
+    targetUserId: options.userId,
   })
   if (!authorized.success) return authorized
   return sessionRevoke({
