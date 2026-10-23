@@ -5,6 +5,8 @@ import { join } from "node:path"
 import { authorizationUserActorContextCreate } from "../../src/features/authorization/domain/authorizationUserActorContextCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
+import { oidcConsentList } from "../../src/features/oidc/actions/oidcConsentList.js"
+import { oidcConsentRevoke } from "../../src/features/oidc/actions/oidcConsentRevoke.js"
 import { realmAdministratorContextAuthorize } from "../../src/features/realms/actions/realmAdministratorContextAuthorize.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -239,5 +241,52 @@ test("user administrator routes scope target users to shared organizations", asy
       headers: { authorization: `Bearer ${tokenA}` },
     })
     expect(ownOrg.status).toBe(200)
+  })
+})
+
+test("administrators cannot manage consents of users outside their organizations", async () => {
+  await withDatabase(async (database) => {
+    const { memberBId, ownerAId, ownerBId, realmId } = await setupRealm(database)
+    const contextFor = (actorId: string) => realmTenantContextCreate(realmId, actorId)
+
+    expect(
+      oidcConsentList({
+        administrator: true,
+        context: contextFor(ownerAId),
+        database,
+        realmId,
+        userId: memberBId,
+      }).success,
+    ).toBe(false)
+    expect(
+      oidcConsentList({
+        administrator: true,
+        context: contextFor(ownerBId),
+        database,
+        realmId,
+        userId: memberBId,
+      }).success,
+    ).toBe(true)
+
+    expect(
+      oidcConsentRevoke({
+        administrator: true,
+        clientId: "missing-client",
+        context: contextFor(ownerAId),
+        database,
+        realmId,
+        userId: memberBId,
+      }).success,
+    ).toBe(false)
+    expect(
+      oidcConsentRevoke({
+        administrator: true,
+        clientId: "missing-client",
+        context: contextFor(ownerBId),
+        database,
+        realmId,
+        userId: memberBId,
+      }),
+    ).toMatchObject({ success: true, data: { revoked: false } })
   })
 })

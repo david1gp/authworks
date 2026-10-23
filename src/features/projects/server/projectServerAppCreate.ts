@@ -12,7 +12,6 @@ import type { StorageDatabase } from "../../../platform/storage/storageDatabaseO
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
 import type { AuthorizationPermission } from "../../authorization/public/authorizationPermissionSchema.js"
-import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBootstrapAdminAuthenticate.js"
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
@@ -650,8 +649,11 @@ function projectSystemAuthenticate(authorization: string | undefined, configured
 function projectTenantAuthenticate(
   context: ProjectRouteContext,
   database: StorageDatabase,
-  permission: AuthorizationPermission,
+  _permission: AuthorizationPermission,
 ) {
+  // The route gate only establishes an authenticated tenant context. The required
+  // permission is enforced per project by the action layer so organization members,
+  // granted organizations, and assigned users keep the read access they hold.
   const host = context.req.header("host") ?? new URL(context.req.url).hostname
   const tenant = realmTenantContextResolve({ database, host })
   if (!tenant.success) return tenant
@@ -661,11 +663,23 @@ function projectTenantAuthenticate(
       "The project is not available in this tenant context.",
       "projects.tenant-mismatch",
     )
-  return realmAdministratorContextAuthorize({
-    actor: context.get("authorizationActor"),
-    database,
-    minimumAssurance: "authenticated",
-    permission,
+  const actor = context.get("authorizationActor")
+  if (actor.realmId !== projectParamGet(context, "realmId"))
+    return resultErrorCodedCreate(
+      "projectTenantAuthenticate",
+      "The project is not available in this tenant context.",
+      "projects.tenant-mismatch",
+    )
+  if (actor.kind !== "user" && actor.kind !== "bootstrap_admin")
+    return resultErrorCodedCreate(
+      "projectTenantAuthenticate",
+      "The actor is not authorized for this project.",
+      "projects.forbidden",
+    )
+  return resultCreate({
+    actor,
+    actorId: actor.actorId,
+    kind: "tenant" as const,
     realmId: projectParamGet(context, "realmId"),
   })
 }
