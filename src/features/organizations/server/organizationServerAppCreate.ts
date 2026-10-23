@@ -15,14 +15,15 @@ import { realmBootstrapAdminAuthenticate } from "../../realms/actions/realmBoots
 import { realmTenantContextResolve } from "../../realms/actions/realmTenantContextResolve.js"
 import { realmSystemContextCreate } from "../../realms/domain/realmSystemContextCreate.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
-import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
+import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { organizationBrandingGet } from "../actions/organizationBrandingGet.js"
 import { organizationBrandingSet } from "../actions/organizationBrandingSet.js"
 import { organizationCreate } from "../actions/organizationCreate.js"
 import { organizationDomainClaim } from "../actions/organizationDomainClaim.js"
 import { organizationDomainDiscover } from "../actions/organizationDomainDiscover.js"
 import { organizationDomainList } from "../actions/organizationDomainList.js"
+import { organizationDomainRealmSeed } from "../actions/organizationDomainRealmSeed.js"
 import { organizationDomainRemove } from "../actions/organizationDomainRemove.js"
 import { organizationDomainVerify } from "../actions/organizationDomainVerify.js"
 import { organizationGet } from "../actions/organizationGet.js"
@@ -45,6 +46,7 @@ import { organizationMembershipList } from "../actions/organizationMembershipLis
 import { organizationMembershipRemove } from "../actions/organizationMembershipRemove.js"
 import { organizationMembershipUpdate } from "../actions/organizationMembershipUpdate.js"
 import { organizationMeSwitch } from "../actions/organizationMeSwitch.js"
+import { organizationPurge } from "../actions/organizationPurge.js"
 import { organizationRealmLoginPolicyGet } from "../actions/organizationRealmLoginPolicyGet.js"
 import { organizationRealmLoginPolicySet } from "../actions/organizationRealmLoginPolicySet.js"
 import { organizationRoleList } from "../actions/organizationRoleList.js"
@@ -347,6 +349,22 @@ export function organizationServerAppCreate(options: OrganizationServerAppCreate
         context: systemContext,
         database: options.database,
         input: input.output,
+        realmId: context.req.param("realmId"),
+        organizationId: context.req.param("organizationId"),
+      }),
+      201,
+    )
+  })
+
+  app.post("/system/realms/:realmId/organizations/:organizationId/domains/:domain/realm-seed", (context) => {
+    const authorization = organizationSystemAuthorizationGet(context.req.header("authorization"), options.systemSecret)
+    if (!authorization.success) return organizationErrorResponseCreate(context, authorization)
+    return organizationResultResponseCreate(
+      context,
+      organizationDomainRealmSeed({
+        context: systemContext,
+        database: options.database,
+        domain: context.req.param("domain"),
         realmId: context.req.param("realmId"),
         organizationId: context.req.param("organizationId"),
       }),
@@ -936,6 +954,18 @@ function organizationAdministratorRoutesRegister(
         context: authenticated.data,
         database: options.database,
         input: input.output,
+        organizationId: context.req.param("organizationId"),
+        realmId: context.req.param("realmId"),
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/organizations/:organizationId/purge", protectedMiddleware, (context) => {
+    return organizationResultResponseCreate(
+      context,
+      organizationPurge({
+        actor: context.get("authorizationActor"),
+        database: options.database,
         organizationId: context.req.param("organizationId"),
         realmId: context.req.param("realmId"),
       }),

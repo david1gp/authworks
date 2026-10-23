@@ -133,6 +133,10 @@ import {
   type OrganizationMeSwitchResponse,
   organizationMeSwitchResponseSchema,
 } from "../public/organizationMeSwitchResponseSchema.js"
+import {
+  type OrganizationPurgeResponse,
+  organizationPurgeResponseSchema,
+} from "../public/organizationPurgeResponseSchema.js"
 import { type OrganizationResponse, organizationResponseSchema } from "../public/organizationResponseSchema.js"
 import {
   type OrganizationRoleListResponse,
@@ -290,6 +294,13 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         `${browserOrganizationPath(realmId)}/${encodeURIComponent(organizationId)}/lifecycle`,
         jsonRequest(parsed.output),
         organizationResponseSchema,
+      )
+    },
+    organizationTenantPurge(realmId: string, organizationId: string): Promise<Result<OrganizationPurgeResponse>> {
+      return browserRequest(
+        `${browserOrganizationPath(realmId)}/${encodeURIComponent(organizationId)}/purge`,
+        jsonRequest({}),
+        organizationPurgeResponseSchema,
       )
     },
     organizationTenantRoleList(realmId: string, query?: ListQuery): Promise<Result<OrganizationRoleListResponse>> {
@@ -705,6 +716,17 @@ export function organizationApiClientCreate(options: OrganizationApiClientCreate
         `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/domains/${encodeURIComponent(domain)}`,
         { method: "DELETE" },
         organizationDomainRemoveResponseSchema,
+      )
+    },
+    organizationDomainRealmSeed(
+      realmId: string,
+      organizationId: string,
+      domain: string,
+    ): Promise<Result<OrganizationDomainResponse>> {
+      return request(
+        `/system/realms/${encodeURIComponent(realmId)}/organizations/${encodeURIComponent(organizationId)}/domains/${encodeURIComponent(domain)}/realm-seed`,
+        jsonRequest({}),
+        organizationDomainResponseSchema,
       )
     },
     organizationDomainDiscover(domain: string): Promise<Result<OrganizationDiscoveryResponse>> {

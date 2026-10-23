@@ -53,6 +53,7 @@ import {
   type UserProfileUpdateRequest,
   userProfileUpdateRequestSchema,
 } from "../public/userProfileUpdateRequestSchema.js"
+import { type UserPurgeResponse, userPurgeResponseSchema } from "../public/userPurgeResponseSchema.js"
 import { type UserResponse, userResponseSchema } from "../public/userResponseSchema.js"
 import { type UserVerificationRequest, userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
 
@@ -501,6 +502,15 @@ export function userApiClientCreate(options: UserApiClientCreateOptions) {
         tenantUserPath(realmId, userId),
         { method: "DELETE" },
         userResponseSchema,
+      )
+    },
+    userTenantPurge(realmId: string, userId: string): Promise<Result<UserPurgeResponse>> {
+      return tenantMutate(
+        realmId,
+        "userTenantPurge",
+        tenantUserPath(realmId, userId, "/purge"),
+        { method: "POST" },
+        userPurgeResponseSchema,
       )
     },
     userMeDelete(realmId: string): Promise<Result<UserResponse>> {

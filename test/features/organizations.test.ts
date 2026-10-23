@@ -1,15 +1,20 @@
 import { expect, test } from "bun:test"
-import * as v from "valibot"
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import * as v from "valibot"
+import { organizationBrandingSet } from "../../src/features/organizations/actions/organizationBrandingSet.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
+import { organizationDomainClaim } from "../../src/features/organizations/actions/organizationDomainClaim.js"
+import { organizationDomainRemove } from "../../src/features/organizations/actions/organizationDomainRemove.js"
+import { organizationDomainVerify } from "../../src/features/organizations/actions/organizationDomainVerify.js"
 import { organizationInvitationAccept } from "../../src/features/organizations/actions/organizationInvitationAccept.js"
 import { organizationInvitationCreate } from "../../src/features/organizations/actions/organizationInvitationCreate.js"
 import { organizationInvitationDecline } from "../../src/features/organizations/actions/organizationInvitationDecline.js"
 import { organizationInvitationRevoke } from "../../src/features/organizations/actions/organizationInvitationRevoke.js"
 import { organizationLifecycleSet } from "../../src/features/organizations/actions/organizationLifecycleSet.js"
 import { organizationList } from "../../src/features/organizations/actions/organizationList.js"
+import { organizationLoginPolicySet } from "../../src/features/organizations/actions/organizationLoginPolicySet.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
 import { organizationMembershipList } from "../../src/features/organizations/actions/organizationMembershipList.js"
 import { organizationMembershipRemove } from "../../src/features/organizations/actions/organizationMembershipRemove.js"
@@ -22,6 +27,7 @@ import { organizationRepositoryCreate } from "../../src/features/organizations/p
 import { organizationListResponseSchema } from "../../src/features/organizations/public/organizationListResponseSchema.js"
 import { organizationResourceIdSchema } from "../../src/features/organizations/public/organizationResourceIdSchema.js"
 import { organizationServerAppCreate } from "../../src/features/organizations/server/organizationServerAppCreate.js"
+import { realmAdministratorGrant } from "../../src/features/realms/actions/realmAdministratorGrant.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
@@ -30,6 +36,7 @@ import { sessionIssue } from "../../src/features/sessions/actions/sessionIssue.j
 import { sessionCsrfTokenCreate } from "../../src/features/sessions/domain/sessionCsrfTokenCreate.js"
 import { userCreate } from "../../src/features/users/actions/userCreate.js"
 import { userLifecycleSet } from "../../src/features/users/actions/userLifecycleSet.js"
+import { resultCreate } from "../../src/platform/errors/resultCreate.js"
 import type { StorageDatabase } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageDatabaseOpen } from "../../src/platform/storage/storageDatabaseOpen.js"
 import { storageEventTable } from "../../src/platform/storage/storageEventTable.js"
@@ -926,4 +933,247 @@ test("organization CLI commands use the API and do not open SQLite", async () =>
   const helpOutput = await new Response(helpProcess.stdout).text()
   expect(await helpProcess.exited).toBe(0)
   expect(helpOutput).toContain("Organization administration")
+})
+
+test("organization write routes require owners while realm administrators keep full access", async () => {
+  await withDatabase(async (database) => {
+    const realm = await createRealm(database, "owner-only.example.com")
+    const realmId = realm.id
+    const owner = await createActiveUser(database, realmId, "sole-owner@example.com")
+    const admin = await createActiveUser(database, realmId, "org-admin@example.com")
+    const member = await createActiveUser(database, realmId, "org-member@example.com")
+    const memberTwo = await createActiveUser(database, realmId, "org-member-two@example.com")
+    const realmAdministrator = await createActiveUser(database, realmId, "realm-administrator@example.com")
+    const system = realmSystemContextCreate("system")
+    const created = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Owner Only", ownerUserId: owner.id },
+      realmId,
+    })
+    expect(created.success).toBe(true)
+    if (!created.success) return
+    const organizationId = created.data.organization.id
+    expect(
+      organizationMembershipCreate({
+        context: realmTenantContextCreate(realmId, owner.id),
+        database,
+        input: { roles: ["admin"], userId: admin.id },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationMembershipCreate({
+        context: realmTenantContextCreate(realmId, owner.id),
+        database,
+        input: { roles: ["member"], userId: member.id },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    expect(realmAdministratorGrant({ context: system, database, realmId, userId: realmAdministrator.id }).success).toBe(
+      true,
+    )
+
+    const adminContext = realmTenantContextCreate(realmId, admin.id)
+    const ownerContext = realmTenantContextCreate(realmId, owner.id)
+    const administratorContext = realmTenantContextCreate(realmId, realmAdministrator.id)
+    const brandingInput = {
+      dark: {
+        backgroundColor: "#111827",
+        fontColor: "#f9fafb",
+        primaryColor: "#60a5fa",
+        warnColor: "#f87171",
+      },
+      disableWatermark: true,
+      light: {
+        backgroundColor: "#ffffff",
+        fontColor: "#111827",
+        primaryColor: "#2563eb",
+        warnColor: "#dc2626",
+      },
+      themeMode: "system" as const,
+    }
+    const dnsPortFor = (token: string) => ({ txtRecordsGet: async () => resultCreate([token]) })
+
+    expect(
+      organizationUpdate({ context: adminContext, database, input: { name: "Admin Rename" }, organizationId, realmId }),
+    ).toMatchObject({ code: "authorization.forbidden", success: false })
+    expect(
+      organizationLifecycleSet({
+        context: adminContext,
+        database,
+        input: { status: "inactive" },
+        organizationId,
+        realmId,
+      }),
+    ).toMatchObject({ code: "authorization.forbidden", success: false })
+    expect(
+      organizationBrandingSet({ context: adminContext, database, input: brandingInput, organizationId, realmId })
+        .success,
+    ).toBe(false)
+    expect(
+      organizationLoginPolicySet({
+        context: adminContext,
+        database,
+        input: { allowPassword: false },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationDomainClaim({
+        context: adminContext,
+        database,
+        input: { domain: "admin-claim.example.com" },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationMembershipCreate({
+        context: adminContext,
+        database,
+        input: { roles: ["owner"], userId: memberTwo.id },
+        organizationId,
+        realmId,
+      }),
+    ).toMatchObject({ code: "organizations.forbidden", success: false })
+
+    expect(
+      organizationUpdate({ context: ownerContext, database, input: { name: "Owner Rename" }, organizationId, realmId })
+        .success,
+    ).toBe(true)
+    expect(
+      organizationBrandingSet({ context: ownerContext, database, input: brandingInput, organizationId, realmId })
+        .success,
+    ).toBe(true)
+    expect(
+      organizationLoginPolicySet({
+        context: ownerContext,
+        database,
+        input: { allowPassword: false },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    const claimed = organizationDomainClaim({
+      context: ownerContext,
+      database,
+      input: { domain: "owner-claim.example.com" },
+      organizationId,
+      realmId,
+    })
+    expect(claimed.success).toBe(true)
+    if (!claimed.success) return
+    const ownerToken = claimed.data.domain.verification?.recordValue ?? ""
+    expect(
+      (
+        await organizationDomainVerify({
+          context: ownerContext,
+          database,
+          dnsPort: dnsPortFor(ownerToken),
+          domain: "owner-claim.example.com",
+          organizationId,
+          realmId,
+        })
+      ).success,
+    ).toBe(true)
+    expect(
+      organizationDomainRemove({
+        context: ownerContext,
+        database,
+        domain: "owner-claim.example.com",
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationMembershipCreate({
+        context: ownerContext,
+        database,
+        input: { roles: ["owner"], userId: memberTwo.id },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationLifecycleSet({
+        context: ownerContext,
+        database,
+        input: { status: "inactive" },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+
+    expect(
+      organizationLifecycleSet({
+        context: administratorContext,
+        database,
+        input: { status: "active" },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationUpdate({
+        context: administratorContext,
+        database,
+        input: { name: "Administrator Rename" },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationBrandingSet({
+        context: administratorContext,
+        database,
+        input: brandingInput,
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    expect(
+      organizationLoginPolicySet({
+        context: administratorContext,
+        database,
+        input: { allowPassword: true },
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+    const administratorClaimed = organizationDomainClaim({
+      context: administratorContext,
+      database,
+      input: { domain: "administrator-claim.example.com" },
+      organizationId,
+      realmId,
+    })
+    expect(administratorClaimed.success).toBe(true)
+    if (!administratorClaimed.success) return
+    const administratorToken = administratorClaimed.data.domain.verification?.recordValue ?? ""
+    expect(
+      (
+        await organizationDomainVerify({
+          context: administratorContext,
+          database,
+          dnsPort: dnsPortFor(administratorToken),
+          domain: "administrator-claim.example.com",
+          organizationId,
+          realmId,
+        })
+      ).success,
+    ).toBe(true)
+    expect(
+      organizationDomainRemove({
+        context: administratorContext,
+        database,
+        domain: "administrator-claim.example.com",
+        organizationId,
+        realmId,
+      }).success,
+    ).toBe(true)
+  })
 })

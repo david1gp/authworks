@@ -18,6 +18,7 @@ export const usersErrorCatalog = [
   { code: "users.forbidden", httpStatus: 403, retryable: false },
   { code: "users.already-exists", httpStatus: 409, retryable: false },
   { code: "users.already-deleted", httpStatus: 409, retryable: false },
+  { code: "users.purge-not-deleted", httpStatus: 409, retryable: false },
   { code: "users.conflict", httpStatus: 409, retryable: false },
   { code: "users.not-active", httpStatus: 409, retryable: false },
   { code: "users.lifecycle-forbidden", httpStatus: 409, retryable: false },
