@@ -77,7 +77,7 @@ afterEach(() => {
   for (const cleanup of cleanups.splice(0)) cleanup()
   for (const [name, previous] of previousGlobals) {
     if (previous === undefined) delete globalValues[name]
-    else globalValues[name] = previous
+    else Object.defineProperty(globalThis, name, { configurable: true, value: previous })
   }
   previousGlobals.clear()
   popup = undefined
@@ -99,8 +99,9 @@ function fixtureCreate() {
   const browserWindow = new Window({ url: "https://auth.example.com/account" })
   previousGlobals.set("document", globalValues.document)
   previousGlobals.set("window", globalValues.window)
-  globalValues.document = browserWindow.document
-  globalValues.window = browserWindow
+  // Bun exposes the browser globals as read-only accessors, so they have to be redefined.
+  Object.defineProperty(globalThis, "document", { configurable: true, value: browserWindow.document })
+  Object.defineProperty(globalThis, "window", { configurable: true, value: browserWindow })
 
   let backendUser = profileUserCreate(false)
   let profileLoads = 0

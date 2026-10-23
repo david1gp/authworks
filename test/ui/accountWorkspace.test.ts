@@ -3,6 +3,10 @@ import { createRoot } from "solid-js"
 
 mock.module("@solidjs/router", () => ({
   useLocation: () => ({ hash: "", pathname: "/account", search: "" }),
+  // Bun keeps the first router mock of a test run, so this mock has to carry every export the
+  // account modules import. Without `useNavigate` the linked identities and recovery codes
+  // modules fail to link in the same process.
+  useNavigate: () => () => undefined,
 }))
 
 import { accountSectionNavStateCreate } from "../../src/features/account/ui/accountSectionNavStateCreate.js"
