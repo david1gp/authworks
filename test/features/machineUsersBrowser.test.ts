@@ -93,17 +93,28 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
     const bootstrap = realmBootstrapAdminCreate({ context: system, database, realmId: alpha.id })
     expect(bootstrap.success).toBe(true)
     if (!bootstrap.success) return
+    const organization = organizationCreate({
+      context: system,
+      database,
+      input: { name: "Machine administrators" },
+      realmId: alpha.id,
+    })
+    expect(organization.success).toBe(true)
+    if (!organization.success) return
+    const organizationId = organization.data.organization.id
 
     const first = machineUserCreate({
       context: system,
       database,
       input: { displayName: "First", userName: "first", scopes: ["api.read"] },
+      organizationId,
       realmId: alpha.id,
     })
     const second = machineUserCreate({
       context: system,
       database,
       input: { displayName: "Second", userName: "second", scopes: ["api.read", "api.write"] },
+      organizationId,
       realmId: alpha.id,
     })
     expect(first.success && second.success).toBe(true)
@@ -132,32 +143,26 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
       sessionCsrfTokenCreate(database.runtime),
     )
 
-    const firstPage = await bootstrapClient.machineUserTenantList(alpha.id, { pageSize: 1 })
+    const firstPage = await bootstrapClient.machineUserTenantList(alpha.id, organizationId, { pageSize: 1 })
     expect(firstPage).toMatchObject({ success: true, data: { items: [{ userName: "second" }] } })
     expect(firstPage.success && firstPage.data.nextPageToken).toBeString()
-    expect((await bootstrapClient.machineUserTenantGet(alpha.id, first.data.machineUser.id)).success).toBe(true)
-    expect((await bootstrapClient.machineUserTenantList(beta.id)).success).toBe(false)
+    expect(
+      (await bootstrapClient.machineUserTenantGet(alpha.id, organizationId, first.data.machineUser.id)).success,
+    ).toBe(true)
+    expect((await bootstrapClient.machineUserTenantList(beta.id, organizationId)).success).toBe(false)
     if (!firstPage.success || firstPage.data.nextPageToken === undefined) return
-    const secondPage = await bootstrapClient.machineUserTenantList(alpha.id, {
+    const secondPage = await bootstrapClient.machineUserTenantList(alpha.id, organizationId, {
       pageSize: 1,
       pageToken: firstPage.data.nextPageToken,
     })
     expect(secondPage).toMatchObject({ success: true, data: { items: [{ userName: "first" }] } })
 
     const admin = await createActiveUser(database, alpha.id, "machine-admin")
-    const organization = organizationCreate({
-      context: system,
-      database,
-      input: { name: "Machine administrators" },
-      realmId: alpha.id,
-    })
-    expect(organization.success).toBe(true)
-    if (!organization.success) return
     const membership = organizationMembershipCreate({
       context: system,
       database,
       input: { roles: ["admin"], userId: admin.id },
-      organizationId: organization.data.organization.id,
+      organizationId,
       realmId: alpha.id,
     })
     expect(membership.success).toBe(true)
@@ -177,7 +182,7 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
     const adminCsrf = sessionCsrfTokenCreate(database.runtime)
     const adminClient = await browserClient(app, `https://${alpha.domain}`, adminSession.data.token, adminCsrf)
 
-    const created = await adminClient.machineUserTenantCreate(alpha.id, {
+    const created = await adminClient.machineUserTenantCreate(alpha.id, organizationId, {
       displayName: "Browser worker",
       scopes: ["api.read", "api.write"],
       userName: "browser-worker",
@@ -187,16 +192,21 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
     if (!created.success) return
     const clientSecret = created.data.clientSecret
     expect(clientSecret).toBeString()
-    expect(JSON.stringify(await adminClient.machineUserTenantGet(alpha.id, created.data.machineUser.id))).not.toContain(
-      clientSecret,
-    )
+    expect(
+      JSON.stringify(await adminClient.machineUserTenantGet(alpha.id, organizationId, created.data.machineUser.id)),
+    ).not.toContain(clientSecret)
 
-    const credentials = await adminClient.machineUserTenantCredentialList(alpha.id, created.data.machineUser.id)
+    const credentials = await adminClient.machineUserTenantCredentialList(
+      alpha.id,
+      organizationId,
+      created.data.machineUser.id,
+    )
     expect(credentials.success).toBe(true)
     expect(JSON.stringify(credentials)).not.toContain(clientSecret)
 
     const personalAccessToken = await adminClient.machineUserTenantPersonalAccessTokenCreate(
       alpha.id,
+      organizationId,
       created.data.machineUser.id,
       {
         expiresAt: database.runtime.now() + 1_000,
@@ -223,34 +233,52 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
       }).success,
     ).toBe(false)
     expect(
-      JSON.stringify(await adminClient.machineUserTenantCredentialList(alpha.id, created.data.machineUser.id)),
+      JSON.stringify(
+        await adminClient.machineUserTenantCredentialList(alpha.id, organizationId, created.data.machineUser.id),
+      ),
     ).not.toContain(personalAccessToken.data.secret)
 
-    const apiKey = await adminClient.machineUserTenantApiKeyCreate(alpha.id, created.data.machineUser.id, {
-      machineUserId: created.data.machineUser.id,
-      name: "browser-key",
-      scopes: ["api.write"],
-    })
+    const apiKey = await adminClient.machineUserTenantApiKeyCreate(
+      alpha.id,
+      organizationId,
+      created.data.machineUser.id,
+      {
+        machineUserId: created.data.machineUser.id,
+        name: "browser-key",
+        scopes: ["api.write"],
+      },
+    )
     expect(apiKey.success).toBe(true)
     if (!apiKey.success) return
-    const revoked = await adminClient.machineUserTenantCredentialRevoke(alpha.id, apiKey.data.credential.id, {
-      reason: "test revoke",
-    })
+    const revoked = await adminClient.machineUserTenantCredentialRevoke(
+      alpha.id,
+      organizationId,
+      apiKey.data.credential.id,
+      {
+        reason: "test revoke",
+      },
+    )
     expect(revoked.success).toBe(true)
     expect(JSON.stringify(revoked)).not.toContain(apiKey.data.secret)
 
-    const rotated = await adminClient.machineUserTenantClientSecretRotate(alpha.id, created.data.machineUser.id)
+    const rotated = await adminClient.machineUserTenantClientSecretRotate(
+      alpha.id,
+      organizationId,
+      created.data.machineUser.id,
+    )
     expect(rotated.success).toBe(true)
     if (!rotated.success) return
     expect(rotated.data.clientSecret).not.toBe(clientSecret)
-    expect(JSON.stringify(await adminClient.machineUserTenantGet(alpha.id, created.data.machineUser.id))).not.toContain(
-      rotated.data.clientSecret,
-    )
     expect(
-      JSON.stringify(await adminClient.machineUserTenantCredentialList(alpha.id, created.data.machineUser.id)),
+      JSON.stringify(await adminClient.machineUserTenantGet(alpha.id, organizationId, created.data.machineUser.id)),
+    ).not.toContain(rotated.data.clientSecret)
+    expect(
+      JSON.stringify(
+        await adminClient.machineUserTenantCredentialList(alpha.id, organizationId, created.data.machineUser.id),
+      ),
     ).not.toContain(rotated.data.clientSecret)
     const invalidCsrf = await app.request(
-      `https://${alpha.domain}/realms/${alpha.id}/machine-users/${created.data.machineUser.id}/lifecycle`,
+      `https://${alpha.domain}/realms/${alpha.id}/machine-users/${created.data.machineUser.id}/lifecycle?organizationId=${organizationId}`,
       {
         body: JSON.stringify({ status: "active" }),
         headers: {
@@ -264,31 +292,40 @@ test("browser realm administrator machine-user routes enforce sessions, permissi
     )
     expect(invalidCsrf.status).toBe(403)
     expect(
-      (await adminClient.machineUserTenantLifecycleSet(alpha.id, created.data.machineUser.id, { status: "inactive" }))
-        .success,
+      (
+        await adminClient.machineUserTenantLifecycleSet(alpha.id, organizationId, created.data.machineUser.id, {
+          status: "inactive",
+        })
+      ).success,
     ).toBe(true)
 
-    const noStepUp = await app.request(`https://${alpha.domain}/realms/${alpha.id}/machine-users`, {
-      body: JSON.stringify({ displayName: "Denied", userName: "denied" }),
-      headers: {
-        cookie: `session=${bootstrapSession.data.token}; csrf=${adminCsrf}`,
-        "content-type": "application/json",
-        origin: `https://${alpha.domain}`,
-        "x-csrf-token": adminCsrf,
+    const noStepUp = await app.request(
+      `https://${alpha.domain}/realms/${alpha.id}/machine-users?organizationId=${organizationId}`,
+      {
+        body: JSON.stringify({ displayName: "Denied", userName: "denied" }),
+        headers: {
+          cookie: `session=${bootstrapSession.data.token}; csrf=${adminCsrf}`,
+          "content-type": "application/json",
+          origin: `https://${alpha.domain}`,
+          "x-csrf-token": adminCsrf,
+        },
+        method: "POST",
       },
-      method: "POST",
-    })
+    )
     expect(noStepUp.status).toBe(403)
 
-    const missingOrigin = await app.request(`https://${alpha.domain}/realms/${alpha.id}/machine-users`, {
-      body: JSON.stringify({ displayName: "Denied", userName: "denied-origin" }),
-      headers: {
-        cookie: `session=${adminSession.data.token}; csrf=${adminCsrf}`,
-        "content-type": "application/json",
-        "x-csrf-token": adminCsrf,
+    const missingOrigin = await app.request(
+      `https://${alpha.domain}/realms/${alpha.id}/machine-users?organizationId=${organizationId}`,
+      {
+        body: JSON.stringify({ displayName: "Denied", userName: "denied-origin" }),
+        headers: {
+          cookie: `session=${adminSession.data.token}; csrf=${adminCsrf}`,
+          "content-type": "application/json",
+          "x-csrf-token": adminCsrf,
+        },
+        method: "POST",
       },
-      method: "POST",
-    })
+    )
     expect(missingOrigin.status).toBe(403)
   })
 })
@@ -327,14 +364,20 @@ test("browser machine-user routes deny non-administrators and expired sessions w
     expect(session.success).toBe(true)
     const app = machineUserServerAppCreate({ database, publicOrigin: `https://${realm.domain}` })
     const csrf = sessionCsrfTokenCreate(database.runtime)
-    const denied = await app.request(`https://${realm.domain}/realms/${realm.id}/machine-users`, {
-      headers: { cookie: `session=${session.data.token}; csrf=${csrf}` },
-    })
+    const denied = await app.request(
+      `https://${realm.domain}/realms/${realm.id}/machine-users?organizationId=${organization.data.organization.id}`,
+      {
+        headers: { cookie: `session=${session.data.token}; csrf=${csrf}` },
+      },
+    )
     expect(denied.status).toBe(403)
     testkit.advance(101)
-    const expired = await app.request(`https://${realm.domain}/realms/${realm.id}/machine-users`, {
-      headers: { cookie: `session=${session.data.token}; csrf=${csrf}` },
-    })
+    const expired = await app.request(
+      `https://${realm.domain}/realms/${realm.id}/machine-users?organizationId=${organization.data.organization.id}`,
+      {
+        headers: { cookie: `session=${session.data.token}; csrf=${csrf}` },
+      },
+    )
     expect(expired.status).toBe(401)
   })
 })

@@ -21,7 +21,11 @@ test("task 17 fixture creates the minimum isolated account graph through public 
       fixture.realm.id,
       fixture.organization.id,
     )
-    const machineUser = await fixture.clients.machines.machineUserGet(fixture.realm.id, fixture.machineUser.id)
+    const machineUser = await fixture.clients.machines.machineUserGet(
+      fixture.realm.id,
+      fixture.organization.id,
+      fixture.machineUser.id,
+    )
     const project = await fixture.clients.projects.projectGet(fixture.realm.id, fixture.project.id)
     const application = await fixture.clients.projects.projectApplicationGet(
       fixture.realm.id,

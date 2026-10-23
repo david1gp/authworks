@@ -196,18 +196,23 @@ test("composed clients preserve tenant and organization boundaries across featur
       trusted: true,
     })
     expect(oidcClient.success).toBe(true)
-    const machine = await machines.machineUserCreate(fixture.alpha.id, {
+    const machine = await machines.machineUserCreate(fixture.alpha.id, alphaOrganization.data.organization.id, {
       displayName: "Alpha machine",
       scopes: ["api.read"],
       userName: "alpha-machine",
     })
     expect(machine.success).toBe(true)
     if (!machine.success) return
-    const credential = await machines.machinePersonalAccessTokenCreate(fixture.alpha.id, machine.data.machineUser.id, {
-      machineUserId: machine.data.machineUser.id,
-      name: "Alpha PAT",
-      scopes: ["api.read"],
-    })
+    const credential = await machines.machinePersonalAccessTokenCreate(
+      fixture.alpha.id,
+      alphaOrganization.data.organization.id,
+      machine.data.machineUser.id,
+      {
+        machineUserId: machine.data.machineUser.id,
+        name: "Alpha PAT",
+        scopes: ["api.read"],
+      },
+    )
     expect(credential.success).toBe(true)
     if (!credential.success) return
 
@@ -413,7 +418,7 @@ test("all public API clients reject malformed success responses and preserve tra
       path: "/realms/realm/passkeys/authentication/start",
     },
     {
-      call: () => machineUserApiClientCreate(options).machineUserList("realm"),
+      call: () => machineUserApiClientCreate(options).machineUserList("realm", "organization"),
       feature: "machineUsers",
       method: "GET",
       path: "/system/realms/realm/machine-users",

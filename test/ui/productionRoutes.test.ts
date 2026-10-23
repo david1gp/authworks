@@ -5,6 +5,7 @@ import { machineAdminScreenSchema } from "../../src/features/machineUsers/ui/mac
 import { oidcAdminScreenSchema } from "../../src/features/oidc/ui/oidcAdminScreenSchema.js"
 import { organizationAdminScreenSchema } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
 import { projectAdminScreenSchema } from "../../src/features/projects/ui/projectAdminScreenSchema.js"
+import { demoAdminScenarioGroups } from "../../src/features/demo/demoAdminScenarioGroups.js"
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 import { productionLoginRedirectUrlCreate } from "../../src/ui/production/productionLoginRedirectUrlCreate.js"
 import type { ProductionNavigationGroup } from "../../src/ui/production/productionNavigationGroup.js"
@@ -144,7 +145,10 @@ describe("production route contracts", () => {
     expect(adminOverview?.label).toBe("shell.nav.overview")
 
     // "Application consents" is also the English value of admin.oidc.consents.title.
-    const adminConsents = productionShellNavigationGroups.admin[3]?.items[2]
+    const openIdConnect = productionShellNavigationGroups.admin.find(
+      (group) => group.label === "shell.nav.openIdConnect",
+    )
+    const adminConsents = openIdConnect?.items[2]
     expect(adminConsents?.label).toBe("shell.nav.applicationConsents")
     expect(englishCatalog["shell.nav.applicationConsents"]).toBe(englishCatalog["admin.oidc.consents.title"])
 
@@ -284,6 +288,7 @@ describe("production shell state", () => {
     expect(productionShellNavigationGroups.admin.map((group) => group.label)).toEqual([
       "shell.nav.realm",
       "shell.nav.directory",
+      "shell.nav.organizations",
       "shell.nav.applications",
       "shell.nav.openIdConnect",
       "shell.nav.operations",
@@ -334,5 +339,54 @@ describe("production shell state", () => {
     const hrefs = productionShellNavigationGroups.admin.flatMap((group) => group.items.map((item) => item.href))
 
     for (const href of hrefs) expect(productionRouteScreenSelect(admin, href), href).toBeDefined()
+  })
+})
+
+describe("org-scoped machine-user administration", () => {
+  const machineKeys = ["machine-users", "machine-user-detail", "machine-credentials"] as const
+
+  test("requires an organization context with machine permissions on every machine screen", () => {
+    const guardOf = (key: string) => {
+      const screen = productionRouteContractMap.admin.screens.find((item) => item.key === key)
+      return screen !== undefined && "guard" in screen ? screen.guard : undefined
+    }
+    for (const key of machineKeys) {
+      expect(guardOf(key)?.organization, key).toBe("required")
+      expect(guardOf(key)?.realm, key).toBe("required")
+    }
+    expect(guardOf("machine-users")?.permission).toBe("machine.user.manage")
+    expect(guardOf("machine-credentials")?.permission).toBe("machine.credential.manage")
+
+    const list = guardOf("machine-users")
+    expect(
+      productionRouteGuardStateCreate(list ?? productionRouteContractMap.admin.guard, {
+        authentication: { status: "authenticated", userId: "user-1" },
+        organization: "missing",
+        permission: "granted",
+        realm: { realmId: "realm-1", status: "available" },
+      }),
+    ).toEqual({ context: "organization", status: "missing-context" })
+  })
+
+  test("keeps machine destinations out of the realm directory group and inside the organizations group", () => {
+    const groups = productionShellNavigationGroups.admin
+    const directory = groups.find((group) => group.label === "shell.nav.directory")
+    expect(directory?.items.map((item) => item.href)).not.toContain("/admin/machine-users")
+    expect(directory?.items.map((item) => item.href)).not.toContain("/admin/machine-credentials")
+
+    const organizations = groups.find((group) => group.label === "shell.nav.organizations")
+    expect(organizations, "organizations navigation group").toBeDefined()
+    expect(organizations?.items.map((item) => item.href)).toContain("/admin/organizations")
+    expect(organizations?.items.map((item) => item.href)).toContain("/admin/machine-users")
+    expect(organizations?.items.map((item) => item.href)).toContain("/admin/machine-credentials")
+  })
+
+  test("lists machine-user demo scenarios under organizations instead of a realm machine group", () => {
+    expect(demoAdminScenarioGroups.map((group) => group.key)).not.toContain("machine-users")
+    const organizations = demoAdminScenarioGroups.find((group) => group.key === "organizations")
+    expect(organizations, "organizations demo group").toBeDefined()
+    for (const key of machineKeys) {
+      expect(organizations?.scenarios.map((scenario) => scenario.key)).toContain(key)
+    }
   })
 })

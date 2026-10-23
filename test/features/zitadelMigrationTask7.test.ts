@@ -78,7 +78,9 @@ test("imports machine users with stable mappings across organizations and confli
     if (!first.success) return
     expect(first.data.counts.machineUsers).toMatchObject({ created: 1, updated: 0, unchanged: 0 })
     const machines = machineRepositoryCreate(database.db)
-    const m1 = machines.userGetByName(realmId, "worker")
+    const org1Id = machineOrganizationId(database, realmId, "111")
+    const org2Id = machineOrganizationId(database, realmId, "222")
+    const m1 = machines.userGetByName(realmId, org1Id, "worker")
     expect(m1.success).toBe(true)
     if (!m1.success || m1.data === null) return
     expect(m1.data).toMatchObject({ createdAt: 10, updatedAt: 20 })
@@ -86,9 +88,9 @@ test("imports machine users with stable mappings across organizations and confli
     expect(second).toMatchObject({ success: true, data: { counts: { machineUsers: { unchanged: 1 } } } })
     const changed = zitadelMigrationImport({ database, realmId, snapshot: snapshot("m1", "worker-renamed", 10, 30) })
     expect(changed).toMatchObject({ success: true, data: { counts: { machineUsers: { updated: 1 } } } })
-    expect(machines.userGetByName(realmId, "worker").success).toBe(true)
+    expect(machines.userGetByName(realmId, org1Id, "worker").success).toBe(true)
     const crossOrganizationSnapshot = snapshot("m2", "worker-renamed", 10, 30)
-    crossOrganizationSnapshot.machineUsers[0]!.organizationId = "org-2"
+    crossOrganizationSnapshot.machineUsers[0]!.organizationId = "222"
     const crossOrganization = zitadelMigrationImport({
       database,
       realmId,
@@ -96,7 +98,7 @@ test("imports machine users with stable mappings across organizations and confli
       snapshot: crossOrganizationSnapshot,
     })
     expect(crossOrganization).toMatchObject({ success: true, data: { conflicts: 0 } })
-    const m2 = machines.userGetByName(realmId, "worker-renamed")
+    const m2 = machines.userGetByName(realmId, org2Id, "worker-renamed")
     expect(m2.success).toBe(true)
     if (!m2.success || m2.data === null) return
     const m1Id = m1.data.id
@@ -104,11 +106,14 @@ test("imports machine users with stable mappings across organizations and confli
     expect(m2Id).not.toBe(m1Id)
     const distinct = zitadelMigrationImport({ database, realmId, snapshot: snapshot("m3", "worker-renamed", 10, 30) })
     expect(distinct).toMatchObject({ success: true, data: { conflicts: 0, counts: { machineUsers: { created: 1 } } } })
-    const after = machines.userList(realmId)
-    expect(after.success).toBe(true)
-    if (!after.success) return
-    expect(after.data).toHaveLength(3)
-    const m3 = after.data.find((user) => user.id !== m1Id && user.id !== m2Id)
+    const afterOrg1 = machines.userList(realmId, org1Id)
+    expect(afterOrg1.success).toBe(true)
+    const afterOrg2 = machines.userList(realmId, org2Id)
+    expect(afterOrg2.success).toBe(true)
+    if (!afterOrg1.success || !afterOrg2.success) return
+    expect([...afterOrg1.data, ...afterOrg2.data]).toHaveLength(3)
+    const m3 = [...afterOrg1.data, ...afterOrg2.data].find((user) => user.id !== m1Id && user.id !== m2Id)
+    expect(m3?.organizationId).toBe(org1Id)
     expect(m3?.userName).toMatch(/^worker-renamed-/)
     const mappings = zitadelMigrationSourceRecordRepositoryCreate(database.db)
     const m1Mapping = mappings.sourceRecordGet(realmId, "https://source.test", "machineUser", "m1")
@@ -173,7 +178,9 @@ test("complete deletion removes credentials, repeats idempotently, and incomplet
       success: true,
       data: { deleted: 0 },
     })
-    expect(machineRepositoryCreate(database.db).userList(realmId)).toMatchObject({ data: [] })
+    expect(
+      machineRepositoryCreate(database.db).userList(realmId, machineOrganizationId(database, realmId, "111")),
+    ).toMatchObject({ data: [] })
     const incomplete = {
       ...source,
       machineUsers: [],
@@ -194,7 +201,9 @@ test("realm and source isolation preserve unrelated machine users", async () => 
       completeness: { ...source.completeness, machineUsers: { complete: true, count: 0 } },
     }
     expect(zitadelMigrationImport({ database, realmId, snapshot: other }).success).toBe(true)
-    expect(machineRepositoryCreate(database.db).userList(realmId)).toMatchObject({ data: [{ userName: "worker" }] })
+    expect(
+      machineRepositoryCreate(database.db).userList(realmId, machineOrganizationId(database, realmId, "111")),
+    ).toMatchObject({ data: [{ userName: "worker" }] })
   })
 })
 
@@ -203,9 +212,17 @@ test("transaction rollback leaves no machine or mapping", async () => {
     const bad = snapshot("m1", "worker", 1, 2)
     bad.oidcApplications = [{ ...bad.oidcApplications[0]!, redirectUris: ["file:///bad"] }]
     expect(zitadelMigrationImport({ database, realmId, snapshot: bad }).success).toBe(false)
-    expect(machineRepositoryCreate(database.db).userList(realmId)).toMatchObject({ data: [] })
+    expect(machineRepositoryCreate(database.db).userListForRealm(realmId)).toMatchObject({ data: [] })
   })
 })
+
+function machineOrganizationId(database: StorageDatabase, realmId: string, sourceOrganizationId: string): string {
+  const mappings = zitadelMigrationSourceRecordRepositoryCreate(database.db)
+  const mapping = mappings.sourceRecordGet(realmId, "https://source.test", "organization", sourceOrganizationId)
+  expect(mapping.success).toBe(true)
+  if (!mapping.success || mapping.data === null) throw new Error("organization mapping was not imported")
+  return mapping.data.destinationId
+}
 
 function snapshot(sourceId: string, name: string, createdAt: number, updatedAt: number): ZitadelMigrationSnapshot {
   const empty = (value: ZitadelMigrationSnapshot["machineUsers"]) => ({
@@ -217,7 +234,7 @@ function snapshot(sourceId: string, name: string, createdAt: number, updatedAt: 
     {
       credentials: [{ available: false, portable: false, type: "machine-secret" }],
       name,
-      organizationId: "org-1",
+      organizationId: "111",
       sourceId,
       createdAt,
       updatedAt,
@@ -225,28 +242,33 @@ function snapshot(sourceId: string, name: string, createdAt: number, updatedAt: 
   ])
 }
 function base(): ZitadelMigrationSnapshot {
+  const completeness = Object.fromEntries(
+    [
+      "users",
+      "organizations",
+      "organizationMemberships",
+      "projects",
+      "projectRoles",
+      "projectGrants",
+      "oidcApplications",
+      "machineUsers",
+      "domains",
+      "loginPolicies",
+      "identityProviders",
+      "externalIdentityLinks",
+    ].map((key) => [key, { complete: true, count: 0 }]),
+  ) as ZitadelMigrationSnapshot["completeness"]
+  completeness.organizations = { complete: true, count: 2 }
   return {
     version: 2,
     sourceInstance: "https://source.test",
     exportedAt: 1,
-    completeness: Object.fromEntries(
-      [
-        "users",
-        "organizations",
-        "organizationMemberships",
-        "projects",
-        "projectRoles",
-        "projectGrants",
-        "oidcApplications",
-        "machineUsers",
-        "domains",
-        "loginPolicies",
-        "identityProviders",
-        "externalIdentityLinks",
-      ].map((key) => [key, { complete: true, count: 0 }]),
-    ) as ZitadelMigrationSnapshot["completeness"],
+    completeness,
     users: [],
-    organizations: [],
+    organizations: [
+      { createdAt: 1, id: "111", name: "Org one", status: "active", updatedAt: 2 },
+      { createdAt: 1, id: "222", name: "Org two", status: "active", updatedAt: 2 },
+    ],
     organizationMemberships: [],
     projects: [],
     projectRoles: [],

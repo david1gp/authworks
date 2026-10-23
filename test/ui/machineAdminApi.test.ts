@@ -5,6 +5,7 @@ import { machineAdminScopeListParse } from "../../src/features/machineUsers/ui/m
 
 const realmId = "018f0000-0000-7000-8000-000000000001"
 const machineUserId = "018f0000-0000-7000-8000-000000000071"
+const organizationId = "028f0000-0000-7000-8000-000000000001"
 const credentialId = "018f0000-0000-7000-8000-000000000081"
 
 const machineUser = {
@@ -37,6 +38,7 @@ function adapterCreate(responder: (url: string) => Response) {
       requests.push({ init, url })
       return responder(url)
     },
+    organizationId: () => organizationId,
     realmId: () => realmId,
   })
   return { adapter, requests }
@@ -87,6 +89,7 @@ describe("machine-user administration production adapter", () => {
         if (url.endsWith("/sessions/csrf")) return Response.json({ csrfToken: "csrf-rotated" })
         return Response.json({ clientId: "billing-sync", clientSecret: "s".repeat(43), machineUser })
       },
+      organizationId: () => organizationId,
       realmId: () => realmId,
     })
 
@@ -110,6 +113,7 @@ describe("machine-user administration production adapter", () => {
           { status: 401 },
         )
       },
+      organizationId: () => organizationId,
       realmId: () => realmId,
     })
 

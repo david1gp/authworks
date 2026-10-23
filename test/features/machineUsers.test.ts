@@ -23,6 +23,7 @@ import { machineUserServerAppCreate } from "../../src/features/machineUsers/serv
 import { oidcDiscoverySchema } from "../../src/features/oidc/public/oidcDiscoverySchema.js"
 import { oidcTokenResponseSchema } from "../../src/features/oidc/public/oidcTokenResponseSchema.js"
 import { oidcServerAppCreate } from "../../src/features/oidc/server/oidcServerAppCreate.js"
+import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
 import { realmTenantContextCreate } from "../../src/features/realms/domain/realmTenantContextCreate.js"
@@ -54,13 +55,22 @@ async function createRealm(database: StorageDatabase, domain: string) {
   return created.data.realm
 }
 
+async function createOrganization(database: StorageDatabase, realmId: string, name: string) {
+  const created = organizationCreate({ context: realmSystemContextCreate(), database, input: { name }, realmId })
+  expect(created.success).toBe(true)
+  if (!created.success) throw new Error(created.errorMessage)
+  return created.data.organization
+}
+
 test("machine users issue one-time client secrets and keep credential material hashed", async () => {
   await withDatabase(async (database) => {
     const realm = await createRealm(database, "machine-users.example.com")
+    const organization = await createOrganization(database, realm.id, "Machine users")
     const created = machineUserCreate({
       context: realmSystemContextCreate(),
       database,
       input: { displayName: "Build worker", scopes: ["api.read", "api.write"], userName: " Build.Worker " },
+      organizationId: organization.id,
       realmId: realm.id,
     })
     expect(created.success).toBe(true)
@@ -75,6 +85,7 @@ test("machine users issue one-time client secrets and keep credential material h
     const fetched = machineUserGet({
       context: realmSystemContextCreate(),
       database,
+      organizationId: organization.id,
       realmId: realm.id,
       machineUserId: created.data.machineUser.id,
     })
@@ -91,10 +102,12 @@ test("machine users issue one-time client secrets and keep credential material h
 test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocation are enforced", async () => {
   await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "credentials.example.com")
+    const organization = await createOrganization(database, realm.id, "Credentials")
     const created = machineUserCreate({
       context: realmSystemContextCreate(),
       database,
       input: { displayName: "Worker", scopes: ["api.read", "api.write"], userName: "worker" },
+      organizationId: organization.id,
       realmId: realm.id,
     })
     expect(created.success).toBe(true)
@@ -108,6 +121,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
     if (!token.success) return
     const authenticated = machineCredentialAuthenticate({
       database,
+      organizationId: organization.id,
       realmId: realm.id,
       token: token.data.accessToken,
     })
@@ -166,6 +180,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
       context: realmSystemContextCreate(),
       database,
       input: { displayName: "Secretless", scopes: ["api.read"], userName: "secretless" },
+      organizationId: organization.id,
       realmId: realm.id,
     })
     expect(secretless.success).toBe(true)
@@ -185,6 +200,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
         context: realmSystemContextCreate(),
         credentialId: secretlessCredential.id,
         database,
+        organizationId: organization.id,
         realmId: realm.id,
       }).success,
     ).toBe(true)
@@ -205,6 +221,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
         name: "deploy",
         scopes: ["api.write"],
       },
+      organizationId: organization.id,
       realmId: realm.id,
     })
     expect(personal.success).toBe(true)
@@ -221,6 +238,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
       context: realmSystemContextCreate(),
       database,
       input: { machineUserId: created.data.machineUser.id, name: "service", scopes: ["api.read"] },
+      organizationId: organization.id,
       realmId: realm.id,
     })
     expect(apiKey.success).toBe(true)
@@ -229,6 +247,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
       context: realmSystemContextCreate(),
       credentialId: apiKey.data.credential.id,
       database,
+      organizationId: organization.id,
       realmId: realm.id,
     })
     expect(revoked.success).toBe(true)
@@ -240,6 +259,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
         context: realmSystemContextCreate(),
         credentialId: apiKey.data.credential.id,
         database,
+        organizationId: organization.id,
         realmId: realm.id,
       }).success,
     ).toBe(false)
@@ -247,6 +267,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
     const rotated = machineUserClientSecretRotate({
       context: realmSystemContextCreate(),
       database,
+      organizationId: organization.id,
       realmId: realm.id,
       machineUserId: created.data.machineUser.id,
     })
@@ -271,6 +292,7 @@ test("client credentials, PATs, API keys, scopes, expiry, rotation, and revocati
         context: realmSystemContextCreate(),
         database,
         input: { status: "inactive" },
+        organizationId: organization.id,
         realmId: realm.id,
         machineUserId: created.data.machineUser.id,
       }).success,
@@ -289,27 +311,59 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
   await withDatabase(async (database) => {
     const alpha = await createRealm(database, "alpha-machine.example.com")
     const beta = await createRealm(database, "beta-machine.example.com")
+    const alphaOrganization = await createOrganization(database, alpha.id, "Alpha machines")
+    const alphaSecondOrganization = await createOrganization(database, alpha.id, "Alpha second")
+    const betaOrganization = await createOrganization(database, beta.id, "Beta machines")
     const created = machineUserCreate({
       context: realmSystemContextCreate(),
       database,
       input: { displayName: "Alpha", scopes: ["api.read"], userName: "alpha" },
+      organizationId: alphaOrganization.id,
       realmId: alpha.id,
     })
     expect(created.success).toBe(true)
     if (!created.success) return
-    const betaUsers = machineUserList({ context: realmSystemContextCreate(), database, realmId: beta.id })
+    const betaUsers = machineUserList({
+      context: realmSystemContextCreate(),
+      database,
+      organizationId: betaOrganization.id,
+      realmId: beta.id,
+    })
     expect(betaUsers.success).toBe(true)
     if (betaUsers.success) expect(betaUsers.data.items).toHaveLength(0)
     expect(
       machineUserGet({
         context: realmSystemContextCreate(),
         database,
+        organizationId: betaOrganization.id,
         realmId: beta.id,
         machineUserId: created.data.machineUser.id,
       }).success,
     ).toBe(false)
     expect(
-      machineUserList({ context: realmTenantContextCreate(alpha.id, "actor"), database, realmId: beta.id }).success,
+      machineUserList({
+        context: realmSystemContextCreate(),
+        database,
+        organizationId: alphaSecondOrganization.id,
+        realmId: alpha.id,
+      }),
+    ).toMatchObject({ success: true, data: { items: [] } })
+    expect(
+      machineUserGet({
+        context: realmSystemContextCreate(),
+        database,
+        organizationId: alphaSecondOrganization.id,
+        realmId: alpha.id,
+        machineUserId: created.data.machineUser.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      machineUserList({
+        context: realmTenantContextCreate(alpha.id, "actor"),
+        database,
+        organizationId: betaOrganization.id,
+        realmId: beta.id,
+      }).success,
     ).toBe(false)
 
     const managementApp = machineUserServerAppCreate({ database, systemSecret: "system" })
@@ -318,13 +372,13 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
       fetch: async (input, init) => managementApp.request(input, init),
       token: "system",
     })
-    const managed = await client.machineUserCreate(alpha.id, {
+    const managed = await client.machineUserCreate(alpha.id, alphaOrganization.id, {
       displayName: "Managed",
       scopes: ["api.read"],
       userName: "managed",
     })
     expect(managed.success).toBe(true)
-    const listed = await client.machineUserList(alpha.id)
+    const listed = await client.machineUserList(alpha.id, alphaOrganization.id)
     expect(listed.success).toBe(true)
     if (listed.success) expect(listed.data.items).toHaveLength(2)
 
@@ -332,6 +386,7 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
       context: realmSystemContextCreate(),
       database,
       input: { machineUserId: created.data.machineUser.id, name: "protected", scopes: ["api.read"] },
+      organizationId: alphaOrganization.id,
       realmId: alpha.id,
     })
     expect(apiKey.success).toBe(true)
@@ -384,6 +439,7 @@ test("machine users isolate tenants, protected APIs accept issued credentials, a
 test("machine user state and events roll back together when event append fails", async () => {
   await withDatabase(async (database) => {
     const realm = await createRealm(database, "atomic-machine.example.com")
+    const organization = await createOrganization(database, realm.id, "Atomic")
     const beforeUsers = database.db.select().from(machineUserTable).all().length
     const beforeCredentials = database.db.select().from(machineCredentialTable).all().length
     const beforeEvents = database.db.select().from(storageEventTable).all().length
@@ -392,6 +448,7 @@ test("machine user state and events roll back together when event append fails",
       correlationId: "",
       database,
       input: { displayName: "Atomic", userName: "atomic" },
+      organizationId: organization.id,
       realmId: realm.id,
     })
     expect(result.success).toBe(false)
@@ -410,7 +467,10 @@ test("machine API client validates public contracts and requests", async () => {
       return Response.json({ items: [] })
     },
   })
-  const result = await client.machineUserList("01900000-0000-7000-8000-000000000000")
+  const result = await client.machineUserList(
+    "01900000-0000-7000-8000-000000000000",
+    "02900000-0000-7000-8000-000000000000",
+  )
   expect(result.success).toBe(true)
   expect(calls[0]?.url).toContain("/system/realms/01900000-0000-7000-8000-000000000000/machine-users")
 })

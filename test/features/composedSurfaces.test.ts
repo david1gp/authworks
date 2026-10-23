@@ -131,13 +131,13 @@ test("all feature clients round-trip through the composed server", async () => {
     expect((await passkeys.passkeyAuthenticationStart(realmId)).success).toBe(true)
 
     const machines = machineUserApiClientCreate(system)
-    const machineUser = await machines.machineUserCreate(realmId, {
+    const machineUser = await machines.machineUserCreate(realmId, organizationId, {
       displayName: "Surface machine",
       scopes: ["api.read"],
       userName: "surface-machine",
     })
     expect(machineUser.success).toBe(true)
-    expect((await machines.machineUserList(realmId)).success).toBe(true)
+    expect((await machines.machineUserList(realmId, organizationId)).success).toBe(true)
 
     const projects = projectApiClientCreate(system)
     const project = await projects.projectCreate(realmId, {
