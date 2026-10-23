@@ -45,6 +45,8 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
           <OrganizationAdminDetailView
             backHref={state.listHref()}
             error={state.page.error()}
+            machineCredentialsHref={state.machineCredentialsHref()}
+            machinesHref={state.machinesHref()}
             memberships={state.page.memberships()}
             membershipsHref={state.membershipsHref()}
             name={state.form.detailName.get()}

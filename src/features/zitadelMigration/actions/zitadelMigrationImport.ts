@@ -8,9 +8,9 @@ import { storageTransactionRun } from "../../../platform/storage/storageTransact
 import { externalIdentityProviderScopesValidate } from "../../externalIdentities/domain/externalIdentityProviderScopesValidate.js"
 import { externalIdentityRepositoryCreate } from "../../externalIdentities/persistence/externalIdentityRepositoryCreate.js"
 import { machineRepositoryCreate } from "../../machineUsers/persistence/machineRepositoryCreate.js"
+import { oidcRepositoryCreate } from "../../oidc/persistence/oidcRepositoryCreate.js"
 import { oidcClientCompatibilitySettingsValidate } from "../../oidc/public/oidcClientCompatibilitySettingsValidate.js"
 import { oidcRedirectUriValidate } from "../../oidc/public/oidcRedirectUriValidate.js"
-import { oidcRepositoryCreate } from "../../oidc/persistence/oidcRepositoryCreate.js"
 import { organizationRolesEncode } from "../../organizations/domain/organizationRolesEncode.js"
 import { organizationDomainRepositoryCreate } from "../../organizations/persistence/organizationDomainRepositoryCreate.js"
 import { organizationLoginPolicyRepositoryCreate } from "../../organizations/persistence/organizationLoginPolicyRepositoryCreate.js"
@@ -817,6 +817,8 @@ function importMachineUser(
 ): Result<void> {
   if (state.machineNameConflicts.has(input.sourceId))
     return skipResult(state, "machineUsers", input.sourceId, "hash-name-collision")
+  const organizationId = state.organizationIds.get(input.organizationId)
+  if (organizationId === undefined) return skipResult(state, "machineUsers", input.sourceId, "organization-not-found")
   const mapping = sourceRecords.sourceRecordGet(realmId, sourceInstance, "machineUser", input.sourceId)
   if (!mapping.success) return mapping
   const normalizedName = userNameNormalize(input.name)
@@ -824,10 +826,16 @@ function importMachineUser(
   let destinationName = state.machineDestinationNames.get(input.sourceId) ?? normalizedName.data
   let existing =
     mapping.data === null
-      ? repository.userGetByName(realmId, destinationName)
-      : repository.userGet(realmId, mapping.data.destinationId)
+      ? repository.userGetByName(realmId, organizationId, destinationName)
+      : repository.userGet(realmId, organizationId, mapping.data.destinationId)
   if (!existing.success) return existing
-  if (mapping.data !== null && existing.data !== null) destinationName = existing.data.userName
+  if (mapping.data !== null && existing.data !== null) {
+    // A mapped row keeps a previously assigned deterministic fallback name so
+    // re-imports stay stable, but a changed source name renames the destination.
+    const fallbackName = `${normalizedName.data}-${machineUserSourceSuffix(sourceInstance, input.organizationId, input.sourceId)}`
+    if (existing.data.userName === destinationName || existing.data.userName === fallbackName)
+      destinationName = existing.data.userName
+  }
   if (mapping.data === null) {
     // Never let an unmapped import update a destination owned by another source.
     // Check both the precomputed name and the deterministic fallback independently.
@@ -836,7 +844,8 @@ function importMachineUser(
       `${normalizedName.data}-${machineUserSourceSuffix(sourceInstance, input.organizationId, input.sourceId)}`,
     ]
     for (const candidate of candidates) {
-      const named = candidate === destinationName ? existing : repository.userGetByName(realmId, candidate)
+      const named =
+        candidate === destinationName ? existing : repository.userGetByName(realmId, organizationId, candidate)
       if (!named.success) return named
       if (named.data === null) {
         destinationName = candidate
@@ -859,6 +868,7 @@ function importMachineUser(
   const values = {
     createdAt,
     displayName: input.name,
+    organizationId,
     userName: destinationName,
     realmId,
     scopes: JSON.stringify([]),
@@ -869,6 +879,7 @@ function importMachineUser(
   if (
     existing.data !== null &&
     existing.data.displayName === input.name &&
+    existing.data.organizationId === organizationId &&
     existing.data.userName === destinationName &&
     existing.data.status === "active" &&
     existing.data.createdAt === createdAt &&
@@ -895,10 +906,17 @@ function importMachineUser(
       })
     return resultCreate(undefined)
   }
+  if (existing.data !== null && existing.data.userName !== values.userName) {
+    // A source rename must not steal a name held by another destination.
+    const clash = repository.userGetByName(realmId, organizationId, values.userName)
+    if (!clash.success) return clash
+    if (clash.data !== null && clash.data.id !== existing.data.id)
+      return skipResult(state, "machineUsers", input.sourceId, "conflict")
+  }
   const saved =
     existing.data === null
       ? repository.userCreate({ ...values, id: randomUUID() })
-      : repository.userUpdate(realmId, existing.data.id, values)
+      : repository.userUpdate(realmId, organizationId, existing.data.id, values)
   if (!saved.success) return saved
   const destination = saved.data
   if (destination === null) return resultCreate(undefined)
@@ -1682,15 +1700,18 @@ function importStateCreate(snapshot: ZitadelMigrationSnapshot): ImportState {
   const machineDestinationNames = new Map<string, string>()
   const machineNameConflicts = new Set<string>()
   const machineSuffixOwners = new Map<string, string>()
-  const groups = new Map<string, typeof snapshot.machineUsers>()
+  const groups = new Map<string, { readonly name: string; readonly inputs: typeof snapshot.machineUsers }>()
   for (const input of snapshot.machineUsers) {
     const normalized = userNameNormalize(input.name)
     if (!normalized.success) continue
-    const group = groups.get(normalized.data) ?? []
-    group.push(input)
-    groups.set(normalized.data, group)
+    // Uniqueness is per organization: the same name in different organizations
+    // must not force deterministic suffixes on each other.
+    const key = `${input.organizationId}\u0000${normalized.data}`
+    const group = groups.get(key) ?? { inputs: [], name: normalized.data }
+    group.inputs.push(input)
+    groups.set(key, group)
   }
-  for (const [name, group] of groups) {
+  for (const { inputs: group, name } of groups.values()) {
     const needsSuffix = group.length > 1
     const suffixes = new Map<string, string>()
     for (const input of group) {

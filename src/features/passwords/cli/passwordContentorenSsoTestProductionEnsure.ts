@@ -92,7 +92,13 @@ export async function passwordContentorenSsoTestProductionEnsure(options: {
   const userApi = userApiClientCreate(clientOptions)
   const users = await fixtureUsersFind(userApi, realms.data, input.data.email)
   if (!users.success) return users
-  const machines = await fixtureMachineUsersRefuse(machineUserApiClientCreate(clientOptions), realms.data)
+  const machines = await fixtureMachineUsersRefuse(
+    machineUserApiClientCreate(clientOptions),
+    organizationApi,
+    realm.data.id,
+    organizations.data,
+    realms.data,
+  )
   if (!machines.success) return machines
   const current = fixtureUserResolve(users.data, realm.data.id, input.data.email)
   if (!current.success) return current
@@ -323,24 +329,34 @@ function fixtureUserResolve(users: readonly User[], realmId: string, email: stri
 
 async function fixtureMachineUsersRefuse(
   api: ReturnType<typeof machineUserApiClientCreate>,
+  organizationApi: ReturnType<typeof organizationApiClientCreate>,
+  productionRealmId: string,
+  productionOrganizations: readonly Organization[],
   realms: readonly Realm[],
 ): Promise<Result<void>> {
   for (const realm of realms) {
-    let pageToken: string | undefined
-    do {
-      const listed = productionApiResultStage(
-        await api.machineUserList(realm.id, pageQueryCreate(pageToken)),
-        "machine-user-list",
-      )
-      if (!listed.success) return listed
-      if (listed.data.items.some((user) => user.userName.trim().toLowerCase() === fixtureUserName))
-        return resultErrorCodedCreate(
-          "fixtureMachineUsersRefuse",
-          "The fixture identity belongs to a machine user; no changes were made.",
-          "passwords.contentoren-ssotest-ensure.machine-conflict",
+    const realmOrganizations =
+      realm.id === productionRealmId
+        ? resultCreate(productionOrganizations)
+        : await organizationListAll(organizationApi, realm.id)
+    if (!realmOrganizations.success) return realmOrganizations
+    for (const realmOrganization of realmOrganizations.data.filter((candidate) => candidate.status === "active")) {
+      let pageToken: string | undefined
+      do {
+        const listed = productionApiResultStage(
+          await api.machineUserList(realm.id, realmOrganization.id, pageQueryCreate(pageToken)),
+          "machine-user-list",
         )
-      pageToken = listed.data.nextPageToken
-    } while (pageToken !== undefined)
+        if (!listed.success) return listed
+        if (listed.data.items.some((user) => user.userName.trim().toLowerCase() === fixtureUserName))
+          return resultErrorCodedCreate(
+            "fixtureMachineUsersRefuse",
+            "The fixture identity belongs to a machine user; no changes were made.",
+            "passwords.contentoren-ssotest-ensure.machine-conflict",
+          )
+        pageToken = listed.data.nextPageToken
+      } while (pageToken !== undefined)
+    }
   }
   return resultCreate(undefined)
 }

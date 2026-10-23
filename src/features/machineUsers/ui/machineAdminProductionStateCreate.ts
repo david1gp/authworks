@@ -12,9 +12,13 @@ export function machineAdminProductionStateCreate(options: {
     const realm = session.guard.realm
     return typeof realm === "object" ? realm.realmId : ""
   }
+  const organizationId = () => {
+    const organization = session.guard.organization
+    return typeof organization === "object" ? organization.organizationId : ""
+  }
 
   return machineAdminScreenStateCreate({
-    adapter: machineAdminProductionAdapterCreate({ baseUrl: window.location.origin, realmId }),
+    adapter: machineAdminProductionAdapterCreate({ baseUrl: window.location.origin, organizationId, realmId }),
     basePath: "/admin",
     machineUserId: options.machineUserId,
     now: () => Date.now(),

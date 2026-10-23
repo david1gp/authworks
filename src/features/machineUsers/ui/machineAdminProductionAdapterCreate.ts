@@ -13,6 +13,7 @@ const pageSize = 25
  */
 export function machineAdminProductionAdapterCreate(options: {
   readonly baseUrl: string
+  readonly organizationId: () => string
   readonly realmId: () => string
   readonly csrfToken?: () => string | undefined
   readonly fetch?: (input: string | URL | Request, init?: RequestInit) => Promise<Response>
@@ -25,6 +26,7 @@ export function machineAdminProductionAdapterCreate(options: {
     })
   const api = () => apiCreate(options.csrfToken?.())
   const realm = () => options.realmId()
+  const organization = () => options.organizationId()
   const listQuery = (pageToken?: string) => (pageToken === undefined ? { pageSize } : { pageSize, pageToken })
   const unwrap = async <TResponse, TValue>(
     operation: Promise<Result<TResponse>>,
@@ -56,38 +58,43 @@ export function machineAdminProductionAdapterCreate(options: {
   return {
     apiKeyCreate: (machineUserId, input) =>
       mutate(
-        (client) => client.machineUserTenantApiKeyCreate(realm(), machineUserId, input),
+        (client) => client.machineUserTenantApiKeyCreate(realm(), organization(), machineUserId, input),
         (data) => ({ credential: data.credential, secret: data.secret }),
       ),
     clientSecretRotate: (machineUserId) =>
       mutate(
-        (client) => client.machineUserTenantClientSecretRotate(realm(), machineUserId),
+        (client) => client.machineUserTenantClientSecretRotate(realm(), organization(), machineUserId),
         (data) => ({ clientId: data.clientId, clientSecret: data.clientSecret, machineUser: data.machineUser }),
       ),
     credentialList: (machineUserId, pageToken) =>
-      api().machineUserTenantCredentialList(realm(), machineUserId, listQuery(pageToken)),
+      api().machineUserTenantCredentialList(realm(), organization(), machineUserId, listQuery(pageToken)),
     credentialRevoke: (credentialId, reason) =>
       mutate(
         (client) =>
-          client.machineUserTenantCredentialRevoke(realm(), credentialId, reason === undefined ? {} : { reason }),
+          client.machineUserTenantCredentialRevoke(
+            realm(),
+            organization(),
+            credentialId,
+            reason === undefined ? {} : { reason },
+          ),
         (data) => data.credential,
       ),
     machineUserCreate: (input) =>
       mutate(
-        (client) => client.machineUserTenantCreate(realm(), input),
+        (client) => client.machineUserTenantCreate(realm(), organization(), input),
         (data) => ({ clientId: data.clientId, clientSecret: data.clientSecret, machineUser: data.machineUser }),
       ),
     machineUserGet: (machineUserId) =>
-      unwrap(api().machineUserTenantGet(realm(), machineUserId), (data) => data.machineUser),
+      unwrap(api().machineUserTenantGet(realm(), organization(), machineUserId), (data) => data.machineUser),
     machineUserLifecycleSet: (machineUserId, input) =>
       mutate(
-        (client) => client.machineUserTenantLifecycleSet(realm(), machineUserId, input),
+        (client) => client.machineUserTenantLifecycleSet(realm(), organization(), machineUserId, input),
         (data) => data.machineUser,
       ),
-    machineUserList: (pageToken) => api().machineUserTenantList(realm(), listQuery(pageToken)),
+    machineUserList: (pageToken) => api().machineUserTenantList(realm(), organization(), listQuery(pageToken)),
     personalAccessTokenCreate: (machineUserId, input) =>
       mutate(
-        (client) => client.machineUserTenantPersonalAccessTokenCreate(realm(), machineUserId, input),
+        (client) => client.machineUserTenantPersonalAccessTokenCreate(realm(), organization(), machineUserId, input),
         (data) => ({ credential: data.credential, secret: data.secret }),
       ),
   }

@@ -120,9 +120,12 @@ function deleteDestination(
   switch (entityType) {
     case "machineUser": {
       const repository = machineRepositoryCreate(database)
-      const revoked = repository.credentialRevokeForUser(realmId, destinationId, now)
+      const current = repository.userGetByIdForRealm(realmId, destinationId)
+      if (!current.success) return current
+      if (current.data === null) return resultCreate(false)
+      const revoked = repository.credentialRevokeForUser(realmId, current.data.organizationId, destinationId, now)
       if (!revoked.success) return revoked
-      const deleted = repository.userDelete(realmId, destinationId)
+      const deleted = repository.userDelete(realmId, current.data.organizationId, destinationId)
       return deleted.success ? resultCreate(deleted.data !== null) : deleted
     }
     case "user": {

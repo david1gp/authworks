@@ -307,7 +307,7 @@ export async function authworksE2eFixtureCreate(
     if (!secondaryMembershipResponse.success)
       return await fixtureSetupFailure(databaseDirectory, secondaryMembershipResponse.errorMessage)
 
-    const machineResponse = await clients.machines.machineUserCreate(realm.id, {
+    const machineResponse = await clients.machines.machineUserCreate(realm.id, organization.id, {
       displayName: "E2E Machine User",
       scopes: ["api.read"],
       userName: "e2e-machine",

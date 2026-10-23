@@ -319,12 +319,24 @@ export const productionRouteContractMap = {
       },
       {
         contracts: ["machine-users.list", "machine-users.create", "machine-users.lifecycle"],
+        guard: {
+          authentication: "required",
+          organization: "required",
+          permission: "machine.user.manage",
+          realm: "required",
+        },
         key: "machine-users",
         path: "/admin/machine-users",
         title: "shell.nav.machineUsers",
       },
       {
         contracts: ["machine-users.get", "machine-users.lifecycle", "machine-users.credentials.rotate"],
+        guard: {
+          authentication: "required",
+          organization: "required",
+          permission: "machine.user.manage",
+          realm: "required",
+        },
         key: "machine-user-detail",
         path: "/admin/machine-users/:machineUserId",
         title: "admin.machine.users.detailTitle",
@@ -335,6 +347,12 @@ export const productionRouteContractMap = {
           "machine-users.credentials.rotate",
           "machine-users.credentials.revoke",
         ],
+        guard: {
+          authentication: "required",
+          organization: "required",
+          permission: "machine.credential.manage",
+          realm: "required",
+        },
         key: "machine-credentials",
         path: "/admin/machine-credentials",
         title: "shell.nav.machineCredentials",

@@ -153,6 +153,8 @@ export function organizationAdminScreenStateCreate(options: {
       void options.page.membershipRolesSet(membership.id, next)
     },
     membershipsHref: () => `${options.basePath}/memberships`,
+    machineCredentialsHref: () => `${options.basePath}/machine-credentials`,
+    machinesHref: () => `${options.basePath}/machine-users`,
     page: options.page,
     policySubmit: (event: SubmitEvent) => {
       event.preventDefault()

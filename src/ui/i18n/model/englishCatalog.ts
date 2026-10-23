@@ -448,7 +448,7 @@ export const englishCatalog = {
   "admin.machine.lifecycle.removeConfirm":
     "Remove this machine user? Every credential it owns stops working immediately and cannot be restored.",
   "admin.machine.lifecycle.title": "Lifecycle",
-  "admin.machine.permissionDenied": "You do not have permission to view or change machine users in this realm.",
+  "admin.machine.permissionDenied": "You do not have permission to view or change machine users in this organization.",
   "admin.machine.permissionDeniedTitle": "Access unavailable",
   "admin.machine.secret.acknowledge": "I have stored the secret",
   "admin.machine.secret.apiKeyTitle": "New API key",
@@ -481,10 +481,10 @@ export const englishCatalog = {
     "A client ID and client secret are issued immediately. The secret is shown once and cannot be recovered.",
   "admin.machine.users.created": "The machine user was created.",
   "admin.machine.users.description":
-    "Non-human identities that authenticate with client credentials, tokens, or API keys in this realm.",
+    "Non-human identities that authenticate with client credentials, tokens, or API keys in this organization.",
   "admin.machine.users.detailTitle": "Machine user detail",
   "admin.machine.users.displayName": "Display name",
-  "admin.machine.users.empty": "No machine users exist in this realm yet.",
+  "admin.machine.users.empty": "No machine users exist in this organization yet.",
   "admin.machine.users.identifier": "Machine user identifier",
   "admin.machine.users.invalid": "Enter a display name and a user name, and use only valid scope values.",
   "admin.machine.users.lifecycleChanged": "The machine user status was changed.",

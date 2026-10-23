@@ -72,10 +72,17 @@ async function fixtureSemanticsVerify(options: {
     const users = await listAll((query) => userApi.userList(realm.id, query))
     if (!users.success) return apiFailureCreate(op, users)
     humans.push(...users.data.filter((user) => normalized(user.userName) === fixtureUserName))
-    const machines = await listAll((query) => machineApi.machineUserList(realm.id, query))
-    if (!machines.success) return apiFailureCreate(op, machines)
-    if (machines.data.some((machine) => normalized(machine.userName) === fixtureUserName))
-      return failureCreate(op, "machine-conflict")
+    const realmOrganizations =
+      realm.id === options.productionRealmId
+        ? resultCreate(options.organizations)
+        : await listAll((query) => options.organizationApi.organizationList(realm.id, query))
+    if (!realmOrganizations.success) return apiFailureCreate(op, realmOrganizations)
+    for (const realmOrganization of realmOrganizations.data.filter((candidate) => candidate.status === "active")) {
+      const machines = await listAll((query) => machineApi.machineUserList(realm.id, realmOrganization.id, query))
+      if (!machines.success) return apiFailureCreate(op, machines)
+      if (machines.data.some((machine) => normalized(machine.userName) === fixtureUserName))
+        return failureCreate(op, "machine-conflict")
+    }
   }
   if (humans.length === 0) return resultCreate(undefined)
   if (humans.length !== 1) return failureCreate(op, "human-ambiguous")

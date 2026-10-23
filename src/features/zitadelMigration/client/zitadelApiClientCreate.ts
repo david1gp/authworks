@@ -1,3 +1,4 @@
+import { type ZitadelConfig, zitadelConfigSchema } from "@adaptive-ds/zitadel-cli/config"
 import {
   type AdminServiceListIDPsRequest,
   adminServiceListIDPs,
@@ -24,9 +25,8 @@ import {
   userServiceListIDPLinks,
   userServiceListUsers,
 } from "@adaptive-ds/zitadel-cli/v2"
-import { zitadelConfigSchema, type ZitadelConfig } from "@adaptive-ds/zitadel-cli/config"
-import * as v from "valibot"
 import type { Transport } from "@connectrpc/connect"
+import * as v from "valibot"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"

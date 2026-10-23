@@ -27,6 +27,8 @@ import { organizationAdminStatusTone } from "./organizationAdminStatusTone.js"
 export function OrganizationAdminDetailView(props: {
   readonly backHref: string
   readonly error?: string
+  readonly machineCredentialsHref: string
+  readonly machinesHref: string
   readonly memberships: readonly OrganizationMembership[]
   readonly membershipsHref: string
   readonly name: string
@@ -224,6 +226,25 @@ export function OrganizationAdminDetailView(props: {
                     </TableBody>
                   </Table>
                 </Show>
+              </AuthenticatedSection>
+
+              <AuthenticatedSection
+                actions={
+                  <A class="text-xs font-medium text-accent hover:underline" href={props.machinesHref}>
+                    {messageTranslate("shell.nav.machineUsers")}
+                  </A>
+                }
+                description={messageTranslate("admin.machine.users.description")}
+                title={messageTranslate("shell.nav.machineUsers")}
+              >
+                <div class="flex flex-wrap gap-2 px-5 py-4">
+                  <A class="text-xs font-medium text-accent hover:underline" href={props.machinesHref}>
+                    {messageTranslate("shell.nav.machineUsers")}
+                  </A>
+                  <A class="text-xs font-medium text-accent hover:underline" href={props.machineCredentialsHref}>
+                    {messageTranslate("shell.nav.credentialsTokens")}
+                  </A>
+                </div>
               </AuthenticatedSection>
             </>
           )}

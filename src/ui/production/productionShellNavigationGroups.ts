@@ -38,9 +38,15 @@ export const productionShellNavigationGroups = {
       icon: mdiAccountMultipleOutline,
       label: "shell.nav.directory",
       items: [
-        { href: "/admin/organizations", icon: mdiOfficeBuildingOutline, label: "shell.nav.organizations" },
         { href: "/admin/users", icon: mdiAccountMultipleOutline, label: "shell.nav.users" },
         { href: "/admin/impersonation", icon: mdiAccountSwitchOutline, label: "shell.nav.impersonation" },
+      ],
+    },
+    {
+      icon: mdiOfficeBuildingOutline,
+      label: "shell.nav.organizations",
+      items: [
+        { href: "/admin/organizations", icon: mdiOfficeBuildingOutline, label: "shell.nav.organizations" },
         { href: "/admin/machine-users", icon: mdiRobotOutline, label: "shell.nav.machineUsers" },
         { href: "/admin/machine-credentials", icon: mdiKeyOutline, label: "shell.nav.credentialsTokens" },
       ],
