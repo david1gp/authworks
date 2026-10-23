@@ -29,17 +29,27 @@ export function machineClientCredentialsAuthenticate(
       "machine-users.invalid-client",
     )
   const repository = machineRepositoryCreate(options.database.db)
-  const machineUser = repository.userGetByName(options.realmId, parsed.output.clientId.trim().toLowerCase())
-  if (!machineUser.success) return machineUser
-  if (machineUser.data === null || machineUser.data.status !== "active")
+  const candidates = repository.userListByNameForRealm(options.realmId, parsed.output.clientId.trim().toLowerCase())
+  if (!candidates.success) return candidates
+  // client_id is unique per organization, so the same name may exist in several
+  // organizations of one realm. Authenticate only when the name resolves to a
+  // single machine user and fail closed on ambiguity.
+  if (candidates.data.length !== 1)
     return resultErrorCreate(
       "machineClientCredentialsInvalidClient",
       "Client authentication failed.",
       "machine-users.invalid-client",
     )
-  const configuredScopes = machineScopesParse(machineUser.data.scopes)
+  const machineUser = candidates.data[0] as (typeof candidates.data)[number]
+  if (machineUser.status !== "active")
+    return resultErrorCreate(
+      "machineClientCredentialsInvalidClient",
+      "Client authentication failed.",
+      "machine-users.invalid-client",
+    )
+  const configuredScopes = machineScopesParse(machineUser.scopes)
   if (!configuredScopes.success) return configuredScopes
-  const credentials = repository.credentialList(options.realmId, machineUser.data.id)
+  const credentials = repository.credentialList(options.realmId, machineUser.organizationId, machineUser.id)
   if (!credentials.success) return credentials
   const clientCredential = credentials.data.find(
     (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
@@ -66,8 +76,8 @@ export function machineClientCredentialsAuthenticate(
       "machine-users.invalid-scope",
     )
   return resultCreate({
-    clientId: machineUser.data.userName,
-    machineUserId: machineUser.data.id,
+    clientId: machineUser.userName,
+    machineUserId: machineUser.id,
     scopes: [...new Set(scopes)],
   })
 }

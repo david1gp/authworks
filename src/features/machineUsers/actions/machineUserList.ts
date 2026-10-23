@@ -14,6 +14,7 @@ import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 type MachineUserListOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
+  readonly organizationId: string
   readonly query?: ListQuery
   readonly realmId: string
 }
@@ -21,7 +22,7 @@ type MachineUserListOptions = {
 export function machineUserList(options: MachineUserListOptions): Result<MachineUserListResponse> {
   const authorized = machineUserContextAuthorize(options)
   if (!authorized.success) return authorized
-  const found = machineRepositoryCreate(options.database.db).userList(options.realmId)
+  const found = machineRepositoryCreate(options.database.db).userList(options.realmId, options.organizationId)
   if (!found.success) return found
   const machineUsers = []
   for (const row of found.data) {

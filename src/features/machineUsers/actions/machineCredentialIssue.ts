@@ -28,6 +28,7 @@ type MachineCredentialIssueOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: MachineCredentialIssueRequest
+  readonly organizationId: string
   readonly realmId: string
   readonly kind: Exclude<MachineCredentialKind, "access_token" | "client_secret">
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -57,7 +58,7 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const machineUser = repository.userGet(options.realmId, parsed.output.machineUserId)
+    const machineUser = repository.userGet(options.realmId, options.organizationId, parsed.output.machineUserId)
     if (!machineUser.success) return machineUser
     if (machineUser.data === null)
       return resultErrorCreate(op, "The machine user was not found.", "machine-users.not-found")
@@ -72,6 +73,7 @@ export function machineCredentialIssue(options: MachineCredentialIssueOptions): 
       createdAt: now,
       expiresAt,
       id: credentialId,
+      organizationId: options.organizationId,
       realmId: options.realmId,
       kind: options.kind,
       machineUserId: parsed.output.machineUserId,

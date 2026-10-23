@@ -58,17 +58,26 @@ export function machineClientCredentialsIssue(
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const machineUser = repository.userGetByName(options.realmId, parsed.output.clientId.trim().toLowerCase())
-    if (!machineUser.success) return machineUser
-    if (machineUser.data === null || machineUser.data.status !== "active")
+    const candidates = repository.userListByNameForRealm(options.realmId, parsed.output.clientId.trim().toLowerCase())
+    if (!candidates.success) return candidates
+    // client_id is unique per organization: issue only when the name resolves to
+    // a single machine user and fail closed on ambiguity.
+    if (candidates.data.length !== 1)
       return resultErrorCreate(
         "machineClientCredentialsInvalidClient",
         "Client authentication failed.",
         "machine-users.invalid-client",
       )
-    const configuredScopes = machineScopesParse(machineUser.data.scopes)
+    const machineUser = candidates.data[0] as (typeof candidates.data)[number]
+    if (machineUser.status !== "active")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidClient",
+        "Client authentication failed.",
+        "machine-users.invalid-client",
+      )
+    const configuredScopes = machineScopesParse(machineUser.scopes)
     if (!configuredScopes.success) return configuredScopes
-    const credentials = repository.credentialList(options.realmId, machineUser.data.id)
+    const credentials = repository.credentialList(options.realmId, machineUser.organizationId, machineUser.id)
     if (!credentials.success) return credentials
     const clientCredential = credentials.data.find(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
@@ -100,9 +109,10 @@ export function machineClientCredentialsIssue(
       createdAt: now,
       expiresAt,
       id: credentialId,
+      organizationId: machineUser.organizationId,
       realmId: options.realmId,
       kind: "access_token",
-      machineUserId: machineUser.data.id,
+      machineUserId: machineUser.id,
       name: "OAuth client credentials",
       replacedById: null,
       revokedAt: null,
@@ -115,7 +125,7 @@ export function machineClientCredentialsIssue(
       credentialId,
       credentialKind: "access_token",
       expiresAt,
-      machineUserId: machineUser.data.id,
+      machineUserId: machineUser.id,
       name: "OAuth client credentials",
       scopes: uniqueScopes,
     })
@@ -124,7 +134,7 @@ export function machineClientCredentialsIssue(
     const event = storageEventAppend(
       transaction,
       {
-        actorId: machineUser.data.id,
+        actorId: machineUser.id,
         aggregateId: credentialId,
         aggregateType: "machine_credential",
         aggregateVersion: 1,

@@ -11,6 +11,7 @@ type MachineApiKeyCreateOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: MachineCredentialIssueRequest
+  readonly organizationId: string
   readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string

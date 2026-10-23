@@ -26,6 +26,7 @@ type MachineCredentialRevokeOptions = {
   readonly database: StorageDatabase
   readonly credentialId: string
   readonly input?: MachineCredentialRevokeRequest
+  readonly organizationId: string
   readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -47,13 +48,13 @@ export function machineCredentialRevoke(
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const found = repository.credentialGet(options.realmId, options.credentialId)
+    const found = repository.credentialGet(options.realmId, options.organizationId, options.credentialId)
     if (!found.success) return found
     if (found.data === null)
       return resultErrorCreate(op, "The machine credential was not found.", "machine-users.not-found")
     if (found.data.revokedAt !== null)
       return resultErrorCreate(op, "The machine credential is already revoked.", "machine-users.conflict")
-    const revoked = repository.credentialRevoke(options.realmId, options.credentialId, now)
+    const revoked = repository.credentialRevoke(options.realmId, options.organizationId, options.credentialId, now)
     if (!revoked.success) return revoked
     if (revoked.data === null)
       return resultErrorCreate(op, "The machine credential is already revoked.", "machine-users.conflict")

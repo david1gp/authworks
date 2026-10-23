@@ -13,6 +13,7 @@ import { machineRepositoryCreate } from "../persistence/machineRepositoryCreate.
 
 type MachineCredentialAuthenticateOptions = {
   readonly database: StorageDatabase
+  readonly organizationId?: string
   readonly realmId: string
   readonly requiredScope?: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -40,6 +41,7 @@ export function machineCredentialAuthenticate(
       credential.kind !== "access_token"
     )
       continue
+    if (options.organizationId !== undefined && credential.organizationId !== options.organizationId) continue
     const verified = machineSecretHashVerify(options.token, credential.secretHash)
     if (!verified.success) return verified
     if (!verified.data) continue
@@ -50,7 +52,7 @@ export function machineCredentialAuthenticate(
   )
   if (credential === undefined)
     return resultErrorCreate(op, "Machine authorization is invalid.", "machine-users.invalid")
-  const machineUser = repository.userGet(options.realmId, credential.machineUserId)
+  const machineUser = repository.userGet(options.realmId, credential.organizationId, credential.machineUserId)
   if (!machineUser.success) return machineUser
   if (machineUser.data === null || machineUser.data.status !== "active")
     return resultErrorCreate(op, "Machine authorization is invalid.", "machine-users.invalid")

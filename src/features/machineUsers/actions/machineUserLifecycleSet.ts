@@ -26,6 +26,7 @@ type MachineUserLifecycleSetOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: MachineUserLifecycleRequest
+  readonly organizationId: string
   readonly realmId: string
   readonly machineUserId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -46,14 +47,14 @@ export function machineUserLifecycleSet(options: MachineUserLifecycleSetOptions)
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const found = repository.userGet(options.realmId, options.machineUserId)
+    const found = repository.userGet(options.realmId, options.organizationId, options.machineUserId)
     if (!found.success) return found
     if (found.data === null) return resultErrorCreate(op, "The machine user was not found.", "machine-users.not-found")
     if (found.data.status === "removed" && parsed.output.status !== "removed")
       return resultErrorCreate(op, "A removed machine user cannot be reactivated.", "machine-users.not-active")
     if (found.data.status === parsed.output.status)
       return resultErrorCreate(op, "The machine user already has that status.", "machine-users.conflict")
-    const updated = repository.userUpdate(options.realmId, options.machineUserId, {
+    const updated = repository.userUpdate(options.realmId, options.organizationId, options.machineUserId, {
       status: parsed.output.status,
       updatedAt: now,
       version: found.data.version + 1,
@@ -86,7 +87,12 @@ export function machineUserLifecycleSet(options: MachineUserLifecycleSetOptions)
     if (!statusEvent.success) return statusEvent
     if (parsed.output.status === "active")
       return resultCreate({ machineUser: machineUserPublicViewCreate(updated.data, scopes.data) })
-    const revoked = repository.credentialRevokeForUser(options.realmId, options.machineUserId, now)
+    const revoked = repository.credentialRevokeForUser(
+      options.realmId,
+      options.organizationId,
+      options.machineUserId,
+      now,
+    )
     if (!revoked.success) return revoked
     let commandIndex = 1
     for (const credential of revoked.data) {

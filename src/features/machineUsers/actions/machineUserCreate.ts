@@ -28,6 +28,7 @@ type MachineUserCreateOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
   readonly input: MachineUserCreateRequest
+  readonly organizationId: string
   readonly realmId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
   readonly correlationId?: string
@@ -66,6 +67,7 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
       createdAt,
       displayName: parsed.output.displayName.trim(),
       id: machineUserId,
+      organizationId: options.organizationId,
       realmId: options.realmId,
       scopes: JSON.stringify(scopes),
       status: "active",
@@ -77,7 +79,7 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
       if (user.errorMessage === "The machine user could not be created.")
         return resultErrorCreate(
           op,
-          "A machine user with that name already exists in this realm.",
+          "A machine user with that name already exists in this organization.",
           "machine-users.already-exists",
         )
       return user
@@ -86,6 +88,7 @@ export function machineUserCreate(options: MachineUserCreateOptions): Result<Mac
       createdAt,
       expiresAt: null,
       id: credentialId,
+      organizationId: options.organizationId,
       realmId: options.realmId,
       kind: "client_secret",
       machineUserId,

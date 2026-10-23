@@ -31,15 +31,24 @@ export function machineClientCredentialsRevoke(options: MachineClientCredentials
   const correlationId = options.correlationId ?? uuidv7Create(runtime)
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const machineUser = repository.userGetByName(options.realmId, options.clientId.trim().toLowerCase())
-    if (!machineUser.success) return machineUser
-    if (machineUser.data === null || machineUser.data.status !== "active")
+    const candidates = repository.userListByNameForRealm(options.realmId, options.clientId.trim().toLowerCase())
+    if (!candidates.success) return candidates
+    // client_id is unique per organization: revoke only when the name resolves
+    // to a single machine user and fail closed on ambiguity.
+    if (candidates.data.length !== 1)
       return resultErrorCreate(
         "machineClientCredentialsInvalidClient",
         "Client authentication failed.",
         "machine-users.invalid-client",
       )
-    const credentials = repository.credentialList(options.realmId, machineUser.data.id)
+    const machineUser = candidates.data[0] as (typeof candidates.data)[number]
+    if (machineUser.status !== "active")
+      return resultErrorCreate(
+        "machineClientCredentialsInvalidClient",
+        "Client authentication failed.",
+        "machine-users.invalid-client",
+      )
+    const credentials = repository.credentialList(options.realmId, machineUser.organizationId, machineUser.id)
     if (!credentials.success) return credentials
     const clientCredential = credentials.data.find(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
@@ -63,7 +72,7 @@ export function machineClientCredentialsRevoke(options: MachineClientCredentials
       const tokenMatches = machineSecretHashVerify(options.token, candidate.secretHash)
       if (!tokenMatches.success) return tokenMatches
       if (!tokenMatches.data) continue
-      const revoked = repository.credentialRevoke(options.realmId, candidate.id, now)
+      const revoked = repository.credentialRevoke(options.realmId, machineUser.organizationId, candidate.id, now)
       if (!revoked.success) return revoked
       if (revoked.data === null) return resultCreate(undefined)
       const payload = v.safeParse(machineCredentialRevokedEventPayloadSchema, {
@@ -75,7 +84,7 @@ export function machineClientCredentialsRevoke(options: MachineClientCredentials
       const event = storageEventAppend(
         transaction,
         {
-          actorId: machineUser.data.id,
+          actorId: machineUser.id,
           aggregateId: candidate.id,
           aggregateType: "machine_credential",
           aggregateVersion: revoked.data.version,

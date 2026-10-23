@@ -22,6 +22,7 @@ import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 type MachineUserClientSecretRotateOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
+  readonly organizationId: string
   readonly realmId: string
   readonly machineUserId: string
   readonly runtime?: Pick<ReturnType<typeof runtimeCreate>, "now" | "randomBytes">
@@ -47,21 +48,21 @@ export function machineUserClientSecretRotate(
 
   return storageTransactionRun(options.database, (transaction) => {
     const repository = machineRepositoryCreate(transaction)
-    const user = repository.userGet(options.realmId, options.machineUserId)
+    const user = repository.userGet(options.realmId, options.organizationId, options.machineUserId)
     if (!user.success) return user
     if (user.data === null) return resultErrorCreate(op, "The machine user was not found.", "machine-users.not-found")
     if (user.data.status !== "active")
       return resultErrorCreate(op, "The machine user is not active.", "machine-users.not-active")
     const scopes = machineScopesParse(user.data.scopes)
     if (!scopes.success) return scopes
-    const credentials = repository.credentialList(options.realmId, options.machineUserId)
+    const credentials = repository.credentialList(options.realmId, options.organizationId, options.machineUserId)
     if (!credentials.success) return credentials
     const current = credentials.data.find(
       (credential) => credential.kind === "client_secret" && credential.revokedAt === null,
     )
     if (current === undefined)
       return resultErrorCreate(op, "The machine user has no active client secret.", "machine-users.invalid")
-    const revoked = repository.credentialUpdate(options.realmId, current.id, {
+    const revoked = repository.credentialUpdate(options.realmId, options.organizationId, current.id, {
       replacedById: replacementId,
       revokedAt: now,
       version: current.version + 1,
@@ -73,6 +74,7 @@ export function machineUserClientSecretRotate(
       createdAt: now,
       expiresAt: null,
       id: replacementId,
+      organizationId: options.organizationId,
       realmId: options.realmId,
       kind: "client_secret",
       machineUserId: options.machineUserId,

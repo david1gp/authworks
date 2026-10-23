@@ -13,6 +13,7 @@ import { machineUserContextAuthorize } from "./machineUserContextAuthorize.js"
 type MachineUserGetOptions = {
   readonly context: RealmSystemContext | RealmTenantContext
   readonly database: StorageDatabase
+  readonly organizationId: string
   readonly realmId: string
   readonly machineUserId: string
 }
@@ -20,7 +21,11 @@ type MachineUserGetOptions = {
 export function machineUserGet(options: MachineUserGetOptions): Result<MachineUserResponse> {
   const authorized = machineUserContextAuthorize(options)
   if (!authorized.success) return authorized
-  const found = machineRepositoryCreate(options.database.db).userGet(options.realmId, options.machineUserId)
+  const found = machineRepositoryCreate(options.database.db).userGet(
+    options.realmId,
+    options.organizationId,
+    options.machineUserId,
+  )
   if (!found.success) return found
   if (found.data === null)
     return resultErrorCreate("machineUserGet", "The machine user was not found.", "machine-users.not-found")
