@@ -46,6 +46,7 @@ export function organizationList(options: OrganizationListOptions): Result<Organ
     if (options.context.kind === "tenant") {
       const authorized = organizationContextAuthorize({
         context: options.context,
+        database: options.database,
         organization: row,
         repository,
         membership:

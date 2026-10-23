@@ -51,6 +51,7 @@ export async function organizationDomainVerify(
     return resultErrorCodedCreate(op, "The organization domain was not found.", "organizations.domain-not-found")
   const authorized = organizationContextAuthorize({
     context: options.context,
+    database: options.database,
     organization: organization.data,
     repository: organizations,
     requiredPermission: "organization.manage",

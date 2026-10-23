@@ -29,7 +29,7 @@ export function accountProductionAdapterStateCreate(
     if (options.realmId !== undefined) return Promise.resolve(options.realmId)
     return productionRealmIdResolve({
       baseUrl,
-      domain: typeof window === "undefined" ? "localhost" : window.location.host,
+      domain: typeof window === "undefined" ? "localhost" : window.location.hostname,
       fallbackRealmId: fallbackRealmId(),
     })
   }

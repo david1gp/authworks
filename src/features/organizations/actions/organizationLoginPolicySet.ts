@@ -67,7 +67,8 @@ function organizationLoginPolicySetRun(
       const authorized = authorizationEnforce({
         actor: options.context.actor,
         realmId: options.realmId,
-        permission: authorizationPermissionDefinitions.organizationManage,
+        permission: authorizationPermissionDefinitions.realmWrite,
+        roles: ["realm_admin"],
       })
       if (!authorized.success) return authorized
     }
@@ -93,6 +94,7 @@ function organizationLoginPolicySetRun(
       if (!realm.success) return realm
       const authorized = organizationContextAuthorize({
         context: options.context,
+        database: options.database,
         organization: organization.data,
         repository: organizationRepository,
         requiredPermission: "organization.manage",

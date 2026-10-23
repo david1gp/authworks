@@ -35,6 +35,7 @@ export function organizationGet(options: OrganizationGetOptions): Result<{ organ
     return resultErrorCodedCreate(op, "The organization is not active.", "organizations.not-active")
   const authorized = organizationContextAuthorize({
     context: options.context,
+    database: options.database,
     organization: organization.data,
     repository,
     requiredPermission: "organization.read",

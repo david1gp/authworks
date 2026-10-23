@@ -9,6 +9,7 @@ import { eventListResponseSchema } from "../../src/features/events/public/eventL
 import { eventServerAppCreate } from "../../src/features/events/server/eventServerAppCreate.js"
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationMembershipCreate } from "../../src/features/organizations/actions/organizationMembershipCreate.js"
+import { realmAdministratorGrant } from "../../src/features/realms/actions/realmAdministratorGrant.js"
 import { realmBootstrapAdminCreate } from "../../src/features/realms/actions/realmBootstrapAdminCreate.js"
 import { realmCreate } from "../../src/features/realms/actions/realmCreate.js"
 import { realmSystemContextCreate } from "../../src/features/realms/domain/realmSystemContextCreate.js"
@@ -187,6 +188,14 @@ test("tenant event listing authenticates browser sessions, enforces permissions,
     expect(memberId).toBeString()
     if (adminId === undefined || memberId === undefined) return
 
+    const granted = realmAdministratorGrant({
+      context: realmSystemContextCreate(),
+      database,
+      realmId: alpha.id,
+      userId: adminId,
+    })
+    expect(granted.success).toBe(true)
+    if (!granted.success) return
     const organization = organizationCreate({
       context: realmSystemContextCreate(),
       database,

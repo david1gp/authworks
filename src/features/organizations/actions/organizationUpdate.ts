@@ -61,6 +61,7 @@ export function organizationUpdate(options: OrganizationUpdateOptions): Result<{
       return resultErrorCodedCreate(op, "The organization was not found.", "organizations.not-found")
     const authorized = organizationContextAuthorize({
       context: options.context,
+      database: options.database,
       organization: current.data,
       repository,
       requiredPermission: "organization.manage",

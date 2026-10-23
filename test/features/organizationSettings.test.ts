@@ -11,6 +11,7 @@ import { organizationBrandingSet } from "../../src/features/organizations/action
 import { organizationCreate } from "../../src/features/organizations/actions/organizationCreate.js"
 import { organizationDomainClaim } from "../../src/features/organizations/actions/organizationDomainClaim.js"
 import { organizationDomainDiscover } from "../../src/features/organizations/actions/organizationDomainDiscover.js"
+import { organizationDomainRealmSeed } from "../../src/features/organizations/actions/organizationDomainRealmSeed.js"
 import { organizationDomainRemove } from "../../src/features/organizations/actions/organizationDomainRemove.js"
 import { organizationDomainVerify } from "../../src/features/organizations/actions/organizationDomainVerify.js"
 import { organizationLoginPolicyEnforce } from "../../src/features/organizations/actions/organizationLoginPolicyEnforce.js"
@@ -136,6 +137,10 @@ test("branding and verified domain discovery are tenant-safe and DNS-port based"
       expect(discovered.data.branding.disableWatermark).toBe(true)
       expect(discovered.data.providers).toEqual([])
     }
+    expect(organizationDomainDiscover({ database, domain: "login.example.com:5190" })).toMatchObject({
+      success: true,
+      data: { found: true, organization: { id: organization.id } },
+    })
     expect(organizationDomainDiscover({ database, domain: "unverified.example.com" })).toEqual({
       data: { found: false },
       success: true,
@@ -143,6 +148,60 @@ test("branding and verified domain discovery are tenant-safe and DNS-port based"
     expect(JSON.stringify(database.db.select().from(storageEventTable).all())).not.toContain(
       claimed.data.domain.verification?.recordValue ?? "never",
     )
+  })
+})
+
+test("organization domain realm seed marks same-realm domains verified without DNS", async () => {
+  await withDatabase(async (database) => {
+    const { realm, organization } = await createOrganization(database)
+    // Cross-realm and foreign domains stay rejected, and tenant callers are refused.
+    expect(
+      organizationDomainRealmSeed({
+        context: realmSystemContextCreate(),
+        database,
+        domain: "other.example.com",
+        realmId: realm.id,
+        organizationId: organization.id,
+      }).success,
+    ).toBe(false)
+    expect(
+      organizationDomainRealmSeed({
+        context: realmTenantContextCreate(realm.id, "user"),
+        database,
+        domain: realm.domain,
+        realmId: realm.id,
+        organizationId: organization.id,
+      } as unknown as Parameters<typeof organizationDomainRealmSeed>[0]).success,
+    ).toBe(false)
+    const seeded = organizationDomainRealmSeed({
+      context: realmSystemContextCreate(),
+      database,
+      domain: realm.domain,
+      realmId: realm.id,
+      organizationId: organization.id,
+    })
+    expect(seeded.success).toBe(true)
+    if (!seeded.success) return
+    expect(seeded.data.domain.verified).toBe(true)
+    expect(seeded.data.domain.domain).toBe(realm.domain)
+    // The seed is idempotent, and discovery resolves with or without a port suffix.
+    expect(
+      organizationDomainRealmSeed({
+        context: realmSystemContextCreate(),
+        database,
+        domain: realm.domain,
+        realmId: realm.id,
+        organizationId: organization.id,
+      }),
+    ).toMatchObject({ success: true, data: { domain: { verified: true } } })
+    expect(organizationDomainDiscover({ database, domain: realm.domain })).toMatchObject({
+      success: true,
+      data: { found: true, organization: { id: organization.id } },
+    })
+    expect(organizationDomainDiscover({ database, domain: `${realm.domain}:5190` })).toMatchObject({
+      success: true,
+      data: { found: true, organization: { id: organization.id } },
+    })
   })
 })
 

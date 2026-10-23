@@ -7,8 +7,8 @@ import { runtimeCreate } from "../../../platform/runtime/runtimeCreate.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import { storageEventAppend } from "../../../platform/storage/storageEventAppend.js"
 import { storageTransactionRun } from "../../../platform/storage/storageTransactionRun.js"
-import { authorizationEnforce } from "../../authorization/actions/authorizationEnforce.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import { realmAdministratorContextAuthorize } from "../../realms/actions/realmAdministratorContextAuthorize.js"
 import { realmGet } from "../../realms/actions/realmGet.js"
 import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.js"
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
@@ -43,10 +43,11 @@ export function organizationCreate(options: OrganizationCreateOptions): Result<{
         "The organization is not available in this tenant context.",
         "organizations.tenant-mismatch",
       )
-    const authorized = authorizationEnforce({
+    const authorized = realmAdministratorContextAuthorize({
       actor: options.context.actor,
-      realmId: options.realmId,
+      database: options.database,
       permission: authorizationPermissionDefinitions.organizationManage,
+      realmId: options.realmId,
     })
     if (!authorized.success) return authorized
   }

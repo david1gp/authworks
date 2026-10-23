@@ -42,6 +42,7 @@ export function organizationDomainList(options: OrganizationDomainListOptions): 
       )
     const authorized = organizationContextAuthorize({
       context: options.context,
+      database: options.database,
       organization: organization.data,
       repository: organizationRepositoryCreate(options.database.db),
       requiredPermission: "organization.read",

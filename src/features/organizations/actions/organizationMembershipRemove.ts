@@ -50,6 +50,7 @@ export function organizationMembershipRemove(options: OrganizationMembershipRemo
     if (!roles.success) return roles
     const authorized = organizationContextAuthorize({
       context: options.context,
+      database: options.database,
       organization: organization.data,
       repository,
       requiredPermission: "organization.members.manage",

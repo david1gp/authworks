@@ -18,7 +18,7 @@ type OrganizationDomainDiscoverOptions = {
 export function organizationDomainDiscover(
   options: OrganizationDomainDiscoverOptions,
 ): Result<OrganizationDiscoveryResponse> {
-  const normalized = realmDomainNormalize(options.domain)
+  const normalized = realmDomainNormalize(organizationDiscoveryDomainPortStrip(options.domain))
   if (!normalized.success) return resultCreate({ found: false })
   const domain = organizationDomainRepositoryCreate(options.database.db).organizationDomainGet(normalized.data)
   if (!domain.success || domain.data === null || !domain.data.verified) return resultCreate({ found: false })
@@ -77,4 +77,12 @@ export function organizationDomainDiscover(
     policy: policy.data,
     providers,
   })
+}
+
+function organizationDiscoveryDomainPortStrip(value: string): string {
+  const separator = value.lastIndexOf(":")
+  if (separator === -1) return value
+  if (value.indexOf(":") !== separator) return value
+  if (!/^\d+$/.test(value.slice(separator + 1))) return value
+  return value.slice(0, separator)
 }

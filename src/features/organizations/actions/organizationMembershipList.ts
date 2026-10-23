@@ -40,6 +40,7 @@ export function organizationMembershipList(
     return resultErrorCodedCreate(op, "The organization is not active or was not found.", "organizations.not-found")
   const authorized = organizationContextAuthorize({
     context: options.context,
+    database: options.database,
     organization: organization.data,
     repository,
     requiredPermission: "organization.read",

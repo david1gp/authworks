@@ -71,6 +71,7 @@ export function organizationMembershipUpdate(
     if (!oldRoles.success) return oldRoles
     const authorized = organizationContextAuthorize({
       context: options.context,
+      database: options.database,
       organization: organization.data,
       repository,
       requiredPermission: "organization.members.manage",

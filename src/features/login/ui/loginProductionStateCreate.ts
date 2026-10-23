@@ -26,7 +26,7 @@ export function loginProductionStateCreate() {
     api,
     discovery: discovery.get,
     discoverySet: discovery.set,
-    domain: window.location.host,
+    domain: window.location.hostname,
     interactionHandle,
     interactionResume: () => {
       const handle = interactionHandle()
