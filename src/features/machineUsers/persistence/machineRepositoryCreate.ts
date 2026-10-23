@@ -11,6 +11,14 @@ type MachineUserUpdate = Partial<MachineUserInsert>
 type MachineCredentialInsert = typeof machineCredentialTable.$inferInsert
 type MachineCredentialUpdate = Partial<MachineCredentialInsert>
 
+function machineUserScope(realmId: string, organizationId: string) {
+  return and(eq(machineUserTable.realmId, realmId), eq(machineUserTable.organizationId, organizationId))
+}
+
+function machineCredentialScope(realmId: string, organizationId: string) {
+  return and(eq(machineCredentialTable.realmId, realmId), eq(machineCredentialTable.organizationId, organizationId))
+}
+
 export function machineRepositoryCreate(database: StorageExecutor) {
   return {
     credentialCreate(input: MachineCredentialInsert): Result<MachineCredentialRow> {
@@ -32,13 +40,13 @@ export function machineRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    credentialGet(realmId: string, credentialId: string): Result<MachineCredentialRow | null> {
+    credentialGet(realmId: string, organizationId: string, credentialId: string): Result<MachineCredentialRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(machineCredentialTable)
-            .where(and(eq(machineCredentialTable.realmId, realmId), eq(machineCredentialTable.id, credentialId)))
+            .where(and(machineCredentialScope(realmId, organizationId), eq(machineCredentialTable.id, credentialId)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -50,13 +58,19 @@ export function machineRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    credentialGetByHash(realmId: string, secretHash: string): Result<MachineCredentialRow | null> {
+    credentialGetByHash(
+      realmId: string,
+      organizationId: string,
+      secretHash: string,
+    ): Result<MachineCredentialRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(machineCredentialTable)
-            .where(and(eq(machineCredentialTable.realmId, realmId), eq(machineCredentialTable.secretHash, secretHash)))
+            .where(
+              and(machineCredentialScope(realmId, organizationId), eq(machineCredentialTable.secretHash, secretHash)),
+            )
             .get() ?? null,
         )
       } catch (_error) {
@@ -68,14 +82,17 @@ export function machineRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    credentialList(realmId: string, machineUserId: string): Result<MachineCredentialRow[]> {
+    credentialList(realmId: string, organizationId: string, machineUserId: string): Result<MachineCredentialRow[]> {
       try {
         return resultCreate(
           database
             .select()
             .from(machineCredentialTable)
             .where(
-              and(eq(machineCredentialTable.realmId, realmId), eq(machineCredentialTable.machineUserId, machineUserId)),
+              and(
+                machineCredentialScope(realmId, organizationId),
+                eq(machineCredentialTable.machineUserId, machineUserId),
+              ),
             )
             .orderBy(asc(machineCredentialTable.createdAt))
             .all(),
@@ -101,14 +118,38 @@ export function machineRepositoryCreate(database: StorageExecutor) {
         )
       } catch (_error) {
         return resultErrorCreate(
-          "machineCredentialListForRealm",
+          "credentialListForRealm",
           "The machine credentials could not be read.",
           "machine-users.read-failed",
         )
       }
     },
 
-    credentialRevoke(realmId: string, credentialId: string, revokedAt: number): Result<MachineCredentialRow | null> {
+    credentialListForOrganization(realmId: string, organizationId: string): Result<MachineCredentialRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(machineCredentialTable)
+            .where(machineCredentialScope(realmId, organizationId))
+            .orderBy(asc(machineCredentialTable.createdAt))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "machineCredentialListForOrganization",
+          "The machine credentials could not be read.",
+          "machine-users.read-failed",
+        )
+      }
+    },
+
+    credentialRevoke(
+      realmId: string,
+      organizationId: string,
+      credentialId: string,
+      revokedAt: number,
+    ): Result<MachineCredentialRow | null> {
       try {
         return resultCreate(
           database
@@ -116,7 +157,7 @@ export function machineRepositoryCreate(database: StorageExecutor) {
             .set({ revokedAt, version: sql`${machineCredentialTable.version} + 1` })
             .where(
               and(
-                eq(machineCredentialTable.realmId, realmId),
+                machineCredentialScope(realmId, organizationId),
                 eq(machineCredentialTable.id, credentialId),
                 isNull(machineCredentialTable.revokedAt),
               ),
@@ -133,7 +174,12 @@ export function machineRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    credentialRevokeForUser(realmId: string, machineUserId: string, revokedAt: number): Result<MachineCredentialRow[]> {
+    credentialRevokeForUser(
+      realmId: string,
+      organizationId: string,
+      machineUserId: string,
+      revokedAt: number,
+    ): Result<MachineCredentialRow[]> {
       try {
         return resultCreate(
           database
@@ -141,7 +187,7 @@ export function machineRepositoryCreate(database: StorageExecutor) {
             .set({ revokedAt, version: sql`${machineCredentialTable.version} + 1` })
             .where(
               and(
-                eq(machineCredentialTable.realmId, realmId),
+                machineCredentialScope(realmId, organizationId),
                 eq(machineCredentialTable.machineUserId, machineUserId),
                 isNull(machineCredentialTable.revokedAt),
               ),
@@ -160,6 +206,7 @@ export function machineRepositoryCreate(database: StorageExecutor) {
 
     credentialUpdate(
       realmId: string,
+      organizationId: string,
       credentialId: string,
       input: MachineCredentialUpdate,
     ): Result<MachineCredentialRow | null> {
@@ -168,7 +215,7 @@ export function machineRepositoryCreate(database: StorageExecutor) {
           database
             .update(machineCredentialTable)
             .set(input)
-            .where(and(eq(machineCredentialTable.realmId, realmId), eq(machineCredentialTable.id, credentialId)))
+            .where(and(machineCredentialScope(realmId, organizationId), eq(machineCredentialTable.id, credentialId)))
             .returning()
             .get() ?? null,
         )
@@ -200,13 +247,13 @@ export function machineRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    userGet(realmId: string, machineUserId: string): Result<MachineUserRow | null> {
+    userGet(realmId: string, organizationId: string, machineUserId: string): Result<MachineUserRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(machineUserTable)
-            .where(and(eq(machineUserTable.realmId, realmId), eq(machineUserTable.id, machineUserId)))
+            .where(and(machineUserScope(realmId, organizationId), eq(machineUserTable.id, machineUserId)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -214,13 +261,13 @@ export function machineRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    userGetByName(realmId: string, userName: string): Result<MachineUserRow | null> {
+    userGetByName(realmId: string, organizationId: string, userName: string): Result<MachineUserRow | null> {
       try {
         return resultCreate(
           database
             .select()
             .from(machineUserTable)
-            .where(and(eq(machineUserTable.realmId, realmId), eq(machineUserTable.userName, userName)))
+            .where(and(machineUserScope(realmId, organizationId), eq(machineUserTable.userName, userName)))
             .get() ?? null,
         )
       } catch (_error) {
@@ -232,7 +279,44 @@ export function machineRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    userList(realmId: string): Result<MachineUserRow[]> {
+    userGetByIdForRealm(realmId: string, machineUserId: string): Result<MachineUserRow | null> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(machineUserTable)
+            .where(and(eq(machineUserTable.realmId, realmId), eq(machineUserTable.id, machineUserId)))
+            .get() ?? null,
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "machineUserGetByIdForRealm",
+          "The machine user could not be read.",
+          "machine-users.read-failed",
+        )
+      }
+    },
+
+    userListByNameForRealm(realmId: string, userName: string): Result<MachineUserRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(machineUserTable)
+            .where(and(eq(machineUserTable.realmId, realmId), eq(machineUserTable.userName, userName)))
+            .orderBy(asc(machineUserTable.createdAt))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCreate(
+          "machineUserListByNameForRealm",
+          "The machine users could not be read.",
+          "machine-users.read-failed",
+        )
+      }
+    },
+
+    userListForRealm(realmId: string): Result<MachineUserRow[]> {
       try {
         return resultCreate(
           database
@@ -243,17 +327,41 @@ export function machineRepositoryCreate(database: StorageExecutor) {
             .all(),
         )
       } catch (_error) {
+        return resultErrorCreate(
+          "machineUserListForRealm",
+          "The machine users could not be read.",
+          "machine-users.read-failed",
+        )
+      }
+    },
+
+    userList(realmId: string, organizationId: string): Result<MachineUserRow[]> {
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(machineUserTable)
+            .where(machineUserScope(realmId, organizationId))
+            .orderBy(asc(machineUserTable.createdAt))
+            .all(),
+        )
+      } catch (_error) {
         return resultErrorCreate("machineUserList", "The machine users could not be read.", "machine-users.read-failed")
       }
     },
 
-    userUpdate(realmId: string, machineUserId: string, input: MachineUserUpdate): Result<MachineUserRow | null> {
+    userUpdate(
+      realmId: string,
+      organizationId: string,
+      machineUserId: string,
+      input: MachineUserUpdate,
+    ): Result<MachineUserRow | null> {
       try {
         return resultCreate(
           database
             .update(machineUserTable)
             .set(input)
-            .where(and(eq(machineUserTable.realmId, realmId), eq(machineUserTable.id, machineUserId)))
+            .where(and(machineUserScope(realmId, organizationId), eq(machineUserTable.id, machineUserId)))
             .returning()
             .get() ?? null,
         )
@@ -266,12 +374,12 @@ export function machineRepositoryCreate(database: StorageExecutor) {
       }
     },
 
-    userDelete(realmId: string, machineUserId: string): Result<MachineUserRow | null> {
+    userDelete(realmId: string, organizationId: string, machineUserId: string): Result<MachineUserRow | null> {
       try {
         return resultCreate(
           database
             .delete(machineUserTable)
-            .where(and(eq(machineUserTable.realmId, realmId), eq(machineUserTable.id, machineUserId)))
+            .where(and(machineUserScope(realmId, organizationId), eq(machineUserTable.id, machineUserId)))
             .returning()
             .get() ?? null,
         )

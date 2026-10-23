@@ -127,6 +127,8 @@ export function storageDatabaseReset(database: StorageDatabase): Result<void> {
       transaction.run("DROP TABLE IF EXISTS project_roles")
       transaction.run("DROP TABLE IF EXISTS project_applications")
       transaction.run("DROP TABLE IF EXISTS projects")
+      transaction.run("DROP TABLE IF EXISTS machine_credentials")
+      transaction.run("DROP TABLE IF EXISTS machine_users")
       transaction.run("DROP TABLE IF EXISTS organization_invitations")
       transaction.run("DROP TABLE IF EXISTS organization_login_policies")
       transaction.run("DROP TABLE IF EXISTS realm_login_policies")

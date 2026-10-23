@@ -491,15 +491,39 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
       "CREATE INDEX IF NOT EXISTS project_user_assignments_user_id_idx ON project_user_assignments (user_id)",
     )
     database.run(
-      "CREATE TABLE IF NOT EXISTS machine_users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, display_name TEXT NOT NULL, scopes TEXT NOT NULL CHECK (json_valid(scopes)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (realm_id, user_name), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE)",
+      "CREATE TABLE IF NOT EXISTS machine_users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, user_name TEXT NOT NULL, display_name TEXT NOT NULL, scopes TEXT NOT NULL CHECK (json_valid(scopes)), status TEXT NOT NULL CHECK (status IN ('active', 'inactive', 'removed')), created_at INTEGER NOT NULL CHECK (created_at >= 0), updated_at INTEGER NOT NULL CHECK (updated_at >= 0), version INTEGER NOT NULL CHECK (version > 0), UNIQUE (organization_id, user_name), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE)",
     )
+    try {
+      database.run(
+        "ALTER TABLE machine_users ADD COLUMN organization_id TEXT REFERENCES organizations(id) ON DELETE CASCADE",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "organization_id")) throw error
+    }
     database.run("CREATE INDEX IF NOT EXISTS machine_users_realm_id_idx ON machine_users (realm_id)")
     database.run(
-      "CREATE TABLE IF NOT EXISTS machine_credentials (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, machine_user_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('client_secret', 'personal_access_token', 'api_key', 'access_token')), name TEXT, secret_hash TEXT NOT NULL UNIQUE, scopes TEXT NOT NULL CHECK (json_valid(scopes)), expires_at INTEGER CHECK (expires_at IS NULL OR expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), replaced_by_id TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (machine_user_id) REFERENCES machine_users(id) ON DELETE CASCADE)",
+      "CREATE INDEX IF NOT EXISTS machine_users_organization_id_idx ON machine_users (realm_id, organization_id)",
     )
+    database.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS machine_users_organization_user_name_idx ON machine_users (organization_id, user_name)",
+    )
+    database.run(
+      "CREATE TABLE IF NOT EXISTS machine_credentials (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, machine_user_id TEXT NOT NULL, kind TEXT NOT NULL CHECK (kind IN ('client_secret', 'personal_access_token', 'api_key', 'access_token')), name TEXT, secret_hash TEXT NOT NULL UNIQUE, scopes TEXT NOT NULL CHECK (json_valid(scopes)), expires_at INTEGER CHECK (expires_at IS NULL OR expires_at >= 0), revoked_at INTEGER CHECK (revoked_at IS NULL OR revoked_at >= 0), replaced_by_id TEXT, created_at INTEGER NOT NULL CHECK (created_at >= 0), version INTEGER NOT NULL CHECK (version > 0), FOREIGN KEY (realm_id) REFERENCES realms(id) ON DELETE CASCADE, FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE, FOREIGN KEY (machine_user_id) REFERENCES machine_users(id) ON DELETE CASCADE)",
+    )
+    try {
+      database.run(
+        "ALTER TABLE machine_credentials ADD COLUMN organization_id TEXT REFERENCES organizations(id) ON DELETE CASCADE",
+      )
+    } catch (error) {
+      if (!storageSchemaDuplicateColumnIsExpected(error, "organization_id")) throw error
+    }
     database.run("CREATE INDEX IF NOT EXISTS machine_credentials_realm_id_idx ON machine_credentials (realm_id)")
     database.run(
-      "CREATE INDEX IF NOT EXISTS machine_credentials_machine_user_id_idx ON machine_credentials (realm_id, machine_user_id)",
+      "CREATE INDEX IF NOT EXISTS machine_credentials_organization_id_idx ON machine_credentials (realm_id, organization_id)",
+    )
+    database.run("DROP INDEX IF EXISTS machine_credentials_machine_user_id_idx")
+    database.run(
+      "CREATE INDEX IF NOT EXISTS machine_credentials_organization_machine_user_id_idx ON machine_credentials (realm_id, organization_id, machine_user_id)",
     )
     database.run(
       "CREATE UNIQUE INDEX IF NOT EXISTS machine_credentials_secret_hash_idx ON machine_credentials (secret_hash)",
