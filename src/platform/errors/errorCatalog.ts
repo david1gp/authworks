@@ -1,5 +1,6 @@
 import { accountErrorCatalog } from "../../features/account/errors/accountErrorCatalog.js"
 import { authorizationErrorCatalog } from "../../features/authorization/errors/authorizationErrorCatalog.js"
+import { directoryErrorCatalog } from "../../features/directory/errors/directoryErrorCatalog.js"
 import { emailErrorCatalog } from "../../features/email/errors/emailErrorCatalog.js"
 import { emailOtpErrorCatalog } from "../../features/emailOtp/errors/emailOtpErrorCatalog.js"
 import { eventsErrorCatalog } from "../../features/events/errors/eventsErrorCatalog.js"
@@ -35,6 +36,7 @@ export const errorCatalog = errorCatalogCompose(
   mfaErrorCatalog,
   impersonationErrorCatalog,
   authorizationErrorCatalog,
+  directoryErrorCatalog,
   emailErrorCatalog,
   emailOtpErrorCatalog,
   eventsErrorCatalog,

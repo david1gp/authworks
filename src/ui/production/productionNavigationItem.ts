@@ -4,4 +4,5 @@ export type ProductionNavigationItem = {
   readonly href: string
   readonly icon: string
   readonly label: MessageKey
+  readonly access?: "organization-admin" | "realm-admin"
 }

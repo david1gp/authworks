@@ -36,6 +36,7 @@ const sessionCreate = (
 ): ProductionSessionContextValue => ({
   actorLabel: "",
   guard: {
+    access: { organizationRoles: [], realmAdministrator: false },
     authentication,
     organization: "missing",
     permission: "not-required",

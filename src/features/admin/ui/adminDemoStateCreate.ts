@@ -13,21 +13,12 @@ import { adminDemoAdapterCreate } from "./adminDemoAdapterCreate.js"
 import { adminPageStateCreate } from "./adminPageStateCreate.js"
 import type { AdminScreen } from "./adminScreenSchema.js"
 
-function adminDemoScenarioKeyResolve(screen: AdminScreen, pathname: string): string {
-  if (screen === "user-detail") {
-    if (pathname.endsWith("/authentication")) return "user-authentication"
-    if (pathname.endsWith("/sessions")) return "user-sessions"
-    return "user-detail"
-  }
+function adminDemoScenarioKeyResolve(screen: AdminScreen, _pathname: string): string {
   switch (screen) {
     case "sign-in":
       return "admin-sign-in"
-    case "overview":
-      return "realm-overview"
     case "realm":
       return "realm-settings"
-    case "users":
-      return "users"
     case "sessions":
       return "sessions"
     case "audit-events":

@@ -39,26 +39,63 @@ function ProductionContextualNavigation(props: {
       <nav aria-label={props.state.title()} class={authenticatedNavigationClasses.nav}>
         <For each={props.state.groups()}>
           {(group) => (
-            <section class={authenticatedNavigationClasses.groupSection}>
-              <h2 class={authenticatedNavigationClasses.groupHeading}>
-                <span class="truncate">{messageTranslate(group.label)}</span>
-              </h2>
-              <div class="grid">
-                <For each={group.items}>
-                  {(item) => (
-                    <A
-                      aria-current={props.state.isActive(item.href) ? "page" : undefined}
-                      class={authenticatedNavigationLinkClassGet(props.state.isActive(item.href))}
-                      href={item.href}
-                      onClick={props.state.destinationSelect}
-                    >
-                      <Icon path={item.icon} />
-                      <span class="truncate">{messageTranslate(item.label)}</span>
-                    </A>
-                  )}
-                </For>
-              </div>
-            </section>
+            <Show
+              when={group.label !== null}
+              fallback={
+                <section class={authenticatedNavigationClasses.groupSection}>
+                  <div class="grid">
+                    <For each={group.items}>
+                      {(item) => (
+                        <A
+                          aria-current={props.state.isActive(item.href) ? "page" : undefined}
+                          class={authenticatedNavigationLinkClassGet(props.state.isActive(item.href))}
+                          href={item.href}
+                          onClick={props.state.destinationSelect}
+                        >
+                          <Icon path={item.icon} />
+                          <span class="truncate">{messageTranslate(item.label)}</span>
+                        </A>
+                      )}
+                    </For>
+                  </div>
+                </section>
+              }
+            >
+              <section class={authenticatedNavigationClasses.groupSection}>
+                <button
+                  aria-expanded={props.state.groupOpen(group)}
+                  class={authenticatedNavigationClasses.groupHeading}
+                  onClick={() => props.state.groupToggle(group)}
+                  type="button"
+                >
+                  <Show when={group.icon}>{(icon) => <Icon class="size-4 shrink-0" path={icon()} />}</Show>
+                  <Show when={group.label} fallback={<span class="truncate" />}>
+                    {(label) => <span class="truncate">{messageTranslate(label())}</span>}
+                  </Show>
+                  <Icon
+                    class={`size-4 shrink-0 transition-transform ${props.state.groupOpen(group) ? "" : "-rotate-90"}`}
+                    path={mdiChevronDown}
+                  />
+                </button>
+                <Show when={props.state.groupOpen(group)}>
+                  <div class="grid">
+                    <For each={group.items}>
+                      {(item) => (
+                        <A
+                          aria-current={props.state.isActive(item.href) ? "page" : undefined}
+                          class={authenticatedNavigationLinkClassGet(props.state.isActive(item.href))}
+                          href={item.href}
+                          onClick={props.state.destinationSelect}
+                        >
+                          <Icon path={item.icon} />
+                          <span class="truncate">{messageTranslate(item.label)}</span>
+                        </A>
+                      )}
+                    </For>
+                  </div>
+                </Show>
+              </section>
+            </Show>
           )}
         </For>
       </nav>
@@ -180,49 +217,41 @@ export function ProductionAuthenticatedShell(props: {
             </div>
 
             <div class={`${authenticatedNavigationClasses.headerEnd} max-xl:gap-1.5 max-sm:gap-1`}>
-              <Show when={state.organizationSwitchable()}>
-                <div
-                  class="authenticated-pill-select inline-flex min-w-0 items-center text-xs"
-                  title={state.organizationLabel()}
-                >
-                  <Icon class="hidden shrink-0 sm:block" path={mdiOfficeBuildingOutline} />
-                  <div class="relative w-full min-w-0">
-                    <select
-                      aria-label={messageTranslate("shell.nav.organization")}
-                      class="max-w-16 appearance-none truncate pr-10! text-foreground xl:max-w-28"
-                      aria-busy={state.organizationSwitchPending()}
-                      disabled={state.organizationSwitchPending()}
-                      value={state.organizationId()}
-                      onChange={state.organizationChange}
-                    >
-                      <For each={state.session.organizations}>
-                        {(organization) => <option value={organization.id}>{organization.label}</option>}
-                      </For>
-                    </select>
-                    <Icon
-                      path={mdiChevronDown}
-                      class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-foreground"
-                    />
-                  </div>
-                  <Show when={state.organizationError()}>
-                    {(error) => (
-                      <span aria-live="assertive" class="sr-only" role="alert">
-                        {error()}
-                      </span>
-                    )}
-                  </Show>
-                </div>
-              </Show>
-              <Show when={!state.organizationSwitchable() && state.organizationLabel().length > 0}>
-                <div
-                  class="hidden h-8 min-w-0 items-center gap-1.5 rounded-full border border-line bg-surface px-2.5 text-xs text-muted-foreground sm:flex"
-                  title={state.organizationLabel()}
-                >
-                  <Icon class="size-4 shrink-0" path={mdiOfficeBuildingOutline} />
-                  <span class="max-w-16 truncate font-medium text-foreground xl:max-w-28">
-                    {state.organizationLabel()}
+              <Show when={state.organizationLabel().length > 0}>
+                <label class="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
+                  <span class="sr-only">{messageTranslate("shell.nav.organizationSwitcher")}</span>
+                  <span
+                    class="authenticated-pill-select inline-flex min-w-0 items-center"
+                    title={state.organizationLabel()}
+                  >
+                    <Icon class="hidden shrink-0 sm:block" path={mdiOfficeBuildingOutline} />
+                    <span class="relative w-full min-w-0">
+                      <select
+                        aria-label={messageTranslate("shell.nav.organizationSwitcher")}
+                        class="max-w-16 appearance-none truncate pr-10! text-foreground xl:max-w-28"
+                        aria-busy={state.organizationSwitchPending()}
+                        disabled={!state.organizationSwitchable() || state.organizationSwitchPending()}
+                        value={state.organizationId()}
+                        onChange={state.organizationChange}
+                      >
+                        <For each={state.session.organizations}>
+                          {(organization) => <option value={organization.id}>{organization.label}</option>}
+                        </For>
+                      </select>
+                      <Icon
+                        path={mdiChevronDown}
+                        class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-foreground"
+                      />
+                    </span>
+                    <Show when={state.organizationError()}>
+                      {(error) => (
+                        <span aria-live="assertive" class="sr-only" role="alert">
+                          {error()}
+                        </span>
+                      )}
+                    </Show>
                   </span>
-                </div>
+                </label>
               </Show>
               <LanguageSelector class="authenticated-language-selector" />
               <AuthenticatedThemeToggle class="hidden sm:inline-flex" />

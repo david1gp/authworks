@@ -1,15 +1,16 @@
 import { afterEach, describe, expect, test } from "bun:test"
 import { createRoot, createSignal } from "solid-js"
+import { accountProductionAdapterStateCreate } from "../../src/features/account/ui/accountProductionAdapterStateCreate.js"
 import type { UserCurrentResponse } from "../../src/features/users/public/userCurrentResponseSchema.js"
 import type { User } from "../../src/features/users/public/userSchema.js"
 import type { ProductionSessionContextValue } from "../../src/ui/production/productionSessionContextValue.js"
-import { accountProductionAdapterStateCreate } from "../../src/features/account/ui/accountProductionAdapterStateCreate.js"
 
 const realmId = "01900000-0000-7000-8000-000000000001"
 const secondRealmId = "01900000-0000-7000-8000-000000000003"
 const session = {
   actorLabel: "Avery Stone",
   guard: {
+    access: { organizationRoles: [], realmAdministrator: false },
     authentication: { status: "authenticated", userId: "01900000-0000-7000-8000-0000000000b1" },
     organization: { organizationId: "01900000-0000-7000-8000-000000000002", status: "available" },
     permission: "granted",
@@ -68,7 +69,10 @@ describe("account production adapter state", () => {
       if (request.method === "PATCH") patches++
       if (new URL(request.url).pathname === "/organization-discovery") return Response.json({ found: false })
       if (new URL(request.url).pathname === `/realms/${realmId}/me`)
-        return Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse)
+        return Response.json({
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user,
+        } satisfies UserCurrentResponse)
       return Response.json({})
     }) as typeof fetch
 
@@ -114,7 +118,10 @@ describe("account production adapter state", () => {
         })
         if (browserCacheHasCurrentMe && request.cache !== "no-store") return new Response(null, { status: 304 })
         browserCacheHasCurrentMe = true
-        return Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse)
+        return Response.json({
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user,
+        } satisfies UserCurrentResponse)
       }
       if (url.pathname === `/realms/${realmId}/me/emails`) return Response.json({ items: [] })
       return Response.json({})
@@ -160,11 +167,21 @@ describe("account production adapter state", () => {
     const secondLoad = state.load(true)
     await waitFor(() => requests.length === 1)
     expect(requests[0]?.ifModifiedSince).toBeNull()
-    first.resolve(Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse))
+    first.resolve(
+      Response.json({
+        capabilities: { realmAdministrator: true, realmRead: true },
+        user,
+      } satisfies UserCurrentResponse),
+    )
     await firstLoad
     await waitFor(() => requests.length === 2)
     expect(requests[1]?.ifModifiedSince).toBeNull()
-    second.resolve(Response.json({ capabilities: { realmRead: true }, user: secondUser } satisfies UserCurrentResponse))
+    second.resolve(
+      Response.json({
+        capabilities: { realmAdministrator: true, realmRead: true },
+        user: secondUser,
+      } satisfies UserCurrentResponse),
+    )
     await secondLoad
 
     expect(state.user.get()).toEqual(secondUser)
@@ -194,7 +211,10 @@ describe("account production adapter state", () => {
         profileUpdated = true
         return mutation.promise
       }
-      return Response.json({ capabilities: { realmRead: true }, user: profileUpdated ? updatedUser : user })
+      return Response.json({
+        capabilities: { realmAdministrator: true, realmRead: true },
+        user: profileUpdated ? updatedUser : user,
+      })
     }) as typeof fetch
 
     const state = stateCreate(() => "profile")
@@ -241,11 +261,17 @@ describe("account production adapter state", () => {
       if (url.pathname === "/organization-discovery") return Response.json({ found: false })
       if (url.pathname.endsWith(`/realms/${realmId}/me`)) {
         paths.push(url.pathname)
-        return Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse)
+        return Response.json({
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user,
+        } satisfies UserCurrentResponse)
       }
       if (url.pathname.endsWith(`/realms/${secondRealmId}/me`)) {
         paths.push(url.pathname)
-        return Response.json({ capabilities: { realmRead: true }, user: secondUser } satisfies UserCurrentResponse)
+        return Response.json({
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user: secondUser,
+        } satisfies UserCurrentResponse)
       }
       return Response.json({})
     }) as typeof fetch
@@ -267,6 +293,7 @@ describe("account production adapter state", () => {
       ...session,
       guard: {
         ...session.guard,
+        access: { organizationRoles: [], realmAdministrator: false },
         realm: { realmId, status: "available" as const },
       },
       realms: [{ id: realmId, label: "Customer identity" }],
@@ -283,7 +310,10 @@ describe("account production adapter state", () => {
       const request = new Request(input, init)
       const url = new URL(request.url)
       if (url.pathname === `/realms/${workspaceRealmId}/me`)
-        return Response.json({ capabilities: { realmRead: true }, user: secondUser } satisfies UserCurrentResponse)
+        return Response.json({
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user: secondUser,
+        } satisfies UserCurrentResponse)
       if (url.pathname === `/realms/${workspaceRealmId}/sessions/csrf`) {
         csrfPaths.push(url.pathname)
         return Response.json({ csrfToken: "csrf-token-for-phone-change-123456789012345678901" })
@@ -407,7 +437,10 @@ describe("account production adapter state", () => {
       if (url.pathname === "/organization-discovery") return Response.json({ found: false })
       if (url.pathname === `/realms/${realmId}/me`) {
         requests.push("me")
-        return Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse)
+        return Response.json({
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user,
+        } satisfies UserCurrentResponse)
       }
       if (url.pathname === `/realms/${realmId}/me/emails`) {
         requests.push("emails")
@@ -472,7 +505,12 @@ describe("account production adapter state", () => {
 
     setKind("email")
     await Promise.resolve()
-    first.resolve(Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse))
+    first.resolve(
+      Response.json({
+        capabilities: { realmAdministrator: true, realmRead: true },
+        user,
+      } satisfies UserCurrentResponse),
+    )
     await firstLoad
     await waitFor(() => requests.length === 2)
 
@@ -480,7 +518,12 @@ describe("account production adapter state", () => {
     expect(state.status.get()).toBe("loading")
     expect(state.user.get()).toBeUndefined()
 
-    second.resolve(Response.json({ capabilities: { realmRead: true }, user: secondUser } satisfies UserCurrentResponse))
+    second.resolve(
+      Response.json({
+        capabilities: { realmAdministrator: true, realmRead: true },
+        user: secondUser,
+      } satisfies UserCurrentResponse),
+    )
     await waitFor(() => requests.length === 3 && state.status.get() === "ready")
 
     expect(requests).toEqual(["me", "me", "emails"])
@@ -515,7 +558,12 @@ describe("account production adapter state", () => {
     const state = stateCreate(kind)
     const firstLoad = state.load(true)
     await waitFor(() => requests.length === 1)
-    first.resolve(Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse))
+    first.resolve(
+      Response.json({
+        capabilities: { realmAdministrator: true, realmRead: true },
+        user,
+      } satisfies UserCurrentResponse),
+    )
     await waitFor(() => requests.length === 2)
 
     setKind("password")
@@ -527,7 +575,12 @@ describe("account production adapter state", () => {
     await firstLoad
     expect(state.status.get()).toBe("loading")
 
-    second.resolve(Response.json({ capabilities: { realmRead: true }, user: secondUser } satisfies UserCurrentResponse))
+    second.resolve(
+      Response.json({
+        capabilities: { realmAdministrator: true, realmRead: true },
+        user: secondUser,
+      } satisfies UserCurrentResponse),
+    )
     await waitFor(() => state.status.get() === "ready")
     expect(requests).toEqual(["me", "emails", "me"])
     expect(state.user.get()).toEqual(secondUser)

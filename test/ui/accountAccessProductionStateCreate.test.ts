@@ -91,6 +91,7 @@ describe("account organization switch state", () => {
     const session = {
       actorLabel: "Avery Stone",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated" as const, userId },
         get organization() {
           return organization()
@@ -116,7 +117,10 @@ describe("account organization switch state", () => {
       const pathname = new URL(String(input), "https://auth.example.test").pathname
       if (pathname === `/realms/${realmId}/me`) {
         requests.profile += 1
-        return Response.json({ capabilities: { realmRead: true }, user } satisfies UserCurrentResponse)
+        return Response.json({
+          capabilities: { realmAdministrator: true, realmRead: true },
+          user,
+        } satisfies UserCurrentResponse)
       }
       if (pathname === `/realms/${realmId}/me/organizations`) {
         requests.organizations += 1
@@ -171,6 +175,7 @@ describe("account organization switch state", () => {
     const session = {
       actorLabel: "Avery Stone",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated" as const, userId },
         get organization() {
           return organization()
@@ -222,6 +227,7 @@ describe("account organization switch state", () => {
     const session = {
       actorLabel: "Avery Stone",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated" as const, userId },
         get organization() {
           return organization()
@@ -314,6 +320,7 @@ describe("account organization switch state", () => {
     const session = {
       actorLabel: "Avery Stone",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated" as const, userId },
         get organization() {
           return organization()
@@ -387,6 +394,7 @@ describe("account organization switch state", () => {
     const session = {
       actorLabel: "Avery Stone",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated" as const, userId },
         get organization() {
           return organization()
@@ -436,6 +444,7 @@ describe("account organization switch state", () => {
     const session = {
       actorLabel: "Avery Stone",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated" as const, userId },
         organization: { organizationId: northwindId, status: "available" as const },
         permission: "granted" as const,
@@ -484,6 +493,7 @@ describe("account organization switch state", () => {
     const session = {
       actorLabel: "Avery Stone",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated" as const, userId },
         organization: { organizationId: northwindId, status: "available" as const },
         permission: "granted" as const,
@@ -537,6 +547,7 @@ describe("account organization switch state", () => {
     const session = {
       actorLabel: "Avery Stone",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated" as const, userId },
         get organization() {
           return organization()

@@ -1,4 +1,45 @@
 import type { ProductionRouteContract } from "./productionRouteContract.js"
+import type { ProductionRouteAccess } from "./productionRouteGuardRequirement.js"
+
+type AdminOrganizationGuard = {
+  readonly access: ProductionRouteAccess
+  readonly authentication: "required"
+  readonly organization: "required"
+  readonly permission: null
+  readonly realm: "required"
+}
+
+type AdminNoOrgGuard = {
+  readonly access: ProductionRouteAccess
+  readonly authentication: "required"
+  readonly organization: "not-required"
+  readonly permission: null
+  readonly realm: "required"
+}
+
+const organizationAdminGuard: AdminOrganizationGuard = {
+  access: "organization-admin",
+  authentication: "required",
+  organization: "required",
+  permission: null,
+  realm: "required",
+}
+
+const realmAdminGuard: AdminNoOrgGuard = {
+  access: "realm-admin",
+  authentication: "required",
+  organization: "not-required",
+  permission: null,
+  realm: "required",
+}
+
+const realmAdminOrganizationGuard: AdminOrganizationGuard = {
+  access: "realm-admin",
+  authentication: "required",
+  organization: "required",
+  permission: null,
+  realm: "required",
+}
 
 export const productionRouteContractMap = {
   login: {
@@ -141,9 +182,99 @@ export const productionRouteContractMap = {
   },
   admin: {
     feature: "admin",
-    guard: { authentication: "required", organization: "not-required", permission: "realm.read", realm: "required" },
-    path: "/admin",
+    guard: {
+      access: "organization-admin",
+      authentication: "required",
+      organization: "not-required",
+      permission: null,
+      realm: "required",
+    },
+    path: "/admin/users",
     screens: [
+      {
+        contracts: ["users.list", "users.create"],
+        guard: { ...organizationAdminGuard, organization: "not-required" },
+        key: "users",
+        path: "/admin/users",
+        title: "shell.nav.users",
+      },
+      {
+        contracts: ["users.get", "users.profile"],
+        guard: { ...organizationAdminGuard, organization: "not-required" },
+        key: "user-detail",
+        path: "/admin/users/:userId",
+        title: "admin.users.detailTitle",
+      },
+      {
+        contracts: ["organizations.memberships.list", "authorization.roles.list"],
+        guard: { ...organizationAdminGuard, organization: "not-required" },
+        key: "roles",
+        path: "/admin/roles",
+        title: "shell.nav.roles",
+      },
+      {
+        contracts: ["realms.administrators.list"],
+        guard: { ...realmAdminGuard },
+        key: "realm-administrators",
+        path: "/admin/realm/administrators",
+        title: "shell.nav.realmAdministrators",
+      },
+      {
+        contracts: ["projects.list", "projects.create"],
+        guard: { ...organizationAdminGuard, organization: "not-required" },
+        key: "projects",
+        path: "/admin/projects",
+        title: "shell.nav.projects",
+      },
+      {
+        contracts: ["projects.list", "projects.create"],
+        guard: { ...organizationAdminGuard, organization: "not-required" },
+        key: "projects",
+        path: "/admin/projects",
+        title: "shell.nav.projects",
+      },
+      {
+        contracts: ["projects.get", "projects.update", "projects.delete"],
+        guard: { ...organizationAdminGuard, organization: "not-required" },
+        key: "project-detail",
+        path: "/admin/projects/:projectId",
+        title: "admin.projects.detailTitle",
+      },
+      {
+        contracts: ["organizations.branding.get", "organizations.login-policy.get"],
+        guard: { ...organizationAdminGuard, organization: "required" },
+        key: "configuration",
+        path: "/admin/configuration/:section",
+        title: "shell.nav.configuration",
+      },
+      {
+        contracts: ["realms.get", "realms.update"],
+        guard: { ...realmAdminGuard },
+        key: "realm",
+        path: "/admin/realm",
+        title: "shell.nav.realmOverviewSettings",
+      },
+      {
+        contracts: ["organizations.login-policy.get", "organizations.login-policy.set"],
+        guard: { ...realmAdminGuard },
+        key: "login-policy",
+        path: "/admin/login-policy",
+        title: "shell.nav.loginPolicy",
+      },
+      {
+        contracts: ["organizations.list", "organizations.create"],
+        guard: { ...realmAdminGuard },
+        key: "organizations",
+        path: "/admin/organizations",
+        title: "shell.nav.organizations",
+      },
+      {
+        contracts: ["organizations.get", "organizations.update"],
+        guard: { ...realmAdminOrganizationGuard },
+        key: "organization-detail",
+        path: "/admin/organizations/:organizationId",
+        title: "admin.organizations.detailTitle",
+      },
       {
         contracts: ["sessions.admin-sign-in"],
         guard: { authentication: "public", organization: "not-required", permission: null, realm: "required" },
@@ -151,192 +282,44 @@ export const productionRouteContractMap = {
         path: "/admin/sign-in",
         title: "shell.nav.administratorSignIn",
       },
-      { contracts: ["realms.get"], key: "overview", path: "/admin", title: "admin.navigation.label" },
-      {
-        contracts: ["realms.get", "realms.update"],
-        key: "realm",
-        path: "/admin/realm",
-        title: "shell.nav.realmSettings",
-      },
-      {
-        contracts: ["organizations.branding.get", "organizations.branding.set"],
-        key: "branding",
-        path: "/admin/branding",
-        title: "shell.nav.branding",
-      },
-      {
-        contracts: ["organizations.login-policy.get", "organizations.login-policy.set"],
-        key: "login-policy",
-        path: "/admin/login-policy",
-        title: "shell.nav.loginPolicyProviders",
-      },
-      {
-        contracts: ["organizations.list", "organizations.create"],
-        key: "organizations",
-        path: "/admin/organizations",
-        title: "shell.nav.organizations",
-      },
-      {
-        contracts: ["organizations.get", "organizations.update"],
-        guard: {
-          authentication: "required",
-          organization: "required",
-          permission: "organization.read",
-          realm: "required",
-        },
-        key: "organization-detail",
-        path: "/admin/organizations/:organizationId",
-        title: "admin.organizations.detailTitle",
-      },
-      {
-        contracts: ["organizations.memberships.list", "organizations.memberships.update"],
-        guard: {
-          authentication: "required",
-          organization: "required",
-          permission: "organization.members.manage",
-          realm: "required",
-        },
-        key: "memberships",
-        path: "/admin/memberships",
-        title: "shell.nav.membershipsRoles",
-      },
-      {
-        contracts: [
-          "organizations.invitations.list",
-          "organizations.invitations.create",
-          "organizations.invitations.revoke",
-        ],
-        guard: {
-          authentication: "required",
-          organization: "required",
-          permission: "organization.members.manage",
-          realm: "required",
-        },
-        key: "invitations",
-        path: "/admin/invitations",
-        title: "shell.nav.invitations",
-      },
-      {
-        contracts: ["organizations.domains.list", "organizations.domains.claim", "organizations.domains.verify"],
-        guard: {
-          authentication: "required",
-          organization: "required",
-          permission: "organization.manage",
-          realm: "required",
-        },
-        key: "domains",
-        path: "/admin/domains",
-        title: "admin.organizations.domains.title",
-      },
-      {
-        contracts: ["users.list", "users.create"],
-        guard: { authentication: "required", organization: "not-required", permission: "user.read", realm: "required" },
-        key: "users",
-        path: "/admin/users",
-        title: "shell.nav.users",
-      },
-      {
-        contracts: [
-          "users.get",
-          "users.profile",
-          "users.lifecycle",
-          "users.verification",
-          "users.delete",
-          "users.authentication-methods",
-          "sessions.list",
-          "sessions.revoke",
-        ],
-        guard: { authentication: "required", organization: "not-required", permission: "user.read", realm: "required" },
-        key: "user-detail",
-        path: "/admin/users/:userId",
-        title: "admin.users.detailTitle",
-      },
-      {
-        contracts: ["impersonation.start", "impersonation.end"],
-        key: "impersonation",
-        path: "/admin/impersonation",
-        title: "shell.nav.impersonation",
-      },
-      {
-        contracts: ["projects.list", "projects.create"],
-        key: "projects",
-        path: "/admin/projects",
-        title: "shell.nav.projects",
-      },
-      {
-        contracts: ["projects.get", "projects.update", "projects.delete"],
-        key: "project-detail",
-        path: "/admin/projects/:projectId",
-        title: "admin.projects.detailTitle",
-      },
-      {
-        contracts: ["projects.applications.list", "projects.applications.create", "projects.applications.update"],
-        key: "applications",
-        path: "/admin/projects/:projectId/applications",
-        title: "shell.nav.applications",
-      },
-      {
-        contracts: ["authorization.roles.list", "projects.grants.list", "projects.grants.update"],
-        key: "roles-grants",
-        path: "/admin/projects/:projectId/roles-grants",
-        title: "shell.nav.rolesGrants",
-      },
-      {
-        contracts: ["authorization.evaluate", "projects.access.check"],
-        key: "effective-access",
-        path: "/admin/projects/:projectId/effective-access",
-        title: "admin.projects.access.title",
-      },
       {
         contracts: ["oidc.clients.list", "oidc.clients.create", "oidc.clients.update"],
+        guard: { ...realmAdminGuard },
         key: "oidc-clients",
         path: "/admin/oidc-clients",
         title: "shell.nav.oidcClients",
       },
       {
         contracts: ["oidc.clients.get", "oidc.clients.update", "oidc.clients.secret"],
+        guard: { ...realmAdminGuard },
         key: "oidc-client-detail",
         path: "/admin/oidc-clients/:clientId",
         title: "admin.oidc.clients.detailTitle",
       },
       {
         contracts: ["oidc.signing-keys.list", "oidc.signing-keys.rotate"],
+        guard: { ...realmAdminGuard },
         key: "signing-keys",
         path: "/admin/signing-keys",
         title: "shell.nav.signingKeys",
       },
       {
         contracts: ["oidc.consents.list", "oidc.consents.revoke"],
+        guard: { ...realmAdminGuard },
         key: "oidc-consents",
         path: "/admin/oidc-consents",
         title: "shell.nav.applicationConsents",
       },
       {
         contracts: ["oidc.discovery", "oidc.jwks"],
+        guard: { ...realmAdminGuard },
         key: "protocol-documents",
         path: "/admin/protocol-documents",
         title: "shell.nav.protocolDocuments",
       },
       {
-        contracts: ["machine-users.list", "machine-users.create", "machine-users.lifecycle"],
-        guard: {
-          authentication: "required",
-          organization: "required",
-          permission: "machine.user.manage",
-          realm: "required",
-        },
-        key: "machine-users",
-        path: "/admin/machine-users",
-        title: "shell.nav.machineUsers",
-      },
-      {
         contracts: ["machine-users.get", "machine-users.lifecycle", "machine-users.credentials.rotate"],
-        guard: {
-          authentication: "required",
-          organization: "required",
-          permission: "machine.user.manage",
-          realm: "required",
-        },
+        guard: { ...organizationAdminGuard },
         key: "machine-user-detail",
         path: "/admin/machine-users/:machineUserId",
         title: "admin.machine.users.detailTitle",
@@ -347,23 +330,32 @@ export const productionRouteContractMap = {
           "machine-users.credentials.rotate",
           "machine-users.credentials.revoke",
         ],
-        guard: {
-          authentication: "required",
-          organization: "required",
-          permission: "machine.credential.manage",
-          realm: "required",
-        },
+        guard: { ...organizationAdminGuard },
         key: "machine-credentials",
         path: "/admin/machine-credentials",
         title: "shell.nav.machineCredentials",
       },
       {
+        contracts: ["impersonation.start", "impersonation.end"],
+        guard: { ...organizationAdminGuard, organization: "not-required" },
+        key: "impersonation",
+        path: "/admin/impersonation",
+        title: "shell.nav.impersonation",
+      },
+      {
         contracts: ["sessions.list", "sessions.revoke"],
+        guard: { ...realmAdminGuard },
         key: "sessions",
         path: "/admin/sessions",
         title: "shell.nav.sessions",
       },
-      { contracts: ["events.list"], key: "audit-events", path: "/admin/events", title: "shell.nav.auditEvents" },
+      {
+        contracts: ["events.list"],
+        guard: { ...realmAdminGuard },
+        key: "audit-events",
+        path: "/admin/events",
+        title: "shell.nav.auditEvents",
+      },
     ],
   },
 } as const satisfies Readonly<Record<string, ProductionRouteContract>>

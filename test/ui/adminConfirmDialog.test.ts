@@ -29,14 +29,11 @@ const [
   import("../../src/ui/i18n/model/englishCatalog.js"),
 ])
 
-const alexId = "01900000-0000-7000-8000-000000000021"
-
-const adminPageCreate = (confirmState: ReturnType<typeof adminConfirmStateCreate>, screen: "user-detail") =>
+const adminPageCreate = (confirmState: ReturnType<typeof adminConfirmStateCreate>, screen: "realm") =>
   adminPageStateCreate({
     adapter: adminDemoAdapterCreate(() => "success", { signedInInitially: true }),
     confirm: confirmState.confirm,
     screen: () => screen,
-    userId: () => alexId,
   })
 
 describe("administration confirmation dialog", () => {
@@ -47,76 +44,40 @@ describe("administration confirmation dialog", () => {
   })
 })
 
-describe("user deletion through the confirmation dialog", () => {
-  test("cancelling leaves the user untouched", async () => {
+describe("realm disabling through the confirmation dialog", () => {
+  const submit = { preventDefault: () => undefined } as SubmitEvent
+  test("cancelling keeps the realm active", async () => {
     const confirmState = adminConfirmStateCreate()
-    const page = adminPageCreate(confirmState, "user-detail")
+    const page = adminPageCreate(confirmState, "realm")
     await Promise.resolve()
+    await Promise.resolve()
+    page.realmStatus.set("disabled")
 
-    const pending = page.userDelete()
+    const pending = page.realmSave(submit)
     await Promise.resolve()
     expect(confirmState.open()).toBe(true)
-    expect(confirmState.message()).toContain("alex.morgan")
     confirmState.cancel()
     await pending
 
     expect(confirmState.open()).toBe(false)
-    expect(page.status()).not.toBe("deleted")
-    expect(page.notice()).toBeUndefined()
+    expect(page.realm()?.status).not.toBe("disabled")
   })
 
-  test("confirming deletes the user and narrates the outcome", async () => {
+  test("confirming disables the realm and narrates the outcome", async () => {
     const confirmState = adminConfirmStateCreate()
-    const page = adminPageCreate(confirmState, "user-detail")
+    const page = adminPageCreate(confirmState, "realm")
     await Promise.resolve()
+    await Promise.resolve()
+    page.realmStatus.set("disabled")
 
-    const pending = page.userDelete()
+    const pending = page.realmSave(submit)
     await Promise.resolve()
     confirmState.accept()
     await pending
 
     expect(confirmState.open()).toBe(false)
-    expect(page.status()).toBe("deleted")
+    expect(page.realm()?.status).toBe("disabled")
     expect(page.notice()).toBeString()
-  })
-})
-
-describe("administrator user-session revocation through the confirmation dialog", () => {
-  test("cancelling keeps every session listed", async () => {
-    const confirmState = adminConfirmStateCreate()
-    const page = adminPageCreate(confirmState, "user-detail")
-    await Promise.resolve()
-    await Promise.resolve()
-    const before = page.userSecurity.sessions().length
-    expect(before).toBeGreaterThan(0)
-    const sessionId = page.userSecurity.sessions()[0]?.id ?? ""
-
-    const pending = page.userSecurity.sessionRevoke(sessionId)
-    await Promise.resolve()
-    expect(confirmState.open()).toBe(true)
-    confirmState.cancel()
-    await pending
-
-    expect(page.userSecurity.sessions()).toHaveLength(before)
-    expect(page.userSecurity.notice()).toBeUndefined()
-  })
-
-  test("confirming revokes exactly the chosen session", async () => {
-    const confirmState = adminConfirmStateCreate()
-    const page = adminPageCreate(confirmState, "user-detail")
-    await Promise.resolve()
-    await Promise.resolve()
-    const before = page.userSecurity.sessions().length
-    const sessionId = page.userSecurity.sessions()[0]?.id ?? ""
-
-    const pending = page.userSecurity.sessionRevoke(sessionId)
-    await Promise.resolve()
-    confirmState.accept()
-    await pending
-
-    expect(page.userSecurity.sessions()).toHaveLength(before - 1)
-    expect(page.userSecurity.sessions().some((item) => item.id === sessionId)).toBe(false)
-    expect(page.userSecurity.notice()).toBeString()
   })
 })
 

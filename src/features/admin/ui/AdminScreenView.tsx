@@ -1,11 +1,7 @@
 import { Match, Switch } from "solid-js"
 import { AdminEventListView } from "./AdminEventListView.js"
-import { AdminRealmOverviewView } from "./AdminRealmOverviewView.js"
-import { AdminRealmView } from "./AdminRealmView.js"
 import { AdminSessionListView } from "./AdminSessionListView.js"
 import { AdminSignInView } from "./AdminSignInView.js"
-import { AdminUserDetailView } from "./AdminUserDetailView.js"
-import { AdminUserListView } from "./AdminUserListView.js"
 import type { adminPageStateCreate } from "./adminPageStateCreate.js"
 import type { AdminScreen } from "./adminScreenSchema.js"
 
@@ -22,22 +18,6 @@ export function AdminScreenView(props: {
       </Match>
       <Match when={props.screen === "sessions"}>
         <AdminSessionListView state={props.state} />
-      </Match>
-      <Match when={props.screen === "overview"}>
-        <AdminRealmOverviewView state={props.state} />
-      </Match>
-      <Match when={props.screen === "realm"}>
-        <AdminRealmView state={props.state} />
-      </Match>
-      <Match when={props.screen === "users"}>
-        <AdminUserListView detailHrefBase={`${props.basePath}/users`} state={props.state} />
-      </Match>
-      <Match when={props.screen === "user-detail"}>
-        <AdminUserDetailView
-          backHref={`${props.basePath}/users`}
-          impersonationHref={`${props.basePath}/impersonation`}
-          state={props.state}
-        />
       </Match>
       <Match when={props.screen === "audit-events"}>
         <AdminEventListView state={props.state} />

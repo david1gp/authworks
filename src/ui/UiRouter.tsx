@@ -5,6 +5,7 @@ import { AdminDemoApp } from "../features/admin/ui/AdminDemoApp.js"
 import { AdminDemoDirectory } from "../features/admin/ui/AdminDemoDirectory.js"
 import { AdminDemoPlaceholder } from "../features/admin/ui/AdminDemoPlaceholder.js"
 import { DemoHub } from "../features/demo/ui/DemoHub.js"
+import { DirectoryAdminDemoAdapter } from "../features/directory/ui/DirectoryAdminDemoAdapter.js"
 import { EmailDemoApp } from "../features/email/ui/EmailDemoApp.js"
 import { ImpersonationAdminDemoAdapter } from "../features/impersonation/ui/ImpersonationAdminDemoAdapter.js"
 import { LoginDemoApp } from "../features/login/ui/LoginDemoApp.js"
@@ -12,7 +13,9 @@ import { MachineAdminDemoRoute } from "../features/machineUsers/ui/MachineAdminD
 import { OidcAdminDemoRoute } from "../features/oidc/ui/OidcAdminDemoRoute.js"
 import { OidcConsentDemoAdapter } from "../features/oidc/ui/OidcConsentDemoAdapter.js"
 import { OrganizationAdminDemoAdapter } from "../features/organizations/ui/OrganizationAdminDemoAdapter.js"
+import { OrganizationConfigurationPlaceholder } from "../features/organizations/ui/OrganizationConfigurationPlaceholder.js"
 import { ProjectAdminDemoRoute } from "../features/projects/ui/ProjectAdminDemoRoute.js"
+import { AuthenticatedUiKitDemo } from "./authenticated/demo/AuthenticatedUiKitDemo.js"
 import { ProductionApplicationProviders } from "./production/ProductionApplicationProviders.js"
 import { ProductionRouteApp } from "./production/ProductionRouteApp.js"
 import type { ProductionApiContextValue } from "./production/productionApiContextValue.js"
@@ -52,43 +55,29 @@ export function UiRouter(props: {
         <Route path="/demo/admin" component={AdminDemoApp}>
           <Route path="/" component={AdminDemoDirectory} />
           <Route path="/sign-in" component={() => <AdminDemoAdapter screen="sign-in" />} />
-          <Route path="/overview" component={() => <AdminDemoAdapter screen="overview" />} />
           <Route path="/realm" component={() => <AdminDemoAdapter screen="realm" />} />
+          <Route
+            path="/realm/administrators"
+            component={() => <DirectoryAdminDemoAdapter screen="realm-administrators" />}
+          />
           <Route path="/organizations" component={() => <OrganizationAdminDemoAdapter screen="organizations" />} />
           <Route
             path="/organizations/:organizationId"
             component={() => <OrganizationAdminDemoAdapter screen="organization-detail" />}
           />
-          <Route path="/memberships" component={() => <OrganizationAdminDemoAdapter screen="memberships" />} />
-          <Route path="/invitations" component={() => <OrganizationAdminDemoAdapter screen="invitations" />} />
-          <Route path="/domains" component={() => <OrganizationAdminDemoAdapter screen="domains" />} />
-          <Route path="/branding" component={() => <OrganizationAdminDemoAdapter screen="branding" />} />
+          <Route path="/configuration/:section" component={OrganizationConfigurationPlaceholder} />
           <Route path="/login-policy" component={() => <OrganizationAdminDemoAdapter screen="login-policy" />} />
-          <Route path="/users" component={() => <AdminDemoAdapter screen="users" />} />
-          <Route path="/users/:userId/authentication" component={() => <AdminDemoAdapter screen="user-detail" />} />
-          <Route path="/users/:userId/sessions" component={() => <AdminDemoAdapter screen="user-detail" />} />
-          <Route path="/users/:userId" component={() => <AdminDemoAdapter screen="user-detail" />} />
+          <Route path="/users" component={() => <DirectoryAdminDemoAdapter screen="users" />} />
+          <Route path="/users/:userId" component={() => <DirectoryAdminDemoAdapter screen="user-detail" />} />
+          <Route path="/roles" component={() => <DirectoryAdminDemoAdapter screen="roles" />} />
           <Route path="/impersonation" component={ImpersonationAdminDemoAdapter} />
           <Route path="/projects" component={() => <ProjectAdminDemoRoute screen="projects" />} />
           <Route path="/projects/:projectId" component={() => <ProjectAdminDemoRoute screen="project-detail" />} />
-          <Route
-            path="/projects/:projectId/applications"
-            component={() => <ProjectAdminDemoRoute screen="applications" />}
-          />
-          <Route
-            path="/projects/:projectId/roles-grants"
-            component={() => <ProjectAdminDemoRoute screen="roles-grants" />}
-          />
-          <Route
-            path="/projects/:projectId/effective-access"
-            component={() => <ProjectAdminDemoRoute screen="effective-access" />}
-          />
           <Route path="/oidc-clients" component={() => <OidcAdminDemoRoute screen="oidc-clients" />} />
           <Route path="/oidc-clients/:clientId" component={() => <OidcAdminDemoRoute screen="oidc-client-detail" />} />
           <Route path="/signing-keys" component={() => <OidcAdminDemoRoute screen="signing-keys" />} />
           <Route path="/oidc-consents" component={() => <OidcAdminDemoRoute screen="oidc-consents" />} />
           <Route path="/protocol-documents" component={() => <OidcAdminDemoRoute screen="protocol-documents" />} />
-          <Route path="/machine-users" component={() => <MachineAdminDemoRoute screen="machine-users" />} />
           <Route
             path="/machine-users/:machineUserId"
             component={() => <MachineAdminDemoRoute screen="machine-user-detail" />}
@@ -96,6 +85,7 @@ export function UiRouter(props: {
           <Route path="/machine-credentials" component={() => <MachineAdminDemoRoute screen="machine-credentials" />} />
           <Route path="/sessions" component={() => <AdminDemoAdapter screen="sessions" />} />
           <Route path="/events" component={() => <AdminDemoAdapter screen="audit-events" />} />
+          <Route path="/ui-kit" component={AuthenticatedUiKitDemo} />
           <Route path="/*adminPath" component={AdminDemoPlaceholder} />
         </Route>
         <Route path="/login" component={productionRouteComponentCreate("login")} />

@@ -1,6 +1,7 @@
 import type { ProductionRouteGuardContext } from "./productionRouteGuardContext.js"
 import type { ProductionRouteGuardRequirement } from "./productionRouteGuardRequirement.js"
 import type { ProductionRouteGuardState } from "./productionRouteGuardState.js"
+import { productionShellAccessPermits } from "./productionShellAccessPermits.js"
 
 export function productionRouteGuardStateCreate(
   requirement: ProductionRouteGuardRequirement,
@@ -19,6 +20,13 @@ export function productionRouteGuardStateCreate(
   if (requirement.organization === "required") {
     if (context.organization === "loading") return { status: "loading" }
     if (context.organization === "missing") return { context: "organization", status: "missing-context" }
+  }
+
+  if (requirement.access !== undefined && requirement.access !== null) {
+    if (context.access === "loading") return { status: "loading" }
+    if (!productionShellAccessPermits(requirement.access, context.access)) {
+      return { permission: requirement.access, status: "insufficient-permission" }
+    }
   }
 
   if (requirement.permission !== null) {

@@ -103,56 +103,33 @@ export function organizationAdminPageStateCreate(options: {
       memberships.set([...membershipList.data.items])
       return status.set("ready")
     }
-    if (screen === "memberships") {
-      const [membershipList, roleList] = await Promise.all([
-        options.adapter.membershipList(organizationId, { pageToken: pageToken() }),
-        options.adapter.roleList(),
-      ])
-      if (!membershipList.success) return fail(membershipList)
-      if (!roleList.success) return fail(roleList)
-      memberships.set([...membershipList.data.items])
-      roles.set([...roleList.data.items])
-      nextPageToken.set(membershipList.data.nextPageToken)
-      return collectionStatus(membershipList.data.items.length)
-    }
-    if (screen === "invitations") {
-      const [invitationList, roleList] = await Promise.all([
-        options.adapter.invitationList(organizationId, { pageToken: pageToken() }),
-        options.adapter.roleList(),
-      ])
-      if (!invitationList.success) return fail(invitationList)
-      if (!roleList.success) return fail(roleList)
-      invitations.set([...invitationList.data.items])
-      roles.set([...roleList.data.items])
-      nextPageToken.set(invitationList.data.nextPageToken)
-      return collectionStatus(invitationList.data.items.length)
-    }
-    if (screen === "domains") {
-      const result = await options.adapter.domainList(organizationId, { pageToken: pageToken() })
-      if (!result.success) return fail(result)
-      domains.set([...result.data.items])
-      nextPageToken.set(result.data.nextPageToken)
-      return collectionStatus(result.data.items.length)
-    }
-    if (screen === "branding") {
-      const result = await options.adapter.brandingGet(organizationId)
-      if (!result.success) return fail(result)
-      branding.set(result.data.branding)
+    if (screen === "configuration") {
+      const organizationId = options.organizationId()
+      if (organizationId.length === 0) {
+        error.set(messageTranslate("admin.common.permission"))
+        return status.set("error")
+      }
       return status.set("ready")
     }
-    const [policyResult, realmPolicyResult, providerList] = await Promise.all([
-      options.adapter.loginPolicyGet(organizationId),
-      organizationId.length === 0 ? options.adapter.loginPolicyGet(organizationId) : options.adapter.loginPolicyGet(""),
-      options.adapter.providerList(organizationId.length === 0 ? undefined : organizationId),
-    ])
-    if (!policyResult.success) return fail(policyResult)
-    if (!realmPolicyResult.success) return fail(realmPolicyResult)
-    if (!providerList.success) return fail(providerList)
-    policy.set(policyResult.data.policy)
-    realmPolicy.set(realmPolicyResult.data.policy)
-    overrides.set(policyResult.data.overrides)
-    providers.set([...providerList.data.items])
-    status.set("ready")
+    if (screen === "login-policy") {
+      const [policyResult, realmPolicyResult, providerList] = await Promise.all([
+        options.adapter.loginPolicyGet(organizationId),
+        organizationId.length === 0
+          ? options.adapter.loginPolicyGet(organizationId)
+          : options.adapter.loginPolicyGet(""),
+        options.adapter.providerList(organizationId.length === 0 ? undefined : organizationId),
+      ])
+      if (!policyResult.success) return fail(policyResult)
+      if (!realmPolicyResult.success) return fail(realmPolicyResult)
+      if (!providerList.success) return fail(providerList)
+      policy.set(policyResult.data.policy)
+      realmPolicy.set(realmPolicyResult.data.policy)
+      overrides.set(policyResult.data.overrides)
+      providers.set([...providerList.data.items])
+      return status.set("ready")
+    }
+    error.set(messageTranslate("admin.common.permission"))
+    return status.set("error")
   }
 
   const mutate = async <T>(id: string, operation: () => Promise<Result<T>>) => {

@@ -84,6 +84,10 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
     if (result.statusCode === 403) return status.set("permission-denied")
     status.set("error")
   }
+  const failWithKey = (key: "admin.common.permission") => {
+    error.set(messageTranslate(key))
+    status.set("error")
+  }
   const realmApply = (next: Realm) => {
     realm.set(next)
     realmName.set(next.name)
@@ -119,24 +123,13 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       nextPageToken.set(result.data.nextPageToken)
       return status.set(result.data.items.length === 0 ? "empty" : "ready")
     }
-    if (options.screen() === "overview" || options.screen() === "realm") {
+    if (options.screen() === "realm") {
       const current = await options.adapter.sessionCurrent()
       if (!current.success) return fail(current)
       session.set(current.data)
       const result = await options.adapter.realmGet()
       if (!result.success) return fail(result)
       realmApply(result.data.realm)
-      return status.set("ready")
-    }
-    if (options.screen() === "user-detail") {
-      const userId = options.userId?.()
-      if (userId === undefined || userId.length === 0) {
-        error.set(messageTranslate("admin.users.missingId"))
-        return status.set("error")
-      }
-      const result = await options.adapter.userGet(userId)
-      if (!result.success) return fail(result)
-      user.set(result.data.user)
       return status.set("ready")
     }
     if (options.screen() === "audit-events") {
@@ -146,11 +139,7 @@ export function adminPageStateCreate(options: AdminPageStateOptions) {
       nextPageToken.set(result.data.nextPageToken)
       return status.set(result.data.items.length === 0 ? "empty" : "ready")
     }
-    const result = await options.adapter.userList(query())
-    if (!result.success) return fail(result)
-    users.set(result.data.items)
-    nextPageToken.set(result.data.nextPageToken)
-    status.set(result.data.items.length === 0 ? "empty" : "ready")
+    return failWithKey("admin.common.permission")
   }
 
   const mutate = async <T>(id: string, operation: () => Promise<Result<T>>): Promise<T | undefined> => {

@@ -18,6 +18,7 @@ type FailedResult = { readonly code?: string; readonly errorMessage: string; rea
 type ProjectAdminPageStateCreateOptions = {
   readonly adapter: ProjectAdminAdapter
   readonly confirm: (request: ConfirmRequest) => boolean | Promise<boolean>
+  readonly organizationId?: () => string | undefined
   readonly projectId: () => string | undefined
   readonly screen: () => ProjectAdminScreen
 }
@@ -73,48 +74,6 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
     if (currentProjectId === undefined) {
       error.set(messageTranslate("admin.projects.missingId"))
       return status.set("error")
-    }
-
-    if (screen === "applications") {
-      const [current, listed] = await Promise.all([
-        adapter.projectGet(currentProjectId),
-        adapter.applicationList(currentProjectId, pageTokens.get().at(-1)),
-      ])
-      if (!current.success) return fail(current)
-      if (!listed.success) return fail(listed)
-      project.set(current.data)
-      applications.set(listed.data.items)
-      nextPageToken.set(listed.data.nextPageToken)
-      return status.set(listed.data.items.length === 0 ? "empty" : "ready")
-    }
-
-    if (screen === "roles-grants") {
-      const [current, roleList, grantList, organizationList] = await Promise.all([
-        adapter.projectGet(currentProjectId),
-        adapter.roleList(currentProjectId),
-        adapter.grantList(currentProjectId),
-        adapter.organizations(),
-      ])
-      if (!current.success) return fail(current)
-      if (!roleList.success) return fail(roleList)
-      if (!grantList.success) return fail(grantList)
-      if (organizationList.success) organizations.set(organizationList.data)
-      project.set(current.data)
-      roles.set(roleList.data.items)
-      grants.set(grantList.data.items)
-      return status.set(roleList.data.items.length === 0 && grantList.data.items.length === 0 ? "empty" : "ready")
-    }
-
-    if (screen === "effective-access") {
-      const [current, checked] = await Promise.all([
-        adapter.projectGet(currentProjectId),
-        adapter.projectAccessCheck(currentProjectId),
-      ])
-      if (!current.success) return fail(current)
-      if (!checked.success) return fail(checked)
-      project.set(current.data)
-      access.set({ grantedOrganizationId: checked.data.grantedOrganizationId, roleKeys: checked.data.roleKeys })
-      return status.set(checked.data.roleKeys.length === 0 ? "empty" : "ready")
     }
 
     const [current, roleList, organizationList] = await Promise.all([
@@ -229,7 +188,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
     projectCreate: async (name: string, organizationId: string) => {
       const created = await mutate("project:create", () => adapter.projectCreate({ name, organizationId }))
       if (created === undefined) return false
-      projects.set([...projects.get(), created])
+      projects.set([...projects.get(), { ...created }])
       notice.set(created.name)
       status.set("ready")
       return true
@@ -260,7 +219,7 @@ export function projectAdminPageStateCreate(options: ProjectAdminPageStateCreate
       )
       if (updated === undefined) return
       project.set(updated)
-      projects.set(projects.get().map((item) => (item.id === projectId ? updated : item)))
+      projects.set(projects.get().map((item) => (item.id === projectId ? { ...updated } : item)))
       notice.set(updated.name)
     },
     projects: projects.get,

@@ -1,11 +1,12 @@
 import { describe, expect, test } from "bun:test"
 import * as v from "valibot"
 import { adminScreenSchema } from "../../src/features/admin/ui/adminScreenSchema.js"
+import { demoAdminScenarioGroups } from "../../src/features/demo/demoAdminScenarioGroups.js"
+import { directoryAdminScreenSchema } from "../../src/features/directory/ui/directoryAdminScreenSchema.js"
 import { machineAdminScreenSchema } from "../../src/features/machineUsers/ui/machineAdminScreenSchema.js"
 import { oidcAdminScreenSchema } from "../../src/features/oidc/ui/oidcAdminScreenSchema.js"
 import { organizationAdminScreenSchema } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
 import { projectAdminScreenSchema } from "../../src/features/projects/ui/projectAdminScreenSchema.js"
-import { demoAdminScenarioGroups } from "../../src/features/demo/demoAdminScenarioGroups.js"
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 import { productionLoginRedirectUrlCreate } from "../../src/ui/production/productionLoginRedirectUrlCreate.js"
 import type { ProductionNavigationGroup } from "../../src/ui/production/productionNavigationGroup.js"
@@ -39,7 +40,7 @@ describe("production route contracts", () => {
       expect(route.path.startsWith("/")).toBe(true)
       expect(route.screens.length).toBeGreaterThan(0)
       for (const screen of route.screens) {
-        expect(screen.path.startsWith(route.path)).toBe(true)
+        expect(screen.path.startsWith(`/${route.path.split("/")[1]}`)).toBe(true)
         expect(screen.contracts.length).toBeGreaterThan(0)
       }
     }
@@ -97,13 +98,25 @@ describe("production route contracts", () => {
     expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).toContain("/admin/users/:userId")
 
     const userDetail = productionRouteContractMap.admin.screens.find((screen) => screen.key === "user-detail")
-    expect(userDetail?.contracts).toEqual(
-      expect.arrayContaining(["users.authentication-methods", "sessions.list", "sessions.revoke"]),
+    expect(userDetail?.contracts).toEqual(expect.arrayContaining(["users.get", "users.profile"]))
+    expect(productionRouteContractMap.admin.screens.map((screen) => screen.key)).toEqual(
+      expect.arrayContaining(["users", "user-detail", "roles", "realm-administrators", "configuration"]),
     )
-    expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).not.toContain(
-      "/admin/user-authentication",
-    )
-    expect(productionRouteContractMap.admin.screens.map((screen) => screen.path)).not.toContain("/admin/user-sessions")
+    for (const removed of [
+      "/admin",
+      "/admin/branding",
+      "/admin/domains",
+      "/admin/memberships",
+      "/admin/invitations",
+      "/admin/machine-users",
+      "/admin/projects/:projectId/applications",
+      "/admin/projects/:projectId/roles-grants",
+      "/admin/projects/:projectId/effective-access",
+    ])
+      expect(
+        productionRouteContractMap.admin.screens.map((screen) => screen.path),
+        removed,
+      ).not.toContain(removed)
   })
 
   test("advertises only typed catalog keys for screen titles and shell navigation labels", () => {
@@ -116,7 +129,7 @@ describe("production route contracts", () => {
     }
     for (const groups of Object.values(productionShellNavigationGroups)) {
       for (const group of groups) {
-        expect(catalogKeys.has(group.label), `${group.label} must be a typed key`).toBe(true)
+        if (group.label !== null) expect(catalogKeys.has(group.label), `${group.label} must be a typed key`).toBe(true)
         for (const item of group.items) {
           expect(catalogKeys.has(item.label), `${item.href} label must be a typed key`).toBe(true)
         }
@@ -130,25 +143,22 @@ describe("production route contracts", () => {
     ) as readonly (readonly ProductionNavigationGroup[])[]
     for (const groups of navigationGroups) {
       for (const group of groups) {
-        expect(group.icon.length).toBeGreaterThan(0)
+        if (group.label !== null) expect(group.icon?.length).toBeGreaterThan(0)
         for (const item of group.items) expect(item.icon.length, item.href).toBeGreaterThan(0)
       }
     }
 
-    expect(productionShellNavigationGroups.invitations[0]?.items[0]?.icon).toBeDefined()
-    expect(productionShellNavigationGroups.invitations[0]?.items[1]?.icon).toBeDefined()
     expect(productionShellNavigationGroups.admin[0]?.items[0]?.icon).toBeDefined()
   })
 
   test("resolves shell labels that share an English value through distinct unambiguous keys", () => {
-    const adminOverview = productionShellNavigationGroups.admin[0]?.items[0]
-    expect(adminOverview?.label).toBe("shell.nav.overview")
+    const adminUsers = productionShellNavigationGroups.admin[0]?.items[0]
+    expect(adminUsers?.href).toBe("/admin/users")
+    expect(adminUsers?.label).toBe("shell.nav.users")
 
     // "Application consents" is also the English value of admin.oidc.consents.title.
-    const openIdConnect = productionShellNavigationGroups.admin.find(
-      (group) => group.label === "shell.nav.openIdConnect",
-    )
-    const adminConsents = openIdConnect?.items[2]
+    const realmGroup = productionShellNavigationGroups.admin.find((group) => group.label === "shell.nav.realmGroup")
+    const adminConsents = realmGroup?.items.find((item) => item.href === "/admin/oidc-consents")
     expect(adminConsents?.label).toBe("shell.nav.applicationConsents")
     expect(englishCatalog["shell.nav.applicationConsents"]).toBe(englishCatalog["admin.oidc.consents.title"])
 
@@ -165,6 +175,7 @@ describe("production route contracts", () => {
   test("renders every advertised administration screen through exactly one feature owner", () => {
     const featureSchemas = [
       adminScreenSchema,
+      directoryAdminScreenSchema,
       organizationAdminScreenSchema,
       projectAdminScreenSchema,
       oidcAdminScreenSchema,
@@ -183,6 +194,7 @@ describe("production route contracts", () => {
 describe("production route guard state", () => {
   const required = productionRouteContractMap.admin.guard
   const authenticatedContext = (overrides: Partial<ProductionRouteGuardContext> = {}): ProductionRouteGuardContext => ({
+    access: { organizationRoles: [], realmAdministrator: false },
     authentication: { status: "authenticated", userId: "user-1" },
     organization: "missing",
     permission: "granted",
@@ -193,6 +205,7 @@ describe("production route guard state", () => {
   test("distinguishes loading and anonymous access", () => {
     expect(
       productionRouteGuardStateCreate(required, {
+        access: "loading",
         authentication: "loading",
         organization: "loading",
         permission: "loading",
@@ -208,6 +221,7 @@ describe("production route guard state", () => {
 
   test("allows an anonymous actor through a public route while retaining realm guards", () => {
     const anonymousContext: ProductionRouteGuardContext = {
+      access: { organizationRoles: [], realmAdministrator: false },
       authentication: "anonymous",
       organization: "missing",
       permission: "not-required",
@@ -221,12 +235,32 @@ describe("production route guard state", () => {
     })
   })
 
-  test("distinguishes authenticated, missing context, and insufficient permission", () => {
-    expect(productionRouteGuardStateCreate(required, authenticatedContext())).toEqual({
+  test("distinguishes authenticated, missing context, and insufficient access", () => {
+    expect(
+      productionRouteGuardStateCreate(
+        required,
+        authenticatedContext({ access: { organizationRoles: ["owner"], realmAdministrator: false } }),
+      ),
+    ).toEqual({
       organizationId: undefined,
       realmId: "realm-1",
       status: "authenticated",
       userId: "user-1",
+    })
+    expect(
+      productionRouteGuardStateCreate(
+        required,
+        authenticatedContext({ access: { organizationRoles: [], realmAdministrator: true } }),
+      ),
+    ).toEqual({
+      organizationId: undefined,
+      realmId: "realm-1",
+      status: "authenticated",
+      userId: "user-1",
+    })
+    expect(productionRouteGuardStateCreate(required, authenticatedContext())).toEqual({
+      permission: "organization-admin",
+      status: "insufficient-permission",
     })
     expect(productionRouteGuardStateCreate(required, authenticatedContext({ realm: "missing" }))).toEqual({
       context: "realm",
@@ -238,15 +272,51 @@ describe("production route guard state", () => {
         authenticatedContext({ organization: "missing" }),
       ),
     ).toEqual({ organizationId: undefined, realmId: "realm-1", status: "authenticated", userId: "user-1" })
-    expect(productionRouteGuardStateCreate(required, authenticatedContext({ permission: "denied" }))).toEqual({
-      permission: "realm.read",
+    expect(
+      productionRouteGuardStateCreate(
+        productionRouteContractMap.login.guard,
+        authenticatedContext({ permission: "denied" }),
+      ),
+    ).toEqual({
+      organizationId: undefined,
+      realmId: "realm-1",
+      status: "authenticated",
+      userId: "user-1",
+    })
+  })
+
+  test("evaluates organization-admin and realm-admin access from the active context", () => {
+    const users = productionRouteContractMap.admin.screens.find((screen) => screen.key === "users")
+    const administrators = productionRouteContractMap.admin.screens.find(
+      (screen) => screen.key === "realm-administrators",
+    )
+    expect(users?.guard?.access).toBe("organization-admin")
+    expect(administrators?.guard?.access).toBe("realm-admin")
+
+    const organizationAdmin = (roles: readonly ("owner" | "admin" | "member" | "guest")[]) =>
+      authenticatedContext({ access: { organizationRoles: [...roles], realmAdministrator: false } })
+    expect(productionRouteGuardStateCreate(users?.guard ?? required, organizationAdmin(["member"]))).toEqual({
+      permission: "organization-admin",
       status: "insufficient-permission",
     })
+    expect(productionRouteGuardStateCreate(users?.guard ?? required, organizationAdmin(["admin"]))).toEqual({
+      organizationId: undefined,
+      realmId: "realm-1",
+      status: "authenticated",
+      userId: "user-1",
+    })
+    expect(
+      productionRouteGuardStateCreate(
+        administrators?.guard ?? required,
+        authenticatedContext({ access: { organizationRoles: ["owner"], realmAdministrator: false } }),
+      ),
+    ).toEqual({ permission: "realm-admin", status: "insufficient-permission" })
   })
 })
 
 describe("production shell state", () => {
   const shellGuardCreate = (overrides: Partial<ProductionRouteGuardContext> = {}): ProductionRouteGuardContext => ({
+    access: { organizationRoles: [], realmAdministrator: true },
     authentication: { status: "authenticated", userId: "user-1" },
     organization: "missing",
     permission: "granted",
@@ -263,21 +333,18 @@ describe("production shell state", () => {
     expect(productionRouteScreenSelect(productionRouteContractMap.admin, "/admin/not-a-screen")).toBeUndefined()
   })
 
-  test("resolves project-scoped authorization screens and their project identifier", () => {
+  test("resolves project detail without legacy project sub-route screens", () => {
     const admin = productionRouteContractMap.admin
-    const cases = [
-      ["/admin/projects/project-9/applications", "applications"],
-      ["/admin/projects/project-9/roles-grants", "roles-grants"],
-      ["/admin/projects/project-9/effective-access", "effective-access"],
-    ] as const
+    for (const removed of [
+      "/admin/projects/project-9/applications",
+      "/admin/projects/project-9/roles-grants",
+      "/admin/projects/project-9/effective-access",
+    ])
+      expect(productionRouteScreenSelect(admin, removed)).toBeUndefined()
 
-    for (const [pathname, key] of cases) {
-      const screen = productionRouteScreenSelect(admin, pathname)
-      expect(screen?.key).toBe(key)
-      expect(productionRouteParamGet(screen?.path ?? "", pathname, "projectId")).toBe("project-9")
-    }
-
-    expect(productionRouteScreenSelect(admin, "/admin/projects/project-9")?.key).toBe("project-detail")
+    const screen = productionRouteScreenSelect(admin, "/admin/projects/project-9")
+    expect(screen?.key).toBe("project-detail")
+    expect(productionRouteParamGet(screen?.path ?? "", "/admin/projects/project-9", "projectId")).toBe("project-9")
     expect(
       productionRouteParamGet("/admin/projects/:projectId", "/admin/projects/project-9", "missing"),
     ).toBeUndefined()
@@ -285,15 +352,16 @@ describe("production shell state", () => {
 
   test("keeps navigation grouped and marks only the matching destination active", () => {
     expect(productionShellNavigationGroups.account).toEqual([])
-    expect(productionShellNavigationGroups.admin.map((group) => group.label)).toEqual([
-      "shell.nav.realm",
-      "shell.nav.directory",
-      "shell.nav.organizations",
-      "shell.nav.applications",
-      "shell.nav.openIdConnect",
-      "shell.nav.operations",
+    expect(productionShellNavigationGroups.admin.map((group) => group.label)).toEqual([null, "shell.nav.realmGroup"])
+    expect(productionShellNavigationGroups.admin[0]?.items.map((item) => item.href)).toEqual([
+      "/admin/users",
+      "/admin/roles",
+      "/admin/projects",
+      "/admin/configuration/general",
     ])
     expect(productionNavigationItemActive("/admin/users", "/admin/users/user-42")).toBe(true)
+    expect(productionNavigationItemActive("/admin/configuration", "/admin/configuration/branding")).toBe(true)
+    expect(productionShellNavigationGroups.admin[0]?.items[3]?.href).toBe("/admin/configuration/general")
     expect(productionNavigationItemActive("/admin", "/admin/users")).toBe(false)
     expect(productionNavigationItemActive("/admin", "/admin")).toBe(true)
     expect(productionNavigationItemActive("/admin", "/account")).toBe(false)
@@ -302,7 +370,7 @@ describe("production shell state", () => {
     expect(productionNavigationItemActive("/account", "/account/legacy")).toBe(false)
   })
 
-  test("shows administration only for an active-realm realm.read decision and always returns to account from admin", () => {
+  test("shows administration for an active realm session and always returns to account from admin", () => {
     const baseGuard = shellGuardCreate()
     expect(productionShellNavigationLinkVisible({ guard: baseGuard, kind: "account", target: "admin" })).toBe(true)
     expect(
@@ -342,24 +410,27 @@ describe("production shell state", () => {
   })
 })
 
-describe("org-scoped machine-user administration", () => {
-  const machineKeys = ["machine-users", "machine-user-detail", "machine-credentials"] as const
+describe("org-admin machine-user administration", () => {
+  const machineKeys = ["machine-user-detail", "machine-credentials"] as const
 
-  test("requires an organization context with machine permissions on every machine screen", () => {
+  test("requires an organization context with organization-admin access on every machine screen", () => {
     const guardOf = (key: string) => {
       const screen = productionRouteContractMap.admin.screens.find((item) => item.key === key)
-      return screen !== undefined && "guard" in screen ? screen.guard : undefined
+      if (screen === undefined || screen.guard === undefined || !("access" in screen.guard)) return undefined
+      return screen.guard
     }
+    expect(productionRouteContractMap.admin.screens.map((screen) => screen.key)).not.toContain("machine-users")
     for (const key of machineKeys) {
       expect(guardOf(key)?.organization, key).toBe("required")
       expect(guardOf(key)?.realm, key).toBe("required")
+      expect(guardOf(key)?.access, key).toBe("organization-admin")
+      expect(guardOf(key)?.permission, key).toBeNull()
     }
-    expect(guardOf("machine-users")?.permission).toBe("machine.user.manage")
-    expect(guardOf("machine-credentials")?.permission).toBe("machine.credential.manage")
 
-    const list = guardOf("machine-users")
+    const detail = guardOf("machine-user-detail")
     expect(
-      productionRouteGuardStateCreate(list ?? productionRouteContractMap.admin.guard, {
+      productionRouteGuardStateCreate(detail ?? productionRouteContractMap.admin.guard, {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: { status: "authenticated", userId: "user-1" },
         organization: "missing",
         permission: "granted",
@@ -368,25 +439,40 @@ describe("org-scoped machine-user administration", () => {
     ).toEqual({ context: "organization", status: "missing-context" })
   })
 
-  test("keeps machine destinations out of the realm directory group and inside the organizations group", () => {
+  test("keeps machine destinations out of the sidebar and inside the realm group scenario catalog", () => {
     const groups = productionShellNavigationGroups.admin
-    const directory = groups.find((group) => group.label === "shell.nav.directory")
-    expect(directory?.items.map((item) => item.href)).not.toContain("/admin/machine-users")
-    expect(directory?.items.map((item) => item.href)).not.toContain("/admin/machine-credentials")
+    const hrefs = groups.flatMap((group) => group.items.map((item) => item.href))
+    expect(hrefs).not.toContain("/admin/machine-users")
+    expect(hrefs).not.toContain("/admin/machine-users/:machineUserId")
+    expect(hrefs).not.toContain("/admin/machine-credentials")
 
-    const organizations = groups.find((group) => group.label === "shell.nav.organizations")
-    expect(organizations, "organizations navigation group").toBeDefined()
-    expect(organizations?.items.map((item) => item.href)).toContain("/admin/organizations")
-    expect(organizations?.items.map((item) => item.href)).toContain("/admin/machine-users")
-    expect(organizations?.items.map((item) => item.href)).toContain("/admin/machine-credentials")
+    expect(productionRouteContractMap.admin.screens.find((screen) => screen.key === "machine-user-detail")?.path).toBe(
+      "/admin/machine-users/:machineUserId",
+    )
   })
 
-  test("lists machine-user demo scenarios under organizations instead of a realm machine group", () => {
-    expect(demoAdminScenarioGroups.map((group) => group.key)).not.toContain("machine-users")
-    const organizations = demoAdminScenarioGroups.find((group) => group.key === "organizations")
-    expect(organizations, "organizations demo group").toBeDefined()
-    for (const key of machineKeys) {
-      expect(organizations?.scenarios.map((scenario) => scenario.key)).toContain(key)
-    }
+  test("mirrors the new production routes in the demo scenario catalog", () => {
+    const paths = demoAdminScenarioGroups.flatMap((group) => group.scenarios.map((scenario) => scenario.path))
+    for (const kept of [
+      "/demo/admin/users",
+      "/demo/admin/roles",
+      "/demo/admin/projects",
+      "/demo/admin/configuration/general",
+      "/demo/admin/realm",
+      "/demo/admin/realm/administrators",
+    ])
+      expect(paths, kept).toContain(kept)
+    for (const removed of [
+      "/demo/admin/overview",
+      "/demo/admin/branding",
+      "/demo/admin/memberships",
+      "/demo/admin/invitations",
+      "/demo/admin/domains",
+      "/demo/admin/machine-users",
+      "/demo/admin/projects/01900000-0000-7000-8000-000000000031/applications",
+      "/demo/admin/projects/01900000-0000-7000-8000-000000000031/roles-grants",
+      "/demo/admin/projects/01900000-0000-7000-8000-000000000031/effective-access",
+    ])
+      expect(paths, removed).not.toContain(removed)
   })
 })

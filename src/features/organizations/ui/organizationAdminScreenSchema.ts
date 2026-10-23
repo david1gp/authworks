@@ -3,10 +3,7 @@ import * as v from "valibot"
 export const organizationAdminScreenSchema = v.picklist([
   "organizations",
   "organization-detail",
-  "memberships",
-  "invitations",
-  "domains",
-  "branding",
+  "configuration",
   "login-policy",
 ])
 

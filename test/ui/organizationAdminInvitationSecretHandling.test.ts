@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, mock, test } from "bun:test"
+import type { OrganizationAdminScreen } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
 
 /** A real storage implementation so acknowledgement is exercised through the browser API. */
 const sessionStorageCreate = (): Storage => {
@@ -118,7 +119,7 @@ describe("organization administration page state dismissal wiring", () => {
         dismissed = true
       },
       organizationId: () => "01900000-0000-7000-8000-000000000011",
-      screen: () => "invitations",
+      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
     })
 
     expect(page.invitationToken()).toBe("demo-invitation-token-0f9c31a7e5b24d68")
@@ -129,7 +130,7 @@ describe("organization administration page state dismissal wiring", () => {
 
   test("prevents token from reappearing after dismissal on same org reload, but re-seeds on new org", () => {
     let currentOrgId = "01900000-0000-7000-8000-000000000011"
-    let currentFixtureState = "one-time"
+    const currentFixtureState = "one-time"
 
     const initialInvitationToken = () => {
       if (currentFixtureState !== "one-time") return undefined
@@ -153,7 +154,7 @@ describe("organization administration page state dismissal wiring", () => {
       initialInvitationToken,
       onInvitationTokenDismiss,
       organizationId: () => currentOrgId,
-      screen: () => "invitations",
+      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
     })
 
     // Initial mount: token is visible
@@ -169,7 +170,7 @@ describe("organization administration page state dismissal wiring", () => {
       initialInvitationToken,
       onInvitationTokenDismiss,
       organizationId: () => currentOrgId,
-      screen: () => "invitations",
+      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
     })
     expect(pageAfterReload.invitationToken()).toBeUndefined()
 
@@ -180,7 +181,7 @@ describe("organization administration page state dismissal wiring", () => {
       initialInvitationToken,
       onInvitationTokenDismiss,
       organizationId: () => currentOrgId,
-      screen: () => "invitations",
+      screen: (() => "invitations") as unknown as () => OrganizationAdminScreen,
     })
     expect(pageDifferentOrg.invitationToken()).toBe("demo-invitation-token-0f9c31a7e5b24d68")
   })

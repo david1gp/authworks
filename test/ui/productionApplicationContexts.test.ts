@@ -45,7 +45,7 @@ describe("production application contexts", () => {
         providers: [],
       },
       [`/realms/${realmId}/me`]: {
-        capabilities: { realmRead: false },
+        capabilities: { realmAdministrator: false, realmRead: false },
         user: {
           createdAt: 1,
           email: "alice@example.com",
@@ -136,8 +136,19 @@ describe("production application contexts", () => {
     if (firstMeResponse === undefined || typeof firstMeResponse !== "object" || firstMeResponse === null)
       throw new Error("The /me test response was not configured.")
     const firstMeObject = firstMeResponse as {
-      readonly capabilities: { readonly realmRead: boolean }
-      readonly user: { readonly profile: { readonly displayName: string } }
+      readonly capabilities: { readonly realmAdministrator: boolean; readonly realmRead: boolean }
+      readonly user: {
+        readonly createdAt: number
+        readonly email: string
+        readonly emailVerified: boolean
+        readonly id: string
+        readonly profile: { readonly displayName: string }
+        readonly realmId: string
+        readonly state: "active"
+        readonly updatedAt: number
+        readonly userName: string
+        readonly verificationState: "verified"
+      }
     }
     responses[mePath] = {
       ...firstMeObject,
@@ -236,7 +247,7 @@ describe("production application contexts", () => {
         },
       },
       [`/realms/${realmId}/me`]: {
-        capabilities: { realmRead: true },
+        capabilities: { realmAdministrator: true, realmRead: true },
         user: {
           createdAt: 1,
           email: "alice@example.com",
@@ -483,7 +494,7 @@ function productionOrganizationSwitchFixtureInstall(secondOrganizationId: string
       },
     },
     [`/realms/${realmId}/me`]: {
-      capabilities: { realmRead: true },
+      capabilities: { realmAdministrator: true, realmRead: true },
       user: {
         createdAt: 1,
         email: "alice@example.com",

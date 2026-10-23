@@ -12,6 +12,7 @@ export const productionShellContextDefault = {
   session: {
     actorLabel: "Avery Stone",
     guard: {
+      access: { organizationRoles: ["owner"], realmAdministrator: true },
       authentication: { status: "authenticated", userId: "shell-user" },
       organization: { status: "available", organizationId: "northwind" },
       permission: "granted",

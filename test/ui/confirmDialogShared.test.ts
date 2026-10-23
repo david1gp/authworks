@@ -33,7 +33,6 @@ const [
   import("../../src/ui/i18n/model/englishCatalog.js"),
 ])
 
-const alexId = "01900000-0000-7000-8000-000000000021"
 const confidentialClientId = "01900000-0000-7000-8000-000000000041"
 
 describe("shared confirmation state", () => {
@@ -113,29 +112,24 @@ describe("features routed through the shared confirmation", () => {
     expect(page.realm()?.status).toBe("disabled")
   })
 
-  test("administration user lifecycle is confirmed before the mutation", async () => {
+  test("administration realm disabling is confirmed through the shared dialog primitive", async () => {
     const state = confirmStateCreate()
     const page = adminPageStateCreate({
       adapter: adminDemoAdapterCreate(() => "success", { signedInInitially: true }),
       confirm: state.confirm,
-      screen: () => "user-detail",
-      userId: () => alexId,
+      screen: () => "realm",
     })
     await Promise.resolve()
     await Promise.resolve()
+    page.realmStatus.set("disabled")
 
-    const cancelled = page.userLifecycleSet("locked")
+    const submit = { preventDefault: () => undefined } as SubmitEvent
+    const cancelled = page.realmSave(submit)
     await Promise.resolve()
     expect(state.open()).toBe(true)
     state.cancel()
     await cancelled
-    expect(page.user()?.state).not.toBe("locked")
-
-    const accepted = page.userLifecycleSet("locked")
-    await Promise.resolve()
-    state.accept()
-    await accepted
-    expect(page.user()?.state).toBe("locked")
+    expect(page.realm()?.status).not.toBe("disabled")
   })
 
   test("OIDC secret rotation is confirmed through the same primitive", async () => {

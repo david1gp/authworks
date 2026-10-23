@@ -1,19 +1,21 @@
 import * as v from "valibot"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
-import { httpApiClientRequest } from "../../platform/http/httpApiClientRequest.js"
-import { resultCreate } from "../../platform/errors/resultCreate.js"
-import { resultErrorCodedCreate } from "../../platform/errors/resultErrorCodedCreate.js"
 import { organizationDiscoveryResponseSchema } from "../../features/organizations/public/organizationDiscoveryResponseSchema.js"
+import { organizationListResponseSchema } from "../../features/organizations/public/organizationListResponseSchema.js"
 import { organizationMeListResponseSchema } from "../../features/organizations/public/organizationMeListResponseSchema.js"
-import { organizationResourceIdSchema } from "../../features/organizations/public/organizationResourceIdSchema.js"
 import { organizationMeSwitchResponseSchema } from "../../features/organizations/public/organizationMeSwitchResponseSchema.js"
+import { organizationResourceIdSchema } from "../../features/organizations/public/organizationResourceIdSchema.js"
 import { realmResponseSchema } from "../../features/realms/public/realmResponseSchema.js"
 import { sessionBrowserRequest } from "../../features/sessions/client/sessionBrowserRequest.js"
 import { sessionSchema } from "../../features/sessions/public/sessionSchema.js"
 import { userCurrentResponseSchema } from "../../features/users/public/userCurrentResponseSchema.js"
+import { resultCreate } from "../../platform/errors/resultCreate.js"
+import { resultErrorCodedCreate } from "../../platform/errors/resultErrorCodedCreate.js"
+import { httpApiClientRequest } from "../../platform/http/httpApiClientRequest.js"
 import type { ProductionApiContextValue } from "./productionApiContextValue.js"
 import type { ProductionRouteGuardContext } from "./productionRouteGuardContext.js"
 import type { ProductionSessionContextValue } from "./productionSessionContextValue.js"
+import { productionShellAccessResolve } from "./productionShellAccessResolve.js"
 
 const sessionCurrentResponseSchema = v.strictObject({ session: sessionSchema })
 
@@ -64,10 +66,22 @@ export async function productionApplicationContextsCreate(): Promise<{
     realmResponseSchema,
     "productionRealmGet",
   )
-  const organizations = memberships?.items.map((item) => ({
-    id: item.organization.id,
-    label: item.organization.name,
-  })) ?? [{ id: discovery.organization.id, label: discovery.organization.name }]
+  // Realm administrators may switch into any active organization, not just their memberships.
+  const allOrganizations =
+    session.subjectType === "user" && user?.capabilities?.realmAdministrator === true
+      ? await productionJsonGet(
+          `/realms/${encodeURIComponent(realmId)}/organizations`,
+          organizationListResponseSchema,
+          "productionOrganizationTenantList",
+        )
+      : undefined
+  const organizations = (
+    allOrganizations?.items.map((item) => ({ id: item.id, label: item.name })) ??
+    memberships?.items.map((item) => ({
+      id: item.organization.id,
+      label: item.organization.name,
+    })) ?? [{ id: discovery.organization.id, label: discovery.organization.name }]
+  ).filter((item, index, items) => items.findIndex((other) => other.id === item.id) === index)
   const requestedOrganization = v.safeParse(
     organizationResourceIdSchema,
     new URL(window.location.href).searchParams.get("organization"),
@@ -143,11 +157,26 @@ export async function productionApplicationContextsCreate(): Promise<{
     return resultCreate(undefined)
   }
 
+  const membershipsByOrganization = new Map(
+    (memberships?.items ?? []).map((item) => [item.organization.id, [...item.membership.roles]] as const),
+  )
+  const accessFor = (organizationId: string | undefined) =>
+    productionShellAccessResolve({
+      capabilities: user?.capabilities,
+      organizationRoles: organizationId === undefined ? [] : (membershipsByOrganization.get(organizationId) ?? []),
+      subjectType:
+        session.subjectType === "user" || session.subjectType === "bootstrap_admin" ? session.subjectType : undefined,
+    })
+
   return productionContextsCreate({
     api: { content: "ready", retry: () => undefined },
     session: {
       actorLabel: user?.user.profile.displayName ?? user?.user.email ?? "Administrator",
       guard: {
+        get access() {
+          const current = organization.get()
+          return accessFor(typeof current === "object" ? current.organizationId : undefined)
+        },
         authentication: { status: "authenticated", userId: session.userId ?? session.subjectId },
         get organization() {
           return organization.get()
@@ -199,6 +228,7 @@ function productionAnonymousContextsCreate() {
     session: {
       actorLabel: "",
       guard: {
+        access: { organizationRoles: [], realmAdministrator: false },
         authentication: "anonymous",
         organization: "missing",
         permission: "not-required",
@@ -217,6 +247,7 @@ function productionAnonymousSessionCreate(realmId: string, organizationId: strin
   return {
     actorLabel: "",
     guard: {
+      access: { organizationRoles: [], realmAdministrator: false },
       authentication: "anonymous" as const,
       organization: { organizationId, status: "available" as const },
       permission: "not-required" as const,

@@ -1,9 +1,12 @@
-import { Match, Show, Switch } from "solid-js"
+import { useNavigate } from "@solidjs/router"
+import { createEffect, Match, Show, Switch } from "solid-js"
 import * as v from "valibot"
 import { AccountAccessProductionAdapter } from "../../features/account/ui/AccountAccessProductionAdapter.js"
 import { AccountWorkspaceProductionAdapter } from "../../features/account/ui/AccountWorkspaceProductionAdapter.js"
 import { AdminProductionAdapter } from "../../features/admin/ui/AdminProductionAdapter.js"
 import { adminScreenSchema } from "../../features/admin/ui/adminScreenSchema.js"
+import { DirectoryAdminProductionAdapter } from "../../features/directory/ui/DirectoryAdminProductionAdapter.js"
+import { directoryAdminScreenSchema } from "../../features/directory/ui/directoryAdminScreenSchema.js"
 import { ImpersonationAdminProductionAdapter } from "../../features/impersonation/ui/ImpersonationAdminProductionAdapter.js"
 import { LoginProductionAdapter } from "../../features/login/ui/LoginProductionAdapter.js"
 import { MachineAdminProductionAdapter } from "../../features/machineUsers/ui/MachineAdminProductionAdapter.js"
@@ -19,11 +22,19 @@ import { messageTranslate } from "../i18n/model/messageTranslate.js"
 import { ProductionAuthenticatedShell } from "./ProductionAuthenticatedShell.js"
 import { ProductionFocusShell } from "./ProductionFocusShell.js"
 import { ProductionStatePanel } from "./ProductionStatePanel.js"
+import { productionAdminRedirectSelect } from "./productionAdminRedirectSelect.js"
 import { productionRouteAppStateCreate } from "./productionRouteAppStateCreate.js"
 import type { ProductionRouteContract } from "./productionRouteContract.js"
 
 export function ProductionRouteApp(props: { readonly route: ProductionRouteContract }) {
   const state = productionRouteAppStateCreate(() => props.route)
+  const navigate = useNavigate()
+  const redirect = () =>
+    props.route.feature === "admin" ? productionAdminRedirectSelect(window.location.pathname) : undefined
+  createEffect(() => {
+    const target = redirect()
+    if (target !== undefined) navigate(target, { replace: true })
+  })
   // The hosted login owns its own branded shell and resolves its realm through runtime discovery,
   // so it must render before the session-context route guard.
   if (props.route.feature === "login") return <LoginProductionAdapter />
@@ -121,6 +132,12 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
     const parsed = v.safeParse(organizationAdminScreenSchema, props.state.screen()?.key)
     return parsed.success ? parsed.output : undefined
   }
+  const directoryScreen = () => {
+    if (props.state.shellKind() !== "admin") return undefined
+    const parsed = v.safeParse(directoryAdminScreenSchema, props.state.screen()?.key)
+    return parsed.success ? parsed.output : undefined
+  }
+
   const oidcAdminScreen = () => {
     if (props.state.shellKind() !== "admin") return undefined
     const parsed = v.safeParse(oidcAdminScreenSchema, props.state.screen()?.key)
@@ -145,6 +162,9 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
       </Match>
       <Match when={oidcAdminScreen() !== undefined}>
         <OidcAdminProductionAdapter clientId={props.state.routeParam("clientId")} screen={oidcAdminScreen()!} />
+      </Match>
+      <Match when={directoryScreen() !== undefined}>
+        <DirectoryAdminProductionAdapter screen={directoryScreen()!} />
       </Match>
       <Match when={organizationAdminScreen() !== undefined}>
         <OrganizationAdminProductionAdapter screen={organizationAdminScreen()!} />

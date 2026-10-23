@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import { type Result } from "#result"
 import { accountServerAppCreate } from "../features/account/server/accountServerAppCreate.js"
+import { directoryServerAppCreate } from "../features/directory/server/directoryServerAppCreate.js"
 import type { MailDeliveryPort } from "../features/email/domain/mailDeliveryPort.js"
 import { emailDeliveryCallbacksCreate } from "../features/email/server/emailDeliveryCallbacksCreate.js"
 import type { EmailGeneratorServerConfiguration } from "../features/email/server/emailGeneratorServerConfiguration.js"
@@ -225,6 +226,7 @@ export function serverApplicationCreate(
       systemSecret: options.systemSecret,
     }),
   )
+  application.route("/", directoryServerAppCreate({ database: database.data, publicOrigin }))
   application.route(
     "/",
     projectServerAppCreate({ database: database.data, publicOrigin, systemSecret: options.systemSecret }),
