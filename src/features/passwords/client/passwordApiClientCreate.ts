@@ -56,6 +56,7 @@ import {
   type PasswordRegistrationResponse,
   passwordRegistrationResponseSchema,
 } from "../public/passwordRegistrationResponseSchema.js"
+import { type PasswordSetRequest, passwordSetRequestSchema } from "../public/passwordSetRequestSchema.js"
 import {
   type PasswordWhatsappVerificationRequest,
   passwordWhatsappVerificationRequestSchema,
@@ -109,6 +110,23 @@ export function passwordApiClientCreate(options: PasswordApiClientCreateOptions)
   }
 
   return {
+    passwordUserTenantSet(
+      realmId: string,
+      userId: string,
+      input: PasswordSetRequest,
+    ): Promise<Result<PasswordCredentialReplaceResponse>> {
+      const parsed = parsedRequest(passwordSetRequestSchema, input, "The password set request is invalid.")
+      if (!parsed.success) return Promise.resolve(parsed)
+      return sessionBrowserRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { body: JSON.stringify(parsed.data), method: "PUT" },
+        op: "passwordUserTenantSet",
+        path: `/realms/${encodeURIComponent(realmId)}/users/${encodeURIComponent(userId)}/password`,
+        realmId,
+        schema: passwordCredentialReplaceResponseSchema,
+      })
+    },
     passwordCredentialReplace(
       realmId: string,
       userId: string,

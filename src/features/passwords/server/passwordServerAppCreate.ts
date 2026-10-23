@@ -29,6 +29,7 @@ import { passwordPolicySet } from "../actions/passwordPolicySet.js"
 import { passwordRecoveryComplete } from "../actions/passwordRecoveryComplete.js"
 import { passwordRecoveryRequest } from "../actions/passwordRecoveryRequest.js"
 import { passwordRegister } from "../actions/passwordRegister.js"
+import { passwordSet } from "../actions/passwordSet.js"
 import { passwordWhatsappVerify } from "../actions/passwordWhatsappVerify.js"
 import type { PasswordSessionCreate } from "../domain/passwordSessionCreate.js"
 import { passwordWhatsappAvailabilityDenyByDefaultCreate } from "../domain/passwordWhatsappAvailabilityDenyByDefaultCreate.js"
@@ -46,6 +47,7 @@ import type { PasswordRecoveryDelivery } from "../public/passwordRecoveryDeliver
 import { passwordRecoveryRequestSchema } from "../public/passwordRecoveryRequestSchema.js"
 import type { PasswordRegistrationDelivery } from "../public/passwordRegistrationDeliverySchema.js"
 import { passwordRegistrationRequestSchema } from "../public/passwordRegistrationRequestSchema.js"
+import { passwordSetRequestSchema } from "../public/passwordSetRequestSchema.js"
 import { passwordWhatsappVerificationRequestSchema } from "../public/passwordWhatsappVerificationRequestSchema.js"
 
 type PasswordServerAppCreateOptions = {
@@ -80,6 +82,33 @@ export function passwordServerAppCreate(options: PasswordServerAppCreateOptions)
     minimumAssurance: "authenticated",
     publicOrigin: options.publicOrigin,
   })
+  const userPasswordManageMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    minimumAssurance: "authenticated",
+    publicOrigin: options.publicOrigin,
+  })
+
+  app.put("/realms/:realmId/users/:userId/password", userPasswordManageMiddleware, async (context) => {
+    const body = await passwordRequestJsonRead(context)
+    if (!body.success) return passwordErrorResponseCreate(context, body)
+    const input = v.safeParse(passwordSetRequestSchema, body.data)
+    if (!input.success)
+      return passwordErrorResponseCreate(context, {
+        errorMessage: "The password set request is invalid.",
+        op: "passwordSet",
+      })
+    return passwordResultResponseCreate(
+      context,
+      passwordSet({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        password: new Secret(input.output.password),
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
   const policyWriteMiddleware = sessionProtectedMiddlewareCreate({
     database: options.database,
     minimumAssurance: "multi_factor",
