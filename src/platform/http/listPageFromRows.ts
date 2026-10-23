@@ -4,7 +4,7 @@ export function listPageFromRows<T>(input: {
   readonly rows: readonly T[]
   readonly pageSize: number
   readonly idGet: (row: T) => string
-  readonly sortValueGet: (row: T) => string | number
+  readonly sortValueGet: (row: T) => string | number | null | undefined
 }): { items: T[]; nextPageToken?: string } {
   if (input.rows.length <= input.pageSize) return { items: [...input.rows] }
 
@@ -12,8 +12,9 @@ export function listPageFromRows<T>(input: {
   const lastItem = items.at(-1)
   if (lastItem === undefined) return { items }
 
+  const sortValue = input.sortValueGet(lastItem)
   return {
     items,
-    nextPageToken: listCursorEncode({ id: input.idGet(lastItem), k: input.sortValueGet(lastItem) }),
+    nextPageToken: listCursorEncode({ id: input.idGet(lastItem), k: sortValue ?? null }),
   }
 }

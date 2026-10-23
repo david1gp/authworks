@@ -16,6 +16,7 @@ type UserCliFlags = {
 type UserListCliFlags = UserCliFlags & {
   readonly pageSize?: number
   readonly pageToken?: string
+  readonly search?: string
   readonly sortBy?: string
   readonly sortDirection?: "asc" | "desc"
 }
@@ -299,6 +300,13 @@ function userListFlags() {
       parse: (value: string) => value,
       placeholder: "TOKEN",
     },
+    search: {
+      brief: "Case-insensitive user search",
+      kind: "parsed" as const,
+      optional: true as const,
+      parse: (value: string) => value,
+      placeholder: "TEXT",
+    },
     sortBy: {
       brief: "Sort field",
       kind: "parsed" as const,
@@ -320,6 +328,7 @@ function userListQueryCreate(flags: UserListCliFlags): ListQuery | undefined {
   if (
     flags.pageSize === undefined &&
     flags.pageToken === undefined &&
+    flags.search === undefined &&
     flags.sortBy === undefined &&
     flags.sortDirection === undefined
   )
@@ -327,6 +336,7 @@ function userListQueryCreate(flags: UserListCliFlags): ListQuery | undefined {
   return {
     ...(flags.pageSize === undefined ? {} : { pageSize: flags.pageSize }),
     ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
+    ...(flags.search === undefined ? {} : { search: flags.search }),
     ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),
     ...(flags.sortDirection === undefined ? {} : { sortDirection: flags.sortDirection }),
   }

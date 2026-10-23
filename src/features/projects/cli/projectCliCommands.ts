@@ -1,16 +1,16 @@
 import { type ApplicationContext, buildCommand, buildRouteMap } from "@stricli/core"
 import * as v from "valibot"
+import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCreate } from "../../../platform/errors/resultErrorCreate.js"
-import { scopeIdResolve } from "../../../platform/cli/scopeIdResolve.js"
-import type { ListQuery } from "../../../platform/http/listQuerySchema.js"
+import { authworksLocalCredentialLookup } from "../../centralConfiguration/public/index.js"
 import { connectionProfileCliCentralFlags } from "../../connectionProfiles/cli/connectionProfileCliCentralFlags.js"
 import { connectionProfileCliConnectionResolve } from "../../connectionProfiles/cli/connectionProfileCliConnectionResolve.js"
 import { connectionProfileCliOutputRedact } from "../../connectionProfiles/cli/connectionProfileCliOutputRedact.js"
 import { connectionProfileCliSystemTokenResolve } from "../../connectionProfiles/cli/connectionProfileCliSystemTokenResolve.js"
-import { authworksLocalCredentialLookup } from "../../centralConfiguration/public/index.js"
 import { userResourceIdSchema } from "../../users/public/userResourceIdSchema.js"
 import { projectApiClientCreate } from "../client/projectApiClientCreate.js"
+import type { ProjectListQuery } from "../public/projectListQuerySchema.js"
 
 type ProjectCliFlags = {
   readonly envFile?: string
@@ -26,6 +26,7 @@ type ProjectListCliFlags = ProjectCliFlags & {
   readonly sortBy?: string
   readonly sortDirection?: "asc" | "desc"
 }
+type ProjectListFilterCliFlags = ProjectListCliFlags & { readonly organizationId?: string }
 type ProjectIdCliFlags = ProjectCliFlags & { readonly projectId?: string; readonly realmId?: string }
 type ProjectGetCliFlags = ProjectIdCliFlags & { readonly ifModifiedSince?: string }
 type ProjectUserAssignmentCliFlags = ProjectIdCliFlags & { readonly assignmentId: string }
@@ -63,7 +64,7 @@ const projectCreateCommand = buildCommand({
 })
 
 const projectListCommand = buildCommand({
-  async func(this: ApplicationContext, flags: ProjectListCliFlags & { realmId?: string }) {
+  async func(this: ApplicationContext, flags: ProjectListFilterCliFlags & { realmId?: string }) {
     const connection = await projectCliConnectionResolve(this, flags)
     if (!connection.success) return projectCliResultWrite(this, connection)
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
@@ -74,7 +75,14 @@ const projectListCommand = buildCommand({
       [connection.data.token, connection.data.systemToken],
     )
   },
-  parameters: { flags: { ...projectCommonFlags(), ...projectListFlags(), realmId: projectScopeIdFlag("Realm UUID") } },
+  parameters: {
+    flags: {
+      ...projectCommonFlags(),
+      ...projectListFlags(),
+      organizationId: { ...projectScopeIdFlag("Organization filter UUID"), optional: true as const },
+      realmId: projectScopeIdFlag("Realm UUID"),
+    },
+  },
   docs: { brief: "List projects" },
 })
 
@@ -557,8 +565,9 @@ function projectListFlags() {
   }
 }
 
-function projectListQueryCreate(flags: ProjectListCliFlags): ListQuery | undefined {
+function projectListQueryCreate(flags: ProjectListFilterCliFlags): ProjectListQuery | undefined {
   if (
+    flags.organizationId === undefined &&
     flags.pageSize === undefined &&
     flags.pageToken === undefined &&
     flags.sortBy === undefined &&
@@ -566,6 +575,7 @@ function projectListQueryCreate(flags: ProjectListCliFlags): ListQuery | undefin
   )
     return undefined
   return {
+    ...(flags.organizationId === undefined ? {} : { organizationId: flags.organizationId }),
     ...(flags.pageSize === undefined ? {} : { pageSize: Number(flags.pageSize) }),
     ...(flags.pageToken === undefined ? {} : { pageToken: flags.pageToken }),
     ...(flags.sortBy === undefined ? {} : { sortBy: flags.sortBy }),

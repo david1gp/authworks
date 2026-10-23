@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm"
+import { and, asc, count, eq, inArray } from "drizzle-orm"
 import { type Result } from "#result"
 import { resultCreate } from "../../../platform/errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../../../platform/errors/resultErrorCodedCreate.js"
@@ -147,6 +147,31 @@ export function projectRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    projectApplicationCountByProject(projectIds: readonly string[]): Result<{ projectId: string; total: number }[]> {
+      if (projectIds.length === 0) return resultCreate([])
+      try {
+        return resultCreate(
+          database
+            .select({ projectId: projectApplicationTable.projectId, total: count() })
+            .from(projectApplicationTable)
+            .where(
+              and(
+                inArray(projectApplicationTable.projectId, [...projectIds]),
+                eq(projectApplicationTable.status, "active"),
+              ),
+            )
+            .groupBy(projectApplicationTable.projectId)
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectApplicationCountByProject",
+          "The applications could not be counted.",
+          "projects.read-failed",
+        )
+      }
+    },
+
     projectApplicationUpdate(
       applicationId: string,
       input: ProjectApplicationUpdate,
@@ -251,6 +276,40 @@ export function projectRepositoryCreate(database: StorageExecutor) {
       } catch (_error) {
         return resultErrorCodedCreate(
           "projectGrantList",
+          "The project grants could not be read.",
+          "projects.read-failed",
+        )
+      }
+    },
+
+    projectGrantActiveListByGrantedOrganization(
+      realmId: string,
+      grantedOrganizationId: string,
+    ): Result<ProjectGrantRow[]> {
+      if (realmId.length === 0 || grantedOrganizationId.length === 0)
+        return resultErrorCodedCreate(
+          "projectGrantActiveListByGrantedOrganization",
+          "The project grant lookup is invalid.",
+          "projects.invalid",
+        )
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(projectGrantTable)
+            .where(
+              and(
+                eq(projectGrantTable.realmId, realmId),
+                eq(projectGrantTable.grantedOrganizationId, grantedOrganizationId),
+                eq(projectGrantTable.status, "active"),
+              ),
+            )
+            .orderBy(asc(projectGrantTable.createdAt), asc(projectGrantTable.id))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectGrantActiveListByGrantedOrganization",
           "The project grants could not be read.",
           "projects.read-failed",
         )
@@ -376,6 +435,31 @@ export function projectRepositoryCreate(database: StorageExecutor) {
       }
     },
 
+    projectUserAssignmentListByUser(realmId: string, userId: string): Result<ProjectUserAssignmentRow[]> {
+      if (realmId.length === 0 || userId.length === 0)
+        return resultErrorCodedCreate(
+          "projectUserAssignmentListByUser",
+          "The project assignment lookup is invalid.",
+          "projects.invalid",
+        )
+      try {
+        return resultCreate(
+          database
+            .select()
+            .from(projectUserAssignmentTable)
+            .where(and(eq(projectUserAssignmentTable.realmId, realmId), eq(projectUserAssignmentTable.userId, userId)))
+            .orderBy(asc(projectUserAssignmentTable.createdAt), asc(projectUserAssignmentTable.id))
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectUserAssignmentListByUser",
+          "The project user assignments could not be read.",
+          "projects.read-failed",
+        )
+      }
+    },
+
     projectUserAssignmentUpdate(
       assignmentId: string,
       input: ProjectUserAssignmentUpdate,
@@ -471,6 +555,26 @@ export function projectRepositoryCreate(database: StorageExecutor) {
         )
       } catch (_error) {
         return resultErrorCodedCreate("projectRoleList", "The project roles could not be read.", "projects.read-failed")
+      }
+    },
+
+    projectRoleCountByProject(projectIds: readonly string[]): Result<{ projectId: string; total: number }[]> {
+      if (projectIds.length === 0) return resultCreate([])
+      try {
+        return resultCreate(
+          database
+            .select({ projectId: projectRoleTable.projectId, total: count() })
+            .from(projectRoleTable)
+            .where(inArray(projectRoleTable.projectId, [...projectIds]))
+            .groupBy(projectRoleTable.projectId)
+            .all(),
+        )
+      } catch (_error) {
+        return resultErrorCodedCreate(
+          "projectRoleCountByProject",
+          "The project roles could not be counted.",
+          "projects.read-failed",
+        )
       }
     },
 

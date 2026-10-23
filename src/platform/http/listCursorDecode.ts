@@ -4,7 +4,7 @@ import { resultCreate } from "../errors/resultCreate.js"
 import { resultErrorCodedCreate } from "../errors/resultErrorCodedCreate.js"
 import { listCursorPayloadSchema } from "./listCursorPayloadSchema.js"
 
-export function listCursorDecode(token: string): Result<{ id: string; k: string | number }> {
+export function listCursorDecode(token: string): Result<{ id: string; k: string | number | null }> {
   const op = "listCursorDecode"
   try {
     if (!/^[A-Za-z0-9_-]+$/.test(token))

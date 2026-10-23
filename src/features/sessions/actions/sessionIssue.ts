@@ -16,6 +16,7 @@ import { mfaLoginAssuranceClaim } from "../../mfa/server/mfaLoginAssuranceClaim.
 import { organizationLoginPolicyResolve } from "../../organizations/actions/organizationLoginPolicyResolve.js"
 import { organizationLoginContextResolve } from "../../organizations/server/organizationLoginContextResolve.js"
 import { organizationMembershipContextValidate } from "../../organizations/server/organizationMembershipContextValidate.js"
+import { userLastSignInRecord } from "../../users/server/userLastSignInRecord.js"
 import { sessionCredentialCreate } from "../domain/sessionCredentialCreate.js"
 import { sessionCredentialHashCreate } from "../domain/sessionCredentialHashCreate.js"
 import { sessionPublicViewCreate } from "../domain/sessionPublicViewCreate.js"
@@ -300,6 +301,19 @@ export function sessionIssue(options: SessionIssueOptions): Result<SessionCreden
           runtime,
         )
   if (!event.success) return event
+  if (
+    subjectType.output === "user" &&
+    authenticationMethod.output !== "impersonation" &&
+    options.impersonatorId === undefined
+  ) {
+    const recorded = userLastSignInRecord({
+      executor,
+      realmId: options.realmId,
+      signedInAt: now,
+      userId: subjectId,
+    })
+    if (!recorded.success) return recorded
+  }
   return resultCreate({ session: sessionPublicViewCreate(created.data, true), token })
 }
 

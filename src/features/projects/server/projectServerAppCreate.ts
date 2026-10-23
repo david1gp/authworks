@@ -40,11 +40,11 @@ import { projectRoleCreate } from "../actions/projectRoleCreate.js"
 import { projectRoleDelete } from "../actions/projectRoleDelete.js"
 import { projectRoleList } from "../actions/projectRoleList.js"
 import { projectRoleUpdate } from "../actions/projectRoleUpdate.js"
+import { projectUpdate } from "../actions/projectUpdate.js"
 import { projectUserAssignmentCreate } from "../actions/projectUserAssignmentCreate.js"
 import { projectUserAssignmentList } from "../actions/projectUserAssignmentList.js"
 import { projectUserAssignmentRemove } from "../actions/projectUserAssignmentRemove.js"
 import { projectUserAssignmentUpdate } from "../actions/projectUserAssignmentUpdate.js"
-import { projectUpdate } from "../actions/projectUpdate.js"
 import { projectApplicationCreateRequestSchema } from "../public/projectApplicationCreateRequestSchema.js"
 import { projectApplicationLifecycleRequestSchema } from "../public/projectApplicationLifecycleRequestSchema.js"
 import { projectApplicationUpdateRequestSchema } from "../public/projectApplicationUpdateRequestSchema.js"
@@ -53,11 +53,12 @@ import { projectGrantCreateRequestSchema } from "../public/projectGrantCreateReq
 import { projectGrantLifecycleRequestSchema } from "../public/projectGrantLifecycleRequestSchema.js"
 import { projectGrantUpdateRequestSchema } from "../public/projectGrantUpdateRequestSchema.js"
 import { projectLifecycleRequestSchema } from "../public/projectLifecycleRequestSchema.js"
+import { projectListQuerySchema } from "../public/projectListQuerySchema.js"
 import { projectRoleCreateRequestSchema } from "../public/projectRoleCreateRequestSchema.js"
 import { projectRoleUpdateRequestSchema } from "../public/projectRoleUpdateRequestSchema.js"
+import { projectUpdateRequestSchema } from "../public/projectUpdateRequestSchema.js"
 import { projectUserAssignmentCreateRequestSchema } from "../public/projectUserAssignmentCreateRequestSchema.js"
 import { projectUserAssignmentUpdateRequestSchema } from "../public/projectUserAssignmentUpdateRequestSchema.js"
-import { projectUpdateRequestSchema } from "../public/projectUpdateRequestSchema.js"
 
 type ProjectServerAppCreateOptions = {
   readonly database: StorageDatabase
@@ -108,8 +109,19 @@ function projectRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, auth
   app.get(`${prefix}/projects`, (context) => {
     const authenticated = authenticate(context, authorizationPermissionDefinitions.projectRead)
     if (!authenticated.success) return projectErrorResponseCreate(context, authenticated)
-    const query = listQueryFromSearchParams(new URL(context.req.url).searchParams)
+    const searchParams = new URL(context.req.url).searchParams
+    const query = listQueryFromSearchParams(searchParams)
     if (!query.success) return projectErrorResponseCreate(context, query)
+    const organizationIdParam = searchParams.get("organizationId")
+    const filter =
+      organizationIdParam === null
+        ? v.safeParse(projectListQuerySchema, {})
+        : v.safeParse(projectListQuerySchema, { organizationId: organizationIdParam })
+    if (!filter.success)
+      return projectErrorResponseCreate(context, {
+        errorMessage: "The organization filter is invalid.",
+        op: "projectList",
+      })
     return projectResultResponseCreate(
       context,
       projectList({
@@ -117,6 +129,7 @@ function projectRoutesRegister(app: Hono<ProjectServerEnv>, prefix: string, auth
         database: projectDatabaseGet(app),
         query: query.data,
         realmId: projectParamGet(context, "realmId"),
+        ...(filter.output.organizationId === undefined ? {} : { organizationId: filter.output.organizationId }),
       }),
     )
   })

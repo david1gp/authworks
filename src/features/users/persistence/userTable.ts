@@ -9,6 +9,7 @@ export const userTable = sqliteTable(
     email: text("email").notNull(),
     emailVerifiedAt: integer("email_verified_at"),
     id: text("id").primaryKey(),
+    lastSignInAt: integer("last_sign_in_at"),
     phoneNumber: text("phone_number"),
     phoneNumberVerifiedAt: integer("phone_number_verified_at"),
     realmId: text("realm_id").notNull(),
@@ -21,6 +22,7 @@ export const userTable = sqliteTable(
   },
   (table) => [
     index("users_realm_id_idx").on(table.realmId),
+    index("users_realm_last_sign_in_idx").on(table.realmId, table.lastSignInAt),
     uniqueIndex("users_realm_id_id_idx").on(table.realmId, table.id),
     uniqueIndex("users_realm_user_name_idx").on(table.realmId, table.userName),
     uniqueIndex("users_realm_email_idx").on(table.realmId, table.email),

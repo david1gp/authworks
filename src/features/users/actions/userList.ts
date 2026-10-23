@@ -24,12 +24,36 @@ export function userList(options: UserListOptions): Result<{ items: User[]; next
     return resultErrorCreate(op, "The users are not available in this tenant context.", "users.tenant-mismatch")
   const users = userRepositoryCreate(options.database.db).userList(options.realmId)
   if (!users.success) return users
-  const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id"], "createdAt")
+  const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id", "userName", "lastSignInAt"], "createdAt")
   if (!sortBy.success) return sortBy
+  let rows = users.data.map(userPublicViewCreate)
+  const search = options.query?.search?.trim()
+  if (search !== undefined && search.length > 0) rows = rows.filter((user) => userRecordMatchesSearch(user, search))
   return listRowsPage({
     idGet: (user) => user.id,
+    nullsLast: sortBy.data === "lastSignInAt",
     query: options.query,
-    rows: users.data.map(userPublicViewCreate),
-    sortValueGet: (user) => (sortBy.data === "id" ? user.id : user.createdAt),
+    rows,
+    sortValueGet: (user) => userListSortValueGet(user, sortBy.data),
   })
+}
+
+function userListSortValueGet(user: User, sortBy: string): string | number | undefined {
+  if (sortBy === "id") return user.id
+  if (sortBy === "userName") return user.userName
+  if (sortBy === "lastSignInAt") return user.lastSignInAt
+  return user.createdAt
+}
+
+function userRecordMatchesSearch(user: User, search: string): boolean {
+  const needle = search.toLowerCase()
+  const haystacks = [
+    user.userName,
+    user.email,
+    user.profile.displayName,
+    user.profile.firstName,
+    user.profile.lastName,
+    user.profile.nickName,
+  ]
+  return haystacks.some((value) => value?.toLowerCase().includes(needle) === true)
 }

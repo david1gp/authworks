@@ -7,16 +7,17 @@ import { httpResultResponseCreate } from "../../../platform/http/httpResultRespo
 import { listQueryFromSearchParams } from "../../../platform/http/listQueryFromSearchParams.js"
 import type { Secret } from "../../../platform/secrets/Secret.js"
 import { secretMatches } from "../../../platform/secrets/secretMatches.js"
+import type { R2ObjectStorage } from "../../../platform/storage/r2/r2ObjectStorage.js"
 import type { StorageDatabase } from "../../../platform/storage/storageDatabaseOpen.js"
 import type { AuthorizationActorContext } from "../../authorization/public/authorizationActorContextSchema.js"
 import { authorizationPermissionDefinitions } from "../../authorization/public/authorizationPermissionDefinitions.js"
+import type { RealmTenantContext } from "../../realms/server/index.js"
 import {
   realmAdministratorContextAuthorize,
   realmBootstrapAdminAuthenticate,
   realmSystemContextCreate,
   realmTenantContextResolve,
 } from "../../realms/server/index.js"
-import type { RealmTenantContext } from "../../realms/server/index.js"
 import type { Session } from "../../sessions/public/sessionSchema.js"
 import { sessionProtectedMiddlewareCreate } from "../../sessions/server/sessionProtectedMiddlewareCreate.js"
 import { userAuthenticationMethodsAdministratorGet } from "../actions/userAuthenticationMethodsAdministratorGet.js"
@@ -36,9 +37,10 @@ import { userEmailVerificationSet } from "../actions/userEmailVerificationSet.js
 import { userGet } from "../actions/userGet.js"
 import { userLifecycleSet } from "../actions/userLifecycleSet.js"
 import { userList } from "../actions/userList.js"
-import { userProfileUpdate } from "../actions/userProfileUpdate.js"
-import { userProfilePictureUpload } from "../actions/userProfilePictureUpload.js"
 import { userProfilePictureRemove } from "../actions/userProfilePictureRemove.js"
+import { userProfilePictureUpload } from "../actions/userProfilePictureUpload.js"
+import { userProfileUpdate } from "../actions/userProfileUpdate.js"
+import { userPurge } from "../actions/userPurge.js"
 import { userRealmReadCapabilityResolve } from "../actions/userRealmReadCapabilityResolve.js"
 import { userCreateRequestSchema } from "../public/userCreateRequestSchema.js"
 import { userEmailAddressAddResendRequestSchema } from "../public/userEmailAddressAddResendRequestSchema.js"
@@ -54,7 +56,6 @@ import { userEmailChangeVerifyRequestSchema } from "../public/userEmailChangeVer
 import { userLifecycleRequestSchema } from "../public/userLifecycleRequestSchema.js"
 import { userProfileUpdateRequestSchema } from "../public/userProfileUpdateRequestSchema.js"
 import { userVerificationRequestSchema } from "../public/userVerificationRequestSchema.js"
-import type { R2ObjectStorage } from "../../../platform/storage/r2/r2ObjectStorage.js"
 
 type UserServerAppCreateOptions = {
   readonly clientIpResolve?: (context: { readonly req: { readonly raw: Request } }) => string | undefined
@@ -95,6 +96,11 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     publicOrigin: options.publicOrigin,
   })
   const userManageMiddleware = sessionProtectedMiddlewareCreate({
+    database: options.database,
+    fallback: (context, next) => userBootstrapFallback(options.database, context, next),
+    publicOrigin: options.publicOrigin,
+  })
+  const userPurgeMiddleware = sessionProtectedMiddlewareCreate({
     database: options.database,
     fallback: (context, next) => userBootstrapFallback(options.database, context, next),
     publicOrigin: options.publicOrigin,
@@ -256,7 +262,7 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
     })
     if (!result.success) return userResultResponseCreate(context, result)
     const capabilities = userRealmReadCapabilityResolve({
-      actor: context.get("authorizationActor"),
+      actor: subject.data.actor,
       database: options.database,
       realmId: context.req.param("realmId"),
     })
@@ -752,6 +758,20 @@ export function userServerAppCreate(options: UserServerAppCreateOptions) {
         context: authenticated.data,
         database: options.database,
         input: input.output,
+        realmId: context.req.param("realmId"),
+        userId: context.req.param("userId"),
+      }),
+    )
+  })
+
+  app.post("/realms/:realmId/users/:userId/purge", userPurgeMiddleware, async (context) => {
+    return userResultResponseCreate(
+      context,
+      await userPurge({
+        actor: context.get("authorizationActor"),
+        database: options.database,
+        profilePicturePublicOrigin: options.profilePicturePublicOrigin,
+        profilePictureStorage: options.profilePictureStorage,
         realmId: context.req.param("realmId"),
         userId: context.req.param("userId"),
       }),

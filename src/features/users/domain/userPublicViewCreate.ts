@@ -42,6 +42,7 @@ export function userPublicViewCreate(row: UserRecord): User {
     emailVerified: row.emailVerifiedAt !== null,
     ...(row.emailVerifiedAt === null ? {} : { emailVerifiedAt: row.emailVerifiedAt }),
     id: row.id,
+    ...(row.lastSignInAt === null ? {} : { lastSignInAt: row.lastSignInAt }),
     ...(row.phoneNumber === null ? {} : { phoneNumber: row.phoneNumber }),
     ...(row.phoneNumberVerifiedAt === null ? {} : { phoneNumberVerifiedAt: row.phoneNumberVerifiedAt }),
     realmId: row.realmId,

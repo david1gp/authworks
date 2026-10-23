@@ -9,7 +9,7 @@ import type { RealmSystemContext } from "../../realms/domain/realmSystemContext.
 import type { RealmTenantContext } from "../../realms/domain/realmTenantContext.js"
 import { projectPublicViewCreate } from "../domain/projectPublicViewCreate.js"
 import { projectRepositoryCreate } from "../persistence/projectRepositoryCreate.js"
-import type { Project } from "../public/projectSchema.js"
+import type { ProjectListItem } from "../public/projectListItemSchema.js"
 import { projectContextAuthorize } from "./projectContextAuthorize.js"
 
 type ProjectListOptions = {
@@ -17,9 +17,10 @@ type ProjectListOptions = {
   readonly database: StorageDatabase
   readonly query?: ListQuery
   readonly realmId: string
+  readonly organizationId?: string
 }
 
-export function projectList(options: ProjectListOptions): Result<{ items: Project[]; nextPageToken?: string }> {
+export function projectList(options: ProjectListOptions): Result<{ items: ProjectListItem[]; nextPageToken?: string }> {
   const op = "projectList"
   if (options.context.kind === "tenant" && options.context.realmId !== options.realmId)
     return resultErrorCodedCreate(
@@ -29,13 +30,26 @@ export function projectList(options: ProjectListOptions): Result<{ items: Projec
     )
   const sortBy = listSortByResolve(options.query?.sortBy, ["createdAt", "id"], "createdAt")
   if (!sortBy.success) return sortBy
-  const rows = projectRepositoryCreate(options.database.db).projectList(options.realmId)
+  const repository = projectRepositoryCreate(options.database.db)
+  const rows = repository.projectList(options.realmId)
   if (!rows.success) return rows
-  const projects: Project[] = []
+  const grantedProjectIds = new Set<string>()
+  if (options.organizationId !== undefined) {
+    const grants = repository.projectGrantActiveListByGrantedOrganization(options.realmId, options.organizationId)
+    if (!grants.success) return grants
+    for (const grant of grants.data) grantedProjectIds.add(grant.projectId)
+  }
+  const views: { project: ProjectListItem }[] = []
   for (const project of rows.data) {
     if (project.status !== "active") continue
+    if (
+      options.organizationId !== undefined &&
+      project.organizationId !== options.organizationId &&
+      !grantedProjectIds.has(project.id)
+    )
+      continue
     if (options.context.kind === "system") {
-      projects.push(projectPublicViewCreate(project))
+      views.push({ project: projectPublicViewCreate(project) })
       continue
     }
     const authorized = projectContextAuthorize({
@@ -45,12 +59,28 @@ export function projectList(options: ProjectListOptions): Result<{ items: Projec
       permission: "project.read",
       project,
     })
-    if (authorized.success) projects.push(projectPublicViewCreate(project))
+    if (authorized.success) views.push({ project: projectPublicViewCreate(project) })
   }
-  return listRowsPage({
-    idGet: (project) => project.id,
+  const page = listRowsPage({
+    idGet: (entry) => entry.project.id,
     query: options.query,
-    rows: projects,
-    sortValueGet: (project) => (sortBy.data === "id" ? project.id : project.createdAt),
+    rows: views,
+    sortValueGet: (entry) => (sortBy.data === "id" ? entry.project.id : entry.project.createdAt),
+  })
+  if (!page.success) return page
+  const pageIds = page.data.items.map((entry) => entry.project.id)
+  const roleCounts = repository.projectRoleCountByProject(pageIds)
+  if (!roleCounts.success) return roleCounts
+  const applicationCounts = repository.projectApplicationCountByProject(pageIds)
+  if (!applicationCounts.success) return applicationCounts
+  const roleCountByProject = new Map(roleCounts.data.map((entry) => [entry.projectId, entry.total]))
+  const applicationCountByProject = new Map(applicationCounts.data.map((entry) => [entry.projectId, entry.total]))
+  return resultCreate({
+    ...(page.data.nextPageToken === undefined ? {} : { nextPageToken: page.data.nextPageToken }),
+    items: page.data.items.map((entry) => ({
+      ...entry.project,
+      applicationCount: applicationCountByProject.get(entry.project.id) ?? 0,
+      roleCount: roleCountByProject.get(entry.project.id) ?? 0,
+    })),
   })
 }

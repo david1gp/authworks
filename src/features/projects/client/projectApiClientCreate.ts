@@ -56,6 +56,7 @@ import {
   projectGrantUpdateRequestSchema,
 } from "../public/projectGrantUpdateRequestSchema.js"
 import { type ProjectLifecycleRequest, projectLifecycleRequestSchema } from "../public/projectLifecycleRequestSchema.js"
+import { type ProjectListQuery, projectListQuerySchema } from "../public/projectListQuerySchema.js"
 import { type ProjectListResponse, projectListResponseSchema } from "../public/projectListResponseSchema.js"
 import { type ProjectResponse, projectResponseSchema } from "../public/projectResponseSchema.js"
 import {
@@ -392,9 +393,18 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
         projectResponseSchema,
       )
     },
-    projectTenantList(realmId: string, query?: ListQuery): Promise<Result<ProjectListResponse>> {
+    projectTenantList(realmId: string, query?: ProjectListQuery): Promise<Result<ProjectListResponse>> {
+      const merged: ProjectListQuery | undefined = query
+      if (merged !== undefined && !v.safeParse(projectListQuerySchema, merged).success)
+        return Promise.resolve(
+          resultErrorCodedCreate(
+            "projectApiClientTenantList",
+            "The project list query is invalid.",
+            "projects.invalid",
+          ),
+        )
       return browserRequest(
-        projectListPath(projectTenantPath(realmId), query),
+        projectListPath(projectTenantPath(realmId), merged),
         { method: "GET" },
         projectListResponseSchema,
       )
@@ -750,7 +760,7 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
         )
       return request(`${projectPath(realmId, projectId)}/lifecycle`, jsonRequest(parsed.output), projectResponseSchema)
     },
-    projectList(realmId: string, query?: ListQuery): Promise<Result<ProjectListResponse>> {
+    projectList(realmId: string, query?: ProjectListQuery): Promise<Result<ProjectListResponse>> {
       return request(projectListPath(projectPath(realmId), query), { method: "GET" }, projectListResponseSchema)
     },
     projectRoleCreate(
@@ -878,11 +888,14 @@ export function projectApiClientCreate(options: ProjectApiClientCreateOptions) {
   }
 }
 
-function projectListPath(path: string, query: ListQuery | undefined): string {
+function projectListPath(path: string, query: ListQuery | ProjectListQuery | undefined): string {
   if (query === undefined) return path
   const params = new URLSearchParams()
   if (query.pageSize !== undefined) params.set("pageSize", String(query.pageSize))
   if (query.pageToken !== undefined) params.set("pageToken", query.pageToken)
+  if (query.search !== undefined) params.set("search", query.search)
+  if ("organizationId" in query && query.organizationId !== undefined)
+    params.set("organizationId", query.organizationId)
   if (query.sortBy !== undefined) params.set("sortBy", query.sortBy)
   if (query.sortDirection !== undefined) params.set("sortDirection", query.sortDirection)
   const encoded = params.toString()
