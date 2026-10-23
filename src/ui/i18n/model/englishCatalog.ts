@@ -247,7 +247,7 @@ export const englishCatalog = {
   "account.security.identityCount": "{count} linked identities",
   "account.security.progress": "{count}/5 methods configured",
   "account.security.progressLabel": "Security setup progress: {count} of 5 methods configured",
-  "account.security.recoveryMfa": "Recovery access / MFA",
+  "account.security.recoveryMfa": "Multi-factor authentication (MFA)",
   "account.securityOverview.backupCodeCount": "{count} backup codes remaining",
   "account.securityOverview.backupCodes": "Backup codes",
   "account.securityOverview.email": "Email",
