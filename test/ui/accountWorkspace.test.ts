@@ -319,8 +319,18 @@ describe("account workspace", () => {
     expect(overview).not.toContain("account.profile.signInDescription")
     expect(overview.match(/<AccountIdentityCopyButton/g)).toHaveLength(4)
     expect(overview).toContain("<AccountSecurityProgress state={props.securityProgress} />")
-    // Wide screens balance the identity strip into equal halves instead of the narrow lg panel.
-    expect(overview).toContain("xl:grid-cols-2")
+    // The strip is a two-column grid: the picture sits top-right, and the MFA row spans both
+    // columns below it on mobile before it returns to the left column from sm up.
+    expect(overview).toContain("grid-cols-[minmax(0,1fr)_auto]")
+    expect(overview).toContain(
+      "col-span-2 row-start-2 min-w-0 border-t border-line-subtle pt-2 sm:col-span-1 sm:col-start-1",
+    )
+    expect(overview).toContain("col-start-2 row-start-1 shrink-0 self-start")
+    expect(overview).not.toContain("lg:border-l")
+    expect(overview).not.toContain("xl:grid-cols-2")
+    expect(overview.indexOf("col-start-1 row-start-1 grid min-w-0 gap-1")).toBeLessThan(
+      overview.indexOf("<AccountProfilePictureField"),
+    )
     expect(progress).toContain("href={item.href}")
     expect(progress).toContain("mdiCheckCircleOutline")
     expect(progress).toContain("mdiAlertCircleOutline")
@@ -329,6 +339,10 @@ describe("account workspace", () => {
     expect(progress).toContain('messageTranslate("account.security.recoveryMfa")')
     expect(progress).toContain("{props.state.text()}")
     expect(progress).toContain('role="progressbar"')
+    // Below sm the summary wraps into label plus chevron on the first line and bar plus count
+    // on the second; from sm up it stays a single line.
+    expect(progress).toContain("flex-wrap")
+    expect(progress).toContain("sm:flex-nowrap")
 
     // The removed nickname helper copy must not come back.
     expect(source).not.toContain("nickNameHint")
