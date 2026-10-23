@@ -143,6 +143,24 @@ describe("account security management", () => {
     expect(view).not.toContain("AccountSecurityOverview")
   })
 
+  test("renders the card headers only after a successful load so no alert badge flashes while loading", async () => {
+    const view = await Bun.file(
+      new URL("../../src/features/account/ui/AccountSecurityView.tsx", import.meta.url),
+    ).text()
+    const boundary = await Bun.file(
+      new URL("../../src/features/account/ui/AccountStateBoundary.tsx", import.meta.url),
+    ).text()
+
+    // The cards are boundary children, and the boundary only renders them in the ready state.
+    // A pending or failed load therefore never shows a "not configured" alert badge.
+    expect(view).toContain("<AccountStateBoundary")
+    expect(view.indexOf("<AccountStateBoundary")).toBeLessThan(view.indexOf("<AccountSecurityManagement"))
+    expect(boundary).toContain('when={props.state === "ready"}')
+    expect(boundary).toContain('when={props.state === "loading"}')
+    expect(view).toContain('if (props.state.status() === "loading") return "loading" as const')
+    expect(view).toContain('if (props.state.status() === "error") return "error" as const')
+  })
+
   test("exposes progress semantics and smooth responsive width without nested card chrome", async () => {
     const progress = await Bun.file(
       new URL("../../src/features/account/ui/AccountSecurityProgress.tsx", import.meta.url),

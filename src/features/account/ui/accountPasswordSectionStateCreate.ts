@@ -6,7 +6,7 @@ export function accountPasswordSectionStateCreate(security: Accessor<AccountSecu
   const configured = () => security().methods().password.available
   return {
     summaryStatus: () => messageTranslate(configured() ? "account.status.configured" : "account.status.notConfigured"),
-    summaryTone: () => (configured() ? ("success" as const) : ("neutral" as const)),
+    summaryTone: () => (configured() ? ("success" as const) : ("danger" as const)),
     summaryValue: () =>
       messageTranslate(
         configured() ? "account.securityOverview.passwordSet" : "account.securityOverview.passwordMissing",

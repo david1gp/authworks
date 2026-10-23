@@ -38,7 +38,7 @@ export function accountRecoveryCodesSectionStateCreate(security: Accessor<Accoun
     remaining,
     summaryStatus: () =>
       messageTranslate(remaining() > 0 ? "account.status.configured" : "account.status.notConfigured"),
-    summaryTone: () => (remaining() > 0 ? ("success" as const) : ("neutral" as const)),
+    summaryTone: () => (remaining() > 0 ? ("success" as const) : ("danger" as const)),
     summaryValue: () => messageTranslate("account.securityOverview.backupCodeCount", { count: remaining() }),
   }
 }
