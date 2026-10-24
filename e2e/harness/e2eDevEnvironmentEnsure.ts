@@ -152,6 +152,8 @@ async function e2eDevEnvironmentProvision(options: {
   const organizations = organizationApiClientCreate({ baseUrl: options.baseUrl, token: systemSecret })
 
   const passwords = passwordApiClientCreate({ baseUrl: options.baseUrl, systemToken: systemSecret })
+  const ready = await e2eDevReadinessWait(realms)
+  if (!ready.success) return ready
   const realm = await e2eDevRealmEnsure(realms)
   if (!realm.success) return realm
   const realmId = realm.data
@@ -521,6 +523,37 @@ async function e2eDevHealthWait(baseUrl: string): Promise<Result<void>> {
     await new Promise<void>((resolve) => setTimeout(resolve, 250))
   }
   return createResultError(op, lastError)
+}
+
+async function e2eDevReadinessWait(realms: ReturnType<typeof realmApiClientCreate>): Promise<Result<void>> {
+  const op = "e2eDevEnvironmentProvision"
+  const deadline = Date.now() + 30_000
+  let lastError = "The E2E dev server did not become ready for realm discovery."
+  let attempt = 0
+  while (Date.now() < deadline) {
+    attempt += 1
+    try {
+      const listed = await realms.realmList({ pageSize: 1 })
+      if (listed.success) return createResult(undefined)
+      if (!e2eDevReadinessRetryable(listed)) return listed
+      lastError =
+        `The E2E dev realm discovery attempt ${attempt} failed (${listed.code ?? "unknown-code"}` +
+        `${listed.statusCode === undefined ? "" : ` http=${listed.statusCode}`}). Retrying while the server warms up.`
+    } catch (error) {
+      lastError = errorMessageGet(error)
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, Math.min(250 * 2 ** (attempt - 1), 2_000)))
+  }
+  return createResultError(op, lastError)
+}
+
+function e2eDevReadinessRetryable(failure: { readonly code?: string; readonly statusCode?: number }): boolean {
+  if (failure.code === "platform.unreachable" || failure.code === "platform.unavailable") return true
+  if (failure.code === "platform.rate-limited" || failure.statusCode === 429) return true
+  if (failure.code === "platform.http" && failure.statusCode !== undefined && failure.statusCode >= 500) return true
+  if (failure.code === "platform.internal" || failure.code === "platform.invalid-response") return true
+  if (failure.statusCode !== undefined && failure.statusCode >= 500) return true
+  return false
 }
 
 async function e2eDevHealthCheck(baseUrl: string): Promise<boolean> {

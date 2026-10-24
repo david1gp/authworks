@@ -182,11 +182,11 @@ export function e2eServiceUserEnsure(options: E2eServiceUserEnsureOptions): Prom
     )
     if (!passwordSet.success) return passwordSet
 
-    const granted = await apiStage(realms.realmAdministratorGrant(realmId, { userId }), "administrator-grant")
-    if (!granted.success) {
-      if (granted.code === "realms.administrator-exists") return grantResolved(realmId, userId, alreadyExisted)
-      return granted
-    }
+    const grantRaw = await realms.realmAdministratorGrant(realmId, { userId })
+    if (!grantRaw.success && grantRaw.code === "realms.administrator-exists")
+      return grantResolved(realmId, userId, alreadyExisted)
+    const granted = apiStage(grantRaw, "administrator-grant")
+    if (!granted.success) return granted
 
     return createResult({ alreadyExisted, realmId, status: alreadyExisted ? "updated" : "created", userId })
   })().catch((error) => failureCreate(op, errorMessageGet(error), "api-failed"))
@@ -201,7 +201,7 @@ function apiStage<T>(result: Result<T>, stage: ApiStage): Result<T>
 function apiStage<T>(result: Promise<Result<T>> | Result<T>, stage: ApiStage): Promise<Result<T>> | Result<T> {
   const op = "e2eServiceUserEnsure"
   const failureMap = (failure: ResultErr): ResultErr => {
-    if (failure.code?.startsWith(`${failurePrefix}.`) === true) return failure
+    if (failure.code?.startsWith(`${failurePrefix}.`) === true) return failureDetailEnrich(failure, stage)
     if (
       failure.code === "platform.unauthorized" ||
       failure.code === "platform.forbidden" ||
@@ -210,19 +210,34 @@ function apiStage<T>(result: Promise<Result<T>> | Result<T>, stage: ApiStage): P
     )
       return resultErrorCodedCreate(
         op,
-        "The service-user ensure was not authorized.",
+        failureDetailMessage(
+          "The service-user ensure was not authorized.",
+          `${failurePrefix}.api-unauthorized`,
+          stage,
+          failure.statusCode,
+        ),
         `${failurePrefix}.api-unauthorized`,
       )
     if (failure.code === "platform.unreachable" || failure.code === "platform.unavailable")
       return resultErrorCodedCreate(
         op,
-        "The service-user ensure API is unreachable.",
+        failureDetailMessage(
+          "The service-user ensure API is unreachable.",
+          `${failurePrefix}.api-unreachable`,
+          stage,
+          failure.statusCode,
+        ),
         `${failurePrefix}.api-unreachable`,
       )
     if (failure.code === "platform.rate-limited" || failure.statusCode === 429)
       return resultErrorCodedCreate(
         op,
-        "The service-user ensure API is rate limited.",
+        failureDetailMessage(
+          "The service-user ensure API is rate limited.",
+          `${failurePrefix}.api-rate-limited`,
+          stage,
+          failure.statusCode,
+        ),
         `${failurePrefix}.api-rate-limited`,
       )
     if (
@@ -239,23 +254,85 @@ function apiStage<T>(result: Promise<Result<T>> | Result<T>, stage: ApiStage): P
     )
       return resultErrorCodedCreate(
         op,
-        "The server rejected the service-user ensure request.",
+        failureDetailMessage(
+          "The server rejected the service-user ensure request.",
+          `${failurePrefix}.api-rejected.${stage}`,
+          stage,
+          failure.statusCode,
+        ),
         `${failurePrefix}.api-rejected.${stage}`,
       )
     if (failure.code === "platform.invalid-response")
       return resultErrorCodedCreate(
         op,
-        "The server returned an invalid response.",
+        failureDetailMessage(
+          "The server returned an invalid response.",
+          `${failurePrefix}.api-invalid-response.${stage}`,
+          stage,
+          failure.statusCode,
+        ),
         `${failurePrefix}.api-invalid-response.${stage}`,
       )
-    return resultErrorCodedCreate(op, "The service-user ensure API call failed.", `${failurePrefix}.api-failed`)
+    return resultErrorCodedCreate(
+      op,
+      failureDetailMessage(
+        "The service-user ensure API call failed.",
+        `${failurePrefix}.api-failed`,
+        stage,
+        failure.statusCode ?? failureDetailStatusGet(failure),
+      ),
+      `${failurePrefix}.api-failed`,
+    )
   }
   if (result instanceof Promise) return result.then((resolved) => (resolved.success ? resolved : failureMap(resolved)))
   return result.success ? result : failureMap(result)
 }
 
+function failureDetailMessage(message: string, code: string, stage: ApiStage, status: number | undefined): string {
+  const statusText = status === undefined ? "n/a" : `${status}`
+  return `${message} [code=${code} stage=${stage} http=${statusText}]`
+}
+
+function failureDetailStatusGet(failure: ResultErr): number | undefined {
+  const parsed = failureDetailErrorDataParse(failure.errorData)
+  const status = parsed?.status
+  return typeof status === "number" && Number.isSafeInteger(status) ? status : undefined
+}
+
+function failureDetailErrorDataParse(raw: string | null | undefined): { readonly status?: unknown } | undefined {
+  if (raw === undefined || raw === null) return undefined
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (typeof parsed === "object" && parsed !== null) return parsed as { readonly status?: unknown }
+    return undefined
+  } catch {
+    return undefined
+  }
+}
+
+function failureDetailEnrich(failure: ResultErr, stage: ApiStage): ResultErr {
+  const status = failure.statusCode ?? failureDetailStatusGet(failure)
+  const code = failure.code ?? `${failurePrefix}.api-failed`
+  if (failure.errorMessage.includes("[code="))
+    return failure.statusCode === undefined && status !== undefined ? { ...failure, statusCode: status } : failure
+  const enriched = resultErrorCodedCreate(
+    opOf(failure),
+    `${failure.errorMessage} [code=${code} stage=${stage} http=${status === undefined ? "n/a" : `${status}`}]`,
+    code,
+  )
+  if (status !== undefined) enriched.statusCode = status
+  if (failure.errorData !== undefined && enriched.errorData === undefined) enriched.errorData = failure.errorData
+  return enriched
+}
+
+function opOf(failure: ResultErr): string {
+  return failure.op.length > 0 ? failure.op : "e2eServiceUserEnsure"
+}
+
 function failureCreate(op: string, errorMessage: string, suffix: string): ResultErr {
-  return resultErrorCodedCreate(op, errorMessage, `${failurePrefix}.${suffix}`)
+  const code = `${failurePrefix}.${suffix}`
+  if (errorMessage.includes("[code=")) return resultErrorCodedCreate(op, errorMessage, code)
+  return resultErrorCodedCreate(op, `${errorMessage} [code=${code}]`, code)
 }
 
 export function e2eServiceUserIdentityGet(): {
