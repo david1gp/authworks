@@ -3,6 +3,7 @@ import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { loginChallengeTokenSelect } from "../model/loginChallengeTokenSelect.js"
 import { loginInteractionHandleSelect } from "../model/loginInteractionHandleSelect.js"
 import { loginPathResolve } from "../model/loginPathResolve.js"
+import { loginPostAuthDestinationResolve } from "../model/loginPostAuthDestinationResolve.js"
 import { loginReturnPathSelect } from "../model/loginReturnPathSelect.js"
 import type { LoginDiscovery } from "./loginAdapter.js"
 import { loginApiCreate } from "./loginApiCreate.js"
@@ -20,7 +21,59 @@ export function loginProductionStateCreate() {
   const search = () => new URLSearchParams(location.search)
   const interactionHandle = () => loginInteractionHandleSelect(search().get("interaction"))
   const mfaChallengeToken = () => loginChallengeTokenSelect(search().get("mfa_challenge"))
-  const returnPath = () => loginReturnPathSelect(search().get("return_to"), "/account")
+  const explicitReturn = () => search().get("return_to")
+  const hasExplicitReturn = () => {
+    const candidate = explicitReturn()
+    return candidate !== null && candidate.length > 0
+  }
+  // After the session cookie exists, resolve the role-aware landing page. Explicit
+  // `return_to` always wins, so this lookup only runs when no explicit target was given.
+  // The lookup starts lazily on first post-auth navigation (not on page load, where no
+  // session exists yet) and stays cached per login page so the session cookie is read
+  // only after sign-in.
+  const defaultDestinationPending = createSignalObject(false)
+  const defaultDestinationLoaded = createSignalObject(false)
+  const defaultDestination = createSignalObject("/account")
+  const defaultDestinationLoad = () => {
+    if (hasExplicitReturn() || defaultDestinationPending.get() || defaultDestinationLoaded.get()) return
+    const realmId = discovery.get()?.organization.realmId
+    if (realmId === undefined) return
+    defaultDestinationPending.set(true)
+    void loginPostAuthDestinationResolve({
+      api,
+      organizationId: discovery.get()?.organization.id,
+      realmId,
+    }).then((resolved) => {
+      if (resolved !== undefined) defaultDestination.set(resolved)
+      defaultDestinationLoaded.set(true)
+      defaultDestinationPending.set(false)
+    })
+  }
+  const returnPathAsync = async () => {
+    // Kick off the role lookup now (post-auth the session cookie exists) and wait for it;
+    // slow or failed lookups keep the safe `/account` default instead of blocking sign-in.
+    defaultDestinationLoad()
+    if (!defaultDestinationLoaded.get() && !hasExplicitReturn()) {
+      const realmId = discovery.get()?.organization.realmId
+      if (realmId !== undefined) {
+        const timeout = new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 1_500))
+        const resolved = await Promise.race([
+          loginPostAuthDestinationResolve({
+            api,
+            organizationId: discovery.get()?.organization.id,
+            realmId,
+          }),
+          timeout,
+        ])
+        if (resolved !== undefined) {
+          defaultDestination.set(resolved)
+          defaultDestinationLoaded.set(true)
+          defaultDestinationPending.set(false)
+        }
+      }
+    }
+    return hasExplicitReturn() ? loginReturnPathSelect(explicitReturn(), "/account") : defaultDestination.get()
+  }
 
   const adapter = loginProductionAdapterCreate({
     api,
@@ -31,11 +84,13 @@ export function loginProductionStateCreate() {
     interactionResume: () => {
       const handle = interactionHandle()
       if (handle === undefined) {
-        window.location.assign(returnPath())
+        void returnPathAsync().then((destination) => window.location.assign(destination))
         return
       }
-      window.location.assign(
-        `/oauth2/authorize?interaction=${encodeURIComponent(handle)}&return_to=${encodeURIComponent(returnPath())}`,
+      void returnPathAsync().then((destination) =>
+        window.location.assign(
+          `/oauth2/authorize?interaction=${encodeURIComponent(handle)}&return_to=${encodeURIComponent(destination)}`,
+        ),
       )
     },
   })

@@ -169,10 +169,10 @@ export function ProductionAuthenticatedShell(props: {
               </Show>
               <Show when={state.showAdminNavigation()}>
                 <A
-                  aria-current={state.isActive("/admin") ? "page" : undefined}
+                  aria-current={state.isActive("/admin/users") ? "page" : undefined}
                   aria-label={messageTranslate("admin.navigation.label")}
                   class="hidden h-8 shrink-0 items-center gap-1.5 rounded-full px-1.5 text-[0.8125rem] font-medium text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground aria-[current=page]:bg-accent-soft aria-[current=page]:text-accent sm:flex xl:px-2.5"
-                  href="/admin"
+                  href="/admin/users"
                   title={messageTranslate("admin.navigation.label")}
                 >
                   <Icon class="size-4 shrink-0" path={mdiShieldLockOutline} />

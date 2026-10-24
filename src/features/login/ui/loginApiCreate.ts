@@ -1,5 +1,7 @@
 import type * as v from "valibot"
 import type { Result } from "#result"
+import type { HttpGetResult } from "../../../platform/http/HttpGetResult.js"
+import { httpApiClientGetRequest } from "../../../platform/http/httpApiClientGetRequest.js"
 import { httpApiClientRequest } from "../../../platform/http/httpApiClientRequest.js"
 import { emailOtpStartResponseSchema } from "../../emailOtp/public/emailOtpStartResponseSchema.js"
 import { emailOtpVerifyResponseSchema } from "../../emailOtp/public/emailOtpVerifyResponseSchema.js"
@@ -8,6 +10,10 @@ import { mfaLoginResponseSchema } from "../../mfa/public/mfaLoginResponseSchema.
 import { mfaTotpEnrollmentConfirmResponseSchema } from "../../mfa/public/mfaTotpEnrollmentConfirmResponseSchema.js"
 import { mfaTotpEnrollmentStartResponseSchema } from "../../mfa/public/mfaTotpEnrollmentStartResponseSchema.js"
 import { organizationApiClientCreate } from "../../organizations/client/organizationApiClientCreate.js"
+import {
+  type OrganizationMeListResponse,
+  organizationMeListResponseSchema,
+} from "../../organizations/public/organizationMeListResponseSchema.js"
 import type { PasskeyAuthenticationCompleteRequest } from "../../passkeys/public/passkeyAuthenticationCompleteRequestSchema.js"
 import { passkeyAuthenticationCompleteResponseSchema } from "../../passkeys/public/passkeyAuthenticationCompleteResponseSchema.js"
 import { passkeyAuthenticationStartResponseSchema } from "../../passkeys/public/passkeyAuthenticationStartResponseSchema.js"
@@ -22,6 +28,7 @@ import { sessionApiClientCreate } from "../../sessions/client/sessionApiClientCr
 import { sessionBrowserRequest } from "../../sessions/client/sessionBrowserRequest.js"
 import { sessionBrowserModeHeaderName } from "../../sessions/public/sessionBrowserModeHeaderName.js"
 import { sessionRevocationResponseSchema } from "../../sessions/public/sessionRevocationResponseSchema.js"
+import { type UserCurrentResponse, userCurrentResponseSchema } from "../../users/public/userCurrentResponseSchema.js"
 import { whatsappOtpApiClientCreate } from "../../whatsappOtp/client/whatsappOtpApiClientCreate.js"
 import { whatsappOtpResendResponseSchema } from "../../whatsappOtp/public/whatsappOtpResendResponseSchema.js"
 import { whatsappOtpStartResponseSchema } from "../../whatsappOtp/public/whatsappOtpStartResponseSchema.js"
@@ -68,6 +75,24 @@ export function loginApiCreate(options: { readonly baseUrl: string; readonly fet
 
   return {
     discover: (domain: string) => organizations.organizationTenantDomainDiscover(domain),
+    meCurrentGet: (realmId: string): Promise<HttpGetResult<UserCurrentResponse>> =>
+      httpApiClientGetRequest<UserCurrentResponse>({
+        baseUrl: options.baseUrl,
+        fetch: browserFetch,
+        init: { cache: "no-store", credentials: "include", method: "GET" },
+        op: "loginMeCurrentGet",
+        path: `${realmPath(realmId)}/me`,
+        schema: userCurrentResponseSchema,
+      }),
+    meOrganizationsList: (realmId: string): Promise<HttpGetResult<OrganizationMeListResponse>> =>
+      httpApiClientGetRequest<OrganizationMeListResponse>({
+        baseUrl: options.baseUrl,
+        fetch: browserFetch,
+        init: { cache: "no-store", credentials: "include", method: "GET" },
+        op: "loginMeOrganizationsList",
+        path: `${realmPath(realmId)}/me/organizations`,
+        schema: organizationMeListResponseSchema,
+      }),
     emailOtpStart: (realmId: string, email: string, organizationId?: string) =>
       post(
         `${realmPath(realmId)}/email-otp/start`,
