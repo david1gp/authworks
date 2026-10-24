@@ -93,7 +93,11 @@ card.
      - Strip: switch to a CSS grid `grid-cols-[minmax(0,1fr)_auto]`. On mobile the MFA row spans both columns below the
        picture; from `sm` up it stays in column 1 and the picture spans both rows.
      - Summary below `sm`: line 1 is shield + label + chevron, line 2 is bar + count. From `sm` up it stays one line.
-8. **v2 screenshots, targeted gate, and commit.** Status: screenshots and targeted gate done. Commit pending.
+8. **v2 screenshots, targeted gate, and commit.** Status: done.
+9. **Consistent authenticator status.** Status: done.
+   - The authenticator card uses the shared `account.status.configured` / `account.status.notConfigured` keys.
+   - The old `account.factors.configured` / `account.factors.missing` catalog keys are still present but unused.
+10. **Merge into `main` and push.** Status: in progress.
 
 ## Testing rules
 
@@ -109,9 +113,6 @@ card.
 
 ## Current context
 
-- Tasks 1–5 are committed (5 local commits on top of `1bb6b27`, not pushed).
-- Task 6 and task 7a are done and uncommitted. Bare icons use `size-8 sm:size-9` with a `size-4.5` badge at
-  `-right-1 -bottom-1`.
-- Tasks 6 and 7 (7a–7d) are done. 97 targeted tests pass.
-- v2 screenshots are in `screens/v2/`.
-- Next: commit tasks 6–7 locally.
+- Tasks 1–9 are committed on `feat/account-card-redesign`.
+- Comparison screenshots: `/tmp/authworks-account-screens.9wxM4P/` (`0-original`, `1-previous`, `2-current`).
+- Next: integrate with the current `main` and push to `origin/main`.
