@@ -261,10 +261,10 @@ Pages (depend 5,6,8)
 10. [x] Users list (+ service accounts and invitations tabs, invite/create dialogs).
 11. [x] User profile (depends 7 for set password).
 12. [x] Roles.
-13. [ ] Projects list + detail tabs.
+13. [x] Projects list + detail tabs.
 14. [x] Configuration (general, branding with live preview, sign-in & security, domains).
-15a. [ ] Realm overview/settings page.
-15b. [ ] Realm administrators page.
+15a. [x] Realm overview/settings page.
+15b. [x] Realm administrators page.
 16. [ ] Remove obsolete admin views, adapters, demo routes, unit tests, e2e specs; `bun run check` green.
 16a. [ ] Translate all missing keys into the 14 CSVs; `test/ui/i18n.test.ts` green.
 
@@ -291,6 +291,5 @@ E2E and release
 - Discovery strips `:port`; dev org gets `login.localhost` seeded as verified domain via system-only
   `POST /system/realms/:realmId/organizations/:organizationId/domains/:domain/realm-seed`. Member UI sign-in on dev
   verified.
-- Commits up to `e6fddbe` (backend, harness, UI kit, shell) are on `origin/main`; production still on `1bb6b27`.
-- Done pages: User profile (11), Roles (12), Configuration (14). In progress: Users list (10), Projects (13), Realm
-  overview (15a), Realm administrators (15b).
+- Commits up to `e6fddbe` are on `origin/main`; pages committed locally (`8162123..`); production still on `1bb6b27`.
+- All pages done. Remaining: 8b, 16, 16a, 18, 18b, 19–24.

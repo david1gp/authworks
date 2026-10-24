@@ -1,10 +1,23 @@
 import { defineConfig, devices } from "@playwright/test"
-import { productionE2eConfigurationResolve } from "./e2e/productionE2eConfigurationResolve.js"
+import { e2eStateDirResolve } from "./e2e/harness/e2eStateDirResolve.js"
 
-const { productionE2e, testIgnore, testMatch } = productionE2eConfigurationResolve()
-const managedOrigin = process.env.AUTHWORKS_E2E_BASE_URL
-const localOrigin = managedOrigin ?? "http://127.0.0.1:5174"
-const productionOrigin = "https://authworks.contentoren.de"
+const suiteKind = process.env.AUTHWORKS_E2E_SUITE_KIND
+const target = process.env.AUTHWORKS_E2E_TARGET
+const isLive = suiteKind === "live"
+const targetBaseUrl = process.env.AUTHWORKS_E2E_BASE_URL
+const localOrigin = "http://127.0.0.1:5174"
+
+const liveTestMatch = process.env.AUTHWORKS_E2E_TEST_MATCH?.split(",").filter((entry) => entry.length > 0)
+
+const liveTestIgnore =
+  process.env.AUTHWORKS_E2E_TEST_IGNORE?.split(",").filter((entry) => entry.length > 0) ?? undefined
+
+const liveArtifactsDir = (() => {
+  const stateDir = e2eStateDirResolve()
+  if (!stateDir.success) return undefined
+  const stateTarget = target === "dev" ? "dev" : "production"
+  return `${stateDir.data.replace(/\/+$/, "")}/${stateTarget}/artifacts`
+})()
 
 export default defineConfig({
   testDir: "./e2e",
@@ -12,25 +25,27 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: "list",
-  testMatch,
-  testIgnore,
+  testMatch: isLive ? (liveTestMatch ?? ["**/*.spec.ts"]) : undefined,
+  testIgnore: isLive
+    ? liveTestIgnore
+    : ["**/productionAuthentication.spec.ts", "**/productionAccountRegression.spec.ts"],
   retries: 0,
-  timeout: productionE2e ? 180_000 : undefined,
+  timeout: isLive ? 180_000 : undefined,
   expect: {
     timeout: 15_000,
   },
   use: {
-    baseURL: productionE2e ? productionOrigin : localOrigin,
-    trace: "off",
+    baseURL: isLive ? (targetBaseUrl ?? "https://authworks.contentoren.de") : localOrigin,
+    trace: isLive ? "retain-on-failure" : "off",
+    ...(liveArtifactsDir === undefined ? {} : { outputDir: liveArtifactsDir }),
     ...devices["Desktop Chrome"],
   },
-  webServer:
-    productionE2e || managedOrigin !== undefined
-      ? undefined
-      : {
-          command: "env UI_PORT=5174 bunx vite --host 127.0.0.1",
-          url: `${localOrigin}/demo`,
-          reuseExistingServer: true,
-          timeout: 60_000,
-        },
+  webServer: isLive
+    ? undefined
+    : {
+        command: "env UI_PORT=5174 bunx vite --host 127.0.0.1",
+        url: `${localOrigin}/demo`,
+        reuseExistingServer: true,
+        timeout: 60_000,
+      },
 })
