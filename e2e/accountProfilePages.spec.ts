@@ -454,7 +454,7 @@ test("production email addresses use the lifecycle APIs and protect the primary 
   await accountApiRoutesInstall(page, async (route, method) => {
     const path = new URL(route.request().url()).pathname
     if (path === `/realms/${realmId}/me`) {
-      await route.fulfill({ json: { capabilities: { realmRead: true }, user } })
+      await route.fulfill({ json: { capabilities: { realmAdministrator: true, realmRead: true }, user } })
       return
     }
     if (path === `/realms/${realmId}/me/emails` && method === "GET") {
@@ -601,12 +601,25 @@ test("production password presents an API rejection", async ({ page }) => {
       })
       return
     }
+    if (pathname.endsWith("/me/authentication-methods")) {
+      // The rejection flow needs a set password so the dialog asks for the current one.
+      await route.fulfill({
+        json: {
+          emailOtp: { available: false },
+          password: { available: true },
+          passkeys: { credentials: [] },
+          recoveryCodes: { available: false, generatedAt: null, remaining: 0 },
+          totp: { enrolled: false, enrollments: [] },
+        },
+      })
+      return
+    }
     await accountBackgroundResponseFulfill(route, pathname, user)
   })
 
   await page.goto("/account#security")
   const securitySection = page.locator("#security")
-  await securitySection.locator("[data-account-security-grid] > details").nth(3).locator("summary").click()
+  await securitySection.locator("summary").filter({ hasText: "Password" }).click()
   await securitySection.getByRole("button", { name: "Change password" }).click()
   const passwordDialog = page.getByRole("dialog", { name: "Change password" })
   await passwordDialog.getByLabel("Current password").fill("wrong-password")
@@ -689,5 +702,5 @@ async function accountBackgroundResponseFulfill(
     await route.fulfill({ json: { items: [] } })
     return
   }
-  await route.fulfill({ json: { capabilities: { realmRead: true }, user } })
+  await route.fulfill({ json: { capabilities: { realmAdministrator: true, realmRead: true }, user } })
 }

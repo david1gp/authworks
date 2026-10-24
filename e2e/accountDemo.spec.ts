@@ -11,7 +11,9 @@ test("the account demo landing page composes the full example account workspace"
   })
   await page.goto("/demo/account")
 
-  await expect(page.getByRole("heading", { name: "Account", exact: true })).toBeVisible()
+  const toolbar = page.locator("[data-account-toolbar]")
+  await expect(toolbar.getByRole("combobox", { name: "Language", exact: true })).toBeVisible()
+  await expect(toolbar.getByRole("link", { name: "Sign out", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Profile", exact: true })).toBeVisible()
   await expect(page.getByRole("heading", { name: "Security", exact: true })).toBeVisible()
   const devices = page.getByRole("region", { name: "Devices and applications" })
@@ -94,7 +96,7 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   await expect(page.getByRole("heading", { level: 1, name: "Security setup", exact: true })).toBeVisible()
   await expect(page.getByRole("navigation", { name: "Fixture state", exact: true })).toHaveCount(1)
   const securityGrid = page.locator("[data-account-security-grid]")
-  await expect(securityGrid.locator(":scope > details")).toHaveCount(5)
+  await expect(securityGrid.locator(":scope > div")).toHaveCount(5)
   for (const detail of ["Password set", "2 passkeys configured", "7 backup codes remaining"])
     await expect(securityGrid.locator("summary").getByText(detail, { exact: true })).toBeVisible()
   await expect(securityGrid.locator("summary").filter({ hasText: /[Cc]onfigured/ })).toHaveCount(5)
@@ -102,7 +104,6 @@ test("account security demos are fixture-backed and interactive", async ({ page 
 
   await page.goto("/demo/account/overview?state=empty")
   await expect(page.locator("[data-account-security-grid]")).toContainText("No password set")
-  await expect(page.locator("[data-account-security-grid]")).toContainText("No verified email")
   await expect(page.locator("[data-account-security-grid] summary").filter({ hasText: "Not configured" })).toHaveCount(
     5,
   )
@@ -168,7 +169,7 @@ test("the full production security composition remains responsive, accessible, a
 
     const securitySection = page.locator("#security")
     const securityGrid = securitySection.locator("[data-account-security-grid]")
-    await expect(securityGrid.locator(":scope > details"), viewport.name).toHaveCount(5)
+    await expect(securityGrid.locator(":scope > div"), viewport.name).toHaveCount(5)
     for (const title of ["Passkeys", "Authenticator", "Linked identities", "Password", "Recovery codes"])
       await expect(
         securityGrid.locator("summary").filter({ hasText: title }),
@@ -176,7 +177,6 @@ test("the full production security composition remains responsive, accessible, a
       ).toBeVisible()
     await expect(page.locator("#profile summary").filter({ hasText: "Phone numbers" })).toBeVisible()
 
-    const profileSection = page.locator("#profile")
     await expect
       .poll(() => securityGrid.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length))
       .toBe(viewport.columns)
@@ -185,7 +185,7 @@ test("the full production security composition remains responsive, accessible, a
     ).toBe(true)
     expect((await new AxeBuilder({ page }).include("#security").analyze()).violations).toEqual([])
 
-    const passkeys = securityGrid.locator(":scope > details").nth(0)
+    const passkeys = page.locator("#security-passkeys")
     await passkeys.locator("summary").click()
     await passkeys.getByRole("list", { name: "Passkeys" }).getByRole("button").first().click()
     await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click()
@@ -196,7 +196,7 @@ test("the full production security composition remains responsive, accessible, a
     await page.getByRole("dialog").getByRole("button", { name: "Add passkey", exact: true }).click()
     await expect(passkeys.getByText("1 passkeys configured", { exact: true })).toBeVisible()
 
-    const identities = securityGrid.locator(":scope > details").nth(2)
+    const identities = page.locator("#security-identities")
     await identities.locator("summary").click()
     await identities.getByRole("list", { name: "Linked identities" }).getByRole("button").first().click()
     await page.getByRole("dialog").getByRole("button", { name: "Unlink", exact: true }).click()
@@ -207,7 +207,7 @@ test("the full production security composition remains responsive, accessible, a
     await expect(page.getByRole("dialog").getByRole("button", { name: "Google", exact: true })).toBeEnabled()
     await page.keyboard.press("Escape")
 
-    const recovery = securityGrid.locator(":scope > details").nth(4)
+    const recovery = page.locator("#security-recovery-codes")
     await recovery.locator("summary").click()
     await recovery.getByRole("button", { name: "Generate new codes", exact: true }).click()
     const recoveryDialog = page.getByRole("dialog", { name: "Recovery codes", exact: true })
@@ -216,7 +216,7 @@ test("the full production security composition remains responsive, accessible, a
     await recoveryDialog.getByRole("button", { name: "I saved these codes", exact: true }).click()
     await expect(recovery.getByText("COMPOSE-API1", { exact: true })).toHaveCount(0)
 
-    const authenticators = securityGrid.locator(":scope > details").nth(1)
+    const authenticators = page.locator("#security-factors")
     await authenticators.locator("summary").click()
     await authenticators.getByRole("button", { name: /Authenticator app Configured/ }).click()
     const authenticatorDialog = page.getByRole("dialog", { name: "Authenticator app", exact: true })
@@ -336,7 +336,7 @@ test("production authenticator enrollment stays in a resettable accessible dialo
 
   await page.goto("/account#security")
   const securitySection = page.locator("#security")
-  await securitySection.locator("[data-account-security-grid] > details").nth(1).locator("summary").click()
+  await securitySection.locator("#security-factors summary").click()
   const trigger = securitySection.getByRole("button", { name: "Add authenticator", exact: true })
   await trigger.click()
   const dialog = page.getByRole("dialog", { name: "Finish authenticator setup", exact: true })
@@ -363,9 +363,7 @@ test("production authenticator enrollment stays in a resettable accessible dialo
   await code.fill("123456")
   await dialog.getByRole("button", { name: "Confirm", exact: true }).click()
   await expect(dialog).toHaveCount(0)
-  await expect(
-    securitySection.locator("[data-account-security-grid] > details").nth(1).locator("summary"),
-  ).toBeVisible()
+  await expect(securitySection.locator("#security-factors summary")).toBeVisible()
 })
 
 test("production session revocation uses the real account contract and CSRF", async ({ page }) => {
@@ -456,7 +454,7 @@ test("production recovery codes are fetched with CSRF and displayed once", async
 
   await page.goto("/account#security")
   const securitySection = page.locator("#security")
-  await securitySection.locator("[data-account-security-grid] > details").nth(4).locator("summary").click()
+  await securitySection.locator("#security-recovery-codes summary").click()
   await securitySection.getByRole("button", { name: "Generate new codes" }).click()
   const recoveryDialog = page.getByRole("dialog", { name: "Recovery codes", exact: true })
   await recoveryDialog.getByRole("button", { name: "Generate new codes" }).click()

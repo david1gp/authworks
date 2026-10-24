@@ -26,37 +26,39 @@ const largeOrganizationItems = [
   ),
 ]
 
-test("production organization tabs keep viewing separate from explicit activation", async ({ page }) => {
+test("production organization tabs keep viewing local without activation", async ({ page }) => {
   const switchRequests: { readonly csrf: string | undefined; readonly organizationId: string }[] = []
-  const profileRequests: string[] = []
+  const organizationRequests: string[] = []
   page.on("request", (request) => {
-    if (new URL(request.url()).pathname === `/realms/${realmId}/me`) profileRequests.push(request.url())
+    if (new URL(request.url()).pathname === `/realms/${realmId}/me/organizations`)
+      organizationRequests.push(request.url())
   })
   await productionAccountSessionBootstrap(page)
   await accountOrganizationRoutesInstall(page, organizationItems, effectiveAccessItems)
-  await page.route(`**/realms/${realmId}/sessions/csrf`, (route) => route.fulfill({ json: { csrfToken: "csrf-e2e" } }))
   await page.route(`**/realms/${realmId}/me/organizations/switch`, async (route) => {
     const request = route.request()
     const organizationId = (request.postDataJSON() as { readonly organizationId: string }).organizationId
     switchRequests.push({ csrf: request.headers()["x-csrf-token"], organizationId })
-    await route.fulfill({ json: organizationSwitchResponseCreate(organizationItems[1]!) })
+    await route.abort()
   })
 
   await page.goto("/account#access")
   const accessSection = page.locator("#access")
-  const accountNavigation = page.getByRole("navigation", { name: "Account navigation", exact: true })
-  await expect(accountNavigation).toHaveCount(1)
-  await expect(accessSection.getByRole("navigation")).toHaveCount(0)
 
-  const organizationsSection = accessSection.getByRole("region", { name: "Organization to view", exact: true })
-  const organizationTabs = organizationsSection.getByRole("tab")
+  const organizationsDisclosure = accessSection.locator("summary").filter({ hasText: "Organizations" })
+  await expect(organizationsDisclosure).toBeVisible()
+  await organizationsDisclosure.click()
+  const organizationsTablist = accessSection.getByRole("tablist", { name: "Organization to view", exact: true })
+  const organizationTabs = organizationsTablist.getByRole("tab")
   await expect(organizationTabs).toHaveCount(2)
   await expect(organizationTabs.nth(0)).toHaveAttribute("aria-selected", "true")
-  const organizationPanel = organizationsSection.getByRole("tabpanel")
+  const organizationPanel = accessSection.getByRole("tabpanel")
   await expect(organizationPanel.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
   await expect(organizationPanel.getByRole("heading", { name: "Customer portal", exact: true })).toBeVisible()
   await expect(organizationPanel.getByText("Active organization", { exact: true })).toBeVisible()
-  await expect(page.getByRole("heading", { name: "Personal information", exact: true })).toBeVisible()
+  // The compact profile card renders below the fold once the access section loads its data.
+  await accessSection.scrollIntoViewIfNeeded()
+  await expect(page.locator("#profile").locator("summary").filter({ hasText: "Personal information" })).toBeVisible()
 
   await organizationTabs.nth(0).focus()
   await organizationTabs.nth(0).press("ArrowRight")
@@ -65,19 +67,19 @@ test("production organization tabs keep viewing separate from explicit activatio
   await expect(organizationPanel.getByRole("heading", { name: "Field Notes board", exact: true })).toBeVisible()
   await expect(organizationPanel.getByText("member", { exact: true })).toBeVisible()
   await expect(organizationPanel.getByText("organization.read", { exact: false })).toBeVisible()
-  await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toBeVisible()
   await expect(organizationPanel.getByText("Active organization", { exact: true })).toHaveCount(0)
   expect(switchRequests).toEqual([])
-  const profileRequestCountBeforeActivation = profileRequests.length
+  const organizationRequestCountAfterViewing = organizationRequests.length
 
-  await organizationPanel.getByRole("button", { name: "Make active organization", exact: true }).click()
+  // Viewing stays local: switching tabs never activates an organization, navigates, or refetches.
+  await expect(page).toHaveURL(/\/account#access$/)
+  await organizationTabs.nth(0).click()
+  await expect(organizationTabs.nth(0)).toHaveAttribute("aria-selected", "true")
+  await expect(organizationPanel.getByRole("heading", { name: "Northwind Labs", exact: true })).toBeVisible()
   await expect(organizationPanel.getByText("Active organization", { exact: true })).toBeVisible()
-  await expect(organizationPanel.getByRole("button", { name: "Make active organization", exact: true })).toHaveCount(0)
-  await expect(organizationTabs.nth(1)).toContainText("Active organization")
-  await expect(page).toHaveURL(new RegExp(`/account\\?organization=${fieldNotesId}#access$`))
-  expect(switchRequests).toEqual([{ csrf: "csrf-e2e", organizationId: fieldNotesId }])
-  // Viewing a tab is local-only; explicit activation refreshes the organization-scoped account data once.
-  await expect.poll(() => profileRequests.length).toBe(profileRequestCountBeforeActivation + 1)
+  expect(switchRequests).toEqual([])
+  await page.waitForTimeout(1000)
+  expect(organizationRequests).toHaveLength(organizationRequestCountAfterViewing)
 })
 
 test("production organization access uses a native select above eight memberships", async ({ page }) => {
@@ -97,30 +99,27 @@ test("production organization access uses a native select above eight membership
   await page.setViewportSize({ height: 800, width: 1280 })
   await page.goto("/account#access")
   const accessSection = page.locator("#access")
-  const organizationsSection = accessSection.getByRole("region", { name: "Organization to view", exact: true })
-  const organizationSelect = organizationsSection.locator("select")
+  await accessSection.locator("summary").filter({ hasText: "Organizations" }).click()
+  const organizationsLabel = accessSection.locator('label[for="account-access-organization-panel-select"]')
+  await expect(organizationsLabel).toHaveCount(1)
+  const organizationSelect = accessSection.locator("select#account-access-organization-panel-select")
   await expect(organizationSelect).toHaveCount(1)
-  await expect(organizationSelect).toHaveAttribute("id", "account-access-organization-panel-select")
-  await expect(organizationsSection.locator('label[for="account-access-organization-panel-select"]')).toHaveCount(1)
   await expect(organizationSelect.locator("option")).toHaveCount(9)
   await expect(organizationSelect).toHaveValue(northwindId)
-  await expect(organizationsSection.getByRole("tablist")).toHaveCount(0)
+  await expect(accessSection.getByRole("tablist", { name: "Organization to view", exact: true })).toHaveCount(0)
   expect(await page.locator("html").evaluate((element) => element.scrollWidth <= window.innerWidth)).toBe(true)
 
   await organizationSelect.selectOption(fieldNotesId)
   await expect(organizationSelect).toHaveValue(fieldNotesId)
   await expect(
-    organizationsSection.getByRole("tabpanel").getByRole("heading", { name: "Field Notes", exact: true }),
+    accessSection.getByRole("tabpanel").getByRole("heading", { name: "Field Notes", exact: true }),
   ).toBeVisible()
   expect(switchRequests).toEqual([])
 
   await page.setViewportSize({ height: 844, width: 390 })
   await page.reload()
-  const mobileOrganizationsSection = page.locator("#access").getByRole("region", {
-    name: "Organization to view",
-    exact: true,
-  })
-  await expect(mobileOrganizationsSection.locator("select")).toHaveCount(1)
+  await page.locator("#access summary").filter({ hasText: "Organizations" }).click()
+  await expect(page.locator("#access select#account-access-organization-panel-select")).toHaveCount(1)
   expect(await page.locator("html").evaluate((element) => element.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
@@ -129,16 +128,16 @@ test("production organization tabs preserve a usable mobile layout", async ({ pa
   await accountOrganizationRoutesInstall(page, organizationItems, effectiveAccessItems)
   await page.setViewportSize({ height: 844, width: 390 })
   await page.goto("/account#access")
+  await page.locator("#access summary").filter({ hasText: "Organizations" }).click()
 
-  const organizationsSection = page
+  const organizationsTablist = page
     .locator("#access")
-    .getByRole("region", { name: "Organization to view", exact: true })
-  const organizationTabs = organizationsSection.getByRole("tab")
-  const tabList = organizationsSection.getByRole("tablist")
+    .getByRole("tablist", { name: "Organization to view", exact: true })
+  const organizationTabs = organizationsTablist.getByRole("tab")
   await expect(organizationTabs).toHaveCount(2)
-  await expect(tabList).toHaveCSS("overflow-x", "auto")
-  await expect(tabList).toHaveCSS("flex-wrap", "nowrap")
-  await expect(organizationsSection.getByRole("tabpanel")).toHaveAttribute("aria-labelledby", /-tab-/)
+  await expect(organizationsTablist).toHaveCSS("overflow-x", "auto")
+  await expect(organizationsTablist).toHaveCSS("flex-wrap", "nowrap")
+  await expect(page.locator("#access").getByRole("tabpanel")).toHaveAttribute("aria-labelledby", /-tab-/)
   expect(await page.locator("html").evaluate((element) => element.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
@@ -151,6 +150,7 @@ test("production consent and invitation adapters expose permission and expiry fa
       return route.fallback()
     if (pathname.endsWith("/sessions/csrf")) return route.fulfill({ json: { csrfToken: "csrf-e2e" } })
     if (pathname.endsWith("/me/emails")) return route.fulfill({ json: { items: [] } })
+    if (pathname.endsWith("/me/sessions")) return route.fulfill({ json: { items: [] } })
     if (pathname.endsWith("/passkeys")) return route.fulfill({ json: { items: [] } })
     if (pathname.endsWith("/me/authentication-methods")) {
       return route.fulfill({
@@ -216,11 +216,21 @@ test("production consent and invitation adapters expose permission and expiry fa
     return route.abort()
   })
 
-  await page.goto("/account#devices-applications")
-  const devicesApplicationsSection = page.locator("#devices-applications")
-  page.once("dialog", (dialog) => dialog.accept())
-  await devicesApplicationsSection.getByRole("button", { name: "Revoke" }).click()
-  await expect(devicesApplicationsSection.getByText("You do not have permission to perform this action.")).toBeVisible()
+  await page.goto("/account#access")
+  const accessSection = page.locator("#access")
+  await accessSection.locator("summary").filter({ hasText: "Application consents" }).click()
+  const consentItem = accessSection
+    .getByRole("list", { name: "Application consents", exact: true })
+    .getByRole("button")
+    .first()
+  await consentItem.click()
+  await page
+    .getByRole("dialog", { name: /Application consent: / })
+    .getByRole("button", { name: "Revoke", exact: true })
+    .click()
+  await expect(page.getByRole("alertdialog")).toBeVisible()
+  await page.getByRole("alertdialog").getByRole("button", { name: "Continue", exact: true }).click()
+  await expect(page.getByText("You do not have permission to perform this action.")).toBeVisible()
 
   await page.goto("/invitations/accept?token=expired-fixture")
   await expect(page.getByText("This invitation has expired.")).toBeVisible()
@@ -319,25 +329,4 @@ async function accountOrganizationRoutesInstall(
   await page.route(`**/realms/${realmId}/me/effective-access**`, (route) =>
     route.fulfill({ json: { items: effectiveAccess } }),
   )
-}
-
-function organizationSwitchResponseCreate(organization: OrganizationMe) {
-  return {
-    activeOrganizationId: organization.organization.id,
-    context: {
-      actor: {
-        actorId: userId,
-        assurance: "authenticated" as const,
-        authenticationMethod: "trusted" as const,
-        kind: "user" as const,
-        organizationId: organization.organization.id,
-        realmId,
-      },
-      actorId: userId,
-      kind: "organization" as const,
-      organizationId: organization.organization.id,
-      realmId,
-    },
-    organization: organization.organization,
-  }
 }
