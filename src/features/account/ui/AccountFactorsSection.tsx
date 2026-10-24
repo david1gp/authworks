@@ -25,7 +25,7 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
     <AccountDisclosure
       class="h-full"
       icon={mdiCellphoneKey}
-      status={messageTranslate(state.enrolled() ? "account.factors.configured" : "account.factors.missing")}
+      status={messageTranslate(state.enrolled() ? "account.status.configured" : "account.status.notConfigured")}
       statusTone={state.enrolled() ? "success" : "danger"}
       summary={messageTranslate("account.factors.authenticator")}
       value={messageTranslate("account.factors.count", { count: state.enrollments().length })}

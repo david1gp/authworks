@@ -104,11 +104,8 @@ test("account security demos are fixture-backed and interactive", async ({ page 
   await expect(page.locator("[data-account-security-grid]")).toContainText("No password set")
   await expect(page.locator("[data-account-security-grid]")).toContainText("No verified email")
   await expect(page.locator("[data-account-security-grid] summary").filter({ hasText: "Not configured" })).toHaveCount(
-    4,
+    5,
   )
-  await expect(
-    page.locator("[data-account-security-grid] summary").filter({ hasText: "Authenticator missing" }),
-  ).toHaveCount(1)
 
   await page.goto("/demo/account/sessions")
   await expect(page.getByRole("heading", { level: 1, name: "Sessions and devices", exact: true })).toBeVisible()
@@ -130,7 +127,7 @@ test("account security demos are fixture-backed and interactive", async ({ page 
 
   await page.goto("/demo/account/factors")
   await expect(page.getByText("1 authenticators", { exact: true })).toBeVisible()
-  await expect(page.locator("summary").filter({ hasText: "Authenticator configured" })).toBeVisible()
+  await expect(page.locator("summary").getByText("Configured", { exact: true })).toBeVisible()
 
   await page.goto("/demo/account/recovery-codes?state=one-time")
   await expect(page.locator('[data-one-time-secret="recovery-codes"]')).toBeVisible()

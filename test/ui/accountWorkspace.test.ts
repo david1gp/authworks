@@ -438,7 +438,7 @@ describe("account workspace", () => {
     expect(source).toContain("<AccountDisclosure")
     expect(source).toContain('summary={messageTranslate("account.factors.authenticator")}')
     expect(source).toContain(
-      'status={messageTranslate(state.enrolled() ? "account.factors.configured" : "account.factors.missing")}',
+      'status={messageTranslate(state.enrolled() ? "account.status.configured" : "account.status.notConfigured")}',
     )
     expect(source).toContain('statusTone={state.enrolled() ? "success" : "danger"}')
     expect(source).not.toContain("statusIcon")
@@ -469,8 +469,8 @@ describe("account workspace", () => {
     expect(source.match(/<AuthenticatedDialog/g)).toHaveLength(3)
     const catalog = await Bun.file(new URL("../../src/ui/i18n/model/englishCatalog.ts", import.meta.url)).text()
     expect(catalog).toContain('"account.factors.authenticator": "Authenticator"')
-    expect(catalog).toContain('"account.factors.configured": "Authenticator configured"')
-    expect(catalog).toContain('"account.factors.missing": "Authenticator missing"')
+    expect(catalog).toContain('"account.status.configured": "Configured"')
+    expect(catalog).toContain('"account.status.notConfigured": "Not configured"')
   })
 
   test("keeps security data and actions inside five management cards", async () => {
