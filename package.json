@@ -48,10 +48,6 @@
   "bin": {
     "authworks": "./dist/cli/cli.js"
   },
-  "engines": {
-    "node": ">=22",
-    "bun": ">=1.3.0"
-  },
   "scripts": {
     "dev": "bun run --parallel dev:api dev:ui",
     "dev:api": "bun run --watch src/outputs/server.ts",
