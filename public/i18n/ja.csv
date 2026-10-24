@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,リカバリーコード
 demo.account.scenario.sessions.description,アクティブなセッションを確認し、使用しなくなったデバイスを取り消します。
 demo.account.scenario.sessions.title,セッションとデバイス
 demo.account.title,アカウントデモ
-demo.admin.description,ユーザー、組織、アプリケーション、認証情報、および監査アクティビティに基づいて構築された情報アーキテクチャを使用して、現在のレルムをナビゲートします。利用可能なデモと予定されているステートレスな遷移先は明確に分離されています。
-demo.admin.directoryTitle,管理ディレクトリ
 demo.admin.eyebrow,レルム管理
 demo.admin.group.authorization.description,アプリケーション、プロジェクトロール、付与、および評価されたアクセス。
 demo.admin.group.authorization.title,プロジェクトと認可

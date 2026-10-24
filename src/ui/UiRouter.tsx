@@ -2,7 +2,6 @@ import { Route, Router } from "@solidjs/router"
 import { AccountDemoApp } from "../features/account/ui/AccountDemoApp.js"
 import { AdminDemoAdapter } from "../features/admin/ui/AdminDemoAdapter.js"
 import { AdminDemoApp } from "../features/admin/ui/AdminDemoApp.js"
-import { AdminDemoDirectory } from "../features/admin/ui/AdminDemoDirectory.js"
 import { AdminDemoPlaceholder } from "../features/admin/ui/AdminDemoPlaceholder.js"
 import { DemoHub } from "../features/demo/ui/DemoHub.js"
 import { DirectoryAdminDemoAdapter } from "../features/directory/ui/DirectoryAdminDemoAdapter.js"
@@ -53,7 +52,6 @@ export function UiRouter(props: {
         <Route path="/demo/emails" component={EmailDemoApp} />
         <Route path="/demo/emails/*emailPath" component={EmailDemoApp} />
         <Route path="/demo/admin" component={AdminDemoApp}>
-          <Route path="/" component={AdminDemoDirectory} />
           <Route path="/sign-in" component={() => <AdminDemoAdapter screen="sign-in" />} />
           <Route path="/realm" component={() => <AdminDemoAdapter screen="realm" />} />
           <Route

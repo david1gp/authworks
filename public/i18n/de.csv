@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,Wiederherstellungscodes
 demo.account.scenario.sessions.description,Aktive Sitzungen prüfen und nicht mehr verwendete Geräte widerrufen.
 demo.account.scenario.sessions.title,Sitzungen und Geräte
 demo.account.title,Konto-Demo
-demo.admin.description,"Navigieren Sie durch den aktuellen Realm mithilfe einer Informationsarchitektur, die sich an Personen, Organisationen, Anwendungen, Anmeldedaten und Audit-Aktivitäten orientiert. Verfügbare Demos und geplante zustandslose Ziele sind klar getrennt."
-demo.admin.directoryTitle,Administrationsverzeichnis
 demo.admin.eyebrow,Realm-Administration
 demo.admin.group.authorization.description,"Anwendungen, Projektrollen, Freigaben und ausgewerteter Zugriff."
 demo.admin.group.authorization.title,Projekte und Autorisierung

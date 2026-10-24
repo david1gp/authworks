@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,恢复代码
 demo.account.scenario.sessions.description,查看活动会话并撤销不再使用的设备。
 demo.account.scenario.sessions.title,会话和设备
 demo.account.title,账户演示
-demo.admin.description,使用围绕人员、组织、应用程序、凭据和审计活动构建的信息架构浏览当前领域。可用演示和计划中的无状态目标明确区分。
-demo.admin.directoryTitle,管理目录
 demo.admin.eyebrow,领域管理
 demo.admin.group.authorization.description,应用程序、项目角色、授权和评估的访问权限。
 demo.admin.group.authorization.title,项目和授权

@@ -52,8 +52,6 @@ const translatedKeys = [
   "admin.organizations.providers.displayName",
   "admin.organizations.providers.secretWriteOnly",
   "admin.users.createdAt",
-  "demo.admin.description",
-  "demo.admin.directoryTitle",
   "demo.admin.eyebrow",
 ]
 

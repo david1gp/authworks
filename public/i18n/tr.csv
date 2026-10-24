@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,Kurtarma kodları
 demo.account.scenario.sessions.description,Aktif oturumları gözden geçirin ve artık kullanılmayan cihazları iptal edin.
 demo.account.scenario.sessions.title,Oturumlar ve cihazlar
 demo.account.title,Hesap demosu
-demo.admin.description,"Kişiler, kuruluşlar, uygulamalar, kimlik bilgileri ve denetim etkinliği etrafında şekillendirilmiş bir bilgi mimarisi kullanarak mevcut realmde gezinin. Kullanılabilir demolar ve planlanan durumsuz hedefler açıkça ayrılmıştır."
-demo.admin.directoryTitle,Yönetim dizini
 demo.admin.eyebrow,Realm yönetimi
 demo.admin.group.authorization.description,"Uygulamalar, proje rolleri, yetkiler ve değerlendirilen erişim."
 demo.admin.group.authorization.title,Projeler ve yetkilendirme

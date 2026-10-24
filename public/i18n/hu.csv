@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,Helyreállítási kódok
 demo.account.scenario.sessions.description,Aktív munkamenetek áttekintése és a már nem használt eszközök visszavonása.
 demo.account.scenario.sessions.title,Munkamenetek és eszközök
 demo.account.title,Fiók bemutató
-demo.admin.description,"Navigáljon az aktuális realmben a személyek, szervezetek, alkalmazások, hitelesítő adatok és audit-tevékenységek köré épített információs architektúra segítségével. Az elérhető bemutatók és a tervezett állapotmentes célok egyértelműen elkülönülnek."
-demo.admin.directoryTitle,Adminisztrációs jegyzék
 demo.admin.eyebrow,Realm adminisztráció
 demo.admin.group.authorization.description,"Alkalmazások, projektszerepkörök, jogosultságok és kiértékelt hozzáférés."
 demo.admin.group.authorization.title,Projektek és engedélyezés

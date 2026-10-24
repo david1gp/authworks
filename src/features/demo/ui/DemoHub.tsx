@@ -44,7 +44,7 @@ export function DemoHub() {
             </A>
             <A
               class="hidden text-sm font-medium text-muted-foreground hover:text-foreground md:inline"
-              href="/demo/admin"
+              href="/demo/admin/users"
             >
               {messageTranslate("demo.nav.admin")}
             </A>
@@ -61,7 +61,7 @@ export function DemoHub() {
             <DemoCard
               title={() => messageTranslate("admin.navigation.label")}
               description={() => messageTranslate("demo.hub.adminDescription")}
-              href="/demo/admin"
+              href="/demo/admin/users"
               linkLabel={() => messageTranslate("demo.hub.adminOpen")}
             />
             <DemoCard

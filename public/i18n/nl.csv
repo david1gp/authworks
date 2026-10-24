@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,Herstelcodes
 demo.account.scenario.sessions.description,Controleer actieve sessies en trek niet meer gebruikte apparaten in.
 demo.account.scenario.sessions.title,Sessies en apparaten
 demo.account.title,Accountdemo
-demo.admin.description,"Navigeer door de huidige realm met behulp van een informatiearchitectuur rond mensen, organisaties, applicaties, inloggegevens en auditactiviteiten. Beschikbare demo's en geplande statusloze bestemmingen zijn duidelijk gescheiden."
-demo.admin.directoryTitle,Beheerdersoverzicht
 demo.admin.eyebrow,Realm-beheer
 demo.admin.group.authorization.description,"Applicaties, projectrollen, toekenningen en geëvalueerde toegang."
 demo.admin.group.authorization.title,Projecten en autorisatie

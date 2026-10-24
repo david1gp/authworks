@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,Codes de récupération
 demo.account.scenario.sessions.description,Vérifier les sessions actives et révoquer les appareils inutilisés.
 demo.account.scenario.sessions.title,Sessions et appareils
 demo.account.title,Démo de compte
-demo.admin.description,"Naviguez dans le domaine actuel à l'aide d'une architecture d'information articulée autour des personnes, des organisations, des applications, des identifiants et des journaux d'audit. Les démos disponibles et les destinations sans état prévues sont clairement séparées."
-demo.admin.directoryTitle,Répertoire d'administration
 demo.admin.eyebrow,Administration du domaine
 demo.admin.group.authorization.description,"Applications, rôles de projet, autorisations accordées et accès évalué."
 demo.admin.group.authorization.title,Projets et autorisation

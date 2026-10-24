@@ -772,7 +772,8 @@ export const englishCatalog = {
   "admin.projects.access.description": "Roles this administrator effectively holds on the project right now.",
   "admin.projects.access.empty": "No project roles are effective in the current organization context.",
   "admin.projects.access.grantedOrganization": "Granted through organization",
-  "admin.projects.access.organizationDescription": "Organizations with access to this project and the roles they receive.",
+  "admin.projects.access.organizationDescription":
+    "Organizations with access to this project and the roles they receive.",
   "admin.projects.access.organizationTitle": "Organization access",
   "admin.projects.access.permissionDescription":
     "Fixed roles and their permissions are defined by Authworks and cannot be edited.",
@@ -781,7 +782,8 @@ export const englishCatalog = {
   "admin.projects.access.selectRoles": "Choose roles",
   "admin.projects.access.title": "Effective access",
   "admin.projects.assignments.create": "Assign user",
-  "admin.projects.assignments.description": "Assign this project's roles directly to a user of the active organization.",
+  "admin.projects.assignments.description":
+    "Assign this project's roles directly to a user of the active organization.",
   "admin.projects.assignments.empty": "No user has been assigned directly to this project yet.",
   "admin.projects.assignments.invalid": "Enter a user and choose at least one role.",
   "admin.projects.assignments.removeConfirm": "Remove this user assignment? The user loses these project roles.",
@@ -798,7 +800,8 @@ export const englishCatalog = {
   "admin.projects.deleteConfirm": "Delete this project? Applications, roles, and grants are removed with it.",
   "admin.projects.deleteConfirmAccept": "Delete project",
   "admin.projects.deleteConfirmTitle": "Delete this project",
-  "admin.projects.detail.authorizationHelp": "Authorization required: users need at least one role of this project to sign in to its applications.",
+  "admin.projects.detail.authorizationHelp":
+    "Authorization required: users need at least one role of this project to sign in to its applications.",
   "admin.projects.detail.backToProjects": "Back to projects",
   "admin.projects.detail.created": "Created",
   "admin.projects.detail.owned": "Owned",
@@ -807,7 +810,8 @@ export const englishCatalog = {
   "admin.projects.detail.removeTypePrompt": "Enter the project name to confirm.",
   "admin.projects.detail.shared": "Shared",
   "admin.projects.detail.organization": "Organization",
-  "admin.projects.detail.projectAccessHelp": "Project access required: users need to be granted access to the project (via their organization or a direct assignment).",
+  "admin.projects.detail.projectAccessHelp":
+    "Project access required: users need to be granted access to the project (via their organization or a direct assignment).",
   "admin.projects.detail.rename": "Rename",
   "admin.projects.detail.renameDescription": "Change the project name shown across the administration.",
   "admin.projects.detail.renameInvalid": "Enter a project name.",
@@ -896,13 +900,15 @@ export const englishCatalog = {
   "admin.realmAdministrators.added": "{name} is now a realm administrator.",
   "admin.realmAdministrators.alreadyAdmin": "Already an administrator",
   "admin.realmAdministrators.confirmRemoveAccept": "Remove administrator",
-  "admin.realmAdministrators.confirmRemoveMessage": "Remove {name} as a realm administrator? They lose access to every organization setting in this realm.",
+  "admin.realmAdministrators.confirmRemoveMessage":
+    "Remove {name} as a realm administrator? They lose access to every organization setting in this realm.",
   "admin.realmAdministrators.confirmRemoveTitle": "Remove this administrator",
   "admin.realmAdministrators.count": "{count} administrators",
   "admin.realmAdministrators.countOne": "1 administrator",
   "admin.realmAdministrators.description":
     "Realm administrators can manage every organization, realm settings, OIDC and audit log.",
-  "admin.realmAdministrators.emptyDescription": "No realm administrators exist yet. Grant the first administrator to manage this realm.",
+  "admin.realmAdministrators.emptyDescription":
+    "No realm administrators exist yet. Grant the first administrator to manage this realm.",
   "admin.realmAdministrators.emptySearchDescription": "No realm users match this search.",
   "admin.realmAdministrators.emptyTitle": "No administrators",
   "admin.realmAdministrators.grant": "Grant administrator",
@@ -1278,9 +1284,6 @@ export const englishCatalog = {
   "demo.account.scenario.sessions.description": "Review active sessions and revoke devices no longer in use.",
   "demo.account.scenario.sessions.title": "Sessions and devices",
   "demo.account.title": "Account demo",
-  "demo.admin.description":
-    "Navigate the current realm using an information architecture shaped around people, organizations, applications, credentials, and audit activity. Available demos and planned stateless destinations are clearly separated.",
-  "demo.admin.directoryTitle": "Administration directory",
   "demo.admin.eyebrow": "Realm administration",
   "demo.admin.group.authorization.description": "Applications, project roles, grants, and evaluated access.",
   "demo.admin.group.authorization.title": "Projects and authorization",

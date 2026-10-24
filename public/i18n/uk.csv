@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,Коди відновлення
 demo.account.scenario.sessions.description,"Переглядайте активні сеанси та відкликайте пристрої, які більше не використовуються."
 demo.account.scenario.sessions.title,Сеанси та пристрої
 demo.account.title,Демонстрація облікового запису
-demo.admin.description,"Переміщуйтеся поточним реалмом за допомогою інформаційної архітектури, зосередженої навколо людей, організацій, додатків, облікових даних та подій аудиту. Доступні демо та заплановані призначення без стану чітко розділені."
-demo.admin.directoryTitle,Каталог адміністрування
 demo.admin.eyebrow,Адміністрування реалму
 demo.admin.group.authorization.description,"Додатки, проєктні ролі, гранти та оцінений доступ."
 demo.admin.group.authorization.title,Проєкти та авторизація

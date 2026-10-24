@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,رموز الاسترداد
 demo.account.scenario.sessions.description,مراجعة الجلسات النشطة وإلغاء الأجهزة التي لم تعد قيد الاستخدام.
 demo.account.scenario.sessions.title,الجلسات والأجهزة
 demo.account.title,عرض تجريبي للحساب
-demo.admin.description,تنقل في النطاق الحالي باستخدام بنية معلومات تتمحور حول الأشخاص والمنظمات والتطبيقات وبيانات الاعتماد ونشاط التدقيق. العروض التجريبية المتاحة والوجهات المخططة المستقلة مفصولة بوضوح.
-demo.admin.directoryTitle,دليل الإدارة
 demo.admin.eyebrow,إدارة النطاق
 demo.admin.group.authorization.description,التطبيقات وأدوار المشروع والمنح والوصول المقيم.
 demo.admin.group.authorization.title,المشاريع والتفويض

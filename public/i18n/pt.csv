@@ -1265,8 +1265,6 @@ demo.account.scenario.recovery_codes.title,Códigos de recuperação
 demo.account.scenario.sessions.description,Reveja as sessões ativas e revogue dispositivos já não utilizados.
 demo.account.scenario.sessions.title,Sessões e dispositivos
 demo.account.title,Demonstração de conta
-demo.admin.description,"Navegue pelo realm atual através de uma arquitetura de informação focada em pessoas, organizações, aplicações, credenciais e atividade de auditoria. Demos disponíveis e destinos planeados sem estado estão claramente separados."
-demo.admin.directoryTitle,Diretório de administração
 demo.admin.eyebrow,Administração do realm
 demo.admin.group.authorization.description,"Aplicações, funções do projeto, concessões e acesso avaliado."
 demo.admin.group.authorization.title,Projetos e autorização
