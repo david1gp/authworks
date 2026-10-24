@@ -8,6 +8,7 @@ import { e2eCleanupRun } from "../e2e/harness/e2eCleanupRun.js"
 import { e2eCredentialsResolve } from "../e2e/harness/e2eCredentialsResolve.js"
 import { e2eDevEnvironmentEnsure, e2eDevEnvironmentStatusGet } from "../e2e/harness/e2eDevEnvironmentEnsure.js"
 import { e2eRunIdCreate } from "../e2e/harness/e2eRunIdCreate.js"
+import { e2eRunLockAcquire, e2eRunLockRelease } from "../e2e/harness/e2eRunLockAcquire.js"
 import { e2eRunResumeDecide } from "../e2e/harness/e2eRunResumeDecide.js"
 import { e2eStateDirResolve } from "../e2e/harness/e2eStateDirResolve.js"
 import { type E2eSuite, e2eSuiteRegistryList } from "../e2e/harness/e2eSuiteRegistryList.js"
@@ -98,6 +99,13 @@ async function e2eRunScriptMain(): Promise<number> {
   }
   process.on("SIGINT", markInterrupted)
   process.on("SIGTERM", markInterrupted)
+  const lockPath = `${stateDir.data.replace(/\/+$/, "")}/${target}/run.lock`
+  const lock = e2eRunLockAcquire(lockPath)
+  if (!lock.success) {
+    process.stderr.write(`${lock.errorMessage}\n`)
+    return 2
+  }
+  process.stdout.write(`E2E run lock acquired for ${target} (pid ${lock.data.pid}).\n`)
   try {
     if (target === "dev") {
       const ensured = await e2eDevEnvironmentEnsure({ rebuild: rebuildUi, stateDir: stateDir.data })
@@ -106,8 +114,10 @@ async function e2eRunScriptMain(): Promise<number> {
         return 1
       }
       const status = e2eDevEnvironmentStatusGet(stateDir.data)
-      process.stdout.write(`Dev target ready at ${ensured.data.baseUrl} (pid ${status.pid ?? "unknown"}).\n`)
-      devStop = ensured.data.stop
+      process.stdout.write(
+        `Dev target ready at ${ensured.data.baseUrl} (pid ${status.pid ?? "unknown"}; ${ensured.data.started ? "started by this run" : "already running"}).\n`,
+      )
+      if (ensured.data.started) devStop = ensured.data.stop
     }
 
     const registry = e2eSuiteRegistryTargetFilter(e2eSuiteRegistryList(), target)
@@ -190,8 +200,11 @@ async function e2eRunScriptMain(): Promise<number> {
     }
     if (devStop !== undefined) {
       await devStop()
-      process.stdout.write("Dev server stopped (state kept).\n")
+      process.stdout.write("Dev server stopped (started by this run; state kept).\n")
+    } else if (target === "dev") {
+      process.stdout.write("Dev server left running (it was already running before this run).\n")
     }
+    e2eRunLockRelease(lockPath)
   }
 }
 

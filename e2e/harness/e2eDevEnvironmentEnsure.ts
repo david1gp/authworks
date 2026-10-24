@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs"
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync } from "node:fs"
+import { dirname } from "node:path"
 import { type Subprocess, spawn } from "bun"
 import { createResult, createResultError, type Result } from "#result"
 import { organizationApiClientCreate } from "../../src/features/organizations/client/organizationApiClientCreate.js"
@@ -30,6 +31,7 @@ export type E2eDevEnvironment = {
   readonly organizationId: string
   readonly realmId: string
   readonly serviceUser: { readonly userId: string; readonly userName: string }
+  readonly started: boolean
   readonly stateDir: string
   readonly systemSecret: string
   readonly stop: () => Promise<void>
@@ -48,6 +50,7 @@ export function e2eDevEnvironmentEnsure(options: E2eDevEnvironmentEnsureOptions)
   const paths = {
     database: `${stateDir}/authworks.sqlite`,
     env: `${stateDir}/env.json`,
+    log: `${stateDir}/server.log`,
     pid: `${stateDir}/server.pid`,
     systemSecret: `${stateDir}/system-secret`,
   }
@@ -66,9 +69,11 @@ export function e2eDevEnvironmentEnsure(options: E2eDevEnvironmentEnsureOptions)
       organizationId: provisioned.data.organizationId,
       realmId: provisioned.data.realmId,
       serviceUser: provisioned.data.serviceUser,
+      started: ensured.data.started,
       stateDir,
       systemSecret: provisioned.data.systemSecret,
       stop: async () => {
+        if (!ensured.data.started) return
         e2eDevServerStop(paths.pid)
       },
     })
@@ -96,27 +101,28 @@ export function e2eDevEnvironmentStatusGet(stateDir: string): {
 type E2eDevServerPaths = {
   readonly database: string
   readonly env: string
+  readonly log: string
   readonly pid: string
   readonly systemSecret: string
 }
 
 async function e2eDevServerEnsure(
   options: E2eDevServerEnsureOptions,
-): Promise<Result<{ readonly credentials: E2eDevEnvironmentCredentials }>> {
+): Promise<Result<{ readonly credentials: E2eDevEnvironmentCredentials; readonly started: boolean }>> {
   const ui = await e2eDevUiEnsure(options.rebuild ?? false)
   if (!ui.success) return ui
   const credentials = e2eDevCredentialsEnsure(options.paths)
   if (!credentials.success) return credentials
   const reused = await e2eDevServerReuse(options.baseUrl, options.paths.pid)
   if (!reused.success) return reused
-  if (reused.data.reused) return createResult({ credentials: credentials.data })
+  if (reused.data.reused) return createResult({ credentials: credentials.data, started: false })
   const started = await e2eDevServerStart({
     baseUrl: options.baseUrl,
     credentials: credentials.data,
     paths: options.paths,
   })
   if (!started.success) return started
-  return createResult({ credentials: credentials.data })
+  return createResult({ credentials: credentials.data, started: true })
 }
 
 async function e2eDevEnvironmentProvision(options: {
@@ -449,16 +455,23 @@ async function e2eDevServerStart(options: E2eDevServerStartOptions): Promise<Res
     NODE_ENV: "development",
   }
   let child: Subprocess
+  let logFile: ReturnType<typeof openSync> | undefined
   try {
+    mkdirSync(dirname(options.paths.log), { recursive: true })
+    logFile = openSync(options.paths.log, "a")
     child = spawn(["bun", "run", "src/outputs/server.ts"], {
       cwd: process.cwd(),
+      detached: true,
       env: { ...process.env, ...environment },
-      stderr: "pipe",
-      stdout: "pipe",
+      stderr: logFile,
+      stdin: "ignore",
+      stdout: logFile,
     })
   } catch (error) {
+    if (logFile !== undefined) closeSync(logFile)
     return createResultError(op, errorMessageGet(error))
   }
+  if (logFile !== undefined) closeSync(logFile)
   try {
     Bun.write(options.paths.pid, `${child.pid}\n`)
   } catch {
