@@ -1,6 +1,7 @@
 import * as v from "valibot"
 import { oidcClientStatusSchema } from "./oidcClientStatusSchema.js"
 import { oidcClientTypeSchema } from "./oidcClientTypeSchema.js"
+import { projectResourceIdSchema } from "../../projects/public/projectResourceIdSchema.js"
 import { oidcOriginSchema } from "./oidcOriginSchema.js"
 import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 import { oidcScopeSchema } from "./oidcScopeSchema.js"
@@ -19,7 +20,7 @@ export const oidcClientSchema = v.strictObject({
   realmId: oidcResourceIdSchema,
   name: v.pipe(v.string(), v.minLength(1), v.maxLength(200)),
   postLogoutRedirectUris: v.pipe(v.array(oidcRedirectUriSchema), v.maxLength(100)),
-  projectId: v.optional(oidcResourceIdSchema),
+  projectId: v.optional(projectResourceIdSchema),
   redirectUris: v.pipe(v.array(oidcRedirectUriSchema), v.minLength(1), v.maxLength(100)),
   requireConsent: v.boolean(),
   status: oidcClientStatusSchema,
