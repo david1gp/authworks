@@ -198,59 +198,72 @@ export function OrganizationConfigurationGeneralSection(props: {
         )}
       </Show>
 
-      <AuthenticatedDialog
-        description={
-          removeDialog()
-            ? messageTranslate("admin.organizations.lifecycle.removeConfirm")
-            : messageTranslate("admin.configuration.dangerDescription")
-        }
-        disabled={removeDialog() && confirmName.get().trim() !== (props.page.organization()?.name ?? "")}
-        onOpenChange={(open) => {
-          if (!open) confirmAction.set(undefined)
-        }}
-        open={confirmAction.get() !== undefined}
-        title={
-          removeDialog()
-            ? messageTranslate("admin.configuration.remove")
-            : confirmAction.get() === "inactive"
-              ? messageTranslate("admin.configuration.deactivate")
-              : messageTranslate("admin.configuration.reactivate")
-        }
-        triggerLabel={<span />}
-      >
-        <div class="grid gap-4">
-          <Show when={removeDialog()}>
-            <div class="grid gap-1.5">
-              <Label for="configuration-confirm-name">{messageTranslate("admin.configuration.typeName")}</Label>
-              <AuthenticatedInput
-                id="configuration-confirm-name"
-                onInput={(event) => confirmName.set(event.currentTarget.value)}
-                value={confirmName.get()}
-              />
-              <Show
-                when={
-                  confirmName.get().length > 0 && confirmName.get().trim() !== (props.page.organization()?.name ?? "")
-                }
+      <Show when={confirmAction.get()}>
+        {(action) => (
+          <AuthenticatedDialog
+            description={
+              removeDialog()
+                ? messageTranslate("admin.organizations.lifecycle.removeConfirm")
+                : messageTranslate("admin.configuration.dangerDescription")
+            }
+            onOpenChange={(open) => {
+              if (!open) confirmAction.set(undefined)
+            }}
+            open={confirmAction.get() !== undefined}
+            title={
+              removeDialog()
+                ? messageTranslate("admin.configuration.remove")
+                : action() === "inactive"
+                  ? messageTranslate("admin.configuration.deactivate")
+                  : messageTranslate("admin.configuration.reactivate")
+            }
+            trigger={
+              <AuthenticatedButton
+                disabled={removeDialog() && confirmName.get().trim() !== (props.page.organization()?.name ?? "")}
               >
-                <AuthenticatedNotice message={messageTranslate("admin.configuration.typeNameInvalid")} tone="danger" />
+                <span />
+              </AuthenticatedButton>
+            }
+          >
+            <div class="grid gap-4">
+              <Show when={removeDialog()}>
+                <div class="grid gap-1.5">
+                  <Label for="configuration-confirm-name">{messageTranslate("admin.configuration.typeName")}</Label>
+                  <AuthenticatedInput
+                    id="configuration-confirm-name"
+                    onInput={(event) => confirmName.set(event.currentTarget.value)}
+                    value={confirmName.get()}
+                  />
+                  <Show
+                    when={
+                      confirmName.get().length > 0 &&
+                      confirmName.get().trim() !== (props.page.organization()?.name ?? "")
+                    }
+                  >
+                    <AuthenticatedNotice
+                      message={messageTranslate("admin.configuration.typeNameInvalid")}
+                      tone="danger"
+                    />
+                  </Show>
+                </div>
               </Show>
+              <div class="flex justify-end gap-2">
+                <AuthenticatedButton onClick={() => confirmAction.set(undefined)} variant="outline">
+                  {messageTranslate("common.cancel")}
+                </AuthenticatedButton>
+                <AuthenticatedButton
+                  disabled={removeDialog() && confirmName.get().trim() !== (props.page.organization()?.name ?? "")}
+                  icon={removeDialog() ? mdiDelete : undefined}
+                  onClick={lifecycleRun}
+                  variant="filledRed"
+                >
+                  {messageTranslate("common.continue")}
+                </AuthenticatedButton>
+              </div>
             </div>
-          </Show>
-          <div class="flex justify-end gap-2">
-            <AuthenticatedButton onClick={() => confirmAction.set(undefined)} variant="outline">
-              {messageTranslate("common.cancel")}
-            </AuthenticatedButton>
-            <AuthenticatedButton
-              disabled={removeDialog() && confirmName.get().trim() !== (props.page.organization()?.name ?? "")}
-              icon={removeDialog() ? mdiDelete : undefined}
-              onClick={lifecycleRun}
-              variant="filledRed"
-            >
-              {messageTranslate("common.continue")}
-            </AuthenticatedButton>
-          </div>
-        </div>
-      </AuthenticatedDialog>
+          </AuthenticatedDialog>
+        )}
+      </Show>
     </OrganizationAdminState>
   )
 }

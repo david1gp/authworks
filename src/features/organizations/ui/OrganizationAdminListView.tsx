@@ -53,9 +53,11 @@ export function OrganizationAdminListView(props: {
             onOpenChange={props.onCreateOpenChange}
             open={props.createOpen}
             title={messageTranslate("admin.organizations.list.create")}
-            triggerLabel={messageTranslate("admin.organizations.list.create")}
-            triggerIcon={mdiPlus}
-            variant="filledBlue"
+            trigger={
+              <AuthenticatedButton icon={mdiPlus} variant="filledBlue">
+                {messageTranslate("admin.organizations.list.create")}
+              </AuthenticatedButton>
+            }
           >
             <form class="grid gap-4" onSubmit={props.onCreateSubmit}>
               <div class="grid gap-1.5">

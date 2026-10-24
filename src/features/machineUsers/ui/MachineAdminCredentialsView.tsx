@@ -1,5 +1,6 @@
 import { Show } from "solid-js"
 import { Label } from "#ui/input/label/Label.jsx"
+import { AuthenticatedButton } from "../../../ui/authenticated/AuthenticatedButton.js"
 import { AuthenticatedDialog } from "../../../ui/authenticated/AuthenticatedDialog.js"
 import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSection.js"
 import { AuthenticatedSelect } from "../../../ui/authenticated/AuthenticatedSelect.js"
@@ -27,8 +28,11 @@ export function MachineAdminCredentialsView(props: {
             onOpenChange={state.issueOpenSet}
             open={state.issueOpen()}
             title={messageTranslate("admin.machine.credentials.issue")}
-            triggerLabel={messageTranslate("admin.machine.credentials.issue")}
-            variant="filledBlue"
+            trigger={
+              <AuthenticatedButton variant="filledBlue">
+                {messageTranslate("admin.machine.credentials.issue")}
+              </AuthenticatedButton>
+            }
           >
             <MachineAdminCredentialForm kindSet={state.issueKindSet} state={state.credentialForm} />
           </AuthenticatedDialog>

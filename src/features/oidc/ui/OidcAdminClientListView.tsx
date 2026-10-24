@@ -62,9 +62,11 @@ export function OidcAdminClientListView(props: {
             onOpenChange={state.createOpenSet}
             open={state.createOpen()}
             title={messageTranslate("admin.oidc.clients.create")}
-            triggerLabel={messageTranslate("admin.oidc.clients.create")}
-            triggerIcon={mdiPlus}
-            variant="filledBlue"
+            trigger={
+              <AuthenticatedButton icon={mdiPlus} variant="filledBlue">
+                {messageTranslate("admin.oidc.clients.create")}
+              </AuthenticatedButton>
+            }
           >
             <form class="grid max-w-3xl gap-4" onSubmit={state.createSubmit}>
               <OidcAdminClientFormFields

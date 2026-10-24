@@ -31,12 +31,11 @@ export function AccountProfilePictureField(props: {
   return (
     <div class="grid justify-items-center gap-2 sm:justify-items-end">
       <AuthenticatedDialog
-        class="!size-14 sm:!size-28 !rounded-full !p-0 overflow-hidden"
         onOpenChange={state.openChange}
         open={state.open()}
         title={messageTranslate("account.profile.picture")}
-        triggerLabel={
-          <>
+        trigger={
+          <AuthenticatedButton class="!size-14 overflow-hidden !rounded-full !p-0 sm:!size-28" variant="outline">
             <span class="sr-only">{messageTranslate("account.profile.pictureChange")}</span>
             <Show
               fallback={<Icon class="size-8 sm:size-14 text-accent" path={mdiAccountCircleOutline} />}
@@ -44,9 +43,8 @@ export function AccountProfilePictureField(props: {
             >
               <img alt="" class="size-full object-cover" onError={state.onPictureError} src={props.url} />
             </Show>
-          </>
+          </AuthenticatedButton>
         }
-        variant="outline"
       >
         <input
           accept={accountPictureAcceptAttribute}

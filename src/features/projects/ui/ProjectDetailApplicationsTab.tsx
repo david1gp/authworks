@@ -108,9 +108,11 @@ export function ProjectDetailApplicationsTab(props: {
               onOpenChange={state.createOpenSet}
               open={state.createOpen()}
               title={messageTranslate("admin.projects.applications.create")}
-              triggerIcon={mdiPlus}
-              triggerLabel={messageTranslate("admin.projects.applications.create")}
-              variant="filledBlue"
+              trigger={
+                <AuthenticatedButton icon={mdiPlus} variant="filledBlue">
+                  {messageTranslate("admin.projects.applications.create")}
+                </AuthenticatedButton>
+              }
             >
               <form class="grid gap-4" onSubmit={(event) => void state.createSubmit(event)}>
                 <div class="grid gap-1.5">

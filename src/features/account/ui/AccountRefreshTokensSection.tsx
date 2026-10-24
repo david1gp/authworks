@@ -43,31 +43,34 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
               {(token) => (
                 <li class="min-w-0">
                   <AuthenticatedDialog
-                    class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
                     description={messageTranslate("account.refreshTokens.description")}
                     onOpenChange={(open) => state.dialogOpenChange(token.familyId, open)}
                     open={state.dialogOpen(token.familyId)}
                     title={messageTranslate("account.refreshTokens.manage", { application: token.clientName })}
-                    triggerLabel={
-                      <span class="grid min-w-0 gap-0.5">
-                        <span class="flex min-w-0 flex-wrap items-center gap-2">
-                          <span class="min-w-0 break-words text-sm font-medium">{token.clientName}</span>
-                          <AuthenticatedStatus
-                            label={messageTranslate(accountRefreshTokenStatusLabelGet(token.status).key)}
-                            tone={accountRefreshTokenStatusLabelGet(token.status).tone}
-                          />
+                    trigger={
+                      <AuthenticatedButton
+                        variant="ghost"
+                        class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
+                      >
+                        <span class="grid min-w-0 gap-0.5">
+                          <span class="flex min-w-0 flex-wrap items-center gap-2">
+                            <span class="min-w-0 break-words text-sm font-medium">{token.clientName}</span>
+                            <AuthenticatedStatus
+                              label={messageTranslate(accountRefreshTokenStatusLabelGet(token.status).key)}
+                              tone={accountRefreshTokenStatusLabelGet(token.status).tone}
+                            />
+                          </span>
+                          <span class="text-xs text-muted-foreground">
+                            {messageTranslate("account.refreshTokens.lastUsed", {
+                              date:
+                                token.lastUsedAt === null
+                                  ? messageTranslate("account.refreshTokens.neverUsed")
+                                  : localeDateFormat(token.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
+                            })}
+                          </span>
                         </span>
-                        <span class="text-xs text-muted-foreground">
-                          {messageTranslate("account.refreshTokens.lastUsed", {
-                            date:
-                              token.lastUsedAt === null
-                                ? messageTranslate("account.refreshTokens.neverUsed")
-                                : localeDateFormat(token.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
-                          })}
-                        </span>
-                      </span>
+                      </AuthenticatedButton>
                     }
-                    variant="ghost"
                   >
                     <div class="grid gap-3">
                       <AccountRoleList values={token.scope} />
@@ -135,10 +138,11 @@ export function AccountRefreshTokensSection(props: { readonly state: AccountSecu
               onOpenChange={state.allDialogOpenChange}
               open={state.allDialogOpen()}
               title={messageTranslate("account.refreshTokens.revokeAll")}
-              triggerIcon={mdiKeyRemove}
-              triggerSize="sm"
-              triggerLabel={messageTranslate("account.refreshTokens.revokeAll")}
-              variant="outline"
+              trigger={
+                <AuthenticatedButton icon={mdiKeyRemove} variant="outline" size="sm">
+                  {messageTranslate("account.refreshTokens.revokeAll")}
+                </AuthenticatedButton>
+              }
             >
               <AuthenticatedButton
                 disabled={props.state.pendingId() !== undefined || !state.allDialogOpen()}

@@ -21,7 +21,11 @@ import type { organizationAdminScreenStateCreate } from "./organizationAdminScre
 type ConfigurationPage = ReturnType<typeof organizationAdminPageStateCreate>
 type ConfigurationScreen = ReturnType<typeof organizationAdminScreenStateCreate>
 
-/** Domains section: list with verification TXT copy, claim dialog, verify, and remove confirm. */
+/**
+ * Organization domains: the domain list with verify and remove controls, the remove
+ * confirmation dialog, and the claim dialog. The claim dialog is state-driven from the
+ * section actions; the remove dialog opens from a row action and renders no trigger.
+ */
 export function OrganizationConfigurationDomainsSection(props: {
   readonly canEdit: boolean
   readonly page: ConfigurationPage
@@ -49,6 +53,7 @@ export function OrganizationConfigurationDomainsSection(props: {
       status={props.page.status()}
     >
       <OrganizationAdminNotice notice={props.page.notice()} />
+
       <AuthenticatedSection
         actions={
           <Show when={props.canEdit}>
@@ -162,13 +167,41 @@ export function OrganizationConfigurationDomainsSection(props: {
 
       <Show when={props.canEdit}>
         <AuthenticatedDialog
+          description={messageTranslate("admin.configuration.removeConfirm", { domain: removeTarget.get() ?? "" })}
+          onOpenChange={(open) => {
+            if (!open) removeTarget.set(undefined)
+          }}
+          open={removeTarget.get() !== undefined}
+          title={messageTranslate("admin.configuration.removeTitle")}
+        >
+          <div class="flex justify-end gap-2">
+            <AuthenticatedButton onClick={() => removeTarget.set(undefined)} variant="outline">
+              {messageTranslate("common.cancel")}
+            </AuthenticatedButton>
+            <AuthenticatedButton
+              disabled={removeTarget.get() === undefined}
+              icon={mdiDelete}
+              onClick={() => {
+                const domain = removeTarget.get()
+                removeTarget.set(undefined)
+                if (domain !== undefined) void props.page.domainRemove(domain)
+              }}
+              variant="filledRed"
+            >
+              {messageTranslate("common.continue")}
+            </AuthenticatedButton>
+          </div>
+        </AuthenticatedDialog>
+      </Show>
+
+      <Show when={props.canEdit}>
+        <AuthenticatedDialog
           description={messageTranslate("admin.configuration.dialogDescription")}
           onOpenChange={(open) => {
             if (!open) claimOpen.set(false)
           }}
           open={claimOpen.get()}
           title={messageTranslate("admin.configuration.dialogTitle")}
-          triggerLabel={<span />}
         >
           <form
             class="grid gap-4"
@@ -216,34 +249,6 @@ export function OrganizationConfigurationDomainsSection(props: {
               </AuthenticatedButton>
             </div>
           </form>
-        </AuthenticatedDialog>
-
-        <AuthenticatedDialog
-          description={messageTranslate("admin.configuration.removeConfirm", { domain: removeTarget.get() ?? "" })}
-          onOpenChange={(open) => {
-            if (!open) removeTarget.set(undefined)
-          }}
-          open={removeTarget.get() !== undefined}
-          title={messageTranslate("admin.configuration.removeTitle")}
-          triggerLabel={<span />}
-        >
-          <div class="flex justify-end gap-2">
-            <AuthenticatedButton onClick={() => removeTarget.set(undefined)} variant="outline">
-              {messageTranslate("common.cancel")}
-            </AuthenticatedButton>
-            <AuthenticatedButton
-              disabled={removeTarget.get() === undefined}
-              icon={mdiDelete}
-              onClick={() => {
-                const domain = removeTarget.get()
-                removeTarget.set(undefined)
-                if (domain !== undefined) void props.page.domainRemove(domain)
-              }}
-              variant="filledRed"
-            >
-              {messageTranslate("common.continue")}
-            </AuthenticatedButton>
-          </div>
         </AuthenticatedDialog>
       </Show>
     </OrganizationAdminState>

@@ -160,9 +160,11 @@ export function MachineAdminDetailView(props: {
                     onOpenChange={state.issueOpenSet}
                     open={state.issueOpen()}
                     title={messageTranslate("admin.machine.credentials.issue")}
-                    triggerLabel={messageTranslate("admin.machine.credentials.issue")}
-                    triggerIcon={mdiKeyPlus}
-                    variant="filledBlue"
+                    trigger={
+                      <AuthenticatedButton icon={mdiKeyPlus} variant="filledBlue">
+                        {messageTranslate("admin.machine.credentials.issue")}
+                      </AuthenticatedButton>
+                    }
                   >
                     <MachineAdminCredentialForm kindSet={state.issueKindSet} state={state.credentialForm} />
                   </AuthenticatedDialog>

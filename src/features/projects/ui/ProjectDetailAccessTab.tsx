@@ -156,9 +156,11 @@ export function ProjectDetailAccessTab(props: {
               onOpenChange={state.grantRoleOpenSet}
               open={state.grantRoleOpen()}
               title={messageTranslate("admin.projects.grants.create")}
-              triggerIcon={mdiPlus}
-              triggerLabel={messageTranslate("admin.projects.grants.create")}
-              variant="filledBlue"
+              trigger={
+                <AuthenticatedButton icon={mdiPlus} variant="filledBlue">
+                  {messageTranslate("admin.projects.grants.create")}
+                </AuthenticatedButton>
+              }
             >
               <form class="grid gap-4" onSubmit={(event) => void state.grantRoleSubmit(event)}>
                 <div class="grid gap-1.5">
@@ -237,9 +239,11 @@ export function ProjectDetailAccessTab(props: {
               onOpenChange={state.assignOpenSet}
               open={state.assignOpen()}
               title={messageTranslate("admin.projects.assignments.create")}
-              triggerIcon={mdiPlus}
-              triggerLabel={messageTranslate("admin.projects.assignments.create")}
-              variant="filledBlue"
+              trigger={
+                <AuthenticatedButton icon={mdiPlus} variant="filledBlue">
+                  {messageTranslate("admin.projects.assignments.create")}
+                </AuthenticatedButton>
+              }
             >
               <form class="grid gap-4" onSubmit={(event) => void state.assignSubmit(event)}>
                 <div class="grid gap-1.5">

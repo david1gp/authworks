@@ -35,7 +35,7 @@ test("application consents are an independent compact card with expanded help an
   expect(boundary.openingElement.getText(tree)).toContain("onRetry={props.onRetry}")
   const dialog = elements.find((element) => name(element) === "AuthenticatedDialog")!
   expect(ancestor(dialog, "For")?.openingElement.getText(tree)).toContain("each={props.consents}")
-  expect(dialog.openingElement.getText(tree)).toContain("triggerLabel={")
+  expect(dialog.openingElement.getText(tree)).toContain("trigger={")
   expect(dialog.openingElement.getText(tree)).toContain(
     'title={messageTranslate("account.access.consentManage", { clientId: consent.clientId })}',
   )

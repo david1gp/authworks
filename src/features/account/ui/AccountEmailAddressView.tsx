@@ -70,29 +70,35 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
             {(address) => (
               <li class="min-w-0">
                 <AuthenticatedDialog
-                  class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
                   onOpenChange={(open) => state.dialogOpenChange(address.id, open)}
                   open={state.dialogOpen(address.id)}
                   title={address.email}
-                  triggerLabel={
-                    <span class="grid min-w-0 gap-1">
-                      <span class="min-w-0 break-all text-sm font-medium">{address.email}</span>
-                      <span class="flex flex-wrap items-center gap-1.5">
-                        <Show when={address.isPrimary}>
-                          <AuthenticatedStatus label={messageTranslate("account.profile.emailPrimary")} tone="accent" />
-                        </Show>
-                        <AuthenticatedStatus
-                          label={
-                            address.verified
-                              ? messageTranslate("account.profile.verified")
-                              : messageTranslate("account.profile.verificationPending")
-                          }
-                          tone={address.verified ? "success" : "warning"}
-                        />
+                  trigger={
+                    <AuthenticatedButton
+                      variant="ghost"
+                      class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
+                    >
+                      <span class="grid min-w-0 gap-1">
+                        <span class="min-w-0 break-all text-sm font-medium">{address.email}</span>
+                        <span class="flex flex-wrap items-center gap-1.5">
+                          <Show when={address.isPrimary}>
+                            <AuthenticatedStatus
+                              label={messageTranslate("account.profile.emailPrimary")}
+                              tone="accent"
+                            />
+                          </Show>
+                          <AuthenticatedStatus
+                            label={
+                              address.verified
+                                ? messageTranslate("account.profile.verified")
+                                : messageTranslate("account.profile.verificationPending")
+                            }
+                            tone={address.verified ? "success" : "warning"}
+                          />
+                        </span>
                       </span>
-                    </span>
+                    </AuthenticatedButton>
                   }
-                  variant="ghost"
                 >
                   <div class="grid gap-3">
                     <div class="flex flex-wrap items-center gap-1.5">
@@ -148,14 +154,19 @@ export function AccountEmailAddressView(props: AccountEmailAddressViewProps) {
           </For>
           <li>
             <AuthenticatedDialog
-              class="!flex !h-auto w-full !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
               description={messageTranslate("account.profile.emailAddDescription")}
               onOpenChange={props.onAddDialogOpenChange}
               open={props.addDialogOpen}
               title={messageTranslate("account.profile.emailAddTitle")}
-              triggerLabel={messageTranslate("account.profile.emailAdd")}
-              triggerIcon={mdiEmailPlusOutline}
-              variant="ghost"
+              trigger={
+                <AuthenticatedButton
+                  icon={mdiEmailPlusOutline}
+                  variant="ghost"
+                  class="!flex !h-auto w-full !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  {messageTranslate("account.profile.emailAdd")}
+                </AuthenticatedButton>
+              }
             >
               <Show
                 when={props.challengeActive}
