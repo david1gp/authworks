@@ -32,7 +32,7 @@ export function directoryAdminProductionAdapterCreate(options: {
     directory: directoryApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     machines: machineUserApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
     organizations: organizationApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
-    users: userApiClientCreate({ baseUrl: options.baseUrl, fetch: options.fetch }),
+    users: userApiClientCreate({ baseUrl: options.baseUrl, fetch: browserFetch }),
   })
   const write = async <T>(run: (clients: ReturnType<typeof readClients>) => Promise<Result<T>>): Promise<Result<T>> => {
     const csrf = await sessionCsrfTokenGet({
@@ -44,9 +44,19 @@ export function directoryAdminProductionAdapterCreate(options: {
     const clients = readClients()
     return run({
       ...clients,
+      machines: machineUserApiClientCreate({
+        baseUrl: options.baseUrl,
+        csrfToken: csrf.data,
+        fetch: browserFetch,
+      }),
+      organizations: organizationApiClientCreate({
+        baseUrl: options.baseUrl,
+        csrfToken: csrf.data,
+        fetch: browserFetch,
+      }),
       users: userApiClientCreate({
         baseUrl: options.baseUrl,
-        fetch: options.fetch,
+        fetch: browserFetch,
         // The users client exchanges its own CSRF inside `sessionBrowserRequest`; the
         // shared token is injected through the browser fetch headers instead.
         token: undefined,

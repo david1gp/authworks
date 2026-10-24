@@ -234,9 +234,8 @@ export function directoryAdminUsersPageStateCreate(options: DirectoryAdminUsersP
       if (!(await confirmed(messageTranslate("admin.users.inviteRevokeConfirm", { email })))) return
       const revoked = await mutate(`invitation:${invitationId}`, () => adapter.invitationRevoke(invitationId))
       if (revoked === undefined) return
-      invitations.set(invitations.get().filter((item) => item.id !== invitationId))
       notice.set(messageTranslate("admin.users.inviteRevoked"))
-      if (invitations.get().length === 0) await load()
+      await load()
     },
     invitations: invitations.get,
     invitationToken: invitationToken.get,
