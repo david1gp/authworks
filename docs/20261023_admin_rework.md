@@ -241,7 +241,7 @@ Backend
    `projectUserAssignmentListByUser` server surface, tests.
 4a. [x] `realmAdministratorContextAuthorize` semantics + all call sites, fixed-role split, `realm.purge` permission,
    events list realm-admin only, `/organization-roles` + realm login-policy read access, `/me` capabilities, tests.
-4b. [ ] Realm-admin branch in `organizationContextAuthorize` / `projectContextAuthorize`; machine-user human path
+4b. [x] Realm-admin branch in `organizationContextAuthorize` / `projectContextAuthorize`; machine-user human path
    via org context of the machine user's organization; org create realm-admin only; org switch + session middleware
    allow realm admins for any active org; full `test/features` + `test/ui` run green.
 5. [x] UI primitives in `src/ui/authenticated/` + showcase `/demo/admin/ui-kit`.
@@ -253,9 +253,9 @@ Backend
    (`userTenantPurge`, `organizationTenantPurge`), `event_purges` gate, `storageEventsPurge`.
 8. [x] Shell + routing (depends 5; uses `/me` contract from 4a): access seam, nav groups, guards, redirects, org
    switcher (realm admins: all orgs), placeholder screens + dispatch + demo routes for all new pages.
-8b. [ ] Post-login default destination: owners/admins/realm admins without explicit `return_to` land on
+8b. [x] Post-login default destination: owners/admins/realm admins without explicit `return_to` land on
    `/admin/users`.
-9. [ ] `scripts/e2eServiceUserEnsure.ts` (system secret: create/activate/verify user, set password via existing
+9. [x] `scripts/e2eServiceUserEnsure.ts` (system secret: create/activate/verify user, set password via existing
    system password route, grant realm admin via system administrators route) — done together with task 18.
 
 Pages (depend 5,6,8)
@@ -266,18 +266,18 @@ Pages (depend 5,6,8)
 14. [x] Configuration (general, branding with live preview, sign-in & security, domains).
 15a. [x] Realm overview/settings page.
 15b. [x] Realm administrators page.
-16. [ ] Remove obsolete admin views, adapters, demo routes, unit tests, e2e specs; `bun run check` green.
+16. [x] Remove obsolete admin views, adapters, demo routes, unit tests, e2e specs; `bun run check` green.
 16a. [x] Translate all missing keys into the 14 CSVs; `test/ui/i18n.test.ts` green.
 
 E2E and release
 17. [x] Harness `e2e/harness/` + pageerror fixture (all specs import `e2eTest`/`e2eExpect`), unit tests in
     `test/e2eHarness`.
-18. [ ] Orchestrator `scripts/e2eRun.ts`, package scripts, dev target server + provisioning (task 9), suite
+18. [x] Orchestrator `scripts/e2eRun.ts`, package scripts, dev target server + provisioning (task 9), suite
     registry. Suites are `local` (demo/mocked/self-spawned servers; run against local Vite for both targets) or
     `live` (run against the target: `productionAuthentication`, `productionAccountRegression`, new admin workflows).
-18b. [ ] Cleanup (depends 7): stale/own test data purge via service user + verification, stale checkpoint removal.
-19. [ ] Workflows `adminOrgOwner`, `adminMemberDenied`.
-20. [ ] Workflows `adminOrgAdminLimits`, `adminRealmAdministrator`, `adminInvitations`.
+18b. [x] Cleanup (depends 7): stale/own test data purge via service user + verification, stale checkpoint removal.
+19. [x] Workflows `adminOrgOwner`, `adminMemberDenied`.
+20. [x] Workflows `adminOrgAdminLimits`, `adminRealmAdministrator`, `adminInvitations`.
 21. [ ] Full `test:e2e:dev` green incl. resume + cleanup verification.
 22. [ ] Commit, push, `prodctl deploy authworks`, health check.
 23. [ ] Provision production service user, write `.env.production`.
@@ -286,12 +286,16 @@ E2E and release
 ## Current context
 
 - Subagent model: `multisub/muse-spark-1.3-contributor` (the `go/` provider hit its usage limit).
+- Agents' scratch files: `/home/david/adaptive/.authworks-work/` (`/tmp` was wiped once by a server restart).
+- E2E: `bun run test:e2e` (production) / `bun run test:e2e:dev`; `scripts/e2eRun.ts --target <t> [--fresh]
+  [--only <suite>]`; registry `e2e/harness/e2eSuiteRegistryList.ts`; per-target run lock; dev server only stopped by
+  the run that started it.
 - Dev target: `bun scripts/e2eDevEnvironment.ts start|status|stop` → `http://login.localhost:5190`, state in
-  `<stateDir>/dev/` (DB, system secret, `env.json` with service + member credentials). `/tmp` was wiped once by a
-  server restart; the state is recreated by `start`. Agents' scratch files go to `/home/david/adaptive/.authworks-work/`.
-  Service user `authworks-e2e-service` (realm admin + owner of "Authworks Dev"), member `e2e-dev-member`.
-- Discovery strips `:port`; dev org gets `login.localhost` seeded as verified domain via system-only
-  `POST /system/realms/:realmId/organizations/:organizationId/domains/:domain/realm-seed`. Member UI sign-in on dev
-  verified.
-- Commits up to `e6fddbe` are on `origin/main`; pages committed locally (`8162123..`); production still on `1bb6b27`.
-- All pages done. Remaining: 8b, 16, 16a, 18, 18b, 19–24.
+  `<stateDir>/dev/` (DB, system secret, `env.json`). Service user `authworks-e2e-service` (realm admin + owner of
+  "Authworks Dev"), member `e2e-dev-member`. `login.localhost` is seeded as the dev org's verified domain via
+  system-only `POST /system/realms/:realmId/organizations/:organizationId/domains/:domain/realm-seed`.
+- Production service-user bridge prepared in `~/leo/contentoren-server` commit `9e9022c` (not pushed, not
+  installed): install `./prodctl/deploy.sh apply` (root), then `prodctl authworks-e2e-service-ensure` writes
+  `AUTHWORKS_E2E_SERVICE_*` into `.env.production`. Requires the new authworks build deployed first.
+- Production still on `1bb6b27`; local `main` is ahead of `origin/main`.
+- Known gap: `/account` renders without the shell header, so the Admin pill isn't visible there.
