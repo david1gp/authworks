@@ -1,4 +1,4 @@
-import { useLocation, useParams } from "@solidjs/router"
+import { useLocation } from "@solidjs/router"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { organizationAdminApiCreate } from "./organizationAdminApiCreate.js"
@@ -7,9 +7,11 @@ import type { OrganizationAdminScreen } from "./organizationAdminScreenSchema.js
 import { organizationAdminScreenStateCreate } from "./organizationAdminScreenStateCreate.js"
 
 /** Binds the organization administration screens to realm-scoped browser clients. */
-export function organizationAdminProductionStateCreate(screen: () => OrganizationAdminScreen) {
+export function organizationAdminProductionStateCreate(options: {
+  readonly organizationId?: string
+  readonly screen: () => OrganizationAdminScreen
+}) {
   const session = productionSessionContextGet()
-  const params = useParams<{ organizationId?: string }>()
   const location = useLocation()
   const realmId = () => {
     const realm = session.guard.realm
@@ -17,14 +19,22 @@ export function organizationAdminProductionStateCreate(screen: () => Organizatio
   }
   const organizationId = () => {
     if (new URLSearchParams(location.search).get("scope") === "realm") return ""
-    if (params.organizationId !== undefined) return params.organizationId
+    // Production routes render through catch-all `/admin/*adminPath` entries, so `useParams`
+    // carries no `:organizationId`; prefer the explicit prop, which the route resolves from
+    // its own path contract (same pattern as the machine-user and project screens).
+    if (options.organizationId !== undefined) return options.organizationId
     const organization = session.guard.organization
     return typeof organization === "object" ? organization.organizationId : ""
   }
   const adapter = organizationAdminApiCreate({ baseUrl: window.location.origin, realmId })
   // Destructive prompts are rendered in-app, so they are translated and always cancelable.
   const confirmState = confirmStateCreate()
-  const page = organizationAdminPageStateCreate({ adapter, confirm: confirmState.confirm, organizationId, screen })
+  const page = organizationAdminPageStateCreate({
+    adapter,
+    confirm: confirmState.confirm,
+    organizationId,
+    screen: options.screen,
+  })
 
   return organizationAdminScreenStateCreate({ basePath: "/admin", confirmState, page })
 }

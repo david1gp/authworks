@@ -167,7 +167,11 @@ function ProductionRouteContent(props: { state: ReturnType<typeof productionRout
         <DirectoryAdminProductionAdapter screen={directoryScreen()!} userId={props.state.routeParam("userId")} />
       </Match>
       <Match when={organizationAdminScreen() !== undefined}>
-        <OrganizationAdminProductionAdapter screen={organizationAdminScreen()!} />
+        <OrganizationAdminProductionAdapter
+          organizationId={props.state.routeParam("organizationId")}
+          screen={organizationAdminScreen()!}
+          section={props.state.routeParam("section")}
+        />
       </Match>
       <Match when={projectScreen() !== undefined}>
         <ProjectAdminProductionAdapter projectId={props.state.routeParam("projectId")} screen={projectScreen()!} />

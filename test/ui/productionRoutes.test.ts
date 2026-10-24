@@ -6,6 +6,7 @@ import { directoryAdminScreenSchema } from "../../src/features/directory/ui/dire
 import { machineAdminScreenSchema } from "../../src/features/machineUsers/ui/machineAdminScreenSchema.js"
 import { oidcAdminScreenSchema } from "../../src/features/oidc/ui/oidcAdminScreenSchema.js"
 import { organizationAdminScreenSchema } from "../../src/features/organizations/ui/organizationAdminScreenSchema.js"
+import { organizationConfigurationSectionSelect } from "../../src/features/organizations/ui/organizationConfigurationSectionSelect.js"
 import { projectAdminScreenSchema } from "../../src/features/projects/ui/projectAdminScreenSchema.js"
 import { englishCatalog } from "../../src/ui/i18n/model/englishCatalog.js"
 import { productionLoginRedirectUrlCreate } from "../../src/ui/production/productionLoginRedirectUrlCreate.js"
@@ -346,6 +347,22 @@ describe("production shell state", () => {
     expect(
       productionRouteParamGet("/admin/projects/:projectId", "/admin/projects/project-9", "missing"),
     ).toBeUndefined()
+  })
+
+  test("resolves organization detail and configuration route params for production adapters", () => {
+    const admin = productionRouteContractMap.admin
+
+    const detail = productionRouteScreenSelect(admin, "/admin/organizations/org-7")
+    expect(detail?.key).toBe("organization-detail")
+    expect(productionRouteParamGet(detail?.path ?? "", "/admin/organizations/org-7", "organizationId")).toBe("org-7")
+
+    const configuration = productionRouteScreenSelect(admin, "/admin/configuration/branding")
+    expect(configuration?.key).toBe("configuration")
+    expect(productionRouteParamGet(configuration?.path ?? "", "/admin/configuration/branding", "section")).toBe(
+      "branding",
+    )
+    // Unknown sections fall back to general in the configuration screen state.
+    expect(organizationConfigurationSectionSelect("unknown")).toBe("general")
   })
 
   test("keeps navigation grouped and marks only the matching destination active", () => {

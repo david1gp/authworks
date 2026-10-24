@@ -1,4 +1,3 @@
-import { useParams } from "@solidjs/router"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { OrganizationConfigurationShellView } from "./OrganizationConfigurationShellView.js"
@@ -7,11 +6,13 @@ import { organizationConfigurationScreenStateCreate } from "./organizationConfig
 import { organizationConfigurationSectionSelect } from "./organizationConfigurationSectionSelect.js"
 
 /** Production configuration adapter: shell access from the session context. */
-export function OrganizationConfigurationProductionAdapter() {
+export function OrganizationConfigurationProductionAdapter(props: { readonly section?: string }) {
   const session = productionSessionContextGet()
-  const params = useParams<{ section?: string }>()
-  const screen = organizationAdminProductionStateCreate(() => "configuration")
-  const section = () => organizationConfigurationSectionSelect(params.section)
+  const screen = organizationAdminProductionStateCreate({
+    organizationId: undefined,
+    screen: () => "configuration",
+  })
+  const section = () => organizationConfigurationSectionSelect(props.section)
   const access = () => {
     const current = session.guard.access
     if (current === "loading") return { organizationRoles: [], realmAdministrator: false }

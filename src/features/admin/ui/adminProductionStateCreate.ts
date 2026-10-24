@@ -3,7 +3,6 @@ import { onMount } from "solid-js"
 import { createSignalObject } from "#ui/utils/createSignalObject.js"
 import { confirmStateCreate } from "../../../ui/confirm/confirmStateCreate.js"
 import { productionRealmIdResolve } from "../../../ui/production/productionRealmIdResolve.js"
-import { productionRouteParamGet } from "../../../ui/production/productionRouteParamGet.js"
 import { productionSessionContextGet } from "../../../ui/production/productionSessionContextGet.js"
 import { adminApiCreate } from "./adminApiCreate.js"
 import { adminPageStateCreate } from "./adminPageStateCreate.js"
@@ -43,7 +42,6 @@ export function adminProductionStateCreate(screen: () => AdminScreen) {
       const encoded = search.toString()
       navigate(`${location.pathname}${encoded.length === 0 ? "" : `?${encoded}`}`, { replace: true })
     },
-    userId: () => productionRouteParamGet("/admin/users/:userId", location.pathname, "userId"),
   })
 
   return { ...page, confirmState }
