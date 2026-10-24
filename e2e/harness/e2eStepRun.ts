@@ -39,10 +39,16 @@ export function e2eStepRunCreate(
     run: async (stepName, run) => {
       const ensured = checkpointEnsure()
       if (!ensured.success) throw new Error(ensured.errorMessage)
-      const current = ensured.data
-      if (current.completedSteps.includes(stepName)) return
+      if (ensured.data.completedSteps.includes(stepName)) return
       await step(stepName, run)
-      const updated: E2eCheckpoint = { ...current, completedSteps: [...current.completedSteps, stepName] }
+      const reread = e2eCheckpointRead(activePath)
+      if (!reread.success) throw new Error(reread.errorMessage)
+      if ("absent" in reread.data) throw new Error(`${op}: no E2E checkpoint at ${activePath} (${reread.data.reason}).`)
+      const fresh = reread.data.checkpoint
+      const completedSteps = fresh.completedSteps.includes(stepName)
+        ? fresh.completedSteps
+        : [...fresh.completedSteps, stepName]
+      const updated: E2eCheckpoint = { ...fresh, completedSteps }
       const written = e2eCheckpointWrite(activePath, updated)
       if (!written.success) throw new Error(written.errorMessage)
       checkpoint = updated

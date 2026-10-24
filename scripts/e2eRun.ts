@@ -61,7 +61,7 @@ async function e2eRunScriptMain(): Promise<number> {
     )
   } else {
     if (existing !== undefined && (decision === "stale" || fresh)) {
-      const cleanup = await e2eCleanupRun({ checkpoint: existing, outcome: "interrupted", target })
+      const cleanup = await e2eCleanupRun({ baseUrl, checkpoint: existing, outcome: "interrupted", target })
       if (!cleanup.success) process.stderr.write(`Stale-run cleanup reported: ${cleanup.errorMessage}\n`)
       process.stdout.write(
         decision === "stale" && !fresh
@@ -173,8 +173,21 @@ async function e2eRunScriptMain(): Promise<number> {
   } finally {
     const finalRead = e2eCheckpointRead(checkpointPath)
     const finalCheckpoint = finalRead.success && "checkpoint" in finalRead.data ? finalRead.data.checkpoint : checkpoint
-    const cleanup = await e2eCleanupRun({ checkpoint: finalCheckpoint, outcome, target })
-    if (!cleanup.success) process.stderr.write(`Cleanup hook reported: ${cleanup.errorMessage}\n`)
+    const cleanup = await e2eCleanupRun({
+      baseUrl,
+      checkpoint: finalCheckpoint,
+      outcome,
+      stateDir: stateDir.data,
+      target,
+    })
+    if (!cleanup.success) {
+      process.stderr.write(`Cleanup hook reported: ${cleanup.errorMessage}\n`)
+      process.exitCode = 1
+    } else {
+      process.stdout.write(
+        `Cleanup removed ${cleanup.data.users} users, ${cleanup.data.organizations} organizations, ${cleanup.data.projects} projects.\n`,
+      )
+    }
     if (devStop !== undefined) {
       await devStop()
       process.stdout.write("Dev server stopped (state kept).\n")

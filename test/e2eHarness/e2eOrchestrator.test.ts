@@ -162,11 +162,19 @@ test("e2e credentials resolve dev members and the service user from the dev env 
   expect(e2eCredentialsResolve({ target: "dev" }).success).toBe(false)
 })
 
-test("e2e cleanup hook resolves for every outcome until task 18b lands", async () => {
+test("e2e cleanup hook requires service credentials on production", async () => {
   const checkpoint = e2eOrchestratorCheckpointCreate()
   for (const outcome of ["success", "failure", "interrupted"] as const) {
-    const cleanup = await e2eCleanupRun({ checkpoint, outcome, target: "production" })
-    expect(cleanup.success).toBe(true)
+    const cleanup = await e2eCleanupRun({
+      checkpoint,
+      environment: {},
+      outcome,
+      stateDir: await e2eOrchestratorTestDirCreate(),
+      target: "production",
+    })
+    expect(cleanup.success).toBe(false)
+    if (!cleanup.success)
+      expect(cleanup.errorMessage).toContain("AUTHWORKS_E2E_SERVICE_USERNAME")
   }
 })
 
