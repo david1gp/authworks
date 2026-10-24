@@ -57,7 +57,10 @@ export function organizationAdminScreenStateCreate(options: {
   }
   const branding = () => form.branding.get() ?? options.page.branding()
   const policyDraft = () => policyDraftSignal.get() ?? options.page.policy()
-  const brandingUpdate = (next: OrganizationBranding) => form.branding.set(next)
+  const brandingUpdate = (next: OrganizationBranding) => {
+    form.branding.set(next)
+    form.brandingLocalWrite(options.page.organizationId(), next)
+  }
   const themeUpdate = (theme: ThemeKey, patch: Partial<OrganizationBrandingTheme>) =>
     brandingUpdate({ ...branding(), [theme]: { ...branding()[theme], ...patch } })
   const policyScope = () => (options.page.policyScope() === "realm" ? "realm" : "organization")
@@ -71,7 +74,9 @@ export function organizationAdminScreenStateCreate(options: {
   createEffect(on(options.page.organization, (organization) => form.detailName.set(organization?.name ?? "")))
   createEffect(
     on(options.page.branding, (loaded) => {
-      if (options.page.status() === "ready") form.branding.set(loaded)
+      if (options.page.status() !== "ready") return
+      const stored = form.brandingLocalGet(options.page.organizationId())
+      form.branding.set(stored ?? loaded)
     }),
   )
   createEffect(
@@ -81,6 +86,7 @@ export function organizationAdminScreenStateCreate(options: {
   )
 
   return {
+    basePath: () => options.basePath,
     branding,
     brandingLegalUrlSet: (key: "privacyUrl" | "termsUrl", value: string) =>
       brandingUpdate({
@@ -89,7 +95,10 @@ export function organizationAdminScreenStateCreate(options: {
       }),
     brandingSubmit: (event: SubmitEvent) => {
       event.preventDefault()
-      void options.page.brandingSave(branding())
+      void (async () => {
+        const saved = await options.page.brandingSave(branding())
+        if (saved) form.brandingLocalClear(options.page.organizationId())
+      })()
     },
     brandingThemeAssetSet: (theme: ThemeKey, key: "iconUrl" | "logoUrl", value: string) =>
       themeUpdate(theme, { [key]: value.length === 0 ? undefined : value }),

@@ -374,14 +374,17 @@ describe("organization administration selector transitions", () => {
   })
 })
 
-describe("organization administration branding accessibility", () => {
+describe("organization configuration branding accessibility", () => {
   test("does not apply aria-hidden to focusable color inputs and provides accessible labels", async () => {
     const { readFileSync } = await import("node:fs")
-    const brandingViewSource = readFileSync("src/features/organizations/ui/OrganizationAdminBrandingView.tsx", "utf8")
+    const brandingSectionSource = readFileSync(
+      "src/features/organizations/ui/OrganizationConfigurationBrandingSection.tsx",
+      "utf8",
+    )
 
-    expect(brandingViewSource).not.toMatch(/<input[^>]*aria-hidden=["']true["'][^>]*type=["']color["']/)
-    expect(brandingViewSource).not.toMatch(/<input[^>]*type=["']color["'][^>]*aria-hidden=["']true["']/)
-    expect(brandingViewSource).toMatch(/type="color"/)
-    expect(brandingViewSource).toMatch(/aria-label=\{messageTranslate\(field\.labelKey\)\}/)
+    expect(brandingSectionSource).not.toMatch(/<input[^>]*aria-hidden=["']true["'][^>]*type=["']color["']/)
+    expect(brandingSectionSource).not.toMatch(/<input[^>]*type=["']color["'][^>]*aria-hidden=["']true["']/)
+    expect(brandingSectionSource).toMatch(/type="color"/)
+    expect(brandingSectionSource).toMatch(/aria-label=\{messageTranslate\(field\.labelKey\)\}/)
   })
 })

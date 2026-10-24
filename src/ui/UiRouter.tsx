@@ -13,7 +13,7 @@ import { MachineAdminDemoRoute } from "../features/machineUsers/ui/MachineAdminD
 import { OidcAdminDemoRoute } from "../features/oidc/ui/OidcAdminDemoRoute.js"
 import { OidcConsentDemoAdapter } from "../features/oidc/ui/OidcConsentDemoAdapter.js"
 import { OrganizationAdminDemoAdapter } from "../features/organizations/ui/OrganizationAdminDemoAdapter.js"
-import { OrganizationConfigurationPlaceholder } from "../features/organizations/ui/OrganizationConfigurationPlaceholder.js"
+import { OrganizationConfigurationDemoAdapter } from "../features/organizations/ui/OrganizationConfigurationDemoAdapter.js"
 import { ProjectAdminDemoRoute } from "../features/projects/ui/ProjectAdminDemoRoute.js"
 import { AuthenticatedUiKitDemo } from "./authenticated/demo/AuthenticatedUiKitDemo.js"
 import { ProductionApplicationProviders } from "./production/ProductionApplicationProviders.js"
@@ -65,7 +65,7 @@ export function UiRouter(props: {
             path="/organizations/:organizationId"
             component={() => <OrganizationAdminDemoAdapter screen="organization-detail" />}
           />
-          <Route path="/configuration/:section" component={OrganizationConfigurationPlaceholder} />
+          <Route path="/configuration/:section" component={OrganizationConfigurationDemoAdapter} />
           <Route path="/login-policy" component={() => <OrganizationAdminDemoAdapter screen="login-policy" />} />
           <Route path="/users" component={() => <DirectoryAdminDemoAdapter screen="users" />} />
           <Route path="/users/:userId" component={() => <DirectoryAdminDemoAdapter screen="user-detail" />} />

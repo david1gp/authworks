@@ -3,7 +3,6 @@ import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { OrganizationAdminDetailView } from "./OrganizationAdminDetailView.js"
 import { OrganizationAdminListView } from "./OrganizationAdminListView.js"
 import { OrganizationAdminLoginPolicyView } from "./OrganizationAdminLoginPolicyView.js"
-import { OrganizationConfigurationPlaceholder } from "./OrganizationConfigurationPlaceholder.js"
 import type { organizationAdminScreenStateCreate } from "./organizationAdminScreenStateCreate.js"
 
 type OrganizationAdminScreenState = ReturnType<typeof organizationAdminScreenStateCreate>
@@ -56,9 +55,6 @@ export function OrganizationAdminScreenView(props: { readonly state: Organizatio
             pendingId={state.page.pendingId?.()}
             status={state.page.status()}
           />
-        </Match>
-        <Match when={state.page.screen() === "configuration"}>
-          <OrganizationConfigurationPlaceholder />
         </Match>
         <Match when={state.page.screen() === "login-policy"}>
           <OrganizationAdminLoginPolicyView

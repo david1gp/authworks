@@ -4,7 +4,7 @@ import type { MessageKey } from "../../../ui/i18n/model/messageKeySchema.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { externalIdentityProviderCreateRequestSchema } from "../../externalIdentities/public/externalIdentityProviderCreateRequestSchema.js"
 import type { ExternalIdentityProviderType } from "../../externalIdentities/public/externalIdentityProviderTypeSchema.js"
-import type { OrganizationBranding } from "../public/organizationBrandingSchema.js"
+import { type OrganizationBranding, organizationBrandingSchema } from "../public/organizationBrandingSchema.js"
 import { organizationCreateRequestSchema } from "../public/organizationCreateRequestSchema.js"
 import { organizationDomainClaimRequestSchema } from "../public/organizationDomainClaimRequestSchema.js"
 import { organizationInvitationCreateRequestSchema } from "../public/organizationInvitationCreateRequestSchema.js"
@@ -52,6 +52,66 @@ export function organizationAdminFormStateCreate() {
   const valid = () => {
     validationMessage.set(undefined)
     return true
+  }
+
+  const brandingTimers = new Map<string, ReturnType<typeof setTimeout>>()
+  const brandingIdleWrite = (organizationId: string, value: OrganizationBranding) => {
+    if (typeof window === "undefined" || typeof window.localStorage === "undefined") return
+    try {
+      window.localStorage.setItem(`authworks.admin.branding.${organizationId}`, JSON.stringify(value))
+    } catch {
+      // Browsers may block storage; the form simply stays memory-only.
+    }
+  }
+  const brandingLocalWrite = (organizationId: string, value: OrganizationBranding) => {
+    const pending = brandingTimers.get(organizationId)
+    if (pending !== undefined) clearTimeout(pending)
+    brandingTimers.set(
+      organizationId,
+      setTimeout(() => {
+        brandingTimers.delete(organizationId)
+        if (typeof window === "undefined") return
+        const idle = (
+          window as unknown as {
+            requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => void
+          }
+        ).requestIdleCallback
+        if (typeof idle === "function") idle(() => brandingIdleWrite(organizationId, value), { timeout: 400 })
+        else brandingIdleWrite(organizationId, value)
+      }, 250),
+    )
+  }
+  const brandingLocalGet = (organizationId: string): OrganizationBranding | undefined => {
+    if (typeof window === "undefined" || typeof window.localStorage === "undefined") return undefined
+    try {
+      const raw = window.localStorage.getItem(`authworks.admin.branding.${organizationId}`)
+      if (raw === null) return undefined
+      const parsed = v.safeParse(organizationBrandingSchema, JSON.parse(raw))
+      return parsed.success ? parsed.output : undefined
+    } catch {
+      return undefined
+    }
+  }
+  const brandingLocalFlush = () => {
+    for (const [pendingId, timer] of brandingTimers) {
+      clearTimeout(timer)
+      brandingTimers.delete(pendingId)
+      const current = branding.get()
+      if (current !== undefined) brandingIdleWrite(pendingId, current)
+    }
+  }
+  const brandingLocalClear = (organizationId: string) => {
+    const pending = brandingTimers.get(organizationId)
+    if (pending !== undefined) {
+      clearTimeout(pending)
+      brandingTimers.delete(organizationId)
+    }
+    if (typeof window === "undefined" || typeof window.localStorage === "undefined") return
+    try {
+      window.localStorage.removeItem(`authworks.admin.branding.${organizationId}`)
+    } catch {
+      // Browsers may block storage; the draft simply stays until overwritten.
+    }
   }
 
   return {
@@ -105,5 +165,9 @@ export function organizationAdminFormStateCreate() {
         ? valid()
         : invalid("admin.organizations.providers.invalid"),
     validationMessage,
+    brandingLocalClear,
+    brandingLocalFlush,
+    brandingLocalGet,
+    brandingLocalWrite,
   }
 }

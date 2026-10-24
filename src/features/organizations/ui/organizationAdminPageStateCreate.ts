@@ -104,11 +104,33 @@ export function organizationAdminPageStateCreate(options: {
       return status.set("ready")
     }
     if (screen === "configuration") {
-      const organizationId = options.organizationId()
-      if (organizationId.length === 0) {
+      const configurationId = options.organizationId()
+      if (configurationId.length === 0) {
         error.set(messageTranslate("admin.common.permission"))
         return status.set("error")
       }
+      const [detail, brandingResult, policyResult, realmPolicyResult, domainList, providerList] = await Promise.all([
+        options.adapter.organizationGet(configurationId),
+        options.adapter.brandingGet(configurationId),
+        options.adapter.loginPolicyGet(configurationId),
+        options.adapter.loginPolicyGet(""),
+        options.adapter.domainList(configurationId),
+        options.adapter.providerList(configurationId),
+      ])
+      if (!detail.success) return fail(detail)
+      if (!brandingResult.success) return fail(brandingResult)
+      if (!policyResult.success) return fail(policyResult)
+      if (!realmPolicyResult.success) return fail(realmPolicyResult)
+      if (!domainList.success) return fail(domainList)
+      if (!providerList.success) return fail(providerList)
+      organization.set(detail.data.organization)
+      branding.set(brandingResult.data.branding)
+      policy.set(policyResult.data.policy)
+      realmPolicy.set(realmPolicyResult.data.policy)
+      overrides.set(policyResult.data.overrides)
+      domains.set([...domainList.data.items])
+      nextPageToken.set(domainList.data.nextPageToken)
+      providers.set([...providerList.data.items])
       return status.set("ready")
     }
     if (screen === "login-policy") {
@@ -159,10 +181,11 @@ export function organizationAdminPageStateCreate(options: {
     branding: branding.get,
     brandingSave: async (next: OrganizationBranding) => {
       const saved = await mutate("branding", () => options.adapter.brandingSet(options.organizationId(), next))
-      if (saved === undefined) return
+      if (saved === undefined) return false
       branding.set(saved.branding)
       notice.set("branding-saved")
       status.set("ready")
+      return true
     },
     domainDiscover: (domain: string) => mutate("domain:discover", () => options.adapter.domainDiscover(domain)),
     domainClaim: async (domain: string, isPrimary: boolean) => {
@@ -245,6 +268,7 @@ export function organizationAdminPageStateCreate(options: {
       notice.set("membership-updated")
     },
     nextPageAvailable: () => nextPageToken.get() !== undefined,
+    organizationId: options.organizationId,
     nextPageOpen: () => {
       const token = nextPageToken.get()
       if (token === undefined) return
