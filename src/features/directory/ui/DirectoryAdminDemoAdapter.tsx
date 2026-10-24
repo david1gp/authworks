@@ -4,6 +4,7 @@ import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
 import { DirectoryAdminPlaceholderPage } from "./DirectoryAdminPlaceholderPage.js"
+import { DirectoryRealmAdministratorsDemoAdapter } from "./DirectoryRealmAdministratorsDemoAdapter.js"
 import { DirectoryRolesView } from "./DirectoryRolesView.js"
 import type { DirectoryAdminScreen } from "./directoryAdminScreenSchema.js"
 import { directoryRolesDemoStateCreate } from "./directoryRolesDemoStateCreate.js"
@@ -45,11 +46,7 @@ export function DirectoryAdminDemoAdapter(props: { readonly screen: DirectoryAdm
         </div>
       </Match>
       <Match when={props.screen === "realm-administrators"}>
-        <DirectoryAdminPlaceholderPage
-          descriptionKey="admin.directory.administrators.placeholder"
-          eyebrowKey="shell.nav.realmGroup"
-          titleKey="shell.nav.realmAdministrators"
-        />
+        <DirectoryRealmAdministratorsDemoAdapter />
       </Match>
     </Switch>
   )

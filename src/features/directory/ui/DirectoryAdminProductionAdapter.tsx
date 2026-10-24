@@ -1,6 +1,7 @@
 import { Match, Switch } from "solid-js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { DirectoryAdminPlaceholderPage } from "./DirectoryAdminPlaceholderPage.js"
+import { DirectoryRealmAdministratorsProductionAdapter } from "./DirectoryRealmAdministratorsProductionAdapter.js"
 import { DirectoryRolesView } from "./DirectoryRolesView.js"
 import type { DirectoryAdminScreen } from "./directoryAdminScreenSchema.js"
 import { directoryRolesProductionStateCreate } from "./directoryRolesProductionStateCreate.js"
@@ -29,11 +30,7 @@ export function DirectoryAdminProductionAdapter(props: { readonly screen: Direct
         <ConfirmDialog state={roles.confirmState} titleKey="admin.common.confirmTitle" />
       </Match>
       <Match when={props.screen === "realm-administrators"}>
-        <DirectoryAdminPlaceholderPage
-          descriptionKey="admin.directory.administrators.placeholder"
-          eyebrowKey="shell.nav.realmGroup"
-          titleKey="shell.nav.realmAdministrators"
-        />
+        <DirectoryRealmAdministratorsProductionAdapter />
       </Match>
     </Switch>
   )

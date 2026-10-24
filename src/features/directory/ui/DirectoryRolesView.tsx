@@ -268,7 +268,9 @@ export function DirectoryRolesView(props: { readonly state: DirectoryRolesViewSt
           </Show>
 
           <AuthenticatedDialog
-            description={messageTranslate("admin.roles.projects.description")}
+            description={messageTranslate(
+              state.isEditing() ? "admin.roles.dialog.editDescription" : "admin.roles.dialog.newDescription",
+            )}
             onOpenChange={(open) => {
               if (!open) state.dialogClose()
             }}
