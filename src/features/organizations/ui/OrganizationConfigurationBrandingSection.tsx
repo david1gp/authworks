@@ -11,6 +11,7 @@ import { AuthenticatedSection } from "../../../ui/authenticated/AuthenticatedSec
 import { AuthenticatedStatus } from "../../../ui/authenticated/AuthenticatedStatus.js"
 import { authenticatedControlClasses } from "../../../ui/authenticated/authenticatedControlClasses.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
+import { OrganizationAdminNotice } from "./OrganizationAdminNotice.js"
 import { OrganizationAdminState } from "./OrganizationAdminState.js"
 import { OrganizationConfigurationPreviewCard } from "./OrganizationConfigurationPreviewCard.js"
 import type {
@@ -48,6 +49,7 @@ export function OrganizationConfigurationBrandingSection(props: {
       onRetry={props.statusRetry}
       status={props.status as "empty" | "error" | "loading" | "ready"}
     >
+      <OrganizationAdminNotice notice={props.notice} />
       <div class="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_22rem] [&>*]:min-w-0">
         <div class="grid min-w-0 gap-5 [&>*]:min-w-0">
           <AuthenticatedSection

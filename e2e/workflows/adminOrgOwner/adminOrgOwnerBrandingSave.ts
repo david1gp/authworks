@@ -18,8 +18,10 @@ export async function adminOrgOwnerBrandingSave(setup: AdminOrgOwnerSetup): Prom
   await expect(colorInput).toBeEnabled()
   await colorInput.fill(nextColor)
 
-  const preview = page.getByText("Sign-in preview").locator("..").locator("..")
-  await expect(preview.locator(`span[style*="${nextColor}"]`).first()).toBeVisible()
+  const preview = page.getByRole("region", { name: "Sign-in preview" })
+  const signInButton = preview.getByText("Sign in", { exact: true })
+  await expect(signInButton).toBeVisible()
+  await expect(signInButton).toHaveCSS("background-color", "rgb(124, 58, 237)")
 
   await page.getByRole("button", { name: "Save" }).last().click()
   await expect(page.getByText("Branding was saved.")).toBeVisible()

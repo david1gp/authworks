@@ -39,7 +39,10 @@ export function e2eStepRunCreate(
     run: async (stepName, run) => {
       const ensured = checkpointEnsure()
       if (!ensured.success) throw new Error(ensured.errorMessage)
-      if (ensured.data.completedSteps.includes(stepName)) return
+      if (ensured.data.completedSteps.includes(stepName)) {
+        process.stderr.write(`E2E step "${stepName}" already completed; skipping.\n`)
+        return
+      }
       await step(stepName, run)
       const reread = e2eCheckpointRead(activePath)
       if (!reread.success) throw new Error(reread.errorMessage)
