@@ -122,7 +122,7 @@ async function e2eDevServerEnsure(
     paths: options.paths,
   })
   if (!started.success) return started
-  return createResult({ credentials: credentials.data, started: true })
+  return createResult({ credentials: credentials.data, started: started.data.started })
 }
 
 async function e2eDevEnvironmentProvision(options: {
@@ -444,9 +444,15 @@ type E2eDevServerStartOptions = {
   readonly paths: E2eDevServerPaths
 }
 
-async function e2eDevServerStart(options: E2eDevServerStartOptions): Promise<Result<void>> {
+async function e2eDevServerStart(options: E2eDevServerStartOptions): Promise<Result<{ readonly started: boolean }>> {
   const op = "e2eDevServerStart"
-  e2eDevServerStop(options.paths.pid)
+  const occupant = e2eDevServerPidRead(options.paths.pid)
+  if (occupant !== undefined && e2eDevProcessAlive(occupant)) {
+    if (await e2eDevHealthCheckRetry(options.baseUrl)) return createResult({ started: false })
+    e2eDevServerStop(options.paths.pid)
+  } else if (occupant !== undefined) {
+    e2eDevPidFileRemove(options.paths.pid)
+  }
   const environment: Record<string, string> = {
     AUTHWORKS_DATABASE_PATH: options.paths.database,
     AUTHWORKS_EMAIL_DELIVERY_ENABLED: "false",
@@ -490,7 +496,7 @@ async function e2eDevServerStart(options: E2eDevServerStartOptions): Promise<Res
     e2eDevServerStop(options.paths.pid)
     return ready
   }
-  return createResult(undefined)
+  return createResult({ started: true })
 }
 
 async function e2eDevServerReuse(baseUrl: string, pidPath: string): Promise<Result<{ readonly reused: boolean }>> {
@@ -500,7 +506,7 @@ async function e2eDevServerReuse(baseUrl: string, pidPath: string): Promise<Resu
     e2eDevPidFileRemove(pidPath)
     return createResult({ reused: false })
   }
-  const healthy = await e2eDevHealthCheck(baseUrl)
+  const healthy = await e2eDevHealthCheckRetry(baseUrl)
   if (!healthy) {
     e2eDevServerStop(pidPath)
     return createResult({ reused: false })
@@ -563,6 +569,14 @@ async function e2eDevHealthCheck(baseUrl: string): Promise<boolean> {
   } catch {
     return false
   }
+}
+
+async function e2eDevHealthCheckRetry(baseUrl: string): Promise<boolean> {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    if (await e2eDevHealthCheck(baseUrl)) return true
+    if (attempt < 3) await new Promise<void>((resolve) => setTimeout(resolve, 2_000))
+  }
+  return false
 }
 
 function e2eDevServerPidRead(pidPath: string): number | undefined {

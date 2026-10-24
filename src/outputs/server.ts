@@ -4,8 +4,10 @@ import { smtpMailDeliveryPortCreate } from "../features/email/server/smtpMailDel
 import { wahaConfigurationParse } from "../features/waha/server/wahaConfigurationParse.js"
 import { configurationParse } from "../platform/configuration/configurationParse.js"
 import { r2ConfigurationParse } from "../platform/configuration/r2ConfigurationParse.js"
+import { serverFatalHandlersInstall } from "./serverFatalHandlersInstall.js"
 
 export function serverListen(): void {
+  serverFatalHandlersInstall()
   const parsed = configurationParse({
     databasePath: process.env.AUTHWORKS_DATABASE_PATH ?? process.env.DATABASE_PATH,
     host: process.env.AUTHWORKS_HOST ?? process.env.HOST,
@@ -44,6 +46,7 @@ export function serverListen(): void {
     accountUiOrigin: parsed.data.accountUiOrigin,
     databasePath: parsed.data.databasePath,
     emailGenerator: mailConfiguration.data?.emailGenerator,
+    httpDiagnostics: true,
     mailDelivery:
       mailConfiguration.data === undefined ? undefined : smtpMailDeliveryPortCreate(mailConfiguration.data.smtp),
     production: parsed.data.nodeEnv === "production",
@@ -67,6 +70,9 @@ export function serverListen(): void {
     hostname: parsed.data.host,
     port: parsed.data.port,
   })
+  console.info(
+    `authworks listening on ${parsed.data.host}:${parsed.data.port} (pid ${process.pid}, origin ${parsed.data.publicOrigin})`,
+  )
 }
 
 if (import.meta.main) serverListen()

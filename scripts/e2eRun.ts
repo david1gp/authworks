@@ -141,6 +141,21 @@ async function e2eRunScriptMain(): Promise<number> {
           allPassed = false
           break
         }
+        if (target === "dev" && suite.kind === "live") {
+          const reensured = await e2eDevEnvironmentEnsure({ rebuild: rebuildUi, stateDir: stateDir.data })
+          if (!reensured.success) {
+            process.stderr.write(
+              `Dev server re-ensure before suite "${suite.name}" failed: ${reensured.errorMessage}\n`,
+            )
+            allPassed = false
+            break
+          }
+          const status = e2eDevEnvironmentStatusGet(stateDir.data)
+          process.stdout.write(
+            `Dev target ready before suite "${suite.name}" (pid ${status.pid ?? "unknown"}; ${reensured.data.started ? "started by this run" : "already running"}).\n`,
+          )
+          if (reensured.data.started && devStop === undefined) devStop = reensured.data.stop
+        }
         const suiteResult = await e2eSuiteRun({ baseUrl, checkpointPath, stateDir: stateDir.data, suite, target })
         if (suiteResult.interrupted) {
           outcome = "interrupted"

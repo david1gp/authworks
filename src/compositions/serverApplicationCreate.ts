@@ -55,6 +55,7 @@ type ServerApplicationCreateOptions = {
   readonly databasePath: string
   readonly emailGenerator?: EmailGeneratorServerConfiguration
   readonly externalIdentityProviderPorts?: ExternalIdentityProviderPorts
+  readonly httpDiagnostics?: boolean
   readonly mailDelivery?: MailDeliveryPort
   readonly production?: boolean
   readonly systemSecret?: string
@@ -121,7 +122,8 @@ export function serverApplicationCreate(
           publicOrigin,
         })
   const application = new Hono()
-  application.use("*", httpServerDiagnosticsMiddlewareCreate({ enabled: options.production === true }))
+  const diagnosticsEnabled = options.httpDiagnostics ?? options.production === true
+  application.use("*", httpServerDiagnosticsMiddlewareCreate({ enabled: diagnosticsEnabled }))
   const wahaRepository = wahaHealthCandidateRepositoryCreate(database.data.db)
   const wahaCandidateReader = wahaHealthCandidateReaderCreate({ repository: wahaRepository })
   const whatsappAvailability =
