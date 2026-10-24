@@ -43,6 +43,7 @@ import { oidcConsentRevoke } from "../actions/oidcConsentRevoke.js"
 import { oidcDiscoveryGet } from "../actions/oidcDiscoveryGet.js"
 import { oidcJwksGet } from "../actions/oidcJwksGet.js"
 import { oidcLogout } from "../actions/oidcLogout.js"
+import { oidcMeAccessGet } from "../actions/oidcMeAccessGet.js"
 import { oidcRefreshTokenFamiliesMeRevokeAll } from "../actions/oidcRefreshTokenFamiliesMeRevokeAll.js"
 import { oidcRefreshTokenFamilyMeRevoke } from "../actions/oidcRefreshTokenFamilyMeRevoke.js"
 import { oidcRefreshTokenMeList } from "../actions/oidcRefreshTokenMeList.js"
@@ -543,6 +544,24 @@ export function oidcServerAppCreate(options: OidcServerAppCreateOptions) {
     if (!userInfo.success) return oidcUserInfoErrorResponseCreate(context)
     context.header("cache-control", "no-store")
     return context.json(userInfo.data)
+  })
+
+  app.get("/oauth2/me/access", (context) => {
+    const realm = oidcPublicRealmResolve(options.database, context.req.header("host"), context.req.url)
+    if (!realm.success) return oidcUserInfoErrorResponseCreate(context)
+    const token = oidcBearerTokenGet(context.req.header("authorization"))
+    if (token === null) return oidcUserInfoErrorResponseCreate(context)
+    const access = oidcMeAccessGet({
+      database: options.database,
+      realmId: realm.data.realmId,
+      token,
+    })
+    if (!access.success) {
+      if (access.code === "oidc.insufficient-scope") return oidcMeAccessInsufficientScopeResponseCreate(context)
+      return oidcUserInfoErrorResponseCreate(context)
+    }
+    context.header("cache-control", "no-store")
+    return context.json(access.data)
   })
 
   app.post("/oauth2/revoke", async (context) => {
@@ -1703,6 +1722,17 @@ function oidcTokenErrorResponseCreate(
   return context.json(
     { error: code, error_description: message },
     (code === "invalid_client" ? 401 : code === "server_error" ? 500 : 400) as ContentfulStatusCode,
+  )
+}
+
+function oidcMeAccessInsufficientScopeResponseCreate(context: {
+  header: (name: string, value: string) => void
+  json: (body: unknown, status?: ContentfulStatusCode) => Response
+}) {
+  context.header("cache-control", "no-store")
+  return context.json(
+    { error: "insufficient_scope", error_description: "The client is not authorized for this resource." },
+    403,
   )
 }
 

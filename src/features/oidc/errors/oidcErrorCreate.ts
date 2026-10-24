@@ -20,6 +20,9 @@ function oidcErrorCodeResolve(op: string): string {
   if (op === "oidcLogout") return "oidc.invalid-request"
   if (op === "oidcTokenIssue") return "oidc.internal"
   if (op === "oidcUserInfoInvalidToken" || op === "oidcUserInfoScopeParse") return "oidc.invalid-token"
+  if (op === "oidcAccessTokenContextInvalidToken" || op === "oidcAccessTokenContextScopeParse")
+    return "oidc.invalid-token"
+  if (op === "oidcMeAccessInsufficientScope") return "oidc.insufficient-scope"
   if (op === "oidcClientConfigurationValidate" || op === "oidcClientUpdateConfigurationValidate")
     return "oidc.configuration-invalid"
   if (op === "oidcConsentScopeParse" || op === "oidcStoredScopeParse" || op === "oidcScopeParse")

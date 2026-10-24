@@ -1,5 +1,6 @@
 import * as v from "valibot"
 import { patchClearableSchemaCreate } from "../../../platform/http/patchClearableSchemaCreate.js"
+import { projectResourceIdSchema } from "../../projects/public/projectResourceIdSchema.js"
 import { oidcOriginSchema } from "./oidcOriginSchema.js"
 import { oidcResourceIdSchema } from "./oidcResourceIdSchema.js"
 import { oidcScopeSchema } from "./oidcScopeSchema.js"
@@ -14,7 +15,7 @@ export const oidcClientUpdateRequestSchema = v.strictObject({
   idTokenUserinfoAssertion: v.optional(v.boolean()),
   name: v.optional(v.pipe(v.string(), v.minLength(1), v.maxLength(200))),
   postLogoutRedirectUris: v.optional(v.pipe(v.array(oidcRedirectUriUpdateSchema), v.maxLength(100))),
-  projectId: patchClearableSchemaCreate(oidcResourceIdSchema),
+  projectId: patchClearableSchemaCreate(projectResourceIdSchema),
   redirectUris: v.optional(v.pipe(v.array(oidcRedirectUriUpdateSchema), v.minLength(1), v.maxLength(100))),
   requireConsent: v.optional(v.boolean()),
   trusted: v.optional(v.boolean()),

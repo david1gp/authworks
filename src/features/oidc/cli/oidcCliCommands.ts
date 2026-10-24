@@ -19,16 +19,16 @@ import { oidcLeoConvexProductionClientEnsure } from "./oidcLeoConvexProductionCl
 import { oidcMultichatDevelopmentClientEnsure } from "./oidcMultichatDevelopmentClientEnsure.js"
 import { oidcMultichatDevelopmentSecretRotate } from "./oidcMultichatDevelopmentSecretRotate.js"
 import { oidcMultichatProductionClientEnsure } from "./oidcMultichatProductionClientEnsure.js"
-import { oidcProjectBoundaryRegistry } from "./oidcProjectBoundaryRegistry.js"
-import { oidcProjectDevelopmentClientEnsure } from "./oidcProjectDevelopmentClientEnsure.js"
-import { oidcProjectDevelopmentSecretRotate } from "./oidcProjectDevelopmentSecretRotate.js"
-import { oidcProjectProductionClientEnsure } from "./oidcProjectProductionClientEnsure.js"
-import { oidcProjectProductionSecretRotate } from "./oidcProjectProductionSecretRotate.js"
 import { oidcMultichatProductionOrganizationIdGet } from "./oidcMultichatProductionOrganizationIdGet.js"
 import { oidcMultichatProductionSecretRotate } from "./oidcMultichatProductionSecretRotate.js"
 import { oidcProductionSigningKeyEnsure } from "./oidcProductionSigningKeyEnsure.js"
 import { oidcProductionSigningKeyEnsureExitCodeGet } from "./oidcProductionSigningKeyEnsureExitCodeGet.js"
 import { oidcProductionSigningKeyEnsureFailureOutputCreate } from "./oidcProductionSigningKeyEnsureFailureOutputCreate.js"
+import { oidcProjectBoundaryRegistry } from "./oidcProjectBoundaryRegistry.js"
+import { oidcProjectDevelopmentClientEnsure } from "./oidcProjectDevelopmentClientEnsure.js"
+import { oidcProjectDevelopmentSecretRotate } from "./oidcProjectDevelopmentSecretRotate.js"
+import { oidcProjectProductionClientEnsure } from "./oidcProjectProductionClientEnsure.js"
+import { oidcProjectProductionSecretRotate } from "./oidcProjectProductionSecretRotate.js"
 
 type OidcCliFlags = {
   readonly profile?: string
@@ -50,9 +50,11 @@ type OidcClientUpdateFlags = OidcClientFlags & {
   readonly accessTokenRoleAssertion?: boolean
   readonly additionalOrigins?: string
   readonly allowedScopes?: string
+  readonly clearProjectId?: boolean
   readonly idTokenUserinfoAssertion?: boolean
   readonly name?: string
   readonly postLogoutRedirectUris?: string
+  readonly projectId?: string
   readonly redirectUris?: string
   readonly requireConsent?: boolean
   readonly trusted?: boolean
@@ -77,6 +79,7 @@ const oidcClientCreateCommand = buildCommand({
       accessTokenRoleAssertion?: boolean
       additionalOrigins?: string
       idTokenUserinfoAssertion?: boolean
+      projectId?: string
       trusted?: boolean
       requireConsent?: boolean
     },
@@ -99,6 +102,7 @@ const oidcClientCreateCommand = buildCommand({
         accessTokenRoleAssertion: flags.accessTokenRoleAssertion,
         additionalOrigins: splitValues(flags.additionalOrigins, []),
         idTokenUserinfoAssertion: flags.idTokenUserinfoAssertion,
+        ...(flags.projectId === undefined ? {} : { projectId: flags.projectId }),
         requireConsent: flags.requireConsent,
         trusted: flags.trusted,
       }),
@@ -130,6 +134,7 @@ const oidcClientCreateCommand = buildCommand({
         kind: "boolean" as const,
         optional: true as const,
       },
+      projectId: { ...oidcTextFlag("Linked project ID (UUIDv7 or migrated numeric ID)"), optional: true as const },
       trusted: { brief: "Skip consent for this client", kind: "boolean" as const, optional: true as const },
       requireConsent: { brief: "Require consent", kind: "boolean" as const, optional: true as const },
     },
@@ -195,6 +200,11 @@ const oidcClientUpdateCommand = buildCommand({
     }
     const realmId = scopeIdResolve(this, connection.data.realmId, "realm")
     if (realmId === undefined) return
+    if (flags.projectId !== undefined && flags.clearProjectId === true) {
+      this.process.stderr.write("--project-id and --clear-project-id are mutually exclusive.\n")
+      this.process.exitCode = 1
+      return
+    }
     oidcCliResultWrite(
       this,
       await oidcCliClientCreate(connection.data).oidcClientUpdate(realmId, flags.clientId, {
@@ -205,6 +215,7 @@ const oidcClientUpdateCommand = buildCommand({
           ? {}
           : { additionalOrigins: splitValues(flags.additionalOrigins, []) }),
         ...(flags.allowedScopes === undefined ? {} : { allowedScopes: splitValues(flags.allowedScopes, []) }),
+        ...(flags.clearProjectId === true ? { projectId: null } : {}),
         ...(flags.idTokenUserinfoAssertion === undefined
           ? {}
           : { idTokenUserinfoAssertion: flags.idTokenUserinfoAssertion }),
@@ -212,6 +223,7 @@ const oidcClientUpdateCommand = buildCommand({
         ...(flags.postLogoutRedirectUris === undefined
           ? {}
           : { postLogoutRedirectUris: splitValues(flags.postLogoutRedirectUris, []) }),
+        ...(flags.projectId === undefined ? {} : { projectId: flags.projectId }),
         ...(flags.redirectUris === undefined ? {} : { redirectUris: splitValues(flags.redirectUris, []) }),
         ...(flags.requireConsent === undefined ? {} : { requireConsent: flags.requireConsent }),
         ...(flags.trusted === undefined ? {} : { trusted: flags.trusted }),
@@ -236,6 +248,15 @@ const oidcClientUpdateCommand = buildCommand({
       additionalOrigins: { ...oidcTextFlag("Comma-separated additional browser origins"), optional: true as const },
       idTokenUserinfoAssertion: {
         brief: "Include scoped claims from UserInfo in ID tokens",
+        kind: "boolean" as const,
+        optional: true as const,
+      },
+      projectId: {
+        ...oidcTextFlag("Linked project ID (UUIDv7 or migrated numeric ID)"),
+        optional: true as const,
+      },
+      clearProjectId: {
+        brief: "Clear the linked project",
         kind: "boolean" as const,
         optional: true as const,
       },
