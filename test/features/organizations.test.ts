@@ -936,7 +936,7 @@ test("organization CLI commands use the API and do not open SQLite", async () =>
 })
 
 test("organization write routes require owners while realm administrators keep full access", async () => {
-  await withDatabase(async (database) => {
+  await withDatabase(async (database, testkit) => {
     const realm = await createRealm(database, "owner-only.example.com")
     const realmId = realm.id
     const owner = await createActiveUser(database, realmId, "sole-owner@example.com")
@@ -1175,5 +1175,38 @@ test("organization write routes require owners while realm administrators keep f
         realmId,
       }).success,
     ).toBe(true)
+
+    const roleApp = organizationServerAppCreate({ database, publicOrigin: "https://owner-only.example.com" })
+    const roleFetch = async (input: string | URL | Request, init?: RequestInit) =>
+      roleApp.request(input instanceof Request ? input : input.toString(), init)
+    const tenantRoles = async (userId: string) => {
+      const issued = sessionIssue({
+        assurance: "authenticated",
+        authenticationMethod: "password",
+        database,
+        realmId,
+        runtime: testkit.runtime,
+        userId,
+      })
+      expect(issued.success).toBe(true)
+      if (!issued.success) throw new Error("The tenant role session was not issued.")
+      const client = organizationApiClientCreate({
+        baseUrl: "https://owner-only.example.com",
+        fetch: roleFetch,
+        token: issued.data.token,
+      })
+      return client.organizationTenantRoleList(realmId)
+    }
+    const ownerRoles = await tenantRoles(owner.id)
+    expect(ownerRoles.success).toBe(true)
+    if (!ownerRoles.success) return
+    expect(ownerRoles.data.items.map((role) => role.id)).toEqual(["owner", "admin", "member", "guest"])
+    const adminRoles = await tenantRoles(admin.id)
+    expect(adminRoles.success).toBe(true)
+    const memberRoles = await tenantRoles(member.id)
+    expect(memberRoles.success).toBe(true)
+    const outsider = await createActiveUser(database, realmId, "org-outsider@example.com")
+    const outsiderRoles = await tenantRoles(outsider.id)
+    expect(outsiderRoles.success).toBe(true)
   })
 })

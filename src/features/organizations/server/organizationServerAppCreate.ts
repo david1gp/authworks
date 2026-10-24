@@ -842,12 +842,7 @@ function organizationAdministratorRoutesRegister(
   })
 
   app.get("/realms/:realmId/organization-roles", protectedMiddleware, (context) => {
-    const authenticated = organizationAdminPermissionAuthorize(
-      context,
-      options.database,
-      context.req.param("realmId"),
-      "organization.read",
-    )
+    const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     const query = organizationListQueryRead(context.req.url)
     if (!query.success) return organizationErrorResponseCreate(context, query)
@@ -973,12 +968,7 @@ function organizationAdministratorRoutesRegister(
   })
 
   app.get("/realms/:realmId/login-policy", protectedMiddleware, (context) => {
-    const authenticated = organizationAdminPermissionAuthorize(
-      context,
-      options.database,
-      context.req.param("realmId"),
-      "organization.read",
-    )
+    const authenticated = organizationAdminContextResolve(context, context.req.param("realmId"))
     if (!authenticated.success) return organizationErrorResponseCreate(context, authenticated)
     return organizationResultResponseCreate(
       context,
