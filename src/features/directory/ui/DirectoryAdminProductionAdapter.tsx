@@ -1,8 +1,9 @@
 import { Match, Switch } from "solid-js"
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
-import { DirectoryAdminPlaceholderPage } from "./DirectoryAdminPlaceholderPage.js"
 import { DirectoryRealmAdministratorsProductionAdapter } from "./DirectoryRealmAdministratorsProductionAdapter.js"
+import { DirectoryAdminUsersProductionAdapter } from "./DirectoryAdminUsersProductionAdapter.js"
 import { DirectoryRolesView } from "./DirectoryRolesView.js"
+import { DirectoryUserProfileProductionAdapter } from "./DirectoryUserProfileProductionAdapter.js"
 import type { DirectoryAdminScreen } from "./directoryAdminScreenSchema.js"
 import { directoryRolesProductionStateCreate } from "./directoryRolesProductionStateCreate.js"
 
@@ -12,18 +13,10 @@ export function DirectoryAdminProductionAdapter(props: { readonly screen: Direct
   return (
     <Switch>
       <Match when={props.screen === "users"}>
-        <DirectoryAdminPlaceholderPage
-          descriptionKey="admin.directory.users.placeholder"
-          eyebrowKey="shell.nav.users"
-          titleKey="shell.nav.users"
-        />
+        <DirectoryAdminUsersProductionAdapter />
       </Match>
       <Match when={props.screen === "user-detail"}>
-        <DirectoryAdminPlaceholderPage
-          descriptionKey="admin.directory.users.placeholder"
-          eyebrowKey="shell.nav.users"
-          titleKey="admin.users.detailTitle"
-        />
+        <DirectoryUserProfileProductionAdapter />
       </Match>
       <Match when={props.screen === "roles"}>
         <DirectoryRolesView state={roles.view} />

@@ -3,9 +3,10 @@ import { AuthenticatedPageHeader } from "../../../ui/authenticated/Authenticated
 import { ConfirmDialog } from "../../../ui/confirm/ConfirmDialog.js"
 import { messageTranslate } from "../../../ui/i18n/model/messageTranslate.js"
 import { DemoFixtureStateSelector } from "../../demo/ui/DemoFixtureStateSelector.js"
-import { DirectoryAdminPlaceholderPage } from "./DirectoryAdminPlaceholderPage.js"
 import { DirectoryRealmAdministratorsDemoAdapter } from "./DirectoryRealmAdministratorsDemoAdapter.js"
+import { DirectoryAdminUsersDemoAdapter } from "./DirectoryAdminUsersDemoAdapter.js"
 import { DirectoryRolesView } from "./DirectoryRolesView.js"
+import { DirectoryUserProfileDemoAdapter } from "./DirectoryUserProfileDemoAdapter.js"
 import type { DirectoryAdminScreen } from "./directoryAdminScreenSchema.js"
 import { directoryRolesDemoStateCreate } from "./directoryRolesDemoStateCreate.js"
 
@@ -15,18 +16,10 @@ export function DirectoryAdminDemoAdapter(props: { readonly screen: DirectoryAdm
   return (
     <Switch>
       <Match when={props.screen === "users"}>
-        <DirectoryAdminPlaceholderPage
-          descriptionKey="admin.directory.users.placeholder"
-          eyebrowKey="shell.nav.users"
-          titleKey="shell.nav.users"
-        />
+        <DirectoryAdminUsersDemoAdapter />
       </Match>
       <Match when={props.screen === "user-detail"}>
-        <DirectoryAdminPlaceholderPage
-          descriptionKey="admin.directory.users.placeholder"
-          eyebrowKey="shell.nav.users"
-          titleKey="admin.users.detailTitle"
-        />
+        <DirectoryUserProfileDemoAdapter />
       </Match>
       <Match when={props.screen === "roles"}>
         <div class="grid min-w-0 gap-4 [&>*]:min-w-0">
