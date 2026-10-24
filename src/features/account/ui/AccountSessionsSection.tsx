@@ -37,38 +37,32 @@ export function AccountSessionsSection(props: { readonly state: AccountSecurityV
               {(session) => (
                 <li class="min-w-0">
                   <AuthenticatedDialog
+                    class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
                     description={messageTranslate("account.sessions.description")}
+                    disabled={props.state.pendingId() === `session:${session.id}`}
                     onOpenChange={(open) => state.dialogOpenChange(session.id, open)}
                     open={state.dialogOpen(session.id)}
                     title={messageTranslate("account.sessions.manage", {
                       device: session.device.description ?? messageTranslate("account.sessions.unknownDevice"),
                     })}
-                    trigger={
-                      <AuthenticatedButton
-                        class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                        disabled={props.state.pendingId() === `session:${session.id}`}
-                        variant="ghost"
-                      >
-                        <span class="grid min-w-0 gap-0.5">
-                          <span class="flex min-w-0 flex-wrap items-center gap-2">
-                            <span class="min-w-0 break-words text-sm font-medium">
-                              {session.device.description ?? messageTranslate("account.sessions.unknownDevice")}
-                            </span>
-                            <Show when={session.current}>
-                              <AuthenticatedStatus
-                                label={messageTranslate("account.sessions.current")}
-                                tone="success"
-                              />
-                            </Show>
+                    triggerLabel={
+                      <span class="grid min-w-0 gap-0.5">
+                        <span class="flex min-w-0 flex-wrap items-center gap-2">
+                          <span class="min-w-0 break-words text-sm font-medium">
+                            {session.device.description ?? messageTranslate("account.sessions.unknownDevice")}
                           </span>
-                          <span class="text-xs text-muted-foreground">
-                            {messageTranslate("account.sessions.lastUsed", {
-                              date: localeDateFormat(session.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
-                            })}
-                          </span>
+                          <Show when={session.current}>
+                            <AuthenticatedStatus label={messageTranslate("account.sessions.current")} tone="success" />
+                          </Show>
                         </span>
-                      </AuthenticatedButton>
+                        <span class="text-xs text-muted-foreground">
+                          {messageTranslate("account.sessions.lastUsed", {
+                            date: localeDateFormat(session.lastUsedAt, { dateStyle: "medium", timeStyle: "short" }),
+                          })}
+                        </span>
+                      </span>
                     }
+                    variant="ghost"
                   >
                     <div class="grid gap-3">
                       <AuthenticatedFieldList

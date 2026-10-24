@@ -89,11 +89,9 @@ export function ProjectAdminListView(props: { readonly state: ReturnType<typeof 
             onOpenChange={state.createOpenSet}
             open={state.createOpen()}
             title={messageTranslate("admin.projects.list.create")}
-            trigger={
-              <AuthenticatedButton icon={mdiPlus} variant="filledBlue">
-                {messageTranslate("admin.projects.list.create")}
-              </AuthenticatedButton>
-            }
+            triggerIcon={mdiPlus}
+            triggerLabel={messageTranslate("admin.projects.list.create")}
+            variant="filledBlue"
           >
             <form class="grid gap-4" onSubmit={(event) => void state.createSubmit(event)}>
               <div class="grid gap-1.5">

@@ -38,20 +38,15 @@ export function AccountPasswordView(props: AccountPasswordViewProps) {
   const submit = () => messageTranslate(hasPassword() ? "account.password.submit" : "account.password.setSubmit")
   const dialog = () => (
     <AuthenticatedDialog
+      class={hasPassword() ? "sm:justify-self-end" : "w-full"}
+      triggerSize="sm"
       description={messageTranslate("account.password.description")}
       onOpenChange={props.onDialogOpenChange}
       open={props.dialogOpen}
       title={title()}
-      trigger={
-        <AuthenticatedButton
-          class={hasPassword() ? "sm:justify-self-end" : "w-full"}
-          icon={mdiLockReset}
-          size="sm"
-          variant={hasPassword() ? "outline" : "filledBlue"}
-        >
-          {submit()}
-        </AuthenticatedButton>
-      }
+      triggerLabel={submit()}
+      triggerIcon={mdiLockReset}
+      variant={hasPassword() ? "outline" : "contrast"}
     >
       <Show
         when={saved()}

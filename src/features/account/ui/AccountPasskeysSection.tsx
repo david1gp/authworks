@@ -35,6 +35,7 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
             {(credential) => (
               <li class="min-w-0">
                 <AuthenticatedDialog
+                  class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
                   onOpenChange={(open) => state.dialogOpenChange(credential.id, open)}
                   open={state.dialogOpen(credential.id)}
                   title={messageTranslate("account.passkeys.manage", {
@@ -43,26 +44,22 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
                     ),
                     id: credential.id,
                   })}
-                  trigger={
-                    <AuthenticatedButton
-                      variant="ghost"
-                      class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                    >
-                      <span class="grid min-w-0 gap-1">
-                        <span class="text-sm font-medium">
-                          {messageTranslate(
-                            credential.backedUp ? "account.passkeys.synced" : "account.passkeys.deviceBound",
-                          )}
-                        </span>
-                        <AuthenticatedStatus
-                          label={messageTranslate("account.passkeys.created", {
-                            date: localeDateFormat(credential.createdAt, { dateStyle: "medium" }),
-                          })}
-                          tone="neutral"
-                        />
+                  triggerLabel={
+                    <span class="grid min-w-0 gap-1">
+                      <span class="text-sm font-medium">
+                        {messageTranslate(
+                          credential.backedUp ? "account.passkeys.synced" : "account.passkeys.deviceBound",
+                        )}
                       </span>
-                    </AuthenticatedButton>
+                      <AuthenticatedStatus
+                        label={messageTranslate("account.passkeys.created", {
+                          date: localeDateFormat(credential.createdAt, { dateStyle: "medium" }),
+                        })}
+                        tone="neutral"
+                      />
+                    </span>
                   }
+                  variant="ghost"
                 >
                   <div class="grid gap-3">
                     <p class="text-xs text-muted-foreground">
@@ -93,19 +90,14 @@ export function AccountPasskeysSection(props: { readonly state: AccountSecurityV
           </For>
           <li class="min-w-0">
             <AuthenticatedDialog
+              class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
               description={messageTranslate("account.passkeys.description")}
               onOpenChange={state.addDialogOpenChange}
               open={state.addDialogOpen()}
               title={messageTranslate("account.passkeys.add")}
-              trigger={
-                <AuthenticatedButton
-                  icon={mdiFingerprint}
-                  variant="ghost"
-                  class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                >
-                  {messageTranslate("account.passkeys.add")}
-                </AuthenticatedButton>
-              }
+              triggerIcon={mdiFingerprint}
+              triggerLabel={messageTranslate("account.passkeys.add")}
+              variant="ghost"
             >
               <div class="grid gap-3">
                 <AuthenticatedButton

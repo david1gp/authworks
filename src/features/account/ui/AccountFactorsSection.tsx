@@ -38,29 +38,26 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
             {(enrollment) => (
               <li class="min-w-0">
                 <AuthenticatedDialog
+                  class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
                   description={messageTranslate("account.factors.description")}
+                  disabled={props.state.pendingId()?.startsWith("totp:")}
                   onOpenChange={(open) => state.renameDialogOpenSet(enrollment.id, enrollment.label, open)}
                   open={state.renameDialogOpen(enrollment.id)}
                   title={enrollment.label}
-                  trigger={
-                    <AuthenticatedButton
-                      disabled={props.state.pendingId()?.startsWith("totp:")}
-                      variant="ghost"
-                      class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                    >
-                      <span class="grid min-w-0 gap-1">
-                        <span class="min-w-0 break-words text-sm font-medium">{enrollment.label}</span>
-                        <AuthenticatedStatus
-                          label={
-                            enrollment.status === "active"
-                              ? messageTranslate("account.status.configured")
-                              : messageTranslate("account.profile.verificationPending")
-                          }
-                          tone={enrollment.status === "active" ? "success" : "neutral"}
-                        />
-                      </span>
-                    </AuthenticatedButton>
+                  triggerLabel={
+                    <span class="grid min-w-0 gap-1">
+                      <span class="min-w-0 break-words text-sm font-medium">{enrollment.label}</span>
+                      <AuthenticatedStatus
+                        label={
+                          enrollment.status === "active"
+                            ? messageTranslate("account.status.configured")
+                            : messageTranslate("account.profile.verificationPending")
+                        }
+                        tone={enrollment.status === "active" ? "success" : "neutral"}
+                      />
+                    </span>
                   }
+                  variant="ghost"
                 >
                   <Show
                     when={enrollment.status === "active"}
@@ -111,20 +108,15 @@ export function AccountFactorsSection(props: { readonly state: AccountSecurityVi
           </For>
           <li class="min-w-0">
             <AuthenticatedDialog
+              class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
               description={messageTranslate("account.factors.totpSecretOnce")}
+              disabled={props.state.pendingId()?.startsWith("totp:")}
               onOpenChange={props.state.totpDialogOpenSet}
               open={props.state.totpDialogOpen()}
               title={messageTranslate("account.factors.finishTotp")}
-              trigger={
-                <AuthenticatedButton
-                  icon={mdiPlus}
-                  disabled={props.state.pendingId()?.startsWith("totp:")}
-                  variant="ghost"
-                  class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                >
-                  {messageTranslate("account.factors.addTotp")}
-                </AuthenticatedButton>
-              }
+              triggerLabel={messageTranslate("account.factors.addTotp")}
+              triggerIcon={mdiPlus}
+              variant="ghost"
             >
               <Show when={!state.startPending()} fallback={<AccountFactorsSectionLoading />}>
                 <Show when={props.state.totpSetup()}>

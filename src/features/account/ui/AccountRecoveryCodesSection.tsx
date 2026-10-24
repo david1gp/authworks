@@ -34,11 +34,10 @@ export function AccountRecoveryCodesSection(props: { readonly state: AccountSecu
           onOpenChange={state.dialogOpenChange}
           open={state.dialogOpen()}
           title={messageTranslate("shell.nav.recoveryCodes")}
-          trigger={
-            <AuthenticatedButton icon={mdiBackupRestore} variant="outline" size="sm">
-              {messageTranslate("account.recovery.generate")}
-            </AuthenticatedButton>
-          }
+          triggerIcon={mdiBackupRestore}
+          triggerSize="sm"
+          triggerLabel={messageTranslate("account.recovery.generate")}
+          variant="outline"
         >
           <div class="grid gap-3">
             <Show when={props.state.error()}>{(error) => <AuthenticatedNotice message={error()} tone="danger" />}</Show>

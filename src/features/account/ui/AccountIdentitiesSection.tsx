@@ -57,27 +57,24 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
             {(identity) => (
               <li class="min-w-0">
                 <AuthenticatedDialog
+                  class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
                   onOpenChange={(open) => state.dialogOpenChange(identity.id, open)}
                   open={state.dialogOpen(identity.id)}
                   title={state.identityTitle(identity)}
-                  trigger={
-                    <AuthenticatedButton
-                      variant="ghost"
-                      class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                    >
-                      <span class="flex min-w-0 items-center gap-2">
-                        <Icon
-                          aria-hidden="true"
-                          class="size-4 shrink-0 text-accent"
-                          path={accountIdentityProviderIconGet(identity.providerType)}
-                        />
-                        <span class="grid min-w-0 gap-0.5">
-                          <span class="truncate text-sm font-medium capitalize">{state.identityLabel(identity)}</span>
-                          <span class="truncate text-xs text-muted-foreground">{state.identityValue(identity)}</span>
-                        </span>
+                  triggerLabel={
+                    <span class="flex min-w-0 items-center gap-2">
+                      <Icon
+                        aria-hidden="true"
+                        class="size-4 shrink-0 text-accent"
+                        path={accountIdentityProviderIconGet(identity.providerType)}
+                      />
+                      <span class="grid min-w-0 gap-0.5">
+                        <span class="truncate text-sm font-medium capitalize">{state.identityLabel(identity)}</span>
+                        <span class="truncate text-xs text-muted-foreground">{state.identityValue(identity)}</span>
                       </span>
-                    </AuthenticatedButton>
+                    </span>
                   }
+                  variant="ghost"
                 >
                   <div class="grid gap-3">
                     <p class="break-words text-sm text-muted-foreground">{state.identityValue(identity)}</p>
@@ -104,19 +101,14 @@ export function AccountIdentitiesSection(props: { readonly state: AccountSecurit
           <Show when={state.linkAvailable()}>
             <li class="min-w-0">
               <AuthenticatedDialog
+                class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
                 description={messageTranslate("account.identities.linkDescription")}
                 onOpenChange={state.linkDialogOpenChange}
                 open={state.linkDialogOpen()}
                 title={messageTranslate("account.identities.linkTitle")}
-                trigger={
-                  <AuthenticatedButton
-                    icon={mdiLinkVariant}
-                    variant="ghost"
-                    class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                  >
-                    {messageTranslate("account.identities.linkTitle")}
-                  </AuthenticatedButton>
-                }
+                triggerIcon={mdiLinkVariant}
+                triggerLabel={messageTranslate("account.identities.linkTitle")}
+                variant="ghost"
               >
                 <div class="grid gap-3">
                   <Show when={props.state.error()}>

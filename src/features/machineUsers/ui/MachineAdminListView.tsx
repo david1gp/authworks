@@ -55,11 +55,9 @@ export function MachineAdminListView(props: { readonly state: ReturnType<typeof 
             onOpenChange={state.createOpenSet}
             open={state.createOpen()}
             title={messageTranslate("admin.machine.users.create")}
-            trigger={
-              <AuthenticatedButton icon={mdiPlus} variant="filledBlue">
-                {messageTranslate("admin.machine.users.create")}
-              </AuthenticatedButton>
-            }
+            triggerLabel={messageTranslate("admin.machine.users.create")}
+            triggerIcon={mdiPlus}
+            variant="filledBlue"
           >
             <form
               class="grid max-w-3xl gap-4 [&_label]:text-[0.8125rem] [&_label]:font-medium [&_div.grid]:gap-y-1.5"

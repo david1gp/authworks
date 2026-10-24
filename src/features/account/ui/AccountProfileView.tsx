@@ -153,9 +153,8 @@ export function AccountProfileView(props: AccountProfileViewProps) {
           onOpenChange={props.onProfileDialogOpenChange}
           open={props.profileDialogOpen}
           title={messageTranslate("account.profile.edit")}
-          trigger={
-            <AuthenticatedButton variant="outline">{messageTranslate("account.profile.edit")}</AuthenticatedButton>
-          }
+          triggerLabel={messageTranslate("account.profile.edit")}
+          variant="outline"
         >
           <form class="grid min-w-0 gap-3" onSubmit={props.onSubmit}>
             <div class="grid min-w-0 items-start gap-2.5 sm:grid-cols-2 [&>*]:min-w-0">

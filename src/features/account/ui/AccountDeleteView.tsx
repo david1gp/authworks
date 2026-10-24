@@ -62,11 +62,10 @@ export function AccountDeleteView(props: AccountDeleteViewProps) {
                 onOpenChange={props.onDialogOpenChange}
                 open={props.dialogOpen}
                 title={messageTranslate("account.delete.title")}
-                trigger={
-                  <AuthenticatedButton icon={mdiAccountRemoveOutline} variant="outline" size="sm">
-                    {messageTranslate("account.delete.dangerZoneToggle")}
-                  </AuthenticatedButton>
-                }
+                triggerIcon={mdiAccountRemoveOutline}
+                triggerSize="sm"
+                triggerLabel={messageTranslate("account.delete.dangerZoneToggle")}
+                variant="outline"
               >
                 <form class="grid gap-3" onSubmit={props.onDelete}>
                   <div class="grid min-w-0 gap-1">

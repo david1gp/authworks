@@ -58,11 +58,9 @@ export function ProjectDetailRolesTab(props: {
               onOpenChange={state.createOpenSet}
               open={state.createOpen()}
               title={messageTranslate("admin.projects.roles.create")}
-              trigger={
-                <AuthenticatedButton icon={mdiPlus} variant="filledBlue">
-                  {messageTranslate("admin.projects.roles.create")}
-                </AuthenticatedButton>
-              }
+              triggerIcon={mdiPlus}
+              triggerLabel={messageTranslate("admin.projects.roles.create")}
+              variant="filledBlue"
             >
               <form class="grid gap-4" onSubmit={(event) => void state.createSubmit(event)}>
                 <div class="grid gap-1.5">

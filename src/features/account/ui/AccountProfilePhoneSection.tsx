@@ -53,34 +53,31 @@ export function AccountProfilePhoneSection(props: {
         <ul aria-label={messageTranslate("account.profile.phoneNumbers")} class="divide-y divide-line-subtle">
           <li class="min-w-0">
             <AuthenticatedDialog
+              class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
               description={messageTranslate("account.profile.phoneDescription")}
               onOpenChange={props.onAddDialogOpenChange}
               open={props.addDialogOpen}
               title={messageTranslate(props.phoneNumber ? "account.profile.phoneChange" : "account.profile.phoneAdd")}
-              trigger={
-                <AuthenticatedButton
-                  icon={props.phoneNumber ? undefined : mdiPhonePlusOutline}
-                  variant="ghost"
-                  class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                >
-                  {props.phoneNumber ? (
-                    <span class="grid min-w-0 gap-1">
-                      <span class="sr-only">{messageTranslate("account.profile.phoneChange")}: </span>
-                      <span class="break-all font-mono text-sm font-medium">{props.phoneNumber}</span>
-                      <AuthenticatedStatus
-                        label={
-                          props.verified
-                            ? messageTranslate("account.profile.verified")
-                            : messageTranslate("account.profile.verificationPending")
-                        }
-                        tone={props.verified ? "success" : "warning"}
-                      />
-                    </span>
-                  ) : (
-                    messageTranslate("account.profile.phoneAdd")
-                  )}
-                </AuthenticatedButton>
+              triggerLabel={
+                props.phoneNumber ? (
+                  <span class="grid min-w-0 gap-1">
+                    <span class="sr-only">{messageTranslate("account.profile.phoneChange")}: </span>
+                    <span class="break-all font-mono text-sm font-medium">{props.phoneNumber}</span>
+                    <AuthenticatedStatus
+                      label={
+                        props.verified
+                          ? messageTranslate("account.profile.verified")
+                          : messageTranslate("account.profile.verificationPending")
+                      }
+                      tone={props.verified ? "success" : "warning"}
+                    />
+                  </span>
+                ) : (
+                  messageTranslate("account.profile.phoneAdd")
+                )
               }
+              triggerIcon={props.phoneNumber ? undefined : mdiPhonePlusOutline}
+              variant="ghost"
             >
               <Show
                 when={props.challengeActive}

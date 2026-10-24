@@ -59,25 +59,22 @@ export function AccountConsentsView(props: {
                   {(consent) => (
                     <li class="min-w-0">
                       <AuthenticatedDialog
+                        class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
                         description={messageTranslate("account.access.consentDescription")}
                         onOpenChange={(open) => state.dialogOpenChange(consent.clientId, open)}
                         open={state.dialogOpen(consent.clientId)}
                         title={messageTranslate("account.access.consentManage", { clientId: consent.clientId })}
-                        trigger={
-                          <AuthenticatedButton
-                            variant="ghost"
-                            class="!flex !h-auto w-full min-w-0 !justify-start !rounded-none !px-2 !py-2.5 text-left hover:bg-surface-hover focus-visible:ring-2 focus-visible:ring-accent"
-                          >
-                            <span class="grid min-w-0 gap-0.5">
-                              <span class="min-w-0 break-all font-mono text-sm font-medium">{consent.clientId}</span>
-                              <span class="text-xs text-muted-foreground">
-                                {messageTranslate("account.access.created", {
-                                  date: localeDateFormat(consent.createdAt, { dateStyle: "medium" }),
-                                })}
-                              </span>
+                        triggerLabel={
+                          <span class="grid min-w-0 gap-0.5">
+                            <span class="min-w-0 break-all font-mono text-sm font-medium">{consent.clientId}</span>
+                            <span class="text-xs text-muted-foreground">
+                              {messageTranslate("account.access.created", {
+                                date: localeDateFormat(consent.createdAt, { dateStyle: "medium" }),
+                              })}
                             </span>
-                          </AuthenticatedButton>
+                          </span>
                         }
+                        variant="ghost"
                       >
                         <div class="grid min-w-0 gap-3">
                           <p class="text-sm text-muted-foreground">

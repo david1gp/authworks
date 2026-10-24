@@ -294,8 +294,9 @@ test("linked identity rows are labelled dialogs, help stays in the collapsed car
   expect(dialogs).toHaveLength(3)
   expect(dialogs[0]?.openingElement.getText(tree)).toContain("title={state.identityTitle(identity)}")
   expect(dialogs[0]?.openingElement.getText(tree)).toContain("open={state.dialogOpen(identity.id)}")
-  expect(dialogs[1]?.openingElement.getText(tree)).toContain("trigger={")
-  expect(dialogs[1]?.getText(tree)).toContain('messageTranslate("account.identities.linkTitle")')
+  expect(dialogs[1]?.openingElement.getText(tree)).toContain(
+    'triggerLabel={messageTranslate("account.identities.linkTitle")}',
+  )
   expect(ancestor(dialogs[1]!, "ul")).toBeDefined()
   expect(ancestor(dialogs[1]!, "Show")?.openingElement.getText(tree)).toContain("when={state.linkAvailable()}")
   const list = ancestor(dialogs[1]!, "ul")!
