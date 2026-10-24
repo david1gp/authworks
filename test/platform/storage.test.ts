@@ -135,6 +135,68 @@ test("storage upgrades legacy MFA challenges with organization context", async (
   })
 })
 
+test("storage backfills legacy machine user organization from a single membership", async () => {
+  await withStorage(async (path) => {
+    const legacy = new Database(path)
+    legacy.run("CREATE TABLE realms (id TEXT PRIMARY KEY NOT NULL)")
+    legacy.run(
+      "CREATE TABLE organizations (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, name TEXT NOT NULL, status TEXT NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, version INTEGER NOT NULL)",
+    )
+    legacy.run(
+      "CREATE TABLE organization_memberships (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, organization_id TEXT NOT NULL, user_id TEXT NOT NULL, roles TEXT NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, version INTEGER NOT NULL)",
+    )
+    legacy.run(
+      "CREATE TABLE machine_users (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, user_name TEXT NOT NULL, display_name TEXT NOT NULL, scopes TEXT NOT NULL, status TEXT NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, version INTEGER NOT NULL)",
+    )
+    legacy.run(
+      "CREATE TABLE machine_credentials (id TEXT PRIMARY KEY NOT NULL, realm_id TEXT NOT NULL, machine_user_id TEXT NOT NULL, kind TEXT NOT NULL, name TEXT, secret_hash TEXT NOT NULL UNIQUE, scopes TEXT NOT NULL, expires_at INTEGER, revoked_at INTEGER, replaced_by_id TEXT, created_at INTEGER NOT NULL, version INTEGER NOT NULL)",
+    )
+    legacy.run("INSERT INTO realms (id) VALUES ('realm-1')")
+    legacy.run(
+      "INSERT INTO organizations (id, realm_id, name, status, created_at, updated_at, version) VALUES ('org-1', 'realm-1', 'One', 'active', 1, 1, 1), ('org-2', 'realm-1', 'Two', 'active', 1, 1, 1)",
+    )
+    legacy.run(
+      "INSERT INTO machine_users (id, realm_id, user_name, display_name, scopes, status, created_at, updated_at, version) VALUES ('mu-member', 'realm-1', 'svc-member', 'Svc', '[]', 'active', 1, 1, 1), ('mu-none', 'realm-1', 'svc-none', 'Svc', '[]', 'active', 1, 1, 1), ('mu-ambiguous', 'realm-1', 'svc-ambiguous', 'Svc', '[]', 'active', 1, 1, 1)",
+    )
+    legacy.run(
+      "INSERT INTO organization_memberships (id, realm_id, organization_id, user_id, roles, created_at, updated_at, version) VALUES ('m-1', 'realm-1', 'org-1', 'mu-member', '[\"admin\"]', 1, 1, 1), ('m-2', 'realm-1', 'org-1', 'mu-ambiguous', '[\"admin\"]', 1, 1, 1), ('m-3', 'realm-1', 'org-2', 'mu-ambiguous', '[\"admin\"]', 1, 1, 1)",
+    )
+    legacy.run(
+      "INSERT INTO machine_credentials (id, realm_id, machine_user_id, kind, name, secret_hash, scopes, created_at, version) VALUES ('cred-member', 'realm-1', 'mu-member', 'client_secret', NULL, 'hash-1', '[]', 1, 1), ('cred-none', 'realm-1', 'mu-none', 'client_secret', NULL, 'hash-2', '[]', 1, 1)",
+    )
+    legacy.close()
+
+    const opened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
+    expect(opened.success).toBe(true)
+    if (!opened.success) return
+
+    const users = opened.data.sqlite
+      .query("SELECT id, organization_id AS organizationId FROM machine_users ORDER BY id")
+      .all()
+    expect(users).toEqual([
+      { id: "mu-ambiguous", organizationId: null },
+      { id: "mu-member", organizationId: "org-1" },
+      { id: "mu-none", organizationId: null },
+    ])
+    const credentials = opened.data.sqlite
+      .query("SELECT id, organization_id AS organizationId FROM machine_credentials ORDER BY id")
+      .all()
+    expect(credentials).toEqual([
+      { id: "cred-member", organizationId: "org-1" },
+      { id: "cred-none", organizationId: null },
+    ])
+    opened.data.close()
+
+    const reopened = storageDatabaseOpen(path, platformTestkitCreate().runtime)
+    expect(reopened.success).toBe(true)
+    if (!reopened.success) return
+    expect(
+      reopened.data.sqlite.query("SELECT COUNT(*) AS count FROM machine_users WHERE organization_id = 'org-1'").get(),
+    ).toEqual({ count: 1 })
+    reopened.data.close()
+  })
+})
+
 test("event append rejects invalid envelope values and rolls back preceding state", async () => {
   await withStorage(async (path) => {
     const testkit = platformTestkitCreate()

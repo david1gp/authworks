@@ -677,6 +677,17 @@ export function storageSchemaCreate(database: StorageExecutor): Result<void> {
     database.run(
       "UPDATE users SET last_sign_in_at = (SELECT MAX(s.created_at) FROM sessions s WHERE s.user_id = users.id AND s.realm_id = users.realm_id AND s.subject_type = 'user' AND s.authentication_method != 'impersonation' AND s.impersonator_id IS NULL) WHERE last_sign_in_at IS NULL AND EXISTS (SELECT 1 FROM sessions s WHERE s.user_id = users.id AND s.realm_id = users.realm_id AND s.subject_type = 'user' AND s.authentication_method != 'impersonation' AND s.impersonator_id IS NULL)",
     )
+    // Machine users created before organization scoping keep a NULL organization_id and
+    // are invisible to organization-scoped reads. Backfill from the user's single
+    // organization membership in the same realm; users with no or several memberships
+    // are left untouched rather than guessed. Credentials follow their machine user.
+    // The statements are idempotent and run on every open.
+    database.run(
+      "UPDATE machine_users SET organization_id = (SELECT om.organization_id FROM organization_memberships om WHERE om.user_id = machine_users.id AND om.realm_id = machine_users.realm_id) WHERE organization_id IS NULL AND (SELECT COUNT(*) FROM organization_memberships om WHERE om.user_id = machine_users.id AND om.realm_id = machine_users.realm_id) = 1",
+    )
+    database.run(
+      "UPDATE machine_credentials SET organization_id = (SELECT mu.organization_id FROM machine_users mu WHERE mu.id = machine_credentials.machine_user_id) WHERE organization_id IS NULL AND EXISTS (SELECT 1 FROM machine_users mu WHERE mu.id = machine_credentials.machine_user_id AND mu.organization_id IS NOT NULL)",
+    )
     storageRealmAdministratorsBackfill(database)
     return resultCreate(undefined)
   } catch (_error) {
