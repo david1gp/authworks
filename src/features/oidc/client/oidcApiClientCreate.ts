@@ -61,6 +61,7 @@ import { type OidcDiscovery, oidcDiscoverySchema } from "../public/oidcDiscovery
 import { type OidcJwks, oidcJwksSchema } from "../public/oidcJwksSchema.js"
 import { type OidcLogoutRequest, oidcLogoutRequestSchema } from "../public/oidcLogoutRequestSchema.js"
 import { type OidcLogoutResponse, oidcLogoutResponseSchema } from "../public/oidcLogoutResponseSchema.js"
+import { type OidcMeAccessResponse, oidcMeAccessResponseSchema } from "../public/oidcMeAccessResponseSchema.js"
 import {
   type OidcRefreshTokenListResponse,
   oidcRefreshTokenListResponseSchema,
@@ -334,6 +335,29 @@ export function oidcApiClientCreate(options: OidcApiClientCreateOptions) {
 
     oidcUserInfoPost(): Promise<Result<OidcUserInfo>> {
       return userInfoRequest("POST")
+    },
+
+    oidcMeAccessGet(accessToken: string): Promise<Result<OidcMeAccessResponse>> {
+      return httpApiClientRequest({
+        baseUrl: options.baseUrl,
+        fetch: options.fetch,
+        init: { method: "GET" },
+        invalidResponseMessage: "The server returned an invalid access response.",
+        op: "oidcApiClientMeAccessGet",
+        path: "/oauth2/me/access",
+        responseErrorMessageGet: (body) => {
+          const parsedError = v.safeParse(
+            v.strictObject({
+              error: v.string(),
+              error_description: v.optional(v.string()),
+            }),
+            body,
+          )
+          return parsedError.success ? (parsedError.output.error_description ?? parsedError.output.error) : undefined
+        },
+        schema: oidcMeAccessResponseSchema,
+        token: accessToken,
+      })
     },
 
     oidcTokenRevoke(input: OidcTokenRevokeRequest): Promise<Result<void>> {

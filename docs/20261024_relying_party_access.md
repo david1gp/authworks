@@ -41,10 +41,10 @@ Status: in progress
 - [x] Feature 1: CLI `--project-id` on client-create/client-update, `--clear-project-id` on update
 - [x] Feature 1: CLI flag tests
 - [x] Feature 1: verify no other validators (persistence mapping, public view, admin UI, typed client)
-- [ ] Feature 2: public `oidcMeAccessResponseSchema` + public index export
-- [ ] Feature 2: shared access-token context helper, userinfo unchanged
-- [ ] Feature 2: `oidcMeAccessGet` action (trusted-only, active orgs/projects)
-- [ ] Feature 2: `GET /oauth2/me/access` route + typed client method
-- [ ] Feature 2: endpoint tests (direct, grant-based, multi-org, no-role project omitted,
+- [x] Feature 2: public `oidcMeAccessResponseSchema` + public index export
+- [x] Feature 2: shared access-token context helper, userinfo unchanged
+- [x] Feature 2: `oidcMeAccessGet` action (trusted-only, active orgs/projects)
+- [x] Feature 2: `GET /oauth2/me/access` route + typed client method
+- [x] Feature 2: endpoint tests (direct, grant-based, multi-org, no-role project omitted,
       untrusted 403, expired/revoked token 401, revoked session 401, deleted user 401)
 - [ ] `bun run check` green; conventional commits; final summary
